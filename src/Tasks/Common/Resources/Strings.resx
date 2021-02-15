@@ -755,7 +755,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1162: "}</comment>
   </data>
   <data name="Crossgen5CannotEmitSymbolsInCompositeMode" xml:space="preserve">
-    <value>NETSDK1163: Crossgen2 5.0 doesn't support emitting symbols in composite mode</value>
+    <value>NETSDK1163: Cannot emit symbols when publishing for .NET 5 with Crossgen2 using composite mode.</value>
     <comment>{StrBegin="NETSDK1163: "}</comment>
   </data>
 </root>

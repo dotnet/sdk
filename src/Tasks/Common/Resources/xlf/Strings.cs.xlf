@@ -280,8 +280,8 @@
         <note>{StrBegin="NETSDK1151: "}</note>
       </trans-unit>
       <trans-unit id="Crossgen5CannotEmitSymbolsInCompositeMode">
-        <source>NETSDK1163: Crossgen2 5.0 doesn't support emitting symbols in composite mode</source>
-        <target state="translated">NETSDK1163: Crossgen2 5.0 nepodporuje výstup symbolů v kompozitním módu</target>
+        <source>NETSDK1163: Cannot emit symbols when publishing for .NET 5 with Crossgen2 using composite mode.</source>
+        <target state="translated">NETSDK1163: Publikování v .NET 5 s použitím Crossgen2 v kompozitním módu nepodporuje výstup symbolů.</target>
         <note>{StrBegin="NETSDK1163: "}</note>
       </trans-unit>
       <trans-unit id="CrossgenToolExecutableNotFound">

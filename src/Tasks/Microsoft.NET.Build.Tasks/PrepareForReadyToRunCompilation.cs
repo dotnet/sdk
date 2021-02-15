@@ -148,7 +148,7 @@ namespace Microsoft.NET.Build.Tasks
                     if (outputPDBImage != null && ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5)
                     {
                         r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
-                        r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
+                        r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, Path.GetDirectoryName(outputPDBImage));
                     }
                     r2rCompilationEntry.RemoveMetadata(MetadataKeys.OriginalItemSpec);
                     imageCompilationList.Add(r2rCompilationEntry);
@@ -178,7 +178,7 @@ namespace Microsoft.NET.Build.Tasks
                     if (compositePDBImage != null && ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5)
                     {
                         r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
-                        r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, compositePDBImage);
+                        r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, Path.GetDirectoryName(compositePDBImage));
 
                         // Publish composite PDB file
                         TaskItem r2rSymbolsFileToPublish = new TaskItem(file);
