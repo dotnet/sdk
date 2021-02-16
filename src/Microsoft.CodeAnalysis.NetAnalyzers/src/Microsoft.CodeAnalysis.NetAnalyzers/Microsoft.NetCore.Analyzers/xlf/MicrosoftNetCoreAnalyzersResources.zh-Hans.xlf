@@ -174,7 +174,7 @@
       </trans-unit>
       <trans-unit id="CommaSeparator">
         <source>, </source>
-        <target state="new">, </target>
+        <target state="translated">, </target>
         <note>Separator used for separating list of platform names: {API} is only supported on: {‘windows’, ‘browser’, ‘linux’}</note>
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
@@ -754,7 +754,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
         <source>{0}() is used where AnyAsync() could be used instead to improve performance</source>
-        <target state="translated">如果可以使用 AnyAsync()，请改为使用 {0}() 来提高性能</target>
+        <target state="translated">使用的是 {0}()，但本可以使用 AnyAsync() 来提高性能</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
@@ -924,7 +924,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
         <source>Do not use stackalloc in loops</source>
-        <target state="translated">不要在循环中使用 stackalloc</target>
+        <target state="translated">不要循环使用 stackalloc</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1519,67 +1519,67 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllVersions">
         <source>'{0}' all versions</source>
-        <target state="new">'{0}' all versions</target>
+        <target state="translated">"{0}" 所有版本</target>
         <note>This call site is reachable on: 'Windows' all versions.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityDescription">
         <source>Using platform dependent API on a component makes the code no longer work across all platforms.</source>
-        <target state="new">Using platform dependent API on a component makes the code no longer work across all platforms.</target>
+        <target state="translated">在组件上使用依赖于平台的 API 会使代码无法用于所有平台。</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityFromVersionToVersion">
         <source>'{0}' from version {1} to {2}</source>
-        <target state="new">'{0}' from version {1} to {2}</target>
+        <target state="translated">"{0}" 版本 {1} 到 {2}。</target>
         <note>'SupportedOnWindows1903UnsupportedOn2004()' is supported on: 'windows' from version 10.0.1903 to 10.0.2004.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityOnlySupportedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is only supported on: {1}.</source>
-        <target state="new">This call site is reachable on all platforms. '{0}' is only supported on: {1}.</target>
+        <target state="translated">可在所有平台上访问此调用站点。"{0}" 仅在 {1} 上受支持。</target>
         <note>This call site is reachable on all platforms. 'SupportedOnWindowsAndBrowser()' is only supported on: 'windows', 'browser' .</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityOnlySupportedCsReachableMessage">
         <source>This call site is reachable on: {2}. '{0}' is only supported on: {1}.</source>
-        <target state="new">This call site is reachable on: {2}. '{0}' is only supported on: {1}.</target>
+        <target state="translated">可在 {2} 上访问此调用站点。"{0}" 仅在 {1} 上受支持。</target>
         <note>This call site is reachable on: 'windows' all versions.'SupportedOnWindowsUnsupportedFromWindows2004()' is only supported on: 'windows' 10.0.2004 and before</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityOnlySupportedCsUnreachableMessage">
         <source>This call site is unreachable on: {2}. '{0}' is only supported on: {1}.</source>
-        <target state="new">This call site is unreachable on: {2}. '{0}' is only supported on: {1}.</target>
+        <target state="translated">无法在 {2} 上访问此调用站点。"{0}" 仅在 {1} 上受支持。</target>
         <note>This call site is unreachable on: 'browser'. 'SupportedOnWindowsAndBrowser()' is only supported on: 'browser', 'windows'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilitySupportedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is supported on: {1}.</source>
-        <target state="new">This call site is reachable on all platforms. '{0}' is supported on: {1}.</target>
+        <target state="translated">可在所有平台上访问此调用站点。"{0}" 在 {1} 上受支持。</target>
         <note>This call site is reachable on all platforms. 'SupportedOnWindows1903UnsupportedFrom2004()' is supported on: 'windows' from version 10.0.1903 to 10.0.2004.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilitySupportedCsReachableMessage">
         <source>This call site is reachable on: {2}. '{0}' is supported on: {1}.</source>
-        <target state="new">This call site is reachable on: {2}. '{0}' is supported on: {1}.</target>
+        <target state="translated">可在 {2} 上访问此调用站点。"{0}" 在 {1} 上受支持。</target>
         <note>This call site is reachable on: 'windows' 10.0.2000 and before. 'UnsupportedOnWindowsSupportedOn1903()' is supported on: 'windows' 10.0.1903 and later.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityTitle">
         <source>Validate platform compatibility</source>
-        <target state="new">Validate platform compatibility</target>
+        <target state="translated">验证平台兼容性</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityUnsupportedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</source>
-        <target state="new">This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</target>
+        <target state="translated">可在所有平台上访问此调用站点。"{0}" 在 {1} 上不受支持。</target>
         <note>This call site is reachable on all platforms. 'UnsupportedOnWindows()' is unsupported on: 'windows'</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityUnsupportedCsReachableMessage">
         <source>This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</source>
-        <target state="new">This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</target>
+        <target state="translated">可在 {2} 上访问此调用站点。"{0}" 在 {1} 上不受支持。</target>
         <note>This call site is reachable on: 'windows', 'browser'. 'UnsupportedOnBrowser()' is unsupported on: 'browser'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityVersionAndBefore">
         <source>'{0}' {1} and before</source>
-        <target state="new">'{0}' {1} and before</target>
+        <target state="translated">"{0}" {1} 及之前版本</target>
         <note>'SupportedOnWindowsUnsupportedFromWindows2004()' is only supported on: 'windows' 10.0.2004 and before.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityVersionAndLater">
         <source>'{0}' {1} and later</source>
-        <target state="new">'{0}' {1} and later</target>
+        <target state="translated">"{0}" {1} 及更高版本</target>
         <note>'SupportedOnWindows10()' is only supported on: 'windows' 10.0 and later.</note>
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">

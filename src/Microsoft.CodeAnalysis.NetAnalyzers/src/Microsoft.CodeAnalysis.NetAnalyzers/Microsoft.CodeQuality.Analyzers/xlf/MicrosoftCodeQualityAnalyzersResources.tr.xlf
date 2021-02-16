@@ -219,7 +219,7 @@
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
-        <target state="translated">Türleri başvuruya göre geçirmek (out veya ref kullanılarak) için işaretçiler konusunda deneyim sahibi olmak, değer ve başvuru türleri arasındaki farkları anlamak ve birden çok dönüş değeri içeren yöntemleri işlemeyi bilmek gerekir. Ayrıca out ve ref parametreleri arasındaki fark yaygın olarak anlaşılmaz.</target>
+        <target state="translated">Türleri başvuruya göre geçirmek (out veya ref kullanılarak) için işaretçiler konusunda deneyim sahibi olmak, değer ve başvuru türleri arasındaki farkları anlamak ve birden çok dönüş değeri içeren metotları işlemeyi bilmek gerekir. Ayrıca out ve ref parametreleri arasındaki fark genelde kapsamlı bir şekilde anlaşılmaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceMessage">

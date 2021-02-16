@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="AvoidDuplicateAcceleratorsDescription">
         <source>An access key, also known as an accelerator, enables keyboard access to a control by using the ALT key. When multiple controls have duplicate access keys, the behavior of the access key is not well defined.</source>
-        <target state="translated">액셀러레이터 키라고도 알려진 액세스 키는 &lt;ALT&gt; 키를 사용하여 컨트롤에 대한 키보드 액세스를 사용합니다. 여러 컨트롤에 중복되는 선택키가 있는 경우 선택키의 동작이 잘 정의되지 않습니다.</target>
+        <target state="translated">액셀러레이터 키라고도 알려진 액세스 키는 &amp;lt;ALT&amp;gt; 키를 사용하여 컨트롤에 대한 키보드 액세스를 사용합니다. 여러 컨트롤에 중복되는 선택키가 있는 경우 선택키의 동작이 잘 정의되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateAcceleratorsMessage">

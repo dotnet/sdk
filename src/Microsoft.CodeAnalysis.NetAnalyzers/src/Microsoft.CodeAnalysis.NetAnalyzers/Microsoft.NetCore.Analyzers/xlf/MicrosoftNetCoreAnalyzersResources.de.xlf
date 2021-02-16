@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="CommaSeparator">
         <source>, </source>
-        <target state="new">, </target>
+        <target state="translated">, </target>
         <note>Separator used for separating list of platform names: {API} is only supported on: {‘windows’, ‘browser’, ‘linux’}</note>
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="translated">Beim Deserialisieren einer nicht vertrauenswürdigen Eingaben ist die Deserialisierung eines {0}-Objekts unsicher. "{1}" ist entweder "{0}" oder davon abgeleitet.</target>
+        <target state="translated">Beim Deserialisieren einer nicht vertrauenswürdigen Eingabe ist die Deserialisierung eines {0}-Objekts unsicher. "{1}" ist entweder "{0}" oder davon abgeleitet.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphTitle">
@@ -199,7 +199,7 @@
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="translated">Beim Deserialisieren einer nicht vertrauenswürdigen Eingaben ist die Deserialisierung eines {0}-Objekts unsicher. "{1}" ist entweder "{0}" oder davon abgeleitet.</target>
+        <target state="translated">Beim Deserialisieren einer nicht vertrauenswürdigen Eingabe ist die Deserialisierung eines {0}-Objekts unsicher. "{1}" ist entweder "{0}" oder davon abgeleitet.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphTitle">
@@ -219,7 +219,7 @@
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="translated">Beim Deserialisieren einer nicht vertrauenswürdigen Eingaben ist die Deserialisierung eines {0}-Objekts unsicher. "{1}" ist entweder "{0}" oder davon abgeleitet.</target>
+        <target state="translated">Beim Deserialisieren einer nicht vertrauenswürdigen Eingabe ist die Deserialisierung eines {0}-Objekts unsicher. "{1}" ist entweder "{0}" oder davon abgeleitet.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeTitle">
@@ -229,7 +229,7 @@
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="translated">Beim Deserialisieren einer nicht vertrauenswürdigen Eingaben ist die Deserialisierung eines {0}-Objekts unsicher. "{1}" ist entweder "{0}" oder davon abgeleitet.</target>
+        <target state="translated">Beim Deserialisieren einer nicht vertrauenswürdigen Eingabe ist die Deserialisierung eines {0}-Objekts unsicher. "{1}" ist entweder "{0}" oder davon abgeleitet.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphTitle">
@@ -419,7 +419,7 @@
       </trans-unit>
       <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPathMessage">
         <source>When creating path for '{0} in method {1}' from relative archive item path to extract file and the source is an untrusted zip archive, make sure to sanitize relative archive item path '{2} in method {3}'</source>
-        <target state="translated">Wenn Sie einen Pfad für "{0} in der Methode "{1}" vom relativen Archivelementpfad zur Extraktionsdatei erstellen und die Quelle ein nicht vertrauenswürdiges ZIP-Archiv ist, stellen Sie sicher, dass der relative Archivelementpfad "{2}" in der Methode "{3}" bereinigt wird.</target>
+        <target state="translated">Wenn Sie einen Pfad für "{0} in Methode {1}" aus dem relativen Archivelementpfad zur Extraktionsdatei erstellen und die Quelle ein nicht vertrauenswürdiges ZIP-Archiv ist, stellen Sie sicher, dass der relative Archivelementpfad "{2} in Methode {3}" bereinigt wird.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotAddSchemaByURL">
@@ -1124,7 +1124,7 @@
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
-        <target state="translated">Da "{0}" mit "OnSerializing", "OnSerialized", "OnDeserializing" oder "OnDeserialized" markiert ist, ändern Sie die zugehörige Signatur so, dass ein einzelner Parameter vom Typ "System.Runtime.Serialization.StreamingContext" angenommen wird.</target>
+        <target state="translated">Da "{0}" mit "OnSerializing", "OnSerialized", "OnDeserializing" oder "OnDeserialized" markiert ist, ändern Sie die zugehörige Signatur so, dass ein einzelner Parameter vom Typ "System.Runtime.Serialization.StreamingContext" akzeptiert wird.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
@@ -1519,67 +1519,67 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllVersions">
         <source>'{0}' all versions</source>
-        <target state="new">'{0}' all versions</target>
+        <target state="translated">{0}, alle Versionen</target>
         <note>This call site is reachable on: 'Windows' all versions.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityDescription">
         <source>Using platform dependent API on a component makes the code no longer work across all platforms.</source>
-        <target state="new">Using platform dependent API on a component makes the code no longer work across all platforms.</target>
+        <target state="translated">Durch die Verwendung einer plattformabhängigen API für eine Komponente funktioniert der Code nicht mehr auf allen Plattformen.</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityFromVersionToVersion">
         <source>'{0}' from version {1} to {2}</source>
-        <target state="new">'{0}' from version {1} to {2}</target>
+        <target state="translated">{0}, Version {1} bis {2}</target>
         <note>'SupportedOnWindows1903UnsupportedOn2004()' is supported on: 'windows' from version 10.0.1903 to 10.0.2004.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityOnlySupportedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is only supported on: {1}.</source>
-        <target state="new">This call site is reachable on all platforms. '{0}' is only supported on: {1}.</target>
+        <target state="translated">Diese Aufrufsite ist auf allen Plattformen erreichbar. "{0}" nur unterstützt für: {1}.</target>
         <note>This call site is reachable on all platforms. 'SupportedOnWindowsAndBrowser()' is only supported on: 'windows', 'browser' .</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityOnlySupportedCsReachableMessage">
         <source>This call site is reachable on: {2}. '{0}' is only supported on: {1}.</source>
-        <target state="new">This call site is reachable on: {2}. '{0}' is only supported on: {1}.</target>
+        <target state="translated">Diese Aufrufsite ist erreichbar für: {2}. "{0}" nur unterstützt für: {1}.</target>
         <note>This call site is reachable on: 'windows' all versions.'SupportedOnWindowsUnsupportedFromWindows2004()' is only supported on: 'windows' 10.0.2004 and before</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityOnlySupportedCsUnreachableMessage">
         <source>This call site is unreachable on: {2}. '{0}' is only supported on: {1}.</source>
-        <target state="new">This call site is unreachable on: {2}. '{0}' is only supported on: {1}.</target>
+        <target state="translated">Diese Aufrufsite ist nicht erreichbar für: {2}. "{0}" nur unterstützt für: {1}.</target>
         <note>This call site is unreachable on: 'browser'. 'SupportedOnWindowsAndBrowser()' is only supported on: 'browser', 'windows'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilitySupportedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is supported on: {1}.</source>
-        <target state="new">This call site is reachable on all platforms. '{0}' is supported on: {1}.</target>
+        <target state="translated">Diese Aufrufsite ist auf allen Plattformen erreichbar. "{0}" unterstützt für: {1}.</target>
         <note>This call site is reachable on all platforms. 'SupportedOnWindows1903UnsupportedFrom2004()' is supported on: 'windows' from version 10.0.1903 to 10.0.2004.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilitySupportedCsReachableMessage">
         <source>This call site is reachable on: {2}. '{0}' is supported on: {1}.</source>
-        <target state="new">This call site is reachable on: {2}. '{0}' is supported on: {1}.</target>
+        <target state="translated">Diese Aufrufsite ist erreichbar für: {2}. "{0}" unterstützt für: {1}.</target>
         <note>This call site is reachable on: 'windows' 10.0.2000 and before. 'UnsupportedOnWindowsSupportedOn1903()' is supported on: 'windows' 10.0.1903 and later.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityTitle">
         <source>Validate platform compatibility</source>
-        <target state="new">Validate platform compatibility</target>
+        <target state="translated">Plattformkompatibilität überprüfen</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityUnsupportedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</source>
-        <target state="new">This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</target>
+        <target state="translated">Diese Aufrufsite ist auf allen Plattformen erreichbar. "{0}" nicht unterstützt für: {1}.</target>
         <note>This call site is reachable on all platforms. 'UnsupportedOnWindows()' is unsupported on: 'windows'</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityUnsupportedCsReachableMessage">
         <source>This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</source>
-        <target state="new">This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</target>
+        <target state="translated">Diese Aufrufsite ist erreichbar für: {2}. "{0}" nicht unterstützt für: {1}.</target>
         <note>This call site is reachable on: 'windows', 'browser'. 'UnsupportedOnBrowser()' is unsupported on: 'browser'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityVersionAndBefore">
         <source>'{0}' {1} and before</source>
-        <target state="new">'{0}' {1} and before</target>
+        <target state="translated">{0}, {1} und vorherige Versionen</target>
         <note>'SupportedOnWindowsUnsupportedFromWindows2004()' is only supported on: 'windows' 10.0.2004 and before.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityVersionAndLater">
         <source>'{0}' {1} and later</source>
-        <target state="new">'{0}' {1} and later</target>
+        <target state="translated">{0}, {1} und höhere Versionen</target>
         <note>'SupportedOnWindows10()' is only supported on: 'windows' 10.0 and later.</note>
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
@@ -1599,7 +1599,7 @@
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
-        <target state="translated">"Stream" verfügt über eine Überladung "ReadAsync", die "Memory&lt;Byte&gt;" als erstes Argument verwendet, sowie über eine Überladung "WriteAsync", die "ReadOnlyMemory&lt;Byte&gt;" als erstes Argument verwendet. Bevorzugen Sie die Aufrufe der arbeitsspeicherbasierten Überladungen, da diese effizienter sind.</target>
+        <target state="translated">Stream verfügt über eine Überladung "ReadAsync", die "Memory&lt;Byte&gt;" als erstes Argument akzeptiert, sowie über eine Überladung "WriteAsync", die "ReadOnlyMemory&lt;Byte&gt;" als erstes Argument akzeptiert. Rufen Sie möglichst arbeitsspeicherbasierte Überladungen auf, da diese effizienter sind.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountDescription">
@@ -1939,7 +1939,7 @@
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
         <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.</source>
-        <target state="translated">Eine Methode oder ein Konstruktor ruft mindestens einen Member mit Überladungen auf, die einen System.IFormatProvider-Parameter akzeptieren, aber die Methode bzw. der Konstruktor ruft nicht die Überladung auf, die den IFormatProvider-Parameter annimmt. Wenn kein System.Globalization.CultureInfo- oder IFormatProvider-Objekt bereitgestellt wird, hat der von dem überladenen Member bereitgestellte Standardwert möglicherweise nicht die gewünschten Auswirkungen in allen Gebietsschemas. Wenn das Ergebnis auf der Eingabe des Benutzers beruht oder die Ausgabe dem Benutzer angezeigt wird, geben Sie "CultureInfo.CurrentCulture" als IFormatProvider an. Wird das Ergebnis hingegen gespeichert und von Software abgerufen (beispielsweise von einem Datenträger oder einer Datenbank geladen und auf einem Datenträger/in einer Datenbank gespeichert), geben Sie "CultureInfo.InvariantCulture" an.</target>
+        <target state="translated">Eine Methode oder ein Konstruktor ruft mindestens einen Member mit Überladungen auf, die einen Parameter "System.IFormatProvider" akzeptieren, aber die Methode bzw. der Konstruktor ruft nicht die Überladung auf, die den Parameter "IFormatProvider" akzeptiert. Wenn kein Objekt "System.Globalization.CultureInfo" oder "IFormatProvider" bereitgestellt wird, hat der von dem überladenen Member bereitgestellte Standardwert möglicherweise nicht die gewünschten Auswirkungen in allen Gebietsschemas. Wenn das Ergebnis auf der Eingabe des Benutzers beruht oder die Ausgabe dem Benutzer angezeigt wird, geben Sie "CultureInfo.CurrentCulture" als IFormatProvider an. Wird das Ergebnis hingegen gespeichert und von Software abgerufen (beispielsweise von einem Datenträger oder einer Datenbank geladen und auf einem Datenträger/in einer Datenbank gespeichert), geben Sie "CultureInfo.InvariantCulture" an.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
@@ -2064,7 +2064,7 @@
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfArrayRangeIndexerDescription">
         <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</source>
-        <target state="translated">Der Range-basierte Indexer für Arraywerte erzeugt eine Kopie des angeforderten Bereichs des Arrays. Diese Kopie ist bei einer impliziten Verwendung als Span- oder Memory-Wert häufig unerwünscht. Verwenden Sie die Span-Methode, um die Kopie zu vermeiden.</target>
+        <target state="translated">Der Range-basierte Indexer für Arraywerte erstellt eine Kopie des angeforderten Bereichs des Arrays. Diese Kopie ist bei einer impliziten Verwendung als Span- oder Memory-Wert häufig unerwünscht. Verwenden Sie die Methode "AsSpan", um das Erstellen einer Kopie zu vermeiden.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
