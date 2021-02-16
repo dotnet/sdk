@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             IReadOnlyList<TemplateInfo> localizedTemplates = settingsLoader.UserTemplateCache.GetTemplatesForLocale(locale, null);
 
-            Assert.True(localizedTemplates.Count != 0);
+            Assert.True(localizedTemplates.Count != 0, "Test template couldn't be loaded.");
             TemplateInfo localizationTemplate = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
             Assert.NotNull(localizationTemplate);
             Assert.Equal(expectedName, localizationTemplate.Name);
@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             IReadOnlyList<TemplateInfo> localizedTemplates = settingsLoader.UserTemplateCache.GetTemplatesForLocale(locale, null);
 
-            Assert.True(localizedTemplates.Count != 0);
+            Assert.True(localizedTemplates.Count != 0, "Test template couldn't be loaded.");
             TemplateInfo localizationTemplate = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
             Assert.NotNull(localizationTemplate);
             Assert.Equal(expectedDescription, localizationTemplate.Description);
@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IReadOnlyList<TemplateInfo> localizedTemplates = settingsLoader.UserTemplateCache.GetTemplatesForLocale(locale,
                 SettingsStore.CurrentVersion);
 
-            Assert.True(localizedTemplates.Count != 0);
+            Assert.True(localizedTemplates.Count != 0, "Test template couldn't be loaded.");
             TemplateInfo localizationTemplate = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
             Assert.NotNull(localizationTemplate);
             KeyValuePair<string, ICacheParameter>? symbol = localizationTemplate.CacheParameters?.FirstOrDefault(p => p.Key == "someSymbol");
@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IReadOnlyList<TemplateInfo> localizedTemplates = settingsLoader.UserTemplateCache.GetTemplatesForLocale(locale,
                 SettingsStore.CurrentVersion);
 
-            Assert.True(localizedTemplates.Count != 0);
+            Assert.True(localizedTemplates.Count != 0, "Test template couldn't be loaded.");
             TemplateInfo localizationTemplate = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
             Assert.NotNull(localizationTemplate);
 
@@ -96,11 +96,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var choices = tag.Value.Value.ChoicesAndDescriptions;
             Assert.NotNull(choices);
-            Assert.True(choices.TryGetValue("choice0", out string choice0Description));
+            Assert.True(choices.TryGetValue("choice0", out string choice0Description), "Template symbol should contain a choice with name 'choice0'.");
             Assert.Equal(choice0Desc, choice0Description);
-            Assert.True(choices.TryGetValue("choice1", out string choice1Description));
+            Assert.True(choices.TryGetValue("choice1", out string choice1Description), "Template symbol should contain a choice with name 'choice1'.");
             Assert.Equal(choice1Desc, choice1Description);
-            Assert.True(choices.TryGetValue("choice2", out string choice2Description));
+            Assert.True(choices.TryGetValue("choice2", out string choice2Description), "Template symbol should contain a choice with name 'choice2'.");
             Assert.Equal(choice2Desc, choice2Description);
         }
 
@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IReadOnlyList<TemplateInfo> localizedTemplates = settingsLoader.UserTemplateCache.GetTemplatesForLocale(locale,
                 SettingsStore.CurrentVersion);
 
-            Assert.True(localizedTemplates.Count != 0);
+            Assert.True(localizedTemplates.Count != 0, "Test template couldn't be loaded.");
             TemplateInfo localizationTemplate = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
             Assert.NotNull(localizationTemplate);
 
@@ -141,7 +141,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.NotNull(effects);
             Assert.NotNull(effects.CreationResult);
             Assert.NotNull(effects.CreationResult.PostActions);
-            Assert.True(effects.CreationResult.PostActions.Count > postActionIndex);
+            Assert.True(effects.CreationResult.PostActions.Count > postActionIndex, "Template does not contain enough post actions");
             Assert.Equal(expectedDescription, effects.CreationResult.PostActions[postActionIndex].Description);
             Assert.Equal(expectedManualInstructions, effects.CreationResult.PostActions[postActionIndex].ManualInstructions);
         }
