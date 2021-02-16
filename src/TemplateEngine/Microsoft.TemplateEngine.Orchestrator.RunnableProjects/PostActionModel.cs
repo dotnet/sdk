@@ -61,7 +61,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     for (int i = 0; i < manualInstructions.Count; i++)
                     {
                         string text;
-                        if (useLocalizedInstructions)
+                        if (useLocalizedInstructions &&
+                            actionLocalizations.Instructions.Count > i &&
+                            !string.IsNullOrEmpty(actionLocalizations.Instructions[i]))
                         {
                             text = actionLocalizations.Instructions[i];
                         }
