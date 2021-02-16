@@ -8,6 +8,12 @@
       Lines="$(PackageVersion)"
       Overwrite="true"
       Encoding="ASCII" />
+    
+    <WriteLinesToFile
+      File="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt"
+      Lines="$(PackageVersion)"
+      Overwrite="true"
+      Encoding="ASCII" />
 
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
