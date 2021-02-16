@@ -307,7 +307,7 @@ namespace Microsoft.NET.Build.Tasks
                 else
                 {
                     result.AppendLine("--perfmap");
-                    result.AppendLine("--perfmap-path:{_outputPDBImage}");
+                    result.AppendLine($"--perfmap-path:{_outputPDBImage}");
                 }
             }
 
