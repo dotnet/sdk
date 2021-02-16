@@ -11,6 +11,7 @@ using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
@@ -38,6 +39,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override void Initialize(AnalysisContext context)
         {
+        }
+
+        private static void OnCompilationStart(CompilationStartAnalysisContext context)
+        {
+            
         }
 
         //  Use readonly struct to avoid allocations.

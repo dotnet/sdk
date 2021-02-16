@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
@@ -18,25 +19,47 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class UseCancellationTokenThrowIfCancellationRequestedTests
     {
-        public static IEnumerable<object[]> Data_OperationCanceledExceptionCtors
+        private static IEnumerable<string> OperationCanceledExceptionCtors
         {
             get
             {
-                yield return new[] { "OperationCanceledException()" };
-                yield return new[] { "OperationCanceledException(token)" };
+                yield return "OperationCanceledException()";
+                yield return "OperationCanceledException(token)";
             }
         }
 
         #region Reports Diagnostics
-        [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtors))]
-        public Task SimpleAffirmativeCheck_ReportedAndFixed_CS(string operationCanceledExceptionCtor)
+        public static IEnumerable<object[]> Data_SimpleAffirmativeCheck_ReportedAndFixed_CS
         {
-            string testStatements = Markup($@"
-if (token.IsCancellationRequested)
-    throw new {operationCanceledExceptionCtor};", 0);
-            string fixedStatements = @"
-token.ThrowIfCancellationRequested();";
+            get
+            {
+                static IEnumerable<string> ConditionalFormatStrings()
+                {
+                    yield return @"if ({0}) {1}";
+                    yield return @"
+if ({0})
+    {1}";
+                    yield return @"
+if ({0})
+{{
+    {1}
+}}";
+                }
+
+                return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings());
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_CS))]
+        public Task SimpleAffirmativeCheck_ReportedAndFixed_CS(string operationCanceledExceptionCtor, string simpleConditionalFormatString)
+        {
+            string testStatements = Markup(
+                FormatInvariant(
+                    simpleConditionalFormatString,
+                    @"token.IsCancellationRequested",
+                    $@"throw new {operationCanceledExceptionCtor};"), 0);
+            string fixedStatements = @"token.ThrowIfCancellationRequested();";
 
             var test = new VerifyCS.Test
             {
@@ -48,16 +71,34 @@ token.ThrowIfCancellationRequested();";
             return test.RunAsync();
         }
 
-        [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtors))]
-        public Task SimpleAffirmativeCheck_ReportedAndFixed_VB(string operationCanceledExceptionCtor)
+        public static IEnumerable<object[]> Data_SimpleAffirmativeCheck_ReportedAndFixed_VB
         {
-            string testStatements = Markup($@"
-If token.IsCancellationRequested Then
-    Throw New {operationCanceledExceptionCtor}
-End If", 0);
-            string fixedStatements = @"
-token.ThrowIfCancellationRequested()";
+            get
+            {
+                static IEnumerable<string> ConditionalFormatStrings()
+                {
+                    yield return @"If {0} Then {1}";
+                    yield return @"
+If {0} Then
+    {1}
+End If";
+                }
+
+                return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings());
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_VB))]
+        public Task SimpleAffirmativeCheck_ReportedAndFixed_VB(string operationCanceledExceptionCtor, string conditionalFormatString)
+        {
+            string testStatements = Markup(
+                FormatInvariant(
+                    conditionalFormatString,
+                    "token.IsCancellationRequested",
+                    $"Throw New {operationCanceledExceptionCtor}"),
+                0);
+            string fixedStatements = @"token.ThrowIfCancellationRequested()";
 
             var test = new VerifyVB.Test
             {
@@ -69,18 +110,63 @@ token.ThrowIfCancellationRequested()";
             return test.RunAsync();
         }
 
+        public static IEnumerable<object[]> Data_NegatedCheckWithElse_ReportedAndFixed_CS
+        {
+            get
+            {
+                static IEnumerable<string> ConditionalFormatStrings()
+                {
+                    yield return @"
+if ({0}) {1}
+else {2}";
+                    yield return @"
+if ({0})
+    {1}
+else
+    {2}";
+                    yield return @"
+if ({0})
+{{
+    {1}
+}}
+else
+{{
+    {2}
+}}";
+                    yield return @"
+if ({0})
+    {1}
+else
+{{
+    {2}
+}}";
+                    yield return @"
+if ({0})
+{{
+    {1}
+}}
+else
+    {2}";
+                }
+
+                return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings());
+            }
+        }
+
         [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtors))]
-        public Task NegatedCheckWithElse_ReportedAndFixed_CS(string operationCanceledExceptionCtor)
+        [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_CS))]
+        public Task NegatedCheckWithElse_ReportedAndFixed_CS(string operationCanceledExceptionCtor, string conditionalFormatString)
         {
             const string members = @"
 private CancellationToken token;
 private void DoSomething() { }";
-            string testStatements = Markup($@"
-if (!token.IsCancellationRequested)
-    DoSomething();
-else
-    throw new {operationCanceledExceptionCtor};", 0);
+            string testStatements = Markup(
+                FormatInvariant(
+                    conditionalFormatString,
+                    "!token.IsCancellationRequested",
+                    "DoSomething();",
+                    $"throw new {operationCanceledExceptionCtor};"),
+                0);
             string fixedStatements = @"
 token.ThrowIfCancellationRequested();
 DoSomething();";
@@ -95,20 +181,39 @@ DoSomething();";
             return test.RunAsync();
         }
 
+        public static IEnumerable<object[]> Data_NegatedCheckWithElse_ReportedAndFixed_VB
+        {
+            get
+            {
+                static IEnumerable<string> ConditionalFormatStrings()
+                {
+                    return Enumerable.Repeat(@"
+If {0} Then
+    {1}
+Else
+    {2}
+End If", 1);
+                }
+
+                return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings());
+            }
+        }
+
         [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtors))]
-        public Task NegatedCheckWithElse_ReportedAndFixed_VB(string operationCanceledExceptionCtor)
+        [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_VB))]
+        public Task NegatedCheckWithElse_ReportedAndFixed_VB(string operationCanceledExceptionCtor, string conditionalFormatString)
         {
             const string members = @"
 Private token As CancellationToken
 Private Sub DoSomething()
 End Sub";
-            string testStatements = Markup($@"
-If Not token.IsCancellationRequested Then
-    DoSomething()
-Else
-    Throw New {operationCanceledExceptionCtor}
-End If", 0);
+            string testStatements = Markup(
+                FormatInvariant(
+                    conditionalFormatString,
+                    "Not token.IsCancellationRequested",
+                    "DoSomething()",
+                    $"Throw New {operationCanceledExceptionCtor}"),
+                0);
             string fixedStatements = @"
 token.ThrowIfCancellationRequested()
 DoSomething()";
@@ -188,6 +293,54 @@ End Class";
         }
 
         private static DiagnosticDescriptor Rule => UseCancellationTokenThrowIfCancellationRequested.Rule;
+
+        private static IEnumerable<object[]> CartesianProduct(IEnumerable<object[]> left, IEnumerable<object[]> right)
+        {
+            return left.SelectMany(x =>
+            {
+                return right.Select(y =>
+                {
+                    var result = new object[x.Length + y.Length];
+                    x.CopyTo(result.AsSpan());
+                    y.CopyTo(result.AsSpan(x.Length));
+                    return result;
+                });
+            });
+        }
+        private static IEnumerable<object[]> CartesianProduct(IEnumerable<object> left, IEnumerable<object[]> right)
+        {
+            return left.SelectMany(x =>
+            {
+                return right.Select(y =>
+                {
+                    var result = new object[y.Length + 1];
+                    result[0] = x;
+                    y.CopyTo(result.AsSpan(1));
+                    return result;
+                });
+            });
+        }
+
+        private static IEnumerable<object[]> CartesianProduct(IEnumerable<object[]> left, IEnumerable<object> right)
+        {
+            return left.SelectMany(x =>
+            {
+                return right.Select(y =>
+                {
+                    var result = new object[x.Length + 1];
+                    x.CopyTo(result.AsSpan());
+                    result[x.Length] = y;
+                    return result;
+                });
+            });
+        }
+
+        private static IEnumerable<object[]> CartesianProduct(IEnumerable<object> left, IEnumerable<object> right)
+        {
+            return left.SelectMany(x => right.Select(y => new[] { x, y }));
+        }
+
+        private static string FormatInvariant(string format, params object[] args) => string.Format(System.Globalization.CultureInfo.InvariantCulture, format, args);
         #endregion
     }
 }
