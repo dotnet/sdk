@@ -207,7 +207,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         .FirstOrDefault(
                                             s =>
                                                 s.Name == "OnAuthorizationAsync" &&
-                                                s.ReturnType.Equals(taskTypeSymbol) &&
+                                                s.ReturnType.Equals(taskTypeSymbol, SymbolEqualityComparer.Default) &&
                                                 s.Parameters.Length == 1 &&
                                                 s.Parameters[0].Type.Equals(authorizationFilterContextTypeSymbol));
                                 if (onAuthorizationAsyncMethodSymbol != null)
@@ -229,7 +229,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                 s.Name == "OnAuthorization" &&
                                                 s.ReturnsVoid &&
                                                 s.Parameters.Length == 1 &&
-                                                s.Parameters[0].Type.Equals(authorizationFilterContextTypeSymbol));
+                                                s.Parameters[0].Type.Equals(authorizationFilterContextTypeSymbol, SymbolEqualityComparer.Default));
                                 if (onAuthorizationMethodSymbol != null)
                                 {
                                     onAuthorizationMethodSymbols.TryAdd(
