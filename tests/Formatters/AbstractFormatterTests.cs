@@ -86,6 +86,46 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 { string.Join(Environment.NewLine, editorConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}")) }
 ";
 
+        private protected Task<SourceText> AssertNoReportedFileChangesAsync(
+            string code,
+            IReadOnlyDictionary<string, string> editorConfig,
+            Encoding? encoding = null,
+            FixCategory fixCategory = FixCategory.Whitespace,
+            IEnumerable<AnalyzerReference>? analyzerReferences = null,
+            DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+        {
+            return AssertNoReportedFileChangesAsync(code, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+        }
+
+        private protected async Task<SourceText> AssertNoReportedFileChangesAsync(
+            string code,
+            string editorConfig,
+            Encoding? encoding = null,
+            FixCategory fixCategory = FixCategory.Whitespace,
+            IEnumerable<AnalyzerReference>? analyzerReferences = null,
+            DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+        {
+            var (formattedText, formattedFiles, logger) = await ApplyFormatterAsync(code, editorConfig, encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+
+            try
+            {
+                // Ensure the code is unchanged
+                Assert.Equal(code, formattedText.ToString());
+
+                // Ensure no non-fixable diagnostics were reported
+                Assert.Empty(formattedFiles);
+            }
+            catch
+            {
+                TestOutputHelper?.WriteLine(logger.GetLog());
+                throw;
+            }
+
+            return formattedText;
+        }
+
         private protected Task<SourceText> AssertCodeUnchangedAsync(
             string code,
             IReadOnlyDictionary<string, string> editorConfig,
@@ -95,7 +135,32 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
-            return AssertCodeChangedAsync(code, code, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+            return AssertCodeUnchangedAsync(code, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+        }
+
+        private protected async Task<SourceText> AssertCodeUnchangedAsync(
+            string code,
+            string editorConfig,
+            Encoding? encoding = null,
+            FixCategory fixCategory = FixCategory.Whitespace,
+            IEnumerable<AnalyzerReference>? analyzerReferences = null,
+            DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+        {
+            var (formattedText, _, logger) = await ApplyFormatterAsync(code, editorConfig, encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+
+            try
+            {
+                // Ensure the code is unchanged
+                Assert.Equal(code, formattedText.ToString());
+            }
+            catch
+            {
+                TestOutputHelper?.WriteLine(logger.GetLog());
+                throw;
+            }
+
+            return formattedText;
         }
 
         private protected Task<SourceText> AssertCodeChangedAsync(
@@ -121,7 +186,31 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
-            var text = SourceText.From(testCode, encoding ?? Encoding.UTF8);
+            var (formattedText, _, logger) = await ApplyFormatterAsync(testCode, editorConfig, encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+
+            try
+            {
+                Assert.Equal(expectedCode, formattedText.ToString());
+            }
+            catch
+            {
+                TestOutputHelper?.WriteLine(logger.GetLog());
+                throw;
+            }
+
+            return formattedText;
+        }
+
+        private protected async Task<(SourceText FormattedText, List<FormattedFile> FormattedFiles, TestLogger Logger)> ApplyFormatterAsync(
+            string code,
+            string editorConfig,
+            Encoding? encoding = null,
+            FixCategory fixCategory = FixCategory.Whitespace,
+            IEnumerable<AnalyzerReference>? analyzerReferences = null,
+            DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+        {
+            var text = SourceText.From(code, encoding ?? Encoding.UTF8);
             TestState.Sources.Add(text);
 
             var solution = await GetSolutionAsync(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray(), editorConfig, analyzerReferences);
@@ -145,22 +234,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var pathsToFormat = GetOnlyFileToFormat(solution);
 
             var logger = new TestLogger();
+            var formattedFiles = new List<FormattedFile>();
 
-            var formattedSolution = await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, logger, new List<FormattedFile>(), default);
+            var formattedSolution = await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, logger, formattedFiles, default);
             var formattedDocument = GetOnlyDocument(formattedSolution);
             var formattedText = await formattedDocument.GetTextAsync();
 
-            try
-            {
-                Assert.Equal(expectedCode, formattedText.ToString());
-            }
-            catch
-            {
-                TestOutputHelper?.WriteLine(logger.GetLog());
-                throw;
-            }
-
-            return formattedText;
+            return (formattedText, formattedFiles, logger);
         }
 
         /// <summary>
