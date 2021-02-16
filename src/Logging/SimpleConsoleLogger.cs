@@ -15,7 +15,8 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
 
         private readonly IConsole _console;
         private readonly ITerminal _terminal;
-        private readonly LogLevel _logLevel;
+        private readonly LogLevel _minimalLogLevel;
+        private readonly LogLevel _minimalErrorLevel;
 
         private static ImmutableDictionary<LogLevel, ConsoleColor> LogLevelColorMap => new Dictionary<LogLevel, ConsoleColor>
         {
@@ -28,11 +29,12 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
             [LogLevel.None] = ConsoleColor.White,
         }.ToImmutableDictionary();
 
-        public SimpleConsoleLogger(IConsole console, LogLevel logLevel)
+        public SimpleConsoleLogger(IConsole console, LogLevel minimalLogLevel, LogLevel minimalErrorLevel)
         {
             _terminal = console.GetTerminal();
             _console = console;
-            _logLevel = logLevel;
+            _minimalLogLevel = minimalLogLevel;
+            _minimalErrorLevel = minimalErrorLevel;
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
@@ -45,20 +47,21 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
             lock (_gate)
             {
                 var message = formatter(state, exception);
+                var logToErrorStream = logLevel >= _minimalErrorLevel;
                 if (_terminal is null)
                 {
-                    LogToConsole(message);
+                    LogToConsole(_console, message, logToErrorStream);
                 }
                 else
                 {
-                    LogToTerminal(message, logLevel);
+                    LogToTerminal(message, logLevel, logToErrorStream);
                 }
             }
         }
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            return (int)logLevel >= (int)_logLevel;
+            return (int)logLevel >= (int)_minimalLogLevel;
         }
 
         public IDisposable BeginScope<TState>(TState state)
@@ -66,17 +69,26 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
             return NullScope.Instance;
         }
 
-        private void LogToTerminal(string message, LogLevel logLevel)
+        private void LogToTerminal(string message, LogLevel logLevel, bool logToErrorStream)
         {
             var messageColor = LogLevelColorMap[logLevel];
             _terminal.ForegroundColor = messageColor;
-            _terminal.Out.Write($"  {message}{Environment.NewLine}");
+
+            LogToConsole(_terminal, message, logToErrorStream);
+
             _terminal.ResetColor();
         }
 
-        private void LogToConsole(string message)
+        private void LogToConsole(IConsole console, string message, bool logToErrorStream)
         {
-            _console.Out.Write($"  {message}{Environment.NewLine}");
+            if (logToErrorStream)
+            {
+                console.Error.Write($"  {message}{Environment.NewLine}");
+            }
+            else
+            {
+                console.Out.Write($"  {message}{Environment.NewLine}");
+            }
         }
     }
 }

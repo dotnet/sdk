@@ -8,17 +8,19 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
     internal class SimpleConsoleLoggerProvider : ILoggerProvider
     {
         private readonly IConsole _console;
-        private readonly LogLevel _logLevel;
+        private readonly LogLevel _minimalLogLevel;
+        private readonly LogLevel _minimalErrorLevel;
 
-        public SimpleConsoleLoggerProvider(IConsole console, LogLevel logLevel)
+        public SimpleConsoleLoggerProvider(IConsole console, LogLevel minimalLogLevel, LogLevel minimalErrorLevel)
         {
             _console = console;
-            _logLevel = logLevel;
+            _minimalLogLevel = minimalLogLevel;
+            _minimalErrorLevel = minimalErrorLevel;
         }
 
         public ILogger CreateLogger(string name)
         {
-            return new SimpleConsoleLogger(_console, _logLevel);
+            return new SimpleConsoleLogger(_console, _minimalLogLevel, _minimalErrorLevel);
         }
 
         public void Dispose()
