@@ -59,5 +59,20 @@ class C
 
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.CodeStyle);
         }
+
+        [Fact]
+        public async Task TestNonFixableCompilerDiagnostics_AreNotReported()
+        {
+            var testCode = @"
+class C
+{
+    public int M()
+    {
+        return null; // Cannot convert null to 'int' because it is a non-nullable value type (CS0037)
+    }
+}";
+
+            await AssertNoReportedFileChangesAsync(testCode, "root = true", fixCategory: FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Warning);
+        }
     }
 }

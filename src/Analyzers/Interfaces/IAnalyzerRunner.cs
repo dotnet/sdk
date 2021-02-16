@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             Project project,
             ImmutableHashSet<string> formattableDocumentPaths,
             DiagnosticSeverity severity,
-            bool includeCompilerDiagnostics,
+            ImmutableHashSet<string> fixableCompilerDiagnostics,
             ILogger logger,
             CancellationToken cancellationToken);
 
@@ -26,7 +26,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             Project project,
             ImmutableHashSet<string> formattableDocumentPaths,
             DiagnosticSeverity severity,
-            bool includeCompilerDiagnostics,
+            ImmutableHashSet<string> fixableCompilerDiagnostics,
             ILogger logger,
             CancellationToken cancellationToken);
     }

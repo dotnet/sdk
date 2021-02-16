@@ -17,10 +17,10 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             Project project,
             ImmutableHashSet<string> formattableDocumentPaths,
             DiagnosticSeverity severity,
-            bool includeCompilerDiagnostics,
+            ImmutableHashSet<string> fixableCompilerDiagnostics,
             ILogger logger,
             CancellationToken cancellationToken)
-            => RunCodeAnalysisAsync(result, ImmutableArray.Create(analyzers), project, formattableDocumentPaths, severity, includeCompilerDiagnostics, logger, cancellationToken);
+            => RunCodeAnalysisAsync(result, ImmutableArray.Create(analyzers), project, formattableDocumentPaths, severity, fixableCompilerDiagnostics, logger, cancellationToken);
 
         public async Task RunCodeAnalysisAsync(
             CodeAnalysisResult result,
@@ -28,13 +28,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             Project project,
             ImmutableHashSet<string> formattableDocumentPaths,
             DiagnosticSeverity severity,
-            bool includeCompilerDiagnostics,
+            ImmutableHashSet<string> fixableCompilerDiagnostics,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             // If are not running any analyzers and are not reporting compiler diagnostics, then there is
             // nothing to report.
-            if (analyzers.IsEmpty && includeCompilerDiagnostics)
+            if (analyzers.IsEmpty && fixableCompilerDiagnostics.IsEmpty)
             {
                 return;
             }
@@ -53,10 +53,16 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return;
             }
 
+            var compilerDiagnostics = !fixableCompilerDiagnostics.IsEmpty
+                ? compilation.GetDiagnostics(cancellationToken)
+                    .Where(diagnostic => fixableCompilerDiagnostics.Contains(diagnostic.Id))
+                    .ToImmutableArray()
+                : ImmutableArray<Diagnostic>.Empty;
+
             ImmutableArray<Diagnostic> diagnostics;
             if (analyzers.IsEmpty)
             {
-                diagnostics = compilation.GetDiagnostics(cancellationToken);
+                diagnostics = compilerDiagnostics;
             }
             else
             {
@@ -69,9 +75,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     logAnalyzerExecutionTime: false,
                     reportSuppressedDiagnostics: false);
                 var analyzerCompilation = compilation.WithAnalyzers(analyzers, analyzerOptions);
-                diagnostics = includeCompilerDiagnostics
-                    ? await analyzerCompilation.GetAllDiagnosticsAsync(cancellationToken).ConfigureAwait(false)
-                    : await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
+
+                diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
+                diagnostics = diagnostics.AddRange(compilerDiagnostics);
             }
 
             // filter diagnostics
