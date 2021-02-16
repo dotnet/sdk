@@ -22,7 +22,7 @@ jobs:
         _configuration: Debug
       Release:
         _configuration: Release
-  timeoutInMinutes: 20
+  timeoutInMinutes: 10
   steps:
     - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine
       displayName: Build and Test
@@ -53,7 +53,7 @@ jobs:
         _configuration: Debug
       Release:
         _configuration: Release
-  timeoutInMinutes: 90
+  timeoutInMinutes: 10
   steps:
     - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine
       displayName: Build and Test
@@ -73,12 +73,12 @@ jobs:
       continueOnError: true
       condition: not(succeeded())
 
-- job: Windows_Spanish
+- job: Linux_Spanish
   pool:
-   name: NetCorePublic-Pool
-   queue: buildpool.windows.10.amd64.es.vs2017.open
+    vmImage: 'ubuntu-latest'
   variables:
-    _os: Windows
+    _os: Linux
+    LC_ALL: es_ES.UTF-8
   strategy:
     maxParallel: 4
     matrix:
@@ -86,21 +86,22 @@ jobs:
         _configuration: Debug
       Release:
         _configuration: Release
-  timeoutInMinutes: 20
+  timeoutInMinutes: 10
   steps:
-    - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine
+    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine
       displayName: Build and Test
-    - task: PublishTestResults@1
+    - task: PublishTestResults@2
+      displayName: Publish xUnit Test Results
       inputs:
         testRunner: XUnit
-        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)\*.xml'
+        testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_configuration)/*.xml'
         mergeTestResults: true
         testRunTitle: 'Spanish $(_os) $(_configuration)'
       condition: always()
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(_configuration)'
+        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_configuration)'
         ArtifactName: 'Spanish $(_os) $(_configuration)'
       continueOnError: true
       condition: not(succeeded())
