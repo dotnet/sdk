@@ -2097,6 +2097,21 @@
         <target state="translated">メソッド {0} では、偽造防止トークンの検証を実行せずに {1} 要求が処理されます。また、HTML フォームで偽造防止トークンが送信されるようにする必要もあります。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
+        <source>'{0}' automatically checks whether the token has been canceled, and throws a new '{2}' if it has.</source>
+        <target state="new">'{0}' automatically checks whether the token has been canceled, and throws a new '{2}' if it has.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
+        <source>Consider calling '{0}' instead of checking '{1}'</source>
+        <target state="new">Consider calling '{0}' instead of checking '{1}'</target>
+        <note>0=ThrowIfCancellationRequested method, 1=IsCancellationRequested property, 2=OperationCanceledException type</note>
+      </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
+        <source>Use '{0}'</source>
+        <target state="new">Use '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
         <source>Use Container Level Access Policy</source>
         <target state="translated">コンテナー レベルのアクセス ポリシーを使用する</target>

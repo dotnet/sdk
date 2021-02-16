@@ -2097,6 +2097,21 @@
         <target state="translated">Die Methode "{0}" verarbeitet eine {1}-Anforderung ohne Überprüfung eines Fälschungssicherheitstokens. Sie müssen außerdem sicherstellen, dass Ihr HTML-Formular ein Fälschungssicherheitstoken sendet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
+        <source>'{0}' automatically checks whether the token has been canceled, and throws a new '{2}' if it has.</source>
+        <target state="new">'{0}' automatically checks whether the token has been canceled, and throws a new '{2}' if it has.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
+        <source>Consider calling '{0}' instead of checking '{1}'</source>
+        <target state="new">Consider calling '{0}' instead of checking '{1}'</target>
+        <note>0=ThrowIfCancellationRequested method, 1=IsCancellationRequested property, 2=OperationCanceledException type</note>
+      </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
+        <source>Use '{0}'</source>
+        <target state="new">Use '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
         <source>Use Container Level Access Policy</source>
         <target state="translated">Zugriffsrichtlinie auf Containerebene verwenden</target>
