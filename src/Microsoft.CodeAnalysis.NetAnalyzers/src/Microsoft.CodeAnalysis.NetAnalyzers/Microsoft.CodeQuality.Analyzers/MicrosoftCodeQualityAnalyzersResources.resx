@@ -1436,4 +1436,7 @@
   <data name="MarkAttributesWithAttributeUsageCodeFix" xml:space="preserve">
     <value>Apply 'AttributeUsageAttribute'</value>
   </data>
+  <data name="OperatorOverloadsHaveNamedAlternatesCodeFixTitle" xml:space="preserve">
+    <value>Add operator overload named alternate</value>
+  </data>
 </root>

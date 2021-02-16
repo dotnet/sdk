@@ -335,8 +335,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 // sanitize the literal to ensure it's not multi-line
                 // replace any newline characters with a space
-                var sanitizedLiteral = literal.Replace(Environment.NewLine, " ");
-                sanitizedLiteral = sanitizedLiteral.Replace((char)13, ' ');
+                var sanitizedLiteral = literal.Replace((char)13, ' ');
                 sanitizedLiteral = sanitizedLiteral.Replace((char)10, ' ');
 
                 if (literals.Length > 0)

@@ -183,7 +183,7 @@ End Class
 ");
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public async Task ParameterWithLocalizableAttribute_MultipleLineStringLiteralArgument_Method_Diagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -206,7 +206,7 @@ public class Test
 }
 ".NormalizeLineEndings(),
                 // Test0.cs(16,13): warning CA1303: Method 'void Test.M1(C c)' passes a literal string as parameter 'param' of a call to 'void C.M(string param)'. Retrieve the following string(s) from a resource table instead: "a a".
-                GetCSharpResultAt(16, 13, "void Test.M1(C c)", "param", "void C.M(string param)", "a a"));
+                GetCSharpResultAt(16, 13, "void Test.M1(C c)", "param", "void C.M(string param)", "a  a"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports Microsoft.VisualBasic
@@ -225,7 +225,7 @@ Public Class Test
 End Class
 ".NormalizeLineEndings(),
                 // Test0.vb(13,13): warning CA1303: Method 'Sub Test.M1(c As C)' passes a literal string as parameter 'param' of a call to 'Sub C.M(param As String)'. Retrieve the following string(s) from a resource table instead: "a a".
-                GetBasicResultAt(13, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a a"));
+                GetBasicResultAt(13, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a  a"));
         }
 
         [Fact]
@@ -1793,7 +1793,7 @@ public class Test
             await csharpTest.RunAsync();
         }
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData(null)]
         [InlineData(PointsToAnalysisKind.None)]
         [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
@@ -1834,7 +1834,7 @@ public class Test
             {
                 csTest.ExpectedDiagnostics.Add(
                     // Test0.cs(17,13): warning CA1303: Method 'void Test.M1(C c)' passes a literal string as parameter 'param' of a call to 'void C.M(string param)'. Retrieve the following string(s) from a resource table instead: "a a".
-                    GetCSharpResultAt(17, 13, "void Test.M1(C c)", "param", "void C.M(string param)", "a a"));
+                    GetCSharpResultAt(17, 13, "void Test.M1(C c)", "param", "void C.M(string param)", "a  a"));
             }
 
             await csTest.RunAsync();
@@ -1866,7 +1866,7 @@ End Class
             {
                 vbTest.ExpectedDiagnostics.Add(
                     // Test0.vb(14,13): warning CA1303: Method 'Sub Test.M1(c As C)' passes a literal string as parameter 'param' of a call to 'Sub C.M(param As String)'. Retrieve the following string(s) from a resource table instead: "a a".
-                    GetBasicResultAt(14, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a a"));
+                    GetBasicResultAt(14, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a  a"));
             }
 
             await vbTest.RunAsync();

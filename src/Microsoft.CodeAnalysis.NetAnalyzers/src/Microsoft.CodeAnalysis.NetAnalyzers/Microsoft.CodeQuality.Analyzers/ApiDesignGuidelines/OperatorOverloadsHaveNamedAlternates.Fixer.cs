@@ -37,7 +37,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            string title = MicrosoftCodeQualityAnalyzersResources.OperatorOverloadsHaveNamedAlternatesTitle;
+            string title = MicrosoftCodeQualityAnalyzersResources.OperatorOverloadsHaveNamedAlternatesCodeFixTitle;
             context.RegisterCodeFix(new MyCodeAction(title, ct => Fix(context, ct), equivalenceKey: title), context.Diagnostics.First());
         }
 
