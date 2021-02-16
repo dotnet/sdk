@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
+using Microsoft.CodeAnalysis.Tools.Tests.XUnit;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -48,7 +49,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             _output = output;
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task NoFilesFormattedInFormattedProject()
         {
             await TestFormatWorkspaceAsync(
@@ -61,7 +62,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 3);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task NoFilesFormattedInFormattedSolution()
         {
             await TestFormatWorkspaceAsync(
@@ -74,7 +75,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 3);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task FilesFormattedInUnformattedProject()
         {
             await TestFormatWorkspaceAsync(
@@ -87,7 +88,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task NoFilesFormattedInUnformattedProjectWhenFixingCodeStyle()
         {
             await TestFormatWorkspaceAsync(
@@ -102,7 +103,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task GeneratedFilesFormattedInUnformattedProject()
         {
             var log = await TestFormatWorkspaceAsync(
@@ -119,7 +120,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Contains(logLines, line => line.Contains("NETCoreApp,Version=v3.0.AssemblyAttributes.cs"));
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task FilesFormattedInUnformattedSolution()
         {
             await TestFormatWorkspaceAsync(
@@ -132,7 +133,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task FilesFormattedInUnformattedProjectFolder()
         {
             // Since the code files are beneath the project folder, files are found and formatted.
@@ -146,7 +147,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task NoFilesFormattedInUnformattedSolutionFolder()
         {
             // Since the code files are outside the solution folder, no files are found or formatted.
@@ -160,7 +161,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 0);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task FSharpProjectsDoNotCreateException()
         {
             var log = await TestFormatWorkspaceAsync(
@@ -179,7 +180,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.EndsWith(s_fSharpProjectFilePath, match.Groups[1].Value);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task OnlyFormatPathsFromList()
         {
             // To match a folder pattern it needs to end with a directory separator.
@@ -195,7 +196,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task OnlyFormatFilesFromList()
         {
             var include = new[] { s_unformattedProgramFilePath };
@@ -210,7 +211,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task NoFilesFormattedWhenNotInList()
         {
             var include = new[] { Path.Combine(s_unformattedProjectPath, "does_not_exist.cs") };
@@ -225,7 +226,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task OnlyLogFormattedFiles()
         {
             var include = new[] { s_unformattedProgramFilePath };
@@ -246,7 +247,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.EndsWith("Program.cs", match.Groups[1].Value);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task FormatLocationsLoggedInUnformattedProject()
         {
             var log = await TestFormatWorkspaceAsync(
@@ -297,7 +298,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task FormatLocationsNotLoggedInFormattedProject()
         {
             var log = await TestFormatWorkspaceAsync(
@@ -315,7 +316,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Empty(formatLocations);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task LogFilesThatDontMatchExclude()
         {
             var include = new[] { s_unformattedProgramFilePath };
@@ -336,7 +337,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.EndsWith("Program.cs", match.Groups[1].Value);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task IgnoreFileWhenListedInExcludeList()
         {
             var include = new[] { s_unformattedProgramFilePath };
@@ -351,7 +352,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task IgnoreFileWhenContainingFolderListedInExcludeList()
         {
             var include = new[] { s_unformattedProgramFilePath };
@@ -367,7 +368,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task IgnoreAllFileWhenExcludingAllFiles()
         {
             var include = new[] { s_unformattedProgramFilePath };
@@ -383,7 +384,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task NoFilesFormattedInGeneratedProject_WhenNotIncludingGeneratedCode()
         {
             await TestFormatWorkspaceAsync(
@@ -396,7 +397,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 3);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task FilesFormattedInGeneratedProject_WhenIncludingGeneratedCode()
         {
             await TestFormatWorkspaceAsync(
@@ -409,7 +410,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 3);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenNotFixingCodeStyle()
         {
             var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
@@ -426,7 +427,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenFixingCodeStyleErrors()
         {
             var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
@@ -444,7 +445,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 codeStyleSeverity: DiagnosticSeverity.Error);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task FilesFormattedInCodeStyleSolution_WhenFixingCodeStyleWarnings()
         {
             var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
@@ -462,7 +463,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 codeStyleSeverity: DiagnosticSeverity.Warning);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
         {
             var restoreExitCode = await NuGetHelper.PerformRestore(s_analyzersSolutionFilePath, _output);
@@ -479,7 +480,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 fixCategory: FixCategory.Whitespace);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task FilesFormattedInAnalyzersSolution_WhenFixingAnalyzerErrors()
         {
             var restoreExitCode = await NuGetHelper.PerformRestore(s_analyzersSolutionFilePath, _output);
