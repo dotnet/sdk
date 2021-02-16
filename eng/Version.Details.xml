@@ -123,23 +123,23 @@
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="5.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>c0486303c07bd6f5e3a0eb8c214f11a3593f958c</Sha>
+      <Sha>0e8ee6b2e67a215c0a44eceaa885bdd109bd6067</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.4-servicing.21112.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.4-servicing.21116.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>c0486303c07bd6f5e3a0eb8c214f11a3593f958c</Sha>
+      <Sha>0e8ee6b2e67a215c0a44eceaa885bdd109bd6067</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="5.0.0">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>ec2af60c1eb8b2665745750f6445b3ff133178fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.3-servicing.21078.5" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.4-servicing.21116.3" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
-      <Sha>5462b9c99364dfa5103de1595e28f2e5975c9d25</Sha>
+      <Sha>82dac0ba0ee7aa3930b671185e34aeac965f8318</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="5.0.3-servicing.21078.5" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="5.0.4-servicing.21116.3" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
-      <Sha>5462b9c99364dfa5103de1595e28f2e5975c9d25</Sha>
+      <Sha>82dac0ba0ee7aa3930b671185e34aeac965f8318</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="5.0.3-servicing.21073.2" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-winforms</Uri>
