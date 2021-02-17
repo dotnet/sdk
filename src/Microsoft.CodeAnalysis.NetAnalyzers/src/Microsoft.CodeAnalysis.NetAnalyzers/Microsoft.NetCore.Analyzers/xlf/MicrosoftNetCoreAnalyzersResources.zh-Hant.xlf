@@ -2098,13 +2098,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
-        <source>'{0}' automatically checks whether the token has been canceled, and throws a new '{2}' if it has.</source>
-        <target state="new">'{0}' automatically checks whether the token has been canceled, and throws a new '{2}' if it has.</target>
+        <source>'{0}' automatically checks whether the token has been canceled, and throws an '{2}' if it has.</source>
+        <target state="new">'{0}' automatically checks whether the token has been canceled, and throws an '{2}' if it has.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
-        <source>Consider calling '{0}' instead of checking '{1}'</source>
-        <target state="new">Consider calling '{0}' instead of checking '{1}'</target>
+        <source>Use '{0}' instead of checking '{1}'</source>
+        <target state="new">Use '{0}' instead of checking '{1}'</target>
         <note>0=ThrowIfCancellationRequested method, 1=IsCancellationRequested property, 2=OperationCanceledException type</note>
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">

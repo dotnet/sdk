@@ -3271,6 +3271,26 @@
             ]
           }
         },
+        "CA2250": {
+          "id": "CA2250",
+          "shortDescription": "Use '{0}'",
+          "fullDescription": "'{0}' automatically checks whether the token has been canceled, and throws an '{2}' if it has.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "UseCancellationTokenThrowIfCancellationRequested",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2300": {
           "id": "CA2300",
           "shortDescription": "Do not use insecure deserializer BinaryFormatter",

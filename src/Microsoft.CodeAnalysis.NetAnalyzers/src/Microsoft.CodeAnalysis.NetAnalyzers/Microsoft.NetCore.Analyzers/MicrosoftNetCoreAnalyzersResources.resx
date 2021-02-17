@@ -1511,10 +1511,10 @@
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
   <data name="UseCancellationTokenThrowIfCancellationRequestedDescription" xml:space="preserve">
-    <value>'{0}' automatically checks whether the token has been canceled, and throws a new '{2}' if it has.</value>
+    <value>'{0}' automatically checks whether the token has been canceled, and throws an '{2}' if it has.</value>
   </data>
   <data name="UseCancellationTokenThrowIfCancellationRequestedMessage" xml:space="preserve">
-    <value>Consider calling '{0}' instead of checking '{1}'</value>
+    <value>Use '{0}' instead of checking '{1}'</value>
     <comment>0=ThrowIfCancellationRequested method, 1=IsCancellationRequested property, 2=OperationCanceledException type</comment>
   </data>
   <data name="UseCancellationTokenThrowIfCancellationRequestedTitle" xml:space="preserve">

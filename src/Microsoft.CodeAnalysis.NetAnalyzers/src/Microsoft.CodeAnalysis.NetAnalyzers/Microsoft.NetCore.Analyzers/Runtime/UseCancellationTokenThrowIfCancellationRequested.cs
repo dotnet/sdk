@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -39,11 +36,51 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override void Initialize(AnalysisContext context)
         {
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+            context.EnableConcurrentExecution();
+            context.RegisterCompilationStartAction(OnCompilationStart);
         }
 
         private static void OnCompilationStart(CompilationStartAnalysisContext context)
         {
-            
+            if (!RequiredSymbols.TryGetSymbols(context.Compilation, out var symbols))
+                return;
+
+            context.RegisterOperationAction(AnalyzeOperation, OperationKind.Conditional);
+
+            void AnalyzeOperation(OperationAnalysisContext context)
+            {
+                var conditional = (IConditionalOperation)context.Operation;
+                IOperation? whenTrue = GetSingleStatementOrDefault(conditional.WhenTrue);
+                IOperation? whenFalse = GetSingleStatementOrDefault(conditional.WhenFalse);
+
+                if (symbols.IsSimpleAffirmativeCheck(conditional, out _) || symbols.IsNegatedCheckWithThrowingElseClause(conditional, out _))
+                {
+                    var model = conditional.SemanticModel;
+                    int position = conditional.Syntax.SpanStart;
+                    Diagnostic diagnostic = conditional.CreateDiagnostic(
+                        Rule,
+                        symbols.ThrowIfCancellationRequestedMethod.ToMinimalDisplayString(model, position, SymbolDisplayFormat.MinimallyQualifiedFormat),
+                        symbols.IsCancellationRequestedProperty.ToMinimalDisplayString(model, position, SymbolDisplayFormat.MinimallyQualifiedFormat),
+                        symbols.OperationCanceledExceptionType.ToMinimalDisplayString(model, position, SymbolDisplayFormat.MinimallyQualifiedFormat));
+                    context.ReportDiagnostic(diagnostic);
+                }
+            }
+        }
+
+        /// <summary>
+        /// If <paramref name="singleOrBlock"/> is a block operation with one child, returns that child.
+        /// If <paramref name="singleOrBlock"/> is a block operation with more than one child, returns <see langword="null"/>.
+        /// If <paramref name="singleOrBlock"/> is not a block operation, returns <paramref name="singleOrBlock"/>.
+        /// </summary>
+        /// <param name="singleOrBlock">The operation to unwrap.</param>
+        internal static IOperation? GetSingleStatementOrDefault(IOperation? singleOrBlock)
+        {
+            if (singleOrBlock is IBlockOperation blockOperation)
+            {
+                return blockOperation.Operations.Length is 1 ? blockOperation.Operations[0] : default;
+            }
+            return singleOrBlock;
         }
 
         //  Use readonly struct to avoid allocations.
@@ -98,6 +135,70 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public IPropertySymbol IsCancellationRequestedProperty { get; init; }
             public IMethodSymbol OperationCanceledExceptionDefaultCtor { get; init; }
             public IMethodSymbol OperationCanceledExceptionTokenCtor { get; init; }
+
+            /// <summary>
+            /// Indicates whether the specified operation is a conditional statement of the form
+            /// <code>
+            /// if (token.IsCancellationRequested)
+            ///     throw new OperationCanceledException();
+            /// </code>
+            /// </summary>
+            public bool IsSimpleAffirmativeCheck(IConditionalOperation conditional, [NotNullWhen(true)] out IPropertyReferenceOperation? isCancellationRequestedPropertyReference)
+            {
+                IOperation? whenTrueUnwrapped = GetSingleStatementOrDefault(conditional.WhenTrue);
+
+                if (conditional.Condition is IPropertyReferenceOperation propertyReference &&
+                    SymbolEqualityComparer.Default.Equals(propertyReference.Property, IsCancellationRequestedProperty) &&
+                    whenTrueUnwrapped is IThrowOperation @throw &&
+                    @throw.Exception is IObjectCreationOperation objectCreation &&
+                    IsDefaultOrTokenOperationCanceledExceptionCtor(objectCreation.Constructor) &&
+                    conditional.WhenFalse is null)
+                {
+                    isCancellationRequestedPropertyReference = propertyReference;
+                    return true;
+                }
+
+                isCancellationRequestedPropertyReference = default;
+                return false;
+            }
+
+            /// <summary>
+            /// Indicates whether the specified operation is a conditional statement of the form
+            /// <code>
+            /// if (!token.IsCancellationRequested)
+            /// {
+            ///     // statements
+            /// }
+            /// else
+            /// {
+            ///     throw new OperationCanceledException();
+            /// }
+            /// </code>
+            /// </summary>
+            public bool IsNegatedCheckWithThrowingElseClause(IConditionalOperation conditional, [NotNullWhen(true)] out IPropertyReferenceOperation? isCancellationRequestedPropertyReference)
+            {
+                IOperation? whenFalseUnwrapped = GetSingleStatementOrDefault(conditional.WhenFalse);
+
+                if (conditional.Condition is IUnaryOperation { OperatorKind: UnaryOperatorKind.Not } unary &&
+                    unary.Operand is IPropertyReferenceOperation propertyReference &&
+                    SymbolEqualityComparer.Default.Equals(propertyReference.Property, IsCancellationRequestedProperty) &&
+                    whenFalseUnwrapped is IThrowOperation @throw &&
+                    @throw.Exception is IObjectCreationOperation objectCreation &&
+                    IsDefaultOrTokenOperationCanceledExceptionCtor(objectCreation.Constructor))
+                {
+                    isCancellationRequestedPropertyReference = propertyReference;
+                    return true;
+                }
+
+                isCancellationRequestedPropertyReference = default;
+                return false;
+            }
+
+            private bool IsDefaultOrTokenOperationCanceledExceptionCtor(IMethodSymbol method)
+            {
+                return SymbolEqualityComparer.Default.Equals(method, OperationCanceledExceptionDefaultCtor) ||
+                    SymbolEqualityComparer.Default.Equals(method, OperationCanceledExceptionTokenCtor);
+            }
         }
 
         private static LocalizableString CreateResource(string resourceName)
