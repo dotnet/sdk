@@ -175,6 +175,11 @@ namespace Microsoft.NET.Build.Tasks
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     {
                         compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.map");
+                        if (ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5)
+                        {
+                            // .NET 6 Preview1 Crossgen2 sets ".perf.map" as the perfmap extension
+                            compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".perf.map");
+                        }
                         compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.map");
                     }
 
