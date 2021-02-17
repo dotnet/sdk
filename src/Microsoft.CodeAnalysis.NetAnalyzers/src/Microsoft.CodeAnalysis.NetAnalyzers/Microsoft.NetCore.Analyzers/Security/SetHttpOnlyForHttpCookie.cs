@@ -34,22 +34,22 @@ namespace Microsoft.NetCore.Analyzers.Security
             ImmutableArray.Create(
                 Rule);
 
-        private static readonly ConstructorMapper ConstructorMapper = new ConstructorMapper(
+        private static readonly ConstructorMapper ConstructorMapper = new(
             (IMethodSymbol constructorMethod,
             IReadOnlyList<PointsToAbstractValue> argumentPointsToAbstractValues) =>
             {
                 return PropertySetAbstractValue.GetInstance(PropertySetAbstractValueKind.Flagged);
             });
 
-        // If HttpOnly is set explictly, the callbacks of OperationKind.SimpleAssignment can cover that case.
+        // If HttpOnly is set explicitly, the callbacks of OperationKind.SimpleAssignment can cover that case.
         // Otherwise, using PropertySetAnalysis to cover the case where HttpCookie object is returned without initializing or assgining HttpOnly property.
-        private static readonly PropertyMapperCollection PropertyMappers = new PropertyMapperCollection(
+        private static readonly PropertyMapperCollection PropertyMappers = new(
             new PropertyMapper(
                 "HttpOnly",
                 (PointsToAbstractValue pointsToAbstractValue) =>
                    PropertySetAbstractValueKind.Unflagged));
 
-        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new HazardousUsageEvaluatorCollection(
+        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new(
                     new HazardousUsageEvaluator(
                         HazardousUsageEvaluatorKind.Return,
                         PropertySetCallbacks.HazardousIfAllFlaggedAndAtLeastOneKnown),
@@ -80,11 +80,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             ISymbol owningSymbol = operationBlockStartAnalysisContext.OwningSymbol;
 
-                            if (owningSymbol.IsConfiguredToSkipAnalysis(
-                                    operationBlockStartAnalysisContext.Options,
-                                    Rule,
-                                    operationBlockStartAnalysisContext.Compilation,
-                                    operationBlockStartAnalysisContext.CancellationToken))
+                            if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(Rule, owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
                             {
                                 return;
                             }

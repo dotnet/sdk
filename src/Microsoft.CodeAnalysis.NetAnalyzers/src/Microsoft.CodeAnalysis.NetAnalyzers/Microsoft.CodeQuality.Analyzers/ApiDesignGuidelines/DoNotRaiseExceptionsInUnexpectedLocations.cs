@@ -80,7 +80,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // Find out if this given method is one of the interesting categories of methods.
-                    // For eg: certain Equals methods or certain accessors etc.
+                    // For example, certain Equals methods or certain accessors etc.
                     MethodCategory methodCategory = methodCategories.FirstOrDefault(l => l.IsMatch(methodSymbol, compilation));
                     if (methodCategory == null)
                     {
@@ -325,14 +325,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             if (!method.IsStatic || !method.IsPublic())
                 return false;
-            switch (method.Name)
+
+            return method.Name switch
             {
-                case WellKnownMemberNames.EqualityOperatorName:
-                case WellKnownMemberNames.InequalityOperatorName:
-                    return true;
-                default:
-                    return false;
-            }
+                WellKnownMemberNames.EqualityOperatorName
+                or WellKnownMemberNames.InequalityOperatorName => true,
+                _ => false,
+            };
         }
 
         private static bool IsImplicitCastOperator(IMethodSymbol method, Compilation compilation)

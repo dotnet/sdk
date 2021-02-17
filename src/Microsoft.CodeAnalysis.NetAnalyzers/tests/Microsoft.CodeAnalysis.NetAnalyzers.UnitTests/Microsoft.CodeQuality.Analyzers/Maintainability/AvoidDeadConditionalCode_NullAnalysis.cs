@@ -17,23 +17,31 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     public partial class AvoidDeadConditionalCodeTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string condition, string reason)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(condition, reason);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string condition, string reason)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(condition, reason);
 
         private static DiagnosticResult GetCSharpNeverNullResultAt(int line, int column, string condition, string reason)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(AvoidDeadConditionalCode.NeverNullRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(condition, reason);
 
         private static DiagnosticResult GetBasicNeverNullResultAt(int line, int column, string condition, string reason)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(AvoidDeadConditionalCode.NeverNullRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(condition, reason);
 
         private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -3337,6 +3345,68 @@ End Class");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4411, "https://github.com/dotnet/roslyn-analyzers/issues/4411")]
+        public async Task NullCheck_AfterTryCast_03_NoDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+class A
+{
+    void M(object o)
+    {
+        if (o is A a)
+        {
+            _ = (a as B)?.ToString();
+        }
+    }
+}
+
+class B : A
+{
+}
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4383, "https://github.com/dotnet/roslyn-analyzers/issues/4383")]
+        public async Task NullCheck_AfterTryCast_04_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+internal static class Class1
+{
+    public static ReadOnlyDictionary<TKey, ReadOnlyCollection<TValue>> AsReadOnlyItems<TKey, TValue>(this IDictionary<TKey, IList<TValue>> self, IEqualityComparer<TKey> keyComparer = null)
+    {
+        _ = self ?? throw new ArgumentNullException(nameof(self));
+
+        keyComparer ??= (self as Dictionary<TKey, TValue>)?.Comparer;
+        var copy = new Dictionary<TKey, ReadOnlyCollection<TValue>>(self.Count, keyComparer);
+        foreach (var kvp in self)
+        {
+            if (kvp.Value is null)
+            {
+                copy.Add(kvp.Key, null);
+                continue;
+            }
+
+            var readOnlyValue = kvp.Value as ReadOnlyCollection<TValue> ?? new ReadOnlyCollection<TValue>(kvp.Value);
+            copy.Add(kvp.Key, readOnlyValue);
+        }
+
+        return new ReadOnlyDictionary<TKey, ReadOnlyCollection<TValue>>(copy);
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
         public async Task NullCheck_AfterTryCast_Diagnostic()
         {
@@ -4144,6 +4214,27 @@ class Test
     void M1(int value)
     {
         if ((sbyte)value == value)
+        {
+        }
+    }
+}
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4415, "https://github.com/dotnet/roslyn-analyzers/issues/4415")]
+        public async Task NullCheck_AfterDirectCast_NullableValueType_NoDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+
+internal class Class1
+{
+    public static void M(object obj)
+    {
+        var d = (DateTime?)obj;
+        if (d != null)
         {
         }
     }
@@ -5476,6 +5567,54 @@ public class C : IDisposable
 }");
         }
 
+#if NETCOREAPP
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4327, "https://github.com/dotnet/roslyn-analyzers/issues/4327")]
+        public async Task TestCompilerGeneratedNullCheckNotFlagged_02()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+class Class1
+{
+    static async IAsyncEnumerable<int> M(IAsyncEnumerable<int> iae)
+    {
+        await foreach (int i in iae.ConfigureAwait(false))
+        {
+            if (i > 0)
+                yield return i;
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+#endif
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4382, "https://github.com/dotnet/roslyn-analyzers/issues/4382")]
+        public async Task TestCompilerGeneratedNullCheckNotFlagged_03()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+
+class C
+{
+    void F(IDisposable x)
+    {
+        if (x != null)
+        {
+            using (x) { }
+        }
+    }
+}");
+        }
+
         [Fact]
         public async Task StaticObjectReferenceEquals_Diagnostic()
         {
@@ -6627,8 +6766,9 @@ End Class
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality." + AvoidDeadConditionalCode.RuleId + ".excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA1508.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA1508.excluded_symbol_names = M*")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -6753,7 +6893,7 @@ public class Class1
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
-        [Theory(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3685")]
+        [Theory, WorkItem(3685, "https://github.com/dotnet/roslyn-analyzers/issues/3685")]
         [InlineData("IsNullOrWhiteSpace")]
         [InlineData("IsNullOrEmpty")]
         public async Task StringNullCheckApis(string apiName)
@@ -6777,6 +6917,123 @@ public class Class1
     }}
 }}
 ",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        [WorkItem(3845, "https://github.com/dotnet/roslyn-analyzers/issues/3845")]
+        public async Task ParamArrayNullCheckIsNotFlagged()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public void M(params int[] p)
+    {
+        if (p == null)
+        {
+        }
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Sub M(ParamArray p As Integer())
+        If p is Nothing Then
+        End If
+    End Sub
+End Class
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        [WorkItem(4509, "https://github.com/dotnet/roslyn-analyzers/issues/4509")]
+        public async Task GenericFieldNullCheckIsNotFlagged()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class MyClass<T>
+{
+    private T m_myValue;
+
+    public void M()
+    {
+        var x = this.m_myValue?.ToString();
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class [MyClass](Of T)
+    Private m_myValue As T
+
+    Public Sub M()
+        Dim x = Me.m_myValue?.ToString()
+    End Sub
+End Class
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        [WorkItem(4548, "https://github.com/dotnet/roslyn-analyzers/issues/4548")]
+        public async Task ActivatorCreateInstanceNullCheckIsNotFlagged()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C
+{
+    public void M()
+    {
+        var value = Activator.CreateInstance(typeof(int?));
+        if (value is null)
+        {
+        }
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    Public Sub M()
+        Dim value = Activator.CreateInstance(GetType(Integer?))
+
+        If value Is Nothing Then
+        End If
+    End Sub
+End Class
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        [WorkItem(4548, "https://github.com/dotnet/roslyn-analyzers/issues/4548")]
+        public async Task FactoryMethodWithNullableReturnIsNotFlagged()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+#nullable enable
+
+public class C
+{
+    public void M(bool flag)
+    {
+        var value = CreateC(flag);
+        if (value is null)
+        {
+        }
+    }
+
+    public static C? CreateC(bool flag)
+    {
+        return flag ? new C() : null;
+    }
+}",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }

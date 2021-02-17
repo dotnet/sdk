@@ -331,13 +331,17 @@ End Class");
         }
 
         private DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
     }
 }

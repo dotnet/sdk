@@ -179,14 +179,14 @@ namespace Microsoft.NetFramework.Analyzers
             #endregion
 
             // .NET frameworks >= 4.5.2 have secure default settings
-            private static readonly Version s_minSecureFxVersion = new Version(4, 5, 2);
+            private static readonly Version s_minSecureFxVersion = new(4, 5, 2);
 
             private readonly CompilationSecurityTypes _xmlTypes;
             private readonly bool _isFrameworkSecure;
-            private readonly HashSet<IOperation> _objectCreationOperationsAnalyzed = new HashSet<IOperation>();
-            private readonly Dictionary<ISymbol, XmlDocumentEnvironment> _xmlDocumentEnvironments = new Dictionary<ISymbol, XmlDocumentEnvironment>();
-            private readonly Dictionary<ISymbol, XmlTextReaderEnvironment> _xmlTextReaderEnvironments = new Dictionary<ISymbol, XmlTextReaderEnvironment>();
-            private readonly Dictionary<ISymbol, XmlReaderSettingsEnvironment> _xmlReaderSettingsEnvironments = new Dictionary<ISymbol, XmlReaderSettingsEnvironment>();
+            private readonly HashSet<IOperation> _objectCreationOperationsAnalyzed = new();
+            private readonly Dictionary<ISymbol, XmlDocumentEnvironment> _xmlDocumentEnvironments = new();
+            private readonly Dictionary<ISymbol, XmlTextReaderEnvironment> _xmlTextReaderEnvironments = new();
+            private readonly Dictionary<ISymbol, XmlReaderSettingsEnvironment> _xmlReaderSettingsEnvironments = new();
 
             public OperationAnalyzer(CompilationSecurityTypes xmlTypes, Version targetFrameworkVersion)
             {
@@ -264,18 +264,10 @@ namespace Microsoft.NetFramework.Analyzers
                 }
                 else if (method.MatchMethodDerivedByName(_xmlTypes.XmlReader, SecurityMemberNames.Create))
                 {
-                    int xmlReaderSettingsIndex = SecurityDiagnosticHelpers.GetXmlReaderSettingsParameterIndex(method, _xmlTypes);
+                    int xmlReaderSettingsIndex = method.GetXmlReaderSettingsParameterIndex(_xmlTypes);
 
                     if (xmlReaderSettingsIndex < 0)
                     {
-                        if (method.Parameters.Length == 1
-                            && method.Parameters[0].RefKind == RefKind.None
-                            && method.Parameters[0].Type.SpecialType == SpecialType.System_String)
-                        {
-                            // inputUri can load be a URL.  Should further investigate if this is worth flagging.
-                            context.ReportDiagnostic(expressionSyntax.CreateDiagnostic(RuleXmlReaderCreateWrongOverload));
-                        }
-
                         // If no XmlReaderSettings are passed, then the default
                         // XmlReaderSettings are used, with DtdProcessing set to Prohibit.
                     }
@@ -320,15 +312,15 @@ namespace Microsoft.NetFramework.Analyzers
                     _objectCreationOperationsAnalyzed.Add(objCreation);
                 }
 
-                if (SecurityDiagnosticHelpers.IsXmlDocumentCtorDerived(objCreation.Constructor, _xmlTypes))
+                if (objCreation.Constructor.IsXmlDocumentCtorDerived(_xmlTypes))
                 {
                     AnalyzeObjectCreationForXmlDocument(context, variable, objCreation);
                 }
-                else if (SecurityDiagnosticHelpers.IsXmlTextReaderCtorDerived(objCreation.Constructor, _xmlTypes))
+                else if (objCreation.Constructor.IsXmlTextReaderCtorDerived(_xmlTypes))
                 {
                     AnalyzeObjectCreationForXmlTextReader(context, variable, objCreation);
                 }
-                else if (SecurityDiagnosticHelpers.IsXmlReaderSettingsCtor(objCreation.Constructor, _xmlTypes))
+                else if (objCreation.Constructor.IsXmlReaderSettingsCtor(_xmlTypes))
                 {
                     AnalyzeObjectCreationForXmlReaderSettings(variable, objCreation);
                 }

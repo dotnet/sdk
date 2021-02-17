@@ -297,6 +297,11 @@
         <target state="translated">Удалите метод завершения из типа '{0}', переопределите Dispose(bool disposing) и поместите логику завершения в путь кода, туда где 'disposing' имеет значение false. В противном случае это может привести к дублированию вызовов метода Dispose, так как базовый тип '{1}' также предоставляет метод завершения.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="translated">Применить "AttributeUsageAttribute"</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">По мере возможности распространяйте токены CancellationToken</target>
@@ -703,7 +708,7 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
+        <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
         <target state="translated">Реализуйте операторы равенства и сделайте их поведение идентичным поведению метода "Equals".</target>
         <note />
       </trans-unit>
@@ -1257,21 +1262,6 @@
         <target state="translated">Либо замените суффикс "{0}" в имени члена "{1}" предложенной альтернативой "{2}", либо полностью удалите суффикс.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
-        <source>Flags enums should have plural names</source>
-        <target state="translated">У перечислений флагов должны быть имена во множественном числе</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesDescription">
-        <source>A public enumeration has the System.FlagsAttribute attribute, and its name does not end in ""s"". Types that are marked by using FlagsAttribute have names that are plural because the attribute indicates that more than one value can be specified.</source>
-        <target state="translated">Общее перечисление имеет атрибут System.FlagsAttribute, а его имя не заканчивается на ""s"". Типы, помеченные с помощью FlagsAttribute, имеют имена во множественном числе, так как атрибут указывает, что можно задать несколько значений.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesMessage">
-        <source>Flags enums should have plural names</source>
-        <target state="translated">У перечислений флагов должны быть имена во множественном числе</target>
-        <note />
-      </trans-unit>
       <trans-unit id="IdentifiersShouldNotMatchKeywordsTitle">
         <source>Identifiers should not match keywords</source>
         <target state="translated">Идентификаторы не должны совпадать с ключевыми словами</target>
@@ -1300,21 +1290,6 @@
       <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageNamespace">
         <source>Rename namespace {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a namespace makes it harder for consumers in other languages to use the namespace.</source>
         <target state="translated">Переименуйте пространство имен {0}, чтобы оно больше не находилось в конфликте с зарезервированным ключевым словом языка "{1}". Использование зарезервированного ключевого слова в качестве имени пространства имен затрудняет использование этого пространства имен потребителями в других языках.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesTitle">
-        <source>Only FlagsAttribute enums should have plural names</source>
-        <target state="translated">Только перечисления FlagsAttribute должны иметь имена во множественном числе</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesDescription">
-        <source>Naming conventions dictate that a plural name for an enumeration indicates that more than one value of the enumeration can be specified at the same time.</source>
-        <target state="translated">По соглашениям об именовании имя перечисления во множественном числе указывает, что одновременно можно задать несколько значений этого перечисления.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesMessage">
-        <source>Only FlagsAttribute enums should have plural names</source>
-        <target state="translated">Только перечисления FlagsAttribute должны иметь имена во множественном числе</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertyNamesShouldNotMatchGetMethodsTitle">

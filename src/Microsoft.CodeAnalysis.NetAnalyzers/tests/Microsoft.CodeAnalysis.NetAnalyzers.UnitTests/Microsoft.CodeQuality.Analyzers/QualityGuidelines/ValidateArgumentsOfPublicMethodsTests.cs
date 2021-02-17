@@ -23,13 +23,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class ValidateArgumentsOfPublicMethodsTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string methodSignature, string parameterName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(methodSignature, parameterName);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string methodSignature, string parameterName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(methodSignature, parameterName);
 
         [Fact]
@@ -565,6 +569,40 @@ End Class
 ",
             // Test0.vb(8,34): warning CA1062: In externally visible method 'Sub Test.M1(str As String, str2 As String)', validate parameter 'str2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetBasicResultAt(8, 34, "Sub Test.M1(str As String, str2 As String)", "str2"));
+        }
+
+        [Fact, WorkItem(4248, "https://github.com/dotnet/roslyn-analyzers/issues/4248")]
+        public async Task NotNullAttribute_PossibleNullRefUsage_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp31,
+                TestCode = @"
+using System.Diagnostics.CodeAnalysis;
+
+public class Test
+{
+    public void M1([NotNull]string str)
+    {
+        var x = str.ToString();
+    }
+}
+",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp31,
+                TestCode = @"
+Imports System.Diagnostics.CodeAnalysis
+
+Public Class Test
+    Public Sub M1(<NotNull>str As String)
+        Dim x = str.ToString()
+    End Sub
+End Class
+",
+            }.RunAsync();
         }
 
         [Fact]
@@ -5936,22 +5974,24 @@ public class C
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
-        [Fact, WorkItem(2528, "https://github.com/dotnet/roslyn-analyzers/issues/2528")]
-        public async Task ParamArrayIsNotFlagged()
+        [Fact]
+        [WorkItem(2528, "https://github.com/dotnet/roslyn-analyzers/issues/2528")]
+        [WorkItem(3845, "https://github.com/dotnet/roslyn-analyzers/issues/3845")]
+        public async Task ParamArrayIsFlagged()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public void M(params int[] p)
     {
-        var x = p.Length;
+        var x = [|p|].Length;
     }
 }");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public Sub M(ParamArray p As Integer())
-        Dim x = p.Length
+        Dim x = [|p|].Length
     End Sub
 End Class
 ");
@@ -6388,7 +6428,8 @@ public class Test
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality." + ValidateArgumentsOfPublicMethods.RuleId + ".excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA1062.excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA1062.excluded_symbol_names = M*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
@@ -6603,6 +6644,26 @@ Public Class C
     End Sub
 End Class",
                 GetBasicResultAt(4, 9, "Sub C.GetValues(ByRef Values As String())", "Values"));
+        }
+
+        [Fact, WorkItem(3899, "https://github.com/dotnet/roslyn-analyzers/issues/3899")]
+        public async Task IsNotNullPattern_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                TestCode = @"
+public class C
+{
+    public void M(object instance)
+    {
+        if (instance is { })
+        {
+            _ = instance.GetHashCode();
+        }
+    }
+}",
+            }.RunAsync();
         }
     }
 }

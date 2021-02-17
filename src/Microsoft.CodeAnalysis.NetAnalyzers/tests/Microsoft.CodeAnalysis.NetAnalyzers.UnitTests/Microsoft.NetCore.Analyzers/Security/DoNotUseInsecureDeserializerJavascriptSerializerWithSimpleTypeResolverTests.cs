@@ -595,10 +595,12 @@ namespace Blah
 
         [Theory]
         [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = D")]
-        [InlineData(@"dotnet_code_quality.CA2321.excluded_symbol_names = D
-                      dotnet_code_quality.CA2322.excluded_symbol_names = D")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = D")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = Des")]
+        [InlineData(@"dotnet_code_quality.CA2321.excluded_symbol_names = Des
+                      dotnet_code_quality.CA2322.excluded_symbol_names = Des")]
+        [InlineData(@"dotnet_code_quality.CA2321.excluded_symbol_names = D*
+                      dotnet_code_quality.CA2322.excluded_symbol_names = D*")]
+        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = Des")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var test = new VerifyCS.Test
@@ -616,7 +618,7 @@ namespace Blah
 {
     public class Program
     {
-        public T D<T>(string str)
+        public T Des<T>(string str)
         {
             JavaScriptSerializer s = new JavaScriptSerializer(new SimpleTypeResolver());
             return s.Deserialize<T>(str);
@@ -654,8 +656,10 @@ namespace Blah
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
     }
 }

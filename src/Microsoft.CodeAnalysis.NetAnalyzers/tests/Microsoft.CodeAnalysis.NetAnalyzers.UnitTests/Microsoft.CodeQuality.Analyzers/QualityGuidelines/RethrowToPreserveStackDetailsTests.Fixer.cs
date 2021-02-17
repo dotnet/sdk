@@ -3,10 +3,10 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpRethrowToPreserveStackDetailsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicRethrowToPreserveStackDetailsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
@@ -16,7 +16,9 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
         [Fact]
         public async Task TestCSharp_RethrowExplicitlyToThrowImplicitly()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(
+#pragma warning disable RS0030 // Do not used banned APIs
+@"
 using System;
 
 class Program
@@ -38,6 +40,7 @@ class Program
         throw new ArithmeticException();
     }
 }", VerifyCS.Diagnostic().WithLocation(14, 13),
+#pragma warning restore RS0030 // Do not used banned APIs
 @"
 using System;
 
@@ -64,7 +67,9 @@ class Program
         [Fact]
         public async Task TestBasic_RethrowExplicitlyToThrowImplicitly()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
+            await VerifyVB.VerifyCodeFixAsync(
+#pragma warning disable RS0030 // Do not used banned APIs
+@"
 Imports System
 Class Program
     Sub CatchAndRethrowExplicitly()
@@ -76,6 +81,7 @@ Class Program
     End Sub
 End Class
 ", VerifyVB.Diagnostic().WithLocation(8, 13),
+#pragma warning restore RS0030 // Do not used banned APIs
     @"
 Imports System
 Class Program

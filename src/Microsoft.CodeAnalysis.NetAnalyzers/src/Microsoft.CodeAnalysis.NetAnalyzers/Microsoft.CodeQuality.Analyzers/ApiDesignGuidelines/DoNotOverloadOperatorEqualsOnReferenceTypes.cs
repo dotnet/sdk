@@ -25,8 +25,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             RuleLevel.Disabled,
             description: s_localizableDescription,
             isPortedFxCopRule: true,
-            isDataflowRule: false,
-            isEnabledByDefaultInFxCopAnalyzers: false);
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -68,7 +67,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // FxCop compat: only analyze externally visible symbols by default.
-                    if (!method.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
+                    if (!context.Options.MatchesConfiguredVisibility(Rule, method, context.Compilation, context.CancellationToken))
                     {
                         return;
                     }

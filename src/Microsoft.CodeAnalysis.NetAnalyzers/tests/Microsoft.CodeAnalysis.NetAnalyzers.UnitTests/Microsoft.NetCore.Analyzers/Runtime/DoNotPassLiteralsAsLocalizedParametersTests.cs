@@ -183,7 +183,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public async Task ParameterWithLocalizableAttribute_MultipleLineStringLiteralArgument_Method_Diagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -200,11 +200,11 @@ public class Test
 {
     public void M1(C c)
     {
-        var str = ""a\na"";
+        var str = ""a\r\na"";
         c.M(str);
     }
 }
-",
+".NormalizeLineEndings(),
                 // Test0.cs(16,13): warning CA1303: Method 'void Test.M1(C c)' passes a literal string as parameter 'param' of a call to 'void C.M(string param)'. Retrieve the following string(s) from a resource table instead: "a a".
                 GetCSharpResultAt(16, 13, "void Test.M1(C c)", "param", "void C.M(string param)", "a a"));
 
@@ -223,7 +223,7 @@ Public Class Test
         c.M(str)
     End Sub
 End Class
-",
+".NormalizeLineEndings(),
                 // Test0.vb(13,13): warning CA1303: Method 'Sub Test.M1(c As C)' passes a literal string as parameter 'param' of a call to 'Sub C.M(param As String)'. Retrieve the following string(s) from a resource table instead: "a a".
                 GetBasicResultAt(13, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a a"));
         }
@@ -1553,6 +1553,8 @@ internal static class Program
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = M:C.M(System.String)|M:C.M2(System.String)")]
         // Match by type documentation ID with "T:" prefix
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:C")]
+        // Match by method name and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = M*")]
         public async Task ShouldBeLocalized_MethodExcludedByConfiguration_NoDiagnostic(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1618,6 +1620,14 @@ public class Test
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:System.Exception")]
         // Match by namespace documentation ID with "N:" prefix
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = N:System")]
+        // Match by type name and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = Except*")]
+        // Match by constructor documentation ID with "M:" prefix and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = M:System.Exception*")]
+        // Match by type documentation ID with "T:" prefix and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:System.E*")]
+        // Match by namespace documentation ID with "N:" prefix and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = N:Sys*")]
         public async Task ShouldBeLocalized_ConstructorExcludedByConfiguration_NoDiagnostic(string editorConfigText)
         {
             var editorConfigTextWithNamingHeuristic = editorConfigText + @"
@@ -1672,6 +1682,10 @@ public class Test
         [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = System.Exception")]
         // Match by type documentation ID with "T:" prefix
         [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = T:System.Exception")]
+        // Match by type name and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = Except*")]
+        // Match by type documentation ID with "T:" prefix and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = T:System.Except*")]
         public async Task ShouldBeLocalized_SubTypesExcludedByConfiguration_NoDiagnostic(string editorConfigText)
         {
             var editorConfigTextWithNamingHeuristic = editorConfigText + @"
@@ -1726,7 +1740,7 @@ public class Test
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality." + DoNotPassLiteralsAsLocalizedParameters.RuleId + ".excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA1303.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
@@ -1779,7 +1793,7 @@ public class Test
             await csharpTest.RunAsync();
         }
 
-        [Theory]
+        [WindowsOnlyTheory]
         [InlineData(null)]
         [InlineData(PointsToAnalysisKind.None)]
         [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
@@ -1805,11 +1819,11 @@ public class Test
     private string str;
     public void M1(C c)
     {
-        str = ""a\na"";
+        str = ""a\r\na"";
         c.M(str);
     }
 }
-";
+".NormalizeLineEndings();
             var csTest = new VerifyCS.Test()
             {
                 TestCode = csCode,
@@ -1841,7 +1855,7 @@ Public Class Test
         c.M(str)
     End Sub
 End Class
-";
+".NormalizeLineEndings();
             var vbTest = new VerifyVB.Test()
             {
                 TestCode = vbCode,
@@ -1859,13 +1873,17 @@ End Class
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic()
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(arguments);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
     }
 }

@@ -61,7 +61,7 @@ namespace Microsoft.NetCore.Analyzers.Security
         /// </summary>
         private const int SerializationBinderIndex = 1;
 
-        private static readonly ConstructorMapper ConstructorMapper = new ConstructorMapper(
+        private static readonly ConstructorMapper ConstructorMapper = new(
             (IMethodSymbol constructorMethod, IReadOnlyList<PointsToAbstractValue> argumentPointsToAbstractValues) =>
             {
                 if (constructorMethod.Parameters.IsEmpty)
@@ -79,7 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 }
             });
 
-        private static readonly PropertyMapperCollection PropertyMappers = new PropertyMapperCollection(
+        private static readonly PropertyMapperCollection PropertyMappers = new(
             new PropertyMapper(
                 "TypeNameHandling",
                 (ValueContentAbstractValue valueContentAbstractValue) =>
@@ -96,7 +96,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 PropertySetCallbacks.FlagIfNull,
                 SerializationBinderIndex));     // Binder & SerializationBinder have the same underlying value.
 
-        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new HazardousUsageEvaluatorCollection(
+        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new(
             SecurityHelpers.JsonSerializerDeserializationMethods.Select(
                 (string methodName) => new HazardousUsageEvaluator(
                     methodName,
@@ -131,14 +131,14 @@ namespace Microsoft.NetCore.Analyzers.Security
                             ISymbol owningSymbol = operationBlockStartAnalysisContext.OwningSymbol;
 
                             // TODO: Handle case when exactly one of the below rules is configured to skip analysis.
-                            if (owningSymbol.IsConfiguredToSkipAnalysis(
-                                    operationBlockStartAnalysisContext.Options,
+                            if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(
                                     DefinitelyInsecureSerializer,
+                                    owningSymbol,
                                     operationBlockStartAnalysisContext.Compilation,
                                     operationBlockStartAnalysisContext.CancellationToken)
-                                && owningSymbol.IsConfiguredToSkipAnalysis(
-                                    operationBlockStartAnalysisContext.Options,
+                                && operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(
                                     MaybeInsecureSerializer,
+                                    owningSymbol,
                                     operationBlockStartAnalysisContext.Compilation,
                                     operationBlockStartAnalysisContext.CancellationToken))
                             {

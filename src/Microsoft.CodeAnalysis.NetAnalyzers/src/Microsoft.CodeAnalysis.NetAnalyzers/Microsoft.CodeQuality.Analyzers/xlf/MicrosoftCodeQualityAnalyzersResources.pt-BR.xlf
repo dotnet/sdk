@@ -297,6 +297,11 @@
         <target state="translated">Remova o finalizador do tipo '{0}', substitua Dispose(bool disposing) e coloque a lógica de finalização no caminho do código em que 'disposing' é false. Caso contrário, ele poderá duplicar invocações Dispose, já que o tipo Base '{1}' também fornece um finalizador.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="translated">Aplicar 'AttributeUsageAttribute'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Propagar CancellationTokens quando possível</target>
@@ -703,8 +708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
-        <target state="translated">Implementar os operadores de igualdade e tornar o comportamento idêntico ao do método 'Equals'</target>
+        <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
+        <target state="translated">Implementar os operadores de igualdade e fazer com que o comportamento deles seja idêntico ao do método Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
@@ -1257,21 +1262,6 @@
         <target state="translated">Substitua o sufixo '{0}' no nome de membro '{1}' pela alternativa sugerida '{2}' ou remova o sufixo por completo</target>
         <note />
       </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
-        <source>Flags enums should have plural names</source>
-        <target state="translated">Enumerações Flags devem ter nomes no plural</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesDescription">
-        <source>A public enumeration has the System.FlagsAttribute attribute, and its name does not end in ""s"". Types that are marked by using FlagsAttribute have names that are plural because the attribute indicates that more than one value can be specified.</source>
-        <target state="translated">Uma enumeração pública tem o atributo System.FlagsAttribute e seu nome não termina em ""s"". Tipos marcados usando FlagsAttribute têm nomes no plural, porque o atributo indica que mais de um valor pode ser especificado.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesMessage">
-        <source>Flags enums should have plural names</source>
-        <target state="translated">Enumerações Flags devem ter nomes no plural</target>
-        <note />
-      </trans-unit>
       <trans-unit id="IdentifiersShouldNotMatchKeywordsTitle">
         <source>Identifiers should not match keywords</source>
         <target state="translated">Identificadores não devem corresponder a palavras-chave</target>
@@ -1300,21 +1290,6 @@
       <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageNamespace">
         <source>Rename namespace {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a namespace makes it harder for consumers in other languages to use the namespace.</source>
         <target state="translated">Renomeie o namespace {0} de forma que ele não fique mais em conflito com a palavra-chave reservada de linguagem '{1}'. Se você usar uma palavra-chave reservada como o nome de um namespace, ficará mais difícil para os consumidores de outras linguagens utilizarem o namespace.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesTitle">
-        <source>Only FlagsAttribute enums should have plural names</source>
-        <target state="translated">Apenas enumerações FlagsAttribute devem ter nomes no plural</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesDescription">
-        <source>Naming conventions dictate that a plural name for an enumeration indicates that more than one value of the enumeration can be specified at the same time.</source>
-        <target state="translated">As convenções de nomenclatura ditam que um nome no plural para uma enumeração indica que mais de um valor da enumeração pode ser especificado ao mesmo tempo.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesMessage">
-        <source>Only FlagsAttribute enums should have plural names</source>
-        <target state="translated">Apenas enumerações FlagsAttribute devem ter nomes no plural</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertyNamesShouldNotMatchGetMethodsTitle">

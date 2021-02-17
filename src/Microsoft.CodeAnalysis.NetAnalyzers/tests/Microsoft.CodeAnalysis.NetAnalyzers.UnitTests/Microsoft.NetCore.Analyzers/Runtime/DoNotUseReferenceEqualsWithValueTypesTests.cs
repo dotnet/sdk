@@ -343,7 +343,7 @@ End Namespace");
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections.Generic;
@@ -362,7 +362,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections.Generic
@@ -382,7 +382,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections.Generic;
@@ -402,7 +402,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections.Generic
@@ -423,7 +423,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections.Generic;
@@ -443,7 +443,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections.Generic
@@ -464,7 +464,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections.Generic;
@@ -483,7 +483,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections.Generic
@@ -503,7 +503,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections.Generic;
@@ -523,7 +523,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections.Generic
@@ -543,7 +543,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections.Generic;
@@ -564,7 +564,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections.Generic
@@ -585,7 +585,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections.Generic;
@@ -613,7 +613,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections.Generic
@@ -638,7 +638,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections.Generic;
@@ -658,7 +658,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections.Generic
@@ -679,7 +679,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections.Generic;
@@ -699,7 +699,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections.Generic
@@ -720,7 +720,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections.Generic;
@@ -747,7 +747,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections.Generic
@@ -772,7 +772,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 using System.Collections;
@@ -795,7 +795,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 Imports System.Collections
@@ -827,9 +827,13 @@ End Namespace",
             => GetVisualBasicResultAt(DoNotUseReferenceEqualsWithValueTypesAnalyzer.ComparerRule, line, column, typeName);
 
         private DiagnosticResult GetCSharpResultAt(DiagnosticDescriptor rule, int line, int column, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(rule).WithLocation(line, column).WithArguments(typeName);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private DiagnosticResult GetVisualBasicResultAt(DiagnosticDescriptor rule, int line, int column, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(rule).WithLocation(line, column).WithArguments(typeName);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

@@ -665,6 +665,7 @@ End Class");
         [InlineData("dotnet_code_quality.excluded_symbol_names = M:NS.C.M1(System.String)")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = T:NS.C")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = N:NS")]
+        [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = M*")]
         public async Task CA1034_ExcludedSymbolsOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -737,13 +738,17 @@ End Namespace",
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string invocation, string containingMethod, string preferredOverload) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(invocation, containingMethod, preferredOverload);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string invocation, string containingMethod, string preferredOverload) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(invocation, containingMethod, preferredOverload);
     }
 }

@@ -16,13 +16,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class CollectionsShouldImplementGenericInterfaceTests
     {
         private static DiagnosticResult GetCA1010CSharpResultAt(int line, int column, string typeName, string interfaceName, string genericInterfaceName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, interfaceName, genericInterfaceName);
 
         private static DiagnosticResult GetCA1010BasicResultAt(int line, int column, string typeName, string interfaceName, string genericInterfaceName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, interfaceName, genericInterfaceName);
 
         [Fact]

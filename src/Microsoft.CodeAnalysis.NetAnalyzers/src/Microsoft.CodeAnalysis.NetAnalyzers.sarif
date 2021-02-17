@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "5.0.0",
+        "version": "6.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -147,6 +147,26 @@
             ]
           }
         },
+        "CA1805": {
+          "id": "CA1805",
+          "shortDescription": "Do not initialize unnecessarily",
+          "fullDescription": "The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1805",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpDoNotInitializeUnnecessarilyAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1812": {
           "id": "CA1812",
           "shortDescription": "Avoid uninstantiated internal classes",
@@ -208,10 +228,29 @@
             ]
           }
         },
+        "CA2014": {
+          "id": "CA2014",
+          "shortDescription": "Do not use stackalloc in loops",
+          "fullDescription": "Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2014",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpDoNotUseStackallocInLoopsAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2016": {
           "id": "CA2016",
-          "shortDescription": "Forward the 'CancellationToken' parameter to methods that take one",
-          "fullDescription": "Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.",
+          "shortDescription": "Forward the 'CancellationToken' parameter to methods",
+          "fullDescription": "Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2016",
           "properties": {
@@ -222,26 +261,6 @@
               "C#"
             ],
             "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2200": {
-          "id": "CA2200",
-          "shortDescription": "Rethrow to preserve stack details",
-          "fullDescription": "Re-throwing caught exception changes stack information",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2200",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpRethrowToPreserveStackDetailsAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
@@ -267,16 +286,16 @@
             ]
           }
         },
-        "CA3076": {
-          "id": "CA3076",
-          "shortDescription": "Insecure XSLT script processing.",
-          "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076",
+        "CA2352": {
+          "id": "CA2352",
+          "shortDescription": "Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks",
+          "fullDescription": "When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2352",
           "properties": {
             "category": "Security",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpDoNotUseInsecureXSLTScriptExecutionAnalyzer",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpDataSetDataTableInSerializableTypeAnalyzer",
             "languages": [
               "C#"
             ],
@@ -286,16 +305,92 @@
             ]
           }
         },
-        "CA3077": {
-          "id": "CA3077",
-          "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
-          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
+        "CA2353": {
+          "id": "CA2353",
+          "shortDescription": "Unsafe DataSet or DataTable in serializable type",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2353",
           "properties": {
             "category": "Security",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpDoNotUseInsecureDtdProcessingInApiDesignAnalyzer",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpDataSetDataTableInSerializableTypeAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2354": {
+          "id": "CA2354",
+          "shortDescription": "Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2354",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpDataSetDataTableInIFormatterSerializableObjectGraphAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2355": {
+          "id": "CA2355",
+          "shortDescription": "Unsafe DataSet or DataTable type found in deserializable object graph",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2355",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpDataSetDataTableInSerializableObjectGraphAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2356": {
+          "id": "CA2356",
+          "shortDescription": "Unsafe DataSet or DataTable type in web deserializable object graph",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2356",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpDataSetDataTableInWebSerializableObjectGraphAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2362": {
+          "id": "CA2362",
+          "shortDescription": "Unsafe DataSet or DataTable in auto-generated serializable type can be vulnerable to remote code execution attacks",
+          "fullDescription": "When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the auto-generated type is never deserialized with untrusted data.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2362",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpDataSetDataTableInSerializableTypeAnalyzer",
             "languages": [
               "C#"
             ],
@@ -310,7 +405,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "5.0.0",
+        "version": "6.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -1817,27 +1912,6 @@
             ]
           }
         },
-        "CA1801": {
-          "id": "CA1801",
-          "shortDescription": "Review unused parameters",
-          "fullDescription": "Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1801",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": false,
-            "typeName": "ReviewUnusedParametersAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA1802": {
           "id": "CA1802",
           "shortDescription": "Use literals where appropriate",
@@ -1848,27 +1922,6 @@
             "category": "Performance",
             "isEnabledByDefault": false,
             "typeName": "UseLiteralsWhereAppropriateAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA1805": {
-          "id": "CA1805",
-          "shortDescription": "Do not initialize unnecessarily",
-          "fullDescription": "The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1805",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": true,
-            "typeName": "DoNotInitializeUnnecessarilyAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -1988,7 +2041,7 @@
         "CA1816": {
           "id": "CA1816",
           "shortDescription": "Dispose methods should call SuppressFinalize",
-          "fullDescription": "A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).",
+          "fullDescription": "A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1816",
           "properties": {
@@ -2533,25 +2586,6 @@
             ]
           }
         },
-        "CA2014": {
-          "id": "CA2014",
-          "shortDescription": "Do not use stackalloc in loops",
-          "fullDescription": "Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2014",
-          "properties": {
-            "category": "Reliability",
-            "isEnabledByDefault": true,
-            "typeName": "DoNotUseStackallocInLoopsAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA2015": {
           "id": "CA2015",
           "shortDescription": "Do not define finalizers for types derived from MemoryManager<T>",
@@ -2672,6 +2706,27 @@
               "Visual Basic"
             ],
             "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2200": {
+          "id": "CA2200",
+          "shortDescription": "Rethrow to preserve stack details",
+          "fullDescription": "Re-throwing caught exception changes stack information",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2200",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "RethrowToPreserveStackDetailsAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
@@ -3576,136 +3631,16 @@
             ]
           }
         },
-        "CA2352": {
-          "id": "CA2352",
-          "shortDescription": "Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks",
-          "fullDescription": "When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2352",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": false,
-            "typeName": "DataSetDataTableInSerializableTypeAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2353": {
-          "id": "CA2353",
-          "shortDescription": "Unsafe DataSet or DataTable in serializable type",
-          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2353",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": false,
-            "typeName": "DataSetDataTableInSerializableTypeAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2354": {
-          "id": "CA2354",
-          "shortDescription": "Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks",
-          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2354",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": false,
-            "typeName": "DataSetDataTableInIFormatterSerializableObjectGraphAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2355": {
-          "id": "CA2355",
-          "shortDescription": "Unsafe DataSet or DataTable type found in deserializable object graph",
-          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2355",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": false,
-            "typeName": "DataSetDataTableInSerializableObjectGraphAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2356": {
-          "id": "CA2356",
-          "shortDescription": "Unsafe DataSet or DataTable type in web deserializable object graph",
-          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2356",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": false,
-            "typeName": "DataSetDataTableInWebSerializableObjectGraphAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA2361": {
           "id": "CA2361",
-          "shortDescription": "Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data",
-          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.",
+          "shortDescription": "Ensure auto-generated class containing DataSet.ReadXml() is not used with untrusted data",
+          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data. Make sure that auto-generated class containing the '{0}' call is not deserialized with untrusted data.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2361",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
             "typeName": "DoNotUseDataSetReadXml",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2362": {
-          "id": "CA2362",
-          "shortDescription": "Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks",
-          "fullDescription": "When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2362",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": false,
-            "typeName": "DataSetDataTableInSerializableTypeAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -4008,6 +3943,46 @@
             ]
           }
         },
+        "CA3076": {
+          "id": "CA3076",
+          "shortDescription": "Insecure XSLT script processing.",
+          "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseInsecureXSLTScriptExecutionAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA3077": {
+          "id": "CA3077",
+          "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
+          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseInsecureDtdProcessingInApiDesignAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA3147": {
           "id": "CA3147",
           "shortDescription": "Mark Verb Handlers With Validate Antiforgery Token",
@@ -4132,7 +4107,7 @@
         "CA5361": {
           "id": "CA5361",
           "shortDescription": "Do Not Disable SChannel Use of Strong Crypto",
-          "fullDescription": "Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommeded to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.",
+          "fullDescription": "Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommended to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5361",
           "properties": {
@@ -4233,7 +4208,7 @@
         },
         "CA5366": {
           "id": "CA5366",
-          "shortDescription": "Use XmlReader For DataSet Read Xml",
+          "shortDescription": "Use XmlReader for 'DataSet.ReadXml()'",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5366",
@@ -4294,7 +4269,7 @@
         },
         "CA5369": {
           "id": "CA5369",
-          "shortDescription": "Use XmlReader For Deserialize",
+          "shortDescription": "Use XmlReader for 'XmlSerializer.Deserialize()'",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5369",
@@ -4314,7 +4289,7 @@
         },
         "CA5370": {
           "id": "CA5370",
-          "shortDescription": "Use XmlReader For Validating Reader",
+          "shortDescription": "Use XmlReader for XmlValidatingReader constructor",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5370",
@@ -4334,7 +4309,7 @@
         },
         "CA5371": {
           "id": "CA5371",
-          "shortDescription": "Use XmlReader For Schema Read",
+          "shortDescription": "Use XmlReader for 'XmlSchema.Read()'",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5371",
@@ -4354,7 +4329,7 @@
         },
         "CA5372": {
           "id": "CA5372",
-          "shortDescription": "Use XmlReader For XPathDocument",
+          "shortDescription": "Use XmlReader for XPathDocument constructor",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5372",
@@ -4497,7 +4472,7 @@
         },
         "CA5379": {
           "id": "CA5379",
-          "shortDescription": "Do Not Use Weak Key Derivation Function Algorithm",
+          "shortDescription": "Ensure Key Derivation Function algorithm is sufficiently strong",
           "fullDescription": "Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm to be specified in a constructor parameter or overwritten in the HashAlgorithm property. If a hash algorithm is specified, then it should be SHA-256 or higher.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5379",
@@ -4561,7 +4536,7 @@
         },
         "CA5382": {
           "id": "CA5382",
-          "shortDescription": "Use Secure Cookies In ASP.Net Core",
+          "shortDescription": "Use Secure Cookies In ASP.NET Core",
           "fullDescription": "Applications available over HTTPS must use secure cookies.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5382",
@@ -4583,7 +4558,7 @@
         },
         "CA5383": {
           "id": "CA5383",
-          "shortDescription": "Ensure Use Secure Cookies In ASP.Net Core",
+          "shortDescription": "Ensure Use Secure Cookies In ASP.NET Core",
           "fullDescription": "Applications available over HTTPS must use secure cookies.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5383",
@@ -5021,53 +4996,13 @@
               "EnabledRuleInAggressiveMode"
             ]
           }
-        },
-        "IL3000": {
-          "id": "IL3000",
-          "shortDescription": "Avoid using accessing Assembly file path when publishing as a single-file",
-          "fullDescription": "'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3000",
-          "properties": {
-            "category": "Publish",
-            "isEnabledByDefault": true,
-            "typeName": "AvoidAssemblyLocationInSingleFile",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "IL3001": {
-          "id": "IL3001",
-          "shortDescription": "Avoid using accessing Assembly file path when publishing as a single-file",
-          "fullDescription": "'{0}' will throw for assemblies embedded in a single-file app",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3001",
-          "properties": {
-            "category": "Publish",
-            "isEnabledByDefault": true,
-            "typeName": "AvoidAssemblyLocationInSingleFile",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
         }
       }
     },
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "5.0.0",
+        "version": "6.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -5209,6 +5144,26 @@
             ]
           }
         },
+        "CA1805": {
+          "id": "CA1805",
+          "shortDescription": "Do not initialize unnecessarily",
+          "fullDescription": "The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1805",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "BasicDoNotInitializeUnnecessarilyAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1812": {
           "id": "CA1812",
           "shortDescription": "Avoid uninstantiated internal classes",
@@ -5272,8 +5227,8 @@
         },
         "CA2016": {
           "id": "CA2016",
-          "shortDescription": "Forward the 'CancellationToken' parameter to methods that take one",
-          "fullDescription": "Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.",
+          "shortDescription": "Forward the 'CancellationToken' parameter to methods",
+          "fullDescription": "Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2016",
           "properties": {
@@ -5284,26 +5239,6 @@
               "Visual Basic"
             ],
             "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2200": {
-          "id": "CA2200",
-          "shortDescription": "Rethrow to preserve stack details",
-          "fullDescription": "Re-throwing caught exception changes stack information",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2200",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": true,
-            "typeName": "BasicRethrowToPreserveStackDetailsAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
@@ -5369,16 +5304,16 @@
             ]
           }
         },
-        "CA3076": {
-          "id": "CA3076",
-          "shortDescription": "Insecure XSLT script processing.",
-          "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076",
+        "CA2352": {
+          "id": "CA2352",
+          "shortDescription": "Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks",
+          "fullDescription": "When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2352",
           "properties": {
             "category": "Security",
-            "isEnabledByDefault": true,
-            "typeName": "BasicDoNotUseInsecureXSLTScriptExecutionAnalyzer",
+            "isEnabledByDefault": false,
+            "typeName": "BasicDataSetDataTableInSerializableTypeAnalyzer",
             "languages": [
               "Visual Basic"
             ],
@@ -5388,16 +5323,92 @@
             ]
           }
         },
-        "CA3077": {
-          "id": "CA3077",
-          "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
-          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
+        "CA2353": {
+          "id": "CA2353",
+          "shortDescription": "Unsafe DataSet or DataTable in serializable type",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2353",
           "properties": {
             "category": "Security",
-            "isEnabledByDefault": true,
-            "typeName": "BasicDoNotUseInsecureDtdProcessingInApiDesignAnalyzer",
+            "isEnabledByDefault": false,
+            "typeName": "BasicDataSetDataTableInSerializableTypeAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2354": {
+          "id": "CA2354",
+          "shortDescription": "Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2354",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "BasicDataSetDataTableInIFormatterSerializableObjectGraphAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2355": {
+          "id": "CA2355",
+          "shortDescription": "Unsafe DataSet or DataTable type found in deserializable object graph",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2355",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "BasicDataSetDataTableInSerializableObjectGraphAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2356": {
+          "id": "CA2356",
+          "shortDescription": "Unsafe DataSet or DataTable type in web deserializable object graph",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2356",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "BasicDataSetDataTableInWebSerializableObjectGraphAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2362": {
+          "id": "CA2362",
+          "shortDescription": "Unsafe DataSet or DataTable in auto-generated serializable type can be vulnerable to remote code execution attacks",
+          "fullDescription": "When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the auto-generated type is never deserialized with untrusted data.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2362",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "BasicDataSetDataTableInSerializableTypeAnalyzer",
             "languages": [
               "Visual Basic"
             ],

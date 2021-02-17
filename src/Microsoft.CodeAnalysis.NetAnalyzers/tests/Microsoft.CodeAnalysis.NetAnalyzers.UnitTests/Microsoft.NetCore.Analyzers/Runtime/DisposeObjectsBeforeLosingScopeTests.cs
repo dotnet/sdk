@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
@@ -25,13 +26,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public partial class DisposeObjectsBeforeLosingScopeTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic(rule)
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(arguments);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string allocationText) =>
@@ -8097,10 +8102,17 @@ Class Test
 End Class");
         }
 
-        [Fact, WorkItem(1602, "https://github.com/dotnet/roslyn-analyzers/issues/1602")]
-        public async Task MemberReferenceInQueryFromClause_Disposed_NoDiagnostic()
+        [Theory, WorkItem(1602, "https://github.com/dotnet/roslyn-analyzers/issues/1602")]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task MemberReferenceInQueryFromClause_Disposed_NoDiagnostic(PointsToAnalysisKind? analysisKind)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test()
+            {
+                AnalyzerConfigDocument = GetEditorConfigContent(analysisKind),
+                TestCode = @"
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -8138,7 +8150,8 @@ class Test
         y.Dispose();
     }
 }
-");
+",
+            }.RunAsync();
         }
 
         [Fact]
@@ -11499,8 +11512,9 @@ public class C
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality." + DisposeObjectsBeforeLosingScope.RuleId + ".excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA2000.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA2000.excluded_symbol_names = M*")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -12001,12 +12015,17 @@ class Test
 }");
         }
 
-        [Fact, WorkItem(3085, "https://github.com/dotnet/roslyn-analyzers/issues/3085")]
-        public async Task LocalInvocationOfAnExcludedType_NoDiagnostic()
+        [Theory, WorkItem(3085, "https://github.com/dotnet/roslyn-analyzers/issues/3085")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.CA2000.excluded_symbol_names = T:MyNamespace.A")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = T:MyNamespace.A")]
+        [InlineData("dotnet_code_quality.CA2000.excluded_symbol_names = N:MyNamespace")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = N:MyNamespace")]
+        [InlineData("dotnet_code_quality.CA2000.excluded_type_names_with_derived_types = T:MyNamespace.A")]
+        [InlineData("dotnet_code_quality.excluded_type_names_with_derived_types = T:MyNamespace.A")]
+        public async Task LocalInvocationOfAnExcludedType_NoDiagnostic(string editorConfigText)
         {
-            string editorConfigText = $"dotnet_code_quality.{DisposeObjectsBeforeLosingScope.RuleId}.excluded_symbol_names = T:A";
-
-            await new VerifyCS.Test
+            var csharpTest = new VerifyCS.Test
             {
                 TestState =
                 {
@@ -12015,39 +12034,46 @@ class Test
                         @"
 using System;
 
-class A : IDisposable
+namespace MyNamespace
 {
-    public void Dispose()
+    class A : IDisposable
     {
+        public void Dispose()
+        {
+        }
     }
-}
 
-class B : IDisposable
-{
-    public void Dispose()
+    class B : A
     {
     }
-}
 
-class Test
-{
-    void M1()
+    class Test
     {
-        var a = new A();
-        var b = new B();
+        void M1()
+        {
+            var a = new A();
+            var b = new B();
+        }
     }
-}
-",
+}",
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText) },
-                    ExpectedDiagnostics =
-                    {
-                        GetCSharpResultAt(23, 17, "new B()"),
-                    }
                 }
-            }.RunAsync();
+            };
 
-            await new VerifyVB.Test
+            if (editorConfigText.Length == 0)
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(21, 21, "new A()"));
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(22, 21, "new B()"));
+            }
+            else if (editorConfigText.EndsWith("excluded_symbol_names = T:MyNamespace.A", StringComparison.OrdinalIgnoreCase))
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(22, 21, "new B()"));
+            }
+
+            await csharpTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
             {
                 TestState =
                 {
@@ -12056,32 +12082,40 @@ class Test
                         @"
 Imports System
 
-Class A
-    Implements IDisposable
-    Public Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+Namespace MyNamespace
+    Class A
+        Implements IDisposable
+        Public Sub Dispose() Implements IDisposable.Dispose
+        End Sub
+    End Class
 
-Class B
-    Implements IDisposable
-    Public Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+    Class B
+        Inherits A
+    End Class
 
-Class Test
-    Sub M1()
-        Dim a As New A()
-        Dim b As New B()
-    End Sub
-End Class",
+    Class Test
+        Sub M1()
+            Dim a As New A()
+            Dim b As New B()
+        End Sub
+    End Class
+End Namespace",
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText) },
-                    ExpectedDiagnostics =
-                    {
-                        GetBasicResultAt(19, 18, "New B()"),
-                    }
                 }
-            }.RunAsync();
+            };
+
+            if (editorConfigText.Length == 0)
+            {
+                vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(17, 22, "New A()"));
+                vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(18, 22, "New B()"));
+            }
+            else if (editorConfigText.EndsWith("excluded_symbol_names = T:MyNamespace.A", StringComparison.OrdinalIgnoreCase))
+            {
+                vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(18, 22, "New B()"));
+            }
+
+            await vbTest.RunAsync();
         }
 
         [Fact, WorkItem(3297, "https://github.com/dotnet/roslyn-analyzers/issues/3297")]

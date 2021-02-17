@@ -66,7 +66,7 @@ End Structure
 public class Class1
 {
     private readonly static int field = 1;
-    static Class1() // No static field initalization
+    static Class1() // No static field initialization
     {
         Class1_Method();
         var field2 = 1;
@@ -331,6 +331,45 @@ Class C
 End Class");
         }
 
+        [Fact, WorkItem(3852, "https://github.com/dotnet/roslyn-analyzers/issues/3852")]
+        public async Task CA1810_EventSubscriptionInStaticCtorPreventsDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+                TestCode = @"
+using System;
+using System.Windows.Forms;
+
+public class C1
+{
+    private static readonly int field;
+
+    static C1()
+    {
+        Application.ThreadExit += new EventHandler(OnThreadExit);
+        field = 42;
+    }
+
+    private static void OnThreadExit(object sender, EventArgs e) {}
+}
+
+public class C2
+{
+    private static readonly int field;
+
+    static C2()
+    {
+        Application.ThreadExit -= new EventHandler(OnThreadExit);
+        field = 42;
+    }
+
+    private static void OnThreadExit(object sender, EventArgs e) {}
+}
+",
+            }.RunAsync();
+        }
+
         #endregion
 
         #region Unit tests for analyzer diagnostic(s)
@@ -502,23 +541,31 @@ class C
         #region Helpers
 
         private static DiagnosticResult GetCA1810CSharpDefaultResultAt(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA1810Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA1810BasicDefaultResultAt(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA1810Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA2207CSharpDefaultResultAt(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA2207Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA2207BasicDefaultResultAt(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA2207Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         #endregion

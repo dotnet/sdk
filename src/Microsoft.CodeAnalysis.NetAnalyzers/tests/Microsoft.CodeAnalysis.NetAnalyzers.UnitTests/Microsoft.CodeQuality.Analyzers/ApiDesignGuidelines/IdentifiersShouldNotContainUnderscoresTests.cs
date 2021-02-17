@@ -1,6 +1,7 @@
 
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
@@ -1063,13 +1064,17 @@ End Class",
         #region Helpers
 
         private static DiagnosticResult GetCA1707CSharpResultAt(int line, int column, SymbolKind symbolKind, params string[] identifierNames)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(GetApproriateRule(symbolKind))
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(identifierNames);
 
         private static DiagnosticResult GetCA1707BasicResultAt(int line, int column, SymbolKind symbolKind, params string[] identifierNames)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(GetApproriateRule(symbolKind))
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(identifierNames);
 
         private static DiagnosticDescriptor GetApproriateRule(SymbolKind symbolKind)
@@ -1084,7 +1089,7 @@ End Class",
                 SymbolKind.MemberParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.MemberParameterRule,
                 SymbolKind.TypeTypeParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.TypeTypeParameterRule,
                 SymbolKind.MethodTypeParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.MethodTypeParameterRule,
-                _ => throw new System.Exception("Unknown Symbol Kind"),
+                _ => throw new NotSupportedException("Unknown Symbol Kind"),
             };
         }
 

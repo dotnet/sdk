@@ -57,13 +57,12 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <summary>
         /// Serialization with Newtonsoft Json.NET.
         /// </summary>
-        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "Type not referenced by assembly.")]
         public bool NewtonsoftJsonNetSerialization { get; private set; }
 
         /// <summary>
         /// Options for BinarySerialization and recursing into member types.
         /// </summary>
-        public static ObjectGraphOptions BinarySerializationOptions = new ObjectGraphOptions()
+        public static ObjectGraphOptions BinarySerializationOptions = new()
         {
             Recurse = true,
             BinarySerialization = true,
@@ -72,7 +71,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <summary>
         /// Options for DataContract serialization and recursing into member types.
         /// </summary>
-        public static ObjectGraphOptions DataContractOptions = new ObjectGraphOptions()
+        public static ObjectGraphOptions DataContractOptions = new()
         {
             Recurse = true,
             DataContractSerialization = true,
@@ -81,7 +80,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <summary>
         /// Options for XML serialization (XmlSerializer) and recursing into member types.
         /// </summary>
-        public static ObjectGraphOptions XmlSerializerOptions = new ObjectGraphOptions()
+        public static ObjectGraphOptions XmlSerializerOptions = new()
         {
             Recurse = true,
             XmlSerialization = true,
@@ -90,7 +89,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <summary>
         /// Options for JavaScriptSerializer serialization and recursing into member types.
         /// </summary>
-        public static ObjectGraphOptions JavaScriptSerializerOptions = new ObjectGraphOptions()
+        public static ObjectGraphOptions JavaScriptSerializerOptions = new()
         {
             Recurse = true,
             JavaScriptSerializer = true,
@@ -99,7 +98,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <summary>
         /// Options for Newtonsoft Json.NET and recursing into member types.
         /// </summary>
-        public static ObjectGraphOptions NewtonsoftJsonNetOptions = new ObjectGraphOptions()
+        public static ObjectGraphOptions NewtonsoftJsonNetOptions = new()
         {
             Recurse = true,
             NewtonsoftJsonNetSerialization = true,

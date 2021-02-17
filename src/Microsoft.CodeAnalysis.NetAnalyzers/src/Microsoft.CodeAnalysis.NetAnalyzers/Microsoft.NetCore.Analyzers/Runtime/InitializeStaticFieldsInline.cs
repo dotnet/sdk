@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -60,18 +61,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
+                var isStaticCtorMandatory = new AtomicBoolean();
                 var initializesStaticField = false;
-                var isStaticCtorMandatory = false;
                 context.RegisterOperationAction(context =>
                 {
                     var assignment = (IAssignmentOperation)context.Operation;
 
-                    if (assignment.Target is IFieldReferenceOperation fieldReference &&
+                    if (!isStaticCtorMandatory.Value &&
+                        assignment.Target is IFieldReferenceOperation fieldReference &&
                         fieldReference.Member.IsStatic)
                     {
                         if (assignment.GetAncestor<IAnonymousFunctionOperation>(OperationKind.AnonymousFunction) != null)
                         {
-                            isStaticCtorMandatory = true;
+                            isStaticCtorMandatory.Value = true;
                         }
                         else
                         {
@@ -80,9 +82,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                 }, OperationKind.SimpleAssignment);
 
+                context.RegisterOperationAction(context =>
+                {
+                    isStaticCtorMandatory.Value = true;
+                }, OperationKind.EventAssignment);
+
                 context.RegisterOperationBlockEndAction(context =>
                 {
-                    if (!isStaticCtorMandatory && initializesStaticField)
+                    if (initializesStaticField && !isStaticCtorMandatory.Value)
                     {
                         context.ReportDiagnostic(
                             method.CreateDiagnostic(
@@ -91,6 +98,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                 });
             });
+        }
+
+        private class AtomicBoolean
+        {
+            private const int TRUE_VALUE = 1;
+            private const int FALSE_VALUE = 0;
+            private int zeroOrOne = FALSE_VALUE;
+
+            public AtomicBoolean(bool initialValue = false)
+            {
+                zeroOrOne = initialValue ? TRUE_VALUE : FALSE_VALUE;
+            }
+
+            public bool Value
+            {
+                get => Interlocked.CompareExchange(ref zeroOrOne, TRUE_VALUE, TRUE_VALUE) == TRUE_VALUE;
+                set
+                {
+                    if (value)
+                    {
+                        Interlocked.CompareExchange(ref zeroOrOne, TRUE_VALUE, FALSE_VALUE);
+                    }
+                    else
+                    {
+                        Interlocked.CompareExchange(ref zeroOrOne, FALSE_VALUE, TRUE_VALUE);
+                    }
+                }
+            }
         }
     }
 }

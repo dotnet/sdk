@@ -413,7 +413,7 @@
     <value>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.</value>
   </data>
   <data name="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage" xml:space="preserve">
-    <value>Implement the equality operators and make their behavior identical to that of 'Equals' method</value>
+    <value>Implement the equality operators and make their behavior identical to that of the Equals method</value>
   </data>
   <data name="PassSystemUriObjectsInsteadOfStringsTitle" xml:space="preserve">
     <value>Pass system uri objects instead of strings</value>
@@ -748,15 +748,6 @@
   <data name="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberWithAlternate" xml:space="preserve">
     <value>Either replace the suffix '{0}' in member name '{1}' with the suggested alternate '{2}' or remove the suffix completely</value>
   </data>
-  <data name="FlagsEnumsShouldHavePluralNamesTitle" xml:space="preserve">
-    <value>Flags enums should have plural names</value>
-  </data>
-  <data name="FlagsEnumsShouldHavePluralNamesDescription" xml:space="preserve">
-    <value>A public enumeration has the System.FlagsAttribute attribute, and its name does not end in ""s"". Types that are marked by using FlagsAttribute have names that are plural because the attribute indicates that more than one value can be specified.</value>
-  </data>
-  <data name="FlagsEnumsShouldHavePluralNamesMessage" xml:space="preserve">
-    <value>Flags enums should have plural names</value>
-  </data>
   <data name="IdentifiersShouldNotMatchKeywordsTitle" xml:space="preserve">
     <value>Identifiers should not match keywords</value>
   </data>
@@ -774,15 +765,6 @@
   </data>
   <data name="IdentifiersShouldNotMatchKeywordsMessageNamespace" xml:space="preserve">
     <value>Rename namespace {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a namespace makes it harder for consumers in other languages to use the namespace.</value>
-  </data>
-  <data name="OnlyFlagsEnumsShouldHavePluralNamesTitle" xml:space="preserve">
-    <value>Only FlagsAttribute enums should have plural names</value>
-  </data>
-  <data name="OnlyFlagsEnumsShouldHavePluralNamesDescription" xml:space="preserve">
-    <value>Naming conventions dictate that a plural name for an enumeration indicates that more than one value of the enumeration can be specified at the same time.</value>
-  </data>
-  <data name="OnlyFlagsEnumsShouldHavePluralNamesMessage" xml:space="preserve">
-    <value>Only FlagsAttribute enums should have plural names</value>
   </data>
   <data name="PropertyNamesShouldNotMatchGetMethodsTitle" xml:space="preserve">
     <value>Property names should not match get methods</value>
@@ -1450,5 +1432,8 @@
   </data>
   <data name="DoNotIgnoreMethodResultsMessageUserDefinedMethod" xml:space="preserve">
     <value>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</value>
+  </data>
+  <data name="MarkAttributesWithAttributeUsageCodeFix" xml:space="preserve">
+    <value>Apply 'AttributeUsageAttribute'</value>
   </data>
 </root>

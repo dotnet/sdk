@@ -16,13 +16,17 @@ namespace Microsoft.NetCore.Analyzers.Data.UnitTests
     public class ReviewSQLQueriesForSecurityVulnerabilitiesTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string invokedSymbol, string containingMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(invokedSymbol, containingMethod);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string invokedSymbol, string containingMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(invokedSymbol, containingMethod);
 
         protected const string SetupCodeCSharp = @"
@@ -1643,8 +1647,9 @@ End Class");
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality." + ReviewSqlQueriesForSecurityVulnerabilities.RuleId + ".excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA2100.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA2100.excluded_symbol_names = M*")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test

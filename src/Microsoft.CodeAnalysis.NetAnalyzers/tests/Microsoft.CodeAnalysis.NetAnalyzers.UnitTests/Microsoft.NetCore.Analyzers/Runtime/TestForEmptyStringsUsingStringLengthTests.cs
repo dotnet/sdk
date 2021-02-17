@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForEmptyStringsUsingStringLengthAnalyzer,
@@ -14,8 +15,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region Helper methods
 
         private DiagnosticResult CSharpResult(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         #endregion
 
@@ -106,5 +109,24 @@ class C
         }
 
         #endregion
+
+        [Fact, WorkItem(1508, "https://github.com/dotnet/roslyn-analyzers/issues/1508")]
+        public async Task CA1820_ExpressionTree_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Linq;
+
+class C
+{
+    void M(IQueryable<string> strings)
+    {
+        var q1 = from s in strings
+                where s == """"
+                select s;
+
+        var q2 = strings.Where(s => s.Equals(""""));
+    }
+}");
+        }
     }
 }

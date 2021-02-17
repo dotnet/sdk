@@ -43,13 +43,13 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                                         DefinitelyUseCreateEncryptorWithNonDefaultIVRule,
                                                                                         MaybeUseCreateEncryptorWithNonDefaultIVRule);
 
-        private static readonly ConstructorMapper ConstructorMapper = new ConstructorMapper(
+        private static readonly ConstructorMapper ConstructorMapper = new(
             (IMethodSymbol constructorMethod, IReadOnlyList<PointsToAbstractValue> argumentPointsToAbstractValues) =>
             {
                 return PropertySetAbstractValue.GetInstance(PropertySetAbstractValueKind.Unflagged);
             });
 
-        private static readonly PropertyMapperCollection PropertyMappers = new PropertyMapperCollection(
+        private static readonly PropertyMapperCollection PropertyMappers = new(
             new PropertyMapper(
                 "IV",
                 (PointsToAbstractValue pointsToAbstractValue) =>
@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     return PropertySetAbstractValueKind.Flagged;
                 }));
 
-        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new HazardousUsageEvaluatorCollection(
+        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new(
             new HazardousUsageEvaluator(
                 "CreateEncryptor",
                 (IMethodSymbol methodSymbol, PropertySetAbstractValue abstractValue) =>
@@ -101,10 +101,10 @@ namespace Microsoft.NetCore.Analyzers.Security
                             var owningSymbol = operationBlockStartAnalysisContext.OwningSymbol;
 
                             // TODO: Handle case when exactly one of the below rules is configured to skip analysis.
-                            if (owningSymbol.IsConfiguredToSkipAnalysis(operationBlockStartAnalysisContext.Options,
-                                    DefinitelyUseCreateEncryptorWithNonDefaultIVRule, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken) &&
-                                owningSymbol.IsConfiguredToSkipAnalysis(operationBlockStartAnalysisContext.Options,
-                                    MaybeUseCreateEncryptorWithNonDefaultIVRule, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
+                            if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(DefinitelyUseCreateEncryptorWithNonDefaultIVRule,
+                                    owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken) &&
+                                operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(MaybeUseCreateEncryptorWithNonDefaultIVRule,
+                                    owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
                             {
                                 return;
                             }

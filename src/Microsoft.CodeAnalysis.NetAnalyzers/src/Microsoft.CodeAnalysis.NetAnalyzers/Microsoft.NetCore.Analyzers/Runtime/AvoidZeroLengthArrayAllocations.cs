@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <summary>The name of the Empty method on System.Array.</summary>
         internal const string ArrayEmptyMethodName = "Empty";
 
-        private static readonly SymbolDisplayFormat ReportFormat = new SymbolDisplayFormat(
+        private static readonly SymbolDisplayFormat ReportFormat = new(
             memberOptions: SymbolDisplayMemberOptions.IncludeContainingType | SymbolDisplayMemberOptions.IncludeParameters,
             genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
             miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
@@ -77,6 +77,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // We can't replace array allocations in attributes, as they're persisted to metadata
             // TODO: Once we have operation walkers, we can replace this syntactic check with an operation-based check.
             if (arrayCreationExpression.Syntax.Ancestors().Any(isAttributeSytnax))
+            {
+                return;
+            }
+
+            var linqExpressionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+            if (arrayCreationExpression.IsWithinExpressionTree(linqExpressionType))
             {
                 return;
             }

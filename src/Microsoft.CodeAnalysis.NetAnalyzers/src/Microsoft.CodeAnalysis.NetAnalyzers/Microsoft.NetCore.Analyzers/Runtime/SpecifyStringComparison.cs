@@ -34,8 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              RuleLevel.Disabled,
                                                                              description: s_localizableCA1307Description,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
 
         private static readonly LocalizableString s_localizableCA1310Title = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1310Title), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableCA1310Message = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1310Message), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
@@ -70,6 +69,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 var overloadMap = GetWellKnownStringOverloads(csaContext.Compilation, stringType, stringComparisonType);
 
+                var linqExpressionType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+
                 csaContext.RegisterOperationAction(oaContext =>
                 {
                     var invocationExpression = (IInvocationOperation)oaContext.Operation;
@@ -78,6 +79,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (targetMethod.IsGenericMethod ||
                         targetMethod.ContainingType == null ||
                         targetMethod.ContainingType.IsErrorType())
+                    {
+                        return;
+                    }
+
+                    // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+                    // that the underlying call doesn't have the comparison option so we want to bail-out.
+                    if (invocationExpression.IsWithinExpressionTree(linqExpressionType))
                     {
                         return;
                     }

@@ -62,7 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Security
         /// <summary>
         /// For PropertySetAnalysis dataflow analysis; new instances always start out as flagged.
         /// </summary>
-        private static readonly ConstructorMapper ConstructorMapper = new ConstructorMapper(ImmutableArray.Create(PropertySetAbstractValueKind.Flagged));
+        private static readonly ConstructorMapper ConstructorMapper = new(ImmutableArray.Create(PropertySetAbstractValueKind.Flagged));
 
         public sealed override void Initialize(AnalysisContext context)
         {
@@ -110,10 +110,10 @@ namespace Microsoft.NetCore.Analyzers.Security
                             var owningSymbol = operationBlockStartAnalysisContext.OwningSymbol;
 
                             // TODO: Handle case when exactly one of the below rules is configured to skip analysis.
-                            if (owningSymbol.IsConfiguredToSkipAnalysis(operationBlockStartAnalysisContext.Options,
-                                    BinderDefinitelyNotSetDescriptor!, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken) &&
-                                owningSymbol.IsConfiguredToSkipAnalysis(operationBlockStartAnalysisContext.Options,
-                                    BinderMaybeNotSetDescriptor!, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
+                            if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(BinderDefinitelyNotSetDescriptor!,
+                                    owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken) &&
+                                operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(BinderMaybeNotSetDescriptor!,
+                                    owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
                             {
                                 return;
                             }
