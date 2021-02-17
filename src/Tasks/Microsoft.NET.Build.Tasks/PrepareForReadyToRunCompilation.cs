@@ -133,6 +133,11 @@ namespace Microsoft.NET.Build.Tasks
                             Guid mvid = mdReader.GetGuid(mdReader.GetModuleDefinition().Mvid);
 
                             outputPDBImage = Path.ChangeExtension(outputR2RImage, "ni.{" + mvid + "}.map");
+                            if (ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5)
+                            {
+                                // .NET 6 Preview1 Crossgen2 sets ".perf.map" as the perfmap extension
+                                outputPDBImage = Path.ChangeExtension(outputR2RImage, ".perf.map");
+                            }
                             outputPDBImageRelativePath = Path.ChangeExtension(outputR2RImageRelativePath, "ni.{" + mvid + "}.map");
                             crossgen1CreatePDBCommand = $"/CreatePerfMap \"{Path.GetDirectoryName(outputPDBImage)}\"";
                         }
