@@ -601,7 +601,7 @@ class TestClass
 {
     public void TestMethod(byte[] someOtherBytesForIV)
     {
-        byte[,] rgbKey = new byte[,] { { 1, 2, 3  }, { 4, 5, 6 } };
+        byte[,] rgbKey = new byte[,] { { 1, 2, 3 }, { 4, 5, 6 } };
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
         rijn.CreateEncryptor(rgbKey.Cast<byte>().ToArray(), someOtherBytesForIV);
     }
