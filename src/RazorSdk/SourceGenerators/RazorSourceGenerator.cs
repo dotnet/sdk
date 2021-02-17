@@ -261,7 +261,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             var isConcurrentBuild = generatorExecutionContext.Compilation.Options.ConcurrentBuild;
             if (Debugger.IsAttached || !isConcurrentBuild)
             {
-                return new ParallelOptions { MaxDegreeOfParallelism = 1 };
+                options.MaxDegreeOfParallelism = 1;
             }
             return options;
         }
