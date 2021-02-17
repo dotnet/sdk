@@ -1789,7 +1789,7 @@
       </trans-unit>
       <trans-unit id="AvoidExcessiveClassCouplingMessage">
         <source>'{0}' is coupled with '{1}' different types from '{2}' different namespaces. Rewrite or refactor the code to decrease its class coupling below '{3}'.</source>
-        <target state="translated">‘{0}’ 與 ‘{2}’ 個不同命名空間中 '{1}’ 個不同的類型結合。請重寫或重構程式碼，以將其類別結合程度降低至 ‘{3}’ 以下。</target>
+        <target state="translated">'{0}' 已與來自 '{2}' 個不同命名空間中的 '{1}' 個不同類型結合。請重寫或重構程式碼，以將其類別結合程度降低至 '{3}' 以下。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveClassCouplingTitle">
@@ -1834,7 +1834,7 @@
       </trans-unit>
       <trans-unit id="AvoidUnmantainableCodeMessage">
         <source>'{0}' has a maintainability index of '{1}'. Rewrite or refactor the code to increase its maintainability index (MI) above '{2}'.</source>
-        <target state="translated">‘{0}’ 的可維護性指數為 '{1}’。請重寫或重構程式碼，以將其可維護性指數 (MI) 提高到 ‘{2}’ 以上。</target>
+        <target state="translated">'{0}' 的可維護性指數為 '{1}'。請重寫或重構程式碼，以將其可維護性指數 (MI) 提高到 '{2}' 以上。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnmantainableCodeTitle">

@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
         <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'</source>
-        <target state="translated">“{0}” 是 NonInheritable 类 "{1}” 中新的受保护成员</target>
+        <target state="translated">“{0}”是 NonInheritable 类“{1}”中新的受保护成员</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">

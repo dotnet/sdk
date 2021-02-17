@@ -104,7 +104,7 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception</source>
-        <target state="translated">{0}' を変更してより具体的な許可された例外の種類をキャッチするか、例外を再スローしてください</target>
+        <target state="translated">'{0}' を変更してより具体的な許可された例外の種類をキャッチするか、例外を再スローしてください</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
