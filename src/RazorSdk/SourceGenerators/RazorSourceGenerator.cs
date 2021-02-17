@@ -263,8 +263,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             {
                 return new ParallelOptions { MaxDegreeOfParallelism = 1 };
             }
-            var options =  DefaultParallelOptions;
-            options.CancellationToken = generatorExecutionContext.CancellationToken;
+            var options = new ParallelOptions { CancellationToken = generatorExecutionContext.CancellationToken };
             return options;
         }
 
