@@ -22,8 +22,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
     [Generator]
     public partial class RazorSourceGenerator : ISourceGenerator
     {
-        private static readonly ParallelOptions DefaultParallelOptions = new();
-
         public void Initialize(GeneratorInitializationContext context)
         {
         }
