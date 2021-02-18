@@ -47,7 +47,7 @@
     </Dependency>
     <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>d1e2874de3956c618626ee46554a093f28a330e2</Sha>
+      <Sha>c636bbdc8a2d393d07c0e9407a4f8923ba1a21cb</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.HostModel" Version="5.0.4-servicing.21116.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -169,9 +169,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>324cf99ce3fcc63ae5c596efe41ed9902253d39c</Sha>
     </Dependency>
-    <Dependency Name="dotnet-watch" Version="5.0.4-servicing.21109.15">
+    <Dependency Name="dotnet-watch" Version="5.0.3-servicing.21073.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>258eeedbed1bbeac0e9c1db61d1ce8521db6649e</Sha>
+      <Sha>d827c653b787c07de908240b7746ce34d3e6271e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzers" Version="5.0.4-servicing.21117.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
