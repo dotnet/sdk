@@ -91,7 +91,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                         var itemGroup = new XElement(ns + "PropertyGroup");
                         itemGroup.Add(new XElement("RuntimeIdentifier", "win-x64"));
                         project.Root.Add(itemGroup);
-                    } 
+                    }
                 });
 
             var publish = new PublishCommand(Log, Path.Combine(projectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
@@ -117,7 +117,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(publishOutputPathWithRID, "AppWithPackageAndP2PReference.StaticWebAssets.xml")).Should().NotExist();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30245")]
         public void Publish_WithBuildReferencesDisabled_CopiesStaticWebAssetsToDestinationFolder()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -168,7 +168,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Fact]
-        public void Build_DoesNotEmbedManifestWhen_NoStaticResourcesAvailable()
+        public void Build_DoesNotGenerateManifestWhen_NoStaticResourcesAvailable()
         {
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
@@ -179,8 +179,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
-            // GenerateStaticWebAssetsManifest should generate the manifest and the cache.
-            new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "SimpleMvc.StaticWebAssets.xml")).Should().Exist();
+            // GenerateStaticWebAssetsManifest should generate the manifest.
             new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "SimpleMvc.StaticWebAssets.Manifest.cache")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.StaticWebAssets.xml")).Should().NotExist();
 
@@ -233,7 +232,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Arrange
             var build = new BuildCommand(projectDirectory, "AppWithPackageAndP2PReference");
             build.Execute().Should().Pass();
-            
+
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
