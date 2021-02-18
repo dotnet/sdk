@@ -1438,5 +1438,6 @@
   </data>
   <data name="UriParametersShouldNotBeStringsCodeFixTitle" xml:space="preserve">
     <value>Add 'System.Uri' overloads</value>
+    <comment>{Locked="System.Uri"}</comment>
   </data>
 </root>
