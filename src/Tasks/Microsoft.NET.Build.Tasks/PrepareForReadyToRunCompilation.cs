@@ -49,6 +49,7 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] ReadyToRunAssembliesToReference => _r2rReferences.ToArray();
 
         private bool _crossgen2IsVersion5;
+        private bool _crossgen2IsVersion6Preview1;
 
         private List<ITaskItem> _compileList = new List<ITaskItem>();
         private List<ITaskItem> _symbolsCompileList = new List<ITaskItem>();
@@ -71,6 +72,9 @@ namespace Microsoft.NET.Build.Tasks
                     Log.LogError(Strings.Crossgen5CannotEmitSymbolsInCompositeMode);
                     return;
                 }
+                
+                string isVersion6Preview1 = Crossgen2Tool.GetMetadata(MetadataKeys.IsVersion6Preview1);
+                _crossgen2IsVersion6Preview1 = !string.IsNullOrEmpty(isVersion6Preview1) && bool.Parse(isVersion6Preview1);
             }
 
             // Process input lists of files
@@ -133,7 +137,7 @@ namespace Microsoft.NET.Build.Tasks
                             Guid mvid = mdReader.GetGuid(mdReader.GetModuleDefinition().Mvid);
 
                             outputPDBImage = Path.ChangeExtension(outputR2RImage, "ni.{" + mvid + "}.map");
-                            if (ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5)
+                            if (ReadyToRunUseCrossgen2 && _crossgen2IsVersion6Preview1)
                             {
                                 // .NET 6 Preview1 Crossgen2 sets ".perf.map" as the perfmap extension
                                 outputPDBImage = Path.ChangeExtension(outputR2RImage, ".perf.map");
@@ -174,13 +178,13 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     {
-                        compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.map");
-                        if (ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5)
+                        compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.{composite}.map");
+                        if (ReadyToRunUseCrossgen2 && _crossgen2IsVersion6Preview1)
                         {
                             // .NET 6 Preview1 Crossgen2 sets ".perf.map" as the perfmap extension
                             compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".perf.map");
                         }
-                        compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.map");
+                        compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.{composite}.map");
                     }
 
                     TaskItem r2rCompilationEntry = new TaskItem(file);

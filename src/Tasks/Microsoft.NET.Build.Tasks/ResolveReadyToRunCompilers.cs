@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -141,6 +141,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             bool version5 = crossgen2PackVersion.Major < 6;
+            bool version6Preview1 = crossgen2PackVersion.Major == 6 && crossgen2PackVersion.Patch <= 21117;
             bool isSupportedTarget = ExtractTargetPlatformAndArchitecture(_targetRuntimeIdentifier, out _targetPlatform, out _targetArchitecture);
             string targetOS = _targetPlatform switch
             {
@@ -169,6 +170,7 @@ namespace Microsoft.NET.Build.Tasks
             // Create tool task item
             Crossgen2Tool = new TaskItem(_crossgen2Tool.ToolPath);
             Crossgen2Tool.SetMetadata(MetadataKeys.IsVersion5, version5.ToString());
+            Crossgen2Tool.SetMetadata(MetadataKeys.IsVersion6Preview1, version6Preview1.ToString());
             if (version5)
             {
                 Crossgen2Tool.SetMetadata(MetadataKeys.JitPath, _crossgen2Tool.ClrJitPath);
