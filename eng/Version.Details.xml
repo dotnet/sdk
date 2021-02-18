@@ -123,11 +123,11 @@
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="5.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>4c82a7c214bd74ec4d1679ea187f384528d202d5</Sha>
+      <Sha>e708867037ec6edbe7965b8f0f1193999785037e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.4-servicing.21117.4">
+    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.4-servicing.21117.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>4c82a7c214bd74ec4d1679ea187f384528d202d5</Sha>
+      <Sha>e708867037ec6edbe7965b8f0f1193999785037e</Sha>
     </Dependency>
     <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.5.0" Version="5.0.2-servicing.20613.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
@@ -137,13 +137,13 @@
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>ec2af60c1eb8b2665745750f6445b3ff133178fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.4-servicing.21117.4" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.4-servicing.21117.5" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
-      <Sha>cb5ea18b953be91dc32571541742b2533f10d592</Sha>
+      <Sha>5d6364723197e917e11c0d442545287c27754aa5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="5.0.4-servicing.21117.4" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="5.0.4-servicing.21117.5" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
-      <Sha>cb5ea18b953be91dc32571541742b2533f10d592</Sha>
+      <Sha>5d6364723197e917e11c0d442545287c27754aa5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="5.0.4-servicing.21117.2" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-winforms</Uri>
