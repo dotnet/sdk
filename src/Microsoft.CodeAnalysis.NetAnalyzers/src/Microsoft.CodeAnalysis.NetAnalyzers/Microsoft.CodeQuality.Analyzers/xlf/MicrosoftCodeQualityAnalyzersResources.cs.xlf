@@ -355,7 +355,7 @@
       <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
         <source>Add 'System.Uri' overloads</source>
         <target state="new">Add 'System.Uri' overloads</target>
-        <note />
+        <note>{Locked="System.Uri"}</note>
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
