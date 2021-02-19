@@ -33,9 +33,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Tasks
             }
 
             // Check generic task type
-            return typeInfo.Type is INamedTypeSymbol namedTypeSymbol &&
-                namedTypeSymbol.Arity == 1 &&
-                namedTypeSymbol.ConstructedFrom == task1Type;
+            return typeInfo.Type is INamedTypeSymbol { Arity: 1 } namedTypeSymbol &&
+                SymbolEqualityComparer.Default.Equals(namedTypeSymbol.ConstructedFrom, task1Type);
         }
     }
 }

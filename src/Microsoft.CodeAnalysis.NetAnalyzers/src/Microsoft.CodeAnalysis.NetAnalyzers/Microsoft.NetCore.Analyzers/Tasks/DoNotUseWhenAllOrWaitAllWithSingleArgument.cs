@@ -79,7 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 
             return nameMatches &&
                 targetMethod.IsStatic &&
-                targetMethod.ContainingType == taskType &&
+                SymbolEqualityComparer.Default.Equals(targetMethod.ContainingType, taskType) &&
                 parameters.Length == 1 &&
                 parameters[0].IsParams;
         }
