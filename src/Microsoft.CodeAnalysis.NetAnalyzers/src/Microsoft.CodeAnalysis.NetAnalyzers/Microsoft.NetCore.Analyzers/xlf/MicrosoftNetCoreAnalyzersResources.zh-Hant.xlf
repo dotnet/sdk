@@ -2237,9 +2237,14 @@
         <target state="translated">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請指定 SharedAccessProtocol.HttpsOnly。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatCodeFixTitle">
+        <source>Replace concatenation with 'string.Concat' and replace 'Substring' with 'AsSpan'</source>
+        <target state="new">Replace concatenation with 'string.Concat' and replace 'Substring' with 'AsSpan'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatDescription">
-        <source>'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator. </source>
-        <target state="new">'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator. </target>
+        <source>'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator.</source>
+        <target state="new">'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatMessage">

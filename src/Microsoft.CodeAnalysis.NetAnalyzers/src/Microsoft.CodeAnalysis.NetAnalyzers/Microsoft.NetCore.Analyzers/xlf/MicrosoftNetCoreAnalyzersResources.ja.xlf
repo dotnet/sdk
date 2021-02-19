@@ -2237,9 +2237,14 @@
         <target state="translated">可能な場合は、Shared Access Signature (SAS) の代わりに、Azure のロールベースのアクセス制御を使用することを検討してください。依然として SAS を使用する必要がある場合は、SharedAccessProtocol.HttpsOnly を指定します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatCodeFixTitle">
+        <source>Replace concatenation with 'string.Concat' and replace 'Substring' with 'AsSpan'</source>
+        <target state="new">Replace concatenation with 'string.Concat' and replace 'Substring' with 'AsSpan'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatDescription">
-        <source>'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator. </source>
-        <target state="new">'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator. </target>
+        <source>'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator.</source>
+        <target state="new">'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatMessage">

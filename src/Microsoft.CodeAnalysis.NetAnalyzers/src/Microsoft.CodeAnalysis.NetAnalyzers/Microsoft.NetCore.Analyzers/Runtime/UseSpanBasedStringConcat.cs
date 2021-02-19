@@ -19,9 +19,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1841";
 
-        private static readonly LocalizableString s_localizableTitle = CreateResource(nameof(Resx.UseSpanBasedStringConcatTitle));
-        private static readonly LocalizableString s_localizableMessage = CreateResource(nameof(Resx.UseSpanBasedStringConcatMessage));
-        private static readonly LocalizableString s_localizableDescription = CreateResource(nameof(Resx.UseSpanBasedStringConcatDescription));
+        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.UseSpanBasedStringConcatTitle), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(Resx.UseSpanBasedStringConcatMessage), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(Resx.UseSpanBasedStringConcatDescription), Resx.ResourceManager, typeof(Resx));
 
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
@@ -209,16 +209,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 IMethodSymbol asSpan1, IMethodSymbol asSpan2)
             {
                 StringType = stringType;
-                RoscharType = roscharType;
-                Substring1 = substring1;
-                Substring2 = substring2;
-                AsSpan1 = asSpan1;
-                AsSpan2 = asSpan2;
+                ReadOnlySpanOfCharType = roscharType;
+                SubstringStart = substring1;
+                SubstringStartLength = substring2;
+                AsSpanStart = asSpan1;
+                AsSpanStartLength = asSpan2;
 
                 RoslynDebug.Assert(
-                    StringType is not null && RoscharType is not null &&
-                    Substring1 is not null && Substring2 is not null &&
-                    AsSpan1 is not null && AsSpan2 is not null);
+                    StringType is not null && ReadOnlySpanOfCharType is not null &&
+                    SubstringStart is not null && SubstringStartLength is not null &&
+                    AsSpanStart is not null && AsSpanStartLength is not null);
             }
 
             public static bool TryGetSymbols(Compilation compilation, out RequiredSymbols symbols)
@@ -232,10 +232,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return false;
                 }
 
-                var roscharType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1)?.Construct(charType);
+                var readOnlySpanOfCharType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1)?.Construct(charType);
                 var memoryExtensionsType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemoryExtensions);
 
-                if (roscharType is null || memoryExtensionsType is null)
+                if (readOnlySpanOfCharType is null || memoryExtensionsType is null)
                 {
                     symbols = default;
                     return false;
@@ -245,57 +245,57 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var stringParamInfo = ParameterInfo.GetParameterInfo(stringType);
 
                 var substringMembers = stringType.GetMembers(SubstringName).OfType<IMethodSymbol>();
-                var substring1 = substringMembers.GetFirstOrDefaultMemberWithParameterInfos(intParamInfo);
-                var substring2 = substringMembers.GetFirstOrDefaultMemberWithParameterInfos(intParamInfo, intParamInfo);
+                var substringStart = substringMembers.GetFirstOrDefaultMemberWithParameterInfos(intParamInfo);
+                var substringStartLength = substringMembers.GetFirstOrDefaultMemberWithParameterInfos(intParamInfo, intParamInfo);
 
                 var asSpanMembers = memoryExtensionsType.GetMembers(AsSpanName).OfType<IMethodSymbol>();
-                var asSpan1 = asSpanMembers.GetFirstOrDefaultMemberWithParameterInfos(stringParamInfo, intParamInfo)?.ReduceExtensionMethod(stringType);
-                var asSpan2 = asSpanMembers.GetFirstOrDefaultMemberWithParameterInfos(stringParamInfo, intParamInfo, intParamInfo)?.ReduceExtensionMethod(stringType);
+                var asSpanStart = asSpanMembers.GetFirstOrDefaultMemberWithParameterInfos(stringParamInfo, intParamInfo)?.ReduceExtensionMethod(stringType);
+                var asSpanStartLength = asSpanMembers.GetFirstOrDefaultMemberWithParameterInfos(stringParamInfo, intParamInfo, intParamInfo)?.ReduceExtensionMethod(stringType);
 
-                if (substring1 is null || substring2 is null || asSpan1 is null || asSpan2 is null)
+                if (substringStart is null || substringStartLength is null || asSpanStart is null || asSpanStartLength is null)
                 {
                     symbols = default;
                     return false;
                 }
 
                 symbols = new RequiredSymbols(
-                    stringType, roscharType,
-                    substring1, substring2,
-                    asSpan1, asSpan2);
+                    stringType, readOnlySpanOfCharType,
+                    substringStart, substringStartLength,
+                    asSpanStart, asSpanStartLength);
                 return true;
             }
 
             public INamedTypeSymbol StringType { get; }
-            public INamedTypeSymbol RoscharType { get; }
-            public IMethodSymbol Substring1 { get; }
-            public IMethodSymbol Substring2 { get; }
-            public IMethodSymbol AsSpan1 { get; }
-            public IMethodSymbol AsSpan2 { get; }
+            public INamedTypeSymbol ReadOnlySpanOfCharType { get; }
+            public IMethodSymbol SubstringStart { get; }
+            public IMethodSymbol SubstringStartLength { get; }
+            public IMethodSymbol AsSpanStart { get; }
+            public IMethodSymbol AsSpanStartLength { get; }
 
             public IMethodSymbol? GetAsSpanEquivalent(IMethodSymbol? substringMethod)
             {
-                if (SymbolEqualityComparer.Default.Equals(substringMethod, Substring1))
-                    return AsSpan1;
-                if (SymbolEqualityComparer.Default.Equals(substringMethod, Substring2))
-                    return AsSpan2;
+                if (SymbolEqualityComparer.Default.Equals(substringMethod, SubstringStart))
+                    return AsSpanStart;
+                if (SymbolEqualityComparer.Default.Equals(substringMethod, SubstringStartLength))
+                    return AsSpanStartLength;
                 return null;
             }
 
             public bool IsAnySubstringMethod(IMethodSymbol? method)
             {
-                return SymbolEqualityComparer.Default.Equals(method, Substring1) ||
-                    SymbolEqualityComparer.Default.Equals(method, Substring2);
+                return SymbolEqualityComparer.Default.Equals(method, SubstringStart) ||
+                    SymbolEqualityComparer.Default.Equals(method, SubstringStartLength);
             }
 
             public bool IsAnySubstringStartIndexParameter(IParameterSymbol? parameter)
             {
-                return SymbolEqualityComparer.Default.Equals(parameter, Substring1.Parameters.First()) ||
-                    SymbolEqualityComparer.Default.Equals(parameter, Substring2.Parameters.First());
+                return SymbolEqualityComparer.Default.Equals(parameter, SubstringStart.Parameters.First()) ||
+                    SymbolEqualityComparer.Default.Equals(parameter, SubstringStartLength.Parameters.First());
             }
 
             public bool TryGetRoscharConcatMethodWithArity(int arity, [NotNullWhen(true)] out IMethodSymbol? concatMethod)
             {
-                var roscharParamInfo = ParameterInfo.GetParameterInfo(RoscharType);
+                var roscharParamInfo = ParameterInfo.GetParameterInfo(ReadOnlySpanOfCharType);
                 var argumentList = new ParameterInfo[arity];
                 for (int index = 0; index < arity; index++)
                     argumentList[index] = roscharParamInfo;
@@ -305,11 +305,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     .GetFirstOrDefaultMemberWithParameterInfos(argumentList);
                 return concatMethod is not null;
             }
-        }
-
-        private static LocalizableString CreateResource(string resourceName)
-        {
-            return new LocalizableResourceString(resourceName, Resx.ResourceManager, typeof(Resx));
         }
     }
 }

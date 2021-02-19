@@ -62,9 +62,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
 
             var codeAction = CodeAction.Create(
-                Resx.UseSpanBasedStringConcatTitle,
+                Resx.UseSpanBasedStringConcatCodeFixTitle,
                 FixConcatOperationChain,
-                Resx.UseSpanBasedStringConcatTitle);
+                Resx.UseSpanBasedStringConcatCodeFixTitle);
             context.RegisterCodeFix(codeAction, diagnostic);
 
             bool IsAnyNonConditionalSubstringInvocation(IOperation operation)
