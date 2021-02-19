@@ -948,8 +948,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskFix">
-        <source>Replace `WaitAll` with single `Wait`</source>
-        <target state="new">Replace `WaitAll` with single `Wait`</target>
+        <source>Replace 'WaitAll' with single 'Wait'</source>
+        <target state="new">Replace 'WaitAll' with single 'Wait'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskTitle">
@@ -998,8 +998,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskFix">
-        <source>Replace 'WhenAll` call with argument</source>
-        <target state="new">Replace 'WhenAll` call with argument</target>
+        <source>Replace 'WhenAll' call with argument</source>
+        <target state="new">Replace 'WhenAll' call with argument</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskTitle">
