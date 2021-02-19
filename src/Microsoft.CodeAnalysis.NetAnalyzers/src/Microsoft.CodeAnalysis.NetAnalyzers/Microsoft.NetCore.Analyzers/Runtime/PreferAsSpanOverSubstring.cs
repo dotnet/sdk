@@ -23,9 +23,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1842";
 
-        private static readonly LocalizableString s_localizableTitle = CreateResource(nameof(Resx.PreferAsSpanOverSubstringTitle));
-        private static readonly LocalizableString s_localizableMessage = CreateResource(nameof(Resx.PreferAsSpanOverSubstringMessage));
-        private static readonly LocalizableString s_localizableDescription = CreateResource(nameof(Resx.PreferAsSpanOverSubstringDescription));
+        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.PreferAsSpanOverSubstringTitle), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(Resx.PreferAsSpanOverSubstringMessage), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(Resx.PreferAsSpanOverSubstringDescription), Resx.ResourceManager, typeof(Resx));
 
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
@@ -60,11 +60,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 context.RegisterOperationAction(context =>
                 {
                     var argument = (IArgumentOperation)context.Operation;
-                    if (!symbols.IsAnySubstringInvocation(WalkDownImplicitConversions(argument.Value)))
-                        return;
-                    if (argument.Parent is not IInvocationOperation invocation)
-                        return;
-                    invocations.Add(invocation);
+                    if (symbols.IsAnySubstringInvocation(argument.Value.WalkDownConversion(c => c.IsImplicit)) && argument.Parent is IInvocationOperation invocation)
+                    {
+                        invocations.Add(invocation);
+                    }
                 }, OperationKind.Argument);
 
                 context.RegisterOperationBlockEndAction(context =>
@@ -85,13 +84,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        internal static IOperation WalkDownImplicitConversions(IOperation operation)
-        {
-            while (operation is IConversionOperation conversion && conversion.IsImplicit)
-                operation = conversion.Operand;
-            return operation;
-        }
-
         /// <summary>
         /// Gets all the overloads that are tied for being the "best" span-based overload for the specified <see cref="IInvocationOperation"/>.
         /// An overload is considered "better" if it allows more Substring invocations to be replaced with AsSpan invocations.
@@ -108,8 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             int substringCalls = 0;
             foreach (var argument in invocation.Arguments)
             {
-                IOperation value = WalkDownImplicitConversions(argument.Value);
-                if (symbols.IsAnySubstringInvocation(value))
+                if (symbols.IsAnySubstringInvocation(argument.Value.WalkDownConversion(c => c.IsImplicit)))
                 {
                     isSubstringLookup[argument.Parameter.Ordinal] = true;
                     ++substringCalls;
@@ -160,7 +151,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 int replacementCount = 0;
                 foreach (var parameter in candidate.Parameters)
                 {
-                    if (isSubstringLookup[parameter.Ordinal] && SymbolEqualityComparer.Default.Equals(parameter.Type, symbols.RoscharType))
+                    if (isSubstringLookup[parameter.Ordinal] && SymbolEqualityComparer.Default.Equals(parameter.Type, symbols.ReadOnlySpanOfCharType))
                     {
                         ++replacementCount;
                         continue;
@@ -189,11 +180,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 allOverloads = model.LookupStaticMembers(location, method.ContainingType, method.Name).OfType<IMethodSymbol>();
             }
+            //  Ensure protected members can only be invoked on instances that are known to be instances of the accessing class.
             else if (instance is not null)
             {
                 var enclosingType = GetEnclosingType(model, location, cancellationToken);
                 allOverloads = model.LookupSymbols(location, instance.Type, method.Name).OfType<IMethodSymbol>();
-                if (DerivesFromOrEqualTo(instance.Type, enclosingType) || instance is IInstanceReferenceOperation)
+                if (instance.Type.DerivesFrom(enclosingType, baseTypesOnly: true) || instance is IInstanceReferenceOperation)
                 {
                     allOverloads = allOverloads.Union(model.LookupBaseMembers(location, method.Name).OfType<IMethodSymbol>());
                 }
@@ -216,11 +208,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private static bool DerivesFromOrEqualTo(ITypeSymbol derived, ITypeSymbol candidateBase)
-        {
-            return derived.DerivesFrom(candidateBase, baseTypesOnly: true) || SymbolEqualityComparer.Default.Equals(derived, candidateBase);
-        }
-
         //  Use struct to avoid allocations.
 #pragma warning disable CA1815 // Override equals and operator equals on value types
         internal readonly struct RequiredSymbols
@@ -233,12 +220,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 IMethodSymbol asSpan1, IMethodSymbol asSpan2)
             {
                 StringType = stringType;
-                RoscharType = roscharType;
+                ReadOnlySpanOfCharType = roscharType;
                 MemoryExtensionsType = memoryExtensionsType;
-                Substring1 = substring1;
-                Substring2 = substring2;
-                AsSpan1 = asSpan1;
-                AsSpan2 = asSpan2;
+                SubstringStart = substring1;
+                SubstringStartLength = substring2;
+                AsSpanStart = asSpan1;
+                AsSpanStartLength = asSpan2;
             }
 
             public static bool TryGetSymbols(Compilation compilation, out RequiredSymbols symbols)
@@ -253,10 +240,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return false;
                 }
 
-                var roscharType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1)?.Construct(charType);
+                var readOnlySpanOfCharType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1)?.Construct(charType);
                 var memoryExtensionsType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemoryExtensions);
 
-                if (roscharType is null || memoryExtensionsType is null)
+                if (readOnlySpanOfCharType is null || memoryExtensionsType is null)
                 {
                     symbols = default;
                     return false;
@@ -266,47 +253,42 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var stringParamInfo = ParameterInfo.GetParameterInfo(stringType);
 
                 var substringMembers = stringType.GetMembers(nameof(string.Substring)).OfType<IMethodSymbol>();
-                var substring1 = substringMembers.GetFirstOrDefaultMemberWithParameterInfos(int32ParamInfo);
-                var substring2 = substringMembers.GetFirstOrDefaultMemberWithParameterInfos(int32ParamInfo, int32ParamInfo);
+                var substringStart = substringMembers.GetFirstOrDefaultMemberWithParameterInfos(int32ParamInfo);
+                var substringStartLength = substringMembers.GetFirstOrDefaultMemberWithParameterInfos(int32ParamInfo, int32ParamInfo);
 
                 var asSpanMembers = memoryExtensionsType.GetMembers(nameof(MemoryExtensions.AsSpan)).OfType<IMethodSymbol>();
-                var asSpan1 = asSpanMembers.GetFirstOrDefaultMemberWithParameterInfos(stringParamInfo, int32ParamInfo);
-                var asSpan2 = asSpanMembers.GetFirstOrDefaultMemberWithParameterInfos(stringParamInfo, int32ParamInfo, int32ParamInfo);
+                var asSpanStart = asSpanMembers.GetFirstOrDefaultMemberWithParameterInfos(stringParamInfo, int32ParamInfo);
+                var asSpanStartLength = asSpanMembers.GetFirstOrDefaultMemberWithParameterInfos(stringParamInfo, int32ParamInfo, int32ParamInfo);
 
-                if (substring1 is null || substring2 is null || asSpan1 is null || asSpan2 is null)
+                if (substringStart is null || substringStartLength is null || asSpanStart is null || asSpanStartLength is null)
                 {
                     symbols = default;
                     return false;
                 }
 
                 symbols = new RequiredSymbols(
-                    stringType, roscharType,
+                    stringType, readOnlySpanOfCharType,
                     memoryExtensionsType,
-                    substring1, substring2,
-                    asSpan1, asSpan2);
+                    substringStart, substringStartLength,
+                    asSpanStart, asSpanStartLength);
                 return true;
             }
 
             public INamedTypeSymbol StringType { get; }
-            public INamedTypeSymbol RoscharType { get; }
+            public INamedTypeSymbol ReadOnlySpanOfCharType { get; }
             public INamedTypeSymbol MemoryExtensionsType { get; }
-            public IMethodSymbol Substring1 { get; }
-            public IMethodSymbol Substring2 { get; }
-            public IMethodSymbol AsSpan1 { get; }
-            public IMethodSymbol AsSpan2 { get; }
+            public IMethodSymbol SubstringStart { get; }
+            public IMethodSymbol SubstringStartLength { get; }
+            public IMethodSymbol AsSpanStart { get; }
+            public IMethodSymbol AsSpanStartLength { get; }
 
             public bool IsAnySubstringInvocation(IOperation operation)
             {
                 if (operation is not IInvocationOperation invocation)
                     return false;
-                return SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, Substring1) ||
-                    SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, Substring2);
+                return SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, SubstringStart) ||
+                    SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, SubstringStartLength);
             }
-        }
-
-        private static LocalizableString CreateResource(string resourceName)
-        {
-            return new LocalizableResourceString(resourceName, Resx.ResourceManager, typeof(Resx));
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -54,11 +55,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 foreach (var argument in reportedInvocation.Arguments)
                 {
-                    IOperation value = PreferAsSpanOverSubstring.WalkDownImplicitConversions(argument.Value);
+                    IOperation value = argument.Value.WalkDownConversion(c => c.IsImplicit);
                     IParameterSymbol newParameter = spanBasedOverload.Parameters[argument.Parameter.Ordinal];
 
                     //  Convert Substring invocations to equivalent AsSpan invocations.
-                    if (symbols.IsAnySubstringInvocation(value) && SymbolEqualityComparer.Default.Equals(newParameter.Type, symbols.RoscharType))
+                    if (symbols.IsAnySubstringInvocation(value) && SymbolEqualityComparer.Default.Equals(newParameter.Type, symbols.ReadOnlySpanOfCharType))
                     {
                         ReplaceNonConditionalInvocationMethodName(editor, value.Syntax, nameof(MemoryExtensions.AsSpan));
                         //  Ensure named Substring arguments get renamed to their equivalent AsSpan counterparts.
