@@ -22,8 +22,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
     [Generator]
     public partial class RazorSourceGenerator : ISourceGenerator
     {
-        private static readonly ParallelOptions DefaultParallelOptions = new();
-
         public void Initialize(GeneratorInitializationContext context)
         {
         }
@@ -63,7 +61,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         {
             var files = razorContext.CshtmlFiles;
 
-            Parallel.For(0, files.Count, GetParallelOptions(), i =>
+            Parallel.For(0, files.Count, GetParallelOptions(context), i =>
             {
                 var file = files[i];
 
@@ -88,7 +86,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             var arraypool = ArrayPool<(string, SourceText)>.Shared;
             var outputs = arraypool.Rent(files.Count);
 
-            Parallel.For(0, files.Count, GetParallelOptions(), i =>
+            Parallel.For(0, files.Count, GetParallelOptions(context), i =>
             {
                 var file = files[i];
                 var projectItem = projectEngine.FileSystem.GetItem(file.NormalizedPath, FileKinds.Component);
@@ -158,7 +156,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
             var parseOptions = (CSharpParseOptions)GeneratorExecutionContext.ParseOptions;
 
-            Parallel.For(0, files.Count, GetParallelOptions(), i =>
+            Parallel.For(0, files.Count, GetParallelOptions(GeneratorExecutionContext), i =>
             {
                 var file = files[i];
                 if (File.GetLastWriteTimeUtc(file.GeneratedDeclarationPath) > File.GetLastWriteTimeUtc(file.AdditionalText.Path))
@@ -205,12 +203,12 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             }
             else
             {
-                tagHelperFeature.DiscoveryMode = TagHelperDiscoveryFilter.ReferenceAssemblies;
+                tagHelperFeature.DiscoveryFilter = TagHelperDiscoveryFilter.ReferenceAssemblies;
                 refTagHelpers = tagHelperFeature.GetDescriptors();
                 TagHelperSerializer.Serialize(razorContext.RefsTagHelperOutputCachePath, refTagHelpers);
             }
 
-            tagHelperFeature.DiscoveryMode = TagHelperDiscoveryFilter.CurrentCompilation;
+            tagHelperFeature.DiscoveryFilter = TagHelperDiscoveryFilter.CurrentCompilation;
             var assemblyTagHelpers = tagHelperFeature.GetDescriptors();
 
             var result = new List<TagHelperDescriptor>(refTagHelpers.Count + assemblyTagHelpers.Count);
@@ -257,13 +255,15 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return builder.ToString();
         }
 
-        private static ParallelOptions GetParallelOptions()
+        private static ParallelOptions GetParallelOptions(GeneratorExecutionContext generatorExecutionContext)
         {
-            if (Debugger.IsAttached)
+            var options = new ParallelOptions { CancellationToken = generatorExecutionContext.CancellationToken };
+            var isConcurrentBuild = generatorExecutionContext.Compilation.Options.ConcurrentBuild;
+            if (Debugger.IsAttached || !isConcurrentBuild)
             {
-                return new ParallelOptions { MaxDegreeOfParallelism = 1 };
+                options.MaxDegreeOfParallelism = 1;
             }
-            return DefaultParallelOptions;
+            return options;
         }
 
         private static void HandleDebugSwitch(bool waitForDebugger)
