@@ -16,13 +16,17 @@ namespace Microsoft.NetCore.Analyzers.Data.UnitTests
     public class ReviewSQLQueriesForSecurityVulnerabilitiesTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string invokedSymbol, string containingMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(invokedSymbol, containingMethod);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string invokedSymbol, string containingMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(invokedSymbol, containingMethod);
 
         protected const string SetupCodeCSharp = @"
@@ -1668,7 +1672,6 @@ End Class");
                     {
                         GetCSharpResultAt(102, 21, "string Command.CommandText", "Page_Load")
                     }
-
                 }
             }.RunAsync();
         }
@@ -1676,9 +1679,10 @@ End Class");
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality." + ReviewSqlQueriesForSecurityVulnerabilities.RuleId + ".excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA2100.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        [InlineData("dotnet_code_quality.CA2100.excluded_symbol_names = M*")]
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {
@@ -1741,6 +1745,16 @@ End Module"
             }
 
             await vbTest.RunAsync();
+        }
+
+        [Fact, WorkItem(3613, "https://github.com/dotnet/roslyn-analyzers/issues/3613")]
+        public async Task GlobalAssemblyAttributes_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage(""Category"", ""Id"")]");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage(""Category"", ""Id"")>");
         }
     }
 }

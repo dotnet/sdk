@@ -33,25 +33,49 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(symbolAnalysisContext =>
+            context.RegisterCompilationStartAction(context =>
             {
-                var field = (IFieldSymbol)symbolAnalysisContext.Symbol;
+                var structLayoutAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesStructLayoutAttribute);
 
-                // Only report diagnostic on non-static, non-const, non-private fields.
-                // Additionally, by default only report externally visible fields for FxCop compat.
-                if (!field.IsStatic &&
-                    !field.IsConst &&
-                    field.DeclaredAccessibility != Accessibility.Private &&
-                    field.MatchesConfiguredVisibility(symbolAnalysisContext.Options, Rule, symbolAnalysisContext.CancellationToken))
+                context.RegisterSymbolAction(symbolAnalysisContext =>
                 {
-                    symbolAnalysisContext.ReportDiagnostic(field.CreateDiagnostic(Rule));
-                }
-            }, SymbolKind.Field);
+                    var field = (IFieldSymbol)symbolAnalysisContext.Symbol;
+
+                    // Only report diagnostic on non-static, non-const, non-private fields.
+                    if (field.IsStatic ||
+                        field.IsConst ||
+                        field.DeclaredAccessibility == Accessibility.Private)
+                    {
+                        return;
+                    }
+
+                    // Do not report on types marked with StructLayoutAttribute
+                    // See https://github.com/dotnet/roslyn-analyzers/issues/4149
+                    if (field.ContainingType.HasAttribute(structLayoutAttributeType))
+                    {
+                        return;
+                    }
+
+                    var excludeStructs = symbolAnalysisContext.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeStructs, Rule,
+                        field, symbolAnalysisContext.Compilation, defaultValue: false, symbolAnalysisContext.CancellationToken);
+                    if (excludeStructs &&
+                        field.ContainingType?.TypeKind == TypeKind.Struct)
+                    {
+                        return;
+                    }
+
+                    // Additionally, by default only report externally visible fields for FxCop compat.
+                    if (symbolAnalysisContext.Options.MatchesConfiguredVisibility(Rule, field, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
+                    {
+                        symbolAnalysisContext.ReportDiagnostic(field.CreateDiagnostic(Rule));
+                    }
+                }, SymbolKind.Field);
+            });
         }
     }
 }

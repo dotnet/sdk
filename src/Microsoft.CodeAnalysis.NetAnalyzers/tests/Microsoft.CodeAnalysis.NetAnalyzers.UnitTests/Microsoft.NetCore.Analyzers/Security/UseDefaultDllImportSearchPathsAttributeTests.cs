@@ -3,6 +3,7 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseDefaultDllImportSearchPathsAttribute,
@@ -523,7 +524,7 @@ class TestClass
         }
 
         // [DllImport] is set with an absolute path, which will let the [DefaultDllImportSearchPaths] be ignored.
-        [Fact]
+        [WindowsOnlyFact]
         public async Task Test_DllImportAttributeWithAbsolutePath_DefaultDllImportSearchPaths_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -544,7 +545,7 @@ class TestClass
         }
 
         // [DllImport] is set with an absolute path.
-        [Fact]
+        [WindowsOnlyFact]
         public async Task Test_DllImportAttributeWithAbsolutePath_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -563,7 +564,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public async Task Test_UsingNonexistentAbsolutePath_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -584,8 +585,10 @@ class TestClass
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
     }
 }

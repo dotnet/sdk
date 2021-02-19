@@ -26,8 +26,7 @@ namespace Microsoft.NetCore.Analyzers.Security
     /// - Newtonsoft Json.NET (partial)
     /// </remarks>
     [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class DataSetDataTableInSerializableObjectGraphAnalyzer : DiagnosticAnalyzer
+    public abstract class DataSetDataTableInSerializableObjectGraphAnalyzer : DiagnosticAnalyzer
     {
         internal static readonly DiagnosticDescriptor ObjectGraphContainsDangerousTypeDescriptor =
             SecurityHelpers.CreateDiagnosticDescriptor(
@@ -39,10 +38,12 @@ namespace Microsoft.NetCore.Analyzers.Security
                 isDataflowRule: false,
                 isReportedAtCompilationEnd: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(ObjectGraphContainsDangerousTypeDescriptor);
 
-        public override void Initialize(AnalysisContext context)
+        protected abstract string ToString(TypedConstant typedConstant);
+
+        public sealed override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
 
@@ -292,7 +293,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             ObjectGraphContainsDangerousTypeDescriptor,
                                             operationForLocation.Syntax.GetLocation(),
                                             result.InsecureType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                                            result.GetDisplayString()));
+                                            result.GetDisplayString(typedConstant => ToString(typedConstant))));
                                 }
                             }
                         }

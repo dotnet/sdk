@@ -48,7 +48,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 s_localizableDoNotUseBrokenAlgorithmsTitle,
                 s_localizableDoNotUseBrokenAlgorithmsMessage,
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_localizableDoNotUseBrokenAlgorithmsDescription,
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
@@ -59,21 +59,21 @@ namespace Microsoft.NetCore.Analyzers.Security
                 s_localizableDoNotUseWeakAlgorithmsTitle,
                 s_localizableDoNotUseWeakAlgorithmsMessage,
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_localizableDoNotUseWeakAlgorithmsDescription,
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DoNotUseBrokenCryptographyRule, DoNotUseWeakCryptographyRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
+            context.EnableConcurrentExecution();
 
             // Security analyzer - analyze and report diagnostics on generated code.
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 (CompilationStartAnalysisContext context) =>
                 {
                     var cryptTypes = new CompilationSecurityTypes(context.Compilation);

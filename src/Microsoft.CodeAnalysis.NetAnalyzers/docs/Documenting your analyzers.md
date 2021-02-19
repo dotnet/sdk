@@ -33,13 +33,13 @@ but you can use any source for the stable URI, including (for example)
 any facility your company might provide for registering URIs.
 
 6. In your analyzers, set the value of the `HelpLinkUri` property of
-your `DiagnosticDescriptor`  to the (preferably stable) URI you provided. 
+your `DiagnosticDescriptor`  to the (preferably stable) URI you provided.
 
 **Note** Some analyzers produce diagnostics with more than one rule id.
 For example, the [`EquatableAnalyzer`](https://github.com/dotnet/roslyn-analyzers/blob/master/src/Microsoft.ApiDesignGuidelines.Analyzers/Core/EquatableAnalyzer.cs) in [`Microsoft.ApiDesignGuidelines.Analyzers`](https://github.com/dotnet/roslyn-analyzers/tree/master/src/Microsoft.ApiDesignGuidelines.Analyzers)
 produces diagnostics with two rule ids:
-`CA1066` ("Implement IEquatable<T> when overriding Object.Equals")
-and `CA1067` ("Override Object.Equals when implementing IEquatable<T>").
+`CA1066` ("Implement IEquatable\<T> when overriding Object.Equals")
+and `CA1067` ("Override Object.Equals when implementing IEquatable\<T>").
 In such a case, create a separate reference page for each rule id.
 In this case, we would have `CA1066_ImplementIEquatableOfTWhenOverridingObjectEquals.md`
 and `CA1067_OverrideObjectEqualsWhenImplementingIEquatableOfT.md`.

@@ -34,12 +34,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(csaContext =>
+            context.RegisterCompilationStartAction(csaContext =>
             {
                 var obsoleteAttributeType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
 
@@ -51,6 +51,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         var invocationExpression = (IInvocationOperation)oaContext.Operation;
                         var targetMethod = invocationExpression.TargetMethod;
                         if (targetMethod.ContainingType == null || targetMethod.ContainingType.IsErrorType() || targetMethod.IsGenericMethod)
+                        {
+                            return;
+                        }
+
+                        if (oaContext.Options.IsConfiguredToSkipAnalysis(Rule, targetMethod, oaContext.ContainingSymbol, oaContext.Compilation, oaContext.CancellationToken))
                         {
                             return;
                         }

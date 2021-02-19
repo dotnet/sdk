@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
     public sealed class CSharpDoNotUseCountWhenAnyCanBeUsedFixer : DoNotUseCountWhenAnyCanBeUsedFixer
     {
         /// <summary>
-        /// Tries the get a fixer the specified <paramref name="node" />.
+        /// Tries to get a fixer for the specified <paramref name="node" />.
         /// </summary>
         /// <param name="node">The node to get a fixer for.</param>
         /// <param name="operation">The operation to get the fixer from.</param>
@@ -26,7 +26,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
         /// <param name="expression">If this method returns <see langword="true" />, contains the expression to be used to invoke <c>Any</c>.</param>
         /// <param name="arguments">If this method returns <see langword="true" />, contains the arguments from <c>Any</c> to be used on <c>Count</c>.</param>
         /// <returns><see langword="true" /> if a fixer was found., <see langword="false" /> otherwise.</returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected override bool TryGetFixer(
             SyntaxNode node,
             string operation,
@@ -36,7 +35,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
         {
             switch (operation)
             {
-                case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationEqualsInstance:
+                case UseCountProperlyAnalyzer.OperationEqualsInstance:
                     {
                         if (node is InvocationExpressionSyntax invocation &&
                             invocation.Expression is MemberAccessExpressionSyntax member &&
@@ -51,7 +50,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
                         break;
                     }
-                case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationEqualsArgument:
+                case UseCountProperlyAnalyzer.OperationEqualsArgument:
                     {
                         if (node is InvocationExpressionSyntax invocation &&
                             invocation.ArgumentList.Arguments.Count == 1 &&
@@ -66,7 +65,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
                         break;
                     }
-                case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationBinaryLeft:
+                case UseCountProperlyAnalyzer.OperationBinaryLeft:
                     {
                         if (node is BinaryExpressionSyntax binary &&
                             TryGetExpressionAndInvocationArguments(
@@ -80,7 +79,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
                         break;
                     }
-                case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationBinaryRight:
+                case UseCountProperlyAnalyzer.OperationBinaryRight:
                     {
                         if (node is BinaryExpressionSyntax binary &&
                             TryGetExpressionAndInvocationArguments(

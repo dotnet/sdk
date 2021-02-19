@@ -9,15 +9,15 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
-    /// <summary> 
-    /// CA1720-redefined: Identifiers should not contain type names 
-    /// Cause: 
-    /// The name of a parameter or a member contains a language-specific data type name. 
-    ///  
-    /// Description: 
-    /// Names of parameters and members are better used to communicate their meaning than  
-    /// to describe their type, which is expected to be provided by development tools. For names of members,  
-    /// if a data type name must be used, use a language-independent name instead of a language-specific one.  
+    /// <summary>
+    /// CA1720-redefined: Identifiers should not contain type names
+    /// Cause:
+    /// The name of a parameter or a member contains a language-specific data type name.
+    ///
+    /// Description:
+    /// Names of parameters and members are better used to communicate their meaning than
+    /// to describe their type, which is expected to be provided by development tools. For names of members,
+    /// if a data type name must be used, use a language-independent name instead of a language-specific one.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class IdentifiersShouldNotContainTypeNames : DiagnosticAnalyzer
@@ -65,7 +65,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 "decimal",
                 "guid",
                 "object",
-                "obj",
                 "string"
             });
 
@@ -80,12 +79,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationStartAnalysisContext =>
+            context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
             {
                 // Analyze named types and fields.
                 compilationStartAnalysisContext.RegisterSymbolAction(
@@ -122,7 +121,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static void AnalyzeSymbol(ISymbol symbol, SymbolAnalysisContext context)
         {
             // FxCop compat: only analyze externally visible symbols by default.
-            if (!symbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
             {
                 return;
             }
@@ -130,7 +129,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var identifier = symbol.Name;
             if (s_typeNames.Contains(identifier))
             {
-                Diagnostic diagnostic = Diagnostic.Create(Rule, symbol.Locations[0], identifier);
+                Diagnostic diagnostic = symbol.CreateDiagnostic(Rule, identifier);
                 context.ReportDiagnostic(diagnostic);
             }
         }

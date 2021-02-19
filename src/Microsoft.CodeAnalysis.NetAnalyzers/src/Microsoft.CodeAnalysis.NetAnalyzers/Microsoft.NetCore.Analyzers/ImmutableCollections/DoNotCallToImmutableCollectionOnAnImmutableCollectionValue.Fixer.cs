@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
             }
 
             var semanticModel = await document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            if (semanticModel.GetOperation(invocationNode) is not IInvocationOperation invocationOperation ||
+            if (semanticModel.GetOperation(invocationNode, context.CancellationToken) is not IInvocationOperation invocationOperation ||
                 !DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer.ToImmutableMethodNames.Contains(invocationOperation.TargetMethod.Name))
             {
                 return;
@@ -62,7 +62,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
 
         private static Task<Document> RemoveRedundantCall(Document document, SyntaxNode root, SyntaxNode invocationNode, IInvocationOperation invocationOperation)
         {
-            var instance = invocationOperation.GetInstance().WithTriviaFrom(invocationNode);
+            var instance = invocationOperation.GetInstanceSyntax().WithTriviaFrom(invocationNode);
             var newRoot = root.ReplaceNode(invocationNode, instance);
             var newDocument = document.WithSyntaxRoot(newRoot);
             return Task.FromResult(newDocument);

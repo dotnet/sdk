@@ -53,7 +53,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                        description: s_localizableDescription,
                                                                        isPortedFxCopRule: true,
                                                                        isDataflowRule: false,
-                                                                       isEnabledByDefaultInFxCopAnalyzers: false,
                                                                        additionalCustomTags: RuleRenameCustomTag);
 
         private static readonly LocalizableString s_localizableMessageRuleMultipleZero = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsMultipleZeros), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
@@ -65,7 +64,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                description: s_localizableDescription,
                                                                isPortedFxCopRule: true,
                                                                isDataflowRule: false,
-                                                               isEnabledByDefaultInFxCopAnalyzers: false,
                                                                additionalCustomTags: RuleMultipleZeroCustomTag);
 
         private static readonly LocalizableString s_localizableMessageRuleNoZero = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
@@ -77,7 +75,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                description: s_localizableDescription,
                                                                isPortedFxCopRule: true,
                                                                isDataflowRule: false,
-                                                               isEnabledByDefaultInFxCopAnalyzers: false,
                                                                additionalCustomTags: RuleNoZeroCustomTag);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleRename, RuleMultipleZero, RuleNoZero);
@@ -108,18 +105,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // FxCop compat: only fire on externally visible types by default.
-            if (!symbol.MatchesConfiguredVisibility(context.Options, RuleMultipleZero, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(RuleMultipleZero, symbol, context.Compilation, context.CancellationToken))
             {
                 return;
             }
 
-            Debug.Assert(symbol.MatchesConfiguredVisibility(context.Options, RuleNoZero, context.CancellationToken));
-            Debug.Assert(symbol.MatchesConfiguredVisibility(context.Options, RuleRename, context.CancellationToken));
+            Debug.Assert(context.Options.MatchesConfiguredVisibility(RuleNoZero, symbol, context.Compilation, context.CancellationToken));
+            Debug.Assert(context.Options.MatchesConfiguredVisibility(RuleRename, symbol, context.Compilation, context.CancellationToken));
 
             ImmutableArray<IFieldSymbol> zeroValuedFields = GetZeroValuedFields(symbol).ToImmutableArray();
 
-            bool hasFlagsAttribute = symbol.GetAttributes().Any(a => Equals(a.AttributeClass, flagsAttribute));
-            if (hasFlagsAttribute)
+            if (symbol.HasAttribute(flagsAttribute))
             {
                 CheckFlags(symbol, zeroValuedFields, context.ReportDiagnostic);
             }

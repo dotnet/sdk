@@ -1,28 +1,22 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
-
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ExceptionsShouldBePublicAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ExceptionsShouldBePublicFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ExceptionsShouldBePublicAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ExceptionsShouldBePublicFixer>;
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class ExceptionsShouldBePublicTests : DiagnosticAnalyzerTestBase
+    public class ExceptionsShouldBePublicTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ExceptionsShouldBePublicAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ExceptionsShouldBePublicAnalyzer();
-        }
-
         [Fact]
-        public void TestCSharpNonPublicException()
+        public async Task TestCSharpNonPublicException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 class InternalException : Exception
 {
@@ -31,9 +25,9 @@ class InternalException : Exception
         }
 
         [Fact]
-        public void TestCSharpNonPublicException2()
+        public async Task TestCSharpNonPublicException2()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 internal class Outer
 {
@@ -45,9 +39,9 @@ internal class Outer
         }
 
         [Fact]
-        public void TestCSharpPublicException()
+        public async Task TestCSharpPublicException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 public class BasicException : Exception
 {
@@ -55,9 +49,9 @@ public class BasicException : Exception
         }
 
         [Fact]
-        public void TestCSharpNonExceptionType()
+        public async Task TestCSharpNonExceptionType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 public class NonException : StringWriter
 {
@@ -65,9 +59,9 @@ public class NonException : StringWriter
         }
 
         [Fact]
-        public void TestVBasicNonPublicException()
+        public async Task TestVBasicNonPublicException()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class InternalException
    Inherits Exception
@@ -76,9 +70,9 @@ End Class",
         }
 
         [Fact]
-        public void TestVBasicNonPublicException2()
+        public async Task TestVBasicNonPublicException2()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Class Outer
     Private Class PrivateException
@@ -89,9 +83,9 @@ End Class",
         }
 
         [Fact]
-        public void TestVBasicPublicException()
+        public async Task TestVBasicPublicException()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Class BasicException
    Inherits Exception
@@ -99,9 +93,9 @@ End Class");
         }
 
         [Fact]
-        public void TestVBasicNonExceptionType()
+        public async Task TestVBasicNonExceptionType()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
 Imports System.Text
 Public Class NonException
@@ -109,12 +103,16 @@ Public Class NonException
 End Class");
         }
 
-        private DiagnosticResult GetCA1064CSharpResultAt(int line, int column) =>
-            GetCSharpResultAt(line, column, ExceptionsShouldBePublicAnalyzer.RuleId,
-                MicrosoftCodeQualityAnalyzersResources.ExceptionsShouldBePublicMessage);
+        private static DiagnosticResult GetCA1064CSharpResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
-        private DiagnosticResult GetCA1064VBasicResultAt(int line, int column) =>
-            GetBasicResultAt(line, column, ExceptionsShouldBePublicAnalyzer.RuleId,
-                MicrosoftCodeQualityAnalyzersResources.ExceptionsShouldBePublicMessage);
+        private static DiagnosticResult GetCA1064VBasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

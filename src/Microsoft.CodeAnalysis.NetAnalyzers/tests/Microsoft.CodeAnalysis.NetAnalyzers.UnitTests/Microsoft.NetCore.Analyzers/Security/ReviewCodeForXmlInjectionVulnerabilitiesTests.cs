@@ -249,7 +249,6 @@ public partial class WebForm : System.Web.UI.Page
 }");
         }
 
-
         [Fact]
         public async Task XmlNotation_InnerXml_Diagnostic()
         {

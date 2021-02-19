@@ -157,10 +157,8 @@ public sealed class C : B, IFace
 }",
                     },
                 },
-#pragma warning disable CS0618 // Type or member is obsolete
-                CodeFixIndex = 1,
-                CodeFixEquivalenceKey = "MakeDeclaringTypeSealed",
-#pragma warning restore CS0618 // Type or member is obsolete
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = "MakeDeclaringTypeSealed",
             }.RunAsync();
         }
 
@@ -213,10 +211,8 @@ internal class C : B, IFace
 }",
                     },
                 },
-#pragma warning disable CS0618 // Type or member is obsolete
-                CodeFixIndex = 2,
-                CodeFixEquivalenceKey = "MakeDeclaringTypeInternal",
-#pragma warning restore CS0618 // Type or member is obsolete
+                CodeActionIndex = 2,
+                CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
             }.RunAsync();
         }
 
@@ -269,10 +265,8 @@ internal abstract class C : B, IFace
 }",
                     },
                 },
-#pragma warning disable CS0618 // Type or member is obsolete
-                CodeFixIndex = 1, // sealed option is not available because class is abstract
-                CodeFixEquivalenceKey = "MakeDeclaringTypeInternal",
-#pragma warning restore CS0618 // Type or member is obsolete
+                CodeActionIndex = 1, // sealed option is not available because class is abstract
+                CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
             }.RunAsync();
         }
 
@@ -360,10 +354,8 @@ internal class C : B, IFace
 }",
                     },
                 },
-#pragma warning disable CS0618 // Type or member is obsolete
-                CodeFixIndex = 1,
-                CodeFixEquivalenceKey = "MakeDeclaringTypeInternal",
-#pragma warning restore CS0618 // Type or member is obsolete
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
             }.RunAsync();
         }
 
@@ -410,10 +402,8 @@ internal abstract class C : B, IFace
 }",
                     },
                 },
-#pragma warning disable CS0618 // Type or member is obsolete
-                CodeFixIndex = 0, // sealed option is not available because type is abstract
-                CodeFixEquivalenceKey = "MakeDeclaringTypeInternal",
-#pragma warning restore CS0618 // Type or member is obsolete
+                CodeActionIndex = 0, // sealed option is not available because type is abstract
+                CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
             }.RunAsync();
         }
 

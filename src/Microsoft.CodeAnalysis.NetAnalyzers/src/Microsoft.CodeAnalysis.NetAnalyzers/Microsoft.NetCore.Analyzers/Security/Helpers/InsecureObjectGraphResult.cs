@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.NetCore.Analyzers.Security.Helpers
 {
@@ -78,7 +77,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// Gets the display string of <see cref="InsecureSymbol"/> or <see cref="InsecureAttribute"/>.
         /// </summary>
         /// <returns>Display string of <see cref="InsecureSymbol"/> or <see cref="InsecureAttribute"/>.</returns>
-        public string GetDisplayString()
+        public string GetDisplayString(Func<TypedConstant, string> typedConstantToString)
         {
             if (this.InsecureSymbol != null)
             {
@@ -87,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             else if (this.InsecureAttributeTypedConstant != null)
             {
                 TypedConstant t = (TypedConstant)this.InsecureAttributeTypedConstant!;
-                return t.ToCSharpString();
+                return typedConstantToString(t);
             }
             else
             {

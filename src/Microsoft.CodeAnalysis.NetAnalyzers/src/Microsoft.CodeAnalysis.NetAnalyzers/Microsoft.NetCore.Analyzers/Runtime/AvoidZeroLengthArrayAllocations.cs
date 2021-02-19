@@ -81,6 +81,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
+            var linqExpressionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+            if (arrayCreationExpression.IsWithinExpressionTree(linqExpressionType))
+            {
+                return;
+            }
+
             if (arrayCreationExpression.DimensionSizes.Length == 1)
             {
                 IOperation dimensionSize = arrayCreationExpression.DimensionSizes[0];
@@ -157,7 +163,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             var parameters = targetSymbol.GetParameters();
-            if (parameters.IsEmpty || !parameters[parameters.Length - 1].IsParams)
+            if (parameters.IsEmpty || !parameters[^1].IsParams)
             {
                 return false;
             }

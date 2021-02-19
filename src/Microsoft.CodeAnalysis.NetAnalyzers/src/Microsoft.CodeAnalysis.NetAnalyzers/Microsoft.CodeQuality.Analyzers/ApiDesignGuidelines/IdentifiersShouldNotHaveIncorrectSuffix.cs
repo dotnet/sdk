@@ -3,10 +3,10 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -33,8 +33,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
         internal static DiagnosticDescriptor MemberNewerVersionRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageMemberNewerVersion,
@@ -42,8 +41,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
         internal static DiagnosticDescriptor TypeNewerVersionRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageTypeNewerVersion,
@@ -51,8 +49,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
         internal static DiagnosticDescriptor MemberWithAlternateRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageMemberWithAlternate,
@@ -60,8 +57,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
             TypeNoAlternateRule,
@@ -85,6 +81,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         internal const string CoreSuffix = "Core";
         internal const string QueueSuffix = "Queue";
         internal const string StackSuffix = "Stack";
+        internal const string FlagSuffix = "Flag";
+        internal const string FlagsSuffix = "Flags";
 
         // Dictionary that maps from a type name suffix to the set of base types from which
         // a type with that suffix is permitted to derive.
@@ -112,13 +110,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 [EnumSuffix] = ImmutableArray.CreateRange(new[] { "System.Enum" })
             });
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
             // Analyze type names.
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 compilationStartAnalysisContext =>
                 {
                     var suffixToBaseTypeDictionaryBuilder = ImmutableDictionary.CreateBuilder<string, ImmutableArray<INamedTypeSymbol>>();
@@ -142,17 +140,22 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                             // will always have identical configured visibility.
-                            if (!namedTypeSymbol.MatchesConfiguredVisibility(symbolAnalysisContext.Options, TypeNoAlternateRule, symbolAnalysisContext.CancellationToken))
+                            if (!symbolAnalysisContext.Options.MatchesConfiguredVisibility(TypeNoAlternateRule, namedTypeSymbol, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
                             {
                                 return;
                             }
+
+                            var allowedSuffixes = symbolAnalysisContext.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule,
+                                    namedTypeSymbol.Locations[0].SourceTree, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken)
+                                .Split('|')
+                                .ToImmutableHashSet();
 
                             string name = namedTypeSymbol.Name;
                             Compilation compilation = symbolAnalysisContext.Compilation;
 
                             foreach (string suffix in s_suffixToBaseTypeNamesDictionary.Keys)
                             {
-                                if (IsNotChildOfAnyButHasSuffix(namedTypeSymbol, suffixToBaseTypeDictionary[suffix], suffix))
+                                if (IsNotChildOfAnyButHasSuffix(namedTypeSymbol, suffixToBaseTypeDictionary[suffix], suffix, allowedSuffixes))
                                 {
                                     symbolAnalysisContext.ReportDiagnostic(
                                         namedTypeSymbol.CreateDiagnostic(TypeNoAlternateRule, name, suffix));
@@ -162,7 +165,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                             foreach (string suffix in s_suffixToAllowedTypesDictionary.Keys)
                             {
-                                if (name.HasSuffix(suffix)
+                                if (IsInvalidSuffix(name, suffix, allowedSuffixes)
                                     && !s_suffixToAllowedTypesDictionary[suffix].Contains(name))
                                 {
                                     symbolAnalysisContext.ReportDiagnostic(
@@ -171,7 +174,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 }
                             }
 
-                            if (name.HasSuffix(ImplSuffix))
+                            if (IsInvalidSuffix(name, ImplSuffix, allowedSuffixes))
                             {
                                 symbolAnalysisContext.ReportDiagnostic(
                                     namedTypeSymbol.CreateDiagnostic(MemberWithAlternateRule, ImplSuffix, name, CoreSuffix));
@@ -181,31 +184,48 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             // FxCop performed the length check for "Ex", but not for any of the other
                             // suffixes, because alone among the suffixes, "Ex" is the only one that
                             // isn't itself a known type or a language keyword.
-                            if (name.HasSuffix(ExSuffix) && name.Length > ExSuffix.Length)
+                            if (IsInvalidSuffix(name, ExSuffix, allowedSuffixes) && name.Length > ExSuffix.Length)
                             {
                                 symbolAnalysisContext.ReportDiagnostic(
                                     namedTypeSymbol.CreateDiagnostic(TypeNewerVersionRule, ExSuffix, name));
                                 return;
                             }
 
-                            if (name.HasSuffix(NewSuffix))
+                            if (IsInvalidSuffix(name, NewSuffix, allowedSuffixes))
                             {
                                 symbolAnalysisContext.ReportDiagnostic(
                                     namedTypeSymbol.CreateDiagnostic(TypeNewerVersionRule, NewSuffix, name));
                                 return;
                             }
+
+                            if (namedTypeSymbol.TypeKind == TypeKind.Enum)
+                            {
+                                if (IsInvalidSuffix(name, FlagSuffix, allowedSuffixes))
+                                {
+                                    symbolAnalysisContext.ReportDiagnostic(
+                                        namedTypeSymbol.CreateDiagnostic(TypeNoAlternateRule, name, FlagSuffix));
+                                    return;
+                                }
+
+                                if (IsInvalidSuffix(name, FlagsSuffix, allowedSuffixes))
+                                {
+                                    symbolAnalysisContext.ReportDiagnostic(
+                                        namedTypeSymbol.CreateDiagnostic(TypeNoAlternateRule, name, FlagsSuffix));
+                                    return;
+                                }
+                            }
                         }, SymbolKind.NamedType);
                 });
 
             // Analyze method names.
-            analysisContext.RegisterSymbolAction(
+            context.RegisterSymbolAction(
                 (SymbolAnalysisContext context) =>
                 {
                     var memberSymbol = context.Symbol;
 
                     // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                     // will always have identical configured visibility.
-                    if (!memberSymbol.MatchesConfiguredVisibility(context.Options, TypeNoAlternateRule, context.CancellationToken))
+                    if (!context.Options.MatchesConfiguredVisibility(TypeNoAlternateRule, memberSymbol, context.Compilation, context.CancellationToken))
                     {
                         return;
                     }
@@ -224,7 +244,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     string name = memberSymbol.Name;
 
-                    if (name.HasSuffix(ExSuffix))
+                    var allowedSuffixes = context.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule,
+                            memberSymbol.Locations[0].SourceTree, context.Compilation, context.CancellationToken)
+                        .Split('|')
+                        .ToImmutableHashSet();
+
+                    if (IsInvalidSuffix(name, ExSuffix, allowedSuffixes))
                     {
                         context.ReportDiagnostic(
                             memberSymbol.CreateDiagnostic(MemberNewerVersionRule, ExSuffix, name));
@@ -235,7 +260,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // another member minus the suffix, e.g., we only fire on "MemberNew" if
                     // "Member" already exists. For some reason FxCop did not apply the
                     // same logic to the "Ex" suffix, and we follow FxCop's implementation.
-                    if (name.HasSuffix(NewSuffix))
+                    if (IsInvalidSuffix(name, NewSuffix, allowedSuffixes))
                     {
                         string nameWithoutSuffix = name.WithoutSuffix(NewSuffix);
                         INamedTypeSymbol containingType = memberSymbol.ContainingType;
@@ -248,7 +273,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         }
                     }
 
-                    if (name.HasSuffix(ImplSuffix))
+                    if (IsInvalidSuffix(name, ImplSuffix, allowedSuffixes))
                     {
                         context.ReportDiagnostic(
                             memberSymbol.CreateDiagnostic(MemberWithAlternateRule, ImplSuffix, name, CoreSuffix));
@@ -269,7 +294,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return false;
         }
 
-        private static bool IsNotChildOfAnyButHasSuffix(INamedTypeSymbol namedTypeSymbol, ImmutableArray<INamedTypeSymbol> parentTypes, string suffix)
+        private static bool IsNotChildOfAnyButHasSuffix(INamedTypeSymbol namedTypeSymbol, ImmutableArray<INamedTypeSymbol> parentTypes, string suffix, ImmutableHashSet<string> allowedSuffixes)
         {
             if (parentTypes.IsEmpty)
             {
@@ -277,8 +302,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return false;
             }
 
-            return namedTypeSymbol.Name.HasSuffix(suffix)
+            return IsInvalidSuffix(namedTypeSymbol.Name, suffix, allowedSuffixes)
                 && !parentTypes.Any(parentType => namedTypeSymbol.DerivesFromOrImplementsAnyConstructionOf(parentType));
         }
+
+        private static bool IsInvalidSuffix(string name, string suffix, ImmutableHashSet<string> allowedSuffixes)
+            => !allowedSuffixes.Contains(suffix) && name.HasSuffix(suffix);
     }
 }

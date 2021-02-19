@@ -28,8 +28,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
         /// <value>The fixable diagnostic ids.</value>
         public override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(
-                DoNotUseCountWhenAnyCanBeUsedAnalyzer.SyncRuleId,
-                DoNotUseCountWhenAnyCanBeUsedAnalyzer.AsyncRuleId);
+                UseCountProperlyAnalyzer.CA1827,
+                UseCountProperlyAnalyzer.CA1828);
 
         /// <summary>
         /// Gets an optional <see cref="FixAllProvider" /> that can fix all/multiple occurrences of diagnostics fixed by this code fix provider.
@@ -55,12 +55,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindNode(context.Span);
             var properties = context.Diagnostics[0].Properties;
-            var shouldNegateKey = properties.ContainsKey(DoNotUseCountWhenAnyCanBeUsedAnalyzer.ShouldNegateKey);
-            var isAsync = properties.ContainsKey(DoNotUseCountWhenAnyCanBeUsedAnalyzer.IsAsyncKey) ||
-                context.Diagnostics[0].Id == DoNotUseCountWhenAnyCanBeUsedAnalyzer.AsyncRuleId;
+            var shouldNegateKey = properties.ContainsKey(UseCountProperlyAnalyzer.ShouldNegateKey);
+            var isAsync = properties.ContainsKey(UseCountProperlyAnalyzer.IsAsyncKey) ||
+                context.Diagnostics[0].Id == UseCountProperlyAnalyzer.CA1828;
 
             if (node is object &&
-                properties.TryGetValue(DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationKey, out var operation) &&
+                properties.TryGetValue(UseCountProperlyAnalyzer.OperationKey, out var operation) &&
                 this.TryGetFixer(node, operation, isAsync, out var expression, out var arguments))
             {
                 context.RegisterCodeFix(
@@ -70,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         }
 
         /// <summary>
-        /// Tries the get a fixer the specified <paramref name="node" />.
+        /// Tries to get a fixer for the specified <paramref name="node" />.
         /// </summary>
         /// <param name="node">The node to get a fixer for.</param>
         /// <param name="operation">The operation to get the fixer from.</param>
@@ -108,11 +108,17 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 this._expression = expression;
                 this._arguments = arguments;
                 this._shouldNegateKey = shouldNegateKey;
+
+                var title = !isAsync ?
+                    MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedTitle :
+                    MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle;
+                this.Title = title;
+                this.EquivalenceKey = title;
             }
 
-            public override string Title { get; } = MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle;
+            public override string Title { get; }
 
-            public override string EquivalenceKey { get; } = MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle;
+            public override string EquivalenceKey { get; }
 
             protected override async Task<Document> GetChangedDocumentAsync(CancellationToken cancellationToken)
             {

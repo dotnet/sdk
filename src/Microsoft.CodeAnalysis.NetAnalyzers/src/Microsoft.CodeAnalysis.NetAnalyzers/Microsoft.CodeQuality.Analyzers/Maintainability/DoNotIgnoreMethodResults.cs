@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -68,6 +67,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private static readonly LocalizableString s_localizableMessageHResultOrErrorCode = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageHResultOrErrorCode), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessagePureMethod = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessagePureMethod), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageTryParse = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageTryParse), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageLinqMethod = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageLinqMethod), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageUserDefinedMethod = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageUserDefinedMethod), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
         internal static DiagnosticDescriptor ObjectCreationRule = DiagnosticDescriptorHelper.Create(RuleId,
@@ -106,7 +107,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
-
         internal static DiagnosticDescriptor TryParseRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageTryParse,
@@ -116,18 +116,37 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
+        internal static DiagnosticDescriptor LinqMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                             s_localizableTitle,
+                                                                             s_localizableMessageLinqMethod,
+                                                                             DiagnosticCategory.Performance,
+                                                                             RuleLevel.IdeSuggestion,
+                                                                             description: s_localizableDescription,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+
+        internal static DiagnosticDescriptor UserDefinedMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                             s_localizableTitle,
+                                                                             s_localizableMessageUserDefinedMethod,
+                                                                             DiagnosticCategory.Performance,
+                                                                             RuleLevel.IdeSuggestion,
+                                                                             description: s_localizableDescription,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ObjectCreationRule, StringCreationRule, HResultOrErrorCodeRule, TryParseRule, PureMethodRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(compilationContext =>
             {
                 INamedTypeSymbol? expectedExceptionType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualStudioTestToolsUnitTestingExpectedExceptionAttribute);
                 INamedTypeSymbol? nunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkAssert);
                 INamedTypeSymbol? xunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.XunitAssert);
+                INamedTypeSymbol? linqEnumerableType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
 
                 compilationContext.RegisterOperationBlockStartAction(osContext =>
                 {
@@ -139,8 +158,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     osContext.RegisterOperationAction(opContext =>
                     {
                         IOperation expression = ((IExpressionStatementOperation)opContext.Operation).Operation;
+
+                        var userDefinedMethods = compilationContext.Options.GetAdditionalUseResultsMethodsOption(UserDefinedMethodRule, expression.Syntax.SyntaxTree, compilationContext.Compilation, compilationContext.CancellationToken);
+
                         DiagnosticDescriptor? rule = null;
-                        string? targetMethodName = null;
+                        string targetMethodName = "";
                         switch (expression.Kind)
                         {
                             case OperationKind.ObjectCreation:
@@ -155,7 +177,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             case OperationKind.Invocation:
                                 IInvocationOperation invocationExpression = (IInvocationOperation)expression;
                                 IMethodSymbol targetMethod = invocationExpression.TargetMethod;
-                                if (targetMethod == null)
+                                if (targetMethod.ReturnsVoid)
                                 {
                                     break;
                                 }
@@ -176,6 +198,14 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 {
                                     rule = PureMethodRule;
                                 }
+                                else if (targetMethod.ContainingType.Equals(linqEnumerableType))
+                                {
+                                    rule = LinqMethodRule;
+                                }
+                                else if (userDefinedMethods.Contains(targetMethod.OriginalDefinition))
+                                {
+                                    rule = UserDefinedMethodRule;
+                                }
 
                                 targetMethodName = targetMethod.Name;
                                 break;
@@ -188,7 +218,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 return;
                             }
 
-                            Diagnostic diagnostic = Diagnostic.Create(rule, expression.Syntax.GetLocation(), method.Name, targetMethodName);
+                            Diagnostic diagnostic = expression.CreateDiagnostic(rule, method.Name, targetMethodName);
                             opContext.ReportDiagnostic(diagnostic);
                         }
                     }, OperationKind.ExpressionStatement);
@@ -275,7 +305,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                 IMethodSymbol methodSymbol = (IMethodSymbol)operationContext.ContainingSymbol;
 
-                return methodSymbol.GetAttributes().Any(attr => Equals(attr.AttributeClass, expectedExceptionType));
+                return methodSymbol.HasAttribute(expectedExceptionType);
             }
             else
             {
@@ -314,7 +344,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         private static bool IsPureMethod(IMethodSymbol method, Compilation compilation)
         {
-            return method.GetAttributes().Any(attr => attr.AttributeClass.Equals(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsContractsPureAttribute)));
+            return method.HasAttribute(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsContractsPureAttribute));
         }
     }
 }

@@ -38,7 +38,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                         equivalenceKey: MicrosoftNetCoreAnalyzersResources.AddNonSerializedAttributeCodeActionTitle),
                                     context.Diagnostics);
 
-
             // Fix 2: If the type of the field is defined in source, then add the serializable attribute to the type.
             SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             var fieldSymbol = model.GetDeclaredSymbol(node, context.CancellationToken) as IFieldSymbol;

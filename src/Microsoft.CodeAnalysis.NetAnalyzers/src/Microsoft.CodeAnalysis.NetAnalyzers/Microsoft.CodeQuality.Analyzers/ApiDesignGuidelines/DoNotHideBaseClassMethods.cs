@@ -34,12 +34,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(SymbolAnalyzer, SymbolKind.Method);
+            context.RegisterSymbolAction(SymbolAnalyzer, SymbolKind.Method);
         }
 
         private void SymbolAnalyzer(SymbolAnalysisContext context)
@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             foreach (var hiddenMethod in GetMethodsHiddenByMethod(method, method.ContainingType.BaseType))
             {
-                var diagnostic = Diagnostic.Create(Rule, context.Symbol.Locations[0], method.ToDisplayString(), hiddenMethod.ToDisplayString());
+                var diagnostic = context.Symbol.CreateDiagnostic(Rule, method.ToDisplayString(), hiddenMethod.ToDisplayString());
                 context.ReportDiagnostic(diagnostic);
             }
         }

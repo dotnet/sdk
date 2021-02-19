@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpDefineAccessorsForAttributeArgumentsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicDefineAccessorsForAttributeArgumentsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
@@ -2755,37 +2755,49 @@ End Class
         private static DiagnosticResult GetCA1019CSharpDefaultResultAt(int line, int column, string paramName, string attributeTypeName)
         {
             // Add a public read-only property accessor for positional argument '{0}' of attribute '{1}'.
+#pragma warning disable RS0030 // Do not used banned APIs
             return VerifyCS.Diagnostic(DefineAccessorsForAttributeArgumentsAnalyzer.DefaultRule).WithLocation(line, column).WithArguments(paramName, attributeTypeName);
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         private static DiagnosticResult GetCA1019BasicDefaultResultAt(int line, int column, string paramName, string attributeTypeName)
         {
             // Add a public read-only property accessor for positional argument '{0}' of attribute '{1}'.
+#pragma warning disable RS0030 // Do not used banned APIs
             return VerifyVB.Diagnostic(DefineAccessorsForAttributeArgumentsAnalyzer.DefaultRule).WithLocation(line, column).WithArguments(paramName, attributeTypeName);
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         private static DiagnosticResult GetCA1019CSharpIncreaseVisibilityResultAt(int line, int column, string propertyName, string paramName)
         {
             // If '{0}' is the property accessor for positional argument '{1}', make it public.
+#pragma warning disable RS0030 // Do not used banned APIs
             return VerifyCS.Diagnostic(DefineAccessorsForAttributeArgumentsAnalyzer.IncreaseVisibilityRule).WithLocation(line, column).WithArguments(propertyName, paramName);
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         private static DiagnosticResult GetCA1019BasicIncreaseVisibilityResultAt(int line, int column, string propertyName, string paramName)
         {
             // If '{0}' is the property accessor for positional argument '{1}', make it public.
+#pragma warning disable RS0030 // Do not used banned APIs
             return VerifyVB.Diagnostic(DefineAccessorsForAttributeArgumentsAnalyzer.IncreaseVisibilityRule).WithLocation(line, column).WithArguments(propertyName, paramName);
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         private static DiagnosticResult GetCA1019CSharpRemoveSetterResultAt(int line, int column, string propertyName, string paramName)
         {
             // Remove the property setter from '{0}' or reduce its accessibility because it corresponds to positional argument '{1}'.
+#pragma warning disable RS0030 // Do not used banned APIs
             return VerifyCS.Diagnostic(DefineAccessorsForAttributeArgumentsAnalyzer.RemoveSetterRule).WithLocation(line, column).WithArguments(propertyName, paramName);
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         private static DiagnosticResult GetCA1019BasicRemoveSetterResultAt(int line, int column, string propertyName, string paramName)
         {
             // Remove the property setter from '{0}' or reduce its accessibility because it corresponds to positional argument '{1}'.
+#pragma warning disable RS0030 // Do not used banned APIs
             return VerifyVB.Diagnostic(DefineAccessorsForAttributeArgumentsAnalyzer.RemoveSetterRule).WithLocation(line, column).WithArguments(propertyName, paramName);
+#pragma warning restore RS0030 // Do not used banned APIs
         }
     }
 }

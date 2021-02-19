@@ -69,7 +69,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                         return;
                     }
 
-                    operationContext.ReportDiagnostic(Diagnostic.Create(Rule, invocation.Syntax.GetLocation(), invocation.TargetMethod.Name));
+                    operationContext.ReportDiagnostic(invocation.CreateDiagnostic(Rule, invocation.TargetMethod.Name));
                 }, OperationKind.Invocation);
             });
         }

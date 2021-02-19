@@ -1,39 +1,33 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.TestForEmptyStringsUsingStringLengthAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public class TestForEmptyStringsUsingStringLengthTests : DiagnosticAnalyzerTestBase
+    public class TestForEmptyStringsUsingStringLengthTests
     {
         #region Helper methods
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new TestForEmptyStringsUsingStringLengthAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return null;
-        }
-
-        private static DiagnosticResult CSharpResult(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, TestForEmptyStringsUsingStringLengthAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.TestForEmptyStringsUsingStringLengthMessage);
-        }
+        private DiagnosticResult CSharpResult(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         #endregion
 
-        #region Diagnostic tests 
+        #region Diagnostic tests
 
         [Fact]
-        public void CA1820StaticEqualsTestCSharp()
+        public async Task CA1820StaticEqualsTestCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C
@@ -63,9 +57,9 @@ class C
         }
 
         [Fact]
-        public void CA1820InstanceEqualsTestCSharp()
+        public async Task CA1820InstanceEqualsTestCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C
@@ -91,9 +85,9 @@ class C
         }
 
         [Fact]
-        public void CA1820OperatorOverloadTestCSharp()
+        public async Task CA1820OperatorOverloadTestCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C
@@ -115,5 +109,24 @@ class C
         }
 
         #endregion
+
+        [Fact, WorkItem(1508, "https://github.com/dotnet/roslyn-analyzers/issues/1508")]
+        public async Task CA1820_ExpressionTree_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Linq;
+
+class C
+{
+    void M(IQueryable<string> strings)
+    {
+        var q1 = from s in strings
+                where s == """"
+                select s;
+
+        var q2 = strings.Where(s => s.Equals(""""));
+    }
+}");
+        }
     }
 }

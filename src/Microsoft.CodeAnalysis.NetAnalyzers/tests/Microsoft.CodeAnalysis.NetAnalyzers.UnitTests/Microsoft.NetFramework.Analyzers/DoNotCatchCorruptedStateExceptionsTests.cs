@@ -3,10 +3,10 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using VerifyCS = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotCatchCorruptedStateExceptionsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
-using VerifyVB = Microsoft.CodeAnalysis.VisualBasic.Testing.XUnit.CodeFixVerifier<
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotCatchCorruptedStateExceptionsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
@@ -335,7 +335,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                         {
                             FileStream fileStream = new FileStream(""name"", FileMode.Create);
                         }
-                        catch 
+                        catch
                         {
                         }
                     }
@@ -356,7 +356,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                     Public Shared Sub TestMethod()
                         Try
                             Dim fileStream As New FileStream(""name"", FileMode.Create)
-                        Catch 
+                        Catch
                         End Try
                     End Sub
                 End Class
@@ -377,7 +377,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                     Public Shared Function TestMethod() As Double
                         Try
                             Dim fileStream As New FileStream(""name"", FileMode.Create)
-                        Catch 
+                        Catch
                         End Try
                         Return 0
                     End Function
@@ -1041,7 +1041,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                             }
                             file = value;
                         }
-                    } 
+                    }
 
                     private static void AccessViolation()
                     {
@@ -1531,13 +1531,13 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         private static DiagnosticResult GetCA2153CSharpResultAt(int line, int column, string signature, string typeName)
-        {
-            return new DiagnosticResult(DoNotCatchCorruptedStateExceptionsAnalyzer.Rule).WithLocation(line, column).WithArguments(signature, typeName);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(signature, typeName);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA2153BasicResultAt(int line, int column, string signature, string typeName)
-        {
-            return new DiagnosticResult(DoNotCatchCorruptedStateExceptionsAnalyzer.Rule).WithLocation(line, column).WithArguments(signature, typeName);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(signature, typeName);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

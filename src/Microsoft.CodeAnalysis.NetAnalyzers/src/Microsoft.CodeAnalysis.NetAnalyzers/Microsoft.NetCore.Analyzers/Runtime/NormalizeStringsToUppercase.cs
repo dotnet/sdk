@@ -39,12 +39,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ToUpperRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationStartContext =>
+            context.RegisterCompilationStartAction(compilationStartContext =>
             {
                 var stringType = compilationStartContext.Compilation.GetSpecialType(SpecialType.System_String);
                 if (stringType == null)
@@ -70,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var toUpperInvariant = stringType.GetMembers("ToUpperInvariant").OfType<IMethodSymbol>().FirstOrDefault();
                 var toUpperWithCultureInfo = cultureInfo != null ?
                     stringType.GetMembers("ToUpper").OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == 1 && Equals(m.Parameters[0].Type, cultureInfo)) :
-                    null; ;
+                    null;
 
                 if (toUpperInvariant == null && toUpperWithCultureInfo == null)
                 {
@@ -92,10 +92,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         IMethodSymbol suggestedMethod = toUpperInvariant ?? toUpperWithCultureInfo!;
 
                         // In method {0}, replace the call to {1} with {2}.
-                        var diagnostic = Diagnostic.Create(ToUpperRule, invocation.Syntax.GetLocation(), operationAnalysisContext.ContainingSymbol.Name, method.Name, suggestedMethod.Name);
+                        var diagnostic = invocation.CreateDiagnostic(ToUpperRule, operationAnalysisContext.ContainingSymbol.Name, method.Name, suggestedMethod.Name);
                         operationAnalysisContext.ReportDiagnostic(diagnostic);
                     }
-
                 }, OperationKind.Invocation);
             });
         }

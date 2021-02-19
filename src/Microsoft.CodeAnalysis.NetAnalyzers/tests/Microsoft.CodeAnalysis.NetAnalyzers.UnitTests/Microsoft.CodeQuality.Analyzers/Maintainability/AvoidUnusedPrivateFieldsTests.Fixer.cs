@@ -28,7 +28,7 @@ class C
     private int c;
     private int d, [|e|], f;
 
-    public int Foo()
+    public int SomeMethod()
     {
         return x + z + a + c + d + f;
     }
@@ -44,7 +44,7 @@ class C
     private int c;
     private int d, f;
 
-    public int Foo()
+    public int SomeMethod()
     {
         return x + z + a + c + d + f;
     }
@@ -66,7 +66,7 @@ Class C
     Private c As Integer
     Private d, [|e|], f As Integer
 
-    Public Function Foo() As Integer
+    Public Function SomeMethod() As Integer
         Return x + z + a + c + d + f
     End Function
 End Class
@@ -80,7 +80,7 @@ Class C
     Private c As Integer
     Private d, f As Integer
 
-    Public Function Foo() As Integer
+    Public Function SomeMethod() As Integer
         Return x + z + a + c + d + f
     End Function
 End Class

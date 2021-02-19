@@ -81,7 +81,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         private abstract class ChangeSymbolAction : CodeAction
         {
-            public ChangeSymbolAction(string title, string equivalenceKey, Solution solution, ISymbol symbol)
+            protected ChangeSymbolAction(string title, string equivalenceKey, Solution solution, ISymbol symbol)
             {
                 Title = title;
                 EquivalenceKey = equivalenceKey;
