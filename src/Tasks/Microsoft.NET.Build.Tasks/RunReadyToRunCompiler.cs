@@ -107,23 +107,24 @@ namespace Microsoft.NET.Build.Tasks
                     Log.LogError(Strings.DotNetHostExecutableNotFound, hostPath);
                     return false;
                 }
-                if (Crossgen2IsVersion5)
+                string jitPath = Crossgen2Tool.GetMetadata(MetadataKeys.JitPath);
+                if (!string.IsNullOrEmpty(jitPath))
                 {
-                    // We expect JitPath to be set for .NET 5 and {TargetOS, TargetArch} to be set for .NET 6 and later
-                    string jitPath = Crossgen2Tool.GetMetadata(MetadataKeys.JitPath);
-                    if (String.IsNullOrEmpty(jitPath))
-                    {
-                        Log.LogError(Strings.Crossgen2MissingRequiredMetadata, MetadataKeys.JitPath);
-                        return false;
-                    }
                     if (!File.Exists(jitPath))
                     {
                         Log.LogError(Strings.JitLibraryNotFound, jitPath);
                         return false;
                     }
                 }
+                else if (Crossgen2IsVersion5)
+                {
+                    // We expect JitPath to be set for .NET 5 and {TargetOS, TargetArch} to be set for .NET 6 and later
+                    Log.LogError(Strings.Crossgen2MissingRequiredMetadata, MetadataKeys.JitPath);
+                    return false;
+                }
                 else
                 {
+                    // For smooth switchover we accept both JitPath and TargetOS / TargetArch in .NET 6 Crossgen2
                     if (string.IsNullOrEmpty(Crossgen2Tool.GetMetadata(MetadataKeys.TargetOS)))
                     {
                         Log.LogError(Strings.Crossgen2MissingRequiredMetadata, MetadataKeys.TargetOS);
@@ -284,9 +285,10 @@ namespace Microsoft.NET.Build.Tasks
         {
             StringBuilder result = new StringBuilder();
             
-            if (Crossgen2IsVersion5)
+            string jitPath = Crossgen2Tool.GetMetadata(MetadataKeys.JitPath);
+            if (!string.IsNullOrEmpty(jitPath))
             {
-                result.AppendLine($"--jitpath:\"{Crossgen2Tool.GetMetadata(MetadataKeys.JitPath)}\"");
+                result.AppendLine($"--jitpath:\"{jitPath}\"");
             }
             else
             {
