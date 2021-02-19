@@ -2,8 +2,8 @@
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Operations
-Imports Microsoft.NetCore.Analyzers.Tasks
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports Microsoft.NetCore.Analyzers.Tasks
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Tasks
     <Diagnostics.DiagnosticAnalyzer(LanguageNames.VisualBasic)>
@@ -35,7 +35,6 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Tasks
             If namedTypeSymbol Is Nothing Then
                 Return False
             End If
-
 
             Return namedTypeSymbol.Arity = 1 And task1Type.Equals(namedTypeSymbol.ConstructedFrom, SymbolEqualityComparer.Default)
         End Function
