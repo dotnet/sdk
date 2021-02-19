@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private const string SubstringStartIndexArgumentName = "startIndex";
         private const string AsSpanStartArgumentName = "start";
 
-        private protected abstract void ReplaceInvocationMethodName(SyntaxEditor editor, SyntaxNode memberInvocation, string newName);
+        private protected abstract void ReplaceNonConditionalInvocationMethodName(SyntaxEditor editor, SyntaxNode memberInvocation, string newName);
 
         private protected abstract void ReplaceNamedArgumentName(SyntaxEditor editor, SyntaxNode invocation, string oldArgumentName, string newArgumentName);
 
@@ -44,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             IMethodSymbol spanBasedOverload = bestCandidates[0];
 
-            string title = MicrosoftNetCoreAnalyzersResources.PreferAsSpanOverSubstringTitle;
+            string title = MicrosoftNetCoreAnalyzersResources.PreferAsSpanOverSubstringCodefixTitle;
             var codeAction = CodeAction.Create(title, CreateChangedDocument, title);
             context.RegisterCodeFix(codeAction, context.Diagnostics);
 
@@ -60,7 +60,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     //  Convert Substring invocations to equivalent AsSpan invocations.
                     if (symbols.IsAnySubstringInvocation(value) && SymbolEqualityComparer.Default.Equals(newParameter.Type, symbols.RoscharType))
                     {
-                        ReplaceInvocationMethodName(editor, value.Syntax, nameof(MemoryExtensions.AsSpan));
+                        ReplaceNonConditionalInvocationMethodName(editor, value.Syntax, nameof(MemoryExtensions.AsSpan));
                         //  Ensure named Substring arguments get renamed to their equivalent AsSpan counterparts.
                         ReplaceNamedArgumentName(editor, value.Syntax, SubstringStartIndexArgumentName, AsSpanStartArgumentName);
                     }

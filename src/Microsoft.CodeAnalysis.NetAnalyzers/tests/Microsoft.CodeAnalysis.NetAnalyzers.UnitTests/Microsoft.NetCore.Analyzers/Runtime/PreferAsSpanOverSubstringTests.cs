@@ -1702,6 +1702,59 @@ public class InternalSubclass : Internal
             return test.RunAsync();
         }
 
+        [Fact]
+        public Task ConditionalSubstringAccess_NoDiagnostic_CS()
+        {
+            string testCode = CS.Usings + @"
+public class Body
+{
+    public void Consume(string text) { }
+    public void Consume(Roschar span) { }
+    public void Run(string foo)
+    {
+        Consume(foo?.Substring(1));
+    }
+}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = testCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task ConditionalSubstringAccess_NoDiagnostic_VB()
+        {
+            string receiver = CS.Usings + @"
+public class Receiver
+{
+    public void Consume(string text) { }
+    public void Consume(Roschar span) { }
+}";
+            var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
+            {
+                Sources = { receiver }
+            };
+            string testCode = VB.WithBody(
+                @"
+Dim receiver = New Receiver()
+receiver.Consume(foo?.Substring(1))");
+
+            var test = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
         #region Helpers
         private static class CS
         {

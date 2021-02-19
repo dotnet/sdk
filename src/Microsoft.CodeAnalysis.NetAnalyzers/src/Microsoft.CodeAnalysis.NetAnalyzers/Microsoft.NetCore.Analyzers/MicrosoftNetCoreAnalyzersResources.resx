@@ -1514,9 +1514,12 @@
     <value>'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.</value>
   </data>
   <data name="PreferAsSpanOverSubstringMessage" xml:space="preserve">
-    <value>Prefer 'AsSpan' over 'Substring' when span-based overloads are available.</value>
+    <value>Prefer 'AsSpan' over 'Substring' when span-based overloads are available</value>
   </data>
   <data name="PreferAsSpanOverSubstringTitle" xml:space="preserve">
     <value>Prefer 'AsSpan' over 'Substring'</value>
+  </data>
+  <data name="PreferAsSpanOverSubstringCodefixTitle" xml:space="preserve">
+    <value>Replace 'Substring' with 'AsSpan'</value>
   </data>
 </root>

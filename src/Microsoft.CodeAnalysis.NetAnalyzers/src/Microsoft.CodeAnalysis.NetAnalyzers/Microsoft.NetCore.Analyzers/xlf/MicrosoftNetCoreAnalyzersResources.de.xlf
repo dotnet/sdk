@@ -1587,14 +1587,19 @@
         <target state="translated">Potenzieller Verweiszyklus in deserialisiertem Objektgraph</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferAsSpanOverSubstringCodefixTitle">
+        <source>Replace 'Substring' with 'AsSpan'</source>
+        <target state="new">Replace 'Substring' with 'AsSpan'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.</source>
         <target state="new">'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
-        <source>Prefer 'AsSpan' over 'Substring' when span-based overloads are available.</source>
-        <target state="new">Prefer 'AsSpan' over 'Substring' when span-based overloads are available.</target>
+        <source>Prefer 'AsSpan' over 'Substring' when span-based overloads are available</source>
+        <target state="new">Prefer 'AsSpan' over 'Substring' when span-based overloads are available</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringTitle">

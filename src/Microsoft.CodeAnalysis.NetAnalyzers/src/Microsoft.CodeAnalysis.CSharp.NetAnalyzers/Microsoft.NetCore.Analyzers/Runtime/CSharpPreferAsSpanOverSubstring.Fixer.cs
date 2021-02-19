@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Linq;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -13,9 +14,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
     [ExportCodeFixProvider(LanguageNames.CSharp)]
     public sealed class CSharpPreferAsSpanOverSubstringFixer : PreferAsSpanOverSubstringFixer
     {
-        private protected override void ReplaceInvocationMethodName(SyntaxEditor editor, SyntaxNode memberInvocation, string newName)
+        private protected override void ReplaceNonConditionalInvocationMethodName(SyntaxEditor editor, SyntaxNode memberInvocation, string newName)
         {
             var cast = (InvocationExpressionSyntax)memberInvocation;
+
+            //  We know that cast.Expression can't be a MemberBindingExpressionSyntax because the analyzer only reports 
+            //  non-conditional substring invocations, i.e. not `foo?.Substring(1)`
+            RoslynDebug.Assert(cast.Expression is MemberAccessExpressionSyntax);
+
             var memberAccessSyntax = (MemberAccessExpressionSyntax)cast.Expression;
             var newNameSyntax = SyntaxFactory.IdentifierName(newName);
             editor.ReplaceNode(memberAccessSyntax.Name, newNameSyntax);

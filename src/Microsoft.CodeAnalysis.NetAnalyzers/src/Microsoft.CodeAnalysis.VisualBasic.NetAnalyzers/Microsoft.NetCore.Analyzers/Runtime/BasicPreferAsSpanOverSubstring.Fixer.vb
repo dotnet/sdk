@@ -12,7 +12,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
     <ExportCodeFixProvider(LanguageNames.VisualBasic)>
     Public NotInheritable Class BasicPreferAsSpanOverSubstringFixer : Inherits PreferAsSpanOverSubstringFixer
 
-        Private Protected Overrides Sub ReplaceInvocationMethodName(editor As SyntaxEditor, memberInvocation As SyntaxNode, newName As String)
+        Private Protected Overrides Sub ReplaceNonConditionalInvocationMethodName(editor As SyntaxEditor, memberInvocation As SyntaxNode, newName As String)
 
             Dim cast = DirectCast(memberInvocation, InvocationExpressionSyntax)
             Dim memberAccessSyntax = DirectCast(cast.Expression, MemberAccessExpressionSyntax)
