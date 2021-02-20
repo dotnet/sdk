@@ -200,33 +200,45 @@ End Class");
         }
 
         private static DiagnosticResult GetCA2229DefaultCSharpResultAt(int line, int column, string objectName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2229Default)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(objectName);
 
         private static DiagnosticResult GetCA2229DefaultBasicResultAt(int line, int column, string objectName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2229Default)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(objectName);
 
         private static DiagnosticResult GetCA2229SealedCSharpResultAt(int line, int column, string objectName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2229Sealed)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(objectName);
 
         private static DiagnosticResult GetCA2229SealedBasicResultAt(int line, int column, string objectName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2229Sealed)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(objectName);
 
         private static DiagnosticResult GetCA2229UnsealedCSharpResultAt(int line, int column, string objectName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2229Unsealed)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(objectName);
 
         private static DiagnosticResult GetCA2229UnsealedBasicResultAt(int line, int column, string objectName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2229Unsealed)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(objectName);
     }
 }

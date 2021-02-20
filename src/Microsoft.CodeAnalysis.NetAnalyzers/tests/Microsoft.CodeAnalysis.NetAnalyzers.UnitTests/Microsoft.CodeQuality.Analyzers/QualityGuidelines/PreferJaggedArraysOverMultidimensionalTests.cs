@@ -278,33 +278,45 @@ End Class
         }
 
         private static DiagnosticResult GetCSharpDefaultResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetCSharpReturnResultAt(int line, int column, string symbolName, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.ReturnRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, typeName);
 
         private static DiagnosticResult GetCSharpBodyResultAt(int line, int column, string symbolName, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.BodyRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, typeName);
 
         private static DiagnosticResult GetBasicDefaultResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetBasicReturnResultAt(int line, int column, string symbolName, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.ReturnRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, typeName);
 
         private static DiagnosticResult GetBasicBodyResultAt(int line, int column, string symbolName, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.BodyRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, typeName);
     }
 }

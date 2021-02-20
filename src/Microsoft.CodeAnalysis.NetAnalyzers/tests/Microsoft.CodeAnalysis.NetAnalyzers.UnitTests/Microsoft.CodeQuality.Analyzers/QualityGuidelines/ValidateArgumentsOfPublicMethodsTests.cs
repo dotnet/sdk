@@ -23,13 +23,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class ValidateArgumentsOfPublicMethodsTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string methodSignature, string parameterName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(methodSignature, parameterName);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string methodSignature, string parameterName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(methodSignature, parameterName);
 
         [Fact]

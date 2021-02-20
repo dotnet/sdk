@@ -3014,93 +3014,129 @@ End Class
         #region Helpers
 
         private static DiagnosticResult GetCA1063CSharpIDisposableReimplementationResultAt(int line, int column, string typeName, string baseTypeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.IDisposableReimplementationRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, baseTypeName);
 
         private static DiagnosticResult GetCA1063BasicIDisposableReimplementationResultAt(int line, int column, string typeName, string baseTypeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.IDisposableReimplementationRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, baseTypeName);
 
         private static DiagnosticResult GetCA1063CSharpDisposeSignatureResultAt(int line, int column, string typeName, string disposeMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeSignatureRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{ typeName}.{ disposeMethod}");
 
         private static DiagnosticResult GetCA1063BasicDisposeSignatureResultAt(int line, int column, string typeName, string disposeMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeSignatureRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{ typeName}.{ disposeMethod}");
 
         private static DiagnosticResult GetCA1063CSharpRenameDisposeResultAt(int line, int column, string typeName, string disposeMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.RenameDisposeRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{ typeName}.{ disposeMethod}");
 
         private static DiagnosticResult GetCA1063BasicRenameDisposeResultAt(int line, int column, string typeName, string disposeMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.RenameDisposeRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063CSharpDisposeOverrideResultAt(int line, int column, string typeName, string method)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeOverrideRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{ typeName}.{method}");
 
         private static DiagnosticResult GetCA1063BasicDisposeOverrideResultAt(int line, int column, string typeName, string method)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeOverrideRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{ typeName}.{method}");
 
         private static DiagnosticResult GetCA1063CSharpFinalizeOverrideResultAt(int line, int column, string typeName, string baseTypeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.FinalizeOverrideRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, baseTypeName);
 
         private static DiagnosticResult GetCA1063BasicFinalizeOverrideResultAt(int line, int column, string typeName, string baseTypeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.FinalizeOverrideRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, baseTypeName);
 
         private static DiagnosticResult GetCA1063CSharpProvideDisposeBoolResultAt(int line, int column, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.ProvideDisposeBoolRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA1063BasicProvideDisposeBoolResultAt(int line, int column, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.ProvideDisposeBoolRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA1063CSharpDisposeBoolSignatureResultAt(int line, int column, string typeName, string disposeMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeBoolSignatureRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063BasicDisposeBoolSignatureResultAt(int line, int column, string typeName, string disposeMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeBoolSignatureRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063CSharpDisposeImplementationResultAt(int line, int column, string typeName, string disposeMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeImplementationRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063BasicDisposeImplementationResultAt(int line, int column, string typeName, string disposeMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeImplementationRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063CSharpFinalizeImplementationResultAt(int line, int column, string typeName, string disposeMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.FinalizeImplementationRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063BasicFinalizeImplementationResultAt(int line, int column, string typeName, string disposeMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.FinalizeImplementationRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments($"{typeName}.{disposeMethod}");
 
         #endregion

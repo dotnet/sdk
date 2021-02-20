@@ -354,13 +354,17 @@ End Class"
         }
 
         private static DiagnosticResult GetCSharpExpectedResult(int line, int col, string returnTypeName, string typeDotMemberName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, col)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(returnTypeName, typeDotMemberName);
 
         private static DiagnosticResult GetBasicExpectedResult(int line, int col, string returnTypeName, string typeDotMemberName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, col)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(returnTypeName, typeDotMemberName);
     }
 }

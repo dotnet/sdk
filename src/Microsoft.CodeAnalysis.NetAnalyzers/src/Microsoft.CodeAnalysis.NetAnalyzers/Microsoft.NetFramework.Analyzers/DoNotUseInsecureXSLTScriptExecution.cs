@@ -1,283 +1,322 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-// TODO(dotpaul): Enable nullable analysis when rewriting this to use DFA.
-#nullable disable
-
-using System.Collections.Generic;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.NetFramework.Analyzers.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetFramework.Analyzers
 {
-    public abstract class DoNotUseInsecureXSLTScriptExecutionAnalyzer<TLanguageKindEnum> : DiagnosticAnalyzer where TLanguageKindEnum : struct
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class DoNotUseInsecureXSLTScriptExecutionAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA3076";
-        internal static DiagnosticDescriptor RuleDoNotUseInsecureXSLTScriptExecution = DiagnosticDescriptorHelper.Create(
-            RuleId,
-            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXsltScriptProcessingMessage)),
-            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage)),
-            DiagnosticCategory.Security,
-            RuleLevel.IdeHidden_BulkConfigurable,
-            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureXSLTScriptExecutionDescription)),
-            isPortedFxCopRule: false,
-            isDataflowRule: false);
+
+        internal static DiagnosticDescriptor RuleDoNotUseInsecureXSLTScriptExecution =
+            DiagnosticDescriptorHelper.Create(
+                RuleId,
+                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXsltScriptProcessingMessage)),
+                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage)),
+                DiagnosticCategory.Security,
+                RuleLevel.IdeHidden_BulkConfigurable,
+                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureXSLTScriptExecutionDescription)),
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleDoNotUseInsecureXSLTScriptExecution);
 
 #pragma warning disable RS1026 // Enable concurrent execution
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
 #pragma warning restore RS1026 // Enable concurrent execution
         {
-            // TODO: Make analyzer thread-safe.
             //analysisContext.EnableConcurrentExecution();
 
             // Security analyzer - analyze and report diagnostics in generated code.
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-            analysisContext.RegisterCompilationStartAction(
-                (context) =>
+            context.RegisterCompilationStartAction(
+                context =>
                 {
                     Compilation compilation = context.Compilation;
                     var xmlTypes = new CompilationSecurityTypes(compilation);
-                    if (xmlTypes.XslCompiledTransform != null)
+                    if (xmlTypes.XslCompiledTransform == null)
                     {
-                        context.RegisterCodeBlockStartAction<TLanguageKindEnum>(
-                            (c) =>
-                            {
-                                GetAnalyzer(c, xmlTypes);
-                            });
+                        return;
                     }
+
+                    context.RegisterOperationBlockStartAction(context =>
+                    {
+                        var analyzer = new OperationBlockAnalyzer(xmlTypes, context.OwningSymbol);
+
+                        context.RegisterOperationAction(context =>
+                        {
+                            var assignment = (IAssignmentOperation)context.Operation;
+                            analyzer.AnalyzeNodeForXsltSettings(assignment.Target, assignment.Value);
+                        }, OperationKind.SimpleAssignment);
+
+                        context.RegisterOperationAction(context =>
+                        {
+                            var variableDeclarator = (IVariableDeclaratorOperation)context.Operation;
+                            if (variableDeclarator.GetVariableInitializer() is IVariableInitializerOperation initializer)
+                            {
+                                analyzer.AnalyzeNodeForXsltSettings(variableDeclarator, initializer.Value);
+                            }
+                        }, OperationKind.VariableDeclarator);
+
+                        context.RegisterOperationAction(context =>
+                        {
+                            var invocation = (IInvocationOperation)context.Operation;
+                            analyzer.AnalyzeNodeForXslCompiledTransformLoad(invocation.TargetMethod, invocation.Arguments,
+                                context.ReportDiagnostic);
+                        }, OperationKind.Invocation);
+
+                        context.RegisterOperationAction(context =>
+                        {
+                            var objectCreation = (IObjectCreationOperation)context.Operation;
+                            analyzer.AnalyzeNodeForXslCompiledTransformLoad(
+                                objectCreation.Constructor, objectCreation.Arguments, context.ReportDiagnostic);
+                        }, OperationKind.ObjectCreation);
+                    });
                 });
         }
 
-        protected abstract SyntaxNodeAnalyzer GetAnalyzer(CodeBlockStartAnalysisContext<TLanguageKindEnum> context, CompilationSecurityTypes types);
-
-        protected sealed class SyntaxNodeAnalyzer
+        private sealed class OperationBlockAnalyzer
         {
             private readonly CompilationSecurityTypes _xmlTypes;
-            private readonly SyntaxNodeHelper _syntaxNodeHelper;
+            private readonly ISymbol _enclosingSymbol;
 
-            private readonly Dictionary<ISymbol, XsltSettingsEnvironment> _xsltSettingsEnvironments = new();
+            private readonly ConcurrentDictionary<ISymbol, XsltSettingsEnvironment> _xsltSettingsEnvironments = new();
 
-            public SyntaxNodeAnalyzer(CompilationSecurityTypes xmlTypes, SyntaxNodeHelper helper)
+            public OperationBlockAnalyzer(CompilationSecurityTypes xmlTypes, ISymbol enclosingSymbol)
             {
                 _xmlTypes = xmlTypes;
-                _syntaxNodeHelper = helper;
+                _enclosingSymbol = enclosingSymbol;
             }
 
-            public void AnalyzeNode(SyntaxNodeAnalysisContext context)
+            public void AnalyzeNodeForXslCompiledTransformLoad(IMethodSymbol methodSymbol,
+                ImmutableArray<IArgumentOperation> arguments, Action<Diagnostic> reportDiagnostic)
             {
-                AnalyzeNodeForXsltSettings(context);
-                AnalyzeNodeForXslCompiledTransformLoad(context);
-            }
-
-            private void AnalyzeNodeForXslCompiledTransformLoad(SyntaxNodeAnalysisContext context)
-            {
-                SyntaxNode node = context.Node;
-                SemanticModel model = context.SemanticModel;
-                IMethodSymbol methodSymbol = _syntaxNodeHelper.GetCalleeMethodSymbol(node, model);
-
-                if (SecurityDiagnosticHelpers.IsXslCompiledTransformLoad(methodSymbol, _xmlTypes))
-                {
-                    bool isSecureResolver;
-                    bool isSecureSettings;
-                    bool isSetInBlock;
-
-                    int xmlResolverIndex = SecurityDiagnosticHelpers.GetXmlResolverParameterIndex(methodSymbol, _xmlTypes);
-                    int xsltSettingsIndex = SecurityDiagnosticHelpers.GetXsltSettingsParameterIndex(methodSymbol, _xmlTypes);
-
-                    // Overloads with no XmlResolver and XstlSettings specified are secure since they all have folowing behavior:
-                    //  1. An XmlUrlResolver with no user credentials is used to process any xsl:import or xsl:include elements.
-                    //  2. The document() function is disabled.
-                    //  3. Embedded scripts are not supported.
-                    if (xmlResolverIndex >= 0 &&
-                        xsltSettingsIndex >= 0)
-                    {
-                        IEnumerable<SyntaxNode> argumentExpressionNodes = _syntaxNodeHelper.GetInvocationArgumentExpressionNodes(node);
-                        SyntaxNode resolverNode = argumentExpressionNodes.ElementAt(xmlResolverIndex);
-
-                        isSecureResolver = SyntaxNodeHelper.NodeHasConstantValueNull(resolverNode, model) ||
-                                           SecurityDiagnosticHelpers.IsXmlSecureResolverType(model.GetTypeInfo(resolverNode).Type, _xmlTypes);
-
-                        SyntaxNode settingsNode = argumentExpressionNodes.ElementAt(xsltSettingsIndex);
-                        ISymbol settingsSymbol = SyntaxNodeHelper.GetSymbol(settingsNode, model);
-
-                        // 1. pass null or XsltSettings.Default as XsltSetting : secure
-                        if (settingsSymbol == null || SecurityDiagnosticHelpers.IsXsltSettingsDefaultProperty(settingsSymbol as IPropertySymbol, _xmlTypes))
-                        {
-                            isSetInBlock = true;
-                            isSecureSettings = true;
-                        }
-                        // 2. XsltSettings.TrustedXslt : insecure
-                        else if (SecurityDiagnosticHelpers.IsXsltSettingsTrustedXsltProperty(settingsSymbol as IPropertySymbol, _xmlTypes))
-                        {
-                            isSetInBlock = true;
-                            isSecureSettings = false;
-                        }
-                        // 3. check xsltSettingsEnvironments, if IsScriptDisabled && IsDocumentFunctionDisabled then secure, else insecure
-                        else if (_xsltSettingsEnvironments.TryGetValue(settingsSymbol, out XsltSettingsEnvironment env))
-                        {
-                            isSetInBlock = false;
-                            isSecureSettings = env.IsDocumentFunctionDisabled && env.IsScriptDisabled;
-                        }
-                        //4. symbol for settings is not found => passed in without any change => assume insecure
-                        else
-                        {
-                            isSetInBlock = true;
-                            isSecureSettings = false;
-                        }
-
-                        if (!isSecureSettings && !isSecureResolver)
-                        {
-                            LocalizableResourceString message = SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                isSetInBlock ? nameof(MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureConstructedMessage) :
-                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage),
-                                SecurityDiagnosticHelpers.GetNonEmptyParentName(node, model, context.CancellationToken)
-                            );
-
-                            context.ReportDiagnostic(
-                                node.CreateDiagnostic(RuleDoNotUseInsecureXSLTScriptExecution, message)
-                            );
-                        }
-                    }
-                }
-            }
-
-            private void AnalyzeNodeForXsltSettings(SyntaxNodeAnalysisContext context)
-            {
-                SyntaxNode node = context.Node;
-                SemanticModel model = context.SemanticModel;
-
-                SyntaxNode lhs = _syntaxNodeHelper.GetAssignmentLeftNode(node);
-                SyntaxNode rhs = _syntaxNodeHelper.GetAssignmentRightNode(node);
-
-                if (lhs == null || rhs == null)
+                if (!methodSymbol.IsXslCompiledTransformLoad(_xmlTypes))
                 {
                     return;
                 }
 
-                ISymbol lhsSymbol = SyntaxNodeHelper.GetSymbol(lhs, model);
-                if (lhsSymbol == null)
+                int xmlResolverIndex = methodSymbol.GetXmlResolverParameterIndex(_xmlTypes);
+                int xsltSettingsIndex = methodSymbol.GetXsltSettingsParameterIndex(_xmlTypes);
+
+                // Overloads with no XmlResolver and XstlSettings specified are secure since they all have
+                // following behavior:
+                //  1. An XmlUrlResolver with no user credentials is used to process any xsl:import
+                //     or xsl:include elements.
+                //  2. The document() function is disabled.
+                //  3. Embedded scripts are not supported.
+                if (xmlResolverIndex < 0 || xsltSettingsIndex < 0)
                 {
                     return;
                 }
 
-                IMethodSymbol rhsMethodSymbol = _syntaxNodeHelper.GetCalleeMethodSymbol(rhs, model);
-                IPropertySymbol rhsPropertySymbol = SyntaxNodeHelper.GetCalleePropertySymbol(rhs, model);
+                var resolverArgumentOperation = arguments[xmlResolverIndex].Value;
+                if (resolverArgumentOperation is IConversionOperation conversion)
+                {
+                    resolverArgumentOperation = conversion.Operand;
+                }
 
-                if (SecurityDiagnosticHelpers.IsXsltSettingsCtor(rhsMethodSymbol, _xmlTypes))
+                var isSecureResolver = resolverArgumentOperation.HasNullConstantValue()
+                    || resolverArgumentOperation.Type.IsXmlSecureResolverType(_xmlTypes);
+
+                var settingsOperation = arguments[xsltSettingsIndex].Value;
+                var settingsSymbol = settingsOperation.GetReferencedMemberOrLocalOrParameter();
+
+                bool isSecureSettings;
+                bool isSetInBlock;
+
+                // 1. pass null or XsltSettings.Default as XsltSetting : secure
+                if (settingsSymbol is null || (settingsSymbol as IPropertySymbol).IsXsltSettingsDefaultProperty(_xmlTypes))
+                {
+                    isSetInBlock = true;
+                    isSecureSettings = true;
+                }
+                // 2. XsltSettings.TrustedXslt : insecure
+                else if ((settingsSymbol as IPropertySymbol).IsXsltSettingsTrustedXsltProperty(_xmlTypes))
+                {
+                    isSetInBlock = true;
+                    isSecureSettings = false;
+                }
+                // 3. check xsltSettingsEnvironments, if IsScriptDisabled && IsDocumentFunctionDisabled then secure,
+                //    else insecure
+                else if (_xsltSettingsEnvironments.TryGetValue(settingsSymbol, out XsltSettingsEnvironment env))
+                {
+                    isSetInBlock = false;
+                    isSecureSettings = env.IsDocumentFunctionDisabled && env.IsScriptDisabled;
+                }
+                //4. symbol for settings is not found => passed in without any change => assume insecure
+                else
+                {
+                    isSetInBlock = true;
+                    isSecureSettings = false;
+                }
+
+                if (!isSecureSettings && !isSecureResolver)
+                {
+                    LocalizableResourceString message = SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                        isSetInBlock
+                            ? nameof(MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureConstructedMessage)
+                            : nameof(MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage),
+                        SecurityDiagnosticHelpers.GetNonEmptyParentName(_enclosingSymbol)
+                    );
+
+                    var invocationOrObjCreation = settingsOperation.Parent.Parent;
+                    RoslynDebug.Assert(invocationOrObjCreation.Kind is OperationKind.Invocation
+                        or OperationKind.ObjectCreation);
+                    reportDiagnostic(
+                        invocationOrObjCreation.CreateDiagnostic(RuleDoNotUseInsecureXSLTScriptExecution, message));
+                }
+            }
+
+            public void AnalyzeNodeForXsltSettings(IOperation lhs, IOperation rhs)
+            {
+                var lhsSymbol = lhs.Kind switch
+                {
+                    OperationKind.VariableDeclarator => ((IVariableDeclaratorOperation)lhs).Symbol,
+                    _ => lhs.GetReferencedMemberOrLocalOrParameter(),
+                };
+                if (lhsSymbol is null)
+                {
+                    return;
+                }
+
+                IMethodSymbol? rhsMethodSymbol = rhs.Kind switch
+                {
+                    OperationKind.Invocation => ((IInvocationOperation)rhs).TargetMethod,
+                    OperationKind.ObjectCreation => ((IObjectCreationOperation)rhs).Constructor,
+                    _ => null,
+                };
+                IPropertySymbol? rhsPropertySymbol = (rhs as IPropertyReferenceOperation)?.Property;
+
+                if (rhsMethodSymbol.IsXsltSettingsCtor(_xmlTypes))
                 {
                     XsltSettingsEnvironment env = new XsltSettingsEnvironment();
                     _xsltSettingsEnvironments[lhsSymbol] = env;
 
                     env.XsltSettingsSymbol = lhsSymbol;
                     env.XsltSettingsDefinitionSymbol = rhsMethodSymbol;
-                    env.XsltSettingsDefinition = node;
-                    env.EnclosingConstructSymbol = _syntaxNodeHelper.GetEnclosingConstructSymbol(node, model);
-                    //default both properties are disbled
+                    env.XsltSettingsDefinition = lhs.Parent;
+                    env.EnclosingConstructSymbol = _enclosingSymbol;
+                    // default both properties are disabled
                     env.IsDocumentFunctionDisabled = true;
                     env.IsScriptDisabled = true;
 
                     // XsltSettings Constructor (Boolean, Boolean)
-                    if (rhsMethodSymbol.Parameters.Any())
+                    if (!rhsMethodSymbol.Parameters.IsEmpty)
                     {
-                        IEnumerable<SyntaxNode> argumentExpressionNodes = _syntaxNodeHelper.GetObjectCreationArgumentExpressionNodes(rhs);
-                        env.IsDocumentFunctionDisabled = SyntaxNodeHelper.NodeHasConstantValueBoolFalse(argumentExpressionNodes.ElementAt(0), model);
-                        env.IsScriptDisabled = SyntaxNodeHelper.NodeHasConstantValueBoolFalse(argumentExpressionNodes.ElementAt(1), model);
+                        var arguments = rhs.Kind switch
+                        {
+                            OperationKind.Invocation => ((IInvocationOperation)rhs).Arguments,
+                            OperationKind.ObjectCreation => ((IObjectCreationOperation)rhs).Arguments,
+                            _ => ImmutableArray<IArgumentOperation>.Empty,
+                        };
+                        env.IsDocumentFunctionDisabled = arguments[0].Value.TryGetBoolConstantValue(out var value)
+                            && !value;
+                        env.IsScriptDisabled = arguments[1].Value.TryGetBoolConstantValue(out value) && !value;
                     }
 
-                    foreach (SyntaxNode arg in _syntaxNodeHelper.GetObjectInitializerExpressionNodes(rhs))
+                    var initializers = (rhs as IObjectCreationOperation)?.Initializer?.Initializers
+                        ?? ImmutableArray<IOperation>.Empty;
+                    foreach (var arg in initializers)
                     {
-                        SyntaxNode argLhs = _syntaxNodeHelper.GetAssignmentLeftNode(arg);
-                        SyntaxNode argRhs = _syntaxNodeHelper.GetAssignmentRightNode(arg);
+                        if (arg is not ISimpleAssignmentOperation assignment)
+                        {
+                            continue;
+                        }
 
-                        ISymbol argLhsSymbol = SyntaxNodeHelper.GetSymbol(argLhs, model);
+                        var argLhsPropertySymbol = (assignment.Target as IPropertyReferenceOperation)?.Property;
+                        var argRhs = assignment.Value;
 
                         // anything other than a constant false is treated as true
-                        if (SecurityDiagnosticHelpers.IsXsltSettingsEnableDocumentFunctionProperty(argLhsSymbol as IPropertySymbol, _xmlTypes))
+                        if (argLhsPropertySymbol.IsXsltSettingsEnableDocumentFunctionProperty(_xmlTypes))
                         {
-                            env.IsDocumentFunctionDisabled = SyntaxNodeHelper.NodeHasConstantValueBoolFalse(argRhs, model);
+                            env.IsDocumentFunctionDisabled = argRhs.TryGetBoolConstantValue(out var value) && !value;
                         }
-                        else if (SecurityDiagnosticHelpers.IsXsltSettingsEnableScriptProperty(argLhsSymbol as IPropertySymbol, _xmlTypes))
+                        else if (argLhsPropertySymbol.IsXsltSettingsEnableScriptProperty(_xmlTypes))
                         {
-                            env.IsScriptDisabled = SyntaxNodeHelper.NodeHasConstantValueBoolFalse(argRhs, model);
+                            env.IsScriptDisabled = argRhs.TryGetBoolConstantValue(out var value) && !value;
                         }
                     }
                 }
-                else if (SecurityDiagnosticHelpers.IsXsltSettingsDefaultProperty(rhsPropertySymbol, _xmlTypes))
+                else if (rhsPropertySymbol.IsXsltSettingsDefaultProperty(_xmlTypes))
                 {
                     XsltSettingsEnvironment env = new XsltSettingsEnvironment();
                     _xsltSettingsEnvironments[lhsSymbol] = env;
 
                     env.XsltSettingsSymbol = lhsSymbol;
                     env.XsltSettingsDefinitionSymbol = rhsPropertySymbol;
-                    env.XsltSettingsDefinition = node;
-                    env.EnclosingConstructSymbol = _syntaxNodeHelper.GetEnclosingConstructSymbol(node, model);
+                    env.XsltSettingsDefinition = lhs.Parent;
+                    env.EnclosingConstructSymbol = _enclosingSymbol;
                     env.IsDocumentFunctionDisabled = true;
                     env.IsScriptDisabled = true;
                 }
-                else if (SecurityDiagnosticHelpers.IsXsltSettingsTrustedXsltProperty(rhsPropertySymbol, _xmlTypes))
+                else if (rhsPropertySymbol.IsXsltSettingsTrustedXsltProperty(_xmlTypes))
                 {
                     XsltSettingsEnvironment env = new XsltSettingsEnvironment();
                     _xsltSettingsEnvironments[lhsSymbol] = env;
 
                     env.XsltSettingsSymbol = lhsSymbol;
                     env.XsltSettingsDefinitionSymbol = rhsPropertySymbol;
-                    env.XsltSettingsDefinition = node;
-                    env.EnclosingConstructSymbol = _syntaxNodeHelper.GetEnclosingConstructSymbol(node, model);
+                    env.XsltSettingsDefinition = lhs.Parent;
+                    env.EnclosingConstructSymbol = _enclosingSymbol;
                 }
                 else
                 {
-                    bool isXlstSettingsEnableDocumentFunctionProperty = SecurityDiagnosticHelpers.IsXsltSettingsEnableDocumentFunctionProperty(lhsSymbol as IPropertySymbol, _xmlTypes);
-                    bool isXlstSettingsEnableScriptProperty = SecurityDiagnosticHelpers.IsXsltSettingsEnableScriptProperty(lhsSymbol as IPropertySymbol, _xmlTypes);
+                    var lhsPropertySymbol = lhsSymbol as IPropertySymbol;
+                    bool isXlstSettingsEnableDocumentFunctionProperty =
+                        lhsPropertySymbol.IsXsltSettingsEnableDocumentFunctionProperty(_xmlTypes);
+                    bool isXlstSettingsEnableScriptProperty =
+                        lhsPropertySymbol.IsXsltSettingsEnableScriptProperty(_xmlTypes);
 
-                    if (isXlstSettingsEnableDocumentFunctionProperty ||
-                        isXlstSettingsEnableScriptProperty)
+                    if (!isXlstSettingsEnableDocumentFunctionProperty &&
+                        !isXlstSettingsEnableScriptProperty)
                     {
-                        SyntaxNode lhsExpressionNode = _syntaxNodeHelper.GetMemberAccessExpressionNode(lhs);
-                        if (lhsExpressionNode == null)
-                        {
-                            return;
-                        }
+                        return;
+                    }
 
-                        ISymbol lhsExpressionSymbol = SyntaxNodeHelper.GetSymbol(lhsExpressionNode, model);
-                        if (lhsExpressionSymbol == null)
-                        {
-                            return;
-                        }
+                    IOperation? lhsExpression = (lhs as IMemberReferenceOperation)?.Instance;
+                    ISymbol? lhsExpressionSymbol = lhsExpression?.GetReferencedMemberOrLocalOrParameter();
+                    if (lhsExpressionSymbol is null)
+                    {
+                        return;
+                    }
 
-                        if (!_xsltSettingsEnvironments.TryGetValue(lhsExpressionSymbol, out XsltSettingsEnvironment env))
+                    if (!_xsltSettingsEnvironments.TryGetValue(lhsExpressionSymbol, out var env))
+                    {
+                        env = new XsltSettingsEnvironment
                         {
-                            env = new XsltSettingsEnvironment
-                            {
-                                XsltSettingsSymbol = lhsExpressionSymbol
-                            };
-                            _xsltSettingsEnvironments[lhsExpressionSymbol] = env;
-                        }
+                            XsltSettingsSymbol = lhsExpressionSymbol,
+                        };
+                        _xsltSettingsEnvironments[lhsExpressionSymbol] = env;
+                    }
 
-                        if (isXlstSettingsEnableDocumentFunctionProperty)
-                        {
-                            env.IsDocumentFunctionDisabled = SyntaxNodeHelper.NodeHasConstantValueBoolFalse(rhs, model);
-                        }
-                        else if (isXlstSettingsEnableScriptProperty)
-                        {
-                            env.IsScriptDisabled = SyntaxNodeHelper.NodeHasConstantValueBoolFalse(rhs, model);
-                        }
+                    if (isXlstSettingsEnableDocumentFunctionProperty)
+                    {
+                        env.IsDocumentFunctionDisabled = rhs.TryGetBoolConstantValue(out var value) && !value;
+                    }
+                    else if (isXlstSettingsEnableScriptProperty)
+                    {
+                        env.IsScriptDisabled = rhs.TryGetBoolConstantValue(out var value) && !value;
                     }
                 }
             }
 
             private class XsltSettingsEnvironment
             {
-                internal ISymbol XsltSettingsSymbol { get; set; }
-                internal ISymbol XsltSettingsDefinitionSymbol { get; set; }
-                internal SyntaxNode XsltSettingsDefinition { get; set; }
-                internal ISymbol EnclosingConstructSymbol { get; set; }
+                internal ISymbol? XsltSettingsSymbol { get; set; }
+                internal ISymbol? XsltSettingsDefinitionSymbol { get; set; }
+                internal IOperation? XsltSettingsDefinition { get; set; }
+                internal ISymbol? EnclosingConstructSymbol { get; set; }
                 internal bool IsScriptDisabled { get; set; }
                 internal bool IsDocumentFunctionDisabled { get; set; }
             }

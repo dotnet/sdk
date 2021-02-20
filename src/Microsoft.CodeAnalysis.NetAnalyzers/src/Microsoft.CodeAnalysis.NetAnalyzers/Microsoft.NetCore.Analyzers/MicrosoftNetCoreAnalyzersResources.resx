@@ -790,7 +790,7 @@
     <value>Adding certificates to the operating system's trusted root certificates increases the risk of incorrectly authenticating an illegitimate certificate</value>
   </data>
   <data name="DefinitelyUseSecureCookiesASPNetCore" xml:space="preserve">
-    <value>Use Secure Cookies In ASP.Net Core</value>
+    <value>Use Secure Cookies In ASP.NET Core</value>
   </data>
   <data name="DefinitelyUseSecureCookiesASPNetCoreMessage" xml:space="preserve">
     <value>Set CookieOptions.Secure = true when setting a cookie</value>
@@ -985,7 +985,7 @@
     <value>Adding certificates to the operating system's trusted root certificates is insecure. Ensure that the target store is not root store.</value>
   </data>
   <data name="MaybeUseSecureCookiesASPNetCore" xml:space="preserve">
-    <value>Ensure Use Secure Cookies In ASP.Net Core</value>
+    <value>Ensure Use Secure Cookies In ASP.NET Core</value>
   </data>
   <data name="MaybeUseSecureCookiesASPNetCoreMessage" xml:space="preserve">
     <value>Ensure that CookieOptions.Secure = true when setting a cookie</value>
@@ -1514,5 +1514,9 @@
   <data name="PlatformCompatibilityAllVersions" xml:space="preserve">
     <value>'{0}' all versions</value>
     <comment>This call site is reachable on: 'Windows' all versions.</comment>
+  </data>
+  <data name="PlatformCompatibilityAllPlatforms" xml:space="preserve">
+    <value>and all other platforms</value>
+    <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
 </root>

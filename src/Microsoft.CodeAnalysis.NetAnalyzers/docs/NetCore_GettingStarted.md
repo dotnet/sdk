@@ -30,7 +30,8 @@
   - Use the failures to discover nuance and guide the implementation details.
   - Run the analyzer against `dotnet/roslyn` [instruction](#Testing-against-the-Roslyn-repo), and if feasable with `dotnet/aspnetcore` repos.
   - Document for review: matching and non-matching scenarios, including any discovered nuance.
-  - Failures in all `dotnet` repos are addressed.
+  - All warnings and errors in these repos are addressed (to prevent build failures)
+    - `Info` level diagnostics do not need to be fully resolved or suppressed as they do not cause build failures
 - Document for review: severity, default, categorization, numbering, titles, messages, and descriptions.
 - Create the appropriate documentation for [docs.microsoft.com](https://github.com/dotnet/docs/tree/master/docs/fundamentals/code-analysis/quality-rules) within **ONE WEEK**, instructions available on [Contribute docs for .NET code analysis rules to the .NET docs repository](https://docs.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis).
 - PR merged into `dotnet/roslyn-analyzers`.
@@ -78,9 +79,8 @@ The diagnostics reported by the analyzer will be listed in Output.txt.
 2. Start VS and open a project you want to debug
 3. Note the process ID for `ServiceHub.RoslynCodeAnalysisService.exe` corresponding to that VS instance
     - If you are using `Visual Studio` older than version `16.8 Preview2` then analyzers run in `devenv.exe`, you will need to attach that process instead
-    - Code fixes and analyzers run in different processes. If you want to debug the CodeFixProvider corresponding to the analyzer, attach `devenv.exe` instead. 
+    - Code fixes and analyzers run in different processes. If you want to debug the CodeFixProvider corresponding to the analyzer, attach `devenv.exe` instead.
 4. Open another VS instance for `RoslynAnalyzers.sln` and set breakpoints in the analyzer solution where you want to debug
 5. Attach to above process ID with the RoslynAnalyzers debugger: `Debug -> Attach to Process...`
 6. Start typing in the other project, the breakpoints should hit
     - If breakpoints are not hitting then the RoslynAnalyzers.sln build might not the same as the build you copied to the step 1 repeat the step again or check if you copied into the correct path
-    

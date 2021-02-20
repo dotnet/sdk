@@ -130,8 +130,8 @@ namespace GenerateDocumentationAndConfigFiles
 
             createRulesetAndEditorconfig(
                 "AllRulesEnabled",
-                "All Rules Enabled with default severity",
-                "All Rules are enabled with default severity. Rules with IsEnabledByDefault = false are force enabled with default severity.",
+                "All Rules Enabled as build warnings",
+                "All Rules are enabled as build warnings. Rules with IsEnabledByDefault = false are force enabled as build warnings.",
                 RulesetKind.AllEnabled);
 
             createRulesetAndEditorconfig(
@@ -151,8 +151,8 @@ namespace GenerateDocumentationAndConfigFiles
 
                 createRulesetAndEditorconfig(
                     $"{category}RulesEnabled",
-                    $"{category} Rules Enabled with default severity",
-                    $@"All {category} Rules are enabled with default severity. {category} Rules with IsEnabledByDefault = false are force enabled with default severity. Rules from a different category are disabled.",
+                    $"{category} Rules Enabled as build warnings",
+                    $@"All {category} Rules are enabled as build warnings. {category} Rules with IsEnabledByDefault = false are force enabled as build warnings. Rules from a different category are disabled.",
                     RulesetKind.CategoryEnabled,
                     category: category);
             }
@@ -173,8 +173,8 @@ namespace GenerateDocumentationAndConfigFiles
 
                 createRulesetAndEditorconfig(
                     $"{customTag}RulesEnabled",
-                    $"{customTag} Rules Enabled with default severity",
-                    $@"All {customTag} Rules are enabled with default severity. {customTag} Rules with IsEnabledByDefault = false are force enabled with default severity. Non-{customTag} Rules are disabled.",
+                    $"{customTag} Rules Enabled as build warnings",
+                    $@"All {customTag} Rules are enabled as build warnings. {customTag} Rules with IsEnabledByDefault = false are force enabled as build warning. Non-{customTag} Rules are disabled.",
                     RulesetKind.CustomTagEnabled,
                     customTag: customTag);
             }
@@ -361,6 +361,10 @@ $@"<Project>
                     description = Regex.Replace(description, "(\r?\n)", "$1$1");
                     // Escape generic arguments to ensure they are not considered as HTML elements
                     description = Regex.Replace(description, "(<.+?>)", "\\$1");
+                    // Add angle brackets around links to prevent violating MD034:
+                    // https://github.com/DavidAnson/markdownlint/blob/82cf68023f7dbd2948a65c53fc30482432195de4/doc/Rules.md#md034---bare-url-used
+                    // Regex taken from: https://github.com/DavidAnson/markdownlint/blob/59eaa869fc749e381fe9d53d04812dfc759595c6/helpers/helpers.js#L24
+                    description = Regex.Replace(description, @"(?:http|ftp)s?:\/\/[^\s\]""']*(?:\/|[^\s\]""'\W])", "<$0>");
                     description = description.Trim();
 
                     builder.AppendLine(description);
@@ -441,7 +445,7 @@ $@"<Project>
                         writer.Write("shortDescription", descriptor.Title.ToString(CultureInfo.InvariantCulture));
 
                         string fullDescription = descriptor.Description.ToString(CultureInfo.InvariantCulture);
-                        writer.Write("fullDescription", !string.IsNullOrEmpty(fullDescription) ? fullDescription : descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture));
+                        writer.Write("fullDescription", !string.IsNullOrEmpty(fullDescription) ? fullDescription.Replace("\r\n", "\n") : descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture));
 
                         writer.Write("defaultLevel", getLevel(descriptor.DefaultSeverity));
 
@@ -562,7 +566,15 @@ Rule ID | Missing Help Link | Title |
                         continue;
                     }
 
-                    var line = $"{ruleId} | {helpLinkUri} | {descriptor.Title.ToString(CultureInfo.InvariantCulture)} |";
+                    // The angle brackets around helpLinkUri are added to follow MD034 rule:
+                    // https://github.com/DavidAnson/markdownlint/blob/82cf68023f7dbd2948a65c53fc30482432195de4/doc/Rules.md#md034---bare-url-used
+                    if (!string.IsNullOrWhiteSpace(helpLinkUri))
+                    {
+                        helpLinkUri = $"<{helpLinkUri}>";
+                    }
+
+                    var escapedTitle = descriptor.Title.ToString(CultureInfo.InvariantCulture).Replace("<", "\\<");
+                    var line = $"{ruleId} | {helpLinkUri} | {escapedTitle} |";
                     if (validateOnly)
                     {
                         // The validation for RulesMissingDocumentation.md is different than others.
@@ -1029,26 +1041,30 @@ Rule ID | Missing Help Link | Title |
                     {
                         RulesetKind.CategoryDefault => getRuleActionCore(enable: categoryPass && rule.IsEnabledByDefault),
 
-                        RulesetKind.CategoryEnabled => getRuleActionCore(enable: categoryPass),
+                        RulesetKind.CategoryEnabled => getRuleActionCore(enable: categoryPass, enableAsWarning: categoryPass),
 
                         RulesetKind.CustomTagDefault => getRuleActionCore(enable: customTagPass && rule.IsEnabledByDefault),
 
-                        RulesetKind.CustomTagEnabled => getRuleActionCore(enable: customTagPass),
+                        RulesetKind.CustomTagEnabled => getRuleActionCore(enable: customTagPass, enableAsWarning: customTagPass),
 
                         RulesetKind.AllDefault => getRuleActionCore(enable: rule.IsEnabledByDefault),
 
-                        RulesetKind.AllEnabled => getRuleActionCore(enable: true),
+                        RulesetKind.AllEnabled => getRuleActionCore(enable: true, enableAsWarning: true),
 
                         RulesetKind.AllDisabled => getRuleActionCore(enable: false),
 
                         _ => throw new InvalidProgramException(),
                     };
 
-                    string getRuleActionCore(bool enable)
+                    string getRuleActionCore(bool enable, bool enableAsWarning = false)
                     {
-                        if (enable)
+                        if (!enable && enableAsWarning)
                         {
-                            return getSeverityString(rule.DefaultSeverity);
+                            throw new ArgumentException($"Unexpected arguments. '{nameof(enable)}' can't be false while '{nameof(enableAsWarning)}' is true.");
+                        }
+                        else if (enable)
+                        {
+                            return getSeverityString(enableAsWarning ? DiagnosticSeverity.Warning : rule.DefaultSeverity);
                         }
                         else
                         {

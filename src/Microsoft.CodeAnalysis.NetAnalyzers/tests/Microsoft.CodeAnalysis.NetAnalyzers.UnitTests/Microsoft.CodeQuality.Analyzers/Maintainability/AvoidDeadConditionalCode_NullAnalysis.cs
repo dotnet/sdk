@@ -17,23 +17,31 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     public partial class AvoidDeadConditionalCodeTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string condition, string reason)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(condition, reason);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string condition, string reason)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(condition, reason);
 
         private static DiagnosticResult GetCSharpNeverNullResultAt(int line, int column, string condition, string reason)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(AvoidDeadConditionalCode.NeverNullRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(condition, reason);
 
         private static DiagnosticResult GetBasicNeverNullResultAt(int line, int column, string condition, string reason)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(AvoidDeadConditionalCode.NeverNullRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(condition, reason);
 
         private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -7028,8 +7036,6 @@ public class C
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
-            await VerifyCS.VerifyAnalyzerAsync(@"
-");
         }
     }
 }
