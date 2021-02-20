@@ -417,7 +417,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(RetainVMGarbageCollection)" />
 
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant"
-                                    Condition="'$(InvariantGlobalization)' != ''"
+                                    Condition="'$(InvariantGlobalization)' == 'true'"
                                     Value="$(InvariantGlobalization)"
                                     Trim="true" />
 
