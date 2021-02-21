@@ -1514,13 +1514,13 @@
     <value>Use 'ContainsKey(TKey)'</value>
   </data>
   <data name="PreferDictionaryContainsKeyDescription" xml:space="preserve">
-    <value>'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations. </value>
+    <value>'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</value>
   </data>
   <data name="PreferDictionaryContainsKeyMessage" xml:space="preserve">
     <value>Prefer '{0}.ContainsKey(TKey)' over '{0}.Keys.Contains(TKey)'</value>
   </data>
   <data name="PreferDictionaryContainsMethodsTitle" xml:space="preserve">
-    <value>Prefer Dictionary Contains Methods</value>
+    <value>Prefer Dictionary.Contains methods</value>
   </data>
   <data name="PreferDictionaryContainsValueCodeFixTitle" xml:space="preserve">
     <value>Use 'ContainsValue(TValue)'</value>

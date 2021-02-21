@@ -1593,8 +1593,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyDescription">
-        <source>'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations. </source>
-        <target state="new">'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations. </target>
+        <source>'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</source>
+        <target state="new">'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyMessage">
@@ -1603,8 +1603,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsMethodsTitle">
-        <source>Prefer Dictionary Contains Methods</source>
-        <target state="new">Prefer Dictionary Contains Methods</target>
+        <source>Prefer Dictionary.Contains methods</source>
+        <target state="new">Prefer Dictionary.Contains methods</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueCodeFixTitle">

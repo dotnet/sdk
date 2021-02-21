@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.CodeActions;
+using Analyzer.Utilities.Extensions;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
@@ -23,7 +24,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 return;
             if (invocation.Expression is not MemberAccessExpressionSyntax containsMemberAccess)
                 return;
-            if (RemoveRoundBrackets(containsMemberAccess.Expression) is not MemberAccessExpressionSyntax keysOrValuesMemberAccess)
+            if (containsMemberAccess.Expression.WalkDownParentheses() is not MemberAccessExpressionSyntax keysOrValuesMemberAccess)
                 return;
 
             if (keysOrValuesMemberAccess.Name.Identifier.ValueText == KeysPropertyName)
@@ -56,17 +57,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
                 return editor.GetChangedDocument();
             }
-        }
-
-        private static SyntaxNode RemoveRoundBrackets(SyntaxNode possiblyPerenthecizedDictionaryPropertyAccessExpression)
-        {
-            SyntaxNode current = possiblyPerenthecizedDictionaryPropertyAccessExpression;
-            while (current is ParenthesizedExpressionSyntax parenExpressionSyntax)
-            {
-                current = parenExpressionSyntax.Expression;
-            }
-
-            return current;
         }
     }
 }

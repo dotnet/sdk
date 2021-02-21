@@ -8,6 +8,7 @@ using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
+using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -16,18 +17,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1839";
 
-        private static readonly LocalizableString s_localizableTitle = CreateResource(nameof(MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsMethodsTitle));
-        private static readonly LocalizableString s_localizableContainsKeyMessage = CreateResource(nameof(MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsKeyMessage));
-        private static readonly LocalizableString s_localizableContainsKeyDescription = CreateResource(nameof(MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsKeyDescription));
-        private static readonly LocalizableString s_localizableContainsValueMessage = CreateResource(nameof(MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueMessage));
-        private static readonly LocalizableString s_localizableContainsValueDescription = CreateResource(nameof(MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueDescription));
+        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsMethodsTitle), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableContainsKeyMessage = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsKeyMessage), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableContainsKeyDescription = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsKeyDescription), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableContainsValueMessage = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsValueMessage), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableContainsValueDescription = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsValueDescription), Resx.ResourceManager, typeof(Resx));
 
         internal static readonly DiagnosticDescriptor ContainsKeyRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableContainsKeyMessage,
             DiagnosticCategory.Performance,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeSuggestion,
             s_localizableContainsKeyDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -37,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             s_localizableTitle,
             s_localizableContainsValueMessage,
             DiagnosticCategory.Performance,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeSuggestion,
             s_localizableContainsValueDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -99,16 +100,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var invocation = (IInvocationOperation)context.Operation;
                 IMethodSymbol containsMethod = invocation.TargetMethod;
 
-                if (containsMethod.Name != ContainsMethodName)
+                if (containsMethod.Name != ContainsMethodName
+                    || containsMethod.ReturnType.SpecialType != SpecialType.System_Boolean
+                    || !TryGetPropertyReferenceOperation(invocation, out IPropertySymbol? property)
+                    || !TryGetConstructedDictionaryType(property.ContainingType, out INamedTypeSymbol? constructedDictionaryType))
+                {
                     return;
-                if (containsMethod.ReturnType.SpecialType != SpecialType.System_Boolean)
-                    return;
-                if (!TryGetPropertyReferenceOperation(invocation, out IPropertySymbol? property))
-                    return;
-                if (!DoesContainsCandidateHaveCorrectArgumentCount(containsMethod))
-                    return;
-                if (!TryGetConstructedDictionaryType(property.ContainingType, out INamedTypeSymbol? constructedDictionaryType))
-                    return;
+                }
 
                 //  At this point, we know that the method being invoked is a method called "Contains" that has a boolean return type.
                 //  We also know that the method is being invoked on a property belonging to a type that implements IDictionary`2. We will
@@ -120,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 //  We use Parameters.Last() because the first argument could be the key/value collection, depending
                 //  on whether the method is an extension method and whether the language is C# or Visual Basic. 
 
-                ITypeSymbol containsParameterType = containsMethod.Parameters.Last().Type;
+                ITypeSymbol containsParameterType = containsMethod.Parameters[^1].Type;
 
                 if (property.Name == KeysPropertyName)
                 {
@@ -136,12 +134,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             x.IsPublic() &&
                             x.Parameters.Length == 1 &&
                             x.Parameters[0].Type.Equals(keyType, SymbolEqualityComparer.Default))
-                        .SingleOrDefault();
+                        .FirstOrDefault();
 
                     if (containsKeyMethod is null)
                         return;
 
-                    var diagnostic = Diagnostic.Create(ContainsKeyRule, invocation.Syntax.GetLocation(), property.ContainingType.Name);
+                    var diagnostic = invocation.CreateDiagnostic(ContainsKeyRule, property.ContainingType.Name);
                     context.ReportDiagnostic(diagnostic);
                 }
                 else if (property.Name == ValuesPropertyName)
@@ -155,35 +153,38 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     IMethodSymbol? containsValueMethod = property.ContainingType.GetMembers(ContainsValueMethodName)
                         .OfType<IMethodSymbol>()
                         .WhereAsArray(x => x.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                            x.IsPublic() &&
                             x.Parameters.Length == 1 &&
                             x.Parameters[0].Type.Equals(valueType, SymbolEqualityComparer.Default))
-                        .SingleOrDefault();
+                        .FirstOrDefault();
 
                     if (containsValueMethod is null)
                         return;
 
-                    var diagnostic = Diagnostic.Create(ContainsValueRule, invocation.Syntax.GetLocation(), property.ContainingType.Name);
+                    var diagnostic = invocation.CreateDiagnostic(ContainsValueRule, property.ContainingType.Name);
                     context.ReportDiagnostic(diagnostic);
                 }
             }
 
             static bool TryGetPropertyReferenceOperation(IInvocationOperation containsInvocation, [NotNullWhen(true)] out IPropertySymbol? property)
             {
-                //  If the method being invoked is an extension method, then the first child may be an IArgumentOperation, 
-                //  and its first child may be an IConversionOperation. The first child is not guaranteed to be an IArgumentOperation
-                //  because VB and C# handle extension methods differently. Likewise, the IConversionOperation may be absent if
-                //  the compile-time types match exactly. Therefore, we need to walk down conditionally. 
+                IMethodSymbol method = containsInvocation.TargetMethod;
+                IOperation? receiver = null;
 
-                IOperation current = containsInvocation;
-                if (containsInvocation.TargetMethod.IsExtensionMethod)
+                //  C# and VB handle extension methods differently. In C#, the "this" argument is included in the argument list. In VB, it's not.
+                if (method.IsExtensionMethod && method.Language == LanguageNames.CSharp && method.Parameters.Length == 2)
                 {
-                    if (current.Children.FirstOrDefault() is IArgumentOperation argumentOperation)
-                        current = argumentOperation;
-                    if (current.Children.FirstOrDefault() is IConversionOperation conversionOperation)
-                        current = conversionOperation;
+                    receiver = containsInvocation.Arguments[0].Value;
+                }
+                else if (method.Parameters.Length == 1)
+                {
+                    receiver = containsInvocation.Instance;
                 }
 
-                property = (current.Children.FirstOrDefault() as IPropertyReferenceOperation)?.Property;
+                //  The receiver may be a conversion operation if the invocation is an extension method.
+                receiver = receiver is IConversionOperation conversion ? conversion.Operand : receiver;
+
+                property = (receiver as IPropertyReferenceOperation)?.Property;
                 return property is not null;
             }
 
@@ -191,33 +192,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 constructedDictionaryType = derived.GetBaseTypesAndThis()
                     .WhereAsArray(x => x.OriginalDefinition.Equals(idictionaryType, SymbolEqualityComparer.Default))
-                    .SingleOrDefault();
+                    .FirstOrDefault();
 
                 if (constructedDictionaryType is null)
                 {
                     constructedDictionaryType = derived.AllInterfaces
                         .WhereAsArray(x => x.OriginalDefinition.Equals(idictionaryType, SymbolEqualityComparer.Default))
-                        .SingleOrDefault();
+                        .FirstOrDefault();
                 }
 
                 return constructedDictionaryType is not null;
             }
-
-            static bool DoesContainsCandidateHaveCorrectArgumentCount(IMethodSymbol containsCandidate)
-            {
-                //  C# and VB handle extension methods differently. In C#, the extended 'this' parameter will be included in 
-                //  the argument list, whereas in VB, it will not. 
-
-                if (containsCandidate.Language == LanguageNames.CSharp && containsCandidate.IsExtensionMethod)
-                    return containsCandidate.Parameters.Length == 2;
-                else
-                    return containsCandidate.Parameters.Length == 1;
-            }
-        }
-
-        private static LocalizableString CreateResource(string resourceName)
-        {
-            return new LocalizableResourceString(resourceName, MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         }
     }
 }

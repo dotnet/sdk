@@ -1296,7 +1296,7 @@ Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in
 |CodeFix|False|
 ---
 
-## [CA1839](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839): Prefer Dictionary Contains Methods
+## [CA1839](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839): Prefer Dictionary.Contains methods
 
 Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'.
 
@@ -1304,7 +1304,7 @@ Many dictionary implementations lazily initialize the Values collection. To avoi
 |-|-|
 |Category|Performance|
 |Enabled|True|
-|Severity|Warning|
+|Severity|Info|
 |CodeFix|True|
 ---
 
