@@ -215,16 +215,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:_RazorSourceGeneratorWriteGeneratedOutput=true").Should().Pass();
+            build.Execute().Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             var generatedIndex = Path.Combine(intermediateOutputPath, "scopedcss", "Views", "Home", "Index.cshtml.rz.scp.css");
             new FileInfo(generatedIndex).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "Razor", "Views", "Home", "Index.cshtml.g.cs")).Should().Exist();
+
             var generatedCounter = Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Counter.razor.rz.scp.css");
             new FileInfo(generatedCounter).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "Razor", "Components", "Counter.razor.g.cs")).Should().Exist();
 
             var indexContent = File.ReadAllText(generatedIndex);
             var counterContent = File.ReadAllText(generatedCounter);
@@ -238,8 +237,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var counterScopeId = counterScopeMatch.Groups[1].Captures[0].Value;
 
             Assert.NotEqual(indexScopeId, counterScopeId);
-            new FileInfo(Path.Combine(intermediateOutputPath, "Razor", "Views", "Home", "Index.cshtml.g.cs")).Should().Contain(indexScopeId);
-            new FileInfo(Path.Combine(intermediateOutputPath, "Razor", "Components", "Counter.razor.g.cs")).Should().Contain(counterScopeId);
         }
 
         [Fact]
