@@ -708,5 +708,37 @@ class C
 #pragma warning restore RS0030 // Do not used banned APIs
                 fixedSource);
         }
+
+        [Fact]
+        [WorkItem(4665, "https://github.com/dotnet/roslyn-analyzers/issues/4665")]
+        public async Task NoDiagnosticInExpressionTree_CSharp()
+        {
+            const string source = @"
+using System;
+using System.Linq.Expressions;
+
+class C
+{
+    Expression<Func<int[]>> f = () => new int[0];
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        [WorkItem(4665, "https://github.com/dotnet/roslyn-analyzers/issues/4665")]
+        public async Task NoDiagnosticInExpressionTree_VisualBasic()
+        {
+            const string source = @"
+Imports System
+Imports System.Linq.Expressions
+
+Class C
+    Private f1 As Expression(Of Func(Of Integer())) = Function() New Integer(-1) {}
+    Private f2 As Expression(Of Func(Of Integer())) = Function() New Integer() {}
+End Class
+";
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
     }
 }

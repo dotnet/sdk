@@ -33,15 +33,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          isDataflowRule: false);
         private const string GetHashCodeName = "GetHashCode";
         private const string GetEnumeratorName = "GetEnumerator";
+        private const string GetPinnableReferenceName = "GetPinnableReference";
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(context =>
+            context.RegisterCompilationStartAction(context =>
             {
                 var taskTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
 
@@ -82,8 +83,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (methodSymbol.IsGenericMethod ||
                         methodSymbol.IsVirtual ||
                         methodSymbol.IsOverride ||
-                        methodSymbol.Name == GetHashCodeName ||
-                        methodSymbol.Name == GetEnumeratorName ||
+                        methodSymbol.Name is GetHashCodeName or GetEnumeratorName ||
+                        (methodSymbol.Name == GetPinnableReferenceName && (methodSymbol.ReturnsByRef || methodSymbol.ReturnsByRefReadonly)) ||
                         methodSymbol.ContainingType.GetMembers(methodSymbol.Name).Length > 1 ||
                         taskTypes.Contains(methodSymbol.ReturnType.OriginalDefinition) ||
                         methodSymbol.IsImplementationOfAnyImplicitInterfaceMember() ||
