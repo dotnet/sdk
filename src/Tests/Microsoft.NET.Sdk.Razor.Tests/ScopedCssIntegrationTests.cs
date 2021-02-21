@@ -308,50 +308,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().Exist();
         }
 
-
-        [Fact]
-        public void Build_GeneratedComponentContainsScope()
-        {
-            var testAsset = "RazorComponentApp";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
-
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
-
-            var generatedCounter = Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
-
-            var counterContent = File.ReadAllText(generatedCounter);
-
-            var counterScopeMatch = Regex.Match(counterContent, ".*button\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            Assert.True(counterScopeMatch.Success, "Couldn't find a scope id in the generated Counter scoped css file.");
-        }
-
-        [Fact]
-        public void Build_GeneratedViewContainsScope()
-        {
-            var testAsset = "RazorSimpleMvc";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
-
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
-
-            var generatedIndex = Path.Combine(intermediateOutputPath, "scopedcss", "Views", "Home", "Index.cshtml.rz.scp.css");
-            new FileInfo(generatedIndex).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "Razor", "Views", "Home", "Index.cshtml.g.cs")).Should().Exist();
-
-            var indexContent = File.ReadAllText(generatedIndex);
-
-            var indexScopeMatch = Regex.Match(indexContent, ".*p\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            Assert.True(indexScopeMatch.Success, "Couldn't find a scope id in the generated Index scoped css file.");
-            var indexScopeId = indexScopeMatch.Groups[1].Captures[0].Value;
-
-            new FileInfo(Path.Combine(intermediateOutputPath, "Razor", "Views", "Home", "Index.cshtml.g.cs")).Should().Contain(indexScopeId);
-        }
-
         [Fact]
         public void Build_RemovingScopedCssAndBuilding_UpdatesGeneratedCodeAndBundle()
         {
