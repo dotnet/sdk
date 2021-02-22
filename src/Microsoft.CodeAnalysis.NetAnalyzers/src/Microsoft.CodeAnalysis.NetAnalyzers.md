@@ -1848,9 +1848,9 @@ Calls to 'string.IndexOf' where the result is used to check for the presence/abs
 |CodeFix|True|
 ---
 
-## [CA2250](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250): Use '{0}'
+## [CA2250](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250): Use 'ThrowIfCancellationRequested'
 
-'{0}' automatically checks whether the token has been canceled, and throws an '{2}' if it has.
+'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.
 
 |Item|Value|
 |-|-|

@@ -499,11 +499,7 @@ public partial class Body
             /// </summary>
             public static string CreateBlock(string statements) => CreateBlock(statements, @"private CancellationToken token;");
 
-            public static DiagnosticResult DiagnosticAt(int markupKey) => VerifyCS.Diagnostic(Rule)
-                .WithLocation(markupKey)
-                .WithArguments($"void {nameof(CancellationToken)}.{nameof(CancellationToken.ThrowIfCancellationRequested)}()",
-                    $"bool {nameof(CancellationToken)}.{nameof(CancellationToken.IsCancellationRequested)}",
-                    nameof(OperationCanceledException));
+            public static DiagnosticResult DiagnosticAt(int markupKey) => VerifyCS.Diagnostic(Rule).WithLocation(markupKey);
         }
 
         private static class VB
@@ -527,12 +523,7 @@ End Class";
 
             public static string CreateBlock(string statements) => CreateBlock(statements, @"Private token As CancellationToken");
 
-            public static DiagnosticResult DiagnosticAt(int markupKey) => VerifyVB.Diagnostic(Rule)
-                .WithLocation(markupKey)
-                .WithArguments(
-                    $"Sub {nameof(CancellationToken)}.{nameof(CancellationToken.ThrowIfCancellationRequested)}()",
-                    $"Property {nameof(CancellationToken)}.{nameof(CancellationToken.IsCancellationRequested)} As Boolean",
-                    nameof(OperationCanceledException));
+            public static DiagnosticResult DiagnosticAt(int markupKey) => VerifyVB.Diagnostic(Rule).WithLocation(markupKey);
         }
 
         private static string IndentLines(string lines, string indent)

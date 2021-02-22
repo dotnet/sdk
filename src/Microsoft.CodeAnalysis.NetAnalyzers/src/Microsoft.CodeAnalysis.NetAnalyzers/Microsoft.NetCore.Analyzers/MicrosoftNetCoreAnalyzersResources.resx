@@ -1511,13 +1511,15 @@
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
   <data name="UseCancellationTokenThrowIfCancellationRequestedDescription" xml:space="preserve">
-    <value>'{0}' automatically checks whether the token has been canceled, and throws an '{2}' if it has.</value>
+    <value>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</value>
   </data>
   <data name="UseCancellationTokenThrowIfCancellationRequestedMessage" xml:space="preserve">
-    <value>Use '{0}' instead of checking '{1}'</value>
-    <comment>0=ThrowIfCancellationRequested method, 1=IsCancellationRequested property, 2=OperationCanceledException type</comment>
+    <value>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested'</value>
   </data>
   <data name="UseCancellationTokenThrowIfCancellationRequestedTitle" xml:space="preserve">
-    <value>Use '{0}'</value>
+    <value>Use 'ThrowIfCancellationRequested'</value>
+  </data>
+  <data name="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle" xml:space="preserve">
+    <value>Use 'ThrowIfCancellationRequested'</value>
   </data>
 </root>

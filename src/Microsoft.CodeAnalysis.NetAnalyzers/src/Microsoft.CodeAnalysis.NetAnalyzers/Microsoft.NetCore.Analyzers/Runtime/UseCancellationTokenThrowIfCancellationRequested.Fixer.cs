@@ -85,9 +85,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             var codeAction = CodeAction.Create(
-                Resx.UseCancellationTokenThrowIfCancellationRequestedTitle,
+                Resx.UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle,
                 createChangedDocument,
-                Resx.UseCancellationTokenThrowIfCancellationRequestedTitle);
+                Resx.UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle);
             context.RegisterCodeFix(codeAction, context.Diagnostics);
         }
 

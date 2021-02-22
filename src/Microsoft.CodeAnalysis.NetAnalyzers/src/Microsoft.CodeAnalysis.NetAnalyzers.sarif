@@ -3273,8 +3273,8 @@
         },
         "CA2250": {
           "id": "CA2250",
-          "shortDescription": "Use '{0}'",
-          "fullDescription": "'{0}' automatically checks whether the token has been canceled, and throws an '{2}' if it has.",
+          "shortDescription": "Use 'ThrowIfCancellationRequested'",
+          "fullDescription": "'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250",
           "properties": {

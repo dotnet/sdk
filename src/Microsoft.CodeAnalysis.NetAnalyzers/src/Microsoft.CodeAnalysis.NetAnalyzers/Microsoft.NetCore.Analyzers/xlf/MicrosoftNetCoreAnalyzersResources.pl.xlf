@@ -2097,19 +2097,24 @@
         <target state="translated">Metoda {0} obsługuje żądanie {1} bez przeprowadzania weryfikacji tokenu zabezpieczającego przed fałszerstwem. Należy również upewnić się, że formularz HTML wysyła token zabezpieczający przed fałszerstwem.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle">
+        <source>Use 'ThrowIfCancellationRequested'</source>
+        <target state="new">Use 'ThrowIfCancellationRequested'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
-        <source>'{0}' automatically checks whether the token has been canceled, and throws an '{2}' if it has.</source>
-        <target state="new">'{0}' automatically checks whether the token has been canceled, and throws an '{2}' if it has.</target>
+        <source>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</source>
+        <target state="new">'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
-        <source>Use '{0}' instead of checking '{1}'</source>
-        <target state="new">Use '{0}' instead of checking '{1}'</target>
-        <note>0=ThrowIfCancellationRequested method, 1=IsCancellationRequested property, 2=OperationCanceledException type</note>
+        <source>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested'</source>
+        <target state="new">Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested'</target>
+        <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
-        <source>Use '{0}'</source>
-        <target state="new">Use '{0}'</target>
+        <source>Use 'ThrowIfCancellationRequested'</source>
+        <target state="new">Use 'ThrowIfCancellationRequested'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">

@@ -18,9 +18,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2250";
 
-        private static readonly LocalizableString s_localizableTitle = CreateResource(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedTitle));
-        private static readonly LocalizableString s_localizableMessage = CreateResource(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedMessage));
-        private static readonly LocalizableString s_localizableDescription = CreateResource(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedDescription));
+        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedTitle), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedMessage), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedDescription), Resx.ResourceManager, typeof(Resx));
 
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
@@ -36,7 +36,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override void Initialize(AnalysisContext context)
         {
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
             context.RegisterCompilationStartAction(OnCompilationStart);
         }
@@ -56,14 +56,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 if (symbols.IsSimpleAffirmativeCheck(conditional, out _) || symbols.IsNegatedCheckWithThrowingElseClause(conditional, out _))
                 {
-                    var model = conditional.SemanticModel;
-                    int position = conditional.Syntax.SpanStart;
-                    Diagnostic diagnostic = conditional.CreateDiagnostic(
-                        Rule,
-                        symbols.ThrowIfCancellationRequestedMethod.ToMinimalDisplayString(model, position, SymbolDisplayFormat.MinimallyQualifiedFormat),
-                        symbols.IsCancellationRequestedProperty.ToMinimalDisplayString(model, position, SymbolDisplayFormat.MinimallyQualifiedFormat),
-                        symbols.OperationCanceledExceptionType.ToMinimalDisplayString(model, position, SymbolDisplayFormat.MinimallyQualifiedFormat));
-                    context.ReportDiagnostic(diagnostic);
+                    context.ReportDiagnostic(conditional.CreateDiagnostic(Rule));
                 }
             }
         }
@@ -80,6 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 return blockOperation.Operations.Length is 1 ? blockOperation.Operations[0] : default;
             }
+
             return singleOrBlock;
         }
 
@@ -97,21 +91,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 if (!compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingCancellationToken, out INamedTypeSymbol? cancellationTokenType))
                     return false;
+
                 IMethodSymbol? throwIfCancellationRequestedMethod = cancellationTokenType.GetMembers(nameof(CancellationToken.ThrowIfCancellationRequested))
                     .OfType<IMethodSymbol>()
                     .GetFirstOrDefaultMemberWithParameterInfos();
                 IPropertySymbol? isCancellationRequestedProperty = cancellationTokenType.GetMembers(nameof(CancellationToken.IsCancellationRequested))
                     .OfType<IPropertySymbol>()
                     .FirstOrDefault();
+
                 if (throwIfCancellationRequestedMethod is null || isCancellationRequestedProperty is null)
                     return false;
 
                 if (!compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemOperationCanceledException, out INamedTypeSymbol? operationCanceledExceptionType))
                     return false;
+
                 IMethodSymbol? operationCanceledExceptionDefaultCtor = operationCanceledExceptionType.InstanceConstructors
                     .GetFirstOrDefaultMemberWithParameterInfos();
                 IMethodSymbol? operationCanceledExceptionTokenCtor = operationCanceledExceptionType.InstanceConstructors
                     .GetFirstOrDefaultMemberWithParameterInfos(ParameterInfo.GetParameterInfo(cancellationTokenType));
+
                 if (operationCanceledExceptionDefaultCtor is null || operationCanceledExceptionTokenCtor is null)
                     return false;
 
@@ -125,6 +123,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     OperationCanceledExceptionDefaultCtor = operationCanceledExceptionDefaultCtor,
                     OperationCanceledExceptionTokenCtor = operationCanceledExceptionTokenCtor
                 };
+
                 return true;
             }
 
@@ -199,11 +198,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return SymbolEqualityComparer.Default.Equals(method, OperationCanceledExceptionDefaultCtor) ||
                     SymbolEqualityComparer.Default.Equals(method, OperationCanceledExceptionTokenCtor);
             }
-        }
-
-        private static LocalizableString CreateResource(string resourceName)
-        {
-            return new LocalizableResourceString(resourceName, Resx.ResourceManager, typeof(Resx));
         }
     }
 }
