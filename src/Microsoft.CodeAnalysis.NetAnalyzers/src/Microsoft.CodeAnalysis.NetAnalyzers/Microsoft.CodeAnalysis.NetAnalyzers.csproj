@@ -8,6 +8,7 @@
     -->
     <PackageId>*$(MSBuildProjectFullPath)*</PackageId>
     <RootNamespace></RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.CodeQuality.CSharp.Analyzers" />
