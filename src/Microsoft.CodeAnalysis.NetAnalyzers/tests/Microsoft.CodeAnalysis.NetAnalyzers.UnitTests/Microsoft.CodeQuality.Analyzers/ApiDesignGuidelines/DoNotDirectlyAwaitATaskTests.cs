@@ -664,7 +664,7 @@ public class C
     public async Task M()
     {
         Task t = null;
-        await t;
+        await {|#0:t|};
     }
 }
 "
@@ -675,7 +675,7 @@ public class C
 
             if (isExpectingDiagnostic)
             {
-                csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(9, 15));
+                csharpTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithLocation(0));
             }
 
             await csharpTest.RunAsync();
@@ -717,11 +717,5 @@ public class C
 
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
-
-        private static DiagnosticResult GetCSharpResultAt(int line, int column)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyCS.Diagnostic()
-                .WithLocation(line, column);
-#pragma warning restore RS0030 // Do not used banned APIs
     }
 }
