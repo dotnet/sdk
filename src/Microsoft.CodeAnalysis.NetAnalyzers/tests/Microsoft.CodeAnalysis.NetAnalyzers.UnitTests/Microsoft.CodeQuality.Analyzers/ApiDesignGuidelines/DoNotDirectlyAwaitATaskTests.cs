@@ -220,7 +220,7 @@ public class SomeAwaiter : INotifyCompletion
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyCodeFixAsync(code, code);
         }
 
         [Fact]
@@ -273,7 +273,7 @@ Public Class SomeAwaiter
     End Sub
 End Class
 ";
-            await VerifyVB.VerifyAnalyzerAsync(code);
+            await VerifyVB.VerifyCodeFixAsync(code, code);
         }
 
         [Fact]
@@ -531,7 +531,7 @@ public class C
     private Task t;
     public async void M()
     {
-        await M1Async();
+        await [|M1Async()|];
     }
 
     private async Task M1Async()
@@ -539,7 +539,24 @@ public class C
         await t.ConfigureAwait(false);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(9, 15));
+            var fixedCode = @"
+using System.Threading.Tasks;
+
+public class C
+{
+    private Task t;
+    public async void M()
+    {
+        await M1Async().ConfigureAwait(false);
+    }
+
+    private async Task M1Async()
+    {
+        await t.ConfigureAwait(false);
+    }
+}";
+
+            await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
         [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
@@ -586,7 +603,7 @@ public class C
     private Task t;
     public async void M()
     {
-        await M1Async();
+        await [|M1Async()|];
     }
 
     private async Task M1Async()
@@ -594,6 +611,23 @@ public class C
         await t.ConfigureAwait(false);
     }
 }";
+            var fixedCode = @"
+using System.Threading.Tasks;
+
+public class C
+{
+    private Task t;
+    public async void M()
+    {
+        await M1Async().ConfigureAwait(false);
+    }
+
+    private async Task M1Async()
+    {
+        await t.ConfigureAwait(false);
+    }
+}";
+
             await new VerifyCS.Test
             {
                 TestState =
@@ -601,7 +635,10 @@ public class C
                     Sources = { code },
                     AdditionalFiles = { (".editorconfig", editorConfigText) }
                 },
-                ExpectedDiagnostics = { GetCSharpResultAt(9, 15) }
+                FixedState =
+                {
+                    Sources = { fixedCode },
+                },
             }.RunAsync();
         }
 
@@ -657,12 +694,28 @@ public class C
         async Task CoreAsync()
         {
             Task t = null;
-            await t;
+            await [|t|];
         }
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(11, 19));
+            var fixedCode = @"
+using System.Threading.Tasks;
+
+public class C
+{
+    public void M()
+    {
+        async Task CoreAsync()
+        {
+            Task t = null;
+            await t.ConfigureAwait(false);
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
