@@ -10,6 +10,7 @@
     <Nullable>Enable</Nullable>
 
     <NoWarn>$(NoWarn);8002</NoWarn>
+    <PackageIcon>Resources/icon.png</PackageIcon>
     <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
 
     <!-- Copy nuget assemblies to build directory. -->
