@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -22,6 +23,9 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
     [Generator]
     public partial class RazorSourceGenerator : ISourceGenerator
     {
+        // Until the compiler supports granular caching for generators, we roll out our own simple caching implementation.
+        // https://github.com/dotnet/roslyn/issues/51257 track the long-term resolution for this.
+        private static readonly ConcurrentDictionary<Guid, IReadOnlyList<TagHelperDescriptor>> _tagHelperCache = new();
         public void Initialize(GeneratorInitializationContext context)
         {
         }
@@ -103,13 +107,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 var hint = GetIdentifierFromPath(file.NormalizedPath);
 
                 var generatedCode = csharpDocument.GeneratedCode;
-                if (razorContext.WriteGeneratedContent)
-                {
-                    var path = file.GeneratedOutputPath;
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
-                    File.WriteAllText(path, generatedCode);
-                }
-
                 outputs[i] = (hint, SourceText.From(generatedCode, Encoding.UTF8));
             });
 
@@ -159,57 +156,23 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             Parallel.For(0, files.Count, GetParallelOptions(GeneratorExecutionContext), i =>
             {
                 var file = files[i];
-                if (File.GetLastWriteTimeUtc(file.GeneratedDeclarationPath) > File.GetLastWriteTimeUtc(file.AdditionalText.Path))
-                {
-                    // Declaration files are invariant to other razor files, tag helpers, assemblies. If we have previously generated
-                    // content that it's still newer than the output file, use it and save time processing the file.
-                    using var outputFileStream = File.OpenRead(file.GeneratedDeclarationPath);
-                    results[i] = CSharpSyntaxTree.ParseText(
-                        SourceText.From(outputFileStream),
-                        options: parseOptions);
-                }
-                else
-                {
-                    var codeGen = discoveryProjectEngine.Process(discoveryProjectEngine.FileSystem.GetItem(file.NormalizedPath, FileKinds.Component));
-                    var generatedCode = codeGen.GetCSharpDocument().GeneratedCode;
+                var codeGen = discoveryProjectEngine.Process(discoveryProjectEngine.FileSystem.GetItem(file.NormalizedPath, FileKinds.Component));
+                var generatedCode = codeGen.GetCSharpDocument().GeneratedCode;
 
-                    Directory.CreateDirectory(Path.GetDirectoryName(file.GeneratedDeclarationPath));
-                    File.WriteAllText(file.GeneratedDeclarationPath, generatedCode);
+                results[i] = CSharpSyntaxTree.ParseText(
+                    generatedCode,
+                    options: parseOptions);
 
-                    results[i] = CSharpSyntaxTree.ParseText(
-                        generatedCode,
-                        options: parseOptions);
-                }
             });
 
             tagHelperFeature.Compilation = GeneratorExecutionContext.Compilation.AddSyntaxTrees(results.Take(files.Count));
             ArrayPool<SyntaxTree>.Shared.Return(results);
 
-            var lastUpdatedReferenceUtc = GetLastUpdatedReference(GeneratorExecutionContext.Compilation.References);
-            IReadOnlyList<TagHelperDescriptor> refTagHelpers;
-
-            if (lastUpdatedReferenceUtc is not null && lastUpdatedReferenceUtc < File.GetLastWriteTimeUtc(razorContext.RefsTagHelperOutputCachePath))
-            {
-                // Producing tag helpers from a Compilation every time is surprisingly expensive. So we'll use some caching strategies to mitigate this until
-                // we can improve the perf in that area.
-
-                // TagHelpers can come from two locations - the declaration files
-                // and the assemblies participating in the compilation.
-                // In a typical inner loop, the assemblies referenced by the project do not change. We could cache these separately from the tag helpers produced
-                // by the app to avoid some per-compilation costs.
-                // We determine if any of the reference assemblies have a newer timestamp than the output cache for the tag helpers. If not, we can re-use previously
-                // calculated results.
-                refTagHelpers = TagHelperSerializer.Deserialize(razorContext.RefsTagHelperOutputCachePath);
-            }
-            else
-            {
-                tagHelperFeature.DiscoveryFilter = TagHelperDiscoveryFilter.ReferenceAssemblies;
-                refTagHelpers = tagHelperFeature.GetDescriptors();
-                TagHelperSerializer.Serialize(razorContext.RefsTagHelperOutputCachePath, refTagHelpers);
-            }
-
-            tagHelperFeature.DiscoveryFilter = TagHelperDiscoveryFilter.CurrentCompilation;
+            var currentMetadataReference = GeneratorExecutionContext.Compilation.GetMetadataReference(GeneratorExecutionContext.Compilation.Assembly);
+            tagHelperFeature.TargetReference = currentMetadataReference;
             var assemblyTagHelpers = tagHelperFeature.GetDescriptors();
+
+            var refTagHelpers = GetTagHelperDescriptorsFromReferences(GeneratorExecutionContext.Compilation, tagHelperFeature);
 
             var result = new List<TagHelperDescriptor>(refTagHelpers.Count + assemblyTagHelpers.Count);
             result.AddRange(assemblyTagHelpers);
@@ -218,25 +181,41 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return result;
         }
 
-        private static DateTime? GetLastUpdatedReference(IEnumerable<MetadataReference> references)
+        private static IReadOnlyList<TagHelperDescriptor> GetTagHelperDescriptorsFromReferences(Compilation compilation, StaticCompilationTagHelperFeature tagHelperFeature)
         {
-            DateTime lastWriteTimeUtc = DateTime.MinValue;
+            List<TagHelperDescriptor> tagHelperDescriptors = new();
 
-            foreach (var reference in references)
+            foreach (var reference in compilation.References)
             {
-                // We expect all references in the compilation context to be backed by a file on disk. If not,
-                // we'll bail out and regenerate the tag helper cache where this is invoked.
-                if (reference is not PortableExecutableReference portableExecutableReference || string.IsNullOrEmpty(portableExecutableReference.FilePath))
+                var guid = reference.GetModuleVersionId(compilation);
+                IReadOnlyList<TagHelperDescriptor> descriptors = default;
+
+                if (guid is Guid _guid)
                 {
-                    return null;
+                    if (!_tagHelperCache.TryGetValue(_guid, out descriptors))
+                    {
+                        tagHelperFeature.TargetReference = reference;
+                        descriptors = tagHelperFeature.GetDescriptors();
+                        // Clear out the cache if it is growing too large. A 
+                        // simple compilation can include around ~300 references
+                        // so give a little bit of buffer beyond this.
+                        if (_tagHelperCache.Count > 400)
+                        {
+                            _tagHelperCache.Clear();
+                        }
+                        _tagHelperCache[_guid] = descriptors;
+                    }
+                }
+                else
+                {
+                    tagHelperFeature.TargetReference = reference;
+                    descriptors = tagHelperFeature.GetDescriptors();
                 }
 
-                var fileWriteTime = File.GetLastWriteTimeUtc(portableExecutableReference.FilePath);
-
-                lastWriteTimeUtc = lastWriteTimeUtc < fileWriteTime ? fileWriteTime : lastWriteTimeUtc;
+                tagHelperDescriptors.AddRange(descriptors);
             }
 
-            return lastWriteTimeUtc;
+            return tagHelperDescriptors;
         }
 
         private static string GetIdentifierFromPath(string filePath)
@@ -257,11 +236,12 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         private static ParallelOptions GetParallelOptions(GeneratorExecutionContext generatorExecutionContext)
         {
-            if (Debugger.IsAttached)
-            {
-                return new ParallelOptions { MaxDegreeOfParallelism = 1 };
-            }
             var options = new ParallelOptions { CancellationToken = generatorExecutionContext.CancellationToken };
+            var isConcurrentBuild = generatorExecutionContext.Compilation.Options.ConcurrentBuild;
+            if (Debugger.IsAttached || !isConcurrentBuild)
+            {
+                options.MaxDegreeOfParallelism = 1;
+            }
             return options;
         }
 
