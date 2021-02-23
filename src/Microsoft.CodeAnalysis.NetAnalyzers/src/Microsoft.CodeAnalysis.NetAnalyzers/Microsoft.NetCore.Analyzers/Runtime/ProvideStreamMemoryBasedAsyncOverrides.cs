@@ -22,9 +22,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1840";
 
-        private static readonly LocalizableString s_localizableTitle = CreateResource(nameof(Resx.ProvideStreamMemoryBasedAsyncOverridesTitle));
-        private static readonly LocalizableString s_localizableMessage = CreateResource(nameof(Resx.ProvideStreamMemoryBasedAsyncOverridesMessage));
-        private static readonly LocalizableString s_localizableDescription = CreateResource(nameof(Resx.ProvideStreamMemoryBasedAsyncOverridesDescription));
+        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.ProvideStreamMemoryBasedAsyncOverridesTitle), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(Resx.ProvideStreamMemoryBasedAsyncOverridesMessage), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(Resx.ProvideStreamMemoryBasedAsyncOverridesDescription), Resx.ResourceManager, typeof(Resx));
 
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
@@ -210,11 +210,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public IMethodSymbol ReadAsyncMemoryMethod { get; }
             public IMethodSymbol WriteAsyncArrayMethod { get; }
             public IMethodSymbol WriteAsyncMemoryMethod { get; }
-        }
-
-        private static LocalizableString CreateResource(string resourceName)
-        {
-            return new LocalizableResourceString(resourceName, Resx.ResourceManager, typeof(Resx));
         }
     }
 }
