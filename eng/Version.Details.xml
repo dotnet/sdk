@@ -100,11 +100,11 @@
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="6.0.100-preview.2.21118.1">
       <Uri>https://github.com/mono/linker</Uri>
-      <Sha>422f2f710707c1cf95dd513022c8fbef19f177dc</Sha>
+      <Sha>ed016c44d716a4179ba6d0f532af0af5ebb04541</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="6.0.100-preview.2.21118.1">
       <Uri>https://github.com/mono/linker</Uri>
-      <Sha>422f2f710707c1cf95dd513022c8fbef19f177dc</Sha>
+      <Sha>ed016c44d716a4179ba6d0f532af0af5ebb04541</Sha>
     </Dependency>
     <Dependency Name="System.CodeDom" Version="6.0.0-preview.2.21123.7">
       <Uri>https://github.com/dotnet/runtime</Uri>
