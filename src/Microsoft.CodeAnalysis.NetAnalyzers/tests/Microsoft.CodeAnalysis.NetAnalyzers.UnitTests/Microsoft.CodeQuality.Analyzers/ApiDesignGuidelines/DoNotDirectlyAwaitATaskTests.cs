@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskFixer>;
@@ -93,6 +95,89 @@ public class C
 }
 ";
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4888, "https://github.com/dotnet/roslyn-analyzers/issues/4888")]
+        public async Task CSharpAsyncDisposable()
+        {
+            var code = @"
+using System;
+using System.Threading.Tasks;
+
+public class C
+{
+    private static IAsyncDisposable Create() => throw null;
+    private static Task<IAsyncDisposable> CreateAsync() => throw null;
+
+    public async Task M1()
+    {
+        await using var resource = [|Create()|];
+    }
+
+    public async Task M2()
+    {
+        await using var resource = [|await CreateAsync().ConfigureAwait(false)|];
+    }
+
+    public async Task M3()
+    {
+        await using (var resource = [|Create()|])
+        {
+        }
+    }
+
+    public async Task M4()
+    {
+        await using (var resource = [|await CreateAsync().ConfigureAwait(false)|])
+        {
+        }
+    }
+}
+";
+            var fixedCode = @"
+using System;
+using System.Threading.Tasks;
+
+public class C
+{
+    private static IAsyncDisposable Create() => throw null;
+    private static Task<IAsyncDisposable> CreateAsync() => throw null;
+
+    public async Task M1()
+    {
+        await using var resource = Create().ConfigureAwait(false);
+    }
+
+    public async Task M2()
+    {
+        await using var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false);
+    }
+
+    public async Task M3()
+    {
+        await using (var resource = Create().ConfigureAwait(false))
+        {
+        }
+    }
+
+    public async Task M4()
+    {
+        await using (var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false))
+        {
+        }
+    }
+}
+";
+
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Default.AddPackages(
+                    ImmutableArray.Create(new PackageIdentity("Microsoft.Bcl.AsyncInterfaces", "5.0.0"))),
+                LanguageVersion = CSharpLanguageVersion.CSharp8,
+                TestCode = code,
+                FixedCode = fixedCode,
+            }.RunAsync();
         }
 
         [Theory]
