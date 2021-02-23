@@ -141,7 +141,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             bool version5 = crossgen2PackVersion.Major < 6;
-            bool version6Preview1 = crossgen2PackVersion.Major == 6 && crossgen2PackVersion.Patch <= 21117;
+            bool version6Preview1 = crossgen2PackVersion.Major == 6 && crossgen2PackVersion.Release.StartsWith("preview.1.");
             bool isSupportedTarget = ExtractTargetPlatformAndArchitecture(_targetRuntimeIdentifier, out _targetPlatform, out _targetArchitecture);
             string targetOS = _targetPlatform switch
             {
