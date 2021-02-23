@@ -2,11 +2,13 @@
 trigger:
 - master
 - feature/*
+- release/*
 
 # Branches that trigger builds on PR
 pr:
 - master
 - feature/*
+- release/*
 
 jobs:
 
