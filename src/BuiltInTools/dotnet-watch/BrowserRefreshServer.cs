@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -26,7 +28,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly IReporter _reporter;
         private readonly TaskCompletionSource _taskCompletionSource;
         private IHost _refreshServer;
-        private WebSocket _webSocket;
+        private readonly ConcurrentDictionary<string, WebSocket> _connectedClients = new();
 
         public BrowserRefreshServer(IReporter reporter)
         {
@@ -71,39 +73,53 @@ namespace Microsoft.DotNet.Watcher.Tools
                 context.Response.StatusCode = 400;
                 return;
             }
-
-            _webSocket = await context.WebSockets.AcceptWebSocketAsync();
+            //new client add them to the list of clients
+            WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+            _connectedClients.TryAdd(Guid.NewGuid().ToString(), webSocket);
             await _taskCompletionSource.Task;
         }
 
         public async ValueTask SendMessage(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken = default)
         {
-            if (_webSocket == null || _webSocket.CloseStatus.HasValue)
+            for (int i = 0; i < _connectedClients.Count; i++)
             {
-                return;
-            }
+                string clientId = _connectedClients.Keys.ElementAt(i);
+                WebSocket _webSocket = _connectedClients.Where(x => x.Key.Equals(clientId)).Select(x => x.Value).FirstOrDefault();
+                if (_webSocket == null || _webSocket.CloseStatus.HasValue)
+                {
+                    // Remove the client
+                    _connectedClients.TryRemove(clientId, out _);
+                    continue;
+                }
 
-            try
-            {
-                await _webSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _reporter.Verbose($"Refresh server error: {ex}");
+                try
+                {
+                    await _webSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _reporter.Verbose($"Refresh server error: {ex}");
+                }
             }
         }
 
         public async ValueTask DisposeAsync()
         {
-            if (_webSocket != null)
+            for (int i = 0; i < _connectedClients.Count; i++)
             {
-                await _webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, default);
-                _webSocket.Dispose();
-            }
+                string clientId = _connectedClients.Keys.ElementAt(i);
+                WebSocket _webSocket = _connectedClients.Where(x => x.Key.Equals(clientId)).Select(x => x.Value).FirstOrDefault();
+                if (_webSocket != null)
+                {
+                    await _webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, default);
+                    _webSocket.Dispose();
+                    _connectedClients.TryRemove(clientId, out _);
+                }
 
-            if (_refreshServer != null)
-            {
-                _refreshServer.Dispose();
+                if (_refreshServer != null)
+                {
+                    _refreshServer.Dispose();
+                }
             }
 
             _taskCompletionSource.TrySetResult();
