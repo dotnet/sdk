@@ -3,7 +3,7 @@ Collection of advice how to auto check/format. Every sample expects dotnet forma
 
 ## Pre-commit hook to reformat
 
-Create file `.git/pre-commit` with following contents:
+Create file `.git/hooks/pre-commit` with following contents:
 ```sh
 #!/bin/sh
 LC_ALL=C
