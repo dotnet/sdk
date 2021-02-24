@@ -428,8 +428,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</source>
-        <target state="translated">{0} 클래스의 인스턴스를 deserialize할 때 {1} 메서드가 위험한 {2} 메서드를 호출할 수 있습니다.</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
+        <target state="new">When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">

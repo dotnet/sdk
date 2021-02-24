@@ -811,7 +811,7 @@
     <value>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</value>
   </data>
   <data name="DoNotCallDangerousMethodsInDeserializationMessage" xml:space="preserve">
-    <value>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</value>
+    <value>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</value>
   </data>
   <data name="DoNotDisableCertificateValidation" xml:space="preserve">
     <value>Do Not Disable Certificate Validation</value>
