@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Xml.Linq;
 using EndToEnd;
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
@@ -48,7 +49,24 @@ namespace Microsoft.DotNet.Tests.EndToEnd
             testProjectCreator.AdditionalProperties["OutputType"] = "exe";
             testProjectCreator.AdditionalProperties["RuntimeIdentifier"] = Rid;
 
-            var testInstance = testProjectCreator.Create();
+            // At certain point of the release cycle LatestRuntimeFrameworkVersion in eng folder may not exist on the nuget feed
+            static void overrideLastRuntimeFrameworkVersionToExistingOlderVersion(XDocument project)
+            {
+                XNamespace ns = project.Root.Name.Namespace;
+                var target = XElement.Parse(@"  <ItemGroup>
+    <KnownFrameworkReference Update=""@(KnownFrameworkReference)"">
+      <LatestRuntimeFrameworkVersion Condition=""'%(TargetFramework)' == 'netcoreapp3.1'"">3.1.10</LatestRuntimeFrameworkVersion>
+    </KnownFrameworkReference>
+
+    <KnownAppHostPack Update=""@(KnownAppHostPack)"">
+      <AppHostPackVersion Condition=""'%(TargetFramework)' == 'netcoreapp3.1'"">3.1.10</AppHostPackVersion>
+    </KnownAppHostPack>
+  </ItemGroup>");
+                target.Name = ns + target.Name.LocalName;
+                project.Root.Add(target);
+            }
+            TestFramework.TestAssetInstance testInstance 
+                = testProjectCreator.Create().WithProjectChanges(overrideLastRuntimeFrameworkVersionToExistingOlderVersion);
 
             new PublishCommand()
                     .WithWorkingDirectory(testInstance.Root.FullName)
