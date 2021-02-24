@@ -16,7 +16,7 @@
     <WindowsDesktopBlobVersion>$(MicrosoftWindowsDesktopAppPackageVersion)</WindowsDesktopBlobVersion>
 
     <!-- Change these individually to or $(CoreSetupBlobVersion), $(AspNetCoreBlobVersion), or appropriate fixed version depending if corresponding .Ref packages are unpinned. -->
-    <NETCoreAppTargetingPackBlobVersion>5.0.0-rtm.20563.12</NETCoreAppTargetingPackBlobVersion>
+    <NETCoreAppTargetingPackBlobVersion>$(VSRedistCommonNetCoreTargetingPackx6450PackageVersion)</NETCoreAppTargetingPackBlobVersion>
     <AspNetCoreTargetingPackBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreTargetingPackBlobVersion>
     <WindowsDesktopTargetingPackBlobVersion>$(VSRedistCommonWindowsDesktopTargetingPackx6450PackageVersion)</WindowsDesktopTargetingPackBlobVersion>
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
