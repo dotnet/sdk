@@ -10,7 +10,9 @@
     <Nullable>Enable</Nullable>
 
     <NoWarn>$(NoWarn);8002</NoWarn>
-    <PackageIcon>Resources/icon.png</PackageIcon>
+    <PackageIcon>Icon.png</PackageIcon>
+    <PackageIconFullPath>$(MSBuildThisFileDirectory)Resources\icon.png</PackageIconFullPath>
+
     <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
 
     <!-- Copy nuget assemblies to build directory. -->
@@ -22,7 +24,6 @@
 
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
-    <PackageIcon>packageicon.png</PackageIcon>
 
     <!--
       These identifiers are for generating the shim'd core executables for signing. Not all options
