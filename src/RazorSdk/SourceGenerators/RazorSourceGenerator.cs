@@ -26,6 +26,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         // Until the compiler supports granular caching for generators, we roll out our own simple caching implementation.
         // https://github.com/dotnet/roslyn/issues/51257 track the long-term resolution for this.
         private static readonly ConcurrentDictionary<Guid, IReadOnlyList<TagHelperDescriptor>> _tagHelperCache = new();
+
         public void Initialize(GeneratorInitializationContext context)
         {
         }
@@ -123,7 +124,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         {
             var tagHelperFeature = new StaticCompilationTagHelperFeature();
 
-            var langVersion = ((CSharpParseOptions)GeneratorExecutionContext.ParseOptions).LanguageVersion;
+            var parseOptions = (CSharpParseOptions)GeneratorExecutionContext.ParseOptions;
+            var langVersion = parseOptions.LanguageVersion;
 
             var discoveryProjectEngine = RazorProjectEngine.Create(razorContext.Configuration, razorContext.FileSystem, b =>
             {
@@ -151,8 +153,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             var files = razorContext.RazorFiles;
             var results = ArrayPool<SyntaxTree>.Shared.Rent(files.Count);
 
-            var parseOptions = (CSharpParseOptions)GeneratorExecutionContext.ParseOptions;
-
             Parallel.For(0, files.Count, GetParallelOptions(GeneratorExecutionContext), i =>
             {
                 var file = files[i];
@@ -172,7 +172,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             tagHelperFeature.TargetReference = currentMetadataReference;
             var assemblyTagHelpers = tagHelperFeature.GetDescriptors();
 
-            var refTagHelpers = GetTagHelperDescriptorsFromReferences(GeneratorExecutionContext.Compilation, tagHelperFeature);
+            var refTagHelpers = GetTagHelperDescriptorsFromReferences(GeneratorExecutionContext, tagHelperFeature);
 
             var result = new List<TagHelperDescriptor>(refTagHelpers.Count + assemblyTagHelpers.Count);
             result.AddRange(assemblyTagHelpers);
@@ -181,9 +181,10 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return result;
         }
 
-        private static IReadOnlyList<TagHelperDescriptor> GetTagHelperDescriptorsFromReferences(Compilation compilation, StaticCompilationTagHelperFeature tagHelperFeature)
+        private static IReadOnlyList<TagHelperDescriptor> GetTagHelperDescriptorsFromReferences(GeneratorExecutionContext context, StaticCompilationTagHelperFeature tagHelperFeature)
         {
             List<TagHelperDescriptor> tagHelperDescriptors = new();
+            var compilation = context.Compilation;
 
             foreach (var reference in compilation.References)
             {
@@ -196,6 +197,10 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     {
                         tagHelperFeature.TargetReference = reference;
                         descriptors = tagHelperFeature.GetDescriptors();
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            RazorDiagnostics.ReComputingTagHelpersDescriptor,
+                            Location.None,
+                            reference.Display));
                         // Clear out the cache if it is growing too large. A 
                         // simple compilation can include around ~300 references
                         // so give a little bit of buffer beyond this.
@@ -210,6 +215,10 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 {
                     tagHelperFeature.TargetReference = reference;
                     descriptors = tagHelperFeature.GetDescriptors();
+                    context.ReportDiagnostic(Diagnostic.Create(
+                            RazorDiagnostics.ReComputingTagHelpersDescriptor,
+                            Location.None,
+                            reference.Display));
                 }
 
                 tagHelperDescriptors.AddRange(descriptors);

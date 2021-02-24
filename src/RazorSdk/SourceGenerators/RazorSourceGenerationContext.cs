@@ -139,14 +139,23 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 var options = context.AnalyzerConfigOptions.GetOptions(item);
                 if (!options.TryGetValue("build_metadata.AdditionalFiles.TargetPath", out var relativePath))
                 {
-                    throw new InvalidOperationException($"TargetPath is not specified for additional file '{item.Path}.");
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        RazorDiagnostics.TargetPathNotProvided,
+                        Location.None,
+                        item.Path));
                 }
 
                 options.TryGetValue("build_metadata.AdditionalFiles.CssScope", out var cssScope);
 
-                string generatedDeclarationPath = null;
+                if (!options.TryGetValue("build_metadata.AdditionalFiles.GeneratedOutputFullPath", out var generatedOutputPath))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        RazorDiagnostics.GeneratedOutputFullPathNotProvided,
+                        Location.None,
+                        item.Path));
+                }
 
-                options.TryGetValue("build_metadata.AdditionalFiles.GeneratedOutputFullPath", out var generatedOutputPath);
+                string generatedDeclarationPath = null;
                 if (isComponent)
                 {
                     options.TryGetValue("build_metadata.AdditionalFiles.GeneratedDeclarationFullPath", out generatedDeclarationPath);
