@@ -21,7 +21,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Configure analyzers -->
     <ItemGroup>
-      <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Newtonsoft.Json.dll" />
       <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
       <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.AspNetCore.Razor.Language.dll" />
       <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.CodeAnalysis.Razor.dll" />
@@ -47,7 +46,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <CompilerVisibleProperty Include="DesignTimeBuild" />
       <CompilerVisibleProperty Include="_RazorReferenceAssemblyTagHelpersOutputPath" />
       <CompilerVisibleProperty Include="_RazorSourceGeneratorDebug" />
-      <CompilerVisibleProperty Include="_RazorSourceGeneratorWriteGeneratedOutput" />
       <CompilerVisibleProperty Include="_RazorSourceGeneratorLog" />
     </ItemGroup>
 
