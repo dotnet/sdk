@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="de" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="Authoring_InvalidRegex">
+        <source>'{0}' could not be parsed as a regular expression</source>
+        <target state="new">'{0}' could not be parsed as a regular expression</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_MalformedPostActionManualInstructions">
+        <source>One or more postActions have a malformed or missing manualInstructions value in '{0}'</source>
+        <target state="new">One or more postActions have a malformed or missing manualInstructions value in '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_MissingValue">
+        <source>Missing '{0}' in '{1}'</source>
+        <target state="new">Missing '{0}' in '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_NonBoolDataTypeForRegexMatch">
+        <source>A non-bool DataType was specified for a regexMatch type symbol</source>
+        <target state="new">A non-bool DataType was specified for a regexMatch type symbol</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_SourceDoesNotExist">
+        <source>    Source '{0}' in template does not exist.</source>
+        <target state="new">    Source '{0}' in template does not exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_SourceIsOutsideInstallSource">
+        <source>    Source location '{0}' is outside the specified install source location.</source>
+        <target state="new">    Source location '{0}' is outside the specified install source location.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_SourceMustBeDirectory">
+        <source>    Source must be a directory, but '{0}' is a file.</source>
+        <target state="new">    Source must be a directory, but '{0}' is a file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_SourcePathRelativeToInstall">
+        <source>    Source path relative to install location: '{0}'</source>
+        <target state="new">    Source path relative to install location: '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_TemplateMissingCommonInformation">
+        <source>'{0}' is missing common information</source>
+        <target state="new">'{0}' is missing common information</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_TemplateNameDisplay">
+        <source>Template: '{0}'</source>
+        <target state="new">Template: '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_TemplateNotInstalled">
+        <source>'{0}' was not loaded</source>
+        <target state="new">'{0}' was not loaded</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_TemplateRootOutsideInstallSource">
+        <source>Template: '{0}' - Template root is outside the specified install source location.</source>
+        <target state="new">Template: '{0}' - Template root is outside the specified install source location.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_TemplateSourceRoot">
+        <source>    TemplateSourceRoot = '{0}'</source>
+        <target state="new">    TemplateSourceRoot = '{0}'</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
