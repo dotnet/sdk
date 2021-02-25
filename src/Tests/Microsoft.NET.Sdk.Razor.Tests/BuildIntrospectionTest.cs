@@ -120,6 +120,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void IntrospectRazorDesignTimeTargets()
         {
+            var expected1 = Path.Combine("Components", "App.razor");
+            var expected2 = Path.Combine("Components", "Shared", "MainLayout.razor");
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
@@ -127,8 +129,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             build.Execute()
                 .Should()
                 .Pass()
-                .And.HaveStdOutContaining("RazorComponentWithTargetPath: App Components\\App.razor")
-                .And.HaveStdOutContaining("RazorComponentWithTargetPath: MainLayout Components\\Shared\\MainLayout.razor");
+                .And.HaveStdOutContaining($"RazorComponentWithTargetPath: App {expected1}")
+                .And.HaveStdOutContaining($"RazorComponentWithTargetPath: MainLayout {expected2}");
         }
     }
 }
