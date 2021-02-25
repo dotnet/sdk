@@ -121,13 +121,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="5.0.4">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="5.0.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>e708867037ec6edbe7965b8f0f1193999785037e</Sha>
+      <Sha>d4638a11e830a93dc41d0ed8298a13972e563f54</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.4-servicing.21117.9">
+    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.5-servicing.21124.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>e708867037ec6edbe7965b8f0f1193999785037e</Sha>
+      <Sha>d4638a11e830a93dc41d0ed8298a13972e563f54</Sha>
     </Dependency>
     <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.5.0" Version="5.0.0-rtm.20520.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
