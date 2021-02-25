@@ -141,4 +141,34 @@
   <data name="GeneratedOutputFullPathNotProvidedMessage" xml:space="preserve">
     <value>GeneratedOutputFullPath not specified for additional file: {0}</value>
   </data>
+  <data name="CurrentCompilationReferenceNotFoundTitle" xml:space="preserve">
+    <value>MetadataReference not found</value>
+  </data>
+  <data name="CurrentCompilationReferenceNotFoundMessage" xml:space="preserve">
+    <value>MetadataReference for current compilation not found.</value>
+  </data>
+  <data name="SkippingGeneratedFileWriteTitle" xml:space="preserve">
+    <value>Generated file not written disk</value>
+  </data>
+  <data name="SkippingGeneratedFileWriteMessage" xml:space="preserve">
+    <value>Generated source for '{0}' was not written to disk because output path was not defined.</value>
+  </data>
+  <data name="SourceTextNotFoundTitle" xml:space="preserve">
+    <value>SourceText not found</value>
+  </data>
+  <data name="SourceTextNotFoundMessage" xml:space="preserve">
+    <value>Source text for '{0}' was not resolved.</value>
+  </data>
+  <data name="UnexpectedProjectItemReadCallTitle" xml:space="preserve">
+    <value>Unexpected call to read from stream</value>
+  </data>
+  <data name="UnexpectedProjectItemReadCallMessage" xml:space="preserve">
+    <value>Attempted to read source document for '{0}' from stream. Should use RazorSourceDocument instead.</value>
+  </data>
+  <data name="InvalidRazorContextComputedTitle" xml:space="preserve">
+    <value>Invalid Razor generator context</value>
+  </data>
+  <data name="InvalidRazorContextComputedMessage" xml:space="preserve">
+    <value>Could not create a valid Razor generator context.</value>
+  </data>
 </root>

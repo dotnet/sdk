@@ -35,8 +35,10 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         {
             var razorContext = RazorSourceGenerationContext.Create(context);
             if (razorContext is null ||
+                razorContext.FileSystem is null ||
                 (razorContext.RazorFiles.Count == 0 && razorContext.CshtmlFiles.Count == 0))
             {
+                context.ReportDiagnostic(Diagnostic.Create(RazorDiagnostics.InvalidRazorContextComputedDescriptor, Location.None));
                 return;
             }
 
@@ -77,6 +79,12 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     var razorDiagnostic = csharpDocument.Diagnostics[j];
                     var csharpDiagnostic = razorDiagnostic.AsDiagnostic();
                     context.ReportDiagnostic(csharpDiagnostic);
+                }
+
+                if (file.GeneratedOutputPath is null)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(RazorDiagnostics.SkippingGeneratedFileWriteDescriptor, Location.None, file.RelativePath));
+                    return;
                 }
 
                 Directory.CreateDirectory(Path.GetDirectoryName(file.GeneratedOutputPath));
@@ -169,6 +177,10 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             ArrayPool<SyntaxTree>.Shared.Return(results);
 
             var currentMetadataReference = GeneratorExecutionContext.Compilation.ToMetadataReference();
+            if (currentMetadataReference is null)
+            {
+                GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(RazorDiagnostics.CurrentCompilationReferenceNotFoundDescriptor, Location.None));
+            }
             tagHelperFeature.TargetReference = currentMetadataReference;
             var assemblyTagHelpers = tagHelperFeature.GetDescriptors();
 
@@ -189,7 +201,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             foreach (var reference in compilation.References)
             {
                 var guid = reference.GetModuleVersionId(compilation);
-                IReadOnlyList<TagHelperDescriptor> descriptors = default;
+                IReadOnlyList<TagHelperDescriptor> descriptors = new List<TagHelperDescriptor>();
 
                 if (guid is Guid _guid)
                 {

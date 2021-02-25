@@ -12,7 +12,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
     internal sealed class StaticCompilationTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
     {
-        private ITagHelperDescriptorProvider[] _providers;
+        private ITagHelperDescriptorProvider[]? _providers;
 
         public IReadOnlyList<TagHelperDescriptor> GetDescriptors()
         {
@@ -21,14 +21,18 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 return Array.Empty<TagHelperDescriptor>();
             }
 
-            var results = new List<TagHelperDescriptor>();
 
+            var results = new List<TagHelperDescriptor>();
 
             var context = TagHelperDescriptorProviderContext.Create(results);
             context.SetCompilation(Compilation);
-            context.Items.SetTargetMetadataReference(TargetReference);
 
-            for (var i = 0; i < _providers.Length; i++)
+            if (TargetReference is not null)
+            {
+                context.Items.SetTargetMetadataReference(TargetReference);
+            }
+
+            for (var i = 0; i < _providers?.Length; i++)
             {
                 _providers[i].Execute(context);
             }
@@ -36,9 +40,9 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return results;
         }
 
-        public Compilation Compilation { get; set; }
+        public Compilation? Compilation { get; set; }
 
-        public MetadataReference TargetReference { get; set; }
+        public MetadataReference? TargetReference { get; set; }
 
         protected override void OnInitialized()
         {

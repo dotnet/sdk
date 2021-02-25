@@ -8,13 +8,29 @@
     <IsPackable>false</IsPackable>
     <IsShipping>false</IsShipping>
     <NoWarn>RS2008</NoWarn>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" GeneratePathProperty="true"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguageVersion)" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(MicrosoftCodeAnalysisRazorVersion)" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Diagnostics\RazorSourceGeneratorResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RazorSourceGeneratorResources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Diagnostics\RazorSourceGeneratorResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>RazorSourceGeneratorResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <!-- See https://github.com/dotnet/roslyn/discussions/47517#discussioncomment-64145 -->

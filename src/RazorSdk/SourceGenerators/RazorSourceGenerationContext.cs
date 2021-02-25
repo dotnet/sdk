@@ -13,15 +13,15 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
     internal class RazorSourceGenerationContext
     {
-        public string RootNamespace { get; private set; }
+        public string RootNamespace { get; private set; } = "ASP";
 
-        public IReadOnlyList<RazorInputItem> RazorFiles { get; private set; }
+        public IReadOnlyList<RazorInputItem> RazorFiles { get; private set; } = Array.Empty<RazorInputItem>();
 
-        public IReadOnlyList<RazorInputItem> CshtmlFiles { get; private set; }
+        public IReadOnlyList<RazorInputItem> CshtmlFiles { get; private set; } = Array.Empty<RazorInputItem>();
 
-        public VirtualRazorProjectFileSystem FileSystem { get; private set; }
+        public VirtualRazorProjectFileSystem? FileSystem { get; private set; }
 
-        public RazorConfiguration Configuration { get; private set; }
+        public RazorConfiguration? Configuration { get; private set; }
 
         public bool DesignTimeBuild { get; private set; }
 
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         /// </para>
         public bool EnableLogging { get; private set; }
 
-        public static RazorSourceGenerationContext Create(GeneratorExecutionContext context)
+        public static RazorSourceGenerationContext? Create(GeneratorExecutionContext context)
         {
             var globalOptions = context.AnalyzerConfigOptions.GlobalOptions;
 
@@ -75,7 +75,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
             var razorConfiguration = RazorConfiguration.Create(razorLanguageVersion, configurationName, Enumerable.Empty<RazorExtension>());
             var (razorFiles, cshtmlFiles) = GetRazorInputs(context);
-            var fileSystem = GetVirtualFileSystem(razorFiles, cshtmlFiles);
+            var fileSystem = GetVirtualFileSystem(context, razorFiles, cshtmlFiles);
 
             return new RazorSourceGenerationContext
             {
@@ -90,7 +90,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             };
         }
 
-        private static VirtualRazorProjectFileSystem GetVirtualFileSystem(IReadOnlyList<RazorInputItem> razorFiles, IReadOnlyList<RazorInputItem> cshtmlFiles)
+        private static VirtualRazorProjectFileSystem GetVirtualFileSystem(GeneratorExecutionContext context, IReadOnlyList<RazorInputItem> razorFiles, IReadOnlyList<RazorInputItem> cshtmlFiles)
         {
             var fileSystem = new VirtualRazorProjectFileSystem();
             for (var i = 0; i < razorFiles.Count; i++)
@@ -102,7 +102,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     relativePhysicalPath: item.RelativePath,
                     fileKind: FileKinds.Component,
                     item.AdditionalText,
-                    cssScope: item.CssScope));
+                    cssScope: item.CssScope,
+                    context: context));
             }
 
             for (var i = 0; i < cshtmlFiles.Count; i++)
@@ -114,7 +115,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     relativePhysicalPath: item.RelativePath,
                     fileKind: FileKinds.Legacy,
                     item.AdditionalText,
-                    cssScope: item.CssScope));
+                    cssScope: item.CssScope,
+                    context: context));
             }
 
             return fileSystem;
@@ -122,8 +124,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         private static (IReadOnlyList<RazorInputItem> razorFiles, IReadOnlyList<RazorInputItem> cshtmlFiles) GetRazorInputs(GeneratorExecutionContext context)
         {
-            List<RazorInputItem> razorFiles = null;
-            List<RazorInputItem> cshtmlFiles = null;
+            List<RazorInputItem> razorFiles = new();
+            List<RazorInputItem> cshtmlFiles = new();
 
             foreach (var item in context.AdditionalFiles)
             {
@@ -143,6 +145,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                         RazorDiagnostics.TargetPathNotProvided,
                         Location.None,
                         item.Path));
+                    continue;
                 }
 
                 options.TryGetValue("build_metadata.AdditionalFiles.CssScope", out var cssScope);
@@ -155,7 +158,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                         item.Path));
                 }
 
-                string generatedDeclarationPath = null;
+                string? generatedDeclarationPath = null;
                 if (isComponent)
                 {
                     options.TryGetValue("build_metadata.AdditionalFiles.GeneratedDeclarationFullPath", out generatedDeclarationPath);
@@ -167,21 +170,15 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
                 if (isComponent)
                 {
-                    razorFiles ??= new();
                     razorFiles.Add(inputItem);
                 }
                 else
                 {
-                    cshtmlFiles ??= new();
                     cshtmlFiles.Add(inputItem);
                 }
             }
 
-            return (
-                (IReadOnlyList<RazorInputItem>)razorFiles ?? Array.Empty<RazorInputItem>(),
-                (IReadOnlyList<RazorInputItem>)cshtmlFiles ?? Array.Empty<RazorInputItem>()
-            );
+            return (razorFiles, cshtmlFiles);
         }
-
     }
 }
