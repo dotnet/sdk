@@ -182,9 +182,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ILLinkTreatWarningsAsErrors Condition=" '$(ILLinkTreatWarningsAsErrors)' == '' ">$(TreatWarningsAsErrors)</ILLinkTreatWarningsAsErrors>
       <_ExtraTrimmerArgs>--skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
       <TrimMode Condition=" '$(TrimMode)' == '' ">copyused</TrimMode>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(_TrimmerDefaultAction)' == '' ">
       <!-- For .NET < 6, the defaults are the same regardless of whether the assembly has an IsTrimmable attribute. (The attribute didn't exist until .NET 6.) -->
       <_TrimmerDefaultAction Condition=" $([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '6.0')) ">$(TrimMode)</_TrimmerDefaultAction>
       <!-- For .NET 6+, assemblies without IsTrimmable attribute get the "copy" action. -->
@@ -230,25 +227,26 @@ Copyright (c) .NET Foundation. All rights reserved.
       <TrimmerRemoveSymbols Condition=" '$(DebuggerSupport)' != 'false' ">false</TrimmerRemoveSymbols>
     </PropertyGroup>
 
+    <!-- Set IsTrimmable for any assemblies that already have customized TrimMode. -->
     <ItemGroup>
-      <!-- Set IsTrimmable for any assemblies that already have customized TrimMode. -->
       <ManagedAssemblyToLink Condition=" '%(ManagedAssemblyToLink.TrimMode)' != '' ">
         <IsTrimmable>true</IsTrimmable>
       </ManagedAssemblyToLink>
+    </ItemGroup>
 
-      <!-- SetIsTrimmable for any assemblies listed in TrimmableAssembly. -->
-      <_ManagedAssemblyToLinkName Include="@(ManagedAssemblyToLink->'%(Filename)')">
-        <OriginalItemSpec>%(Identity)</OriginalItemSpec>
-      </_ManagedAssemblyToLinkName>
-      <_NonTrimmableManagedAssemblyToLinkName Include="@(_ManagedAssemblyToLinkName)" Exclude="@(TrimmableAssembly)" />
-      <_TrimmableManagedAssemblyToLinkName Include="@(_ManagedAssemblyToLinkName)" Exclude="@(_NonTrimmableManagedAssemblyToLinkName)" />
-      <_TrimmableManagedAssemblyToLink Include="@(_TrimmableManagedAssemblyToLinkName->'%(OriginalItemSpec)')" />
+    <!-- SetIsTrimmable for any assemblies listed in TrimmableAssembly. -->
+    <JoinItems Left="@(ManagedAssemblyToLink)" LeftKey="FileName" LeftMetadata="*"
+               Right="@(TrimmableAssembly)"
+               ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_TrimmableManagedAssemblyToLink" />
+    </JoinItems>
+    <ItemGroup>
       <ManagedAssemblyToLink Remove="@(_TrimmableManagedAssemblyToLink)" />
-      <ManagedAssemblyToLink Include="@(_TrimmableManagedAssemblyToLink)">
-        <IsTrimmable>true</IsTrimmable>
-      </ManagedAssemblyToLink>
+      <ManagedAssemblyToLink Include="@(_TrimmableManagedAssemblyToLink)" IsTrimmable="true" />
+    </ItemGroup>
 
-      <!-- Root the main assembly, whether or not it has IsTrimmable set. -->
+    <!-- Root the main assembly, whether or not it has IsTrimmable set. -->
+    <ItemGroup>
       <TrimmerRootAssembly Include="@(IntermediateAssembly)" />
     </ItemGroup>
 
