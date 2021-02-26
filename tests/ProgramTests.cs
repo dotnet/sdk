@@ -184,6 +184,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 bool fixWhitespace,
                 string fixStyle,
                 string fixAnalyzers,
+                string[] diagnostics,
                 string verbosity,
                 bool check,
                 string[] include,
@@ -197,6 +198,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 Assert.True(fixWhitespace);
                 Assert.Equal("warn", fixStyle);
                 Assert.Equal("info", fixAnalyzers);
+                Assert.Equal(new[] { "IDE0005", "IDE0073" }, diagnostics);
                 Assert.Equal("diag", verbosity);
                 Assert.True(check);
                 Assert.Equal(new[] { "*.cs" }, include);
@@ -214,6 +216,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 warn
 --fix-analyzers
 info
+--diagnostics
+IDE0005
+IDE0073
 --verbosity
 diag
 --check

@@ -17,6 +17,11 @@
         <target state="translated">解決方案檔、專案檔，或包含解決方案或專案檔之資料夾的路徑。若未指定路徑，就會使用目前的目錄。</target>
         <note />
       </trans-unit>
+      <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues">
+        <source>A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</source>
+        <target state="new">A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory">
         <source>Accepts a file path, which if provided, will produce a json report in the given directory.</source>
         <target state="translated">接受檔案路徑 (如果有提供) 將在指定的目錄中產生 json 報告。</target>

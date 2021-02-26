@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
@@ -47,6 +48,7 @@ namespace Microsoft.CodeAnalysis.Tools
             bool fixWhitespace,
             string? fixStyle,
             string? fixAnalyzers,
+            string[] diagnostics,
             string? verbosity,
             bool check,
             string[] include,
@@ -164,6 +166,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     fixType,
                     codeStyleSeverity: GetSeverity(fixStyle ?? FixSeverity.Error),
                     analyzerSeverity: GetSeverity(fixAnalyzers ?? FixSeverity.Error),
+                    diagnostics: diagnostics.ToImmutableHashSet(),
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
                     fileMatcher,

@@ -17,6 +17,11 @@
         <target state="translated">Ścieżka do pliku rozwiązania, pliku projektu albo folderu zawierającego plik rozwiązania lub plik projektu. Jeśli ścieżka nie zostanie określona, zostanie użyty bieżący katalog.</target>
         <note />
       </trans-unit>
+      <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues">
+        <source>A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</source>
+        <target state="new">A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory">
         <source>Accepts a file path, which if provided, will produce a json report in the given directory.</source>
         <target state="translated">Akceptuje ścieżkę pliku, która, jeśli zostanie podana, wygeneruje raport JSON w danym katalogu.</target>

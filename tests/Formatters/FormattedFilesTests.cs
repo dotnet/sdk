@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -67,6 +68,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 fixCategory: FixCategory.Whitespace,
                 codeStyleSeverity: DiagnosticSeverity.Error,
                 analyzerSeverity: DiagnosticSeverity.Error,
+                diagnostics: ImmutableHashSet<string>.Empty,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 fileMatcher,
