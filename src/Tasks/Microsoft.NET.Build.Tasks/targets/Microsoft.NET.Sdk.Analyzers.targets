@@ -71,6 +71,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)..\analyzers\build\Microsoft.NET.ILLink.Analyzers.props"
           Condition="'$(PublishSingleFile)' == 'true' Or '$(PublishTrimmed)' == 'true'" />
 
+  <!-- Intermediate step to enable ILLink.Analyzers so ILLink, Blazor, Xamarin, AOT, etc. can enable the same flags -->
+  <AnalyzeSingleFile Condition="'$(PublishSingleFile)' == 'true'">true</AnalyzeSingleFile>
+  <AnalyzeTrimming Condition="'$(PublishTrimmed)' == 'true'">true</AnalyzeTrimming>
+
   <!-- .NET Analyzers -->
   <ItemGroup Condition="$(EnableNETAnalyzers)">
     <Analyzer
@@ -86,7 +90,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       IsImplicitlyDefined="true" />
     <!-- ILLinker Analyzers -->
     <Analyzer
-      Condition="'$(PublishSingleFile)' == 'true' Or '$(PublishTrimmed)' == 'true'"
+      Condition="'$(AnalyzeSingleFile)' == 'true' Or '$(AnalyzeTrimming)' == 'true'"
       Include="$(MSBuildThisFileDirectory)..\analyzers\ILLink.RoslynAnalyzer.dll"
       IsImplicitlyDefined="true" />
   </ItemGroup>
