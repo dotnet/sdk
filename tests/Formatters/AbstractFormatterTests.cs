@@ -93,9 +93,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             FixCategory fixCategory = FixCategory.Whitespace,
             IEnumerable<AnalyzerReference>? analyzerReferences = null,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
+            string[]? diagnostics = null)
         {
-            return AssertNoReportedFileChangesAsync(code, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+            return AssertNoReportedFileChangesAsync(code, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity, diagnostics);
         }
 
         private protected async Task<SourceText> AssertNoReportedFileChangesAsync(
@@ -105,9 +106,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             FixCategory fixCategory = FixCategory.Whitespace,
             IEnumerable<AnalyzerReference>? analyzerReferences = null,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
+            string[]? diagnostics = null)
         {
-            var (formattedText, formattedFiles, logger) = await ApplyFormatterAsync(code, editorConfig, encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+            var (formattedText, formattedFiles, logger) = await ApplyFormatterAsync(code, editorConfig, encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity, diagnostics);
 
             try
             {
@@ -133,9 +135,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             FixCategory fixCategory = FixCategory.Whitespace,
             IEnumerable<AnalyzerReference>? analyzerReferences = null,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
+            string[]? diagnostics = null)
         {
-            return AssertCodeUnchangedAsync(code, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+            return AssertCodeUnchangedAsync(code, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity, diagnostics);
         }
 
         private protected async Task<SourceText> AssertCodeUnchangedAsync(
@@ -145,9 +148,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             FixCategory fixCategory = FixCategory.Whitespace,
             IEnumerable<AnalyzerReference>? analyzerReferences = null,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
+            string[]? diagnostics = null)
         {
-            var (formattedText, _, logger) = await ApplyFormatterAsync(code, editorConfig, encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+            var (formattedText, _, logger) = await ApplyFormatterAsync(code, editorConfig, encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity, diagnostics);
 
             try
             {
@@ -171,9 +175,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             FixCategory fixCategory = FixCategory.Whitespace,
             IEnumerable<AnalyzerReference>? analyzerReferences = null,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
+            string[]? diagnostics = null)
         {
-            return AssertCodeChangedAsync(testCode, expectedCode, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+            return AssertCodeChangedAsync(testCode, expectedCode, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity, diagnostics);
         }
 
         private protected async Task<SourceText> AssertCodeChangedAsync(
@@ -184,9 +189,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             FixCategory fixCategory = FixCategory.Whitespace,
             IEnumerable<AnalyzerReference>? analyzerReferences = null,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
+            string[]? diagnostics = null)
         {
-            var (formattedText, _, logger) = await ApplyFormatterAsync(testCode, editorConfig, encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
+            var (formattedText, _, logger) = await ApplyFormatterAsync(testCode, editorConfig, encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity, diagnostics);
 
             try
             {
@@ -208,7 +214,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             FixCategory fixCategory = FixCategory.Whitespace,
             IEnumerable<AnalyzerReference>? analyzerReferences = null,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
+            string[]? diagnostics = null)
         {
             var text = SourceText.From(code, encoding ?? Encoding.UTF8);
             TestState.Sources.Add(text);
@@ -225,6 +232,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 fixCategory,
                 codeStyleSeverity,
                 analyzerSeverity,
+                (diagnostics ?? Array.Empty<string>()).ToImmutableHashSet(),
                 saveFormattedFiles: true,
                 changesAreErrors: false,
                 fileMatcher,

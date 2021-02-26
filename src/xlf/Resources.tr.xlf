@@ -17,6 +17,11 @@
         <target state="translated">Çözüm dosyasının, proje dosyasının veya çözüm ya da proje dosyasını içeren klasörün yolu. Yol belirtilmezse geçerli dizin kullanılır.</target>
         <note />
       </trans-unit>
+      <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues">
+        <source>A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</source>
+        <target state="new">A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory">
         <source>Accepts a file path, which if provided, will produce a json report in the given directory.</source>
         <target state="translated">Sağlanırsa, verilen dizinde json raporu oluşturacak bir dosya yolunu kabul eder.</target>
@@ -35,6 +40,16 @@
       <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; agrument.</source>
         <target state="translated">'{0}' içinde hem MSBuild proje dosyası hem de çözüm dosyası bulundu. Hangisinin &lt;çalışma alanı&gt; bağımsız değişkeni ile kullanılacağını belirtin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_when_fixing_style">
+        <source>Cannot specify the '--folder' option when fixing style.</source>
+        <target state="new">Cannot specify the '--folder' option when fixing style.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_when_running_analyzers">
+        <source>Cannot specify the '--folder' option when running analyzers.</source>
+        <target state="new">Cannot specify the '--folder' option when running analyzers.</target>
         <note />
       </trans-unit>
       <trans-unit id="Code_Style">
@@ -210,6 +225,11 @@
       <trans-unit id="Standard_input_used_multiple_times">
         <source>Standard input markers ('/dev/stdin', '-') can only be used either with `--include` or `--exclude`, but not both.</source>
         <target state="new">Standard input markers ('/dev/stdin', '-') can only be used either with `--include` or `--exclude`, but not both.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="The_diagnostics_option_only_applies_when_fixing_style_or_running_analyzers">
+        <source>The '--diagnostics' option only applies when fixing style or running analyzers.</source>
+        <target state="new">The '--diagnostics' option only applies when fixing style or running analyzers.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_dotnet_CLI_version_is_0">

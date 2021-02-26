@@ -105,5 +105,58 @@ class C
 
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Warning);
         }
+
+        [Theory]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Error)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Error)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Error)]
+        public async Task WhenIDE0005SeverityEqualOrGreaterThanFixSeverity_AndHasUnusedImports_AndIncludedInDiagnosticsList_ImportRemoved(string key, string severity)
+        {
+            var testCode =
+@"using System;
+
+class C
+{
+}";
+
+            var expectedCode =
+@"class C
+{
+}";
+
+            var editorConfig = new Dictionary<string, string>()
+            {
+                [key] = severity
+            };
+
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Warning, diagnostics: new[] { UnnecessaryImportsFormatter.IDE0005 });
+        }
+
+        [Theory]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Error)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Error)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Error)]
+        public async Task WhenIDE0005SeverityEqualOrGreaterThanFixSeverity_AndHasUnusedImports_AndNotIncludedInDiagnosticsList_ImportNotRemoved(string key, string severity)
+        {
+            var testCode =
+@"using System;
+
+class C
+{
+}";
+
+            var editorConfig = new Dictionary<string, string>()
+            {
+                [key] = severity
+            };
+
+            await AssertCodeUnchangedAsync(testCode, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Warning, diagnostics: new[] { "IDE0073" });
+        }
     }
 }

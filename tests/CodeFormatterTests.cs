@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -508,7 +509,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             int expectedFileCount,
             FixCategory fixCategory = FixCategory.Whitespace,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
+            string[] diagnostics = null)
         {
             var currentDirectory = Environment.CurrentDirectory;
             Environment.CurrentDirectory = TestProjectsPathHelper.GetProjectsDirectory();
@@ -541,6 +543,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 fixCategory,
                 codeStyleSeverity,
                 analyzerSeverity,
+                diagnostics?.ToImmutableHashSet() ?? ImmutableHashSet<string>.Empty,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 fileMatcher,

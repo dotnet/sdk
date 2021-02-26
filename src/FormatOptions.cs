@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +14,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public FixCategory FixCategory { get; }
         public DiagnosticSeverity CodeStyleSeverity { get; }
         public DiagnosticSeverity AnalyzerSeverity { get; }
+        public ImmutableHashSet<string> Diagnostics { get; }
         public bool SaveFormattedFiles { get; }
         public bool ChangesAreErrors { get; }
         public SourceFileMatcher FileMatcher { get; }
@@ -26,6 +28,7 @@ namespace Microsoft.CodeAnalysis.Tools
             FixCategory fixCategory,
             DiagnosticSeverity codeStyleSeverity,
             DiagnosticSeverity analyzerSeverity,
+            ImmutableHashSet<string> diagnostics,
             bool saveFormattedFiles,
             bool changesAreErrors,
             SourceFileMatcher fileMatcher,
@@ -38,6 +41,7 @@ namespace Microsoft.CodeAnalysis.Tools
             FixCategory = fixCategory;
             CodeStyleSeverity = codeStyleSeverity;
             AnalyzerSeverity = analyzerSeverity;
+            Diagnostics = diagnostics;
             SaveFormattedFiles = saveFormattedFiles;
             ChangesAreErrors = changesAreErrors;
             FileMatcher = fileMatcher;
@@ -52,6 +56,7 @@ namespace Microsoft.CodeAnalysis.Tools
             out FixCategory fixCategory,
             out DiagnosticSeverity codeStyleSeverity,
             out DiagnosticSeverity analyzerSeverity,
+            out ImmutableHashSet<string> diagnostics,
             out bool saveFormattedFiles,
             out bool changesAreErrors,
             out SourceFileMatcher fileMatcher,
@@ -64,6 +69,7 @@ namespace Microsoft.CodeAnalysis.Tools
             fixCategory = FixCategory;
             codeStyleSeverity = CodeStyleSeverity;
             analyzerSeverity = AnalyzerSeverity;
+            diagnostics = Diagnostics;
             saveFormattedFiles = SaveFormattedFiles;
             changesAreErrors = ChangesAreErrors;
             fileMatcher = FileMatcher;

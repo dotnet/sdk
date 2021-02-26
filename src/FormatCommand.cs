@@ -18,6 +18,7 @@ namespace Microsoft.CodeAnalysis.Tools
             bool fixWhitespace,
             string? fixStyle,
             string? fixAnalyzers,
+            string[] diagnostics,
             string? verbosity,
             bool check,
             string[] include,
@@ -48,6 +49,10 @@ namespace Microsoft.CodeAnalysis.Tools
                 new Option(new[] { "--fix-analyzers", "-a" }, Resources.Run_3rd_party_analyzers_and_apply_fixes)
                 {
                     Argument = new Argument<string?>("severity") { Arity = ArgumentArity.ZeroOrOne }.FromAmong(SeverityLevels)
+                },
+                new Option(new[] { "--diagnostics" }, Resources.A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues)
+                {
+                    Argument = new Argument<string[]>(() => Array.Empty<string>())
                 },
                 new Option(new[] { "--include" }, Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
                 {
@@ -84,7 +89,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var folder = symbolResult.ValueForOption<bool>("--folder");
             var fixAnalyzers = symbolResult.OptionResult("--fix-analyzers");
             return folder && fixAnalyzers != null
-                ? "Cannot specify the '--folder' option when running analyzers."
+                ? Resources.Cannot_specify_the_folder_option_when_running_analyzers
                 : null;
         }
 
@@ -93,7 +98,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var folder = symbolResult.ValueForOption<bool>("--folder");
             var fixStyle = symbolResult.OptionResult("--fix-style");
             return folder && fixStyle != null
-                ? "Cannot specify the '--folder' option when fixing style."
+                ? Resources.Cannot_specify_the_folder_option_when_fixing_style
                 : null;
         }
 

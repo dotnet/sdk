@@ -41,6 +41,13 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 return sourceText;
             }
 
+            // If diagnostics are being filtered and IDE0005 isn't specified, then make no changes.
+            if (!formatOptions.Diagnostics.IsEmpty &&
+                !formatOptions.Diagnostics.Contains(IDE0005))
+            {
+                return sourceText;
+            }
+
             var tree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
             if (tree is null)
             {
