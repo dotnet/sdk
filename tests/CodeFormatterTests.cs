@@ -543,7 +543,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 fixCategory,
                 codeStyleSeverity,
                 analyzerSeverity,
-                diagnostics?.ToImmutableHashSet() ?? default,
+                diagnostics?.ToImmutableHashSet() ?? ImmutableHashSet<string>.Empty,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 fileMatcher,

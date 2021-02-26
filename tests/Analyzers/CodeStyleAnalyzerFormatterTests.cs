@@ -74,49 +74,5 @@ class C
 
             await AssertNoReportedFileChangesAsync(testCode, "root = true", fixCategory: FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Warning);
         }
-
-        [Fact]
-        public async Task TestUnusedImport_AppliesWhenIDE0005InDiagnosticsList()
-        {
-            var testCode = @"
-using System.Buffers;
-using System.Collections.Generic;
-
-class C
-{
-    void M()
-    {
-        object obj = new object();
-        List<string> list = new List<string>();
-        int count = 5;
-    }
-}";
-
-            var expectedCode = @"
-using System.Collections.Generic;
-
-class C
-{
-    void M()
-    {
-        object obj = new object();
-        List<string> list = new List<string>();
-        int count = 5;
-    }
-}";
-
-            var editorConfig = new Dictionary<string, string>()
-            {
-                /// IDE0005: Using directive is unnecessary
-                ["dotnet_diagnostic.IDE0005.severity"] = "error",
-                /// Prefer "var" everywhere
-                ["dotnet_diagnostic.IDE0007.severity"] = "error",
-                ["csharp_style_var_for_built_in_types"] = "true:error",
-                ["csharp_style_var_when_type_is_apparent"] = "true:error",
-                ["csharp_style_var_elsewhere"] = "true:error",
-            };
-
-            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.CodeStyle, diagnostics: new[] { "IDE0005" });
-        }
     }
 }
