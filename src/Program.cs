@@ -150,6 +150,11 @@ namespace Microsoft.CodeAnalysis.Tools
                     fixType |= FixCategory.Analyzers;
                 }
 
+                if (fixType == FixCategory.None && diagnostics.Length > 0)
+                {
+                    logger.LogWarning(Resources.The_diagnostics_option_only_applies_when_fixing_style_or_running_analyzers);
+                }
+
                 if (fixType == FixCategory.None || fixWhitespace)
                 {
                     fixType |= FixCategory.Whitespace;

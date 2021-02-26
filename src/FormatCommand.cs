@@ -89,7 +89,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var folder = symbolResult.ValueForOption<bool>("--folder");
             var fixAnalyzers = symbolResult.OptionResult("--fix-analyzers");
             return folder && fixAnalyzers != null
-                ? "Cannot specify the '--folder' option when running analyzers."
+                ? Resources.Cannot_specify_the_folder_option_when_running_analyzers
                 : null;
         }
 
@@ -98,7 +98,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var folder = symbolResult.ValueForOption<bool>("--folder");
             var fixStyle = symbolResult.OptionResult("--fix-style");
             return folder && fixStyle != null
-                ? "Cannot specify the '--folder' option when fixing style."
+                ? Resources.Cannot_specify_the_folder_option_when_fixing_style
                 : null;
         }
 

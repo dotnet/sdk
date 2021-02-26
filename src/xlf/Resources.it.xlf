@@ -42,6 +42,16 @@
         <target state="translated">In '{0}' sono stati trovati sia un file di progetto che un file di soluzione MSBuild. Per specificare quello desiderato, usare l'argomento &lt;workspace&gt;.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_when_fixing_style">
+        <source>Cannot specify the '--folder' option when fixing style.</source>
+        <target state="new">Cannot specify the '--folder' option when fixing style.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_when_running_analyzers">
+        <source>Cannot specify the '--folder' option when running analyzers.</source>
+        <target state="new">Cannot specify the '--folder' option when running analyzers.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Code_Style">
         <source>Code Style</source>
         <target state="translated">Stile codice</target>
@@ -215,6 +225,11 @@
       <trans-unit id="Standard_input_used_multiple_times">
         <source>Standard input markers ('/dev/stdin', '-') can only be used either with `--include` or `--exclude`, but not both.</source>
         <target state="new">Standard input markers ('/dev/stdin', '-') can only be used either with `--include` or `--exclude`, but not both.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="The_diagnostics_option_only_applies_when_fixing_style_or_running_analyzers">
+        <source>The '--diagnostics' option only applies when fixing style or running analyzers.</source>
+        <target state="new">The '--diagnostics' option only applies when fixing style or running analyzers.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_dotnet_CLI_version_is_0">
