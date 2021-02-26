@@ -82,6 +82,20 @@ Running 3rd party analysis requires the use of a MSBuild solution or project fil
 
 - `--fix-analyzers <severity>` - Runs analysis and attempts to fix issues with severity equal or greater than specified. If no severity is specified then this defaults to error.
 
+#### Filter diagnostics to fix
+
+Typically when running codestyle or 3rd party analysis, all diagnostics of sufficient severity are reported and fixed. The `--diagnostics` option allows you to target a particular diagnostic or set of diagnostics of sufficient severity.
+
+- `--diagnostics <diagnostic ids>` - When used in conjunction with `--fix-style` or `--fix-analyzer`, allows you to apply targeted fixes for particular analyzers.
+
+*Example:*
+
+Run code-style analysis and fix unused using directive errors.
+
+```console
+dotnet-format ./format.sln --fix-style --diagnostics IDE0005
+```
+
 ### Filter files to format
 
 You can further narrow the list of files to be formatted by specifying a list of paths to include or exclude. When specifying folder paths the path must end with a directory separator. File globbing is supported.

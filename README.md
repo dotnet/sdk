@@ -101,6 +101,7 @@ Options:
   --fix-whitespace, -w                Run whitespace formatting. Run by default when not applying fixes.
   --fix-style, -s <severity>          Run code style analyzers and apply fixes.
   --fix-analyzers, -a <severity>      Run 3rd party analyzers and apply fixes.
+  --diagnostics <diagnostic ids>      A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party analyzers.
   --include <include>                 A list of relative file or folder paths to include in formatting. All files are formatted if empty.
   --exclude <exclude>                 A list of relative file or folder paths to exclude from formatting.
   --check                             Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.
@@ -117,6 +118,7 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | `dotnet format <workspace>`                                      | Formats a specific project or solution.                                                            |
 | `dotnet format <workspace> -f`                                   | Formats a particular folder and subfolders.                                                        |
 | `dotnet format <workspace> --fix-style warn`                     | Fixes only codestyle analyzer warnings.                                                            |
+| `dotnet format <workspace> --fix-style --diagnostics IDE0005`    | Fixes only codestyle analyzer errors for the IDE0005 diagnostic.                                   |
 | `dotnet format <workspace> --fix-whitespace --fix-style`         | Formats and fixes codestyle analyzer errors.                                                       |
 | `dotnet format <workspace> --fix-analyzers`                      | Fixes only 3rd party analyzer errors.                                                              |
 | `dotnet format <workspace> -wsa`                                 | Formats, fixes codestyle errors, and fixes 3rd party analyzer errors.                              |
@@ -143,8 +145,8 @@ You can build and package the tool using the following commands. The instruction
 ```console
 build -pack
 # The final line from the build will read something like
-# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.6.0.0-dev.nupkg'.
-# Use the value that is in the form `6.0.0-dev` as the version in the next command.
+# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.5.1.0-dev.nupkg'.
+# Use the value that is in the form `5.1.0-dev` as the version in the next command.
 dotnet tool install --add-source .\artifacts\packages\Debug\Shipping -g dotnet-format --version <version>
 dotnet format
 ```

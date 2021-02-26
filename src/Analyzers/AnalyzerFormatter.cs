@@ -72,6 +72,12 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 .SelectMany(codefix => codefix.FixableDiagnosticIds.Where(id => id.StartsWith("CS") || id.StartsWith("BC")))
                 .ToImmutableHashSet();
 
+            // Filter compiler diagnostics
+            if (!fixableCompilerDiagnostics.IsEmpty && !formatOptions.Diagnostics.IsEmpty)
+            {
+                fixableCompilerDiagnostics.Intersect(formatOptions.Diagnostics);
+            }
+
             var analysisStopwatch = Stopwatch.StartNew();
             logger.LogTrace(Resources.Running_0_analysis, _name);
 
@@ -83,7 +89,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var severity = _informationProvider.GetSeverity(formatOptions);
 
             // Filter to analyzers that report diagnostics with equal or greater severity.
-            var projectAnalyzers = await FilterBySeverityAsync(solution, projectAnalyzersAndFixers, formattablePaths, severity, cancellationToken).ConfigureAwait(false);
+            var projectAnalyzers = await FilterAnalyzersAsync(solution, projectAnalyzersAndFixers, formattablePaths, severity, formatOptions.Diagnostics, cancellationToken).ConfigureAwait(false);
 
             // Determine which diagnostics are being reported for each project.
             var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, severity, fixableCompilerDiagnostics, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
@@ -248,11 +254,12 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
         }
 
-        internal static async Task<ImmutableDictionary<ProjectId, ImmutableArray<DiagnosticAnalyzer>>> FilterBySeverityAsync(
+        internal static async Task<ImmutableDictionary<ProjectId, ImmutableArray<DiagnosticAnalyzer>>> FilterAnalyzersAsync(
             Solution solution,
             ImmutableDictionary<ProjectId, AnalyzersAndFixers> projectAnalyzersAndFixers,
             ImmutableHashSet<string> formattablePaths,
             DiagnosticSeverity minimumSeverity,
+            ImmutableHashSet<string> diagnostics,
             CancellationToken cancellationToken)
         {
             // We only want to run analyzers for each project that have the potential for reporting a diagnostic with
@@ -273,6 +280,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     .Where(analyzer => DoesAnalyzerSupportLanguage(analyzer, project.Language));
                 foreach (var analyzer in filteredAnalyzer)
                 {
+                    // Filter by diagnostics
+                    if (!diagnostics.IsEmpty &&
+                        !analyzer.SupportedDiagnostics.Any(descriptor => diagnostics.Contains(descriptor.Id)))
+                    {
+                        continue;
+                    }
+
                     // Always run naming style analyzers because we cannot determine potential severity.
                     // The reported diagnostics will be filtered by severity when they are run.
                     if (analyzer.GetType().FullName?.EndsWith("NamingStyleDiagnosticAnalyzer") == true)

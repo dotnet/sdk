@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Immutable;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
@@ -38,6 +39,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
                 fixCategory: FixCategory.Whitespace,
                 codeStyleSeverity: DiagnosticSeverity.Error,
                 analyzerSeverity: DiagnosticSeverity.Error,
+                diagnostics: ImmutableHashSet<string>.Empty,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 AllFileMatcher,
@@ -57,6 +59,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
                 fixCategory: FixCategory.Whitespace,
                 codeStyleSeverity: DiagnosticSeverity.Error,
                 analyzerSeverity: DiagnosticSeverity.Error,
+                diagnostics: ImmutableHashSet<string>.Empty,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 AllFileMatcher,
