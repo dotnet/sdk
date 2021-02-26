@@ -62,6 +62,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WarningLevel Condition="'$(Language)' == 'C#' And
                              '$(AnalysisLevel)' == 'preview'">9999</WarningLevel>
 
+    <!-- Intermediate step to enable ILLink.Analyzers so ILLink, Blazor, Xamarin, AOT, etc. can enable the same flags -->
+    <AnalyzeSingleFile Condition="'$(PublishSingleFile)' == 'true'">true</AnalyzeSingleFile>
+    <AnalyzeTrimming Condition="'$(PublishTrimmed)' == 'true'">true</AnalyzeTrimming>
+
   </PropertyGroup>
   <!-- Unconditionally import 'Microsoft.CodeAnalysis.NetAnalyzers.props' for all C# and VB projects for supporting https://github.com/dotnet/roslyn-analyzers/issues/3977 -->
   <Import Project="$(MSBuildThisFileDirectory)..\analyzers\build\Microsoft.CodeAnalysis.NetAnalyzers.props"
@@ -70,10 +74,6 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="$(EnableNETAnalyzers)" />
   <Import Project="$(MSBuildThisFileDirectory)..\analyzers\build\Microsoft.NET.ILLink.Analyzers.props"
           Condition="'$(PublishSingleFile)' == 'true' Or '$(PublishTrimmed)' == 'true'" />
-
-  <!-- Intermediate step to enable ILLink.Analyzers so ILLink, Blazor, Xamarin, AOT, etc. can enable the same flags -->
-  <AnalyzeSingleFile Condition="'$(PublishSingleFile)' == 'true'">true</AnalyzeSingleFile>
-  <AnalyzeTrimming Condition="'$(PublishTrimmed)' == 'true'">true</AnalyzeTrimming>
 
   <!-- .NET Analyzers -->
   <ItemGroup Condition="$(EnableNETAnalyzers)">
