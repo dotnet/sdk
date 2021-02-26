@@ -151,7 +151,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
                 foreach (var diagnostic in diagnostics)
                 {
-                    var message = $"{diagnostic.GetMessage()} ({diagnostic.Id})";
+                    var message = $"{diagnostic.Severity.ToString().ToLower()} {diagnostic.Id}: {diagnostic.GetMessage()}";
                     var document = solution.GetDocument(diagnostic.Location.SourceTree);
                     if (document is null)
                     {
