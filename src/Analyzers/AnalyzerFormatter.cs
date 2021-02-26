@@ -163,7 +163,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     var mappedLineSpan = diagnostic.Location.GetMappedLineSpan();
                     var changePosition = mappedLineSpan.StartLinePosition;
 
-                    var formatMessage = $"{Path.GetRelativePath(workspaceFolder, filePath)}({changePosition.Line + 1},{changePosition.Character + 1}): {message}";
+                    var formatMessage = $"{filePath}({changePosition.Line + 1},{changePosition.Character + 1}): {message} [{document.Project.FilePath}]";
                     formattedFiles.Add(new FormattedFile(document!, new[] { new FileChange(changePosition, message) }));
 
                     if (changesAreErrors)

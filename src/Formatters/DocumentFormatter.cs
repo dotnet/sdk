@@ -21,6 +21,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         protected abstract string FormatWarningDescription { get; }
 
         /// <summary>
+        /// Gets the fix name to use when logging.
+        /// </summary>
+        public abstract string Name { get; }
+
+        /// <summary>
         /// Gets the fix category this formatter belongs to.
         /// </summary>
         public abstract FixCategory Category { get; }
@@ -113,7 +118,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// Applies the changed <see cref="SourceText"/> to each formatted <see cref="Document"/>.
         /// </summary>
         private async Task<Solution> ApplyFileChangesAsync(
-           Solution solution,
+            Solution solution,
             ImmutableArray<(Document, Task<(SourceText originalText, SourceText? formattedText)>)> formattedDocuments,
             FormatOptions formatOptions,
             ILogger logger,
@@ -141,7 +146,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     continue;
                 }
 
-                var fileChanges = GetFileChanges(formatOptions, formatOptions.WorkspaceFilePath, document.FilePath, originalText, formattedText, formatOptions.ChangesAreErrors, logger);
+                var fileChanges = GetFileChanges(formatOptions, document, originalText, formattedText, formatOptions.ChangesAreErrors, logger);
                 formattedFiles.Add(new FormattedFile(document, fileChanges));
 
                 formattedSolution = formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
@@ -150,14 +155,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             return formattedSolution;
         }
 
-        private ImmutableArray<FileChange> GetFileChanges(FormatOptions formatOptions, string workspacePath, string filePath, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
+        private ImmutableArray<FileChange> GetFileChanges(FormatOptions formatOptions, Document document, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
         {
-            var workspaceFolder = Path.GetDirectoryName(workspacePath);
-            if (workspaceFolder is null)
-            {
-                throw new Exception($"Unable to find directory name for '{workspacePath}'");
-            }
-
             var fileChanges = ImmutableArray.CreateBuilder<FileChange>();
             var changes = formattedText.GetChangeRanges(originalText);
 
@@ -171,16 +170,16 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
                 if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Trace)
                 {
-                    LogFormattingChanges(filePath, changesAreErrors, logger, workspaceFolder, fileChange);
+                    LogFormattingChanges(document, changesAreErrors, logger, fileChange);
                 }
             }
 
             return fileChanges.ToImmutable();
         }
 
-        private static void LogFormattingChanges(string filePath, bool changesAreErrors, ILogger logger, string workspaceFolder, FileChange fileChange)
+        private void LogFormattingChanges(Document document, bool changesAreErrors, ILogger logger, FileChange fileChange)
         {
-            var formatMessage = $"{Path.GetRelativePath(workspaceFolder, filePath)}({fileChange.LineNumber},{fileChange.CharNumber}): {fileChange.FormatDescription}";
+            var formatMessage = $"{document.FilePath}({fileChange.LineNumber},{fileChange.CharNumber}): error {Name}: {fileChange.FormatDescription} [{document.Project.FilePath}]";
             if (changesAreErrors)
             {
                 logger.LogError(formatMessage);

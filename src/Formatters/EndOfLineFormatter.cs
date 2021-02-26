@@ -15,6 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     {
         protected override string FormatWarningDescription => Resources.Fix_end_of_line_marker;
 
+        public override string Name => "ENDOFLINE";
         public override FixCategory Category => FixCategory.Whitespace;
 
         internal override Task<SourceText> FormatFileAsync(
