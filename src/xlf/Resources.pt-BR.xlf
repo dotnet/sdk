@@ -167,6 +167,11 @@
         <target state="translated">Foram encontrados vários arquivos de solução do MSBuild em '{0}'. Especifique qual será usado com o argumento &lt;workspace&gt;.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Project_0_is_using_configuration_from_1">
+        <source>Project {0} is using configuration from '{1}'.</source>
+        <target state="new">Project {0} is using configuration from '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting">
         <source>Required references did not load for {0} or referenced project. Run `dotnet restore` prior to formatting.</source>
         <target state="new">Required references did not load for {0} or referenced project. Run `dotnet restore` prior to formatting.</target>

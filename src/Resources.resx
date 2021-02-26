@@ -309,4 +309,7 @@
   <data name="Cannot_specify_the_folder_option_when_fixing_style" xml:space="preserve">
     <value>Cannot specify the '--folder' option when fixing style.</value>
   </data>
+  <data name="Project_0_is_using_configuration_from_1" xml:space="preserve">
+    <value>Project {0} is using configuration from '{1}'.</value>
+  </data>
 </root>

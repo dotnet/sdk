@@ -51,6 +51,17 @@ namespace Microsoft.CodeAnalysis.Tools
                 return new WorkspaceFormatResult(filesFormatted: 0, fileCount: 0, exitCode: 1);
             }
 
+            if (formatOptions.LogLevel <= LogLevel.Debug)
+            {
+                foreach (var project in workspace.CurrentSolution.Projects)
+                {
+                    foreach (var configDocument in project.AnalyzerConfigDocuments)
+                    {
+                        logger.LogDebug(Resources.Project_0_is_using_configuration_from_1, project.Name, configDocument.FilePath);
+                    }
+                }
+            }
+
             var loadWorkspaceMS = workspaceStopwatch.ElapsedMilliseconds;
             logger.LogTrace(Resources.Complete_in_0_ms, loadWorkspaceMS);
 
