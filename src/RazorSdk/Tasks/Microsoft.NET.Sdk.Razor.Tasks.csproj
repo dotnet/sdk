@@ -18,7 +18,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <CopyLocalLockFileAssemblies Condition="'$(TargetFramework)'!='net472'">false</CopyLocalLockFileAssemblies>
     <!-- MSBuild Task DLLs need to be versioned with every build -->
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
 
@@ -38,7 +38,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" ExcludeAssets="Runtime" />
-    <PackageReference Include="System.Reflection.Metadata"  Version="$(SystemReflectionMetadataVersion)" PrivateAssets="All" Condition="'$(TargetFramework)'=='net472'" />
+    <PackageReference Include="System.Reflection.Metadata"
+      Version="$(SystemReflectionMetadataVersion)"
+      Condition="'$(TargetFramework)'=='net472'" />
   </ItemGroup>
 
   <ItemGroup>
