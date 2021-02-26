@@ -1515,6 +1515,26 @@
             ]
           }
         },
+        "CA1418": {
+          "id": "CA1418",
+          "shortDescription": "Use valid platform string",
+          "fullDescription": "Platform compatibility analyzer requires a valid platform name and version.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1418",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "UseValidPlatformString",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1501": {
           "id": "CA1501",
           "shortDescription": "Avoid excessive inheritance",

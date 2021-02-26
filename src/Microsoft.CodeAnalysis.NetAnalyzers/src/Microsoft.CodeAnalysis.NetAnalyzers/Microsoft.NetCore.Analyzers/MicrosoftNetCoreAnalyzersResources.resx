@@ -1510,4 +1510,20 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="UseValidPlatformStringDescription" xml:space="preserve">
+    <value>Platform compatibility analyzer requires a valid platform name and version.</value>
+  </data>
+  <data name="UseValidPlatformStringTitle" xml:space="preserve">
+    <value>Use valid platform string</value>
+  </data>
+  <data name="UseValidPlatformStringUnknownPlatform" xml:space="preserve">
+    <value>The platform '{0}' is not a known platform name</value>
+  </data>
+  <data name="UseValidPlatformStringInvalidVersion" xml:space="preserve">
+    <value>Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</value>
+    <comment>Version '7' is not valid for platform 'windows'. Use a version with 2-4 parts for this platform.</comment>
+  </data>
+  <data name="UseValidPlatformStringNoVersion" xml:space="preserve">
+    <value>Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</value>
+  </data>
 </root>

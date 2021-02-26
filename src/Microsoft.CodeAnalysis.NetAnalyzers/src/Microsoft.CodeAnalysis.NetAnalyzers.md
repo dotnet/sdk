@@ -708,6 +708,18 @@ String parameters passed by value with the 'OutAttribute' can destabilize the ru
 |CodeFix|False|
 ---
 
+## [CA1418](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1418): Use valid platform string
+
+Platform compatibility analyzer requires a valid platform name and version.
+
+|Item|Value|
+|-|-|
+|Category|Interoperability|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA1501](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1501): Avoid excessive inheritance
 
 Deeply nested type hierarchies can be difficult to follow, understand, and maintain. This rule limits analysis to hierarchies in the same module. To fix a violation of this rule, derive the type from a base type that is less deep in the inheritance hierarchy or eliminate some of the intermediate base types.
