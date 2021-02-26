@@ -156,6 +156,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [Fact]
+        public void CommandLine_FolderValidation_FailsIfNoRestoreSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--folder", "--no-restore" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+        }
+
+        [Fact]
         public void CommandLine_AnalyzerOptions_CanSpecifyBothWithDefaults()
         {
             // Arrange
@@ -180,6 +193,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             Task<int> TestRun(
                 string workspace,
+                bool noRestore,
                 bool folder,
                 bool fixWhitespace,
                 string fixStyle,
@@ -194,6 +208,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 IConsole console = null)
             {
                 Assert.Equal("./src", workspace);
+                Assert.True(noRestore);
                 Assert.False(folder);
                 Assert.True(fixWhitespace);
                 Assert.Equal("warn", fixStyle);
@@ -211,6 +226,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             var args = @"
 ./src
+--no-restore
 --fix-whitespace
 --fix-style
 warn

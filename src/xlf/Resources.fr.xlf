@@ -52,6 +52,11 @@
         <target state="new">Cannot specify the '--folder' option when running analyzers.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_with_no_restore">
+        <source>Cannot specify the '--folder' option with '--no-restore'.</source>
+        <target state="new">Cannot specify the '--folder' option with '--no-restore'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Code_Style">
         <source>Code Style</source>
         <target state="translated">Style de code</target>
@@ -80,6 +85,11 @@
       <trans-unit id="Determining_formattable_files">
         <source>Determining formattable files.</source>
         <target state="translated">Identification des fichiers pouvant être mis en forme.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Doesnt_execute_an_implicit_restore_before_formatting">
+        <source>Doesn't execute an implicit restore before formatting.</source>
+        <target state="new">Doesn't execute an implicit restore before formatting.</target>
         <note />
       </trans-unit>
       <trans-unit id="Failed_to_apply_code_fix_0_for_1_2">

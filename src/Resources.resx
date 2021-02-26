@@ -312,4 +312,10 @@
   <data name="Project_0_is_using_configuration_from_1" xml:space="preserve">
     <value>Project {0} is using configuration from '{1}'.</value>
   </data>
+  <data name="Doesnt_execute_an_implicit_restore_before_formatting" xml:space="preserve">
+    <value>Doesn't execute an implicit restore before formatting.</value>
+  </data>
+  <data name="Cannot_specify_the_folder_option_with_no_restore" xml:space="preserve">
+    <value>Cannot specify the '--folder' option with '--no-restore'.</value>
+  </data>
 </root>
