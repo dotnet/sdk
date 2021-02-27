@@ -1514,12 +1514,12 @@
     <value>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</value>
   </data>
   <data name="UseCancellationTokenThrowIfCancellationRequestedMessage" xml:space="preserve">
-    <value>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested'</value>
+    <value>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</value>
   </data>
   <data name="UseCancellationTokenThrowIfCancellationRequestedTitle" xml:space="preserve">
     <value>Use 'ThrowIfCancellationRequested'</value>
   </data>
   <data name="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle" xml:space="preserve">
-    <value>Use 'ThrowIfCancellationRequested'</value>
+    <value>Replace with 'CancellationToken.ThrowIfCancellationRequested'</value>
   </data>
 </root>

@@ -51,8 +51,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             void AnalyzeOperation(OperationAnalysisContext context)
             {
                 var conditional = (IConditionalOperation)context.Operation;
-                IOperation? whenTrue = GetSingleStatementOrDefault(conditional.WhenTrue);
-                IOperation? whenFalse = GetSingleStatementOrDefault(conditional.WhenFalse);
+                GetSingleStatementOrDefault(conditional.WhenTrue);
+                GetSingleStatementOrDefault(conditional.WhenFalse);
 
                 if (symbols.IsSimpleAffirmativeCheck(conditional, out _) || symbols.IsNegatedCheckWithThrowingElseClause(conditional, out _))
                 {
