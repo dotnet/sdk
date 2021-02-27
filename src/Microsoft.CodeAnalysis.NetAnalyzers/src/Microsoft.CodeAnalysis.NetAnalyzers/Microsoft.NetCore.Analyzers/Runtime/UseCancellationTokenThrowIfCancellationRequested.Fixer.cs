@@ -34,8 +34,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SyntaxNode node = root.FindNode(context.Span);
             if (model.GetOperation(node, context.CancellationToken) is not IConditionalOperation conditional)
                 return;
-            IOperation? whenTrue = UseCancellationTokenThrowIfCancellationRequested.GetSingleStatementOrDefault(conditional.WhenTrue);
-            IOperation? whenFalse = UseCancellationTokenThrowIfCancellationRequested.GetSingleStatementOrDefault(conditional.WhenFalse);
 
             Func<CancellationToken, Task<Document>> createChangedDocument;
             if (symbols.IsSimpleAffirmativeCheck(conditional, out IPropertyReferenceOperation? propertyReference))

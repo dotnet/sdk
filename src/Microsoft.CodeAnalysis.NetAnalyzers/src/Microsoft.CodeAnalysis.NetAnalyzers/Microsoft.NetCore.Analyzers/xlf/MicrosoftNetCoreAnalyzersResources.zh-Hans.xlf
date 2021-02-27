@@ -2098,8 +2098,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle">
-        <source>Use 'ThrowIfCancellationRequested'</source>
-        <target state="new">Use 'ThrowIfCancellationRequested'</target>
+        <source>Replace with 'CancellationToken.ThrowIfCancellationRequested'</source>
+        <target state="new">Replace with 'CancellationToken.ThrowIfCancellationRequested'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
@@ -2108,8 +2108,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
-        <source>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested'</source>
-        <target state="new">Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested'</target>
+        <source>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</source>
+        <target state="new">Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">

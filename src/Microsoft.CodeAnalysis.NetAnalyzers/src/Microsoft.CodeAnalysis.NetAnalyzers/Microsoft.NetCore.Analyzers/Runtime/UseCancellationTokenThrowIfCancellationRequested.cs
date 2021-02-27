@@ -51,8 +51,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             void AnalyzeOperation(OperationAnalysisContext context)
             {
                 var conditional = (IConditionalOperation)context.Operation;
-                GetSingleStatementOrDefault(conditional.WhenTrue);
-                GetSingleStatementOrDefault(conditional.WhenFalse);
 
                 if (symbols.IsSimpleAffirmativeCheck(conditional, out _) || symbols.IsNegatedCheckWithThrowingElseClause(conditional, out _))
                 {
@@ -115,10 +113,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 symbols = new RequiredSymbols
                 {
-                    BoolType = boolType,
-                    CancellationTokenType = cancellationTokenType,
-                    OperationCanceledExceptionType = operationCanceledExceptionType,
-                    ThrowIfCancellationRequestedMethod = throwIfCancellationRequestedMethod,
                     IsCancellationRequestedProperty = isCancellationRequestedProperty,
                     OperationCanceledExceptionDefaultCtor = operationCanceledExceptionDefaultCtor,
                     OperationCanceledExceptionTokenCtor = operationCanceledExceptionTokenCtor
@@ -127,10 +121,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return true;
             }
 
-            public INamedTypeSymbol BoolType { get; init; }
-            public INamedTypeSymbol CancellationTokenType { get; init; }
-            public INamedTypeSymbol OperationCanceledExceptionType { get; init; }
-            public IMethodSymbol ThrowIfCancellationRequestedMethod { get; init; }
             public IPropertySymbol IsCancellationRequestedProperty { get; init; }
             public IMethodSymbol OperationCanceledExceptionDefaultCtor { get; init; }
             public IMethodSymbol OperationCanceledExceptionTokenCtor { get; init; }
