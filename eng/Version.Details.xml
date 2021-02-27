@@ -166,10 +166,6 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>ba8ec804c3f59d84f787a86dd72f78511b8f7815</Sha>
     </Dependency>
-    <Dependency Name="dotnet-watch" Version="6.0.0-preview.2.21108.6">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>0d981a053fd45a73f52f93da2855d986c4cc7b62</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzers" Version="6.0.0-preview.2.21123.3">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>ba8ec804c3f59d84f787a86dd72f78511b8f7815</Sha>
