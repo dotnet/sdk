@@ -72,6 +72,11 @@
         <target state="translated">'{0}'의 서식을 지정할 수 없습니다. 서식 지정은 현재 C# 및 Visual Basic 프로젝트만 지원합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Delete_0_characters">
+        <source>Delete {0} characters.</source>
+        <target state="new">Delete {0} characters.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Determining_diagnostics">
         <source>Determining diagnostics...</source>
         <target state="translated">진단을 확인하는 중...</target>
@@ -152,6 +157,11 @@
         <target state="translated">서식 지정 작업에서 생성된 코드 파일을 포함합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Insert_0">
+        <source>Insert '{0}'.</source>
+        <target state="new">Insert '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Loading_workspace">
         <source>Loading workspace.</source>
         <target state="translated">작업 영역을 로드하는 중입니다.</target>
@@ -170,6 +180,11 @@
       <trans-unit id="Project_0_is_using_configuration_from_1">
         <source>Project {0} is using configuration from '{1}'.</source>
         <target state="new">Project {0} is using configuration from '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Replace_0_characters_with_1">
+        <source>Replace {0} characters with '{1}'.</source>
+        <target state="new">Replace {0} characters with '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting">

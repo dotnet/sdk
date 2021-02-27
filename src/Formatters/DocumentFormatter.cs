@@ -159,14 +159,16 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             }
 
             var fileChanges = ImmutableArray.CreateBuilder<FileChange>();
-            var changes = formattedText.GetChangeRanges(originalText);
+            var changes = formattedText.GetTextChanges(originalText);
 
             for (var index = 0; index < changes.Count; index++)
             {
                 var change = changes[index];
+                var changeMessage = BuildChangeMessage(change);
+
                 var changePosition = originalText.Lines.GetLinePosition(change.Span.Start);
 
-                var fileChange = new FileChange(changePosition, FormatWarningDescription);
+                var fileChange = new FileChange(changePosition, $"{FormatWarningDescription}{changeMessage}");
                 fileChanges.Add(fileChange);
 
                 if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Trace)
@@ -176,6 +178,25 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             }
 
             return fileChanges.ToImmutable();
+
+            static string BuildChangeMessage(TextChange change)
+            {
+                var isDelete = string.IsNullOrEmpty(change.NewText);
+                var isAdd = change.Span.Length == 0;
+                if (isDelete && isAdd)
+                {
+                    return string.Empty;
+                }
+
+                // Escape characters in the text changes so that it can be more easily read.
+                var textChange = change.NewText?.Replace(" ", "\\s").Replace("\t", "\\t").Replace("\n", "\\n").Replace("\r", "\\r");
+                var message = isDelete
+                    ? string.Format(Resources.Delete_0_characters, change.Span.Length)
+                    : isAdd
+                        ? string.Format(Resources.Insert_0, textChange)
+                        : string.Format(Resources.Replace_0_characters_with_1, change.Span.Length, textChange);
+                return $" {message}";
+            }
         }
 
         private static void LogFormattingChanges(string filePath, bool changesAreErrors, ILogger logger, string workspaceFolder, FileChange fileChange)
