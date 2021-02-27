@@ -166,26 +166,13 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 var fileChange = new FileChange(changePosition, FormatWarningDescription);
                 fileChanges.Add(fileChange);
 
-                if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Trace)
+                if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Debug)
                 {
-                    LogFormattingChanges(document, changesAreErrors, logger, fileChange);
+                    logger.LogFormattingIssue(document, Name, fileChange, changesAreErrors);
                 }
             }
 
             return fileChanges.ToImmutable();
-        }
-
-        private void LogFormattingChanges(Document document, bool changesAreErrors, ILogger logger, FileChange fileChange)
-        {
-            var formatMessage = $"{document.FilePath}({fileChange.LineNumber},{fileChange.CharNumber}): error {Name}: {fileChange.FormatDescription} [{document.Project.FilePath}]";
-            if (changesAreErrors)
-            {
-                logger.LogError(formatMessage);
-            }
-            else
-            {
-                logger.LogWarning(formatMessage);
-            }
         }
 
         protected static async Task<bool> IsSameDocumentAndVersionAsync(Document a, Document b, CancellationToken cancellationToken)
