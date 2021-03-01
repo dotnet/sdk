@@ -14,6 +14,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     {
         protected override string FormatWarningDescription => Resources.Fix_final_newline;
 
+        public override string Name => "FINALNEWLINE";
         public override FixCategory Category => FixCategory.Whitespace;
 
         internal override async Task<SourceText> FormatFileAsync(

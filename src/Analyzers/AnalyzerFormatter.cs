@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -141,39 +140,29 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, fixableCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
             }
 
-            LogDiagnosticLocations(solution, result.Diagnostics.SelectMany(kvp => kvp.Value), options.WorkspaceFilePath, options.ChangesAreErrors, logger, formattedFiles);
+            LogDiagnosticLocations(solution, result.Diagnostics.SelectMany(kvp => kvp.Value), options.SaveFormattedFiles, options.ChangesAreErrors, logger, options.LogLevel, formattedFiles);
 
             return result.Diagnostics.ToImmutableDictionary(kvp => kvp.Key.Id, kvp => kvp.Value.Select(diagnostic => diagnostic.Id).ToImmutableHashSet());
 
-            static void LogDiagnosticLocations(Solution solution, IEnumerable<Diagnostic> diagnostics, string workspacePath, bool changesAreErrors, ILogger logger, List<FormattedFile> formattedFiles)
+            static void LogDiagnosticLocations(Solution solution, IEnumerable<Diagnostic> diagnostics, bool saveFormattedFiles, bool changesAreErrors, ILogger logger, LogLevel logLevel, List<FormattedFile> formattedFiles)
             {
-                var workspaceFolder = Path.GetDirectoryName(workspacePath) ?? workspacePath;
-
                 foreach (var diagnostic in diagnostics)
                 {
-                    var message = $"{diagnostic.GetMessage()} ({diagnostic.Id})";
                     var document = solution.GetDocument(diagnostic.Location.SourceTree);
                     if (document is null)
                     {
                         continue;
                     }
 
-                    var filePath = document.FilePath ?? document.Name;
-
                     var mappedLineSpan = diagnostic.Location.GetMappedLineSpan();
-                    var changePosition = mappedLineSpan.StartLinePosition;
+                    var diagnosticPosition = mappedLineSpan.StartLinePosition;
 
-                    var formatMessage = $"{Path.GetRelativePath(workspaceFolder, filePath)}({changePosition.Line + 1},{changePosition.Character + 1}): {message}";
-                    formattedFiles.Add(new FormattedFile(document!, new[] { new FileChange(changePosition, message) }));
+                    if (!saveFormattedFiles || logLevel == LogLevel.Debug)
+                    {
+                        logger.LogDiagnosticIssue(document, diagnosticPosition, diagnostic, changesAreErrors);
+                    }
 
-                    if (changesAreErrors)
-                    {
-                        logger.LogError(formatMessage);
-                    }
-                    else
-                    {
-                        logger.LogWarning(formatMessage);
-                    }
+                    formattedFiles.Add(new FormattedFile(document, new[] { new FileChange(diagnosticPosition, $"{diagnostic.Severity.ToString().ToLower()} {diagnostic.Id}: {diagnostic.GetMessage()}") }));
                 }
             }
         }

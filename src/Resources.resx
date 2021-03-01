@@ -318,4 +318,13 @@
   <data name="Cannot_specify_the_folder_option_with_no_restore" xml:space="preserve">
     <value>Cannot specify the '--folder' option with '--no-restore'.</value>
   </data>
+  <data name="Delete_0_characters" xml:space="preserve">
+    <value>Delete {0} characters.</value>
+  </data>
+  <data name="Insert_0" xml:space="preserve">
+    <value>Insert '{0}'.</value>
+  </data>
+  <data name="Replace_0_characters_with_1" xml:space="preserve">
+    <value>Replace {0} characters with '{1}'.</value>
+  </data>
 </root>
