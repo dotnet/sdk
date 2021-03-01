@@ -1,0 +1,47 @@
+<Project>
+  <!-- <Import Project="eng\Versions.props" /> -->
+  
+  <PropertyGroup>
+    <MicrosoftBuildVersion>15.3.409</MicrosoftBuildVersion>
+    <MicrosoftExtensionsVersion>5.0.0-preview.7.20364.11</MicrosoftExtensionsVersion>
+    <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
+    <NuGetVersion>5.8.0-preview.3.6823</NuGetVersion>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.12.1" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.12.1" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="1.2.6" />
+    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)"/>
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.0.1-beta1.20413.3" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="NuGet.Common" Version="$(NuGetVersion)" />
+    <PackageVersion Include="NuGet.Configuration" Version="$(NuGetVersion)" />
+    <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetVersion)" />
+    <PackageVersion Include="NuGet.Packaging" Version="$(NuGetVersion)" />
+    <PackageVersion Include="NuGet.Protocol" Version="$(NuGetVersion)" />
+    <PackageVersion Include="NuGet.Versioning" Version="$(NuGetVersion)" />
+    <PackageVersion Include="System.CommandLine.Rendering" Version="0.3.0-alpha.20371.2" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta1.20371.2" />
+    <PackageVersion Include="System.Text.Json" Version="$(MicrosoftExtensionsVersion)" />
+    <!--
+      Workaround for the inability to load the NugetSdkResolver from the .NET 5 SDK
+      https://github.com/microsoft/MSBuildLocator/issues/88
+    -->
+    <PackageVersion Include="Newtonsoft.Json" Version="12.0.2" />
+  </ItemGroup>
+</Project>

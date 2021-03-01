@@ -9,8 +9,8 @@
     <Configuration>Release</Configuration>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetVersion)" />
-    <PackageReference Include="BenchmarkDotNet.Annotations" Version="$(BenchmarkDotNetAnnotationsVersion)" />
+    <PackageReference Include="BenchmarkDotNet"  />
+    <PackageReference Include="BenchmarkDotNet.Annotations"  />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\src\dotnet-format.csproj" />
