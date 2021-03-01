@@ -312,4 +312,13 @@
   <data name="Project_0_is_using_configuration_from_1" xml:space="preserve">
     <value>Project {0} is using configuration from '{1}'.</value>
   </data>
+  <data name="Delete_0_characters" xml:space="preserve">
+    <value>Delete {0} characters.</value>
+  </data>
+  <data name="Insert_0" xml:space="preserve">
+    <value>Insert '{0}'.</value>
+  </data>
+  <data name="Replace_0_characters_with_1" xml:space="preserve">
+    <value>Replace {0} characters with '{1}'.</value>
+  </data>
 </root>

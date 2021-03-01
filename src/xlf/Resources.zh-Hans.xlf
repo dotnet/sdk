@@ -72,6 +72,11 @@
         <target state="translated">无法设置“{0}”的格式。该格式当前仅支持 C# 和 Visual Basic 项目。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Delete_0_characters">
+        <source>Delete {0} characters.</source>
+        <target state="new">Delete {0} characters.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Determining_diagnostics">
         <source>Determining diagnostics...</source>
         <target state="translated">正在确定诊断…</target>
@@ -152,6 +157,11 @@
         <target state="translated">在格式化操作中包含所生成的代码文件。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Insert_0">
+        <source>Insert '{0}'.</source>
+        <target state="new">Insert '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Loading_workspace">
         <source>Loading workspace.</source>
         <target state="translated">正在加载工作区。</target>
@@ -170,6 +180,11 @@
       <trans-unit id="Project_0_is_using_configuration_from_1">
         <source>Project {0} is using configuration from '{1}'.</source>
         <target state="new">Project {0} is using configuration from '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Replace_0_characters_with_1">
+        <source>Replace {0} characters with '{1}'.</source>
+        <target state="new">Replace {0} characters with '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting">

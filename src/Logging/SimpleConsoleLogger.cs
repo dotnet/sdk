@@ -83,7 +83,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
         {
             if (logToErrorStream)
             {
-                console.Error.Write($"  {message}{Environment.NewLine}");
+                console.Error.Write($"{message}{Environment.NewLine}");
             }
             else
             {

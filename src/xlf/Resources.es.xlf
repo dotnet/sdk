@@ -72,6 +72,11 @@
         <target state="translated">No se pudo dar formato a "{0}". El formato admite solo proyectos de C# y Visual Basic en este momento.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Delete_0_characters">
+        <source>Delete {0} characters.</source>
+        <target state="new">Delete {0} characters.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Determining_diagnostics">
         <source>Determining diagnostics...</source>
         <target state="translated">Determinando los diagnósticos...</target>
@@ -152,6 +157,11 @@
         <target state="translated">Incluya los archivos de código generados en las operaciones de formato.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Insert_0">
+        <source>Insert '{0}'.</source>
+        <target state="new">Insert '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Loading_workspace">
         <source>Loading workspace.</source>
         <target state="translated">Cargando área de trabajo.</target>
@@ -170,6 +180,11 @@
       <trans-unit id="Project_0_is_using_configuration_from_1">
         <source>Project {0} is using configuration from '{1}'.</source>
         <target state="new">Project {0} is using configuration from '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Replace_0_characters_with_1">
+        <source>Replace {0} characters with '{1}'.</source>
+        <target state="new">Replace {0} characters with '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting">

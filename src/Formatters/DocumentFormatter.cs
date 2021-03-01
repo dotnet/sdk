@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -19,6 +17,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     internal abstract class DocumentFormatter : ICodeFormatter
     {
         protected abstract string FormatWarningDescription { get; }
+
+        /// <summary>
+        /// Gets the fix name to use when logging.
+        /// </summary>
+        public abstract string Name { get; }
 
         /// <summary>
         /// Gets the fix category this formatter belongs to.
@@ -113,7 +116,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// Applies the changed <see cref="SourceText"/> to each formatted <see cref="Document"/>.
         /// </summary>
         private async Task<Solution> ApplyFileChangesAsync(
-           Solution solution,
+            Solution solution,
             ImmutableArray<(Document, Task<(SourceText originalText, SourceText? formattedText)>)> formattedDocuments,
             FormatOptions formatOptions,
             ILogger logger,
@@ -141,7 +144,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     continue;
                 }
 
-                var fileChanges = GetFileChanges(formatOptions, formatOptions.WorkspaceFilePath, document.FilePath, originalText, formattedText, formatOptions.ChangesAreErrors, logger);
+                var fileChanges = GetFileChanges(formatOptions, document, originalText, formattedText, formatOptions.ChangesAreErrors, logger);
                 formattedFiles.Add(new FormattedFile(document, fileChanges));
 
                 formattedSolution = formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
@@ -150,44 +153,46 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             return formattedSolution;
         }
 
-        private ImmutableArray<FileChange> GetFileChanges(FormatOptions formatOptions, string workspacePath, string filePath, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
+        private ImmutableArray<FileChange> GetFileChanges(FormatOptions formatOptions, Document document, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
         {
-            var workspaceFolder = Path.GetDirectoryName(workspacePath);
-            if (workspaceFolder is null)
-            {
-                throw new Exception($"Unable to find directory name for '{workspacePath}'");
-            }
-
             var fileChanges = ImmutableArray.CreateBuilder<FileChange>();
-            var changes = formattedText.GetChangeRanges(originalText);
+            var changes = formattedText.GetTextChanges(originalText);
 
             for (var index = 0; index < changes.Count; index++)
             {
                 var change = changes[index];
+                var changeMessage = BuildChangeMessage(change);
+
                 var changePosition = originalText.Lines.GetLinePosition(change.Span.Start);
 
-                var fileChange = new FileChange(changePosition, FormatWarningDescription);
+                var fileChange = new FileChange(changePosition, $"{FormatWarningDescription}{changeMessage}");
                 fileChanges.Add(fileChange);
 
-                if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Trace)
+                if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Debug)
                 {
-                    LogFormattingChanges(filePath, changesAreErrors, logger, workspaceFolder, fileChange);
+                    logger.LogFormattingIssue(document, Name, fileChange, changesAreErrors);
                 }
             }
 
             return fileChanges.ToImmutable();
-        }
 
-        private static void LogFormattingChanges(string filePath, bool changesAreErrors, ILogger logger, string workspaceFolder, FileChange fileChange)
-        {
-            var formatMessage = $"{Path.GetRelativePath(workspaceFolder, filePath)}({fileChange.LineNumber},{fileChange.CharNumber}): {fileChange.FormatDescription}";
-            if (changesAreErrors)
+            static string BuildChangeMessage(TextChange change)
             {
-                logger.LogError(formatMessage);
-            }
-            else
-            {
-                logger.LogWarning(formatMessage);
+                var isDelete = string.IsNullOrEmpty(change.NewText);
+                var isAdd = change.Span.Length == 0;
+                if (isDelete && isAdd)
+                {
+                    return string.Empty;
+                }
+
+                // Escape characters in the text changes so that it can be more easily read.
+                var textChange = change.NewText?.Replace(" ", "\\s").Replace("\t", "\\t").Replace("\n", "\\n").Replace("\r", "\\r");
+                var message = isDelete
+                    ? string.Format(Resources.Delete_0_characters, change.Span.Length)
+                    : isAdd
+                        ? string.Format(Resources.Insert_0, textChange)
+                        : string.Format(Resources.Replace_0_characters_with_1, change.Span.Length, textChange);
+                return $" {message}";
             }
         }
 

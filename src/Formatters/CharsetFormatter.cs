@@ -20,6 +20,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         private static Encoding Utf8 => new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         private static Encoding Latin1 => Encoding.GetEncoding("iso-8859-1");
 
+        public override string Name => "CHARSET";
         public override FixCategory Category => FixCategory.Whitespace;
 
         internal override Task<SourceText> FormatFileAsync(
