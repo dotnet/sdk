@@ -80,7 +80,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Outputs="@(RazorIntermediateAssembly);
                    @(_RazorDebugSymbolsIntermediatePath);
                    $(NonExistentFile)"
-          Condition="'@(RazorCompile)'!=''">
+          Condition="'@(RazorCompile)'!='' AND '@(_UseRazorSourceGenerator)' != 'true'">
     <!-- These two compiler warnings are raised when a reference is bound to a different version
              than specified in the assembly reference version number.  MSBuild raises the same warning in this case,
              so the compiler warning would be redundant. -->
@@ -111,7 +111,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AdditionalFiles Include="@(%(AdditionalFileItems.Identity))" />
     </ItemGroup>
 
-    <!-- Remove after https://github.com/dotnet/aspnetcore/issues/29862 is resolved -->
     <ItemGroup>
       <AdditionalFiles Remove="@(_RazorAdditionalFile)" />
       <Analyzer Remove="@(_RazorAnalyzer)" />

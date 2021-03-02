@@ -156,7 +156,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveRazorEmbeddedResources;
     </ResolveRazorCompileInputsDependsOn>
 
-    <RazorCompileDependsOn>
+    <RazorCompileDependsOn Condition="'$(_UseRazorSourceGenerator)' != 'true'">
       PrepareForRazorCompile;
       RazorCoreCompile
     </RazorCompileDependsOn>
@@ -419,7 +419,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="PrepareForRazorCompile" DependsOnTargets="$(PrepareForRazorCompileDependsOn)">
   </Target>
 
-  <Target Name="RazorCompile" DependsOnTargets="$(RazorCompileDependsOn)">
+  <Target Name="RazorCompile" DependsOnTargets="$(RazorCompileDependsOn)" Condition="'$(_UseSourceGenerators)' == ''">
   </Target>
 
   <!--

@@ -42,12 +42,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             build.Execute()
                 .Should()
                 .Pass()
-                .And.HaveStdOutContaining($"SimpleMvc -> {Path.Combine(projectDirectory.Path, outputPath, "SimpleMvc.Views.dll")}");
+                .And.NotHaveStdOutContaining($"SimpleMvc -> {Path.Combine(projectDirectory.Path, outputPath, "SimpleMvc.Views.dll")}");
 
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
         }
 
         [Fact]

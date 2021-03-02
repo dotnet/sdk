@@ -57,6 +57,14 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 b.SetCSharpLanguageVersion(((CSharpParseOptions)context.ParseOptions).LanguageVersion);
             });
 
+            var assemblyInfo = @"
+using System;
+using System.Reflection;
+
+[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(""Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor"")]
+";
+            context.AddSource($"{context.Compilation.AssemblyName}.View.Info", SourceText.From(assemblyInfo, Encoding.UTF8));
+
             CodeGenerateRazorComponents(context, razorContext, projectEngine);
             GenerateViews(context, razorContext, projectEngine);
         }
@@ -64,6 +72,9 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         private void GenerateViews(GeneratorExecutionContext context, RazorSourceGenerationContext razorContext, RazorProjectEngine projectEngine)
         {
             var files = razorContext.CshtmlFiles;
+
+            var arraypool = ArrayPool<(string, SourceText)>.Shared;
+            var outputs = arraypool.Rent(files.Count);
 
             Parallel.For(0, files.Count, GetParallelOptions(context), i =>
             {
@@ -78,9 +89,18 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     context.ReportDiagnostic(csharpDiagnostic);
                 }
 
-                Directory.CreateDirectory(Path.GetDirectoryName(file.GeneratedOutputPath));
-                File.WriteAllText(file.GeneratedOutputPath, csharpDocument.GeneratedCode);
+                var generatedCode = csharpDocument.GeneratedCode;
+                var hint = GetIdentifierFromPath(file.GeneratedOutputPath);
+                outputs[i] = (hint, SourceText.From(generatedCode, Encoding.UTF8));
             });
+
+            for (var i = 0; i < files.Count; i++)
+            {
+                var (hint, sourceText) = outputs[i];
+                context.AddSource(hint, sourceText);
+            }
+
+            arraypool.Return(outputs);
         }
 
         private static void CodeGenerateRazorComponents(GeneratorExecutionContext context, RazorSourceGenerationContext razorContext, RazorProjectEngine projectEngine)
