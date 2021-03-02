@@ -365,7 +365,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       if any of the project's outputs have changed.
     -->
     <UpToDateCheckBuilt Include="@(RazorIntermediateAssembly)"
-      Condition="'$(RazorCompileOnBuild)'=='true' AND '@(Content->WithMetadataValue('Extension', '.cshtml'))' != ''" Set="RazorViews" />
+      Condition="'$(RazorCompileOnBuild)'=='true' AND '@(Content->WithMetadataValue('Extension', '.cshtml'))' != '' AND '$(_UseRazorSourceGenerator)' != 'true'" Set="RazorViews" />
   </ItemGroup>
 
   <!--
@@ -669,7 +669,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target
     Name="_RazorAddBuiltProjectOutputGroupOutput"
     DependsOnTargets="_ResolveRazorTargetPath;ResolveRazorGenerateInputs"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true' AND '$(_UseRazorSourceGenerator)' != 'true'">
 
     <ItemGroup Condition="'@(RazorGenerate)'!= ''">
       <BuiltProjectOutputGroupOutput Include="%(RazorIntermediateAssembly.FullPath)" FinalOutputPath="$(RazorTargetPath)" />
@@ -704,7 +704,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target
     Name="_RazorGetCopyToOutputDirectoryItems"
     DependsOnTargets="ResolveRazorGenerateInputs"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true' AND '$(_UseRazorSourceGenerator)' != 'true'">
 
     <!--
       This condition needs to be inside the target because it the itemgroup will be populated after the target's
@@ -734,7 +734,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Name="_RazorGetCopyToPublishDirectoryItems"
     BeforeTargets="GetCopyToPublishDirectoryItems"
     DependsOnTargets="ResolveRazorGenerateInputs"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' AND '$(_UseRazorSourceGenerator)' != 'true'">
 
     <!--
       This condition needs to be inside the target because it the itemgroup will be populated after the target's
@@ -764,7 +764,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Name="_RazorCopyFilesToOutputDirectory"
     DependsOnTargets="_ResolveRazorTargetPath;RazorCompile"
     AfterTargets="CopyFilesToOutputDirectory"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true' AND '$(_UseRazorSourceGenerator)' != 'true'">
 
     <!-- Copy the Razor dll  -->
     <Copy
@@ -820,7 +820,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target
     Name="_RazorComputeFilesToPublish"
     AfterTargets="ComputeResolvedFilesToPublishList"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' and '@(RazorGenerate)'!=''">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' and '@(RazorGenerate)'!='' AND '$(_UseRazorSourceGenerator)' != 'true'">
 
     <!-- If we generated an assembly/pdb then include those -->
     <ItemGroup>

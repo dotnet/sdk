@@ -44,11 +44,16 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private void Build_ComponentsWorks()
         {
+            // while (!System.Diagnostics.Debugger.IsAttached)
+            // {
+            //     System.Console.WriteLine($"Waiting for {System.Diagnostics.Process.GetCurrentProcess().Id}");
+            //     System.Threading.Thread.Sleep(1000);
+            // }
             var testAsset = "RazorMvcWithComponents";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            build.Execute($"/bl:/Users/captainsafia/Downloads/Build_ComponentsWorks-{System.Guid.NewGuid().ToString()}.binlog").Should().Pass();
 
             string outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -63,7 +68,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Components should appear in the app assembly.
             new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).AssemblyShould().ContainType("MvcWithComponents.Components.Counter");
             // Views should also appear in the app assembly.
-            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).AssemblyShould().ContainType("AspNetCore.Views.Home.Index");
+            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).AssemblyShould().ContainType("AspNetCore.Views_Home_Index");
         }
     }
 }

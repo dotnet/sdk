@@ -57,11 +57,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Act & Assert 2
             for (var i = 0; i < 2; i++)
             {
-                // We want to make sure nothing changed between multiple incremental builds.
-                using (var razorGenDirectoryLock = LockDirectory(Path.Combine(intermediateOutputPath, "Razor")))
-                {
-                    result = build.Execute();
-                }
+                result = build.Execute();
 
                 result.Should().Pass();
                 foreach (var file in files)
@@ -212,10 +208,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             string outputPath = build.GetOutputDirectory(DefaultTfm).FullName;
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.pdb")).Should().NotExist();
 
             var clean = new MSBuildCommand(Log, "Clean", build.FullPathProjectFile);
             clean.Execute("/p:BuildProjectReferences=false").Should().Pass();
@@ -231,10 +227,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             build.Execute("/p:BuildProjectReferences=false").Should().Pass();
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.pdb")).Should().NotExist();
         }
 
         [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/28780")]

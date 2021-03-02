@@ -25,7 +25,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public PackIntegrationTest(ITestOutputHelper log) : base(log) {}
 
         [Fact]
-        public void Pack_NoBuild_Works_IncludesRazorAssembly()
+        public void Pack_NoBuild_Works_IncludesAssembly()
         {
             var testAsset = "RazorClassLibrary";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
@@ -41,9 +41,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().NotExist();
 
             result.Should().NuSpecContain(
+                Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.nuspec"),
+                $"<file src=\"{Path.Combine(projectDirectory.Path, "bin", "Debug", DefaultTfm, "ClassLibrary.dll")}\" " +
+                $"target=\"{Path.Combine("lib", DefaultTfm, "ClassLibrary.dll")}\" />");
+
+            result.Should().NuSpecDoesNotContain(
                 Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.nuspec"),
                 $"<file src=\"{Path.Combine(projectDirectory.Path, "bin", "Debug", DefaultTfm, "ClassLibrary.Views.dll")}\" " +
                 $"target=\"{Path.Combine("lib", DefaultTfm, "ClassLibrary.Views.dll")}\" />");
@@ -56,14 +61,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             result.Should().NuSpecDoesNotContain(
                 Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.nuspec"),
                 $@"<files include=""any/{DefaultTfm}/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
-
+            
             result.Should().NuPkgContain(
                 Path.Combine(projectDirectory.Path, "bin", "Debug", "ClassLibrary.1.0.0.nupkg"),
-                Path.Combine("lib", DefaultTfm, "ClassLibrary.Views.dll"));
+                Path.Combine("lib", DefaultTfm, "ClassLibrary.dll"));
         }
 
         [Fact]
-        public void Pack_Works_IncludesRazorAssembly()
+        public void Pack_Works_IncludesAssembly()
         {
             var testAsset = "RazorClassLibrary";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
@@ -75,14 +80,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var outputPath = pack.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().NotExist();
 
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 // Travis on OSX produces different full paths in C# and MSBuild
                 result.Should().NuSpecContain(
                     Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.nuspec"),
-                    $"<file src=\"{Path.Combine(projectDirectory.Path, "bin", "Debug", DefaultTfm, "ClassLibrary.Views.dll")}\" " +
+                    $"<file src=\"{Path.Combine(projectDirectory.Path, "bin", "Debug", DefaultTfm, "ClassLibrary.dll")}\" " +
                     $"target=\"{Path.Combine("lib", DefaultTfm, "ClassLibrary.Views.dll")}\" />");
 
                 result.Should().NuSpecDoesNotContain(
@@ -97,7 +102,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             result.Should().NuPkgContain(
                 Path.Combine(projectDirectory.Path, "bin", "Debug", "ClassLibrary.1.0.0.nupkg"),
-                Path.Combine("lib", DefaultTfm, "ClassLibrary.Views.dll"));
+                Path.Combine("lib", DefaultTfm, "ClassLibrary.dll"));
         }
 
         [Fact]

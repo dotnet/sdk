@@ -34,15 +34,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
             new FileInfo(Path.Combine(publishOutputPath, "appsettings.json")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "appsettings.Development.json")).Should().Exist();
 
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "appsettings.json")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "appsettings.Development.json")).Should().Exist();
 
@@ -73,8 +73,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
 
             // By default refs and .cshtml files will not be copied on publish
             new DirectoryInfo(Path.Combine(publishOutputPath, "refs")).Should().NotExist();
@@ -115,8 +115,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
 
             // By default refs and .cshtml files will not be copied on publish
             new FileInfo(Path.Combine(publishOutputPath, "refs", "mscorlib.dll")).Should().Exist();
@@ -144,8 +144,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
 
             // By default refs and .cshtml files will not be copied on publish
             new FileInfo(Path.Combine(publishOutputPath, "refs", "mscorlib.dll")).Should().Exist();
@@ -164,12 +164,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.Views.pdb")).Should().NotExist();
             new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.Views.pdb")).Should().NotExist();
 
             // Verify fix for https://github.com/aspnet/Razor/issues/2295. No cshtml files should be published from the app
             // or the ClassLibrary.
@@ -204,11 +204,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "AnotherClassLib.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "AnotherClassLib.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "AnotherClassLib.Views.dll")).Should().NotExist();
 
             // dotnet msbuild /t:Publish /p:BuildProjectReferences=false
             var publish = new PublishCommand(Log, $"{projectDirectory.TestRoot}/AppWithP2PReference");
@@ -218,18 +218,18 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.Views.pdb")).Should().NotExist();
 
             new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "ClassLibrary.Views.pdb")).Should().NotExist();
 
             new FileInfo(Path.Combine(publishOutputPath, "AnotherClassLib.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "AnotherClassLib.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "AnotherClassLib.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputPath, "AnotherClassLib.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "AnotherClassLib.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "AnotherClassLib.Views.pdb")).Should().NotExist();
         }
 
         [Fact]
@@ -246,10 +246,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var assemblyPath = Path.Combine(outputPath, "SimpleMvc.dll");
             new FileInfo(assemblyPath).Should().Exist();
-            var viewsAssemblyPath = Path.Combine(outputPath, "SimpleMvc.Views.dll");
-            new FileInfo(viewsAssemblyPath).Should().Exist();
             var assemblyVersion = AssemblyName.GetAssemblyName(assemblyPath).Version;
-            var viewsAssemblyVersion = AssemblyName.GetAssemblyName(viewsAssemblyPath).Version;
 
             // Publish should copy dlls from OutputPath
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
@@ -259,14 +256,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var publishAssemblyPath = Path.Combine(publishOutputPath, "SimpleMvc.dll");
             new FileInfo(publishAssemblyPath).Should().Exist();
-            var publishViewsAssemblyPath = Path.Combine(publishOutputPath, "SimpleMvc.Views.dll");
-            new FileInfo(publishViewsAssemblyPath).Should().Exist();
 
             var publishAssemblyVersion = AssemblyName.GetAssemblyName(publishAssemblyPath).Version;
-            var publishViewsAssemblyVersion = AssemblyName.GetAssemblyName(publishViewsAssemblyPath).Version;
 
             Assert.Equal(assemblyVersion, publishAssemblyVersion);
-            Assert.Equal(viewsAssemblyVersion, publishViewsAssemblyVersion);
         }
     }
 }
