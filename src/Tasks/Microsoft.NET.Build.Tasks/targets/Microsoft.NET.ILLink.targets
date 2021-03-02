@@ -40,12 +40,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(_TrimmerUnreachableBodies)' == '' And
-                            '$(PublishTrimmed)' == 'true' And
-                            $([MSBuild]::VersionLessThan($(_TargetFrameworkVersionWithoutV), '6.0'))">
-    <_TrimmerUnreachableBodies>false</_TrimmerUnreachableBodies>
-  </PropertyGroup>
-
   <PropertyGroup Condition=" '$(PublishTrimmed)' == 'true' ">
     <SuppressTrimAnalysisWarnings Condition=" '$(SuppressTrimAnalysisWarnings)' == '' ">true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
@@ -224,6 +218,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- The default is to remove symbols when debugger support is disabled, and keep them otherwise. -->
       <TrimmerRemoveSymbols Condition=" '$(DebuggerSupport)' == 'false' ">true</TrimmerRemoveSymbols>
       <TrimmerRemoveSymbols Condition=" '$(DebuggerSupport)' != 'false' ">false</TrimmerRemoveSymbols>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_TrimmerUnreachableBodies)' == '' And
+                              '$(PublishTrimmed)' == 'true' And
+                              $([MSBuild]::VersionLessThan($(_TargetFrameworkVersionWithoutV), '6.0'))">
+      <_TrimmerUnreachableBodies>false</_TrimmerUnreachableBodies>
     </PropertyGroup>
 
     <ItemGroup>
