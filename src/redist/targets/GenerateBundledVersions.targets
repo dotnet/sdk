@@ -250,7 +250,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
                               RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
-                              IsTrimmable="true"
                               />
 
     <KnownAppHostPack Include="Microsoft.NETCore.App"
