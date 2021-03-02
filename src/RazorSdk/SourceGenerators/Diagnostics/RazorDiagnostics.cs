@@ -69,7 +69,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             new LocalizableResourceString(nameof(RazorSourceGeneratorResources.SourceTextNotFoundTitle), RazorSourceGeneratorResources.ResourceManager, typeof(RazorSourceGeneratorResources)),
             new LocalizableResourceString(nameof(RazorSourceGeneratorResources.SourceTextNotFoundMessage), RazorSourceGeneratorResources.ResourceManager, typeof(RazorSourceGeneratorResources)),
             "RazorSourceGenerator",
-            DiagnosticSeverity.Warning,
+            DiagnosticSeverity.Error,
             isEnabledByDefault: true
         );
 

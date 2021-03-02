@@ -127,7 +127,7 @@
     <value>Recomputing tag helpers</value>
   </data>
   <data name="RecomputingTagHelpersMessage" xml:space="preserve">
-    <value>Recomputing tag helpers from target MetadataReference: {0}.</value>
+    <value>Recomputing tag helpers from target MetadataReference: {0}. Found {1} descriptors.</value>
   </data>
   <data name="TargetPathNotProvidedTitle" xml:space="preserve">
     <value>TargetPath not defined</value>

@@ -51,10 +51,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         public override string? CssScope { get; }
 
-        public override Stream? Read()
-        {
-            _context.ReportDiagnostic(Diagnostic.Create(RazorDiagnostics.UnexpectedProjectItemReadCallDescriptor, Location.None, FilePath));
-            return null;
-        }
+        public override Stream Read() 
+            => throw new NotSupportedException("This API should not be invoked. We should instead be relying on " +
+                "the RazorSourceDocument associated with this item instead.");
     }
 }

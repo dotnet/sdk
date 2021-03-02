@@ -18,21 +18,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" GeneratePathProperty="true" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Diagnostics\RazorSourceGeneratorResources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>RazorSourceGeneratorResources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Diagnostics\RazorSourceGeneratorResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>RazorSourceGeneratorResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
   <!-- See https://github.com/dotnet/roslyn/discussions/47517#discussioncomment-64145 -->
   <PropertyGroup>
     <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>

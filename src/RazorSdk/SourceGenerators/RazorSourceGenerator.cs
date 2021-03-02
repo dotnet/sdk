@@ -33,12 +33,15 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         public void Execute(GeneratorExecutionContext context)
         {
-            var razorContext = RazorSourceGenerationContext.Create(context);
-            if (razorContext is null ||
-                razorContext.FileSystem is null ||
-                (razorContext.RazorFiles.Count == 0 && razorContext.CshtmlFiles.Count == 0))
+            var razorContext = new RazorSourceGenerationContext(context);
+            if (razorContext is null)
             {
                 context.ReportDiagnostic(Diagnostic.Create(RazorDiagnostics.InvalidRazorContextComputedDescriptor, Location.None));
+                return;
+            }
+
+            if (razorContext.RazorFiles.Count == 0 && razorContext.CshtmlFiles.Count == 0)
+            {
                 return;
             }
 
@@ -212,7 +215,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                         context.ReportDiagnostic(Diagnostic.Create(
                             RazorDiagnostics.ReComputingTagHelpersDescriptor,
                             Location.None,
-                            reference.Display));
+                            reference.Display,
+                            descriptors.Count()));
                         // Clear out the cache if it is growing too large. A 
                         // simple compilation can include around ~300 references
                         // so give a little bit of buffer beyond this.
