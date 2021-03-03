@@ -46,10 +46,6 @@
   <ItemGroup>
     <AdditionalContent Include="$(RazorSdkRoot)Targets\**\*.*">
       <Pack>true</Pack>
-      <PackagePath>targets</PackagePath>
-    </AdditionalContent>
-    <AdditionalContent Include="$(RazorSdkRoot)Targets\**\*.*">
-      <Pack>true</Pack>
       <PackagePath>build\netstandard2.0</PackagePath>
     </AdditionalContent>
     <AdditionalContent Include="$(RazorSdkRoot)Sdk\**\*.*">
