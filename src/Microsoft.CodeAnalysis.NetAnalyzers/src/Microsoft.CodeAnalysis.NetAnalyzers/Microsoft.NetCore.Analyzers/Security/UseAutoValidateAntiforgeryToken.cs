@@ -202,9 +202,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         .FirstOrDefault(
                                             s =>
                                                 s.Name == "OnAuthorizationAsync" &&
-                                                s.ReturnType.Equals(taskTypeSymbol, SymbolEqualityComparer.Default) &&
+                                                SymbolEqualityComparer.Default.Equals(s.ReturnType, taskTypeSymbol) &&
                                                 s.Parameters.Length == 1 &&
-                                                s.Parameters[0].Type.Equals(authorizationFilterContextTypeSymbol));
+                                                SymbolEqualityComparer.Default.Equals(
+                                                    s.Parameters[0].Type,
+                                                    authorizationFilterContextTypeSymbol));
                                 if (onAuthorizationAsyncMethodSymbol != null)
                                 {
                                     onAuthorizationMethodSymbols.TryAdd(
@@ -224,9 +226,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                 s.Name == "OnAuthorization" &&
                                                 s.ReturnsVoid &&
                                                 s.Parameters.Length == 1 &&
-                                                s.Parameters[0].Type.Equals(
-                                                    authorizationFilterContextTypeSymbol,
-                                                    SymbolEqualityComparer.Default));
+                                                SymbolEqualityComparer.Default.Equals(
+                                                    s.Parameters[0].Type,
+                                                    authorizationFilterContextTypeSymbol));
                                 if (onAuthorizationMethodSymbol != null)
                                 {
                                     onAuthorizationMethodSymbols.TryAdd(
@@ -331,7 +333,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                             {
                                 if (calleeMethod.Name == "ValidateRequestAsync" &&
                                     (calleeMethod.ContainingType.AllInterfaces.Contains(iAntiforgeryTypeSymbol) ||
-                                    calleeMethod.ContainingType.Equals(iAntiforgeryTypeSymbol)))
+                                     SymbolEqualityComparer.Default.Equals(calleeMethod.ContainingType, iAntiforgeryTypeSymbol)))
                                 {
                                     FindAllTheSpecifiedCalleeMethods(calleeMethod, visited, results);
 
