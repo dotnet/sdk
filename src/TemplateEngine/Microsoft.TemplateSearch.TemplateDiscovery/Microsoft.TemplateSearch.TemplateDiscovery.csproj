@@ -5,7 +5,6 @@
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <SignAssembly>false</SignAssembly>
     <DelaySign>false</DelaySign>
-    <EnableAnalyzers>true</EnableAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

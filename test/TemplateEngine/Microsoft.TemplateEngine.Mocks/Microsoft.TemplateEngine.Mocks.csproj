@@ -5,7 +5,6 @@
         <IsPackable>true</IsPackable>
 		<IsShipping>false</IsShipping>
         <IsTestProject>false</IsTestProject>
-        <EnableAnalyzers>true</EnableAnalyzers>
     </PropertyGroup>
 
     <ItemGroup>
