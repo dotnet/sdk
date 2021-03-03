@@ -2237,6 +2237,31 @@
         <target state="translated">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請指定 SharedAccessProtocol.HttpsOnly。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseValidPlatformStringDescription">
+        <source>Platform compatibility analyzer requires a valid platform name and version.</source>
+        <target state="new">Platform compatibility analyzer requires a valid platform name and version.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValidPlatformStringInvalidVersion">
+        <source>Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</source>
+        <target state="new">Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</target>
+        <note>Version '7' is not valid for platform 'windows'. Use a version with 2-4 parts for this platform.</note>
+      </trans-unit>
+      <trans-unit id="UseValidPlatformStringNoVersion">
+        <source>Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</source>
+        <target state="new">Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValidPlatformStringTitle">
+        <source>Use valid platform string</source>
+        <target state="new">Use valid platform string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValidPlatformStringUnknownPlatform">
+        <source>The platform '{0}' is not a known platform name</source>
+        <target state="new">The platform '{0}' is not a known platform name</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
         <target state="translated">應直接等候從成員引動過程傳回的 ValueTask。若在已得知完成 ValueTask 之前，嘗試多次使用 ValueTask 或直接存取其結果，可能會導致發生例外狀況或損毀。忽略這類 ValueTask 可能表示發生功能性 Bug，而且可能會降低效能。</target>

@@ -30,7 +30,8 @@
   - Use the failures to discover nuance and guide the implementation details.
   - Run the analyzer against `dotnet/roslyn` [instruction](#Testing-against-the-Roslyn-repo), and if feasable with `dotnet/aspnetcore` repos.
   - Document for review: matching and non-matching scenarios, including any discovered nuance.
-  - Failures in all `dotnet` repos are addressed.
+  - All warnings and errors in these repos are addressed (to prevent build failures)
+    - `Info` level diagnostics do not need to be fully resolved or suppressed as they do not cause build failures
 - Document for review: severity, default, categorization, numbering, titles, messages, and descriptions.
 - Create the appropriate documentation for [docs.microsoft.com](https://github.com/dotnet/docs/tree/master/docs/fundamentals/code-analysis/quality-rules) within **ONE WEEK**, instructions available on [Contribute docs for .NET code analysis rules to the .NET docs repository](https://docs.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis).
 - PR merged into `dotnet/roslyn-analyzers`.

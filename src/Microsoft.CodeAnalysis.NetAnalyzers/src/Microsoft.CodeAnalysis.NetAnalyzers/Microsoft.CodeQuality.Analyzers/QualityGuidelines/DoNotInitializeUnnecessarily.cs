@@ -31,12 +31,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         /// </summary>
         protected abstract bool IsNullSuppressed(IOperation op);
 
-        public sealed override void Initialize(AnalysisContext analysisContext)
+        public sealed override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterOperationAction(context =>
+            context.RegisterOperationAction(context =>
             {
                 var init = (IFieldInitializerOperation)context.Operation;
                 IFieldSymbol? field = init.InitializedFields.FirstOrDefault();
@@ -50,7 +50,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 }
             }, OperationKind.FieldInitializer);
 
-            analysisContext.RegisterOperationAction(context =>
+            context.RegisterOperationAction(context =>
             {
                 var init = (IPropertyInitializerOperation)context.Operation;
                 IPropertySymbol? prop = init.InitializedProperties.FirstOrDefault();
