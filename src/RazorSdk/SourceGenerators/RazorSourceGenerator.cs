@@ -57,14 +57,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 b.SetCSharpLanguageVersion(((CSharpParseOptions)context.ParseOptions).LanguageVersion);
             });
 
-            var assemblyInfo = @"
-using System;
-using System.Reflection;
-
-[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(""Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor"")]
-";
-            context.AddSource($"{context.Compilation.AssemblyName}.View.Info", SourceText.From(assemblyInfo, Encoding.UTF8));
-
             CodeGenerateRazorComponents(context, razorContext, projectEngine);
             GenerateViews(context, razorContext, projectEngine);
         }
@@ -75,6 +67,18 @@ using System.Reflection;
 
             var arraypool = ArrayPool<(string, SourceText)>.Shared;
             var outputs = arraypool.Rent(files.Count);
+
+            if (files.Count > 0)
+            {
+                var assemblyInfo = @"
+using System;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+
+[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(""Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor"")]
+";
+                context.AddSource($"{context.Compilation.AssemblyName}.View.Info", SourceText.From(assemblyInfo, Encoding.UTF8));
+            }
 
             Parallel.For(0, files.Count, GetParallelOptions(context), i =>
             {
