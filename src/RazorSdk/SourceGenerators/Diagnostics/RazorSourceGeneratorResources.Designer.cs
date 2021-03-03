@@ -62,7 +62,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators.Diagnostics {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MetadataReference for current compilation not found..
+        ///   Looks up a localized string similar to MetadataReference for current compilation not found&apos;..
         /// </summary>
         internal static string CurrentCompilationReferenceNotFoundMessage {
             get {
@@ -134,7 +134,25 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators.Diagnostics {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Recomputing tag helpers from target MetadataReference: {0}..
+        ///   Looks up a localized string similar to MetadataReference not provided.
+        /// </summary>
+        internal static string MetadataReferenceNotProvidedTitle {
+            get {
+                return ResourceManager.GetString("MetadataReferenceNotProvidedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Expected a valid MetadataReference but found none..
+        /// </summary>
+        internal static string MetadataReferenceNotProvidedMessage {
+            get {
+                return ResourceManager.GetString("MetadataReferenceNotProvidedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recomputing tag helpers from target MetadataReference: {0}. Found {1} descriptors..
         /// </summary>
         internal static string RecomputingTagHelpersMessage {
             get {

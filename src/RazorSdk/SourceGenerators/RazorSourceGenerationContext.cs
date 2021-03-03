@@ -21,7 +21,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         public VirtualRazorProjectFileSystem FileSystem { get; private set; }
 
-        public RazorConfiguration? Configuration { get; private set; }
+        public RazorConfiguration Configuration { get; private set; }
 
         public bool DesignTimeBuild { get; private set; }
 

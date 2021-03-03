@@ -133,7 +133,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         private static IReadOnlyList<TagHelperDescriptor> ResolveTagHelperDescriptors(GeneratorExecutionContext GeneratorExecutionContext, RazorSourceGenerationContext razorContext)
         {
-            var tagHelperFeature = new StaticCompilationTagHelperFeature();
+            var tagHelperFeature = new StaticCompilationTagHelperFeature(GeneratorExecutionContext);
 
             var parseOptions = (CSharpParseOptions)GeneratorExecutionContext.ParseOptions;
             var langVersion = parseOptions.LanguageVersion;

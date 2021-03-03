@@ -14,6 +14,13 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
     {
         private ITagHelperDescriptorProvider[]? _providers;
 
+        private GeneratorExecutionContext _generatorExecutionContext;
+
+        public StaticCompilationTagHelperFeature(GeneratorExecutionContext context)
+        {
+            _generatorExecutionContext = context;
+        }
+
         public IReadOnlyList<TagHelperDescriptor> GetDescriptors()
         {
             if (Compilation is null)
@@ -27,7 +34,11 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             var context = TagHelperDescriptorProviderContext.Create(results);
             context.SetCompilation(Compilation);
 
-            if (TargetReference is not null)
+            if (TargetReference is null)
+            {
+                _generatorExecutionContext.ReportDiagnostic(Diagnostic.Create(RazorDiagnostics.MetadataReferenceNotProvidedDescriptor, Location.None));
+            }
+            else
             {
                 context.Items.SetTargetMetadataReference(TargetReference);
             }

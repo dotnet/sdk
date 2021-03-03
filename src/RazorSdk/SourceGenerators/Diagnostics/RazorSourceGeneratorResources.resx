@@ -145,7 +145,7 @@
     <value>MetadataReference not found</value>
   </data>
   <data name="CurrentCompilationReferenceNotFoundMessage" xml:space="preserve">
-    <value>MetadataReference for current compilation not found.</value>
+    <value>MetadataReference for current compilation not found'.</value>
   </data>
   <data name="SkippingGeneratedFileWriteTitle" xml:space="preserve">
     <value>Generated file not written disk</value>
@@ -170,5 +170,11 @@
   </data>
   <data name="InvalidRazorContextComputedMessage" xml:space="preserve">
     <value>Could not create a valid Razor generator context.</value>
+  </data>
+  <data name="MetadataReferenceNotProvidedTitle" xml:space="preserve">
+    <value>MetadataReference not provided</value>
+  </data>
+  <data name="MetadataReferenceNotProvidedMessage" xml:space="preserve">
+    <value>Expected a valid MetadataReference but found none.</value>
   </data>
 </root>

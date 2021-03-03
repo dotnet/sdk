@@ -91,6 +91,15 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             isEnabledByDefault: true
         );
 
+        public static readonly DiagnosticDescriptor MetadataReferenceNotProvidedDescriptor = new DiagnosticDescriptor(
+            DiagnosticIds.MetadataReferenceNotProvidedId,
+            new LocalizableResourceString(nameof(RazorSourceGeneratorResources.MetadataReferenceNotProvidedTitle), RazorSourceGeneratorResources.ResourceManager, typeof(RazorSourceGeneratorResources)),
+            new LocalizableResourceString(nameof(RazorSourceGeneratorResources.MetadataReferenceNotProvidedMessage), RazorSourceGeneratorResources.ResourceManager, typeof(RazorSourceGeneratorResources)),
+            "RazorSourceGenerator",
+            DiagnosticSeverity.Info,
+            isEnabledByDefault: true
+        );
+
         public static Diagnostic AsDiagnostic(this RazorDiagnostic razorDiagnostic)
         {
             var descriptor = new DiagnosticDescriptor(

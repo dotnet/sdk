@@ -14,5 +14,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         public const string SourceTextNotFoundId = "RSG006";
         public const string UnexpectedProjectItemReadCallId = "RSG007";
         public const string InvalidRazorContextComputedId = "RSG008";
+        public const string MetadataReferenceNotProvidedId = "RSG009";
     }
 }
