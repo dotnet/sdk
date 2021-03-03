@@ -1703,7 +1703,11 @@ class Test
     }}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -1733,7 +1737,11 @@ Module Test
     End Sub
 End Module"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 

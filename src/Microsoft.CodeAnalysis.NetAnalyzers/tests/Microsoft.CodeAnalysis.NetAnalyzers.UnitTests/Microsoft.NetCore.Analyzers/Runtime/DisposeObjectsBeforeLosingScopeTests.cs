@@ -1290,7 +1290,11 @@ class DisposableOwnerType
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -1332,7 +1336,11 @@ End Class
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -1385,7 +1393,11 @@ class Test
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -1425,7 +1437,11 @@ End Class
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -1525,7 +1541,11 @@ public class SerialPort : IDisposable
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             };
 
@@ -1601,7 +1621,11 @@ End Class
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             };
 
@@ -1696,7 +1720,10 @@ Public Class A
 End Class
 "
                     },
-                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(disposeAnalysisKind)) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{GetEditorConfigContent(disposeAnalysisKind)}") }
                 }
             };
 
@@ -2644,7 +2671,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
 
@@ -2671,7 +2702,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -2713,7 +2748,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
 
@@ -2741,7 +2780,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -2783,7 +2826,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
 
@@ -2811,7 +2858,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -2886,7 +2937,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
 
@@ -2959,7 +3014,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -3035,7 +3094,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
 
@@ -3101,7 +3164,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -6182,7 +6249,11 @@ class Test
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             };
 
@@ -7193,7 +7264,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") },
                     ExpectedDiagnostics =
                     {
                         // Test0.cs(34,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
@@ -7303,7 +7378,11 @@ Class Test
 End Class
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") },
                     ExpectedDiagnostics =
                     {
                         // Test0.vb(30,32): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
@@ -7630,7 +7709,11 @@ class Test
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             };
             csharpTest.ExpectedDiagnostics.AddRange(builder);
@@ -7706,7 +7789,11 @@ End Class
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(builder);
@@ -8706,7 +8793,11 @@ public class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -10082,7 +10173,10 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(DisposeAnalysisKind.AllPaths)) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{GetEditorConfigContent(DisposeAnalysisKind.AllPaths)}") },
                     ExpectedDiagnostics =
                     {
                         // Test0.cs(17,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
@@ -10325,7 +10419,10 @@ Class Test
 End Class
 "
                     },
-                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(DisposeAnalysisKind.AllPaths)) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{GetEditorConfigContent(DisposeAnalysisKind.AllPaths)}") },
                     ExpectedDiagnostics =
                     {
                         // Test0.vb(16,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
@@ -10517,7 +10614,10 @@ class MyException: Exception
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(disposeAnalysisKind)) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{GetEditorConfigContent(disposeAnalysisKind)}") }
                 }
             };
 
@@ -11248,7 +11348,11 @@ class C : IDisposable
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
 }
             }.RunAsync();
         }
@@ -11296,7 +11400,11 @@ public class C
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
         }
@@ -11542,7 +11650,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -11578,7 +11690,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -11628,7 +11744,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -11669,7 +11789,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -11852,7 +11976,11 @@ class B : IDisposable
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -11899,7 +12027,11 @@ class B : IDisposable
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -11947,7 +12079,11 @@ class Test
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -12057,7 +12193,11 @@ namespace MyNamespace
     }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 }
             };
 
@@ -12101,7 +12241,11 @@ Namespace MyNamespace
     End Class
 End Namespace",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 }
             };
 
@@ -12209,7 +12353,11 @@ public class C
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 }
             }.RunAsync();
 
@@ -12236,7 +12384,11 @@ Public Class C
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 }
             }.RunAsync();
         }
