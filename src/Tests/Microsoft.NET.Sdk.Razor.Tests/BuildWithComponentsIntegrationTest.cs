@@ -53,7 +53,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
-            build.Execute($"/bl:/Users/captainsafia/Downloads/Build_ComponentsWorks-{System.Guid.NewGuid().ToString()}.binlog").Should().Pass();
+            build.Execute().Should().Pass();
 
             string outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
 

@@ -207,7 +207,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute($"/bl:/Users/captainsafia/Downloads/Clean_Success_RemovesManifestAndCache-{System.Guid.NewGuid().ToString()}.binlog").Should().Pass();
+            build.Execute().Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString().ToString();
 
