@@ -433,7 +433,10 @@ class TestClass : ControllerBase
     }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = false") }
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = false") }
                 },
             };
 
@@ -1600,7 +1603,11 @@ class TestClass : ControllerBase
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             }.RunAsync();
         }

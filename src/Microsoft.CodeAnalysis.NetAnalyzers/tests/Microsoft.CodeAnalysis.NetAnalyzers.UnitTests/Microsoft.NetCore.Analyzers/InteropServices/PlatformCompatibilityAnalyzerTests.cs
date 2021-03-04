@@ -3491,14 +3491,22 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue("""
         private static async Task VerifyAnalyzerAsyncCs(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
         {
             var test = PopulateTestCs(sourceCode, expectedDiagnostics);
-            test.TestState.AdditionalFiles.Add((".editorconfig", editorconfigText));
+            test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $@"root = true
+
+[*]
+{editorconfigText}
+"));
             await test.RunAsync();
         }
 
         private static async Task VerifyAnalyzerAsyncCs(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestCs(sourceCode);
-            test.TestState.AdditionalFiles.Add((".editorconfig", editorconfigText));
+            test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $@"root = true
+
+[*]
+{editorconfigText}
+"));
             await test.RunAsync();
         }
 
@@ -3508,7 +3516,11 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue("""
         private static async Task VerifyAnalyzerAsyncVb(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
         {
             var test = PopulateTestVb(sourceCode, expectedDiagnostics);
-            test.TestState.AdditionalFiles.Add((".editorconfig", editorconfigText));
+            test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $@"root = true
+
+[*]
+{editorconfigText}
+"));
             await test.RunAsync();
         }
 

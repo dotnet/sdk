@@ -2103,7 +2103,10 @@ public class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.copy_analysis = true") },
                     ExpectedDiagnostics =
                     {
                         // Test0.cs(30,13): warning CA1508: 'a2 == a' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
@@ -2188,7 +2191,10 @@ public class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.copy_analysis = true") },
                     ExpectedDiagnostics =
                     {
                         // Test0.cs(16,13): warning CA1508: 'x.Item1.Item1 == a' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
@@ -2559,7 +2565,11 @@ public static class C
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorconfig) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorconfig}
+") }
                 }
             }.RunAsync();
         }
@@ -2707,7 +2717,11 @@ public class C
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorconfig) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorconfig}
+") }
                 }
             }.RunAsync();
         }

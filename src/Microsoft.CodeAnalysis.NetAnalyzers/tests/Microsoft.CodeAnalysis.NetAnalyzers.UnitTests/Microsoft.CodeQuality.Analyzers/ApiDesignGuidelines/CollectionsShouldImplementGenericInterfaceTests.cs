@@ -937,7 +937,11 @@ public class C : IDictionary
     IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "ICollection", "ICollection<T>") },
                 }
             }.RunAsync();
@@ -1035,7 +1039,11 @@ Public Class C
     End Function
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "ICollection", "ICollection(Of T)") },
                 }
             }.RunAsync();
@@ -1088,7 +1096,11 @@ public class C : IDictionary
     IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "IDictionary", "IDictionary<TKey, TValue>") },
                 }
             }.RunAsync();
@@ -1186,7 +1198,11 @@ Public Class C
     End Function
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "IDictionary", "IDictionary(Of TKey, TValue)") },
                 }
             }.RunAsync();
@@ -1208,7 +1224,11 @@ using System.Collections;
 
 public class TestClass : CollectionBase { }"
 },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(4, 14, "TestClass", "IList", "IDictionary<TKey, TValue>") },
                 }
             }.RunAsync();
@@ -1227,7 +1247,11 @@ Public Class TestClass
 End Class
 "
     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010BasicResultAt(4, 14, "TestClass", "IList", "IDictionary(Of TKey, TValue)") },
                 }
             }.RunAsync();
