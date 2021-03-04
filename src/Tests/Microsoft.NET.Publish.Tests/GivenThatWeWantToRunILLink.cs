@@ -501,12 +501,7 @@ namespace Microsoft.NET.Publish.Tests
 
         private void ValidateWarningsOnHelloWorldApp (PublishCommand publishCommand, CommandResult result, List<string> expectedOutput, string targetFramework, string rid)
         {
-            //This function doesn't use an XML file like the runtime
-            //to silence warnings since will make the test to fail only
-            //with new warnings, we want the test to fail if any 
-            //missing warnings also. It doesn't use BeEquivalentTo
-            //function that warns for any new or missing warnings
-            //since the error experience is not good for a developer
+            // This checks that there are no unexpected warnings, but does not cause failures for missing expected warnings.
             var warnings = result.StdOut.Split('\n', '\r', ')').Where(line => line.StartsWith("ILLink :"));
             var extraWarnings = warnings.Except(expectedOutput);
 
