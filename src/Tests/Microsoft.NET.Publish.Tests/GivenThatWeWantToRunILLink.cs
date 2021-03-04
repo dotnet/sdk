@@ -509,11 +509,10 @@ namespace Microsoft.NET.Publish.Tests
             //since the error experience is not good for a developer
             var warnings = result.StdOut.Split('\n', '\r', ')').Where(line => line.StartsWith("ILLink :"));
             var extraWarnings = warnings.Except(expectedOutput);
-            var missingWarnings = expectedOutput.Except(warnings);
 
             StringBuilder errorMessage = new StringBuilder();
 
-            if (extraWarnings.Any() || missingWarnings.Any())
+            if (extraWarnings.Any())
             {
                 // Print additional information to recognize which framework assemblies are being used.
                 errorMessage.AppendLine($"Target framework from test: {targetFramework}");
@@ -531,18 +530,11 @@ namespace Microsoft.NET.Publish.Tests
                     errorMessage.AppendLine($"Runtime Assembly Informational Version: {assemblyVersionInfo}");
                 }
                 errorMessage.AppendLine($"The execution of a hello world app generated a diff in the number of warnings the app produces{Environment.NewLine}");
-            }
-            if (extraWarnings.Any()) {
                 errorMessage.AppendLine("Test output contained the following extra linker warnings:");
                 foreach (var extraWarning in extraWarnings)
                     errorMessage.AppendLine($"+ {extraWarning}");
             }
-            if (missingWarnings.Any()) {
-                errorMessage.AppendLine("Test output was missing the following expected linker warnings:");
-                foreach (var missingWarning in missingWarnings)
-                    errorMessage.AppendLine($"- {missingWarning}");
-            }
-            Assert.True(!extraWarnings.Any() && !missingWarnings.Any(), errorMessage.ToString());
+            Assert.True(!extraWarnings.Any(), errorMessage.ToString());
         }
 
         [Theory]
