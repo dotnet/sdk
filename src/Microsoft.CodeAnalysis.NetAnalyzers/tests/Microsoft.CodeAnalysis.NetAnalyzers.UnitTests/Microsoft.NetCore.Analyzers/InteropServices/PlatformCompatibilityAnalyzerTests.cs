@@ -3426,7 +3426,7 @@ class Test
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/4920")]
+        [Fact]
         [WorkItem(4920, "https://github.com/dotnet/roslyn-analyzers/issues/4920")]
         public async Task TestTimelyTermination()
         {
