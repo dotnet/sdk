@@ -141,5 +141,30 @@
             Skip="true"
             Issue=""
             Reason="Need all .NET core runtime"/>
+
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAFrameworkDependentApp.It_publishes_with_or_without_apphost"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp.It_generates_a_single_file_including_pdbs"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASelfContainedApp.It_can_make_a_Windows_GUI_exe"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp.It_can_include_ni_pdbs_in_single_file"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_runs_a_rid_specific_app_from_the_output_folder"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Build.Tests.GivenWeWantToRequireWindowsForDesktopApps.It_infers_WinExe_output_type"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
   </SkippedTests>
 </Tests>
