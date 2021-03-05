@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-// https://github.com/dotnet/roslyn/blob/master/src/Compilers/Core/Portable/InternalUtilities/JsonWriter.cs
+// https://github.com/dotnet/roslyn/blob/main/src/Compilers/Core/Portable/InternalUtilities/JsonWriter.cs
 
 using System;
 using System.Diagnostics;
@@ -161,7 +161,7 @@ namespace Roslyn.Utilities
         // String escaping implementation forked from System.Runtime.Serialization.Json to 
         // avoid a large dependency graph for this small amount of code:
         //
-        // https://github.com/dotnet/corefx/blob/master/src/System.Private.DataContractSerialization/src/System/Runtime/Serialization/Json/JavaScriptString.cs
+        // https://github.com/dotnet/corefx/blob/main/src/System.Private.DataContractSerialization/src/System/Runtime/Serialization/Json/JavaScriptString.cs
         //
         private static string EscapeString(string value)
         {
