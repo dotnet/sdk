@@ -354,7 +354,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             while (symbol != null)
             {
                 allAttributes.AddRange(symbol.GetAttributes());
-                symbol = symbol is IMethodSymbol method && method.AssociatedSymbol != null
+                symbol = symbol is IMethodSymbol { AssociatedSymbol: not null } method
                     ? method.AssociatedSymbol :
                     symbol.ContainingSymbol;
             }
