@@ -17,13 +17,17 @@ namespace Microsoft.NetCore.Analyzers.Data.UnitTests
     public class ReviewSQLQueriesForSecurityVulnerabilitiesTests_FlowAnalysis : ReviewSQLQueriesForSecurityVulnerabilitiesTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string invokedSymbol, string containingMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(invokedSymbol, containingMethod);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string invokedSymbol, string containingMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(invokedSymbol, containingMethod);
 
         [Fact]
@@ -6914,7 +6918,10 @@ class Test
 }}
 "
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.copy_analysis = true") }
                 }
             }.RunAsync();
 
@@ -6960,7 +6967,10 @@ Module Test
     End Sub
 End Module"
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.copy_analysis = true") }
                 }
             }.RunAsync();
         }
@@ -7076,7 +7086,10 @@ class Test
 }}
 "
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.copy_analysis = true") },
                     ExpectedDiagnostics =
                     {
                         // Test0.cs(142,25): warning CA2100: Review if the query string passed to 'Command1.Command1(string cmd, string parameter2)' in 'M1', accepts any user input.
@@ -7187,7 +7200,10 @@ Module Test
     End Sub
 End Module"
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.copy_analysis = true") },
                     ExpectedDiagnostics =
                     {
                         // Test0.vb(177,32): warning CA2100: Review if the query string passed to 'Sub Command1.New(cmd As String, parameter2 As String)' in 'M1', accepts any user input.
@@ -8383,7 +8399,10 @@ class Test
 }}
 "
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.copy_analysis = true") }
                 }
             }.RunAsync();
 
@@ -8432,7 +8451,10 @@ Module Test
     End Sub
 End Module"
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.copy_analysis = true") }
                 }
             }.RunAsync();
         }

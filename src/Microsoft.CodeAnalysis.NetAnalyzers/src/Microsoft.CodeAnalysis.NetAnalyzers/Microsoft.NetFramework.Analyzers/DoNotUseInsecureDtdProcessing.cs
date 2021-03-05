@@ -87,16 +87,16 @@ namespace Microsoft.NetFramework.Analyzers
         }
 
 #pragma warning disable RS1026 // Enable concurrent execution
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
 #pragma warning restore RS1026 // Enable concurrent execution
         {
             // TODO: Make analyzer thread-safe
             //analysisContext.EnableConcurrentExecution();
 
             // Security analyzer - analyze and report diagnostics in generated code.
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 (context) =>
                 {
                     Compilation compilation = context.Compilation;
@@ -264,7 +264,7 @@ namespace Microsoft.NetFramework.Analyzers
                 }
                 else if (method.MatchMethodDerivedByName(_xmlTypes.XmlReader, SecurityMemberNames.Create))
                 {
-                    int xmlReaderSettingsIndex = SecurityDiagnosticHelpers.GetXmlReaderSettingsParameterIndex(method, _xmlTypes);
+                    int xmlReaderSettingsIndex = method.GetXmlReaderSettingsParameterIndex(_xmlTypes);
 
                     if (xmlReaderSettingsIndex < 0)
                     {
@@ -312,15 +312,15 @@ namespace Microsoft.NetFramework.Analyzers
                     _objectCreationOperationsAnalyzed.Add(objCreation);
                 }
 
-                if (SecurityDiagnosticHelpers.IsXmlDocumentCtorDerived(objCreation.Constructor, _xmlTypes))
+                if (objCreation.Constructor.IsXmlDocumentCtorDerived(_xmlTypes))
                 {
                     AnalyzeObjectCreationForXmlDocument(context, variable, objCreation);
                 }
-                else if (SecurityDiagnosticHelpers.IsXmlTextReaderCtorDerived(objCreation.Constructor, _xmlTypes))
+                else if (objCreation.Constructor.IsXmlTextReaderCtorDerived(_xmlTypes))
                 {
                     AnalyzeObjectCreationForXmlTextReader(context, variable, objCreation);
                 }
-                else if (SecurityDiagnosticHelpers.IsXmlReaderSettingsCtor(objCreation.Constructor, _xmlTypes))
+                else if (objCreation.Constructor.IsXmlReaderSettingsCtor(_xmlTypes))
                 {
                     AnalyzeObjectCreationForXmlReaderSettings(variable, objCreation);
                 }

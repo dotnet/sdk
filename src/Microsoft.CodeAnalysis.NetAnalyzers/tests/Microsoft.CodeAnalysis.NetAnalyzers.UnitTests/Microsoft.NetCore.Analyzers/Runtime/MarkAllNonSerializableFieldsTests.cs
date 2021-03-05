@@ -600,13 +600,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         internal static readonly string CA2235Message = MicrosoftNetCoreAnalyzersResources.MarkAllNonSerializableFieldsMessage;
 
         private static DiagnosticResult GetCA2235CSharpResultAt(int line, int column, string fieldName, string containerName, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2235)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(fieldName, containerName, typeName);
 
         private static DiagnosticResult GetCA2235BasicResultAt(int line, int column, string fieldName, string containerName, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2235)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(fieldName, containerName, typeName);
     }
 }

@@ -21,7 +21,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
-            // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
             return WellKnownFixAllProviders.BatchFixer;
         }
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
@@ -29,16 +29,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
 
-            SyntaxNode binaryExpressionSyntax = GetBinaryExpression(node);
+            SyntaxNode expressionSyntax = GetExpression(node);
 
-            if (!IsEqualsOperator(binaryExpressionSyntax) && !IsNotEqualsOperator(binaryExpressionSyntax))
+            if (!IsFixableBinaryExpression(expressionSyntax) && !IsFixableInvocationExpression(expressionSyntax))
             {
                 return;
             }
 
             SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
-            FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model, context.CancellationToken);
+            FixResolution? resolution = TryGetFixResolution(expressionSyntax, model, context.CancellationToken);
 
             if (resolution != null)
             {
@@ -56,20 +56,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private FixResolution? TryGetFixResolution(SyntaxNode binaryExpressionSyntax, SemanticModel model, CancellationToken cancellationToken)
+        private FixResolution? TryGetFixResolution(SyntaxNode expressionSyntax, SemanticModel model, CancellationToken cancellationToken)
         {
-            bool isEqualsOperator = IsEqualsOperator(binaryExpressionSyntax);
-            SyntaxNode leftOperand = GetLeftOperand(binaryExpressionSyntax);
-            SyntaxNode rightOperand = GetRightOperand(binaryExpressionSyntax);
-
-            if (ContainsSystemStringEmpty(leftOperand, model, cancellationToken) || ContainsEmptyStringLiteral(leftOperand, model, cancellationToken))
+            if (IsFixableBinaryExpression(expressionSyntax))
             {
-                return new FixResolution(binaryExpressionSyntax, rightOperand, isEqualsOperator);
+                bool isEqualsOperator = IsEqualsOperator(expressionSyntax);
+                SyntaxNode leftOperand = GetLeftOperand(expressionSyntax);
+                SyntaxNode rightOperand = GetRightOperand(expressionSyntax);
+
+                if (ContainsSystemStringEmpty(leftOperand, model, cancellationToken) || ContainsEmptyStringLiteral(leftOperand, model, cancellationToken))
+                {
+                    return new FixResolution(expressionSyntax, rightOperand, isEqualsOperator);
+                }
+
+                if (ContainsSystemStringEmpty(rightOperand, model, cancellationToken) || ContainsEmptyStringLiteral(rightOperand, model, cancellationToken))
+                {
+                    return new FixResolution(expressionSyntax, leftOperand, isEqualsOperator);
+                }
             }
-
-            if (ContainsSystemStringEmpty(rightOperand, model, cancellationToken) || ContainsEmptyStringLiteral(rightOperand, model, cancellationToken))
+            else if (IsFixableInvocationExpression(expressionSyntax))
             {
-                return new FixResolution(binaryExpressionSyntax, leftOperand, isEqualsOperator);
+                SyntaxNode? target = GetInvocationTarget(expressionSyntax);
+
+                if (target == null)
+                {
+                    return null;
+                }
+
+                return new FixResolution(expressionSyntax, target, true);
             }
 
             return null;
@@ -94,12 +108,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             SyntaxNode typeNameSyntax = editor.Generator.TypeExpression(SpecialType.System_String);
             SyntaxNode nullOrEmptyMemberSyntax = editor.Generator.MemberAccessExpression(typeNameSyntax, "IsNullOrEmpty");
-            SyntaxNode nullOrEmptyInvocationSyntax = editor.Generator.InvocationExpression(nullOrEmptyMemberSyntax, fixResolution.ComparisonOperand.WithoutTrailingTrivia());
+            SyntaxNode nullOrEmptyInvocationSyntax = editor.Generator.InvocationExpression(nullOrEmptyMemberSyntax, fixResolution.Target.WithoutTrailingTrivia());
 
             SyntaxNode replacementSyntax = fixResolution.UsesEqualsOperator ? nullOrEmptyInvocationSyntax : editor.Generator.LogicalNotExpression(nullOrEmptyInvocationSyntax);
-            SyntaxNode replacementAnnotatedSyntax = replacementSyntax.WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(fixResolution.BinaryExpressionSyntax);
+            SyntaxNode replacementAnnotatedSyntax = replacementSyntax.WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(fixResolution.ExpressionSyntax);
 
-            editor.ReplaceNode(fixResolution.BinaryExpressionSyntax, replacementAnnotatedSyntax);
+            editor.ReplaceNode(fixResolution.ExpressionSyntax, replacementAnnotatedSyntax);
 
             return editor.GetChangedDocument();
         }
@@ -107,14 +121,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private async Task<Document> ConvertToStringLengthComparison(CodeFixContext context, FixResolution fixResolution)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode leftOperand = GetLeftOperand(fixResolution.BinaryExpressionSyntax);
-            SyntaxNode rightOperand = GetRightOperand(fixResolution.BinaryExpressionSyntax);
+            SyntaxNode leftOperand = GetLeftOperand(fixResolution.ExpressionSyntax);
+            SyntaxNode rightOperand = GetRightOperand(fixResolution.ExpressionSyntax);
 
             // Take the below example:
             //   if (f == String.Empty) ...
             // The comparison operand, f, will now become 'f.Length' and a the other operand will become '0'
             SyntaxNode zeroLengthSyntax = editor.Generator.LiteralExpression(0);
-            if (leftOperand == fixResolution.ComparisonOperand)
+            if (leftOperand == fixResolution.Target)
             {
                 leftOperand = editor.Generator.MemberAccessExpression(leftOperand, "Length");
                 rightOperand = zeroLengthSyntax.WithTriviaFrom(rightOperand);
@@ -131,7 +145,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             SyntaxNode replacementAnnotatedSyntax = replacementSyntax.WithAdditionalAnnotations(Formatter.Annotation);
 
-            editor.ReplaceNode(fixResolution.BinaryExpressionSyntax, replacementAnnotatedSyntax);
+            editor.ReplaceNode(fixResolution.ExpressionSyntax, replacementAnnotatedSyntax);
 
             return editor.GetChangedDocument();
         }
@@ -140,22 +154,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             => model.GetConstantValue(node, cancellationToken) is Optional<object> optionalValue &&
             optionalValue.HasValue && optionalValue.Value is string value && value.Length == 0;
 
-        protected abstract SyntaxNode GetBinaryExpression(SyntaxNode node);
+        protected abstract SyntaxNode GetExpression(SyntaxNode node);
+        protected abstract bool IsFixableBinaryExpression(SyntaxNode node);
+        protected abstract bool IsFixableInvocationExpression(SyntaxNode node);
         protected abstract bool IsEqualsOperator(SyntaxNode node);
         protected abstract bool IsNotEqualsOperator(SyntaxNode node);
         protected abstract SyntaxNode GetLeftOperand(SyntaxNode binaryExpressionSyntax);
         protected abstract SyntaxNode GetRightOperand(SyntaxNode binaryExpressionSyntax);
+        protected abstract SyntaxNode? GetInvocationTarget(SyntaxNode node);
 
         private sealed class FixResolution
         {
-            public SyntaxNode BinaryExpressionSyntax { get; }
-            public SyntaxNode ComparisonOperand { get; }
+            public SyntaxNode ExpressionSyntax { get; }
+            public SyntaxNode Target { get; }
             public bool UsesEqualsOperator { get; }
 
-            public FixResolution(SyntaxNode binaryExpressionSyntax, SyntaxNode comparisonOperand, bool usesEqualsOperator)
+            public FixResolution(SyntaxNode expressionSyntax, SyntaxNode target, bool usesEqualsOperator)
             {
-                BinaryExpressionSyntax = binaryExpressionSyntax;
-                ComparisonOperand = comparisonOperand;
+                ExpressionSyntax = expressionSyntax;
+                Target = target;
                 UsesEqualsOperator = usesEqualsOperator;
             }
         }

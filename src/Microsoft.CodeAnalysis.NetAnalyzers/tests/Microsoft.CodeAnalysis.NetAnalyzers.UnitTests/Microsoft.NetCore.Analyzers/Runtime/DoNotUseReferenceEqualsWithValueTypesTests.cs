@@ -827,9 +827,13 @@ End Namespace",
             => GetVisualBasicResultAt(DoNotUseReferenceEqualsWithValueTypesAnalyzer.ComparerRule, line, column, typeName);
 
         private DiagnosticResult GetCSharpResultAt(DiagnosticDescriptor rule, int line, int column, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(rule).WithLocation(line, column).WithArguments(typeName);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private DiagnosticResult GetVisualBasicResultAt(DiagnosticDescriptor rule, int line, int column, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(rule).WithLocation(line, column).WithArguments(typeName);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

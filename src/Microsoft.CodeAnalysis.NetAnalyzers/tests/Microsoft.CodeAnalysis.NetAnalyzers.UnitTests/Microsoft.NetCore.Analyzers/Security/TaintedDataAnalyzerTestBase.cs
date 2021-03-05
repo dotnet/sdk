@@ -23,9 +23,13 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         protected DiagnosticResult GetCSharpResultAt(int sinkLine, int sinkColumn, int sourceLine, int sourceColumn, string sink, string sinkContainingMethod, string source, string sourceContainingMethod)
         {
+#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not used banned APIs
             return new DiagnosticResult(Rule).WithArguments(sink, sinkContainingMethod, source, sourceContainingMethod)
                 .WithLocation(sinkLine, sinkColumn)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithLocation(sourceLine, sourceColumn);
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
@@ -66,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
             }
 
-            test.TestState.AdditionalFiles.Add(file);
+            test.TestState.AnalyzerConfigFiles.Add(file);
 
             test.TestState.ExpectedDiagnostics.AddRange(expected);
             await test.RunAsync();
@@ -74,9 +78,13 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         protected DiagnosticResult GetBasicResultAt(int sinkLine, int sinkColumn, int sourceLine, int sourceColumn, string sink, string sinkContainingMethod, string source, string sourceContainingMethod)
         {
+#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not used banned APIs
             return new DiagnosticResult(Rule).WithArguments(sink, sinkContainingMethod, source, sourceContainingMethod)
                 .WithLocation(sinkLine, sinkColumn)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithLocation(sourceLine, sourceColumn);
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         protected async Task VerifyVisualBasicWithDependenciesAsync(string source, params DiagnosticResult[] expected)

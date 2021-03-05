@@ -57,26 +57,6 @@ Structure C
 End Structure");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/7305")]
-        public async Task Ignored_Interface()
-        {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Interface I
-    Public Overrides Function Equals(o As Object) As Boolean
-        Return True
-    End Function
-End Interface");
-        }
-
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/7305")]
-        public async Task Ignored_TopLevel()
-        {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Overrides Function Equals(o As Object) As Boolean
-    Return True
-End Function");
-        }
-
         [Fact]
         public async Task Bad_Class()
         {
@@ -144,7 +124,9 @@ End Class",
         }
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

@@ -21,6 +21,6 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         protected override SinkKind SinkKind => SinkKind.FilePathInjection;
 
-        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor { get { return Rule; } }
+        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor => Rule;
     }
 }

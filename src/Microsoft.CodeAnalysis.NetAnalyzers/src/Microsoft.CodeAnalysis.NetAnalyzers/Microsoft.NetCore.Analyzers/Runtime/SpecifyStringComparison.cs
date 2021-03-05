@@ -49,17 +49,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              isPortedFxCopRule: false,
                                                                              isDataflowRule: false);
 
-        private static readonly ImmutableArray<OperationKind> s_LambdaOrLocalFunctionKinds =
-            ImmutableArray.Create(OperationKind.AnonymousFunction, OperationKind.LocalFunction);
-
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule_CA1307, Rule_CA1310);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(csaContext =>
+            context.RegisterCompilationStartAction(csaContext =>
             {
                 var stringComparisonType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemStringComparison);
                 var stringType = csaContext.Compilation.GetSpecialType(SpecialType.System_String);
@@ -86,17 +83,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    if (linqExpressionType != null)
+                    // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+                    // that the underlying call doesn't have the comparison option so we want to bail-out.
+                    if (invocationExpression.IsWithinExpressionTree(linqExpressionType))
                     {
-                        var enclosingLambdaOrLocalFunc = invocationExpression.GetAncestor(s_LambdaOrLocalFunctionKinds);
-
-                        // Check if we are in a Expression<Func<T...>> context, in which case it is possible
-                        // that the underlying call doesn't have the comparison option so we want to bail-out.
-                        if (enclosingLambdaOrLocalFunc?.Parent?.Type?.OriginalDefinition is { } lambdaType
-                            && linqExpressionType.Equals(lambdaType))
-                        {
-                            return;
-                        }
+                        return;
                     }
 
                     // Report correctness issue CA1310 for known string comparison methods that default to culture specific string comparison:

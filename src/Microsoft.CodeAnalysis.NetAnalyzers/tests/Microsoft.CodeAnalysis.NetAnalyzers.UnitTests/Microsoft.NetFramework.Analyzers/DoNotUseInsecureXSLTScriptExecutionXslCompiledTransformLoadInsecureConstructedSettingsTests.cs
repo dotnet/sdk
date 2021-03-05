@@ -3,12 +3,13 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
-    Microsoft.NetFramework.CSharp.Analyzers.CSharpDoNotUseInsecureXSLTScriptExecutionAnalyzer,
+    Microsoft.NetFramework.Analyzers.DoNotUseInsecureXSLTScriptExecutionAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
-    Microsoft.NetFramework.VisualBasic.Analyzers.BasicDoNotUseInsecureXSLTScriptExecutionAnalyzer,
+    Microsoft.NetFramework.Analyzers.DoNotUseInsecureXSLTScriptExecutionAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetFramework.Analyzers.UnitTests
@@ -16,10 +17,14 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureXSLTScriptExecutionAnalyzerTests
     {
         private static DiagnosticResult GetCA3076LoadCSharpResultAt(int line, int column, string name)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage, name));
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3076LoadBasicResultAt(int line, int column, string name)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage, name));
+#pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
         public async Task Issue2752()
@@ -1278,6 +1283,30 @@ Namespace TestNamespace
 End Namespace",
                 GetCA3076LoadInsecureConstructedBasicResultAt(10, 13, "TestMethod")
             );
+        }
+
+        [Fact]
+        [WorkItem(4750, "https://github.com/dotnet/roslyn-analyzers/issues/4750")]
+        public async Task VariableDeclaratorWithoutInitializer_NoCrashAndNoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+class TestClass
+{
+    private static void TestMethod()
+    {
+        string x;
+    }
+}
+"
+            );
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Class TestClass
+    Private Shared Sub TestMethod()
+        Dim x As String
+    End Sub
+End Class
+");
         }
     }
 }

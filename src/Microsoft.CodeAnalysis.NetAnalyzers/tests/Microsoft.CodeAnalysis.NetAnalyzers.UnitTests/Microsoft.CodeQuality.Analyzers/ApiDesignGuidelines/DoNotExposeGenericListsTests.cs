@@ -296,7 +296,11 @@ public class OuterClass
     {accessibility} List<int> [|AutoProperty|] {{ get; set; }}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             }.RunAsync();
         }
@@ -348,19 +352,27 @@ Public Class OuterClass
     End Class
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             }.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpExpectedResult(int line, int col, string returnTypeName, string typeDotMemberName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, col)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(returnTypeName, typeDotMemberName);
 
         private static DiagnosticResult GetBasicExpectedResult(int line, int col, string returnTypeName, string typeDotMemberName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, col)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(returnTypeName, typeDotMemberName);
     }
 }

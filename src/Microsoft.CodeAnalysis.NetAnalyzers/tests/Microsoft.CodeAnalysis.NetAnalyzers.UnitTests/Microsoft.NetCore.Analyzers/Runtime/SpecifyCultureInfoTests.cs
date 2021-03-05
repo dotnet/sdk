@@ -691,7 +691,11 @@ namespace NS
     }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
@@ -725,7 +729,11 @@ Namespace NS
     End Class
 End Namespace",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
@@ -738,13 +746,17 @@ End Namespace",
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string invocation, string containingMethod, string preferredOverload) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(invocation, containingMethod, preferredOverload);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string invocation, string containingMethod, string preferredOverload) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(invocation, containingMethod, preferredOverload);
     }
 }

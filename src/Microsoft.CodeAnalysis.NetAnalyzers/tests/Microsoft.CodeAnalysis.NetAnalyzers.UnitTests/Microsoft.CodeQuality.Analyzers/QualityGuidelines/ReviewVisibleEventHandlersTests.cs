@@ -25,8 +25,12 @@ public class Program
     public void Handler1(object sender, EventArgs args) {}
     protected void Handler2(object sender, EventArgs args) {}
 }",
+#pragma warning disable RS0030 // Do not used banned APIs
                 VerifyCS.Diagnostic().WithLocation(6, 17).WithArguments("Handler1"),
+#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not used banned APIs
                 VerifyCS.Diagnostic().WithLocation(7, 20).WithArguments("Handler2"));
+#pragma warning restore RS0030 // Do not used banned APIs
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -38,8 +42,12 @@ Public Class Program
     Protected Sub Handler2(ByVal sender As Object, ByVal args As EventArgs)
     End Sub
 End Class",
+#pragma warning disable RS0030 // Do not used banned APIs
                 VerifyVB.Diagnostic().WithLocation(5, 16).WithArguments("Handler1"),
+#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not used banned APIs
                 VerifyVB.Diagnostic().WithLocation(8, 19).WithArguments("Handler2"));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]

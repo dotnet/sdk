@@ -1531,9 +1531,13 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         private static DiagnosticResult GetCA2153CSharpResultAt(int line, int column, string signature, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(signature, typeName);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA2153BasicResultAt(int line, int column, string signature, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(signature, typeName);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

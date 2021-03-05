@@ -541,23 +541,31 @@ class C
         #region Helpers
 
         private static DiagnosticResult GetCA1810CSharpDefaultResultAt(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA1810Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA1810BasicDefaultResultAt(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA1810Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA2207CSharpDefaultResultAt(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA2207Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA2207BasicDefaultResultAt(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA2207Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         #endregion

@@ -57,7 +57,6 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <summary>
         /// Serialization with Newtonsoft Json.NET.
         /// </summary>
-        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "Type not referenced by assembly.")]
         public bool NewtonsoftJsonNetSerialization { get; private set; }
 
         /// <summary>

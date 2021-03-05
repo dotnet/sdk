@@ -426,23 +426,31 @@ End Enum",
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string fieldName, string constantValue, string duplicatedFieldName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedValue)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(fieldName, constantValue, duplicatedFieldName);
 
         private static DiagnosticResult GetCSharpBitwiseResultAt(int line, int column, string duplicatedFieldName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedBitwiseValuePart)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(duplicatedFieldName);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string fieldName, string constantValue, string duplicatedFieldName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedValue)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(fieldName, constantValue, duplicatedFieldName);
 
         private static DiagnosticResult GetBasicBitwiseResultAt(int line, int column, string duplicatedFieldName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedBitwiseValuePart)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(duplicatedFieldName);
     }
 }

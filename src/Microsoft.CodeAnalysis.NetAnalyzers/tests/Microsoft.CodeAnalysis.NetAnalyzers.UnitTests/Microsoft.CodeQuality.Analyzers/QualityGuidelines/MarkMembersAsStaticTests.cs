@@ -335,6 +335,8 @@ public class MembersTests
     public void SomeNotImplementedMethod() => throw new System.NotImplementedException();
 
     public void SomeNotSupportedMethod() => throw new System.NotSupportedException();
+
+    public int this[int x] => 42;
 }
 
 public class Generic<T>
@@ -394,6 +396,12 @@ Public Class MembersTests
     Public Sub SomeNotSupportedMethod()
         Throw New System.NotSupportedException()
     End Sub
+
+    Default Public ReadOnly Property Item(x As Integer) As Integer
+        Get
+            Return 42
+        End Get
+    End Property
 End Class
 
 Public Class Generic(Of T)
@@ -1286,14 +1294,81 @@ public class C
             }.RunAsync();
         }
 
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaiterPattern_INotifyCompletion_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaiter : INotifyCompletion
+{
+    public void GetResult()
+    {
+    }
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaiter : ICriticalNotifyCompletion
+{
+    public void GetResult()
+    {
+    }
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+    public void UnsafeOnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaitablePattern_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaitable
+{
+    public DummyAwaiter GetAwaiter() => new DummyAwaiter();
+}
+
+public class DummyAwaiter : INotifyCompletion
+{
+    public void GetResult()
+    {
+    }
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+}");
+        }
+
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
     }
 }

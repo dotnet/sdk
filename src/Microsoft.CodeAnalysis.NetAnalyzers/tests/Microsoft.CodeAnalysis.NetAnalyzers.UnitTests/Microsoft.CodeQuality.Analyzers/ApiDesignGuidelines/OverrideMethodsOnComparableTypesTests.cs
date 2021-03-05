@@ -1298,28 +1298,38 @@ public class DerivedClass<T> : BaseClass<T>
         }
 
         private static DiagnosticResult GetCA1036CSharpOperatorsResultAt(int line, int column, string typeName, string operators)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleOperator)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, operators);
 
         private static DiagnosticResult GetCA1036BasicOperatorsResultAt(int line, int column, string typeName, string operators)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleOperator)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, operators);
 
         private static DiagnosticResult GetCA1036CSharpBothResultAt(int line, int column, string typeName, string operators)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, operators);
 
         private static DiagnosticResult GetCA1036BasicBothResultAt(int line, int column, string typeName, string operators)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, operators);
 
         private static DiagnosticResult GetCA1036CSharpEqualsResultAt(int line, int column, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleEquals)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
     }
 }

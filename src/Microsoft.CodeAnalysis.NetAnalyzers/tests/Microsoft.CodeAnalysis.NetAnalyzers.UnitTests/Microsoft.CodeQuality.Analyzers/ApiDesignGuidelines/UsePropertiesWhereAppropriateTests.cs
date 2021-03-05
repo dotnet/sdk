@@ -117,6 +117,11 @@ public class Class1 : Base
         return null;
     }
 
+    public ref string GetPinnableReference() // If the method isn't ref-returning, there will be a diagnostic.
+    {
+        return ref fileName;
+    }
+
     // 10) Method with invocation expressions
     public int GetSomethingWithInvocation()
     {
@@ -140,6 +145,16 @@ public class Class1 : Base
     internal string GetSomethingInternal()
     {
         return fileName;
+    }
+}
+
+public class Class2
+{
+    private string fileName = """";
+
+    public ref readonly string GetPinnableReference() // If the method isn't ref-returning, there will be a diagnostic.
+    {
+        return ref fileName;
     }
 }
 ");
@@ -172,12 +187,18 @@ public class Class
     {
         return fileName;
     }
+
+    public int GetPinnableReference() // Not a ref-return method.
+    {
+        return 0;
+    }
 }
 ",
             GetCA1024CSharpResultAt(6, 19, "GetFileName"),
             GetCA1024CSharpResultAt(11, 19, "Get_FileName2"),
             GetCA1024CSharpResultAt(16, 19, "Get123"),
-            GetCA1024CSharpResultAt(21, 22, "GetFileNameProtected"));
+            GetCA1024CSharpResultAt(21, 22, "GetFileNameProtected"),
+            GetCA1024CSharpResultAt(26, 16, "GetPinnableReference"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -478,14 +499,77 @@ End Class
 ");
         }
 
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaiterPattern_INotifyCompletion_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaiter : INotifyCompletion
+{
+    public object GetResult() => null;
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaiter : ICriticalNotifyCompletion
+{
+    public object GetResult() => null;
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+    public void UnsafeOnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaitablePattern_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaitable
+{
+    public DummyAwaiter GetAwaiter() => new DummyAwaiter();
+}
+
+public class DummyAwaiter : INotifyCompletion
+{
+    public void GetResult()
+    {
+    }
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+}");
+        }
+
         private static DiagnosticResult GetCA1024CSharpResultAt(int line, int column, string methodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(methodName);
 
         private static DiagnosticResult GetCA1024BasicResultAt(int line, int column, string methodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(methodName);
     }
 }
