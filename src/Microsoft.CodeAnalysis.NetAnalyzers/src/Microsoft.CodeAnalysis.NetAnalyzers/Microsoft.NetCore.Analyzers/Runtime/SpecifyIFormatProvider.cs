@@ -239,7 +239,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 #endregion
 
             }, OperationKind.Invocation);
-
         }
 
         private static IEnumerable<int> GetIndexesOfParameterType(IMethodSymbol targetMethod, INamedTypeSymbol formatProviderType)
