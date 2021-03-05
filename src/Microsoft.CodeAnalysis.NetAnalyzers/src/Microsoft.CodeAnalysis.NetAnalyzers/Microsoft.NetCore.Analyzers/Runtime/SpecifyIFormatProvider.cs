@@ -154,7 +154,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 #endregion
 
                 #region "IFormatProviderAlternateStringRule Only"
-                if (stringType != null && stringFormatMemberWithIFormatProviderStringAndParamsObjectParameter != null &&
+                if (stringFormatMemberWithIFormatProviderStringAndParamsObjectParameter != null &&
                     (targetMethod.Equals(stringFormatMemberWithStringAndObjectParameter) ||
                      targetMethod.Equals(stringFormatMemberWithStringObjectAndObjectParameter) ||
                      targetMethod.Equals(stringFormatMemberWithStringObjectObjectAndObjectParameter) ||
