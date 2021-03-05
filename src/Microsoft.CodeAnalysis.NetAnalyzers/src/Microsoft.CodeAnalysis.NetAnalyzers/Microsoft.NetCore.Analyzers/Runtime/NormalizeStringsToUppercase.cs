@@ -40,15 +40,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ToUpperRule);
 
-        protected override void InitializeWorker(CompilationStartAnalysisContext compilationContext)
+        protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
-            var stringType = compilationContext.Compilation.GetSpecialType(SpecialType.System_String);
+            var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
             if (stringType == null)
             {
                 return;
             }
 
-            var cultureInfo = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
+            var cultureInfo = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
             var invariantCulture = cultureInfo?.GetMembers("InvariantCulture").OfType<IPropertySymbol>().FirstOrDefault();
 
             // We want to flag calls to "ToLowerInvariant" and "ToLower(CultureInfo.InvariantCulture)".
@@ -73,7 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            compilationContext.RegisterOperationAction(operationAnalysisContext =>
+            context.RegisterOperationAction(operationAnalysisContext =>
             {
                 var invocation = (IInvocationOperation)operationAnalysisContext.Operation;
                 if (invocation.TargetMethod == null)

@@ -38,12 +38,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        protected override void InitializeWorker(CompilationStartAnalysisContext compilationContext)
+        protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
-            INamedTypeSymbol? stringComparisonType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(StringComparisonTypeName);
+            INamedTypeSymbol? stringComparisonType = context.Compilation.GetOrCreateTypeByMetadataName(StringComparisonTypeName);
             if (stringComparisonType != null)
             {
-                compilationContext.RegisterOperationAction(operationContext =>
+                context.RegisterOperationAction(operationContext =>
                 {
                     var operation = (IInvocationOperation)operationContext.Operation;
                     IMethodSymbol methodSymbol = operation.TargetMethod;

@@ -52,10 +52,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule_CA1307, Rule_CA1310);
 
-        protected override void InitializeWorker(CompilationStartAnalysisContext compilationContext)
+        protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
-            var stringComparisonType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemStringComparison);
-            var stringType = compilationContext.Compilation.GetSpecialType(SpecialType.System_String);
+            var stringComparisonType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemStringComparison);
+            var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
 
             // Without these symbols the rule cannot run
             if (stringComparisonType == null || stringType == null)
@@ -63,11 +63,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            var overloadMap = GetWellKnownStringOverloads(compilationContext.Compilation, stringType, stringComparisonType);
+            var overloadMap = GetWellKnownStringOverloads(context.Compilation, stringType, stringComparisonType);
 
-            var linqExpressionType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+            var linqExpressionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
 
-            compilationContext.RegisterOperationAction(oaContext =>
+            context.RegisterOperationAction(oaContext =>
             {
                 var invocationExpression = (IInvocationOperation)oaContext.Operation;
                 var targetMethod = invocationExpression.TargetMethod;

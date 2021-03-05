@@ -35,14 +35,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        protected override void InitializeWorker(CompilationStartAnalysisContext compilationContext)
+        protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
-            var obsoleteAttributeType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+            var obsoleteAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
 
-            var cultureInfoType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
+            var cultureInfoType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
             if (cultureInfoType != null)
             {
-                compilationContext.RegisterOperationAction(oaContext =>
+                context.RegisterOperationAction(oaContext =>
                 {
                     var invocationExpression = (IInvocationOperation)oaContext.Operation;
                     var targetMethod = invocationExpression.TargetMethod;

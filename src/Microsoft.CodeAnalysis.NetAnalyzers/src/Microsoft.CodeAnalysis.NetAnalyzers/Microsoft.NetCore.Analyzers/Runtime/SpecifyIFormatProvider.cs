@@ -65,27 +65,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(IFormatProviderAlternateStringRule, IFormatProviderAlternateRule, UICultureStringRule, UICultureRule);
 
-        protected override void InitializeWorker(CompilationStartAnalysisContext compilationContext)
+        protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
 
             #region "Get All the WellKnown Types and Members"
-            var iformatProviderType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIFormatProvider);
-            var cultureInfoType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
+            var iformatProviderType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIFormatProvider);
+            var cultureInfoType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
             if (iformatProviderType == null || cultureInfoType == null)
             {
                 return;
             }
 
-            var objectType = compilationContext.Compilation.GetSpecialType(SpecialType.System_Object);
-            var stringType = compilationContext.Compilation.GetSpecialType(SpecialType.System_String);
+            var objectType = context.Compilation.GetSpecialType(SpecialType.System_Object);
+            var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
             if (objectType == null || stringType == null)
             {
                 return;
             }
 
-            var charType = compilationContext.Compilation.GetSpecialType(SpecialType.System_Char);
-            var boolType = compilationContext.Compilation.GetSpecialType(SpecialType.System_Boolean);
-            var guidType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGuid);
+            var charType = context.Compilation.GetSpecialType(SpecialType.System_Char);
+            var boolType = context.Compilation.GetSpecialType(SpecialType.System_Boolean);
+            var guidType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGuid);
 
             var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>();
             builder.AddIfNotNull(charType);
@@ -94,9 +94,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             builder.AddIfNotNull(guidType);
             var invariantToStringTypes = builder.ToImmutableHashSet();
 
-            var dateTimeType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTime);
-            var dateTimeOffsetType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTimeOffset);
-            var timeSpanType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTimeSpan);
+            var dateTimeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTime);
+            var dateTimeOffsetType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTimeOffset);
+            var timeSpanType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTimeSpan);
 
             var stringFormatMembers = stringType.GetMembers("Format").OfType<IMethodSymbol>();
 
@@ -125,19 +125,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var currentUICultureProperty = cultureInfoType.GetMembers("CurrentUICulture").OfType<IPropertySymbol>().FirstOrDefault();
             var installedUICultureProperty = cultureInfoType.GetMembers("InstalledUICulture").OfType<IPropertySymbol>().FirstOrDefault();
 
-            var threadType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingThread);
+            var threadType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingThread);
             var currentThreadCurrentUICultureProperty = threadType?.GetMembers("CurrentUICulture").OfType<IPropertySymbol>().FirstOrDefault();
 
-            var activatorType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemActivator);
-            var resourceManagerType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemResourcesResourceManager);
+            var activatorType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemActivator);
+            var resourceManagerType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemResourcesResourceManager);
 
-            var computerInfoType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualBasicDevicesComputerInfo);
+            var computerInfoType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualBasicDevicesComputerInfo);
             var installedUICulturePropertyOfComputerInfoType = computerInfoType?.GetMembers("InstalledUICulture").OfType<IPropertySymbol>().FirstOrDefault();
 
-            var obsoleteAttributeType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+            var obsoleteAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
             #endregion
 
-            compilationContext.RegisterOperationAction(oaContext =>
+            context.RegisterOperationAction(oaContext =>
             {
                 var invocationExpression = (IInvocationOperation)oaContext.Operation;
                 var targetMethod = invocationExpression.TargetMethod;

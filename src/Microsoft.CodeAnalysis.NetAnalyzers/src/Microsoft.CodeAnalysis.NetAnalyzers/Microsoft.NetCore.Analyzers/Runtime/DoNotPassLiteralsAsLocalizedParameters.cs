@@ -47,14 +47,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        protected override void InitializeWorker(CompilationStartAnalysisContext compilationContext)
+        protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
-            INamedTypeSymbol? localizableStateAttributeSymbol = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelLocalizableAttribute);
-            INamedTypeSymbol? conditionalAttributeSymbol = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute);
-            INamedTypeSymbol? systemConsoleSymbol = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConsole);
-            ImmutableHashSet<INamedTypeSymbol> typesToIgnore = GetTypesToIgnore(compilationContext.Compilation);
+            INamedTypeSymbol? localizableStateAttributeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelLocalizableAttribute);
+            INamedTypeSymbol? conditionalAttributeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute);
+            INamedTypeSymbol? systemConsoleSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConsole);
+            ImmutableHashSet<INamedTypeSymbol> typesToIgnore = GetTypesToIgnore(context.Compilation);
 
-            compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
+            context.RegisterOperationBlockStartAction(operationBlockStartContext =>
             {
                 if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod ||
                     operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))

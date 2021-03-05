@@ -16,13 +16,13 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers
             context.RegisterCompilationStartAction(context =>
             {
                 var value = context.Options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.InvariantGlobalization, context.Compilation, context.CancellationToken);
-                if (value is not "true")
+                if (value != "true")
                 {
                     InitializeWorker(context);
                 }
             });
         }
 
-        protected abstract void InitializeWorker(CompilationStartAnalysisContext compilationContext);
+        protected abstract void InitializeWorker(CompilationStartAnalysisContext context);
     }
 }
