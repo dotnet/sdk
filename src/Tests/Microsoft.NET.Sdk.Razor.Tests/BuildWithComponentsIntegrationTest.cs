@@ -44,11 +44,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private void Build_ComponentsWorks()
         {
-            // while (!System.Diagnostics.Debugger.IsAttached)
-            // {
-            //     System.Console.WriteLine($"Waiting for {System.Diagnostics.Process.GetCurrentProcess().Id}");
-            //     System.Threading.Thread.Sleep(1000);
-            // }
             var testAsset = "RazorMvcWithComponents";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 

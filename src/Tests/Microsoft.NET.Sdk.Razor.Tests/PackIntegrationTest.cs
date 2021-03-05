@@ -61,7 +61,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             result.Should().NuSpecDoesNotContain(
                 Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.nuspec"),
                 $@"<files include=""any/{DefaultTfm}/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
-            
+
             result.Should().NuPkgContain(
                 Path.Combine(projectDirectory.Path, "bin", "Debug", "ClassLibrary.1.0.0.nupkg"),
                 Path.Combine("lib", DefaultTfm, "ClassLibrary.dll"));
