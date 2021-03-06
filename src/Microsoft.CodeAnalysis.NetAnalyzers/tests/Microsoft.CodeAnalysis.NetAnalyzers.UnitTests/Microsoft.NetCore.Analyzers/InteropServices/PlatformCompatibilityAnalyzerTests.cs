@@ -3466,6 +3466,36 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue("""
             }.RunAsync();
         }
 
+        [Fact, WorkItem(51652, "https://github.com/dotnet/roslyn/issues/51652")]
+        public async Task TestGuardedCheckInsideLoopWithTryCatch()
+        {
+            var source = @"
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Threading.Tasks;
+
+class TestType
+{
+    static async Task Main(string[] args) {
+	while (true)
+		try {
+			await Task.Delay(1000);
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				Test();
+		} catch {
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				Test();
+			throw;
+		}
+    }
+
+    [SupportedOSPlatform(""windows"")]
+    static void Test() { }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
         private string GetFormattedString(string resource, params string[] args) =>
             string.Format(CultureInfo.InvariantCulture, resource, args);
 
