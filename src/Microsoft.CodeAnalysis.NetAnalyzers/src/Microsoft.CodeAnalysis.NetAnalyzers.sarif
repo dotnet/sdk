@@ -2394,7 +2394,7 @@
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
-            "typeName": "UseEnvironmentProcessId",
+            "typeName": "UseEnvironmentMembers",
             "languages": [
               "C#",
               "Visual Basic"
@@ -2415,6 +2415,46 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "AvoidStringBuilderPInvokeParametersAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1839": {
+          "id": "CA1839",
+          "shortDescription": "Use 'Environment.ProcessPath'",
+          "fullDescription": "'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseEnvironmentMembers",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1840": {
+          "id": "CA1840",
+          "shortDescription": "Use 'Environment.CurrentManagedThreadId'",
+          "fullDescription": "'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseEnvironmentMembers",
             "languages": [
               "C#",
               "Visual Basic"

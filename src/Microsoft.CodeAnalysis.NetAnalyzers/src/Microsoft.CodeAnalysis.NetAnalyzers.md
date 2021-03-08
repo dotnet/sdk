@@ -1296,6 +1296,30 @@ Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in
 |CodeFix|False|
 ---
 
+## [CA1839](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839): Use 'Environment.ProcessPath'
+
+'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1840](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840): Use 'Environment.CurrentManagedThreadId'
+
+'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.

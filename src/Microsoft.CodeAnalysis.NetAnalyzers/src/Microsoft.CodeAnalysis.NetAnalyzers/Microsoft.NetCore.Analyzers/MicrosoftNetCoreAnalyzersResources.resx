@@ -1425,6 +1425,30 @@
   <data name="UseEnvironmentProcessIdFix" xml:space="preserve">
     <value>Use 'Environment.ProcessId'</value>
   </data>
+  <data name="UseEnvironmentProcessPathDescription" xml:space="preserve">
+    <value>'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</value>
+  </data>
+  <data name="UseEnvironmentProcessPathMessage" xml:space="preserve">
+    <value>Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</value>
+  </data>
+  <data name="UseEnvironmentProcessPathTitle" xml:space="preserve">
+    <value>Use 'Environment.ProcessPath'</value>
+  </data>
+  <data name="UseEnvironmentProcessPathFix" xml:space="preserve">
+    <value>Use 'Environment.ProcessPath'</value>
+  </data>
+  <data name="UseEnvironmentCurrentManagedThreadIdDescription" xml:space="preserve">
+    <value>'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</value>
+  </data>
+  <data name="UseEnvironmentCurrentManagedThreadIdMessage" xml:space="preserve">
+    <value>Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</value>
+  </data>
+  <data name="UseEnvironmentCurrentManagedThreadIdTitle" xml:space="preserve">
+    <value>Use 'Environment.CurrentManagedThreadId'</value>
+  </data>
+  <data name="UseEnvironmentCurrentManagedThreadIdFix" xml:space="preserve">
+    <value>Use 'Environment.CurrentManagedThreadId'</value>
+  </data>
   <data name="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle" xml:space="preserve">
     <value>Use `{0}` instead of Range-based indexers on a string</value>
   </data>
