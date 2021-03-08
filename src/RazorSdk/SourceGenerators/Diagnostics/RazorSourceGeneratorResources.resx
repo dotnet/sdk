@@ -133,19 +133,19 @@
     <value>TargetPath not defined</value>
   </data>
   <data name="TargetPathNotProvidedMessage" xml:space="preserve">
-    <value>TargetPath not specified for additional file: {0}</value>
+    <value>TargetPath not specified for additional file: {0}.</value>
   </data>
   <data name="GeneratedOutputFullPathNotProvidedTitle" xml:space="preserve">
     <value>GeneratedOutputFullPath not defined</value>
   </data>
   <data name="GeneratedOutputFullPathNotProvidedMessage" xml:space="preserve">
-    <value>GeneratedOutputFullPath not specified for additional file: {0}</value>
+    <value>GeneratedOutputFullPath not specified for additional file: {0}.</value>
   </data>
   <data name="CurrentCompilationReferenceNotFoundTitle" xml:space="preserve">
     <value>MetadataReference not found</value>
   </data>
   <data name="CurrentCompilationReferenceNotFoundMessage" xml:space="preserve">
-    <value>MetadataReference for current compilation not found'.</value>
+    <value>MetadataReference for current compilation not found.</value>
   </data>
   <data name="SkippingGeneratedFileWriteTitle" xml:space="preserve">
     <value>Generated file not written disk</value>
@@ -169,12 +169,12 @@
     <value>Invalid Razor generator context</value>
   </data>
   <data name="InvalidRazorContextComputedMessage" xml:space="preserve">
-    <value>Could not create a valid Razor generator context.</value>
+    <value>Could not create a valid Razor source generator context.</value>
   </data>
   <data name="MetadataReferenceNotProvidedTitle" xml:space="preserve">
     <value>MetadataReference not provided</value>
   </data>
   <data name="MetadataReferenceNotProvidedMessage" xml:space="preserve">
-    <value>Expected a valid MetadataReference but found none.</value>
+    <value>Expected a valid MetadataReference, but found none.</value>
   </data>
 </root>
