@@ -162,6 +162,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             });
 
             var files = razorContext.RazorFiles;
+            var parseOptions = (CSharpParseOptions)GeneratorExecutionContext.ParseOptions;
+
             var results = ArrayPool<SyntaxTree>.Shared.Rent(files.Count);
 
             Parallel.For(0, files.Count, GetParallelOptions(GeneratorExecutionContext), i =>
@@ -173,14 +175,15 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 results[i] = CSharpSyntaxTree.ParseText(
                     generatedCode,
                     options: parseOptions);
-
             });
 
-            tagHelperFeature.Compilation = GeneratorExecutionContext.Compilation.AddSyntaxTrees(results.Take(files.Count));
+            // Add declaration codegen to the compilation so we can perform discovery on it.
+            var compilationWithDeclarationCodeGen = GeneratorExecutionContext.Compilation.AddSyntaxTrees(results.Take(files.Count));
             ArrayPool<SyntaxTree>.Shared.Return(results);
+                
+            tagHelperFeature.Compilation = compilationWithDeclarationCodeGen;
 
-            var currentTargetAssembly = GeneratorExecutionContext.Compilation.Assembly; 
-            tagHelperFeature.TargetAssembly = currentTargetAssembly;
+            tagHelperFeature.TargetAssembly = compilationWithDeclarationCodeGen.Assembly;
             var assemblyTagHelpers = tagHelperFeature.GetDescriptors();
 
             var refTagHelpers = GetTagHelperDescriptorsFromReferences(GeneratorExecutionContext, tagHelperFeature);
