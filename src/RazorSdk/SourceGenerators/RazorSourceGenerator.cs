@@ -162,7 +162,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             });
 
             var files = razorContext.RazorFiles;
-            var parseOptions = (CSharpParseOptions)GeneratorExecutionContext.ParseOptions;
 
             var results = ArrayPool<SyntaxTree>.Shared.Rent(files.Count);
 
