@@ -147,7 +147,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       _CheckForMissingRazorCompiler;
       RazorCoreGenerate
     </RazorGenerateDependsOn>
-
+    
     <RazorComponentGenerateDependsOn>
       PrepareForRazorComponentGenerate
     </RazorComponentGenerateDependsOn>
@@ -162,25 +162,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveRazorEmbeddedResources;
     </ResolveRazorCompileInputsDependsOn>
 
-    <RazorCompileDependsOn Condition="'$(_UseRazorSourceGenerator)' != 'true'">
-      PrepareForRazorCompile;
-      RazorCoreCompile
-    </RazorCompileDependsOn>
-
     <DebugSymbolsProjectOutputGroupDependsOn>
       $(DebugSymbolsProjectOutputGroupDependsOn);
       _RazorAddDebugSymbolsProjectOutputGroupOutput
     </DebugSymbolsProjectOutputGroupDependsOn>
-
-    <CoreCompileDependsOn Condition="'$(_UseRazorSourceGenerator)' != 'true' AND '$(DesignTimeBuild)'!='true'">
-      RazorComponentGenerate;
-      $(CoreCompileDependsOn)
-    </CoreCompileDependsOn>
-
-    <CoreCompileDependsOn Condition="'$(_UseRazorSourceGenerator)' != 'true' AND '$(DesignTimeBuild)'=='true'">
-      RazorGenerateComponentDeclarationDesignTime;
-      $(CoreCompileDependsOn)
-    </CoreCompileDependsOn>
 
     <PrepareForBuildDependsOn>
       $(PrepareForBuildDependsOn);

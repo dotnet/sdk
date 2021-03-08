@@ -111,11 +111,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AdditionalFiles Include="@(%(AdditionalFileItems.Identity))" />
     </ItemGroup>
 
-    <ItemGroup>
-      <AdditionalFiles Remove="@(_RazorAdditionalFile)" />
-      <Analyzer Remove="@(_RazorAnalyzer)" />
-    </ItemGroup>
-
     <PropertyGroup Condition="'$(UseSharedCompilation)' == ''">
       <UseSharedCompilation>true</UseSharedCompilation>
     </PropertyGroup>
@@ -367,6 +362,22 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(BuiltProjectOutputGroupDependsOn);
       _RazorAddBuiltProjectOutputGroupOutput
     </BuiltProjectOutputGroupDependsOn>
+
+    <RazorCompileDependsOn>
+      PrepareForRazorCompile;
+      RazorCoreCompile
+    </RazorCompileDependsOn>
+
+    <CoreCompileDependsOn Condition="'$(DesignTimeBuild)'!='true'">
+      RazorComponentGenerate;
+      $(CoreCompileDependsOn)
+    </CoreCompileDependsOn>
+
+    <CoreCompileDependsOn Condition="'$(DesignTimeBuild)'=='true'">
+      RazorGenerateComponentDeclarationDesignTime;
+      $(CoreCompileDependsOn)
+    </CoreCompileDependsOn>
+
   </PropertyGroup>
 
 </Project>

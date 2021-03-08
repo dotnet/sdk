@@ -65,13 +65,15 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         {
             var files = razorContext.CshtmlFiles;
 
+            if (files.Count == 0)
+            {
+                return;
+            }
+
             var arraypool = ArrayPool<(string, SourceText)>.Shared;
             var outputs = arraypool.Rent(files.Count);
 
-            if (files.Count > 0)
-            {
-                PopulateAssemblyInfo(context);
-            }
+            PopulateAssemblyInfo(context);
 
             Parallel.For(0, files.Count, GetParallelOptions(context), i =>
             {
@@ -240,13 +242,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         private static void PopulateAssemblyInfo(GeneratorExecutionContext context)
         {
-            var assemblyInfo = @"
-using System;
-using System.Reflection;
-using Microsoft.AspNetCore.Mvc;
-
-[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(""Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor"")]
-";
+            var typeInfo = "typeof(global::Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory), global::Microsoft.AspNetCore.Mvc.Razor";
+            var assemblyInfo = $@"[assembly: global::Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(""{typeInfo}"")]";
             context.AddSource($"{context.Compilation.AssemblyName}.UnifiedAssembly.Info", SourceText.From(assemblyInfo, Encoding.UTF8));
         }
 
