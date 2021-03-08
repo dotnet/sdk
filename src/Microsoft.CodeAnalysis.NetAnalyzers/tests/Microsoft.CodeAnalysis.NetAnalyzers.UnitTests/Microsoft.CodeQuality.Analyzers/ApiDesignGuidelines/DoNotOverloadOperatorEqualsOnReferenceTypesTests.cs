@@ -137,7 +137,11 @@ public class OuterClass
     }}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             }.RunAsync();
         }
@@ -188,7 +192,11 @@ Public Class OuterClass
     End Class
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             }.RunAsync();
         }

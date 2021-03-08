@@ -2064,7 +2064,11 @@ public enum MyFlag {}
 
 public class MyAttribute {}",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             }.RunAsync();
 
@@ -2082,7 +2086,11 @@ End Enum
 Public Class MyAttribute
 End Class",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             }.RunAsync();
         }

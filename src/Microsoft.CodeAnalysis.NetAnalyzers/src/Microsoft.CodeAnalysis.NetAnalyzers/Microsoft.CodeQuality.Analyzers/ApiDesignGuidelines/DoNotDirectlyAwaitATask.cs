@@ -53,25 +53,25 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                context.RegisterOperationBlockStartAction(operationBlockStartContext =>
+                context.RegisterOperationBlockStartAction(context =>
                 {
-                    if (operationBlockStartContext.OwningSymbol is IMethodSymbol method)
+                    if (context.OwningSymbol is IMethodSymbol method)
                     {
                         if (method.IsAsync &&
                             method.ReturnsVoid &&
-                            operationBlockStartContext.Options.GetBoolOptionValue(
+                            context.Options.GetBoolOptionValue(
                                 optionName: EditorConfigOptionNames.ExcludeAsyncVoidMethods,
                                 rule: Rule,
                                 method,
                                 context.Compilation,
                                 defaultValue: false,
-                                cancellationToken: operationBlockStartContext.CancellationToken))
+                                cancellationToken: context.CancellationToken))
                         {
                             // Configured to skip this analysis in async void methods.
                             return;
                         }
 
-                        operationBlockStartContext.RegisterOperationAction(oc => AnalyzeOperation(oc, taskTypes), OperationKind.Await);
+                        context.RegisterOperationAction(context => AnalyzeOperation(context, taskTypes), OperationKind.Await);
                     }
                 });
             });

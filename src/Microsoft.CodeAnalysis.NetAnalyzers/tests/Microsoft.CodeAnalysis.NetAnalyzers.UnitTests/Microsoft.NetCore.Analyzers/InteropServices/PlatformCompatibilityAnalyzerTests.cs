@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.PlatformCompatibilityAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
-
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.PlatformCompatibilityAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -3424,6 +3426,46 @@ class Test
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
+        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/4920")]
+        [WorkItem(4920, "https://github.com/dotnet/roslyn-analyzers/issues/4920")]
+        public async Task TestTimelyTermination()
+        {
+            var source = @"
+using System.Runtime.InteropServices;
+using Microsoft.Win32;
+
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue("""", """", null) != null)
+{
+    foreach (var x in new string[0])
+    {
+        if ("""".ToString() == """")
+        {
+            try
+            {
+            }
+            catch
+            {
+            }
+        }
+    }
+}";
+
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50.AddPackages(
+                    ImmutableArray.Create(new PackageIdentity("Microsoft.Win32.Registry", "5.0.0"))),
+                LanguageVersion = CSharpLanguageVersion.CSharp9,
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.globalconfig", $@"is_global = true
+
+{s_msBuildPlatforms}") },
+                }
+            }.RunAsync();
+        }
+
         private string GetFormattedString(string resource, params string[] args) =>
             string.Format(CultureInfo.InvariantCulture, resource, args);
 
@@ -3449,14 +3491,22 @@ class Test
         private static async Task VerifyAnalyzerAsyncCs(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
         {
             var test = PopulateTestCs(sourceCode, expectedDiagnostics);
-            test.TestState.AdditionalFiles.Add((".editorconfig", editorconfigText));
+            test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $@"root = true
+
+[*]
+{editorconfigText}
+"));
             await test.RunAsync();
         }
 
         private static async Task VerifyAnalyzerAsyncCs(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestCs(sourceCode);
-            test.TestState.AdditionalFiles.Add((".editorconfig", editorconfigText));
+            test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $@"root = true
+
+[*]
+{editorconfigText}
+"));
             await test.RunAsync();
         }
 
@@ -3466,7 +3516,11 @@ class Test
         private static async Task VerifyAnalyzerAsyncVb(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
         {
             var test = PopulateTestVb(sourceCode, expectedDiagnostics);
-            test.TestState.AdditionalFiles.Add((".editorconfig", editorconfigText));
+            test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $@"root = true
+
+[*]
+{editorconfigText}
+"));
             await test.RunAsync();
         }
 
