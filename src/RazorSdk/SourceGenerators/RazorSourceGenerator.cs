@@ -254,7 +254,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         private static void PopulateAssemblyInfo(GeneratorExecutionContext context)
         {
-            var typeInfo = "typeof(global::Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory), global::Microsoft.AspNetCore.Mvc.Razor";
+            var typeInfo = "typeof(global::Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory)";
             var assemblyInfo = $@"[assembly: global::Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(""{typeInfo}"")]";
             context.AddSource($"{context.Compilation.AssemblyName}.UnifiedAssembly.Info", SourceText.From(assemblyInfo, Encoding.UTF8));
         }
