@@ -3426,7 +3426,7 @@ class Test
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/4920")]
+        [Fact]
         [WorkItem(4920, "https://github.com/dotnet/roslyn-analyzers/issues/4920")]
         public async Task TestTimelyTermination()
         {
@@ -3464,6 +3464,36 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue("""
 {s_msBuildPlatforms}") },
                 }
             }.RunAsync();
+        }
+
+        [Fact, WorkItem(51652, "https://github.com/dotnet/roslyn/issues/51652")]
+        public async Task TestGuardedCheckInsideLoopWithTryCatch()
+        {
+            var source = @"
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Threading.Tasks;
+
+class TestType
+{
+    static async Task Main(string[] args) {
+	while (true)
+		try {
+			await Task.Delay(1000);
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				Test();
+		} catch {
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				Test();
+			throw;
+		}
+    }
+
+    [SupportedOSPlatform(""windows"")]
+    static void Test() { }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
         private string GetFormattedString(string resource, params string[] args) =>
