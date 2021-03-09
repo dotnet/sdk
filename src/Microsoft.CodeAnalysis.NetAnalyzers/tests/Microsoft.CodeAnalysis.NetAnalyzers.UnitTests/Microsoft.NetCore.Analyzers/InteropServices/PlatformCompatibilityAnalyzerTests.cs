@@ -2645,46 +2645,6 @@ public class Test
             return string.Format(CultureInfo.InvariantCulture, resource, args);
         }
 
-        [Fact]
-        [WorkItem(4920, "https://github.com/dotnet/roslyn-analyzers/issues/4920")]
-        public async Task TestTimelyTermination()
-        {
-            var source = @"
-using System.Runtime.InteropServices;
-using Microsoft.Win32;
-
-if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue("""", """", null) != null)
-{
-    foreach (var x in new string[0])
-    {
-        if ("""".ToString() == """")
-        {
-            try
-            {
-            }
-            catch
-            {
-            }
-        }
-    }
-}";
-
-            await new VerifyCS.Test
-            {
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50.AddPackages(
-                    ImmutableArray.Create(new PackageIdentity("Microsoft.Win32.Registry", "5.0.0"))),
-                LanguageVersion = CSharpLanguageVersion.CSharp9,
-                TestState =
-                {
-                    OutputKind = OutputKind.ConsoleApplication,
-                    Sources = { source },
-                    AnalyzerConfigFiles = { ("/.globalconfig", $@"is_global = true
-
-{s_msBuildPlatforms}") },
-                }
-            }.RunAsync();
-        }
-
         [Fact, WorkItem(51652, "https://github.com/dotnet/roslyn/issues/51652")]
         public async Task TestGuardedCheckInsideLoopWithTryCatch()
         {
@@ -2714,12 +2674,6 @@ class TestType
 }";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
-
-        private string GetFormattedString(string resource, params string[] args) =>
-            string.Format(CultureInfo.InvariantCulture, resource, args);
-
-        private string Join(string platform1, string platform2) =>
-            string.Join(MicrosoftNetCoreAnalyzersResources.CommaSeparator, platform1, platform2);
 
         private static VerifyCS.Test PopulateTestCs(string sourceCode, params DiagnosticResult[] expected)
         {
