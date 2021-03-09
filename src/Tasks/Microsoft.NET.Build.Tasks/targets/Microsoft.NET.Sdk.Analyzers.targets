@@ -50,9 +50,15 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     $([MSBuild]::VersionGreaterThanOrEquals($(EffectiveAnalysisLevel), '5.0'))">true</EnableNETAnalyzers>
     <EnableNETAnalyzers Condition="'$(EnableNETAnalyzers)' == ''">false</EnableNETAnalyzers>
 
+    <!-- Intermediate step to enable ILLink.Analyzers so ILLink, Blazor, Xamarin, AOT, etc. can enable the same flags -->
+    <EnableSingleFileAnalyzer Condition="'$(EnableSingleFileAnalyzer)' == '' And
+                              '$(PublishSingleFile)' == 'true'">true</EnableSingleFileAnalyzer>
+    <EnableTrimAnalyzer Condition="'$(EnableTrimAnalyzer' == '' And
+                        '$(PublishTrimmed)' == 'true'">true</EnableTrimAnalyzer>
+
     <!-- EnforceCodeStyleInBuild Allows code style analyzers to be disabled in bulk via msbuild if the user wants to -->
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">false</EnforceCodeStyleInBuild>
-    
+
     <!-- Compiler warning level, defaulted to 4. We promote it to 5 if the user has set analysis level to 5 or higher
          NOTE: at this time only the C# compiler supports warning waves -->
     <WarningLevel Condition="'$(Language)' == 'C#' And
@@ -68,15 +74,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)..\analyzers\build\Microsoft.CodeAnalysis.NetAnalyzers.targets"
           Condition="$(EnableNETAnalyzers)" />
   <Import Project="$(MSBuildThisFileDirectory)..\analyzers\build\Microsoft.NET.ILLink.Analyzers.props"
-          Condition="'$(PublishSingleFile)' == 'true' Or '$(PublishTrimmed)' == 'true'" />
-
-  <!-- Intermediate step to enable ILLink.Analyzers so ILLink, Blazor, Xamarin, AOT, etc. can enable the same flags -->
-  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
-    <AnalyzeSingleFile Condition=" '$(AnalyzeSingleFile)' == ''">true</AnalyzeSingleFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(PublishTrimmed)' == 'true'">
-    <AnalyzeTrimming Condition=" '$(AnalyzeTrimming)' == ''">true</AnalyzeTrimming>
-  </PropertyGroup>
+          Condition="'$(EnableSingleFileAnalyzer)' == 'true' Or '$(EnableTrimAnalyzer)' == 'true'" />
 
   <!-- .NET Analyzers -->
   <ItemGroup Condition="$(EnableNETAnalyzers)">
@@ -93,7 +91,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       IsImplicitlyDefined="true" />
     <!-- ILLinker Analyzers -->
     <Analyzer
-      Condition="'$(AnalyzeSingleFile)' == 'true' Or '$(AnalyzeTrimming)' == 'true'"
+      Condition="'$(EnableSingleFileAnalyzer)' == 'true' Or '$(EnableTrimAnalyzer)' == 'true'"
       Include="$(MSBuildThisFileDirectory)..\analyzers\ILLink.RoslynAnalyzer.dll"
       IsImplicitlyDefined="true" />
   </ItemGroup>

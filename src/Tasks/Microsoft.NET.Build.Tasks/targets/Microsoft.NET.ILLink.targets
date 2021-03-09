@@ -40,7 +40,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(AnalyzeTrimming)' == 'true' or '$(PublishTrimmed)' == 'true'">
+  <PropertyGroup Condition="'$(EnableTrimAnalyzer)' == 'true' or '$(PublishTrimmed)' == 'true'">
     <SuppressTrimAnalysisWarnings Condition="'$(SuppressTrimAnalysisWarnings)' == ''">true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
