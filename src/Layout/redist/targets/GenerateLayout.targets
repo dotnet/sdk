@@ -151,22 +151,15 @@
 
   <Target Name="GenerateCliRuntimeConfigurationFiles"
           AfterTargets="Build">
-    <RemoveAssetFromDepsPackages DepsFile="$(OutputPath)/$(TargetName).deps.json"
-                                 SectionName="runtime"
-                                 AssetPath="%(BundledToolProjects.Identity).dll" />
-
-    <Copy SourceFiles="$(OutputPath)/$(TargetName).deps.json"
-          DestinationFiles="$(OutputPath)/%(BundledTools.Identity).deps.json" />
 
     <Copy SourceFiles="$(OutputPath)/$(TargetName).runtimeconfig.json"
           DestinationFiles="$(OutputPath)/%(BundledTools.Identity).runtimeconfig.json" />
 
-    <Delete Files="$(OutputPath)/$(TargetName).deps.json;
-                   $(OutputPath)/$(TargetName).runtimeconfig.json;
+    <Delete Files="$(OutputPath)/$(TargetName).runtimeconfig.json;
                    $(OutputPath)/%(BundledToolProjects.Identity).dll;
                    $(OutputPath)/%(BundledToolProjects.Identity).pdb" />
 
-    <ChangeEntryPointLibraryName
+    <ChangeEntryPointLibraryName Condition="'%(BundledTools.Identity)' != 'dotnet'"
           DepsFile="$(OutputPath)/%(BundledTools.Identity).deps.json"
           NewName="%(BundledTools.Identity).deps.json" />
   </Target>
@@ -277,10 +270,6 @@
 
       <Copy SourceFiles="@(NuPkgContentForMSBuildExtensions)"
             DestinationFiles="@(NuPkgContentForMSBuildExtensions->'$(OutputPath)/%(RecursiveDir)%(Filename)%(Extension)')" />
-
-      <RemoveAssetFromDepsPackages DepsFile="$(OutputPath)/$(TargetName).deps.json"
-                                   SectionName="runtimeTargets"
-                                   AssetPath="%(NuPkgContentForMSBuildExtensionsRelativePaths.Identity)" />
   </Target>
 
   <!-- The msdia140typelib_clr0200.dll file is not MIT licensed (and it only used on Windows). Remove it, so

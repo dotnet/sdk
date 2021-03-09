@@ -12,6 +12,8 @@
     <PackageId>Microsoft.DotNet.Cli</PackageId>
     <UseAppHost>false</UseAppHost>
     <IsPackable>true</IsPackable>
+    <!-- https://github.com/dotnet/sdk/issues/16196#issuecomment-793672037 -->
+    <GenerateDependencyFile>false</GenerateDependencyFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="commands\dotnet-new\**" />
