@@ -26,15 +26,21 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         // Until the compiler supports granular caching for generators, we roll out our own simple caching implementation.
         // https://github.com/dotnet/roslyn/issues/51257 track the long-term resolution for this.
         private static readonly ConcurrentDictionary<Guid, IReadOnlyList<TagHelperDescriptor>> _tagHelperCache = new();
+
         public void Initialize(GeneratorInitializationContext context)
         {
         }
 
         public void Execute(GeneratorExecutionContext context)
         {
-            var razorContext = RazorSourceGenerationContext.Create(context);
-            if (razorContext is null ||
-                (razorContext.RazorFiles.Count == 0 && razorContext.CshtmlFiles.Count == 0))
+            var razorContext = new RazorSourceGenerationContext(context);
+            if (razorContext is null)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(RazorDiagnostics.InvalidRazorContextComputedDescriptor, Location.None));
+                return;
+            }
+
+            if (razorContext.RazorFiles.Count == 0 && razorContext.CshtmlFiles.Count == 0)
             {
                 return;
             }
@@ -76,6 +82,12 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     var razorDiagnostic = csharpDocument.Diagnostics[j];
                     var csharpDiagnostic = razorDiagnostic.AsDiagnostic();
                     context.ReportDiagnostic(csharpDiagnostic);
+                }
+
+                if (file.GeneratedOutputPath is null)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(RazorDiagnostics.SkippingGeneratedFileWriteDescriptor, Location.None, file.RelativePath));
+                    return;
                 }
 
                 Directory.CreateDirectory(Path.GetDirectoryName(file.GeneratedOutputPath));
@@ -121,9 +133,10 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         private static IReadOnlyList<TagHelperDescriptor> ResolveTagHelperDescriptors(GeneratorExecutionContext GeneratorExecutionContext, RazorSourceGenerationContext razorContext)
         {
-            var tagHelperFeature = new StaticCompilationTagHelperFeature();
+            var tagHelperFeature = new StaticCompilationTagHelperFeature(GeneratorExecutionContext);
 
-            var langVersion = ((CSharpParseOptions)GeneratorExecutionContext.ParseOptions).LanguageVersion;
+            var parseOptions = (CSharpParseOptions)GeneratorExecutionContext.ParseOptions;
+            var langVersion = parseOptions.LanguageVersion;
 
             var discoveryProjectEngine = RazorProjectEngine.Create(razorContext.Configuration, razorContext.FileSystem, b =>
             {
@@ -149,9 +162,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             });
 
             var files = razorContext.RazorFiles;
-            var results = ArrayPool<SyntaxTree>.Shared.Rent(files.Count);
 
-            var parseOptions = (CSharpParseOptions)GeneratorExecutionContext.ParseOptions;
+            var results = ArrayPool<SyntaxTree>.Shared.Rent(files.Count);
 
             Parallel.For(0, files.Count, GetParallelOptions(GeneratorExecutionContext), i =>
             {
@@ -162,17 +174,18 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 results[i] = CSharpSyntaxTree.ParseText(
                     generatedCode,
                     options: parseOptions);
-
             });
 
-            tagHelperFeature.Compilation = GeneratorExecutionContext.Compilation.AddSyntaxTrees(results.Take(files.Count));
+            // Add declaration codegen to the compilation so we can perform discovery on it.
+            var compilationWithDeclarationCodeGen = GeneratorExecutionContext.Compilation.AddSyntaxTrees(results.Take(files.Count));
             ArrayPool<SyntaxTree>.Shared.Return(results);
+                
+            tagHelperFeature.Compilation = compilationWithDeclarationCodeGen;
 
-            var currentMetadataReference = GeneratorExecutionContext.Compilation.GetMetadataReference(GeneratorExecutionContext.Compilation.Assembly);
-            tagHelperFeature.TargetReference = currentMetadataReference;
+            tagHelperFeature.TargetAssembly = compilationWithDeclarationCodeGen.Assembly;
             var assemblyTagHelpers = tagHelperFeature.GetDescriptors();
 
-            var refTagHelpers = GetTagHelperDescriptorsFromReferences(GeneratorExecutionContext.Compilation, tagHelperFeature);
+            var refTagHelpers = GetTagHelperDescriptorsFromReferences(GeneratorExecutionContext, tagHelperFeature);
 
             var result = new List<TagHelperDescriptor>(refTagHelpers.Count + assemblyTagHelpers.Count);
             result.AddRange(assemblyTagHelpers);
@@ -181,38 +194,46 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return result;
         }
 
-        private static IReadOnlyList<TagHelperDescriptor> GetTagHelperDescriptorsFromReferences(Compilation compilation, StaticCompilationTagHelperFeature tagHelperFeature)
+        private static IReadOnlyList<TagHelperDescriptor> GetTagHelperDescriptorsFromReferences(GeneratorExecutionContext context, StaticCompilationTagHelperFeature tagHelperFeature)
         {
             List<TagHelperDescriptor> tagHelperDescriptors = new();
+            var compilation = context.Compilation;
 
             foreach (var reference in compilation.References)
             {
-                var guid = reference.GetModuleVersionId(compilation);
-                IReadOnlyList<TagHelperDescriptor> descriptors = default;
-
-                if (guid is Guid _guid)
+                if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
                 {
-                    if (!_tagHelperCache.TryGetValue(_guid, out descriptors))
+                    var guid = reference.GetModuleVersionId(compilation);
+                    IReadOnlyList<TagHelperDescriptor> descriptors = new List<TagHelperDescriptor>();
+
+                    if (guid is Guid _guid)
                     {
-                        tagHelperFeature.TargetReference = reference;
-                        descriptors = tagHelperFeature.GetDescriptors();
-                        // Clear out the cache if it is growing too large. A 
-                        // simple compilation can include around ~300 references
-                        // so give a little bit of buffer beyond this.
-                        if (_tagHelperCache.Count > 400)
+                        if (!_tagHelperCache.TryGetValue(_guid, out descriptors))
                         {
-                            _tagHelperCache.Clear();
+                            tagHelperFeature.TargetAssembly = assembly;
+                            descriptors = tagHelperFeature.GetDescriptors();
+                            // Clear out the cache if it is growing too large. A 
+                            // simple compilation can include around ~300 references
+                            // so give a little bit of buffer beyond this.
+                            if (_tagHelperCache.Count > 400)
+                            {
+                                _tagHelperCache.Clear();
+                            }
+                            _tagHelperCache[_guid] = descriptors;
                         }
-                        _tagHelperCache[_guid] = descriptors;
                     }
-                }
-                else
-                {
-                    tagHelperFeature.TargetReference = reference;
-                    descriptors = tagHelperFeature.GetDescriptors();
-                }
+                    else
+                    {
+                        tagHelperFeature.TargetAssembly = assembly;
+                        descriptors = tagHelperFeature.GetDescriptors();
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            RazorDiagnostics.ReComputingTagHelpersDescriptor,
+                            Location.None,
+                            reference.Display));
+                    }
 
-                tagHelperDescriptors.AddRange(descriptors);
+                    tagHelperDescriptors.AddRange(descriptors);
+                }
             }
 
             return tagHelperDescriptors;
