@@ -2671,7 +2671,7 @@ class TestType
 
     [SupportedOSPlatform(""windows"")]
     static void Test() { }
-}";
+}" + MockAttributesCsSource;
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
