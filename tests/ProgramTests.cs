@@ -191,6 +191,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 string[] exclude,
                 string report,
                 bool includeGenerated,
+                string binaryLogPath,
                 IConsole console = null)
             {
                 Assert.Equal("./src", workspace);

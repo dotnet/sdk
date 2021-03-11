@@ -55,6 +55,7 @@ namespace Microsoft.CodeAnalysis.Tools
             string[] exclude,
             string? report,
             bool includeGenerated,
+            string? binarylog,
             IConsole console = null!)
         {
             if (s_parseResult == null)
@@ -182,7 +183,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     formatOptions,
                     logger,
                     cancellationTokenSource.Token,
-                    createBinaryLog: logLevel == LogLevel.Trace).ConfigureAwait(false);
+                    binaryLogPath: binarylog).ConfigureAwait(false);
 
                 return GetExitCode(formatResult, check);
             }

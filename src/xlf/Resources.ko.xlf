@@ -167,6 +167,11 @@
         <target state="translated">작업 영역을 로드하는 중입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Log_all_project_or_solution_load_information_to_a_binary_log_file">
+        <source>Log all project or solution load information to a binary log file.</source>
+        <target state="new">Log all project or solution load information to a binary log file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
         <target state="translated">'{0}'에 여러 MSBuild 프로젝트 파일이 있습니다. &lt;workspace&gt; 인수를 사용하여 사용할 파일을 지정하세요.</target>

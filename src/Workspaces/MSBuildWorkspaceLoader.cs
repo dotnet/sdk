@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.MSBuild;
@@ -19,7 +18,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
         public static async Task<Workspace?> LoadAsync(
             string solutionOrProjectPath,
             WorkspaceType workspaceType,
-            bool createBinaryLog,
+            string? binaryLogPath,
             bool logWorkspaceWarnings,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -35,11 +34,11 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             var workspace = MSBuildWorkspace.Create(properties);
 
             Build.Framework.ILogger? binlog = null;
-            if (createBinaryLog)
+            if (binaryLogPath is not null)
             {
                 binlog = new Build.Logging.BinaryLogger()
                 {
-                    Parameters = Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog"),
+                    Parameters = binaryLogPath,
                     Verbosity = Build.Framework.LoggerVerbosity.Diagnostic,
                 };
             }
@@ -98,7 +97,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
         internal static async Task<Workspace?> LockedLoadAsync(
             string solutionOrProjectPath,
             WorkspaceType workspaceType,
-            bool createBinaryLog,
+            string? binaryLogPath,
             bool logWorkspaceWarnings,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -106,7 +105,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             await Guard.WaitAsync();
             try
             {
-                return await LoadAsync(solutionOrProjectPath, workspaceType, createBinaryLog, logWorkspaceWarnings, logger, cancellationToken);
+                return await LoadAsync(solutionOrProjectPath, workspaceType, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken);
             }
             finally
             {

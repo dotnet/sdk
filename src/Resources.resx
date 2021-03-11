@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -320,5 +320,8 @@
   </data>
   <data name="Replace_0_characters_with_1" xml:space="preserve">
     <value>Replace {0} characters with '{1}'.</value>
+  </data>
+  <data name="Log_all_project_or_solution_load_information_to_a_binary_log_file" xml:space="preserve">
+    <value>Log all project or solution load information to a binary log file.</value>
   </data>
 </root>

@@ -3,6 +3,7 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,7 +11,7 @@ namespace Microsoft.CodeAnalysis.Tools
 {
     internal static class FormatCommand
     {
-        // This delegate should be kept in Sync with the FormatCommand options and arguement names
+        // This delegate should be kept in Sync with the FormatCommand options and argument names
         // so that values bind correctly.
         internal delegate Task<int> Handler(
             string? workspace,
@@ -25,6 +26,7 @@ namespace Microsoft.CodeAnalysis.Tools
             string[] exclude,
             string? report,
             bool includeGenerated,
+            string? binarylog,
             IConsole console);
 
         internal static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
@@ -74,6 +76,11 @@ namespace Microsoft.CodeAnalysis.Tools
                 new Option(new[] { "--include-generated" }, Resources.Include_generated_code_files_in_formatting_operations)
                 {
                     IsHidden = true
+                },
+                new Option(new[] {"--binarylog", "-bl" }, Resources.Log_all_project_or_solution_load_information_to_a_binary_log_file)
+                {
+                    Argument = new Argument<string?>(
+                        () => Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog") ) { Name = "binary-log-path" }.LegalFilePathsOnly()
                 },
             };
 
