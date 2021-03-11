@@ -501,6 +501,7 @@
                             GenerateBundledVersions;
                             LayoutRuntimeGraph;
                             LayoutTemplates;
+                            LayoutManifests;
                             LayoutBundledTools;
                             RetargetTools;
                             CrossgenLayout;

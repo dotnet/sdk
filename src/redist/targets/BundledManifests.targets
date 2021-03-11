@@ -1,0 +1,64 @@
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <BundledManifests Include="Microsoft.NET.Workload.Android" Version="$(XamarinAndroidWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.Android" />
+    <BundledManifests Include="Microsoft.NET.Sdk.BlazorWebAssembly.AOT" Version="$(BlazorWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.BlazorWebAssembly" />
+  </ItemGroup>
+
+  <!-- Restore workload manifests via PackageReference -->
+  <ItemGroup>
+    <PackageReference Include="@(BundledManifests)" />
+  </ItemGroup>
+
+  <Target Name="LayoutManifests"
+        DependsOnTargets="LayoutManifestsForSDK;LayoutManifestsForMSI" />
+
+  <Target Name="LayoutManifestsForSDK"
+          DependsOnTargets="SetupBundledComponents;GenerateManifestVersions">
+    
+    <Copy SourceFiles="@(ManifestContent)"
+          DestinationFolder="$(RedistLayoutPath)sdk-manifests/$(CliProductBandVersion)00/%(DestinationPath)"/>
+  
+  </Target>
+
+  <Target Name="LayoutManifestsForMSI"
+          DependsOnTargets="SetupBundledComponents;GenerateManifestVersions"
+          Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
+
+    <Copy SourceFiles="@(ManifestContent)"
+          DestinationFolder="$(BaseOutputPath)$(Configuration)\sdk-manifests\sdk-manifests/$(CliProductBandVersion)00/%(DestinationPath)"/>
+    
+  </Target>
+  
+  <Target Name="GenerateManifestVersions">
+    
+    <PropertyGroup>
+      <ManifestsMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-sdkmanifests-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</ManifestsMSIInstallerFile>
+      <ManifestsDependencyKeyName>SDK_Manifests_$([System.String]::Copy('$(Version)').Replace('-', '_'))</ManifestsDependencyKeyName>
+      <ManifestsBrandName>Microsoft .NET SDK Workload Manifests $(Version)</ManifestsBrandName>
+      <ManifestsLayoutPath>$(BaseOutputPath)$(Configuration)\sdk-manifests</ManifestsLayoutPath>
+    </PropertyGroup>    
+
+    <GenerateMsiVersion BuildNumber="$(CombinedBuildNumberAndRevision)"
+                        Major="$(VersionMajor)"
+                        Minor="$(VersionMinor)"
+                        Patch="$(VersionFeature)">
+      <Output TaskParameter="MsiVersion" PropertyName="ManifestMsiVersion" />
+    </GenerateMsiVersion>
+
+    <GenerateGuidFromName Name="$(ManifestsMSIInstallerFile)">
+      <Output TaskParameter="GeneratedGuid"
+          PropertyName="ManifestsInstallerUpgradeCode" />
+    </GenerateGuidFromName>
+      
+    <ItemGroup>
+      <BundledManifests Update="@(BundledManifests)" >
+        <RestoredNupkgContentPath>$(NuGetPackageRoot)%(Identity)/%(Version)</RestoredNupkgContentPath>
+      </BundledManifests>
+      
+      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\**\*.json;%(BundledManifests.RestoredNupkgContentPath)\**\*.targets"
+                       DestinationPath="%(WorkloadId)/"/>
+    </ItemGroup>
+  </Target>
+
+</Project>

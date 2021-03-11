@@ -17,6 +17,7 @@ param(
     [Parameter(Mandatory=$true)][string]$AspNetTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$WindowsDesktopTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$TemplatesMSIFile,
+    [Parameter(Mandatory=$true)][string]$ManifestsMSIFile,
     [Parameter(Mandatory=$true)][string]$DotnetBundleOutput,
     [Parameter(Mandatory=$true)][string]$WixRoot,
     [Parameter(Mandatory=$true)][string]$ProductMoniker,
@@ -63,6 +64,7 @@ function RunCandleForBundle
         -dAspNetTargetingPackMsiSourcePath="$AspNetTargetingPackMSIFile" `
         -dWindowsDesktopTargetingPackMsiSourcePath="$WindowsDesktopTargetingPackMSIFile" `
         -dTemplatesMsiSourcePath="$TemplatesMSIFile" `
+        -dManifestsMsiSourcePath="$ManifestsMSIFile" `
         -dWinFormsAndWpfVersion="$WindowsDesktopVersion" `
         -dAdditionalSharedFXMsiSourcePath="$AdditionalSharedFxMSIFile" `
         -dAdditionalHostFXRMsiSourcePath="$AdditionalHostFxrMSIFile" `

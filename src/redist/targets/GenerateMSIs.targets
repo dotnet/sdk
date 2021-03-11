@@ -97,6 +97,7 @@
     <ItemGroup>
       <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile);$(SdkPlaceholderMSIInstallerFile)" />
       <GeneratedInstallers Include="@(TemplatesMsiComponent->'%(MSIInstallerFile)')" />
+      <GeneratedInstallers Include="@(BundledManifests->'%(MSIInstallerFile)')" />
     </ItemGroup>
 
     <GenerateMsiVersion BuildNumber="$(CombinedBuildNumberAndRevision)"
@@ -270,8 +271,48 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="GenerateManifestsMsi"
+        DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetSdkBrandingInfo"
+        Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'"
+        Inputs="@(BundledManifests);$(ManifestsGenerateMsiPowershellScript)"
+        Outputs="$(ManifestsMSIInstallerFile)">
+
+    <PropertyGroup>
+      <ManifestsGenerateMsiPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatemanifestsmsi.ps1</ManifestsGenerateMsiPowershellScript>
+    </PropertyGroup>
+    
+    <Exec Command="powershell -NoProfile -NoLogo $(ManifestsGenerateMsiPowershellScript) ^
+                      '$(ManifestsLayoutPath)' ^
+                      '$(ManifestsMSIInstallerFile)' ^
+                      '$(WixRoot)' ^
+                      '$(ManifestsBrandName)' ^
+                      '$(ManifestMsiVersion)' ^
+                      '$(ManifestMsiVersion)' ^
+                      '$(FullNugetVersion)' ^
+                      '$(ManifestsInstallerUpgradeCode)' ^
+                      '$(ManifestsDependencyKeyName)' ^
+                      '$(Architecture)' ^
+                      -InformationAction Continue" />
+    <ItemGroup>
+      <ManifestsMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
+      <ManifestsMsiWixSrcFiles Include="$(WixRoot)\Manifests.wixobj" />
+      <ManifestsMsiWixSrcFiles Include="$(WixRoot)\Manifest-install-files.wixobj" />
+    </ItemGroup>
+
+    <CreateLightCommandPackageDrop
+      LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
+      NoLogo="true"
+      Cultures="en-us"
+      InstallerFile="$(ArtifactsNonShippingPackagesDir)$(ManifestsMSIInstallerFile)"
+      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
+      WixSrcFiles="@(ManifestsMsiWixSrcFiles)">
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
+    </CreateLightCommandPackageDrop>
+  </Target>
+
   <Target Name="GenerateSdkBundle"
-          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;SignSdkMsi;GenerateTemplatesMsis;SignTemplatesMsis"
+          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;SignSdkMsi;GenerateTemplatesMsis;GenerateManifestsMsi;SignTemplatesMsis"
           Condition=" '$(OS)' == 'Windows_NT' "
           Inputs="$(SdkMSIInstallerFile);
                     $(DownloadedSharedFrameworkInstallerFile);
@@ -305,6 +346,7 @@
                       '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
                       '$(LatestTemplateMsiInstallerFile)' ^
+                      '$(ManifestsMsiInstallerFile)' ^
                       '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
@@ -481,6 +523,7 @@
                             GenerateSdkMsi;
                             SignSdkMsi;
                             GenerateTemplatesMsis;
+                            GenerateManifestsMsi;
                             SignTemplatesMsis;
                             GenerateSdkBundle;
                             SignSdkBundle;
