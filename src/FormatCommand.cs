@@ -77,7 +77,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 {
                     IsHidden = true
                 },
-                new Option(new[] {"--binarylog", "-bl" }, Resources.Log_all_project_or_solution_load_information_to_a_binary_log_file)
+                new Option(new[] { "--binarylog" }, Resources.Log_all_project_or_solution_load_information_to_a_binary_log_file)
                 {
                     Argument = new Argument<string?>(
                         () => Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog") ) { Name = "binary-log-path" }.LegalFilePathsOnly()
