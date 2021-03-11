@@ -86,8 +86,8 @@ namespace Microsoft.NET.TestFramework.Commands
             IEnumerable<string> enumerableArgs = args;
             return ExecuteWithRetry(
                     action: () => Execute(enumerableArgs),
-                    successOrStopRetry: SuccessOrNotTransientRestoreError,
-                    maxRetryCount: 2,
+                    shouldStopRetry: SuccessOrNotTransientRestoreError,
+                    maxRetryCount: 3,
                     timer: () => Timer(Intervals),
                     taskDescription: "Run command while retry transient restore error")
                 .ConfigureAwait(false).GetAwaiter().GetResult();

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework
 {
@@ -15,6 +16,7 @@ namespace Microsoft.NET.TestFramework
         {
             get
             {
+                yield return TimeSpan.FromSeconds(0); // first retry immediately
                 var seconds = 5;
                 while (true)
                 {
@@ -25,21 +27,23 @@ namespace Microsoft.NET.TestFramework
         }
 
         public static async Task<T> ExecuteWithRetry<T>(Func<T> action,
-            Func<T, bool> successOrStopRetry,
+            Func<T, bool> shouldStopRetry,
             int maxRetryCount,
             Func<IEnumerable<Task>> timer,
-            string taskDescription = "")
+            string taskDescription = "",
+            ITestOutputHelper log = null)
         {
             var count = 0;
             foreach (var t in timer())
             {
                 await t;
                 var result = action();
-                if (successOrStopRetry(result))
+                if (shouldStopRetry(result))
                 {
                     return result;
                 }
 
+                log?.WriteLine($"Operation failed. Retry count: {count}");
                 count++;
                 if (count == maxRetryCount)
                 {
