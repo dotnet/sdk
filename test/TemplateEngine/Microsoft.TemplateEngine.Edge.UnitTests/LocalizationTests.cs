@@ -158,7 +158,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             {
                 HostIdentifier = "TestRunner",
                 Version = "1.0.0.0",
-                Locale = "en-US",
                 FallbackHostTemplateConfigNames = Array.Empty<string>(),
             };
 

@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
                 typeof(RunnableProjectGenerator).GetTypeInfo().Assembly,            // for assembly: Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 typeof(AssemblyComponentCatalog).GetTypeInfo().Assembly,            // for assembly: Microsoft.TemplateEngine.Edge
             });
-            return new DefaultTemplateEngineHost(HostIdentifier + Guid.NewGuid().ToString(), HostVersion, CultureInfo.CurrentCulture.Name, preferences, builtIns, Array.Empty<string>());
+            return new DefaultTemplateEngineHost(HostIdentifier + Guid.NewGuid().ToString(), HostVersion, preferences, builtIns, Array.Empty<string>());
         }
 
         private static void InstallAllTemplatesOnFirstRun(IEngineEnvironmentSettings environmentSettings, IInstaller installer)

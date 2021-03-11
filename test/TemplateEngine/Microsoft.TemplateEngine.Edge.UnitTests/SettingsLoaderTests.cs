@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -170,8 +171,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 .Returns(_fileSystem);
             A.CallTo(() => environmentSettings.Paths.BaseDir)
                 .Returns(BaseDir);
-            A.CallTo(() => environmentSettings.Host.Locale)
-                .Returns("en-GB");
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en-GB");
 
             _fixture.Customizations.Add(new MountPointInfoBuilder(FileSystemMountPointFactory.FactoryId));
             List<MountPointInfo> mountPoints = _fixture.Build<MountPointInfo>()

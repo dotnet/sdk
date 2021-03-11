@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -485,9 +486,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 _paths.WriteAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), serialized.ToString());
             }
 
-            bool isCurrentLocale = string.IsNullOrEmpty(locale)
-                && string.IsNullOrEmpty(_environmentSettings.Host.Locale)
-                || (locale == _environmentSettings.Host.Locale);
+            CultureInfo currentUICulture = CultureInfo.CurrentUICulture;
+            bool isCurrentLocale = string.IsNullOrEmpty(locale) && currentUICulture == CultureInfo.InvariantCulture
+                || locale == currentUICulture.Name;
 
             // TODO: determine if this reload is necessary if there wasn't a save (probably not needed)
             if (isCurrentLocale)

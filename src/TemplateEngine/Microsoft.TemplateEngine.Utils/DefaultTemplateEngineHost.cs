@@ -11,31 +11,30 @@ namespace Microsoft.TemplateEngine.Utils
         private readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> _hostBuiltInComponents;
         private static readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> NoComponents = new KeyValuePair<Guid, Func<Type>>[0];
 
-        public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale)
-            : this(hostIdentifier, version, locale, null)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version)
+            : this(hostIdentifier, version, null)
         {
         }
 
-        public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale, Dictionary<string, string> defaults)
-            : this (hostIdentifier, version, locale, defaults, NoComponents, null)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string> defaults)
+            : this (hostIdentifier, version, defaults, NoComponents, null)
         {
         }
 
-        public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale, Dictionary<string, string> defaults, IReadOnlyList<KeyValuePair<Guid, Func<Type>>> builtIns)
-            : this(hostIdentifier, version, locale, defaults, builtIns, null)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string> defaults, IReadOnlyList<KeyValuePair<Guid, Func<Type>>> builtIns)
+            : this(hostIdentifier, version, defaults, builtIns, null)
         {
         }
 
-        public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale, Dictionary<string, string> defaults, IReadOnlyList<string> fallbackHostTemplateConfigNames)
-            : this(hostIdentifier, version, locale, defaults, NoComponents, fallbackHostTemplateConfigNames)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string> defaults, IReadOnlyList<string> fallbackHostTemplateConfigNames)
+            : this(hostIdentifier, version, defaults, NoComponents, fallbackHostTemplateConfigNames)
         {
         }
 
-        public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale, Dictionary<string, string> defaults, IReadOnlyList<KeyValuePair<Guid, Func<Type>>> builtIns, IReadOnlyList<string> fallbackHostTemplateConfigNames)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string> defaults, IReadOnlyList<KeyValuePair<Guid, Func<Type>>> builtIns, IReadOnlyList<string> fallbackHostTemplateConfigNames)
         {
             HostIdentifier = hostIdentifier;
             Version = version;
-            Locale = locale;
             _hostDefaults = defaults ?? new Dictionary<string, string>();
             FileSystem = new PhysicalFileSystem();
             _hostBuiltInComponents = builtIns ?? NoComponents;
@@ -45,14 +44,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public IPhysicalFileSystem FileSystem { get; private set; }
 
-        public string Locale { get; private set; }
-
         public Action<string, TimeSpan, int> OnLogTiming { get; set; }
-
-        public void UpdateLocale(string newLocale)
-        {
-            Locale = newLocale;
-        }
 
         public string HostIdentifier { get; }
 

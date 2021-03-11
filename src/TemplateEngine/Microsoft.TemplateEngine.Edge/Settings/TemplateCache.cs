@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Template;
@@ -155,14 +156,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         //  - neutral locale
         internal void WriteTemplateCaches(string existingCacheVersion)
         {
-            string currentLocale = _environmentSettings.Host.Locale;
+            CultureInfo currentUICulture = CultureInfo.CurrentUICulture;
             HashSet<string> localesWritten = new HashSet<string>();
 
             // If the current locale exists, always write it.
-            if (! string.IsNullOrEmpty(currentLocale))
+            if (currentUICulture != CultureInfo.InvariantCulture)
             {
-                WriteTemplateCacheForLocale(currentLocale, existingCacheVersion);
-                localesWritten.Add(currentLocale);
+                WriteTemplateCacheForLocale(currentUICulture.Name, existingCacheVersion);
+                localesWritten.Add(currentUICulture.Name);
             }
 
             // write caches for any locales which had new langpacks installed

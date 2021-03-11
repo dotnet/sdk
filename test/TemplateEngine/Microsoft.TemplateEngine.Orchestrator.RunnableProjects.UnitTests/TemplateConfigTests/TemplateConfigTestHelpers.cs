@@ -24,7 +24,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 HostIdentifier = "TestRunner",
                 Version = "1.0.0.0",
-                Locale = "en-US"
             };
 
             host.FileSystem = new PhysicalFileSystem();

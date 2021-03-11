@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -328,7 +329,7 @@ namespace Microsoft.TemplateEngine.Edge
             {
                 get
                 {
-                    return ExplicitLocaleTemplateCacheFile(_parent._environmentSettings.Host.Locale);
+                    return ExplicitLocaleTemplateCacheFile(CultureInfo.CurrentUICulture.Name);
                 }
             }
 
@@ -348,7 +349,8 @@ namespace Microsoft.TemplateEngine.Edge
                     filename = locale + "." + TemplateCacheFileBaseName;
                 }
 
-                string tempCache = null;    // don't cache, the locale could change
+                // don't cache, the locale could change
+                string tempCache = null;
                 return _parent.GetOrComputePath(ref tempCache, BaseDir, filename);
             }
 

@@ -18,8 +18,6 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         void LogTiming(string label, TimeSpan duration, int depth);
 
-        string Locale { get; }
-        
         void LogMessage(string message);
 
         void OnCriticalError(string code, string message, string currentFile, long currentPosition);
@@ -36,8 +34,6 @@ namespace Microsoft.TemplateEngine.Abstractions
         void LogDiagnosticMessage(string message, string category, params string[] details);
 
         bool TryGetHostParamDefault(string paramName, out string value);
-
-        void UpdateLocale(string newLocale);
 
         void VirtualizeDirectory(string path);
 

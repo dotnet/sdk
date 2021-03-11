@@ -17,7 +17,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 HostIdentifier = "TestRunner",
                 Version = "1.0.0.0",
-                Locale = "en-US"
             };
 
             EnvironmentSettings = new EngineEnvironmentSettings(host, s => null);
