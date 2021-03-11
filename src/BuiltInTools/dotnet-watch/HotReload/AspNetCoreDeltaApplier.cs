@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.EditAndContinue;
+using Microsoft.CodeAnalysis.ExternalAccess.DotNetCli;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, ManagedModuleUpdates2? updates, CancellationToken cancellationToken)
+        public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, DotNetCliManagedModuleUpdates? updates, CancellationToken cancellationToken)
         {
             if (!_task.IsCompletedSuccessfully || !_pipe.IsConnected)
             {
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 #else
                 TimeSpan.FromSeconds(5);
 #endif
-                
+
                 using var cancellationTokenSource = new CancellationTokenSource(timeout);
                 var numBytes = await _pipe.ReadAsync(bytes, cancellationTokenSource.Token);
 
@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             _pipe?.Dispose();
         }
-        
+
         public readonly struct HotReloadDiagnostics
         {
             public string Type => "HotReloadDiagnosticsv1";

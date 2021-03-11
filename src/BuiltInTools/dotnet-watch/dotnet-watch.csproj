@@ -25,6 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.ExternalAccess.DotNetCli">
+      <HintPath>BINARIES\Microsoft.CodeAnalysis.ExternalAccess.DotNetCli.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces">
       <HintPath>BINARIES\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>

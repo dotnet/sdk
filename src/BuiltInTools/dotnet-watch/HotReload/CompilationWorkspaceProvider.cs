@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.EditAndContinue;
+using Microsoft.CodeAnalysis.ExternalAccess.DotNetCli;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -16,15 +16,15 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal static class CompilationWorkspaceProvider
     {
-        public static Task<(Solution, IEditAndContinueWorkspaceService)> CreateWorkspaceAsync(string projectPath, IReporter reporter, CancellationToken cancellationToken)
+        public static Task<(Solution, DotNetCliEditAndContinueWorkspaceService)> CreateWorkspaceAsync(string projectPath, IReporter reporter, CancellationToken cancellationToken)
         {
-            var taskCompletionSource = new TaskCompletionSource<(Solution, IEditAndContinueWorkspaceService)>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var taskCompletionSource = new TaskCompletionSource<(Solution, DotNetCliEditAndContinueWorkspaceService)>(TaskCreationOptions.RunContinuationsAsynchronously);
             CreateProject(taskCompletionSource, projectPath, reporter, cancellationToken);
 
             return taskCompletionSource.Task;
         }
 
-        static async void CreateProject(TaskCompletionSource<(Solution, IEditAndContinueWorkspaceService)> taskCompletionSource, string projectPath, IReporter reporter, CancellationToken cancellationToken)
+        static async void CreateProject(TaskCompletionSource<(Solution, DotNetCliEditAndContinueWorkspaceService)> taskCompletionSource, string projectPath, IReporter reporter, CancellationToken cancellationToken)
         {
             var workspace = MSBuildWorkspace.Create();
 
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await workspace.OpenProjectAsync(projectPath, cancellationToken: cancellationToken);
             var currentSolution = workspace.CurrentSolution;
-            var editAndContinue = workspace.Services.GetRequiredService<IEditAndContinueWorkspaceService>();
+            var editAndContinue = workspace.Services.GetRequiredService<DotNetCliEditAndContinueWorkspaceService>();
             editAndContinue.StartDebuggingSession(workspace.CurrentSolution);
 
             // Read the documents to memory
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 foreach (var document in project.Documents)
                 {
-                    await editAndContinue.OnSourceFileUpdatedAsync(document);
+                    await editAndContinue.OnSourceFileUpdatedAsync(document, cancellationToken);
                 }
             }
 

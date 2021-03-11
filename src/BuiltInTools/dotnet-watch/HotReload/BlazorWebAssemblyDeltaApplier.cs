@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.EditAndContinue;
+using Microsoft.CodeAnalysis.ExternalAccess.DotNetCli;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             return default;
         }
 
-        public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, ManagedModuleUpdates2? updates, CancellationToken cancellationToken)
+        public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, DotNetCliManagedModuleUpdates? updates, CancellationToken cancellationToken)
         {
             if (context.BrowserRefreshServer is null)
             {

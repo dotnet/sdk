@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.EditAndContinue;
+using Microsoft.CodeAnalysis.ExternalAccess.DotNetCli;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -23,9 +23,9 @@ namespace Microsoft.DotNet.Watcher.Tools
     internal class CompilationHandler : IDisposable
     {
         private readonly IReporter _reporter;
-        private Task<(Solution, IEditAndContinueWorkspaceService)>? _initializeTask;
+        private Task<(Solution, DotNetCliEditAndContinueWorkspaceService)>? _initializeTask;
         private Solution? _currentSolution;
-        private IEditAndContinueWorkspaceService? _editAndContinue;
+        private DotNetCliEditAndContinueWorkspaceService? _editAndContinue;
         private IDeltaApplier? _deltaApplier;
 
         public CompilationHandler(IReporter reporter)
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             Debug.Assert(_currentSolution != null);
             Debug.Assert(_deltaApplier != null);
 
-            _editAndContinue.StartEditSession(out _);
+            _editAndContinue.StartEditSession();
 
             Solution? updatedSolution = null;
             ProjectId updatedProjectId;
@@ -102,19 +102,19 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            var (updates, encDiagnostics) = await _editAndContinue.EmitSolutionUpdate2Async(updatedSolution, cancellationToken);
+            var updates = await _editAndContinue.EmitSolutionUpdateAsync(updatedSolution, cancellationToken);
 
-            if (updates.Status == ManagedModuleUpdateStatus2.None)
+            if (updates.Status == DotNetCliManagedModuleUpdateStatus.None)
             {
                 // Nothing to do?
-                _editAndContinue.EndEditSession(out _);
+                _editAndContinue.EndEditSession();
 
                 await _deltaApplier.Apply(context, file.FilePath, default, cancellationToken);
                 return true;
             }
-            else if (updates.Status == ManagedModuleUpdateStatus2.Blocked)
+            else if (updates.Status == DotNetCliManagedModuleUpdateStatus.Blocked)
             {
-                _editAndContinue.EndEditSession(out _);
+                _editAndContinue.EndEditSession();
 
                 var project = updatedSolution.GetProject(updatedProjectId)!;
                 var diagnostics = GetDiagnostics(project, cancellationToken);
@@ -135,7 +135,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                     // We'll instead simply keep track of the updated solution.
                     _currentSolution = updatedSolution;
 
-                    return true;
+                    // Figure out how to recover from errors. Currently it seems unrecoverable.
+                    return false;
                 }
 
                 _reporter.Verbose("Unable to apply update.");
@@ -143,7 +144,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             _editAndContinue.CommitSolutionUpdate();
-            _editAndContinue.EndEditSession(out _);
+            _editAndContinue.EndEditSession();
 
             // Calling Workspace.TryApply on an MSBuildWorkspace causes the workspace to write source text changes to disk.
             // We'll instead simply keep track of the updated solution.
@@ -170,7 +171,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 diagnostics.Add(CSharpDiagnosticFormatter.Instance.Format(item));
             }
-            
+
             return diagnostics;
         }
 
@@ -223,7 +224,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public void Dispose()
         {
-            _editAndContinue?.EndDebuggingSession(out _);
+            _editAndContinue?.EndDebuggingSession();
             if (_deltaApplier is not null)
             {
                 _deltaApplier.Dispose();
