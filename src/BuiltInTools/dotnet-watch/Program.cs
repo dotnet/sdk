@@ -73,6 +73,8 @@ Examples:
 
         public static async Task<int> Main(string[] args)
         {
+            Console.WriteLine(Environment.ProcessId);
+            Console.ReadLine();
             try
             {
                 using var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory());

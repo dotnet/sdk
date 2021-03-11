@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.ExternalAccess.DotNetCli;
+using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -26,7 +28,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         static async void CreateProject(TaskCompletionSource<(Solution, DotNetCliEditAndContinueWorkspaceService)> taskCompletionSource, string projectPath, IReporter reporter, CancellationToken cancellationToken)
         {
-            var workspace = MSBuildWorkspace.Create();
+            var hostServices = MefHostServices.Create(MSBuildMefHostServices.DefaultAssemblies.Append(typeof(DotNetCliEditAndContinueWorkspaceService).Assembly));
+            var workspace = MSBuildWorkspace.Create(hostServices);
 
             workspace.WorkspaceFailed += (_sender, diag) =>
             {
