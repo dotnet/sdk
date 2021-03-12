@@ -2,12 +2,20 @@
 
   <ItemGroup>
     <BundledManifests Include="Microsoft.NET.Workload.Android" Version="$(XamarinAndroidWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.Android" />
+    <BundledManifests Include="Microsoft.NET.Workload.iOS" Version="$(XamarinIOSWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.iOS" />
+    <BundledManifests Include="Microsoft.NET.Workload.MacCatalyst" Version="$(XamarinMacCatalystWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.MacCatalyst" />
+    <BundledManifests Include="Microsoft.NET.Workload.macOS" Version="$(XamarinMacOSWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.macOS" />
+    <BundledManifests Include="Microsoft.NET.Workload.tvOS" Version="$(XamarinTvOSWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.tvOS" />
     <BundledManifests Include="Microsoft.NET.Sdk.BlazorWebAssembly.AOT" Version="$(BlazorWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.BlazorWebAssembly" />
   </ItemGroup>
 
   <!-- Restore workload manifests via PackageReference -->
   <ItemGroup>
-    <PackageReference Include="@(BundledManifests)" />
+    <BundledManifestsForPackageDownload Include="@(BundledManifests)" >
+      <Version>[%(Version)]</Version>
+    </BundledManifestsForPackageDownload>
+  
+    <PackageDownload Include="@(BundledManifestsForPackageDownload)" />
   </ItemGroup>
 
   <Target Name="LayoutManifests"
@@ -34,7 +42,7 @@
     
     <PropertyGroup>
       <ManifestsMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-sdkmanifests-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</ManifestsMSIInstallerFile>
-      <ManifestsDependencyKeyName>SDK_Manifests_$([System.String]::Copy('$(Version)').Replace('-', '_'))</ManifestsDependencyKeyName>
+      <ManifestsDependencyKeyName>SDK_Manifests_$([MSBuild]::ValueOrDefault('$(Version)', '').Replace('-', '_'))</ManifestsDependencyKeyName>
       <ManifestsBrandName>Microsoft .NET SDK Workload Manifests $(Version)</ManifestsBrandName>
       <ManifestsLayoutPath>$(BaseOutputPath)$(Configuration)\sdk-manifests</ManifestsLayoutPath>
     </PropertyGroup>    
