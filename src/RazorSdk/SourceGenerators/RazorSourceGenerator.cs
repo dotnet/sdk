@@ -256,8 +256,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         private static SourceText GetProvideApplicationPartFactorySourceText()
         {
-            var typeInfo = "typeof(global::Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory)";
-            var assemblyInfo = $@"[assembly: global::Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute({typeInfo})]";
+            var typeInfo = "Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory";
+            var assemblyInfo = $@"[assembly: global::Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(""{typeInfo}"")]";
             return SourceText.From(assemblyInfo, Encoding.UTF8);
         }
 
