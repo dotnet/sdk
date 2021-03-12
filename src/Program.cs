@@ -183,7 +183,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     formatOptions,
                     logger,
                     cancellationTokenSource.Token,
-                    binaryLogPath: binarylog).ConfigureAwait(false);
+                    binaryLogPath: s_parseResult.WasOptionUsed("--binarylog") ? binarylog : null).ConfigureAwait(false);
 
                 return GetExitCode(formatResult, check);
             }
