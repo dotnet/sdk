@@ -106,6 +106,7 @@ Options:
   --exclude <exclude>                 A list of relative file or folder paths to exclude from formatting.
   --check                             Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.
   --report <report>                   Accepts a file path, which if provided, will produce a json report in the given directory.
+  --binarylog <binary-log-path>       Log all project or solution load information to a binary log file.
   --verbosity, -v <verbosity>         Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
   --version                           Show version information
 ```
