@@ -324,4 +324,7 @@
   <data name="Log_all_project_or_solution_load_information_to_a_binary_log_file" xml:space="preserve">
     <value>Log all project or solution load information to a binary log file.</value>
   </data>
+  <data name="Cannot_specify_the_folder_option_when_writing_a_binary_log" xml:space="preserve">
+    <value>Cannot specify the '--folder' option when writing a binary log.</value>
+  </data>
 </root>

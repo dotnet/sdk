@@ -3,7 +3,6 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -79,14 +78,14 @@ namespace Microsoft.CodeAnalysis.Tools
                 },
                 new Option(new[] { "--binarylog" }, Resources.Log_all_project_or_solution_load_information_to_a_binary_log_file)
                 {
-                    Argument = new Argument<string?>(
-                        () => Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog") ) { Name = "binary-log-path" }.LegalFilePathsOnly()
+                    Argument = new Argument<string?>(() => null) { Name = "binary-log-path", Arity = ArgumentArity.ZeroOrOne }.LegalFilePathsOnly()
                 },
             };
 
             rootCommand.Description = "dotnet-format";
             rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenFixingStyle);
             rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenFixingAnalyzers);
+            rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenLoggingBinlog);
 
             return rootCommand;
         }
@@ -106,6 +105,15 @@ namespace Microsoft.CodeAnalysis.Tools
             var fixStyle = symbolResult.OptionResult("--fix-style");
             return folder && fixStyle != null
                 ? Resources.Cannot_specify_the_folder_option_when_fixing_style
+                : null;
+        }
+
+        internal static string? EnsureFolderNotSpecifiedWhenLoggingBinlog(CommandResult symbolResult)
+        {
+            var folder = symbolResult.ValueForOption<bool>("--folder");
+            var binarylog = symbolResult.OptionResult("--binarylog");
+            return folder && binarylog is not null && !binarylog.IsImplicit
+                ? Resources.Cannot_specify_the_folder_option_when_writing_a_binary_log
                 : null;
         }
 

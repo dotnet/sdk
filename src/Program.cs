@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -183,9 +183,28 @@ namespace Microsoft.CodeAnalysis.Tools
                     formatOptions,
                     logger,
                     cancellationTokenSource.Token,
-                    binaryLogPath: s_parseResult.WasOptionUsed("--binarylog") ? binarylog : null).ConfigureAwait(false);
+                    binaryLogPath: GetBinaryLogPath(s_parseResult, binarylog)).ConfigureAwait(false);
 
                 return GetExitCode(formatResult, check);
+
+                static string? GetBinaryLogPath(ParseResult parseResult, string? binarylog)
+                {
+                    if (parseResult.WasOptionUsed("--binarylog"))
+                    {
+                        if (binarylog is null)
+                        {
+                            return Path.Combine(Directory.GetCurrentDirectory(), "format.binlog");
+                        }
+                        else if (Path.GetExtension(binarylog)?.Equals(".binlog") == false)
+                        {
+                            return Path.ChangeExtension(binarylog, ".binlog");
+                        }
+
+                        return binarylog;
+                    }
+
+                    return null;
+                }
             }
             catch (FileNotFoundException fex)
             {

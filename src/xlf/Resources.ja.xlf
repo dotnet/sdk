@@ -52,6 +52,11 @@
         <target state="new">Cannot specify the '--folder' option when running analyzers.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_when_writing_a_binary_log">
+        <source>Cannot specify the '--folder' option when writing a binary log.</source>
+        <target state="new">Cannot specify the '--folder' option when writing a binary log.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Code_Style">
         <source>Code Style</source>
         <target state="translated">コード スタイル</target>
