@@ -184,9 +184,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("net5.0")]
-        [InlineData("net6.0")]
-        public void ILLink_respects_global_TrimMode(string targetFramework)
+        [InlineData("net5.0", "link")]
+        [InlineData("net6.0", "copyused")]
+        public void ILLink_respects_global_TrimMode(string targetFramework, string trimMode)
         {
             var projectName = "HelloWorld";
             var referenceProjectName = "ClassLibForILLink";
@@ -194,7 +194,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
-                .WithProjectChanges(project => SetGlobalTrimMode(project, "link"))
+                .WithProjectChanges(project => SetGlobalTrimMode(project, trimMode))
                 .WithProjectChanges(project => SetIsTrimmable(project, referenceProjectName))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
 
@@ -208,9 +208,14 @@ namespace Microsoft.NET.Publish.Tests
 
             File.Exists(publishedDll).Should().BeTrue();
             File.Exists(isTrimmableDll).Should().BeTrue();
-            // Check that the assembly was trimmed at the member level
             DoesImageHaveMethod(isTrimmableDll, "UnusedMethodToRoot").Should().BeTrue();
-            DoesImageHaveMethod(isTrimmableDll, "UnusedMethod").Should().BeFalse();
+            if (trimMode == "link") {
+                // Check that the assembly was trimmed at the member level
+                DoesImageHaveMethod(isTrimmableDll, "UnusedMethod").Should().BeFalse();
+            } else {
+                // Check that the assembly was trimmed at the assembxly level
+                DoesImageHaveMethod(isTrimmableDll, "UnusedMethod").Should().BeTrue();
+            }
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
@@ -317,8 +322,7 @@ namespace Microsoft.NET.Publish.Tests
             string projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testProject = CreateTestProjectWithIsTrimmableAttributes(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
-                .WithProjectChanges(project => SetGlobalTrimMode(project, "link"));
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
@@ -359,8 +363,8 @@ namespace Microsoft.NET.Publish.Tests
             var unusedTrimmableDll = Path.Combine(publishDirectory, "UnusedTrimmableAssembly.dll");
             var unusedNonTrimmableDll = Path.Combine(publishDirectory, "UnusedNonTrimmableAssembly.dll");
 
-            // Trimmable assemblies are trimmed at assembly level
-            DoesImageHaveMethod(trimmableDll, "UnusedMethod").Should().BeTrue();
+            // Trimmable assemblies are trimmed at member level
+            DoesImageHaveMethod(trimmableDll, "UnusedMethod").Should().BeFalse();
             File.Exists(unusedTrimmableDll).Should().BeFalse();
             // Unattributed assemblies are trimmed at member level
             DoesImageHaveMethod(nonTrimmableDll, "UnusedMethod").Should().BeFalse();
@@ -487,7 +491,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false");
+            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false", "/p:TrimMode=copyused");
             result.Should().Pass();
             ValidateWarningsOnHelloWorldApp(publishCommand, result, expectedOutput, targetFramework, rid);
         }
