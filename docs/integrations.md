@@ -1,5 +1,5 @@
 # Integrations
-Collection of advice how to auto check/format. Every sample expects dotnet format installed as local tool.
+Collection of advice how to auto check/format. Every sample expects dotnet format installed as local tool, unless otherwise noted.
 
 ## Git pre-commit hook to reformat
 
@@ -59,4 +59,6 @@ Add the following block to the `repos` section of your `.pre-commit-config.yaml`
     -   id: dotnet-format
         args: [--include]
 ```
+Note that this will install dotnet format using the system installation of the dotnet CLI. See the [pre-commit.com documentation](https://pre-commit.com/#dotnet) for more details.
+
 These instructions originally authored by [rkm](https://github.com/rkm)
