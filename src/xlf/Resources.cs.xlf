@@ -52,6 +52,11 @@
         <target state="new">Cannot specify the '--folder' option when running analyzers.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_with_no_restore">
+        <source>Cannot specify the '--folder' option with '--no-restore'.</source>
+        <target state="new">Cannot specify the '--folder' option with '--no-restore'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_when_writing_a_binary_log">
         <source>Cannot specify the '--folder' option when writing a binary log.</source>
         <target state="new">Cannot specify the '--folder' option when writing a binary log.</target>
@@ -90,6 +95,11 @@
       <trans-unit id="Determining_formattable_files">
         <source>Determining formattable files.</source>
         <target state="translated">Určují se soubory, které se dají formátovat.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Doesnt_execute_an_implicit_restore_before_formatting">
+        <source>Doesn't execute an implicit restore before formatting.</source>
+        <target state="new">Doesn't execute an implicit restore before formatting.</target>
         <note />
       </trans-unit>
       <trans-unit id="Failed_to_apply_code_fix_0_for_1_2">

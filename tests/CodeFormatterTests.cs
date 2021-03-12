@@ -414,9 +414,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenNotFixingCodeStyle()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -431,9 +428,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenFixingCodeStyleErrors()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -449,9 +443,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task FilesFormattedInCodeStyleSolution_WhenFixingCodeStyleWarnings()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -467,9 +458,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_analyzersSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_analyzersSolutionFilePath,
                 include: EmptyFilesList,
@@ -484,9 +472,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task FilesFormattedInAnalyzersSolution_WhenFixingAnalyzerErrors()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_analyzersSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_analyzersSolutionFilePath,
                 include: EmptyFilesList,
@@ -510,7 +495,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             FixCategory fixCategory = FixCategory.Whitespace,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
-            string[] diagnostics = null)
+            string[] diagnostics = null,
+            bool noRestore = false)
         {
             var currentDirectory = Environment.CurrentDirectory;
             Environment.CurrentDirectory = TestProjectsPathHelper.GetProjectsDirectory();
@@ -539,6 +525,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var formatOptions = new FormatOptions(
                 workspacePath,
                 workspaceType,
+                noRestore,
                 LogLevel.Trace,
                 fixCategory,
                 codeStyleSeverity,

@@ -97,6 +97,7 @@ Arguments:
   <workspace>    A path to a solution file, a project file, or a folder containing a solution or project file. If a path is not specified then the current directory is used.
 
 Options:
+  --no-restore                        Doesn't execute an implicit restore before formatting.
   --folder, -f                        Whether to treat the `<workspace>` argument as a simple folder of files.
   --fix-whitespace, -w                Run whitespace formatting. Run by default when not applying fixes.
   --fix-style, -s <severity>          Run code style analyzers and apply fixes.
@@ -119,6 +120,7 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | `dotnet format <workspace>`                                      | Formats a specific project or solution.                                                            |
 | `dotnet format <workspace> -f`                                   | Formats a particular folder and subfolders.                                                        |
 | `dotnet format <workspace> --fix-style warn`                     | Fixes only codestyle analyzer warnings.                                                            |
+| `dotnet format <workspace> --fix-style --no-restore`             | Fixes only codestyle analyzer errors without performing an implicit restore.                       |
 | `dotnet format <workspace> --fix-style --diagnostics IDE0005`    | Fixes only codestyle analyzer errors for the IDE0005 diagnostic.                                   |
 | `dotnet format <workspace> --fix-whitespace --fix-style`         | Formats and fixes codestyle analyzer errors.                                                       |
 | `dotnet format <workspace> --fix-analyzers`                      | Fixes only 3rd party analyzer errors.                                                              |

@@ -14,6 +14,7 @@ namespace Microsoft.CodeAnalysis.Tools
         // so that values bind correctly.
         internal delegate Task<int> Handler(
             string? workspace,
+            bool noRestore,
             bool folder,
             bool fixWhitespace,
             string? fixStyle,
@@ -41,6 +42,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     Arity = ArgumentArity.ZeroOrOne,
                     Description = Resources.A_path_to_a_solution_file_a_project_file_or_a_folder_containing_a_solution_or_project_file_If_a_path_is_not_specified_then_the_current_directory_is_used
                 }.LegalFilePathsOnly(),
+                new Option(new[] { "--no-restore" }, Resources.Doesnt_execute_an_implicit_restore_before_formatting),
                 new Option(new[] { "--folder", "-f" }, Resources.Whether_to_treat_the_workspace_argument_as_a_simple_folder_of_files),
                 new Option(new[] { "--fix-whitespace", "-w" }, Resources.Run_whitespace_formatting_Run_by_default_when_not_applying_fixes),
                 new Option(new[] { "--fix-style", "-s" }, Resources.Run_code_style_analyzers_and_apply_fixes)
@@ -85,6 +87,7 @@ namespace Microsoft.CodeAnalysis.Tools
             rootCommand.Description = "dotnet-format";
             rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenFixingStyle);
             rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenFixingAnalyzers);
+            rootCommand.AddValidator(EnsureFolderNotSpecifiedWithNoRestore);
             rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenLoggingBinlog);
 
             return rootCommand;
@@ -105,6 +108,15 @@ namespace Microsoft.CodeAnalysis.Tools
             var fixStyle = symbolResult.OptionResult("--fix-style");
             return folder && fixStyle != null
                 ? Resources.Cannot_specify_the_folder_option_when_fixing_style
+                : null;
+        }
+
+        internal static string? EnsureFolderNotSpecifiedWithNoRestore(CommandResult symbolResult)
+        {
+            var folder = symbolResult.ValueForOption<bool>("--folder");
+            var noRestore = symbolResult.OptionResult("--no-restore");
+            return folder && noRestore != null
+                ? Resources.Cannot_specify_the_folder_option_with_no_restore
                 : null;
         }
 

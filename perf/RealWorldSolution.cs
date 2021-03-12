@@ -35,6 +35,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
             var options = new FormatOptions(
                 workspacePath,
                 workspaceType,
+                noRestore: false,
                 LogLevel.Error,
                 fixCategory: FixCategory.Whitespace,
                 codeStyleSeverity: DiagnosticSeverity.Error,
@@ -55,6 +56,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
             var options = new FormatOptions(
                 workspacePath,
                 workspaceType,
+                noRestore: false,
                 LogLevel.Error,
                 fixCategory: FixCategory.Whitespace,
                 codeStyleSeverity: DiagnosticSeverity.Error,

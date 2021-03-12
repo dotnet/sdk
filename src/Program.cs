@@ -45,6 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public static async Task<int> Run(
             string? workspace,
+            bool noRestore,
             bool folder,
             bool fixWhitespace,
             string? fixStyle,
@@ -169,6 +170,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 var formatOptions = new FormatOptions(
                     workspacePath,
                     workspaceType,
+                    noRestore,
                     logLevel,
                     fixType,
                     codeStyleSeverity: GetSeverity(fixStyle ?? FixSeverity.Error),
