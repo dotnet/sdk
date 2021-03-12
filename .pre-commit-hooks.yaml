@@ -4,4 +4,4 @@
   name: dotnet format
   language: dotnet
   types: ['c#']
-  entry: dotnet-format
+  entry: dotnet-format --include
