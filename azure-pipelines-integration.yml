@@ -1,12 +1,12 @@
 # Branches that trigger a build on commit
 trigger:
-- master
+- main
 - feature/*
 - release/*
 
 # Branches that trigger builds on PR
 pr:
-- master
+- main
 - feature/*
 - release/*
 
@@ -22,13 +22,13 @@ jobs:
         _repo: "https://github.com/dotnet/format"
         _repoName: "dotnet/format"
         _targetSolution: "format.sln"
-        _branchName: "master"
+        _branchName: "main"
         _sha: "36d343a6fb81806bff265f1180c0e3193edbbeec"
       roslyn:
         _repo: "https://github.com/dotnet/roslyn"
         _repoName: "dotnet/roslyn"
         _targetSolution: "Compilers.sln"
-        _branchName: "master"
+        _branchName: "main"
         _sha: "f4a14672ea85096f9c101961fd5ac96fe5482ad8"
       sdk:
         _repo: "https://github.com/dotnet/sdk"

@@ -33,7 +33,7 @@ namespace Microsoft.CodeAnalysis.Tools
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken,
-            bool createBinaryLog = false)
+            string? binaryLogPath = null)
         {
             var logWorkspaceWarnings = formatOptions.LogLevel == LogLevel.Trace;
 
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             using var workspace = formatOptions.WorkspaceType == WorkspaceType.Folder
                 ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
-                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, createBinaryLog, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
+                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
 
             if (workspace is null)
             {
@@ -126,7 +126,7 @@ namespace Microsoft.CodeAnalysis.Tools
             WorkspaceType workspaceType,
             bool noRestore,
             bool requiresSemantics,
-            bool createBinaryLog,
+            string? binaryLogPath,
             bool logWorkspaceWarnings,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -138,7 +138,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 throw new Exception("Restore operation failed.");
             }
 
-            return await MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, createBinaryLog, logWorkspaceWarnings, logger, cancellationToken);
+            return await MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken);
         }
 
         private static async Task<Solution> RunCodeFormattersAsync(

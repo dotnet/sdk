@@ -19,7 +19,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 
         public override int GetHashCode()
         {
+#pragma warning disable RS1024 // Compare symbols correctly
             return RuntimeHelpers.GetHashCode(this);
+#pragma warning restore RS1024 // Compare symbols correctly
         }
 
         public override Stream OpenRead(string resolvedPath)
