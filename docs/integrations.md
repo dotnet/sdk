@@ -58,6 +58,6 @@ Add the following block to the `repos` section of your `.pre-commit-config.yaml`
     hooks:
     -   id: dotnet-format
 ```
-Note that this will install dotnet format using the system installation of the dotnet CLI. See the [pre-commit.com documentation](https://pre-commit.com/#dotnet) for more details.
+Note that this will install dotnet format to an isolated environment, using the system installation of the dotnet CLI. See the [pre-commit.com documentation](https://pre-commit.com/#dotnet) for more details.
 
 These instructions originally authored by [rkm](https://github.com/rkm)
