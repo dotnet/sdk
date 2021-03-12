@@ -52,6 +52,11 @@
         <target state="new">Cannot specify the '--folder' option when running analyzers.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_when_writing_a_binary_log">
+        <source>Cannot specify the '--folder' option when writing a binary log.</source>
+        <target state="new">Cannot specify the '--folder' option when writing a binary log.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Code_Style">
         <source>Code Style</source>
         <target state="translated">コード スタイル</target>
@@ -165,6 +170,11 @@
       <trans-unit id="Loading_workspace">
         <source>Loading workspace.</source>
         <target state="translated">ワークスペースを読み込んでいます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Log_all_project_or_solution_load_information_to_a_binary_log_file">
+        <source>Log all project or solution load information to a binary log file.</source>
+        <target state="new">Log all project or solution load information to a binary log file.</target>
         <note />
       </trans-unit>
       <trans-unit id="Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">

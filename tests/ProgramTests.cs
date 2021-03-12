@@ -191,6 +191,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 string[] exclude,
                 string report,
                 bool includeGenerated,
+                string binaryLogPath,
                 IConsole console = null)
             {
                 Assert.Equal("./src", workspace);
@@ -237,6 +238,47 @@ report.json
             // Assert
             Assert.Equal(0, parseResult.Errors.Count);
             Assert.Equal(uniqueExitCode, result);
+        }
+
+        [Fact]
+        public void CommandLine_BinaryLog_DoesNotFailIfPathNotSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--binarylog" });
+
+            // Assert
+            Assert.Equal(0, result.Errors.Count);
+            Assert.True(result.WasOptionUsed("--binarylog"));
+        }
+
+        [Fact]
+        public void CommandLine_BinaryLog_DoesNotFailIfPathIsSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--binarylog", "log" });
+
+            // Assert
+            Assert.Equal(0, result.Errors.Count);
+            Assert.True(result.WasOptionUsed("--binarylog"));
+        }
+
+        [Fact]
+        public void CommandLine_BinaryLog_FailsIfFolderIsSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--folder", "--binarylog" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
         }
     }
 }

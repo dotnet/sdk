@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.CodeAnalysis.Tools.Tests</RootNamespace>
 

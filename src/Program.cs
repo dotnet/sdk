@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.CodeAnalysis.Tools.Logging;
 using Microsoft.CodeAnalysis.Tools.MSBuild;
 using Microsoft.CodeAnalysis.Tools.Utilities;
@@ -55,6 +56,7 @@ namespace Microsoft.CodeAnalysis.Tools
             string[] exclude,
             string? report,
             bool includeGenerated,
+            string? binarylog,
             IConsole console = null!)
         {
             if (s_parseResult == null)
@@ -182,9 +184,28 @@ namespace Microsoft.CodeAnalysis.Tools
                     formatOptions,
                     logger,
                     cancellationTokenSource.Token,
-                    createBinaryLog: logLevel == LogLevel.Trace).ConfigureAwait(false);
+                    binaryLogPath: GetBinaryLogPath(s_parseResult, binarylog)).ConfigureAwait(false);
 
                 return GetExitCode(formatResult, check);
+
+                static string? GetBinaryLogPath(ParseResult parseResult, string? binarylog)
+                {
+                    if (parseResult.WasOptionUsed("--binarylog"))
+                    {
+                        if (binarylog is null)
+                        {
+                            return Path.Combine(Directory.GetCurrentDirectory(), "format.binlog");
+                        }
+                        else if (Path.GetExtension(binarylog)?.Equals(".binlog") == false)
+                        {
+                            return Path.ChangeExtension(binarylog, ".binlog");
+                        }
+
+                        return binarylog;
+                    }
+
+                    return null;
+                }
             }
             catch (FileNotFoundException fex)
             {

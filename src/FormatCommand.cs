@@ -10,7 +10,7 @@ namespace Microsoft.CodeAnalysis.Tools
 {
     internal static class FormatCommand
     {
-        // This delegate should be kept in Sync with the FormatCommand options and arguement names
+        // This delegate should be kept in Sync with the FormatCommand options and argument names
         // so that values bind correctly.
         internal delegate Task<int> Handler(
             string? workspace,
@@ -25,6 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools
             string[] exclude,
             string? report,
             bool includeGenerated,
+            string? binarylog,
             IConsole console);
 
         internal static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
@@ -75,11 +76,16 @@ namespace Microsoft.CodeAnalysis.Tools
                 {
                     IsHidden = true
                 },
+                new Option(new[] { "--binarylog" }, Resources.Log_all_project_or_solution_load_information_to_a_binary_log_file)
+                {
+                    Argument = new Argument<string?>(() => null) { Name = "binary-log-path", Arity = ArgumentArity.ZeroOrOne }.LegalFilePathsOnly()
+                },
             };
 
             rootCommand.Description = "dotnet-format";
             rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenFixingStyle);
             rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenFixingAnalyzers);
+            rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenLoggingBinlog);
 
             return rootCommand;
         }
@@ -99,6 +105,15 @@ namespace Microsoft.CodeAnalysis.Tools
             var fixStyle = symbolResult.OptionResult("--fix-style");
             return folder && fixStyle != null
                 ? Resources.Cannot_specify_the_folder_option_when_fixing_style
+                : null;
+        }
+
+        internal static string? EnsureFolderNotSpecifiedWhenLoggingBinlog(CommandResult symbolResult)
+        {
+            var folder = symbolResult.ValueForOption<bool>("--folder");
+            var binarylog = symbolResult.OptionResult("--binarylog");
+            return folder && binarylog is not null && !binarylog.IsImplicit
+                ? Resources.Cannot_specify_the_folder_option_when_writing_a_binary_log
                 : null;
         }
 
