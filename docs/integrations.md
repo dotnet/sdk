@@ -52,7 +52,7 @@ These instructions originally authored by [leotsarev](https://github.com/joinrpg
 
 Add the following block to the `repos` section of your `.pre-commit-config.yaml` file:
 
-```
+```yaml
 -   repo: https://github.com/dotnet/format
     rev: "v5.0.211103"  # Or a more recent commit sha
     hooks:
