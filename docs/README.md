@@ -117,6 +117,7 @@ dotnet format -f --include ./src/ ./tests/ --exclude ./src/submodule-a/ --check
 
 - `--verbosity` - Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
 - `--report` - Writes a json file to the given directory. Defaults to 'format-report.json' if no filename given.
+- `--binarylog` - Writes a [binary log file](https://msbuildlog.com/) to help in diagnosing solution or project load errors. Defaults to 'format.binlog' if no filename given.
 
 ### Validate formatting
 
