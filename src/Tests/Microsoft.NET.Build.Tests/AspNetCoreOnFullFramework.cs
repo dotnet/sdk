@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
 
         [WindowsOnlyTheory]
         [InlineData("1.1.2")]
-        [InlineData("2.0.4")]
+        [InlineData("2.1.0")]
         public void It_discovers_assembly_parts(string aspnetVersion)
         {
             var testProject = new TestProject()
