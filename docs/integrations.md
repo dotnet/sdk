@@ -54,7 +54,7 @@ Add the following block to the `repos` section of your `.pre-commit-config.yaml`
 
 ```yaml
 -   repo: https://github.com/dotnet/format
-    rev: "v5.0.211103"  # Or a more recent commit sha
+    rev: ""  # Specify a tag or sha here, or run "pre-commit autoupdate" 
     hooks:
     -   id: dotnet-format
 ```
