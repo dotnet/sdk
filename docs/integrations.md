@@ -1,7 +1,7 @@
 # Integrations
-Collection of advice how to auto check/format. Every sample expects dotnet format installed as local tool.
+Collection of advice how to auto check/format. Every sample expects dotnet format installed as local tool, unless otherwise noted.
 
-## Pre-commit hook to reformat
+## Git pre-commit hook to reformat
 
 Create file `.git/pre-commit` with following contents:
 ```sh
@@ -46,3 +46,18 @@ Add following to your build file:
 
 
 These instructions originally authored by [leotsarev](https://github.com/joinrpg/joinrpg-net/).
+
+
+## [pre-commit.com](https://pre-commit.com/) hook to reformat 
+
+Add the following block to the `repos` section of your `.pre-commit-config.yaml` file:
+
+```yaml
+-   repo: https://github.com/dotnet/format
+    rev: ""  # Specify a tag or sha here, or run "pre-commit autoupdate" 
+    hooks:
+    -   id: dotnet-format
+```
+Note that this will install dotnet format to an isolated environment, using the system installation of the dotnet CLI. See the [pre-commit.com documentation](https://pre-commit.com/#dotnet) for more details.
+
+These instructions originally authored by [rkm](https://github.com/rkm)
