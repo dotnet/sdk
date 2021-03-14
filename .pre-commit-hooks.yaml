@@ -3,5 +3,5 @@
 - id: dotnet-format
   name: dotnet format
   language: dotnet
-  types: ['c#']
+  types_or: ['c#', 'vb']
   entry: dotnet-format --include
