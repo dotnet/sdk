@@ -97,15 +97,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 
         protected virtual ICacheTag ReadOneTag(JProperty item)
         {
-            Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            JObject cdToken = item.Value.Get<JObject>(nameof(ICacheTag.ChoicesAndDescriptions));
+            Dictionary<string, ParameterChoice> choicesAndDescriptions = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
+            JObject cdToken = item.Value.Get<JObject>("ChoicesAndDescriptions");
             foreach (JProperty cdPair in cdToken.Properties())
             {
-                choicesAndDescriptions.Add(cdPair.Name.ToString(), cdPair.Value.ToString());
+                choicesAndDescriptions.Add(cdPair.Name.ToString(), new ParameterChoice(null, cdPair.Value.ToString()));
             }
 
             return new CacheTag(
-                item.Value.ToString(nameof(ICacheTag.Description)),
+                displayName: null,
+                description: item.Value.ToString(nameof(ICacheTag.Description)),
                 choicesAndDescriptions,
                 item.Value.ToString(nameof(ICacheTag.DefaultValue)));
         }

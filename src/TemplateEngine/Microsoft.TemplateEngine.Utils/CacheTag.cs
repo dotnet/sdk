@@ -1,3 +1,8 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
@@ -6,26 +11,29 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public class CacheTag : ICacheTag, IAllowDefaultIfOptionWithoutValue
     {
-        public CacheTag(string description, IReadOnlyDictionary<string, string> choicesAndDescriptions, string defaultValue)
-            : this(description, choicesAndDescriptions, defaultValue, null)
+        public CacheTag(string? displayName, string? description, IReadOnlyDictionary<string, ParameterChoice> choices, string? defaultValue)
+            : this(displayName, description, choices, defaultValue, null)
         {
         }
 
-        public CacheTag(string description, IReadOnlyDictionary<string, string> choicesAndDescriptions, string defaultValue, string defaultIfOptionWithoutValue)
+        public CacheTag(string? displayName, string? description, IReadOnlyDictionary<string, ParameterChoice> choices, string? defaultValue, string? defaultIfOptionWithoutValue)
         {
+            DisplayName = displayName;
             Description = description;
-            ChoicesAndDescriptions = choicesAndDescriptions.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
+            Choices = choices.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
             DefaultValue = defaultValue;
             DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue;
         }
 
-        public string Description { get; }
+        public string? DisplayName { get; }
 
-        public IReadOnlyDictionary<string, string> ChoicesAndDescriptions { get; }
+        public string? Description { get; }
 
-        public string DefaultValue { get; }
+        public IReadOnlyDictionary<string, ParameterChoice> Choices { get; }
 
-        public string DefaultIfOptionWithoutValue { get; set; }
+        public string? DefaultValue { get; }
+
+        public string? DefaultIfOptionWithoutValue { get; set; }
 
         public bool ShouldSerializeDefaultIfOptionWithoutValue()
         {

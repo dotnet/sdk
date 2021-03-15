@@ -65,6 +65,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             return mergedSymbol;
         }
 
+        /// <summary>
+        /// Gets or sets the friendly name of the symbol to be displayed to the user.
+        /// </summary>
+        public string DisplayName { get; set; }
+
+        public string Description { get; set; }
+
         // only relevant for choice datatype
         public bool IsTag { get; set; }
 
@@ -74,9 +81,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         // If this is set, the option can be provided without a value. It will be given this value.
         public string DefaultIfOptionWithoutValue { get; set; }
 
-        private IReadOnlyDictionary<string, string> _choices;
+        private IReadOnlyDictionary<string, ParameterChoice> _choices;
 
-        public IReadOnlyDictionary<string, string> Choices
+        public IReadOnlyDictionary<string, ParameterChoice> Choices
         {
             get
             {
@@ -92,8 +99,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         {
             ParameterSymbol symbol = FromJObject<ParameterSymbol>(jObject, localization, defaultOverride);
             symbol.DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
+            symbol.DisplayName = localization?.DisplayName ?? jObject.ToString(nameof(DisplayName)) ?? string.Empty;
+            symbol.Description = localization?.Description ?? jObject.ToString(nameof(Description)) ?? string.Empty;
 
-            Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>();
+            var choicesAndDescriptions = new Dictionary<string, ParameterChoice>();
 
             if (symbol.DataType == "choice")
             {
@@ -102,14 +111,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 
                 foreach (JObject choiceObject in jObject.Items<JObject>(nameof(Choices)))
                 {
-                    string choice = choiceObject.ToString("choice");
+                    string choiceName = choiceObject.ToString("choice");
+                    var choice = new ParameterChoice(
+                        choiceObject.ToString("displayName") ?? string.Empty,
+                        choiceObject.ToString("description") ?? string.Empty);
 
-                    if (localization == null
-                        || !localization.ChoicesAndDescriptions.TryGetValue(choice, out string choiceDescription))
+                    if (localization != null
+                        && localization.Choices.TryGetValue(choiceName, out ParameterChoiceLocalizationModel choiceLocalization))
                     {
-                        choiceDescription = choiceObject.ToString("description");
+                        choice.Localize(choiceLocalization);
                     }
-                    choicesAndDescriptions.Add(choice, choiceDescription ?? string.Empty);
+
+                    choicesAndDescriptions.Add(choiceName, choice);
                 }
             }
             else if (symbol.DataType == "bool" && string.IsNullOrEmpty(symbol.DefaultIfOptionWithoutValue))
@@ -131,7 +144,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
                 Type = TypeName,
                 DataType = "choice",
                 IsTag = true,
-                Choices = new Dictionary<string, string>() { { value, string.Empty } },
+                Choices = new Dictionary<string, ParameterChoice>()
+                {
+                    { value, new ParameterChoice(string.Empty, string.Empty) }
+                },
                 Forms = SymbolValueFormsModel.Default
             };
 

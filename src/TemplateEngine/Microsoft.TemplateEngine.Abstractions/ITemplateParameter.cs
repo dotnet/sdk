@@ -18,6 +18,6 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string DataType { get; }
 
-        IReadOnlyDictionary<string, string> Choices { get; }
+        IReadOnlyDictionary<string, ParameterChoice> Choices { get; }
     }
 }

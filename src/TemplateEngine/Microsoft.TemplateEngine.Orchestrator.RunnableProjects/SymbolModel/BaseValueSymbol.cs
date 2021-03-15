@@ -12,8 +12,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 
         public string DefaultValue { get; set; }
 
-        public string Description { get; set; }
-
         public SymbolValueFormsModel Forms { get; set; }
 
         public bool IsRequired { get; set; }
@@ -35,7 +33,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             {
                 Binding = jObject.ToString(nameof(Binding)),
                 DefaultValue = defaultOverride ?? jObject.ToString(nameof(DefaultValue)),
-                Description = localization?.Description ?? jObject.ToString(nameof(Description)) ?? string.Empty,
                 FileRename = jObject.ToString(nameof(FileRename)),
                 IsRequired = jObject.ToBool(nameof(IsRequired)),
                 Type = jObject.ToString(nameof(Type)),

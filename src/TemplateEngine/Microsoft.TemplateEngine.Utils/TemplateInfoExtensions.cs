@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 return null;
             }
-            return tag.ChoicesAndDescriptions.Keys;
+            return tag.Choices.Keys;
         }
     }
 }

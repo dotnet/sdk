@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     public class SettingsStore
     {
         // NOTE: when the current version changes, a corresponding change in TemplateInfo.cs is needed, to get the correct template cache version reader to fire.
-        public static readonly string CurrentVersion = "1.0.0.3";
+        public static readonly string CurrentVersion = "1.0.0.4";
 
         public SettingsStore()
         {

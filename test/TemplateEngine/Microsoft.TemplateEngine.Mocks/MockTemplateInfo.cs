@@ -208,12 +208,12 @@ namespace Microsoft.TemplateEngine.Mocks
 
         private static ICacheTag CreateTestCacheTag(IReadOnlyList<string> choiceList, string tagDescription = null, string defaultValue = null, string defaultIfOptionWithoutValue = null)
         {
-            Dictionary<string, string> choicesDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, ParameterChoice> choicesDict = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
             foreach (string choice in choiceList)
             {
-                choicesDict.Add(choice, null);
+                choicesDict.Add(choice, new ParameterChoice(string.Empty, string.Empty));
             };
-            return new CacheTag(tagDescription, choicesDict, defaultValue, defaultIfOptionWithoutValue);
+            return new CacheTag(string.Empty, tagDescription, choicesDict, defaultValue, defaultIfOptionWithoutValue);
         }
 
         private void PopulateParametersFromTags (List<ITemplateParameter> parameters)
@@ -225,7 +225,7 @@ namespace Microsoft.TemplateEngine.Mocks
                     Name = tagInfo.Key,
                     Documentation = tagInfo.Value.Description,
                     DefaultValue = tagInfo.Value.DefaultValue,
-                    Choices = tagInfo.Value.ChoicesAndDescriptions,
+                    Choices = tagInfo.Value.Choices,
                     DataType = "choice"
                 };
 

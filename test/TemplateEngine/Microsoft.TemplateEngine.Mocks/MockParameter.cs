@@ -21,6 +21,6 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public string DataType { get; set; }
 
-        public IReadOnlyDictionary<string, string> Choices { get; set; }
+        public IReadOnlyDictionary<string, ParameterChoice> Choices { get; set; }
     }
 }

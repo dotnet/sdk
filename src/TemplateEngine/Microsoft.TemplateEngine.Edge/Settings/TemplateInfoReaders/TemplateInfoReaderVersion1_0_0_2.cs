@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             if (cacheTag is IAllowDefaultIfOptionWithoutValue tagWithNoValueDefault)
             {
                 tagWithNoValueDefault.DefaultIfOptionWithoutValue = item.Value.ToString(nameof(IAllowDefaultIfOptionWithoutValue.DefaultIfOptionWithoutValue));
-                return tagWithNoValueDefault as CacheTag;
+                return cacheTag;
             }
 
             return cacheTag;

@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable enable
+
+using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
@@ -6,8 +11,13 @@ namespace Microsoft.TemplateEngine.Abstractions
     {
         string Name { get; }
 
-        string Description { get; }
+        /// <summary>
+        /// Gets the localized friendly name of the symbol to be displayed to the user.
+        /// </summary>
+        string? DisplayName { get; }
 
-        IReadOnlyDictionary<string, string> ChoicesAndDescriptions { get; }
+        string? Description { get; }
+
+        IReadOnlyDictionary<string, ParameterChoiceLocalizationModel> Choices { get; }
     }
 }

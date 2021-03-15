@@ -350,40 +350,38 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             foreach (KeyValuePair<string, ICacheTag> templateTag in templateTags)
             {
-                if (localizedParameterSymbols.TryGetValue(templateTag.Key, out IParameterSymbolLocalizationModel localizationForTag))
-                {   // there is loc for this symbol
-                    Dictionary<string, string> localizedChoicesAndDescriptions = new Dictionary<string, string>();
-
-                    foreach (KeyValuePair<string, string> templateChoice in templateTag.Value.ChoicesAndDescriptions)
-                    {
-                        if (localizationForTag.ChoicesAndDescriptions.TryGetValue(templateChoice.Key, out string localizedDesc) && !string.IsNullOrWhiteSpace(localizedDesc))
-                        {
-                            localizedChoicesAndDescriptions.Add(templateChoice.Key, localizedDesc);
-                        }
-                        else
-                        {
-                            localizedChoicesAndDescriptions.Add(templateChoice.Key, templateChoice.Value);
-                        }
-                    }
-
-                    string tagDescription = localizationForTag.Description ?? templateTag.Value.Description;
-
-                    ICacheTag localizedTag;
-                    if (templateTag.Value is IAllowDefaultIfOptionWithoutValue tagWithNoValueDefault)
-                    {
-                        localizedTag = new CacheTag(tagDescription, localizedChoicesAndDescriptions, templateTag.Value.DefaultValue, tagWithNoValueDefault.DefaultIfOptionWithoutValue);
-                    }
-                    else
-                    {
-                        localizedTag = new CacheTag(tagDescription, localizedChoicesAndDescriptions, templateTag.Value.DefaultValue);
-                    }
-
-                    localizedCacheTags.Add(templateTag.Key, localizedTag);
-                }
-                else
+                if (!localizedParameterSymbols.TryGetValue(templateTag.Key, out IParameterSymbolLocalizationModel localizationForTag))
                 {
+                    // There is no localization for this symbol. Use the symbol as is.
                     localizedCacheTags.Add(templateTag.Key, templateTag.Value);
+                    continue;
                 }
+
+                // There is localization. Create a localized instance, starting with the choices.
+                var localizedChoices = new Dictionary<string, ParameterChoice>();
+
+                foreach (KeyValuePair<string, ParameterChoice> templateChoice in templateTag.Value.Choices)
+                {
+                    ParameterChoice localizedChoice = new ParameterChoice(
+                        templateChoice.Value.DisplayName,
+                        templateChoice.Value.Description);
+
+                    if (localizationForTag.Choices.TryGetValue(templateChoice.Key, out ParameterChoiceLocalizationModel locModel))
+                    {
+                        localizedChoice.Localize(locModel);
+                    }
+
+                    localizedChoices.Add(templateChoice.Key, localizedChoice);
+                }
+
+                ICacheTag localizedTag = new CacheTag(
+                    localizationForTag.DisplayName ?? templateTag.Value.DisplayName,
+                    localizationForTag.Description ?? templateTag.Value.Description,
+                    localizedChoices,
+                    templateTag.Value.DefaultValue,
+                    (templateTag.Value as IAllowDefaultIfOptionWithoutValue)?.DefaultIfOptionWithoutValue);
+
+                localizedCacheTags.Add(templateTag.Key, localizedTag);
             }
 
             return localizedCacheTags;
@@ -410,6 +408,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     {
                         DataType = templateParam.Value.DataType,
                         DefaultValue = templateParam.Value.DefaultValue,
+                        DisplayName = localizationForParam.DisplayName ?? templateParam.Value.DisplayName,
                         Description = localizationForParam.Description ?? templateParam.Value.Description
                     };
 

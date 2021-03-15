@@ -94,19 +94,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 foreach (KeyValuePair<string, ParameterSymbol> tagParameter in TagDetails)
                 {
-                    string defaultValue;
+                    ParameterSymbol tag = tagParameter.Value;
+                    string defaultValue = tag.DefaultValue;
 
-                    if (string.IsNullOrEmpty(tagParameter.Value.DefaultValue)
+                    if (string.IsNullOrEmpty(defaultValue)
                         && (tagParameter.Value.Choices.Count == 1))
                     {
                         defaultValue = tagParameter.Value.Choices.Keys.First();
                     }
-                    else
-                    {
-                        defaultValue = tagParameter.Value.DefaultValue;
-                    }
 
-                    ICacheTag cacheTag = new CacheTag(tagParameter.Value.Description, tagParameter.Value.Choices, defaultValue, tagParameter.Value.DefaultIfOptionWithoutValue);
+                    ICacheTag cacheTag = new CacheTag(tag.DisplayName, tag.Description, tag.Choices, defaultValue, tag.DefaultIfOptionWithoutValue);
                     tags.Add(tagParameter.Key, cacheTag);
                 }
 
@@ -157,7 +154,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         if (symbol.Value is ParameterSymbol param && param.DataType != "choice")
                         {
-                            ICacheParameter cacheParam = new CacheParameter(param.DataType, param.DefaultValue, param.Description, param.DefaultIfOptionWithoutValue);
+                            ICacheParameter cacheParam = new CacheParameter(param.DataType, param.DefaultValue, param.DisplayName, param.Description, param.DefaultIfOptionWithoutValue);
                             cacheParameters.Add(symbol.Key, cacheParam);
                         }
                     }
@@ -212,47 +209,57 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             get
             {
-                if (_parameters == null)
+                if (_parameters != null)
                 {
-                    Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
-
-                    if (Symbols != null)
-                    {
-                        foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
-                        {
-                            if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) ||
-                                    string.Equals(symbol.Value.Type, DerivedSymbol.TypeName, StringComparison.Ordinal))
-                            {
-                                BaseValueSymbol baseSymbol = (BaseValueSymbol)symbol.Value;
-                                bool isName = baseSymbol.Binding == NameSymbolName;
-
-                                parameters[symbol.Key] = new Parameter
-                                {
-                                    DefaultValue = baseSymbol.DefaultValue ?? (!baseSymbol.IsRequired ? baseSymbol.Replaces : null),
-                                    Description = baseSymbol.Description,
-                                    IsName = isName,
-                                    IsVariable = true,
-                                    Name = symbol.Key,
-#pragma warning disable 612,618
-                                    FileRename = baseSymbol.FileRename,
-#pragma warning restore 612,618
-                                    Requirement = baseSymbol.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
-                                    Type = baseSymbol.Type,
-                                    DataType = baseSymbol.DataType
-                                };
-
-                                if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal))
-                                {
-                                    parameters[symbol.Key].Choices = ((ParameterSymbol)symbol.Value).Choices;
-                                    parameters[symbol.Key].DefaultIfOptionWithoutValue = ((ParameterSymbol)symbol.Value).DefaultIfOptionWithoutValue;
-                                }
-                            }
-                        }
-                    }
-
-                    _parameters = parameters;
+                    return _parameters;
                 }
 
+                Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
+
+                if (Symbols == null)
+                {
+                    _parameters = parameters;
+                    return _parameters;
+                }
+
+                foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
+                {
+                    if (!string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) &&
+                            !string.Equals(symbol.Value.Type, DerivedSymbol.TypeName, StringComparison.Ordinal) ||
+                            !(symbol.Value is BaseValueSymbol baseSymbol))
+                    {
+                        // Symbol is of wrong type. Skip.
+                        continue;
+                    }
+
+                    bool isName = baseSymbol.Binding == NameSymbolName;
+
+                    Parameter parameter = new Parameter
+                    {
+                        DefaultValue = baseSymbol.DefaultValue ?? (!baseSymbol.IsRequired ? baseSymbol.Replaces : null),
+                        IsName = isName,
+                        IsVariable = true,
+                        Name = symbol.Key,
+#pragma warning disable 612,618
+                        FileRename = baseSymbol.FileRename,
+#pragma warning restore 612,618
+                        Requirement = baseSymbol.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
+                        Type = baseSymbol.Type,
+                        DataType = baseSymbol.DataType
+                    };
+
+                    if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) &&
+                            symbol.Value is ParameterSymbol parameterSymbol)
+                    {
+                        parameter.Description = parameterSymbol.Description;
+                        parameter.Choices = parameterSymbol.Choices;
+                        parameter.DefaultIfOptionWithoutValue = parameterSymbol.DefaultIfOptionWithoutValue;
+                    }
+
+                    parameters[symbol.Key] = parameter;
+                }
+
+                _parameters = parameters;
                 return _parameters;
             }
         }
@@ -1267,21 +1274,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             foreach (KeyValuePair<string, JToken> symbolDetail in symbolInfoList)
             {
                 string symbol = symbolDetail.Key;
+                string displayName = symbolDetail.Value.ToString("displayName");
                 string description = symbolDetail.Value.ToString("description");
-                Dictionary<string, string> choicesAndDescriptionsForSymbol = new Dictionary<string, string>();
+                var choiceLocalizations = new Dictionary<string, ParameterChoiceLocalizationModel>();
 
                 foreach (JObject choiceObject in symbolDetail.Value.Items<JObject>("choices"))
                 {
-                    string choice = choiceObject.ToString("choice");
-                    string choiceDescription = choiceObject.ToString("description");
-
-                    if (!string.IsNullOrEmpty(choice) && !string.IsNullOrEmpty(choiceDescription))
+                    string choiceName = choiceObject.ToString("choice");
+                    if (string.IsNullOrEmpty(choiceName))
                     {
-                        choicesAndDescriptionsForSymbol.Add(choice, choiceDescription);
+                        continue;
                     }
+
+                    choiceLocalizations.Add(choiceName, new ParameterChoiceLocalizationModel(
+                        choiceObject.ToString("displayName"),
+                        choiceObject.ToString("description")));
                 }
 
-                IParameterSymbolLocalizationModel symbolLocalization = new ParameterSymbolLocalizationModel(symbol, description, choicesAndDescriptionsForSymbol);
+                var symbolLocalization = new ParameterSymbolLocalizationModel(
+                    symbol,
+                    displayName,
+                    description,
+                    choiceLocalizations);
                 parameterLocalizations.Add(symbol, symbolLocalization);
             }
 

@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string FileRename { get; set; }
 
         [JsonProperty]
-        public IReadOnlyDictionary<string, string> Choices { get; set; }
+        public IReadOnlyDictionary<string, ParameterChoice> Choices { get; set; }
 
         [JsonProperty]
         public IReadOnlyDictionary<string, IReadOnlyList<string>> Forms { get; set; }
@@ -79,8 +79,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 DefaultIfOptionWithoutValue = value;
             }
         }
-
-        IReadOnlyDictionary<string, string> ITemplateParameter.Choices => Choices;
 
         public override string ToString()
         {

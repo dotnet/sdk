@@ -22,9 +22,9 @@ namespace Microsoft.TemplateEngine.Utils
 
         public string DefaultIfOptionWithoutValue { get; set; }
 
-        private IReadOnlyDictionary<string, string> _choices;
+        private IReadOnlyDictionary<string, ParameterChoice> _choices;
 
-        public IReadOnlyDictionary<string, string> Choices
+        public IReadOnlyDictionary<string, ParameterChoice> Choices
         {
             get
             {
