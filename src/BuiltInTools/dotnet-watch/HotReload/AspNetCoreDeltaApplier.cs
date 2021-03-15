@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.ExternalAccess.DotNetCli;
+using Microsoft.CodeAnalysis.ExternalAccess.DotNetWatch;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, DotNetCliManagedModuleUpdates? updates, CancellationToken cancellationToken)
+        public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, DotNetWatchManagedModuleUpdates? updates, CancellationToken cancellationToken)
         {
             if (!_task.IsCompletedSuccessfully || !_pipe.IsConnected)
             {

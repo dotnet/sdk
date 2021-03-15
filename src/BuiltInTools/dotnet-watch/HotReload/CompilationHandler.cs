@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.ExternalAccess.DotNetCli;
+using Microsoft.CodeAnalysis.ExternalAccess.DotNetWatch;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -23,9 +23,9 @@ namespace Microsoft.DotNet.Watcher.Tools
     internal class CompilationHandler : IDisposable
     {
         private readonly IReporter _reporter;
-        private Task<(Solution, DotNetCliEditAndContinueWorkspaceService)>? _initializeTask;
+        private Task<(Solution, DotNetWatchEditAndContinueWorkspaceService)>? _initializeTask;
         private Solution? _currentSolution;
-        private DotNetCliEditAndContinueWorkspaceService? _editAndContinue;
+        private DotNetWatchEditAndContinueWorkspaceService? _editAndContinue;
         private IDeltaApplier? _deltaApplier;
 
         public CompilationHandler(IReporter reporter)
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var updates = await _editAndContinue.EmitSolutionUpdateAsync(updatedSolution, cancellationToken);
 
-            if (updates.Status == DotNetCliManagedModuleUpdateStatus.None)
+            if (updates.Status == DotNetWatchManagedModuleUpdateStatus.None)
             {
                 // Nothing to do?
                 _editAndContinue.EndEditSession();
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 await _deltaApplier.Apply(context, file.FilePath, default, cancellationToken);
                 return true;
             }
-            else if (updates.Status == DotNetCliManagedModuleUpdateStatus.Blocked)
+            else if (updates.Status == DotNetWatchManagedModuleUpdateStatus.Blocked)
             {
                 _editAndContinue.EndEditSession();
 

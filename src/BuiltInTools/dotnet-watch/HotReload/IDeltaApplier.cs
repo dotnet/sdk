@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.ExternalAccess.DotNetCli;
+using Microsoft.CodeAnalysis.ExternalAccess.DotNetWatch;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Watcher.Tools
     {
         ValueTask InitializeAsync(DotNetWatchContext context, CancellationToken cancellationToken);
 
-        ValueTask<bool> Apply(DotNetWatchContext context, string changedFile,  DotNetCliManagedModuleUpdates? solutionUpdate, CancellationToken cancellationToken);
+        ValueTask<bool> Apply(DotNetWatchContext context, string changedFile,  DotNetWatchManagedModuleUpdates? solutionUpdate, CancellationToken cancellationToken);
 
         ValueTask ReportDiagnosticsAsync(DotNetWatchContext context, IEnumerable<string> diagnostics, CancellationToken cancellationToken);
     }

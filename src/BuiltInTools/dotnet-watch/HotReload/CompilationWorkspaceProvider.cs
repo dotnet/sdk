@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.ExternalAccess.DotNetCli;
+using Microsoft.CodeAnalysis.ExternalAccess.DotNetWatch;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
@@ -18,17 +18,17 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal static class CompilationWorkspaceProvider
     {
-        public static Task<(Solution, DotNetCliEditAndContinueWorkspaceService)> CreateWorkspaceAsync(string projectPath, IReporter reporter, CancellationToken cancellationToken)
+        public static Task<(Solution, DotNetWatchEditAndContinueWorkspaceService)> CreateWorkspaceAsync(string projectPath, IReporter reporter, CancellationToken cancellationToken)
         {
-            var taskCompletionSource = new TaskCompletionSource<(Solution, DotNetCliEditAndContinueWorkspaceService)>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var taskCompletionSource = new TaskCompletionSource<(Solution, DotNetWatchEditAndContinueWorkspaceService)>(TaskCreationOptions.RunContinuationsAsynchronously);
             CreateProject(taskCompletionSource, projectPath, reporter, cancellationToken);
 
             return taskCompletionSource.Task;
         }
 
-        static async void CreateProject(TaskCompletionSource<(Solution, DotNetCliEditAndContinueWorkspaceService)> taskCompletionSource, string projectPath, IReporter reporter, CancellationToken cancellationToken)
+        static async void CreateProject(TaskCompletionSource<(Solution, DotNetWatchEditAndContinueWorkspaceService)> taskCompletionSource, string projectPath, IReporter reporter, CancellationToken cancellationToken)
         {
-            var hostServices = MefHostServices.Create(MSBuildMefHostServices.DefaultAssemblies.Append(typeof(DotNetCliEditAndContinueWorkspaceService).Assembly));
+            var hostServices = MefHostServices.Create(MSBuildMefHostServices.DefaultAssemblies.Append(typeof(DotNetWatchEditAndContinueWorkspaceService).Assembly));
             var workspace = MSBuildWorkspace.Create(hostServices);
 
             workspace.WorkspaceFailed += (_sender, diag) =>
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await workspace.OpenProjectAsync(projectPath, cancellationToken: cancellationToken);
             var currentSolution = workspace.CurrentSolution;
-            var editAndContinue = workspace.Services.GetRequiredService<DotNetCliEditAndContinueWorkspaceService>();
+            var editAndContinue = workspace.Services.GetRequiredService<DotNetWatchEditAndContinueWorkspaceService>();
             editAndContinue.StartDebuggingSession(workspace.CurrentSolution);
 
             // Read the documents to memory
