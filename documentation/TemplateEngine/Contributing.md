@@ -19,15 +19,15 @@ The steps required are outlined below.
 
 - Fork this repository.
 - Clone the forked repository to your local machine.
-- Checkout *master* and branch off to your feature branch (see: [branching](#branching))
-- Rebase against *master* before submitting your PR.
+- Checkout *main* and branch off to your feature branch (see: [branching](#branching))
+- Rebase against *main* before submitting your PR.
 
 # Build & Run
 
 - Open up a command prompt and navigate to the root of your local repo.
 - Run the build script appropriate for your environment.
-     - **Windows:** [build.cmd](https://github.com/dotnet/templating/blob/master/build.cmd)
-     - **Mac/Linux**: [build.sh](https://github.com/dotnet/templating/blob/master/build.sh) 
+     - **Windows:** [build.cmd](https://github.com/dotnet/templating/blob/main/build.cmd)
+     - **Mac/Linux**: [build.sh](https://github.com/dotnet/templating/blob/main/build.sh) 
 - The changes you build will not change how `dotnet new` behaves. Instead, they will be available through `dotnet new3`. To run `dotnet new3`, run 
   ```
   dotnet <your repo location>\artifacts\bin\dotnet-new3\<configuration>\<target framework>\dotnet-new3.dll
@@ -116,13 +116,13 @@ Some of the analyzer rules are currently being treated as "info/suggestion"s ins
 
 # Branching #
 
-We do development in *master* branch. After a release branch is created, any new changes that should be included in that release are cherry-picked from *master*.
+We do development in *main* branch. After a release branch is created, any new changes that should be included in that release are cherry-picked from *main*.
 
 We follow the same versioning as https://github.com/dotnet/sdk and release branches are named after the version numbers. For instance, `release/5.0.2xx` branch ships with .NET SDK 5.0.2xx.
 
 | Topic | Branch |
 |-------|-------|
-| Development | *master* |
+| Development | *main* |
 | Release | *release/** |
 
 [Top](#top)

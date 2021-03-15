@@ -1,4 +1,4 @@
-dotnet/templating repo includes the test framework (ProjectTestRunner) which allows automated testing for the custom templates. The source code is available in [tools subfolder](https://github.com/dotnet/templating/tree/master/tools/ProjectTestRunner).
+dotnet/templating repo includes the test framework (ProjectTestRunner) which allows automated testing for the custom templates. The source code is available in [tools subfolder](https://github.com/dotnet/templating/tree/main/tools/ProjectTestRunner).
 The default test set includes the templates shipped with dotnet SDK, but tests can be setup for 3rd-party templates as long as the templates can be installed using `dotnet new --install <template pack identifier>`. The framework used to configure these tests makes it easy to setup tests to do any of the following:
 * Install a template pack
 * Instantiate an installed template with parameters specified
