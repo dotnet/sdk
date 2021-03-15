@@ -373,7 +373,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net5.0")]
-        public void ILLink_analysis_warnings_are_disabled_by_default(string targetFramework)
+        public void ILLink_analysis_warnings_are_enabled_by_default(string targetFramework)
         {
             var projectName = "AnalysisWarnings";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -386,33 +386,33 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true")
                 .Should().Pass()
                 // trim analysis warnings are disabled
-                .And.NotHaveStdOutContaining("warning IL2075")
-                .And.NotHaveStdOutContaining("warning IL2026")
-                .And.NotHaveStdOutContaining("warning IL2043")
-                .And.NotHaveStdOutContaining("warning IL2046")
-                .And.NotHaveStdOutContaining("warning IL2093");
+                .And.HaveStdOutMatching("warning IL2075.*Program.IL_2075")
+                .And.HaveStdOutMatching("warning IL2026.*Program.IL_2026.*Testing analysis warning IL2026")
+                .And.HaveStdOutMatching("warning IL2043.*Program.IL_2043.get")
+                .And.HaveStdOutMatching("warning IL2046.*Program.Derived.IL_2046")
+                .And.HaveStdOutMatching("warning IL2093.*Program.Derived.IL_2093");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net5.0")]
-        public void ILLink_accepts_option_to_enable_analysis_warnings(string targetFramework)
+        public void ILLink_accepts_option_to_disable_analysis_warnings(string targetFramework)
         {
             var projectName = "AnalysisWarnings";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
-            testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
+            testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true")
                 .Should().Pass()
-                .And.HaveStdOutMatching("warning IL2075.*Program.IL_2075")
-                .And.HaveStdOutMatching("warning IL2026.*Program.IL_2026.*Testing analysis warning IL2026")
-                .And.HaveStdOutMatching("warning IL2043.*Program.IL_2043.get")
-                .And.HaveStdOutMatching("warning IL2046.*Program.Derived.IL_2046")
-                .And.HaveStdOutMatching("warning IL2093.*Program.Derived.IL_2093");
+                .And.NotHaveStdOutContaining("warning IL2075")
+                .And.NotHaveStdOutContaining("warning IL2026")
+                .And.NotHaveStdOutContaining("warning IL2043")
+                .And.NotHaveStdOutContaining("warning IL2046")
+                .And.NotHaveStdOutContaining("warning IL2093");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
@@ -424,7 +424,6 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
             testProject.AdditionalProperties["EnableTrimAnalyzer"] = "true";
-            testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);

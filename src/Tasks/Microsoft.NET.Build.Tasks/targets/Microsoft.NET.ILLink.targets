@@ -40,8 +40,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(EnableTrimAnalyzer)' == 'true' or '$(PublishTrimmed)' == 'true'">
-    <SuppressTrimAnalysisWarnings Condition="'$(SuppressTrimAnalysisWarnings)' == ''">true</SuppressTrimAnalysisWarnings>
+  <PropertyGroup Condition="'$(SuppressTrimAnalysisWarnings)' == '' and ('$(EnableTrimAnalyzer)' == 'true' or '$(PublishTrimmed)' == 'true')">
+    <SuppressTrimAnalysisWarnings Condition="'$(UseWpf)' == 'true' Or '$(UseWindowsForms)' == 'true'">true</SuppressTrimAnalysisWarnings>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
   <!-- Suppress warnings produced by the linker or by the ILLink Roslyn analyzer. Warnings produced
