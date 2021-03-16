@@ -17,9 +17,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class SpecifyCultureInfoTests
     {
         [Theory]
-        [InlineData("build_property.InvariantCulture = false", @"[|""aaa"".ToLower()|]")]
-        [InlineData("build_property.InvariantCulture = true", @"""aaa"".ToLower()")]
-        public async Task CA1304_PlainString_CSharp_InvariantCulture(string property, string returnExpression)
+        [InlineData("build_property.InvariantGlobalization = false", @"[|""aaa"".ToLower()|]")]
+        [InlineData("build_property.InvariantGlobalization = true", @"""aaa"".ToLower()")]
+        public async Task CA1304_PlainString_CSharp_InvariantGlobalization(string property, string returnExpression)
         {
             await new VerifyCS.Test
             {
