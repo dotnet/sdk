@@ -161,7 +161,10 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             for (var index = 0; index < changes.Count; index++)
             {
                 var change = changes[index];
-                var changeMessage = BuildChangeMessage(change);
+
+                var changeMessage = changes.Count > 1 || change.NewText?.Length != formattedText.Length
+                    ? BuildChangeMessage(change)
+                    : string.Empty;
 
                 var changePosition = originalText.Lines.GetLinePosition(change.Span.Start);
 
