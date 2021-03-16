@@ -119,7 +119,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:PublishTrimmed=true", $"/p:TrimMode={trimMode}")
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:PublishTrimmed=true", $"/p:TrimMode={trimMode}", "/p:SuppressTrimAnalysisWarnings=true")
                 .Should().Pass()
                 .And.NotHaveStdOutContaining("warning IL2075")
                 .And.NotHaveStdOutContaining("warning IL2026");
