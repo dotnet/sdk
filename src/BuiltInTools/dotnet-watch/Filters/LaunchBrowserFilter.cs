@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -173,7 +171,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            if (!context.DefaultLaunchSettingsProfile.LaunchBrowser)
+            if (context.DefaultLaunchSettingsProfile is not { LaunchBrowser: true })
             {
                 reporter.Verbose("launchSettings does not allow launching browsers.");
                 return false;

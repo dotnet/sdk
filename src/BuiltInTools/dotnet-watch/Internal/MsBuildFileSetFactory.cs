@@ -150,8 +150,9 @@ namespace Microsoft.DotNet.Watcher.Internal
 #endif
 
                         // TargetFrameworkVersion appears as v6.0 in msbuild. Ignore the leading v
-                        var targetFrameworkVersion = Version.Parse(result.TargetFrameworkVersion.AsSpan(1)); // Ignore leading v
-
+                        var targetFrameworkVersion = !string.IsNullOrEmpty(result.TargetFrameworkVersion) ?
+                            Version.Parse(result.TargetFrameworkVersion.AsSpan(1)) : // Ignore leading v
+                            null;
                         var projectInfo = new ProjectInfo(
                             _projectFile,
                             result.IsNetCoreApp,

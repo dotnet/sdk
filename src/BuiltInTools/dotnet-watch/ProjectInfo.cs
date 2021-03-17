@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 
 namespace Microsoft.DotNet.Watcher
@@ -9,7 +11,7 @@ namespace Microsoft.DotNet.Watcher
     (
         string ProjectPath,
         bool IsNetCoreApp,
-        Version TargetFrameworkVersion,
+        Version? TargetFrameworkVersion,
         string RunCommand,
         string RunArguments,
         string RunWorkingDirectory
@@ -20,12 +22,12 @@ namespace Microsoft.DotNet.Watcher
 
         public bool IsNetCoreApp31OrNewer()
         {
-            return IsNetCoreApp && TargetFrameworkVersion >= Version3_1;
+            return IsNetCoreApp && TargetFrameworkVersion is not null && TargetFrameworkVersion >= Version3_1;
         }
 
         public bool IsNetCoreApp60OrNewer()
         {
-            return IsNetCoreApp && TargetFrameworkVersion >= Version6_0;
+            return IsNetCoreApp && TargetFrameworkVersion is not null && TargetFrameworkVersion >= Version6_0;
         }
     }
 }

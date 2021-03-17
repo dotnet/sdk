@@ -259,7 +259,7 @@ Examples:
                 DefaultLaunchSettingsProfile = defaultProfile,
             };
 
-            if (isDefaultRunCommand && !string.IsNullOrEmpty(defaultProfile.HotReloadProfile))
+            if (isDefaultRunCommand && !string.IsNullOrEmpty(defaultProfile?.HotReloadProfile))
             {
                 _reporter.Verbose($"Found HotReloadProfile={defaultProfile.HotReloadProfile}. Watching with hot-reload");
 
