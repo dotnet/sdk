@@ -35,6 +35,19 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             throw new WorkloadManifestFormatException(Strings.ExpectedStringAtOffset, reader.TokenStartIndex);
         }
 
+        private static long ReadInt64(ref Utf8JsonStreamReader reader)
+        {
+            if (reader.Read() && reader.TokenType.IsInt())
+            {
+                if (reader.TryGetInt64 (out long value))
+                {
+                    return value;
+                }
+            }
+
+            throw new WorkloadManifestFormatException(Strings.ExpectedIntegerAtOffset, reader.TokenStartIndex);
+        }
+
         private static bool ReadBool(ref Utf8JsonStreamReader reader)
         {
             if (reader.Read() && reader.TokenType.IsBool())
@@ -48,7 +61,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private static void ThrowDuplicateKeyException<T> (ref Utf8JsonStreamReader reader, T key)
             => throw new WorkloadManifestFormatException(Strings.DuplicateKeyAtOffset, key?.ToString() ?? throw new ArgumentNullException (nameof(key)), reader.TokenStartIndex);
 
-        private static WorkloadManifest ReadWorkloadManifest(ref Utf8JsonStreamReader reader)
+        private static WorkloadManifest ReadWorkloadManifest(string id, ref Utf8JsonStreamReader reader)
         {
             ConsumeToken(ref reader, JsonTokenType.StartObject);
 
@@ -56,6 +69,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             string? description = null;
             Dictionary<WorkloadDefinitionId, WorkloadDefinition>? workloads = null;
             Dictionary<WorkloadPackId, WorkloadPack>? packs = null;
+            Dictionary<string, long>? dependsOn = null;
 
             while (reader.Read())
             {
@@ -76,6 +90,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         {
                             if (description != null) ThrowDuplicateKeyException(ref reader, propName);
                             description = ReadString(ref reader);
+                            continue;
+                        }
+
+                        if (string.Equals("depends-on", propName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (dependsOn != null) ThrowDuplicateKeyException(ref reader, propName);
+                            dependsOn = ReadDependsOn(ref reader);
                             continue;
                         }
 
@@ -113,10 +134,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         }
 
                         return new WorkloadManifest (
+                            id,
                             version.Value,
                             description,
                             workloads ?? new Dictionary<WorkloadDefinitionId, WorkloadDefinition> (),
-                            packs ?? new Dictionary<WorkloadPackId, WorkloadPack> ()
+                            packs ?? new Dictionary<WorkloadPackId, WorkloadPack> (),
+                            dependsOn
                         );
                     default:
                         throw new WorkloadManifestFormatException(Strings.UnexpectedTokenAtOffset, reader.TokenType, reader.TokenStartIndex);
@@ -152,6 +175,32 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             } while (reader.CurrentDepth > depth);
 
             return true;
+        }
+
+        private static Dictionary<string, long> ReadDependsOn(ref Utf8JsonStreamReader reader)
+        {
+            ConsumeToken(ref reader, JsonTokenType.StartObject);
+
+            var dependsOn = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+
+            while (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.PropertyName:
+                        var dependencyId = reader.GetString();
+                        var dependencyVersion = ReadInt64(ref reader);
+                        if (dependsOn.ContainsKey(dependencyId)) ThrowDuplicateKeyException(ref reader, dependencyId);
+                        dependsOn.Add(dependencyId, dependencyVersion);
+                        continue;
+                    case JsonTokenType.EndObject:
+                        return dependsOn;
+                    default:
+                        throw new WorkloadManifestFormatException(Strings.UnexpectedTokenAtOffset, reader.TokenType, reader.TokenStartIndex);
+                }
+            }
+
+            throw new WorkloadManifestFormatException(Strings.IncompleteDocument);
         }
 
         private static Dictionary<WorkloadDefinitionId, WorkloadDefinition> ReadWorkloadDefinitions(ref Utf8JsonStreamReader reader)

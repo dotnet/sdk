@@ -26,7 +26,7 @@ namespace ManifestReaderTests
         {
             using (FileStream fsSource = new FileStream(ManifestPath, FileMode.Open, FileAccess.Read))
             {
-                var result = WorkloadManifestReader.ReadWorkloadManifest(fsSource);
+                var result = WorkloadManifestReader.ReadWorkloadManifest("Sample", fsSource);
                 result.Version.Should().Be(5);
                 var xamAndroidId = new WorkloadPackId("Xamarin.Android.Sdk");
 
