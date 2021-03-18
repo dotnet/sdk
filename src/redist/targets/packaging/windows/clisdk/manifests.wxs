@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?include "Variables.wxi" ?>
+  <Product Id="*" Name="$(var.ProductName)" Language="$(var.ProductLanguage)" Version="$(var.ProductVersion)" Manufacturer="$(var.Manufacturer)" UpgradeCode="$(var.UpgradeCode)">
+    <Package Compressed="yes" InstallScope="perMachine" InstallerVersion="$(var.InstallerVersion)" />
+
+    <Condition Message="$(var.ProductName) must be installed as part of a coordinated SDK installation.">
+      Installed OR ALLOWMSIINSTALL
+    </Condition>
+
+    <MajorUpgrade DowngradeErrorMessage="$(var.DowngradeErrorMessage)" Schedule="afterInstallInitialize"/>
+
+    <MediaTemplate CompressionLevel="high" EmbedCab="yes" />
+    <Feature Id="MainFeature" Title="Main Feature" Level="1">
+      <ComponentGroupRef Id="InstallFiles" />
+    </Feature>
+    <Feature Id="Provider" Absent="disallow" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" Level="1" InstallDefault="local" Title="RefCounting" TypicalDefault="install">
+      <ComponentRef Id="$(var.DependencyKeyId)" />
+    </Feature>
+    <Property Id="ProductFamily" Value="$(var.ProductFamily)" />
+    <Property Id="ProductEdition" Value="$(var.ProductEdition)" />
+    <Property Id="ProductCPU" Value="$(var.Platform)" />
+    <Property Id="RTM_ProductVersion" Value="$(var.Dotnet_ProductVersion)" />
+    <Property Id="MSIFASTINSTALL" Value="7" />
+    <Property Id="NUGETVERSION" Value="$(var.NugetVersion)" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.MicrosoftEula)" />
+
+  </Product>
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.Program_Files)">
+        <Directory Id="DOTNETHOME" Name="dotnet"/>
+      </Directory>
+    </Directory>
+  </Fragment>
+</Wix>

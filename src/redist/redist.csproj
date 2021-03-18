@@ -31,6 +31,7 @@
   <Import Project="targets\Versions.targets" />
   <Import Project="targets\Branding.targets" />
   <Import Project="targets\BundledTemplates.targets" />
+  <Import Project="targets\BundledManifests.targets" />
   <Import Project="targets\BundledDotnetTools.targets" />
   <Import Project="targets\GenerateBundledVersions.targets" />
   <Import Project="targets\Crossgen.targets" />
