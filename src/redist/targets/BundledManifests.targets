@@ -1,12 +1,12 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ItemGroup>
-    <BundledManifests Include="Microsoft.NET.Workload.Android" Version="$(XamarinAndroidWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.Android" />
-    <BundledManifests Include="Microsoft.NET.Workload.iOS" Version="$(XamarinIOSWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.iOS" />
-    <BundledManifests Include="Microsoft.NET.Workload.MacCatalyst" Version="$(XamarinMacCatalystWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.MacCatalyst" />
-    <BundledManifests Include="Microsoft.NET.Workload.macOS" Version="$(XamarinMacOSWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.macOS" />
-    <BundledManifests Include="Microsoft.NET.Workload.tvOS" Version="$(XamarinTvOSWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.tvOS" />
-    <BundledManifests Include="Microsoft.NET.Sdk.BlazorWebAssembly.AOT" Version="$(BlazorWorkloadManifestVersion)" WorkloadId="Microsoft.NET.Workload.BlazorWebAssembly" />
+    <BundledManifests Include="Microsoft.NET.Workload.Android" Version="$(XamarinAndroidWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.Android" />
+    <BundledManifests Include="Microsoft.NET.Workload.iOS" Version="$(XamarinIOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.iOS" />
+    <BundledManifests Include="Microsoft.NET.Workload.MacCatalyst" Version="$(XamarinMacCatalystWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.MacCatalyst" />
+    <BundledManifests Include="Microsoft.NET.Workload.macOS" Version="$(XamarinMacOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.macOS" />
+    <BundledManifests Include="Microsoft.NET.Workload.tvOS" Version="$(XamarinTvOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.tvOS" />
+    <BundledManifests Include="Microsoft.NET.Sdk.BlazorWebAssembly.AOT" Version="$(BlazorWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.BlazorWebAssembly" />
   </ItemGroup>
 
   <!-- Restore workload manifests via PackageReference -->
@@ -65,7 +65,7 @@
       </BundledManifests>
       
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\**\*.json;%(BundledManifests.RestoredNupkgContentPath)\**\*.targets"
-                       DestinationPath="%(WorkloadId)/"/>
+                       DestinationPath="%(WorkloadManifestId)/"/>
     </ItemGroup>
   </Target>
 
