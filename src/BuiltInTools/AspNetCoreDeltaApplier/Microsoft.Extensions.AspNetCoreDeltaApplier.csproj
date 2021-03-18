@@ -3,7 +3,6 @@
     <!-- Intentionally pinned. This feature is supported in projects targeting 6.0 or newer.-->
     <TargetFramework>net6.0</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
