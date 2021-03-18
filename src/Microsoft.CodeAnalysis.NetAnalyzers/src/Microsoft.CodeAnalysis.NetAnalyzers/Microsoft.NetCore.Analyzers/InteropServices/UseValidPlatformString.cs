@@ -21,6 +21,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private static readonly ImmutableArray<string> methodNames = ImmutableArray.Create("IsOSPlatform", "IsOSPlatformVersionAtLeast");
         private const string IsPrefix = "Is";
         private const string VersionSuffix = "VersionAtLeast";
+        private const string macOS = nameof(macOS);
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValidPlatformStringTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableUnknownPlatform = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValidPlatformStringUnknownPlatform), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
@@ -75,6 +76,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 AddPlatformsAndVersionCountFromGuardMethods(operatingSystemType, knownPlatforms);
                 AddPlatformsFromMsBuildOptions(knownPlatforms, context.Options.GetMSBuildItemMetadataValues(
                     MSBuildItemOptionNames.SupportedPlatform, context.Compilation, context.CancellationToken));
+
+                if (knownPlatforms.TryGetValue(macOS, out var versions))
+                {
+                    knownPlatforms.Add("OSX", versions);
+                }
 
                 context.RegisterOperationAction(context => AnalyzeOperation(context.Operation, context, knownPlatforms), OperationKind.Invocation);
                 context.RegisterSymbolAction(context => AnalyzeSymbol(context.ReportDiagnostic, context.Symbol,
