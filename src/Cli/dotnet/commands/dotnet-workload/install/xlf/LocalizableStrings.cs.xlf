@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="InstallationSucceeded">
         <source>Workload '{0}' (version '{1}') was successfully installed.</source>
-        <target state="new">Workload '{0}' (version '{1}') was successfully installed.</target>
+        <target state="translated">Úloha {0} (verze {1}) se úspěšně nainstalovala.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidWorkloadConfiguration">
         <source>The settings file in the workload's NuGet package is invalid: {0}</source>
-        <target state="new">The settings file in the workload's NuGet package is invalid: {0}</target>
+        <target state="translated">Soubor nastavení v balíčku NuGet úlohy je neplatný: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestPathOptionDescription">
@@ -19,12 +19,12 @@
       </trans-unit>
       <trans-unit id="ManifestPathOptionName">
         <source>PATH</source>
-        <target state="translated">PATH</target>
+        <target state="translated">CESTA</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Install a workload.</source>
-        <target state="needs-review-translation">Nainstaluje globální nebo místní nástroj. Místní nástroje se přidávají do manifestu a obnovují.</target>
+        <target state="translated">Nainstalujte úlohu.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to install the workload for.</source>
-        <target state="needs-review-translation">Cílová architektura, pro kterou se má nástroj nainstalovat</target>
+        <target state="translated">Cílová architektura, pro kterou se má úloha nainstalovat</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="needs-review-translation">Verze balíčku nástroje, který se má nainstalovat</target>
+        <target state="translated">Verze balíčku úlohy, která se má nainstalovat</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallFullCommandNameLocalized">
@@ -84,32 +84,32 @@
       </trans-unit>
       <trans-unit id="WorkloadAlreadyInstalled">
         <source>Workload '{0}' is already installed.</source>
-        <target state="new">Workload '{0}' is already installed.</target>
+        <target state="translated">Úloha {0} je už nainstalovaná.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentDescription">
         <source>The NuGet Package Id of the workload to install.</source>
-        <target state="new">The NuGet Package Id of the workload to install.</target>
+        <target state="translated">ID balíčku NuGet úlohy, která se má nainstalovat</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="new">PACKAGE_ID</target>
+        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallationFailed">
         <source>Workload '{0}' failed to install.</source>
-        <target state="new">Workload '{0}' failed to install.</target>
+        <target state="translated">Nepovedlo se nainstalovat úlohu {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionDescription">
         <source>The directory where the workload will be installed. The directory will be created if it does not exist.</source>
-        <target state="new">The directory where the workload will be installed. The directory will be created if it does not exist.</target>
+        <target state="translated">Adresář, do kterého se úloha nainstaluje. Pokud tento adresář neexistuje, vytvoří se.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
-        <target state="new">PATH</target>
+        <target state="translated">CESTA</target>
         <note />
       </trans-unit>
     </body>

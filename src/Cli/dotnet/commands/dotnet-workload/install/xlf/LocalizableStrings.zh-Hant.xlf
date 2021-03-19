@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="InstallationSucceeded">
         <source>Workload '{0}' (version '{1}') was successfully installed.</source>
-        <target state="new">Workload '{0}' (version '{1}') was successfully installed.</target>
+        <target state="translated">已成功安裝工作負載 '{0}' ('{1}' 版)。</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidWorkloadConfiguration">
         <source>The settings file in the workload's NuGet package is invalid: {0}</source>
-        <target state="new">The settings file in the workload's NuGet package is invalid: {0}</target>
+        <target state="translated">工作負載的 NuGet 套件設定檔案無效: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestPathOptionDescription">
@@ -19,12 +19,12 @@
       </trans-unit>
       <trans-unit id="ManifestPathOptionName">
         <source>PATH</source>
-        <target state="translated">PATH</target>
+        <target state="translated">路徑</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Install a workload.</source>
-        <target state="needs-review-translation">安裝全域或本機工具。本機工具會新增至資訊清單，並會還原。</target>
+        <target state="translated">安裝工作負載。</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to install the workload for.</source>
-        <target state="needs-review-translation">要為工具安裝的目標 Framework。</target>
+        <target state="translated">要為工作負載安裝的目標 Framework。</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="needs-review-translation">要安裝之工具套件的版本。</target>
+        <target state="translated">要安裝工作負載套件的版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallFullCommandNameLocalized">
@@ -84,32 +84,32 @@
       </trans-unit>
       <trans-unit id="WorkloadAlreadyInstalled">
         <source>Workload '{0}' is already installed.</source>
-        <target state="new">Workload '{0}' is already installed.</target>
+        <target state="translated">已安裝工作負載 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentDescription">
         <source>The NuGet Package Id of the workload to install.</source>
-        <target state="new">The NuGet Package Id of the workload to install.</target>
+        <target state="translated">要安裝工作負載的 NuGet 套件識別碼。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="new">PACKAGE_ID</target>
+        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallationFailed">
         <source>Workload '{0}' failed to install.</source>
-        <target state="new">Workload '{0}' failed to install.</target>
+        <target state="translated">無法安裝工作負載 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionDescription">
         <source>The directory where the workload will be installed. The directory will be created if it does not exist.</source>
-        <target state="new">The directory where the workload will be installed. The directory will be created if it does not exist.</target>
+        <target state="translated">安裝工作負載所在的目錄。若目錄不存在，則會建立該目錄。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
-        <target state="new">PATH</target>
+        <target state="translated">路徑</target>
         <note />
       </trans-unit>
     </body>

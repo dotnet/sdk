@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to uninstall.</source>
-        <target state="translated">Identyfikator pakietu NuGet narzędzia do odinstalowania.</target>
+        <target state="translated">Identyfikator pakietu NuGet obciążenia do odinstalowania.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Uninstall a workload.</source>
-        <target state="needs-review-translation">Odinstaluj narzędzie globalne lub lokalne.</target>
+        <target state="translated">Odinstaluj obciążenie.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentName">
@@ -19,47 +19,42 @@
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Specify one workload Package Id to uninstall.</source>
-        <target state="translated">Określ jeden identyfikator pakietu narzędzia do odinstalowania.</target>
+        <target state="translated">Określ jeden identyfikator pakietu obciążenia do odinstalowania.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallLocalWorkloadSucceeded">
         <source>Workload '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
-        <target state="translated">Narzędzie „{0}” zostało pomyślnie odinstalowane i usunięte z pliku manifestu {1}.</target>
+        <target state="translated">Obciążenie „{0}” zostało pomyślnie odinstalowane i usunięte z pliku manifestu {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallSucceeded">
         <source>Workload '{0}' (version '{1}') was successfully uninstalled.</source>
-        <target state="translated">Pomyślnie odinstalowano narzędzie „{0}” (wersja: „{1}”).</target>
+        <target state="translated">Pomyślnie odinstalowano obciążenie „{0}” (wersja: „{1}”).</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadNotInstalled">
         <source>A workload with the package Id '{0}' could not be found.</source>
-        <target state="needs-review-translation">Nie można odnaleźć narzędzia o identyfikatorze pakietu „{0}”. 
-
-Narzędzia są odinstalowywane przy użyciu ich identyfikatora pakietu, który może być inny 
-niż nazwa narzędzia używana podczas wywoływania narzędzia. Nazwy narzędzi 
-i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleźć przy użyciu polecenia
-„dotnet workload list”.</target>
+        <target state="translated">Nie można odnaleźć obciążenia o identyfikatorze pakietu „{0}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToUninstallWorkload">
         <source>Failed to uninstall workload '{0}': {1}</source>
-        <target state="translated">Nie można odinstalować narzędzia „{0}”: {1}</target>
+        <target state="translated">Nie można odinstalować obciążenia „{0}”: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidWorkloadPathOption">
         <source>Workload path '{0}' does not exist.</source>
-        <target state="translated">Ścieżka narzędzia „{0}” nie istnieje.</target>
+        <target state="translated">Ścieżka obciążenia „{0}” nie istnieje.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
-        <target state="translated">PATH</target>
+        <target state="translated">ŚCIEŻKA</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionDescription">
         <source>The directory containing the workload to uninstall.</source>
-        <target state="translated">Katalog zawierający narzędzie do odinstalowania.</target>
+        <target state="translated">Katalog zawierający obciążenie do odinstalowania.</target>
         <note />
       </trans-unit>
     </body>

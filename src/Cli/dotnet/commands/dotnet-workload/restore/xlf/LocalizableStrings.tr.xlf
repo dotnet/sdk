@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Restore workloads required for the project.</source>
-        <target state="needs-review-translation">Yerel araç bildiriminde tanımlı araçları geri yükleyin.</target>
+        <target state="translated">Proje için gereken iş yüklerini geri yükleyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageWarning">
         <source>Warning: workload package '{0}' is invalid</source>
-        <target state="new">Warning: workload package '{0}' is invalid</target>
+        <target state="translated">Uyarı: '{0}' iş yükü paketi geçersiz</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsWereRestored">
         <source>No workloads were restored.</source>
-        <target state="translated">Hiçbir araç geri yüklenmedi.</target>
+        <target state="translated">İş yükleri geri yüklenmedi.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdColumn">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="translated">Yüklenecek araç paketinin sürümü.</target>
+        <target state="translated">Yüklenecek iş yükü paketinin sürümü.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
         <source>VERSION</source>
-        <target state="translated">VERSION</target>
+        <target state="translated">SÜRÜM</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageFailedToRestore">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="RestoreSuccessful">
         <source>Workload '{0}' (version '{1}') was restored. Available commands: {2}</source>
-        <target state="translated">'{0}' aracı (sürüm '{1}') geri yüklendi. Kullanılabilen komutlar: {2}</target>
+        <target state="translated">'{0}' iş yükü (sürüm '{1}') geri yüklendi. Kullanılabilen komutlar: {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">

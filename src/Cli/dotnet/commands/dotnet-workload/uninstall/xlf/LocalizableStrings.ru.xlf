@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to uninstall.</source>
-        <target state="translated">Идентификатор пакета NuGet удаляемого инструмента.</target>
+        <target state="translated">Идентификатор пакета NuGet удаляемой рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Uninstall a workload.</source>
-        <target state="needs-review-translation">Удаление глобального или локального средства.</target>
+        <target state="translated">Удаление рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentName">
@@ -19,37 +19,32 @@
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Specify one workload Package Id to uninstall.</source>
-        <target state="translated">Укажите один идентификатор пакета удаляемого инструмента.</target>
+        <target state="translated">Укажите один идентификатор пакета удаляемой рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallLocalWorkloadSucceeded">
         <source>Workload '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
-        <target state="translated">Средство "{0}" успешно удалено и исключено из файла манифеста {1}.</target>
+        <target state="translated">Рабочая нагрузка "{0}" удалена и исключена из файла манифеста {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallSucceeded">
         <source>Workload '{0}' (version '{1}') was successfully uninstalled.</source>
-        <target state="translated">Инструмент "{0}" (версия "{1}") удален.</target>
+        <target state="translated">Рабочая нагрузка "{0}" (версия "{1}") удалена.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadNotInstalled">
         <source>A workload with the package Id '{0}' could not be found.</source>
-        <target state="needs-review-translation">Не удалось найти средство с идентификатором пакета "{0}". 
-
-Средства удалены с помощью идентификатора пакета, который может отличаться 
-от имени средства, используемого при его вызове. Имена средств 
-и соответствующие идентификаторы пакетов для установленных средств можно найти с помощью команды
-"dotnet workload list".</target>
+        <target state="translated">Не удалось найти рабочую нагрузку с идентификатором пакета "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToUninstallWorkload">
         <source>Failed to uninstall workload '{0}': {1}</source>
-        <target state="translated">Не удалось удалить инструмент "{0}": {1}</target>
+        <target state="translated">Не удалось удалить рабочую нагрузку "{0}": {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidWorkloadPathOption">
         <source>Workload path '{0}' does not exist.</source>
-        <target state="translated">Путь к средству "{0}" не существует.</target>
+        <target state="translated">Путь к рабочей нагрузке "{0}" не существует.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionName">
@@ -59,7 +54,7 @@
       </trans-unit>
       <trans-unit id="WorkloadPathOptionDescription">
         <source>The directory containing the workload to uninstall.</source>
-        <target state="translated">Каталог, содержащий удаляемый инструмент.</target>
+        <target state="translated">Каталог, содержащий удаляемую рабочую нагрузку.</target>
         <note />
       </trans-unit>
     </body>

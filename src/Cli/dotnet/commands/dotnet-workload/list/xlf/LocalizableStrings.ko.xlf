@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>List workloads available.</source>
-        <target state="needs-review-translation">전역으로 또는 로컬로 설치된 도구를 나열합니다.</target>
+        <target state="translated">사용 가능한 워크로드를 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionColumn">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
-        <target state="new">PATH</target>
+        <target state="translated">경로</target>
         <note />
       </trans-unit>
     </body>

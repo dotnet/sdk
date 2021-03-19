@@ -14,27 +14,27 @@
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to update.</source>
-        <target state="translated">업데이트할 도구의 NuGet 패키지 ID입니다.</target>
+        <target state="translated">업데이트할 워크로드의 NuGet 패키지 ID입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Specify one workload Package Id to update.</source>
-        <target state="translated">업데이트할 도구 패키지 ID를 하나 지정하세요.</target>
+        <target state="translated">업데이트할 워크로드 패키지 ID를 하나 지정하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaWorkloadSucceededVersionNoChange">
         <source>Workload '{0}' is up to date.</source>
-        <target state="new">Workload '{0}' is up to date.</target>
+        <target state="translated">워크로드 '{0}'이(가) 최신 상태입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaWorkloadToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
-        <target state="new">The requested version {0} is lower than existing version {1}.</target>
+        <target state="translated">요청된 버전 {0}이(가) 기존 버전 {1}보다 낮습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocalWorkloadSucceeded">
         <source>Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
-        <target state="new">Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</target>
+        <target state="translated">워크로드 '{0}'의 버전이 '{1}'에서 '{2}'(으)로 업데이트되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
@@ -44,12 +44,12 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version range of the workload package to update to.</source>
-        <target state="translated">업데이트할 도구 패키지의 버전 범위입니다.</target>
+        <target state="translated">업데이트할 워크로드 패키지의 버전 범위입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update a workload.</source>
-        <target state="needs-review-translation">전역 도구를 업데이트합니다.</target>
+        <target state="translated">워크로드를 업데이트합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to update the workload for.</source>
-        <target state="translated">도구를 업데이트할 대상 프레임워크입니다.</target>
+        <target state="translated">워크로드를 업데이트할 대상 프레임워크입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetConfigurationFileDoesNotExist">
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
-        <target state="translated">'{0}' 도구가 '{1}' 버전에서 '{2}' 버전으로 업데이트되었습니다.</target>
+        <target state="translated">워크로드 '{0}'의 버전이 '{1}'에서 '{2}'(으)로 업데이트되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateFullCommandNameLocalized">
@@ -79,12 +79,12 @@
       </trans-unit>
       <trans-unit id="UpdateSucceededVersionNoChange">
         <source>Workload '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">'{0}' 도구가 안정적인 최신 버전('{1}' 버전)으로 다시 설치되었습니다.</target>
+        <target state="translated">워크로드 '{0}'이(가) 안정적인 최신 버전(버전 '{1}')으로 다시 설치되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateWorkloadFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
-        <target state="translated">다음으로 인해 '{0}' 도구를 업데이트하지 못했습니다.</target>
+        <target state="translated">다음으로 인해 워크로드 '{0}'을(를) 업데이트하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionDescription">

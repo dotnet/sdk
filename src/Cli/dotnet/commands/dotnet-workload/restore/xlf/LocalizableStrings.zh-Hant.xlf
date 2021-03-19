@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Restore workloads required for the project.</source>
-        <target state="needs-review-translation">還原本機工具資訊清單中所定義的工具。</target>
+        <target state="translated">還原專案所需的工作負載。</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageWarning">
         <source>Warning: workload package '{0}' is invalid</source>
-        <target state="new">Warning: workload package '{0}' is invalid</target>
+        <target state="translated">警告: 工作負載套件 '{0}' 無效</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsWereRestored">
         <source>No workloads were restored.</source>
-        <target state="translated">未還原任何工具。</target>
+        <target state="translated">未還原任何工作負載。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdColumn">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="translated">要安裝之工具套件的版本。</target>
+        <target state="translated">要安裝工作負載套件的版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="RestoreSuccessful">
         <source>Workload '{0}' (version '{1}') was restored. Available commands: {2}</source>
-        <target state="translated">已還原工具 '{0}' (版本 '{1}')。可用的命令: {2}</target>
+        <target state="translated">已還原工作負載 '{0}' ('{1}' 版)。可用的命令: {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">

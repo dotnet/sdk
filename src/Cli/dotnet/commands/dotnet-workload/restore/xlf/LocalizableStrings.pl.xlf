@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Restore workloads required for the project.</source>
-        <target state="needs-review-translation">Przywróć narzędzia zdefiniowane w manifeście narzędzi lokalnych.</target>
+        <target state="translated">Przywróć obciążenia wymagane dla projektu.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageWarning">
         <source>Warning: workload package '{0}' is invalid</source>
-        <target state="new">Warning: workload package '{0}' is invalid</target>
+        <target state="translated">Ostrzeżenie: pakiet obciążenia „{0}” jest nieprawidłowy</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsWereRestored">
         <source>No workloads were restored.</source>
-        <target state="translated">Nie przywrócono żadnych narzędzi.</target>
+        <target state="translated">Nie przywrócono żadnych obciążeń.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdColumn">
@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <target state="translated">ŹRÓDŁO</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
@@ -49,17 +49,17 @@
       </trans-unit>
       <trans-unit id="ConfigFileOptionName">
         <source>FILE</source>
-        <target state="translated">FILE</target>
+        <target state="translated">PLIK</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="translated">Wersja pakietu narzędzia do zainstalowania.</target>
+        <target state="translated">Wersja pakietu obciążenia do zainstalowania.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
         <source>VERSION</source>
-        <target state="translated">VERSION</target>
+        <target state="translated">WERSJA</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageFailedToRestore">
@@ -69,12 +69,12 @@
       </trans-unit>
       <trans-unit id="RestoreFailed">
         <source>Restore failed.</source>
-        <target state="translated">Błąd przywracania.</target>
+        <target state="translated">Przywracanie nie powiodło się.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreSuccessful">
         <source>Workload '{0}' (version '{1}') was restored. Available commands: {2}</source>
-        <target state="translated">Narzędzie „{0}” (wersja „{1}”) zostało przywrócone. Dostępne polecenia: {2}</target>
+        <target state="translated">Obciążenie „{0}” (wersja „{1}”) zostało przywrócone. Dostępne polecenia: {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">

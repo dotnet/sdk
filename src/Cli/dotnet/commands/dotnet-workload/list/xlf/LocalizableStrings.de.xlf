@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>List workloads available.</source>
-        <target state="needs-review-translation">Hiermit listen Sie die global oder lokal installierten Tools auf.</target>
+        <target state="translated">Hiermit werden die verfügbaren Workloads aufgelistet.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionColumn">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
-        <target state="new">PATH</target>
+        <target state="translated">PFAD</target>
         <note />
       </trans-unit>
     </body>

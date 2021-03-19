@@ -261,7 +261,7 @@
       </trans-unit>
       <trans-unit id="Crossgen2MissingRequiredMetadata">
         <source>NETSDK1155: Required '{0}' metadata missing on Crossgen2Tool item.</source>
-        <target state="new">NETSDK1155: Required '{0}' metadata missing on Crossgen2Tool item.</target>
+        <target state="translated">NETSDK1155: Faltan metadatos de "{0}" necesarios en el elemento Crossgen2Tool.</target>
         <note>{StrBegin="NETSDK1155: "}</note>
       </trans-unit>
       <trans-unit id="Crossgen2RequiresSelfContained">
@@ -271,42 +271,42 @@
       </trans-unit>
       <trans-unit id="Crossgen2ToolExecutableNotFound">
         <source>NETSDK1152: Crossgen2Tool executable '{0}' not found.</source>
-        <target state="new">NETSDK1152: Crossgen2Tool executable '{0}' not found.</target>
+        <target state="translated">NETSDK1152: No se encontró el ejecutable de Crossgen2Tool "{0}".</target>
         <note>{StrBegin="NETSDK1152: "}</note>
       </trans-unit>
       <trans-unit id="Crossgen2ToolMissingWhenUseCrossgen2IsSet">
         <source>NETSDK1151: Crossgen2Tool must be specified when UseCrossgen2 is set to true.</source>
-        <target state="new">NETSDK1151: Crossgen2Tool must be specified when UseCrossgen2 is set to true.</target>
+        <target state="translated">NETSDK1151: Crossgen2Tool debe especificarse cuando UseCrossgen2 esté establecido en true.</target>
         <note>{StrBegin="NETSDK1151: "}</note>
       </trans-unit>
       <trans-unit id="Crossgen5CannotEmitSymbolsInCompositeMode">
         <source>NETSDK1163: Cannot emit symbols when publishing for .NET 5 with Crossgen2 using composite mode.</source>
-        <target state="new">NETSDK1163: Cannot emit symbols when publishing for .NET 5 with Crossgen2 using composite mode.</target>
+        <target state="translated">NETSDK1163: No se pueden emitir símbolos al publicar para .NET 5 con Crossgen2 con el modo compuesto.</target>
         <note>{StrBegin="NETSDK1163: "}</note>
       </trans-unit>
       <trans-unit id="CrossgenToolExecutableNotFound">
         <source>NETSDK1157: CrossgenTool executable '{0}' not found.</source>
-        <target state="new">NETSDK1157: CrossgenTool executable '{0}' not found.</target>
+        <target state="translated">NETSDK1157: No se encontró el ejecutable de CrossgenTool "{0}".</target>
         <note>{StrBegin="NETSDK1157: "}</note>
       </trans-unit>
       <trans-unit id="CrossgenToolMissingInPDBCompilationMode">
         <source>NETSDK1150: CrossgenTool not specified in PDB compilation mode.</source>
-        <target state="new">NETSDK1150: CrossgenTool not specified in PDB compilation mode.</target>
+        <target state="translated">NETSDK1150: CrossgenTool no se especifica en el modo de compilación de PDB.</target>
         <note>{StrBegin="NETSDK1150: "}</note>
       </trans-unit>
       <trans-unit id="CrossgenToolMissingWhenUseCrossgen2IsNotSet">
         <source>NETSDK1156: CrossgenTool must be specified when UseCrossgen2 is set to false.</source>
-        <target state="new">NETSDK1156: CrossgenTool must be specified when UseCrossgen2 is set to false.</target>
+        <target state="translated">NETSDK1156: CrossgenTool debe especificarse cuando UseCrossgen2 se establezca en false.</target>
         <note>{StrBegin="NETSDK1156: "}</note>
       </trans-unit>
       <trans-unit id="DiaSymReaderLibraryNotFound">
         <source>NETSDK1158: DiaSymReader library '{0}' not found.</source>
-        <target state="new">NETSDK1158: DiaSymReader library '{0}' not found.</target>
+        <target state="translated">NETSDK1158: No se encontró la biblioteca DiaSymReader "{0}".</target>
         <note>{StrBegin="NETSDK1158: "}</note>
       </trans-unit>
       <trans-unit id="DotNetHostExecutableNotFound">
         <source>NETSDK1153: .NET host executable '{0}' not found.</source>
-        <target state="new">NETSDK1153: .NET host executable '{0}' not found.</target>
+        <target state="translated">NETSDK1153: No se encontró el ejecutable del host de .NET "{0}".</target>
         <note>{StrBegin="NETSDK1153: "}</note>
       </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21">
@@ -441,7 +441,7 @@
       </trans-unit>
       <trans-unit id="InputAssemblyNotFound">
         <source>NETSDK1160: Input assembly '{0}' not found.</source>
-        <target state="new">NETSDK1160: Input assembly '{0}' not found.</target>
+        <target state="translated">NETSDK1160: No se encontró el ensamblado de entrada "{0}".</target>
         <note>{StrBegin="NETSDK1160: "}</note>
       </trans-unit>
       <trans-unit id="InvalidFrameworkName">
@@ -479,7 +479,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="JitLibraryNotFound">
         <source>NETSDK1154: JIT library '{0}' not found.</source>
-        <target state="new">NETSDK1154: JIT library '{0}' not found.</target>
+        <target state="translated">NETSDK1154: No se encontró la biblioteca JIT "{0}".</target>
         <note>{StrBegin="NETSDK1154: "}</note>
       </trans-unit>
       <trans-unit id="MismatchedPlatformPackageVersion">
@@ -497,12 +497,12 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="MissingOutputPDBImagePath">
         <source>NETSDK1161: Missing output PDB path in PDB generation mode (OutputPDBImage metadata).</source>
-        <target state="new">NETSDK1161: Missing output PDB path in PDB generation mode (OutputPDBImage metadata).</target>
+        <target state="translated">NETSDK1161: Falta la ruta de acceso del archivo PDB de salida en el modo de generación de PDB (metadatos OutputPDBImage).</target>
         <note>{StrBegin="NETSDK1161: "}</note>
       </trans-unit>
       <trans-unit id="MissingOutputR2RImageFileName">
         <source>NETSDK1162: Missing output R2R image path (OutputR2RImage metadata).</source>
-        <target state="new">NETSDK1162: Missing output R2R image path (OutputR2RImage metadata).</target>
+        <target state="translated">NETSDK1162: Falta la ruta de acceso de la imagen R2R de salida (metadatos OutputR2RImage).</target>
         <note>{StrBegin="NETSDK1162: "}</note>
       </trans-unit>
       <trans-unit id="MultipleFilesResolved">
@@ -577,7 +577,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PDBGeneratorInputExecutableNotFound">
         <source>NETSDK1159: PDB generation: R2R executable '{0}' not found.</source>
-        <target state="new">NETSDK1159: PDB generation: R2R executable '{0}' not found.</target>
+        <target state="translated">NETSDK1159: Generación de PDB: no se encontró el ejecutable de R2R "{0}".</target>
         <note>{StrBegin="NETSDK1159: "}</note>
       </trans-unit>
       <trans-unit id="PackAsToolCannotSupportSelfContained">
@@ -812,7 +812,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="WindowsSDKVersionConflicts">
         <source>NETSDK1149: A referenced assembly was compiled using a newer version of Microsoft.Windows.SDK.NET.dll. Please update to a newer .NET SDK in order to reference this assembly.</source>
-        <target state="new">NETSDK1149: A referenced assembly was compiled using a newer version of Microsoft.Windows.SDK.NET.dll. Please update to a newer .NET SDK in order to reference this assembly.</target>
+        <target state="translated">NETSDK1149: Un ensamblado al que se hace referencia se compiló con una versión más reciente de Microsoft.Windows.SDK.NET.dll. Actualice a un SDK de .NET más reciente para hacer referencia a este ensamblado.</target>
         <note>{StrBegin="NETSDK1149: "}</note>
       </trans-unit>
       <trans-unit id="WorkloadNotInstalled">

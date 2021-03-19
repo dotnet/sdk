@@ -14,27 +14,27 @@
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to update.</source>
-        <target state="translated">更新するツールの NuGet パッケージ ID。</target>
+        <target state="translated">更新するワークロードの NuGet パッケージ ID。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Specify one workload Package Id to update.</source>
-        <target state="translated">更新するツール パッケージの ID を 1 つ指定してください。</target>
+        <target state="translated">更新するワークロード パッケージの ID を 1 つ指定してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaWorkloadSucceededVersionNoChange">
         <source>Workload '{0}' is up to date.</source>
-        <target state="new">Workload '{0}' is up to date.</target>
+        <target state="translated">ワークロード '{0}' は最新です。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaWorkloadToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
-        <target state="new">The requested version {0} is lower than existing version {1}.</target>
+        <target state="translated">要求されたバージョン {0} は、既存のバージョン {1} を下回っています。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocalWorkloadSucceeded">
         <source>Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
-        <target state="new">Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</target>
+        <target state="translated">ワークロード '{0}' がバージョン '{1}' からバージョン '{2}' に正常に更新されました。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
@@ -44,12 +44,12 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version range of the workload package to update to.</source>
-        <target state="translated">更新対象のツール パッケージのバージョン範囲。</target>
+        <target state="translated">更新対象のワークロード パッケージのバージョン範囲。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update a workload.</source>
-        <target state="needs-review-translation">グローバル ツールを更新します。</target>
+        <target state="translated">ワークロードを更新します。</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to update the workload for.</source>
-        <target state="translated">ツールを更新するターゲット フレームワーク。</target>
+        <target state="translated">ワークロードを更新するターゲット フレームワーク。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetConfigurationFileDoesNotExist">
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
-        <target state="translated">ツール '{0}' がバージョン '{1}' からバージョン '{2}' に正常に更新されました。</target>
+        <target state="translated">ワークロード '{0}' がバージョン '{1}' からバージョン '{2}' に正常に更新されました。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateFullCommandNameLocalized">
@@ -79,12 +79,12 @@
       </trans-unit>
       <trans-unit id="UpdateSucceededVersionNoChange">
         <source>Workload '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">ツール '{0}' が安定した最新バージョン (バージョン '{1}') で再インストールされました。</target>
+        <target state="translated">ワークロード '{0}' が安定した最新バージョン (バージョン '{1}') で再インストールされました。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateWorkloadFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
-        <target state="translated">ツール '{0}' を更新できませんでした。原因:</target>
+        <target state="translated">ワークロード '{0}' を更新できませんでした。原因:</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionDescription">

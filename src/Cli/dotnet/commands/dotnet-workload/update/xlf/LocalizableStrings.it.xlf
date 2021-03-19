@@ -9,32 +9,32 @@
       </trans-unit>
       <trans-unit id="PackageIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
+        <target state="translated">ID_PACCHETTO</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to update.</source>
-        <target state="translated">ID pacchetto NuGet dello strumento da aggiornare.</target>
+        <target state="translated">ID pacchetto NuGet del carico di lavoro da aggiornare.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Specify one workload Package Id to update.</source>
-        <target state="translated">Specificare un ID pacchetto dello strumento da aggiornare.</target>
+        <target state="translated">Specificare un ID pacchetto del carico di lavoro da aggiornare.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaWorkloadSucceededVersionNoChange">
         <source>Workload '{0}' is up to date.</source>
-        <target state="new">Workload '{0}' is up to date.</target>
+        <target state="translated">Il carico di lavoro '{0}' è aggiornato.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaWorkloadToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
-        <target state="new">The requested version {0} is lower than existing version {1}.</target>
+        <target state="translated">La versione richiesta {0} è inferiore a quella esistente {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocalWorkloadSucceeded">
         <source>Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
-        <target state="new">Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</target>
+        <target state="translated">Il carico di lavoro '{0}' è stato aggiornato dalla versione '{1}' alla versione '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
@@ -44,12 +44,12 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version range of the workload package to update to.</source>
-        <target state="translated">Intervallo di versioni a cui aggiornare il pacchetto dello strumento.</target>
+        <target state="translated">Intervallo di versioni a cui aggiornare il pacchetto del carico di lavoro.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update a workload.</source>
-        <target state="needs-review-translation">Aggiorna uno strumento globale.</target>
+        <target state="translated">Consente di caricare un carico di lavoro.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to update the workload for.</source>
-        <target state="translated">Framework di destinazione per cui aggiornare lo strumento.</target>
+        <target state="translated">Framework di destinazione per cui aggiornare il carico di lavoro.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetConfigurationFileDoesNotExist">
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
-        <target state="translated">Lo strumento '{0}' è stato aggiornato dalla versione '{1}' alla versione '{2}'.</target>
+        <target state="translated">Il carico di lavoro '{0}' è stato aggiornato dalla versione '{1}' alla versione '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateFullCommandNameLocalized">
@@ -79,12 +79,12 @@
       </trans-unit>
       <trans-unit id="UpdateSucceededVersionNoChange">
         <source>Workload '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">Lo strumento '{0}' è stato reinstallato con l'ultima versione stabile (versione '{1}').</target>
+        <target state="translated">Il carico di lavoro '{0}' è stato reinstallato con l'ultima versione stabile (versione '{1}').</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateWorkloadFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
-        <target state="translated">L'aggiornamento dello strumento '{0}' non è riuscito. Motivi:</target>
+        <target state="translated">L'aggiornamento del carico di lavoro '{0}' non è riuscito. Motivi:</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionDescription">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <target state="translated">ORIGINE</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionName">
@@ -109,7 +109,7 @@
       </trans-unit>
       <trans-unit id="VersionOptionName">
         <source>VERSION</source>
-        <target state="translated">VERSION</target>
+        <target state="translated">VERSIONE</target>
         <note />
       </trans-unit>
     </body>

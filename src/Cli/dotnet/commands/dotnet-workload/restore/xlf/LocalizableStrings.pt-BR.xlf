@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Restore workloads required for the project.</source>
-        <target state="needs-review-translation">Restaure as ferramentas definidas no manifesto de ferramenta local.</target>
+        <target state="translated">Restaurar as cargas de trabalho necessárias para o projeto.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageWarning">
         <source>Warning: workload package '{0}' is invalid</source>
-        <target state="new">Warning: workload package '{0}' is invalid</target>
+        <target state="translated">Aviso: o pacote de carga de trabalho '{0}' é inválido</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsWereRestored">
         <source>No workloads were restored.</source>
-        <target state="translated">Nenhuma ferramenta foi restaurada.</target>
+        <target state="translated">Não foi restaurada nenhuma carga de trabalho.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdColumn">
@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <target state="translated">ORIGEM</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
@@ -49,12 +49,12 @@
       </trans-unit>
       <trans-unit id="ConfigFileOptionName">
         <source>FILE</source>
-        <target state="translated">FILE</target>
+        <target state="translated">ARQUIVO</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="translated">A versão do pacote da ferramenta a ser instalada.</target>
+        <target state="translated">A versão do pacote de carga de trabalho a ser instalada.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="RestoreSuccessful">
         <source>Workload '{0}' (version '{1}') was restored. Available commands: {2}</source>
-        <target state="translated">A ferramenta '{0}' (versão '{1}') foi restaurada. Comandos disponíveis: {2}</target>
+        <target state="translated">A carga de trabalho '{0}' (versão '{1}') foi restaurada. Comandos disponíveis: {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">

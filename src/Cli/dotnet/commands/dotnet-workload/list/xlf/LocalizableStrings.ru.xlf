@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>List workloads available.</source>
-        <target state="needs-review-translation">Перечисление средств, установленных глобально или локально.</target>
+        <target state="translated">Список доступных рабочих нагрузок.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionColumn">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
-        <target state="new">PATH</target>
+        <target state="translated">PATH</target>
         <note />
       </trans-unit>
     </body>

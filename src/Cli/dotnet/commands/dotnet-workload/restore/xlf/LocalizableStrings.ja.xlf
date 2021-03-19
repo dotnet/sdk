@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Restore workloads required for the project.</source>
-        <target state="needs-review-translation">ローカル ツール マニフェストで定義されているツールを復元します。</target>
+        <target state="translated">プロジェクトに必要なワークロードを復元します。</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageWarning">
         <source>Warning: workload package '{0}' is invalid</source>
-        <target state="new">Warning: workload package '{0}' is invalid</target>
+        <target state="translated">警告: ワークロード パッケージ '{0}' が無効です</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsWereRestored">
         <source>No workloads were restored.</source>
-        <target state="translated">復元されたツールはありません。</target>
+        <target state="translated">復元されたワークロードはありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdColumn">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="translated">インストールするツール パッケージのバージョン。</target>
+        <target state="translated">インストールするワークロード パッケージのバージョン。</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
@@ -69,12 +69,12 @@
       </trans-unit>
       <trans-unit id="RestoreFailed">
         <source>Restore failed.</source>
-        <target state="translated">復元できませんでした。</target>
+        <target state="translated">復元に失敗しました。</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreSuccessful">
         <source>Workload '{0}' (version '{1}') was restored. Available commands: {2}</source>
-        <target state="translated">ツール '{0}' (バージョン '{1}') は復元されました。使用できるコマンド: {2}</target>
+        <target state="translated">ワークロード '{0}' (バージョン '{1}') は復元されました。使用できるコマンド: {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">

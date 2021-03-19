@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Restore workloads required for the project.</source>
-        <target state="needs-review-translation">로컬 도구 매니페스트에 정의된 도구를 복원합니다.</target>
+        <target state="translated">프로젝트에 필요한 워크로드를 복원합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageWarning">
         <source>Warning: workload package '{0}' is invalid</source>
-        <target state="new">Warning: workload package '{0}' is invalid</target>
+        <target state="translated">경고: 워크로드 패키지 '{0}'이(가) 잘못되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsWereRestored">
         <source>No workloads were restored.</source>
-        <target state="translated">복원된 도구가 없습니다.</target>
+        <target state="translated">복원된 워크로드가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdColumn">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="translated">설치할 도구 패키지 버전입니다.</target>
+        <target state="translated">설치할 워크로드 패키지 버전입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="RestoreSuccessful">
         <source>Workload '{0}' (version '{1}') was restored. Available commands: {2}</source>
-        <target state="translated">'{0}' 도구(버전 '{1}')가 복원되었습니다. 사용 가능한 명령: {2}</target>
+        <target state="translated">워크로드 '{0}'(버전 '{1}')이(가) 복원되었습니다. 사용 가능한 명령: {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">

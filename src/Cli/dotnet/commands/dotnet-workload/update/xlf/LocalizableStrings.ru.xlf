@@ -14,27 +14,27 @@
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to update.</source>
-        <target state="translated">Идентификатор пакета NuGet обновляемого инструмента.</target>
+        <target state="translated">Идентификатор пакета NuGet обновляемой рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Specify one workload Package Id to update.</source>
-        <target state="translated">Укажите один обновляемый идентификатор пакета инструмента.</target>
+        <target state="translated">Укажите один идентификатор пакета обновляемой рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaWorkloadSucceededVersionNoChange">
         <source>Workload '{0}' is up to date.</source>
-        <target state="new">Workload '{0}' is up to date.</target>
+        <target state="translated">Рабочая нагрузка "{0}" не требует обновления.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaWorkloadToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
-        <target state="new">The requested version {0} is lower than existing version {1}.</target>
+        <target state="translated">Запрошенная версия {0} ниже существующей версии {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocalWorkloadSucceeded">
         <source>Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
-        <target state="new">Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</target>
+        <target state="translated">Рабочая нагрузка "{0}" обновлена с версии "{1}" до версии "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
@@ -44,12 +44,12 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version range of the workload package to update to.</source>
-        <target state="translated">Диапазон версий пакета средства для обновления.</target>
+        <target state="translated">Диапазон версий пакета рабочей нагрузки, до которых можно выполнить обновление.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update a workload.</source>
-        <target state="needs-review-translation">Обновление глобального средства.</target>
+        <target state="translated">Обновление рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to update the workload for.</source>
-        <target state="translated">Целевая платформа для обновления инструмента.</target>
+        <target state="translated">Целевая платформа для обновления рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetConfigurationFileDoesNotExist">
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
-        <target state="translated">Инструмент "{0}" успешно обновлен с версии "{1}" до версии "{2}".</target>
+        <target state="translated">Рабочая нагрузка "{0}" обновлена с версии "{1}" до версии "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateFullCommandNameLocalized">
@@ -79,12 +79,12 @@
       </trans-unit>
       <trans-unit id="UpdateSucceededVersionNoChange">
         <source>Workload '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">Инструмент "{0}" был переустановлен с последней стабильной версией (версией "{1}").</target>
+        <target state="translated">Рабочая нагрузка "{0}" была переустановлена с установкой последней стабильной версии (версия "{1}").</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateWorkloadFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
-        <target state="translated">Не удалось обновить инструмент "{0}" по следующей причине:</target>
+        <target state="translated">Не удалось обновить рабочую нагрузку "{0}" по следующей причине:</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionDescription">

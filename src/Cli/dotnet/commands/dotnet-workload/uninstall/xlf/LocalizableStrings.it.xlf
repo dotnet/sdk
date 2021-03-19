@@ -4,62 +4,57 @@
     <body>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to uninstall.</source>
-        <target state="translated">ID pacchetto NuGet dello strumento da disinstallare.</target>
+        <target state="translated">ID pacchetto NuGet del carico di lavoro da disinstallare.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Uninstall a workload.</source>
-        <target state="needs-review-translation">Disinstalla uno strumento globale o locale.</target>
+        <target state="translated">Disinstalla un carico di lavoro.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
+        <target state="translated">ID_PACCHETTO</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Specify one workload Package Id to uninstall.</source>
-        <target state="translated">Specificare un ID pacchetto dello strumento da disinstallare.</target>
+        <target state="translated">Specificare un ID pacchetto del carico di lavoro da disinstallare.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallLocalWorkloadSucceeded">
         <source>Workload '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
-        <target state="translated">Lo strumento '{0}' è stato disinstallato e rimosso dal file manifesto {1}.</target>
+        <target state="translated">Il carico di lavoro '{0}' è stato disinstallato e rimosso dal file manifesto {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallSucceeded">
         <source>Workload '{0}' (version '{1}') was successfully uninstalled.</source>
-        <target state="translated">Lo strumento '{0}' (versione '{1}') è stato disinstallato.</target>
+        <target state="translated">Il carico di lavoro '{0}' (versione '{1}') è stato disinstallato.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadNotInstalled">
         <source>A workload with the package Id '{0}' could not be found.</source>
-        <target state="needs-review-translation">Non è stato possibile trovare uno strumento con l'ID pacchetto '{0}'. 
-
-Per disinstallare gli strumenti, si usa il relativo ID pacchetto che potrebbe 
-essere diverso dal nome dello strumento usato quando si chiama lo strumento.
-Per trovare i nomi degli strumenti e gli ID pacchetto corrispondente 
-per gli strumenti installati, usare il comando 'dotnet workload list'.</target>
+        <target state="translated">Non è stato possibile trovare un carico di lavoro con ID pacchetto '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToUninstallWorkload">
         <source>Failed to uninstall workload '{0}': {1}</source>
-        <target state="translated">Non è stato possibile disinstallare lo strumento '{0}': {1}</target>
+        <target state="translated">Non è stato possibile disinstallare il carico di lavoro '{0}': {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidWorkloadPathOption">
         <source>Workload path '{0}' does not exist.</source>
-        <target state="translated">Il percorso '{0}' dello strumento non esiste.</target>
+        <target state="translated">Il percorso '{0}' del carico di lavoro non esiste.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
-        <target state="translated">PATH</target>
+        <target state="translated">PERCORSO</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionDescription">
         <source>The directory containing the workload to uninstall.</source>
-        <target state="translated">Directory contenente lo strumento da disinstallare.</target>
+        <target state="translated">Directory contenente il carico di lavoro da disinstallare.</target>
         <note />
       </trans-unit>
     </body>

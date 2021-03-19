@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Restore workloads required for the project.</source>
-        <target state="needs-review-translation">Восстановление средств, определенных в манифесте локального инструмента.</target>
+        <target state="translated">Восстановление рабочих нагрузок, необходимых для проекта.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageWarning">
         <source>Warning: workload package '{0}' is invalid</source>
-        <target state="new">Warning: workload package '{0}' is invalid</target>
+        <target state="translated">Внимание! Пакет рабочей нагрузки "{0}" является недопустимым.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsWereRestored">
         <source>No workloads were restored.</source>
-        <target state="translated">Не были восстановлены никакие средства.</target>
+        <target state="translated">Рабочие нагрузки не были восстановлены.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdColumn">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="translated">Версия устанавливаемого пакета инструмента.</target>
+        <target state="translated">Версия устанавливаемого пакета рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
@@ -69,12 +69,12 @@
       </trans-unit>
       <trans-unit id="RestoreFailed">
         <source>Restore failed.</source>
-        <target state="translated">Сбой восстановления.</target>
+        <target state="translated">Не удалось выполнить восстановление.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreSuccessful">
         <source>Workload '{0}' (version '{1}') was restored. Available commands: {2}</source>
-        <target state="translated">Средство "{0}" (версия "{1}") было восстановлено. Доступные команды: {2}</target>
+        <target state="translated">Рабочая нагрузка "{0}" (версия "{1}") была восстановлена. Доступные команды: {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">

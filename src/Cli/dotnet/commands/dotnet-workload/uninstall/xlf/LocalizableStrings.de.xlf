@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to uninstall.</source>
-        <target state="translated">Die NuGet-Paket-ID des Workloads, das deinstalliert werden soll.</target>
+        <target state="translated">Die NuGet-Paket-ID der Workload, die deinstalliert werden soll.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Uninstall a workload.</source>
-        <target state="needs-review-translation">Deinstallieren Sie ein globales oder lokales Workload.</target>
+        <target state="translated">Hiermit wird eine Workload deinstalliert.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentName">
@@ -24,27 +24,22 @@
       </trans-unit>
       <trans-unit id="UninstallLocalWorkloadSucceeded">
         <source>Workload '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
-        <target state="translated">Das Workload "{0}" wurde erfolgreich deinstalliert und aus der Manifestdatei "{1}" entfernt.</target>
+        <target state="translated">Die Workload "{0}" wurde erfolgreich deinstalliert und aus der Manifestdatei "{1}" entfernt.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallSucceeded">
         <source>Workload '{0}' (version '{1}') was successfully uninstalled.</source>
-        <target state="translated">Das Workload "{0}" (Version "{1}") wurde erfolgreich deinstalliert.</target>
+        <target state="translated">Die Workload "{0}" (Version {1}) wurde erfolgreich deinstalliert.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadNotInstalled">
         <source>A workload with the package Id '{0}' could not be found.</source>
-        <target state="needs-review-translation">Ein Workload mit der Paket-ID "{0}" wurde nicht gefunden. 
-
-Workloads werden unter Verwendung der zugehörigen Paket-ID deinstalliert. Diese unterscheidet sich möglicherweise 
-vom Workloadnamen, den Sie zum Aufrufen des Workloads verwenden. Sie können die Workloadnamen 
-und die zugehörigen Paket-IDs für installierte Workloads über den Befehl
-"dotnet workload list" abrufen.</target>
+        <target state="translated">Eine Workload mit der Paket-ID "{0}" wurde nicht gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToUninstallWorkload">
         <source>Failed to uninstall workload '{0}': {1}</source>
-        <target state="translated">Fehler beim Deinstallieren des Workloads "{0}": {1}</target>
+        <target state="translated">Fehler beim Deinstallieren der Workload "{0}": {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidWorkloadPathOption">
@@ -54,12 +49,12 @@ und die zugehörigen Paket-IDs für installierte Workloads über den Befehl
       </trans-unit>
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
-        <target state="translated">PATH</target>
+        <target state="translated">PFAD</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionDescription">
         <source>The directory containing the workload to uninstall.</source>
-        <target state="translated">Das Verzeichnis, das das zu deinstallierende Workload enthält.</target>
+        <target state="translated">Das Verzeichnis, das die zu deinstallierende Workload enthält.</target>
         <note />
       </trans-unit>
     </body>

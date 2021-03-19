@@ -14,27 +14,27 @@
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to update.</source>
-        <target state="translated">Güncelleştirilecek aracın NuGet Paket Kimliği.</target>
+        <target state="translated">Güncelleştirilecek iş yükünün NuGet Paket Kimliği.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Specify one workload Package Id to update.</source>
-        <target state="translated">Güncelleştirilecek tek bir aracın Paketi Kimliğini belirtin.</target>
+        <target state="translated">Güncelleştirilecek tek bir iş yükünün Paketi Kimliğini belirtin.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaWorkloadSucceededVersionNoChange">
         <source>Workload '{0}' is up to date.</source>
-        <target state="new">Workload '{0}' is up to date.</target>
+        <target state="translated">'{0}' iş yükü güncel.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaWorkloadToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
-        <target state="new">The requested version {0} is lower than existing version {1}.</target>
+        <target state="translated">İstenen sürümü ({0}) mevcut sürümünden ({1}) düşük.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocalWorkloadSucceeded">
         <source>Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
-        <target state="new">Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</target>
+        <target state="translated">'{0}' iş yükü, '{1}' sürümünden '{2}' sürümüne başarıyla güncelleştirildi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
@@ -44,12 +44,12 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version range of the workload package to update to.</source>
-        <target state="translated">Araç paketinin güncelleştirileceği sürüm aralığı.</target>
+        <target state="translated">İş yükü paketinin güncelleştirileceği sürüm aralığı.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update a workload.</source>
-        <target state="needs-review-translation">Genel bir aracı güncelleştirin.</target>
+        <target state="translated">İş yükünü güncelleştirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to update the workload for.</source>
-        <target state="translated">Aracın güncelleştirileceği hedef çerçeve.</target>
+        <target state="translated">İş yükünün güncelleştirileceği hedef çerçeve.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetConfigurationFileDoesNotExist">
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Workload '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
-        <target state="translated">'{0}' aracı, '{1}' sürümünden '{2}' sürümüne başarıyla güncelleştirildi.</target>
+        <target state="translated">'{0}' iş yükü, '{1}' sürümünden '{2}' sürümüne başarıyla güncelleştirildi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateFullCommandNameLocalized">
@@ -79,12 +79,12 @@
       </trans-unit>
       <trans-unit id="UpdateSucceededVersionNoChange">
         <source>Workload '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">'{0}' aracı, en son kararlı sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
+        <target state="translated">'{0}' iş yükü, en son kararlı sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateWorkloadFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
-        <target state="translated">Aşağıdaki nedenlerle '{0}' aracı güncelleştirilemedi:</target>
+        <target state="translated">Aşağıdaki nedenlerle '{0}' iş yükü güncelleştirilemedi:</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionDescription">
@@ -104,12 +104,12 @@
       </trans-unit>
       <trans-unit id="FrameworkOptionName">
         <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
+        <target state="translated">ÇERÇEVE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
         <source>VERSION</source>
-        <target state="translated">VERSION</target>
+        <target state="translated">SÜRÜM</target>
         <note />
       </trans-unit>
     </body>

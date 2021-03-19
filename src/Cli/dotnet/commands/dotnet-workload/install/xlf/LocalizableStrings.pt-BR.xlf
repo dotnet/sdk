@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="InstallationSucceeded">
         <source>Workload '{0}' (version '{1}') was successfully installed.</source>
-        <target state="new">Workload '{0}' (version '{1}') was successfully installed.</target>
+        <target state="translated">A carga de trabalho '{0}' (versão '{1}') foi instalada com êxito.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidWorkloadConfiguration">
         <source>The settings file in the workload's NuGet package is invalid: {0}</source>
-        <target state="new">The settings file in the workload's NuGet package is invalid: {0}</target>
+        <target state="translated">O arquivo de configurações no pacote NuGet da carga de trabalho é inválido: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestPathOptionDescription">
@@ -19,12 +19,12 @@
       </trans-unit>
       <trans-unit id="ManifestPathOptionName">
         <source>PATH</source>
-        <target state="translated">PATH</target>
+        <target state="translated">CAMINHO</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Install a workload.</source>
-        <target state="needs-review-translation">Instale a ferramentas local ou global. Ferramentas locais são adicionadas ao manifesto e restauradas.</target>
+        <target state="translated">Instalar uma carga de trabalho.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to install the workload for.</source>
-        <target state="needs-review-translation">A estrutura de destino para a qual instalar a ferramenta.</target>
+        <target state="translated">A estrutura de destino para a qual a carga de trabalho será instalada.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="needs-review-translation">A versão do pacote da ferramenta a ser instalada.</target>
+        <target state="translated">A versão do pacote de carga de trabalho a ser instalada.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallFullCommandNameLocalized">
@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <target state="translated">ORIGEM</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="ConfigFileOptionName">
         <source>FILE</source>
-        <target state="translated">FILE</target>
+        <target state="translated">ARQUIVO</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkOptionName">
@@ -84,32 +84,32 @@
       </trans-unit>
       <trans-unit id="WorkloadAlreadyInstalled">
         <source>Workload '{0}' is already installed.</source>
-        <target state="new">Workload '{0}' is already installed.</target>
+        <target state="translated">A carga de trabalho '{0}' já está instalada.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentDescription">
         <source>The NuGet Package Id of the workload to install.</source>
-        <target state="new">The NuGet Package Id of the workload to install.</target>
+        <target state="translated">A ID do Pacote NuGet da carga de trabalho a ser instalada.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="new">PACKAGE_ID</target>
+        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallationFailed">
         <source>Workload '{0}' failed to install.</source>
-        <target state="new">Workload '{0}' failed to install.</target>
+        <target state="translated">Falha na instalação da carga de trabalho '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionDescription">
         <source>The directory where the workload will be installed. The directory will be created if it does not exist.</source>
-        <target state="new">The directory where the workload will be installed. The directory will be created if it does not exist.</target>
+        <target state="translated">O diretório no qual a carga de trabalho será instalada. Ele será criado se ainda não existir.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
-        <target state="new">PATH</target>
+        <target state="translated">CAMINHO</target>
         <note />
       </trans-unit>
     </body>

@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Restore workloads required for the project.</source>
-        <target state="needs-review-translation">Restaure les outils définis dans le manifeste d'outils locaux.</target>
+        <target state="translated">Restaurez les charges de travail nécessaires au projet.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageWarning">
         <source>Warning: workload package '{0}' is invalid</source>
-        <target state="new">Warning: workload package '{0}' is invalid</target>
+        <target state="translated">Avertissement : Le package de charge de travail '{0}' n'est pas valide</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsWereRestored">
         <source>No workloads were restored.</source>
-        <target state="translated">Aucun outil n'a été restauré.</target>
+        <target state="translated">Aucune charge de travail n'a été restaurée.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdColumn">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the workload package to install.</source>
-        <target state="translated">Version du package d'outils à installer.</target>
+        <target state="translated">Version du package de charge de travail à installer.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
@@ -69,12 +69,12 @@
       </trans-unit>
       <trans-unit id="RestoreFailed">
         <source>Restore failed.</source>
-        <target state="translated">La restauration a échoué.</target>
+        <target state="translated">Échec de la restauration.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreSuccessful">
         <source>Workload '{0}' (version '{1}') was restored. Available commands: {2}</source>
-        <target state="translated">L'outil '{0}' (version '{1}') a été restauré. Commandes disponibles : {2}</target>
+        <target state="translated">La charge de travail '{0}' (version '{1}') a été restaurée. Commandes disponibles : {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
