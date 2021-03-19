@@ -11,7 +11,7 @@
 
     <MakeDir Directories="$(ArtifactsTmpDir)" Condition="!Exists('$(ArtifactsTmpDir)')" />
 
-    <!-- Logic copied from https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Arcade.Sdk/tools/Sign.proj -->
+    <!-- Logic copied from https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Arcade.Sdk/tools/Sign.proj -->
     <Error Text="The value of DotNetSignType is invalid: '$(DotNetSignType)'"
        Condition="'$(DotNetSignType)' != 'real' and '$(DotNetSignType)' != 'test' and '$(DotNetSignType)' != ''" />
 
