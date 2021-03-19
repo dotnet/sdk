@@ -137,6 +137,10 @@
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
     <VSRedistCommonWindowsDesktopSharedFrameworkx6460PackageVersion>6.0.0-preview.3.21167.3</VSRedistCommonWindowsDesktopSharedFrameworkx6460PackageVersion>
   </PropertyGroup>
+  <PropertyGroup Label="Manually updated">
+    <!-- Dependencies from https://github.com/microsoft/MSBuildLocator -->
+    <MicrosoftBuildLocatorPackageVersion>1.4.1</MicrosoftBuildLocatorPackageVersion>
+  </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
