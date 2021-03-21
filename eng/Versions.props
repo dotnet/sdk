@@ -14,7 +14,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNETCoreCompilersPackageVersion>3.10.0-2.21169.30</MicrosoftNETCoreCompilersPackageVersion>
+    <MicrosoftNETCoreCompilersPackageVersion>3.10.0-2.21170.16</MicrosoftNETCoreCompilersPackageVersion>
   </PropertyGroup>
   <!--
     Other Dependency versions
