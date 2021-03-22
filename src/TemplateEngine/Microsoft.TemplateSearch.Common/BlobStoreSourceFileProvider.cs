@@ -97,14 +97,6 @@ namespace Microsoft.TemplateSearch.Common
             {
                 return true;
             }
-
-            // use the in-box shipped file. It's probably very stale, but better than nothing.
-            if (paths.FileExists(paths.User.NuGetScrapedTemplateSearchFile))
-            {
-                paths.Copy(paths.User.NuGetScrapedTemplateSearchFile, metadataFileTargetLocation);
-                return true;
-            }
-
             return false;
         }
 

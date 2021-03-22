@@ -246,7 +246,6 @@ namespace Microsoft.TemplateEngine.Edge
             private string _builtInsFeed;
             private string _defaultInstallPackageList;
             private string _defaultInstallTemplateList;
-            private string _defaultTemplateSearchData;
             private readonly Paths _parent;
 
             public GlobalPaths(Paths parent)
@@ -275,8 +274,6 @@ namespace Microsoft.TemplateEngine.Edge
             public string DefaultInstallPackageList => _parent.GetOrComputePath(ref _defaultInstallPackageList, BaseDir, "defaultinstall.package.list");
 
             public string DefaultInstallTemplateList => _parent.GetOrComputePath(ref _defaultInstallTemplateList, BaseDir, "defaultinstall.template.list");
-
-            public string DefaultInstallTemplateSearchData => _parent.GetOrComputePath(ref _defaultTemplateSearchData, BaseDir, "defaultinstall.TemplateSearchInfo.json");
         }
 
         public class UserPaths
@@ -290,7 +287,6 @@ namespace Microsoft.TemplateEngine.Edge
             private string _installUnitDescriptorsFile;
             private string _contentDir;
             private string _packagesDir;
-            private string _nugetScrapedTemplatesFile;
 
             public UserPaths(Paths parent)
             {
@@ -314,8 +310,6 @@ namespace Microsoft.TemplateEngine.Edge
             public string SettingsFile => _parent.GetOrComputePath(ref _settingsFile, BaseDir, "settings.json");
 
             public string InstallUnitDescriptorsFile => _parent.GetOrComputePath(ref _installUnitDescriptorsFile, BaseDir, "installUnitDescriptors.json");
-
-            public string NuGetScrapedTemplateSearchFile => _parent.GetOrComputePath(ref _nugetScrapedTemplatesFile, BaseDir, "inBoxNugetScrapedTemplateSearchFile.json");
 
             public string CultureNeutralTemplateCacheFile
             {
