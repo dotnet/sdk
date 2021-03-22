@@ -18,6 +18,12 @@
     <PackageDownload Include="@(BundledManifestsForPackageDownload)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <BundledManifests Update="@(BundledManifests)" >
+      <RestoredNupkgContentPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/$([MSBuild]::ValueOrDefault('%(Version)', '').ToLower())</RestoredNupkgContentPath>
+    </BundledManifests>
+  </ItemGroup>
+
   <Target Name="LayoutManifests"
         DependsOnTargets="LayoutManifestsForSDK;LayoutManifestsForMSI" />
 
@@ -60,10 +66,6 @@
     </GenerateGuidFromName>
       
     <ItemGroup>
-      <BundledManifests Update="@(BundledManifests)" >
-        <RestoredNupkgContentPath>$(NuGetPackageRoot)%(Identity)/%(Version)</RestoredNupkgContentPath>
-      </BundledManifests>
-      
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\**\*.json;%(BundledManifests.RestoredNupkgContentPath)\**\*.targets"
                        DestinationPath="%(WorkloadManifestId)/"/>
     </ItemGroup>
