@@ -69,6 +69,8 @@
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\**\*.json;%(BundledManifests.RestoredNupkgContentPath)\**\*.targets"
                        DestinationPath="%(WorkloadManifestId)/"/>
     </ItemGroup>
+
+    <Error Text="No workload manifest content found." Condition="'@(ManifestContent->Count())' == '0'" />
   </Target>
 
 </Project>
