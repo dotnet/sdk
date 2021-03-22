@@ -60,7 +60,7 @@ Here is a list (alpha sorted) of templates which are available for use with `dot
 | [Freya](https://freya.io) | `dotnet new --install "Freya.Template::*"` |
 | [Giraffe Template](https://github.com/giraffe-fsharp/giraffe-template) | `dotnet new -i "giraffe-template::*"` |
 | [GtkSharp](https://github.com/GtkSharp/GtkSharp) | `dotnet new -i "GtkSharp.Template.FSharp"` |
-| [Interstellar](https:/github.com/jwosty/Interstellar) | `dotnet new -i "Interstellar.Template"` |
+| [Interstellar](https://github.com/fsprojects/Interstellar) | `dotnet new -i "Interstellar.Template"` |
 | [MiniScaffold](https://github.com/TheAngryByrd/MiniScaffold) - F# Template for creating and publishing libraries targeting .NET Full (net45) and Core (netstandard1.6) | `dotnet new -i "MiniScaffold::*"` |
 | [NancyFx](https://github.com/MNie/NancyFxCore)| `dotnet new -i "NancyFx.Core.Template::*"`|
 | [SAFE Template](https://safe-stack.github.io/)| `dotnet new -i "SAFE.Template::*"`|
