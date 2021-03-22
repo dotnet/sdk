@@ -561,7 +561,10 @@ An ordered list of possible instructions to display if the action cannot be perf
 Additional configuration for the associated post action. The structure & content will vary based on the post action.
 
 ## Packaging
-Currently, the template should be packed with [nuget.exe](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) (not [dotnet-pack](https://docs.microsoft.com/en-us/dotnet/articles/core/tools/dotnet-pack)).
+
+The NuGet packages for the templates can be created using:
+- [dotnet-pack](https://docs.microsoft.com/en-us/dotnet/articles/core/tools/dotnet-pack), see the [tutorial](https://docs.microsoft.com/en-us/dotnet/core/tutorials/cli-templates-create-template-pack) for creating the template packages using dotnet pack
+- [nuget.exe](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe)
 
 The whole contents of the project folder, together with the `.template.config\template.json` file, needs to be placed into a folder named `content`. Besides the `content` folder there needs to be a [.nuspec file](https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package) created. A `packageTypes\packageType` element with the value `Template` should be present in that file.
 
