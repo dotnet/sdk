@@ -462,7 +462,7 @@ $@"<Project>
 
                         writer.Write("typeName", rule.Value.typeName);
 
-                        if ((rule.Value.languages?.Length ?? 0) > 0)
+                        if (rule.Value.languages?.Length > 0)
                         {
                             writer.WriteArrayStart("languages");
 
@@ -547,7 +547,7 @@ $@"<Project>
 Rule ID | Missing Help Link | Title |
 --------|-------------------|-------|
 ");
-                string[]? actualContent = null;
+                var actualContent = Array.Empty<string>();
                 if (validateOnly)
                 {
                     actualContent = File.ReadAllLines(fileWithPath);
