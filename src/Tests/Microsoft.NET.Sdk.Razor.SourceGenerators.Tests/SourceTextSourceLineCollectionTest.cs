@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.InteropServices;
 using Xunit;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
@@ -68,7 +69,9 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators.Tests
             var location = collection.GetLocation(length);
 
             // Assert
-            var expected = new SourceLocation("dummy", length, 1, 38);
+            // Conditional check to account for line endings on Windows
+            var lineLength = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 39 : 38;
+            var expected = new SourceLocation("dummy", length, 1, lineLength);
             Assert.Equal(expected, location);
         }
 
