@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
-    <NoWarn>NU1605</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
