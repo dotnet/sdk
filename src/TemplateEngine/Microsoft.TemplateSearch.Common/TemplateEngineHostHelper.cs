@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.TemplateEngine.Edge;
-using Microsoft.TemplateEngine.Edge.TemplateUpdates;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
 using Microsoft.TemplateEngine.Utils;
 
@@ -37,7 +36,7 @@ namespace Microsoft.TemplateSearch.Common
             var builtIns = new AssemblyComponentCatalog(new[]
             {
                 typeof(RunnableProjectGenerator).GetTypeInfo().Assembly,    // RPG
-                typeof(NupkgInstallUnitDescriptorFactory).GetTypeInfo().Assembly,   // edge
+                typeof(Microsoft.TemplateEngine.Edge.Template.TemplateCreator).GetTypeInfo().Assembly,   // edge
             });
 
             // use "dotnetcli" as a fallback host so the correct host specific files are read.

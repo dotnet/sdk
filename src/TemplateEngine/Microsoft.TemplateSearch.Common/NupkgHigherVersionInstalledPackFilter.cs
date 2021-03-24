@@ -1,20 +1,19 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
-using Microsoft.TemplateEngine.Edge.TemplateUpdates;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateSearch.Common
 {
     public class NupkgHigherVersionInstalledPackFilter : ISearchPackFilter
     {
-        private readonly IReadOnlyList<IInstallUnitDescriptor> _existingInstallDescriptors;
-        private IReadOnlyDictionary<string, SemanticVersion> _existingInstallDescriptorFilterData;
+        private readonly IReadOnlyList<IManagedTemplatePackage> _existingTemplatePackage;
+        private IReadOnlyDictionary<string, string> _existingTemplatePackageFilterData;
         private bool _isInitialized;
 
-        public NupkgHigherVersionInstalledPackFilter(IReadOnlyList<IInstallUnitDescriptor> existingInstallDecriptors)
+        public NupkgHigherVersionInstalledPackFilter(IReadOnlyList<IManagedTemplatePackage> existingInstallDecriptors)
         {
-            _existingInstallDescriptors = existingInstallDecriptors;
+            _existingTemplatePackage = existingInstallDecriptors;
             _isInitialized = false;
         }
 
@@ -25,18 +24,14 @@ namespace Microsoft.TemplateSearch.Common
                 return;
             }
 
-            Dictionary<string, SemanticVersion> filterData = new Dictionary<string, SemanticVersion>();
+            Dictionary<string, string> filterData = new Dictionary<string, string>();
 
-            foreach (IInstallUnitDescriptor descriptor in _existingInstallDescriptors)
+            foreach (IManagedTemplatePackage descriptor in _existingTemplatePackage)
             {
-                if (descriptor is NupkgInstallUnitDescriptor nupkgDescriptor
-                    && SemanticVersion.TryParse(nupkgDescriptor.Version, out SemanticVersion descriptorVersion))
-                {
-                    filterData[nupkgDescriptor.UninstallString] = descriptorVersion;
-                }
+                filterData[descriptor.Identifier] = descriptor.Version;
             }
 
-            _existingInstallDescriptorFilterData = filterData;
+            _existingTemplatePackageFilterData = filterData;
 
             _isInitialized = true;
         }
@@ -45,20 +40,13 @@ namespace Microsoft.TemplateSearch.Common
         {
             EnsureInitialized();
 
-            if (!_existingInstallDescriptorFilterData.TryGetValue(candidatePackName, out SemanticVersion existingPackVersion))
+            if (!_existingTemplatePackageFilterData.TryGetValue(candidatePackName, out string existingPackVersion))
             {
                 // no existing install of this pack - don't filter it
                 return false;
             }
 
-            if (!SemanticVersion.TryParse(candidatePackVersion, out SemanticVersion candidateVersion))
-            {
-                // The candidate pack version didn't parse. So not filtering it - this might want to be revisited.
-                // Realistically, this probably can't happen.
-                return false;
-            }
-
-            return existingPackVersion >= candidateVersion;
+            return existingPackVersion != candidatePackVersion;
         }
     }
 }
