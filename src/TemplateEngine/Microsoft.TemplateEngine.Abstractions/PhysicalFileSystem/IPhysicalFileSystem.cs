@@ -37,5 +37,7 @@ namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
         FileAttributes GetFileAttributes(string file);
 
         void SetFileAttributes(string file, FileAttributes attributes);
+
+        IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged);
     }
 }

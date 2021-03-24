@@ -886,5 +886,10 @@ namespace Microsoft.TemplateEngine.Utils
 
             targetFile.LastWriteTimeUtc = lastWriteTimeUtc;
         }
+
+        public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged)
+        {
+            return new MemoryStream();//Just some disposable dummy
+        }
     }
 }

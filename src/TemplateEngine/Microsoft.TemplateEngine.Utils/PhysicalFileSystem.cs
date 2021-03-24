@@ -101,5 +101,13 @@ namespace Microsoft.TemplateEngine.Utils
         {
             File.SetLastWriteTimeUtc(file, lastWriteTimeUtc);
         }
+
+        public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged)
+        {
+            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(filepath), Path.GetFileName(filepath));
+            watcher.Changed += fileChanged;
+            watcher.EnableRaisingEvents = true;
+            return watcher;
+        }
     }
 }
