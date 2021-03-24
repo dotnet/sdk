@@ -17,6 +17,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="NuGet.Configuration" Version="5.8.1" />
+        <PackageReference Include="NuGet.Credentials" Version="5.8.1" />
+        <PackageReference Include="NuGet.Protocol" Version="5.8.1" />
         <PackageReference Include="System.IO.Compression" />
         <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFramework)' != '$(NETFullTargetFramework)'"/>
