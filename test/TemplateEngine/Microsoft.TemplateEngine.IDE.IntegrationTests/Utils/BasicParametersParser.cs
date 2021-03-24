@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
 {
@@ -30,7 +31,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             {
                 return parametersArray[outputIndex + 1];
             }
-            return TestHelper.CreateTemporaryFolder();
+            return TestUtils.CreateTemporaryFolder();
         }
 
         internal static Dictionary<string, string> ParseParameterString(string parameters)

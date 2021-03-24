@@ -24,27 +24,16 @@ namespace Microsoft.TemplateEngine.Mocks
         /// <summary>
         /// Contains the list of mount points that are considered to be unavailable when demanding
         /// </summary>
-        public List<MountPointInfo> UnavailableMountPoints { get; } = new List<MountPointInfo>();
+        public List<string> UnavailableMountPoints { get; } = new List<string>();
 
         public void ReleaseMountPoint(IMountPoint mountPoint)
         {
             // do nothing
         }
 
-        public bool TryDemandMountPoint(MountPointInfo info, out IMountPoint mountPoint)
+        public bool TryDemandMountPoint(string mountPointUri, out IMountPoint mountPoint)
         {
-            if (UnavailableMountPoints.Any(m => m.MountPointId == info.MountPointId))
-            {
-                mountPoint = null;
-                return false;
-            }
-            mountPoint = new MockMountPoint(EnvironmentSettings);
-            return true;
-        }
-
-        public bool TryDemandMountPoint(Guid mountPointId, out IMountPoint mountPoint)
-        {
-            if (UnavailableMountPoints.Any(m => m.MountPointId == mountPointId))
+            if (UnavailableMountPoints.Any(m => m == mountPointUri))
             {
                 mountPoint = null;
                 return false;

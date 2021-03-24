@@ -3,12 +3,16 @@
         <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
         <TestProject>true</TestProject>
     </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
         <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.IDE\Microsoft.TemplateEngine.IDE.csproj" />
         <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
         <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
+        <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
 
     </ItemGroup>
 </Project>

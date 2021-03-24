@@ -38,8 +38,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 configFile = DefaultConfigRelativePath;
             }
 
-            string fullPath = Path.Combine(mountPoint.Info.Place, configFile);
-            string configContent = environment.Host.FileSystem.ReadAllText(fullPath);
+            using Stream stream = mountPoint.FileInfo(configFile).OpenRead();
+            using StreamReader streamReader = new StreamReader(stream);
+            string configContent = streamReader.ReadToEnd();
 
             JObject configJson = JObject.Parse(configContent);
             return SimpleConfigModel.FromJObject(environment, configJson);

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -13,13 +13,13 @@ namespace Microsoft.TemplateEngine.Mocks
             MockRoot = new MockDirectory("/", "/", this, null);
         }
 
-        public MountPointInfo Info { get; set; }
-
         public IDirectory Root => MockRoot;
 
         public MockDirectory MockRoot { get; }
 
         public IEngineEnvironmentSettings EnvironmentSettings { get; set; }
+
+        public string MountPointUri { get; }
 
         public IFileSystemInfo FileSystemInfo(string fullPath)
         {
@@ -84,6 +84,10 @@ namespace Microsoft.TemplateEngine.Mocks
             }
 
             return new MockFile(fullPath, this);
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

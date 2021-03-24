@@ -180,15 +180,11 @@ namespace Microsoft.TemplateEngine.Mocks
             }
         }
 
-        public Guid ConfigMountPointId { get; }
+        public string MountPointUri { get; }
 
         public string ConfigPlace { get; }
 
-        public Guid LocaleConfigMountPointId { get; }
-
         public string LocaleConfigPlace { get; }
-
-        public Guid HostConfigMountPointId { get; }
 
         public string HostConfigPlace { get; }
 

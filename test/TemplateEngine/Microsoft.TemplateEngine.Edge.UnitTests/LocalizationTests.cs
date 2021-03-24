@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
@@ -15,15 +16,17 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class LocalizationTests
+    public class LocalizationTests : IDisposable
     {
+        EnvironmentSettingsHelper _helper = new EnvironmentSettingsHelper();
+
         [Theory]
         [InlineData(null, "name")]
         [InlineData("de-DE", "name_de-DE:äÄßöÖüÜ")]
         [InlineData("tr-TR", "name_tr-TR:çÇğĞıIİöÖşŞüÜ")]
         public void TestLocalizedTemplateName(string locale, string expectedName)
         {
-            _ = LoadHostWithLocalizationTemplates(locale, out _, out TemplateInfo localizationTemplate);
+            _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
             Assert.Equal(expectedName, localizationTemplate.Name);
         }
@@ -34,7 +37,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("tr-TR", "desc_tr-TR:çÇğĞıIİöÖşŞüÜ")]
         public void TestLocalizedTemplateDescription(string locale, string expectedDescription)
         {
-            _ = LoadHostWithLocalizationTemplates(locale, out _, out TemplateInfo localizationTemplate);
+            _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
             Assert.Equal(expectedDescription, localizationTemplate.Description);
         }
@@ -45,7 +48,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("tr-TR", "someSymbol", "sym0_displayName_tr-TR:çÇğĞıIİöÖşŞüÜ")]
         public void TestLocalizedSymbolDisplayName(string locale, string symbolName, string expectedDisplayName)
         {
-            _ = LoadHostWithLocalizationTemplates(locale, out _, out TemplateInfo localizationTemplate);
+            _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
             KeyValuePair<string, ICacheParameter>? symbol = localizationTemplate.CacheParameters?.FirstOrDefault(p => p.Key == symbolName);
             Assert.NotNull(symbol);
@@ -58,7 +61,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("tr-TR", "someChoice", "sym1_displayName")]
         public void TestLocalizedSymbolChoiceDisplayName(string locale, string symbolName, string expectedDisplayName)
         {
-            _ = LoadHostWithLocalizationTemplates(locale, out _, out TemplateInfo localizationTemplate);
+            _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
             KeyValuePair<string, ICacheTag>? symbol = localizationTemplate.Tags?.FirstOrDefault(p => p.Key == symbolName);
             Assert.NotNull(symbol);
@@ -71,7 +74,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("tr-TR", "sym0_desc_tr-TR:çÇğĞıIİöÖşŞüÜ")]
         public void TestLocalizedSymbolDescription(string locale, string expectedDescription)
         {
-            _ = LoadHostWithLocalizationTemplates(locale, out _, out TemplateInfo localizationTemplate);
+            _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
             KeyValuePair<string, ICacheParameter>? symbol = localizationTemplate.CacheParameters?.FirstOrDefault(p => p.Key == "someSymbol");
             Assert.NotNull(symbol);
@@ -89,7 +92,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string choice1Desc,
             string choice2Desc)
         {
-            _ = LoadHostWithLocalizationTemplates(locale, out _, out TemplateInfo localizationTemplate);
+            _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
             KeyValuePair<string, ICacheTag>? tag = localizationTemplate.Tags?.FirstOrDefault(p => p.Key == "someChoice");
             Assert.NotNull(tag);
@@ -120,7 +123,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string expectedDescription,
             string expectedManualInstructions)
         {
-            _ = LoadHostWithLocalizationTemplates(locale, out SettingsLoader settingsLoader, out TemplateInfo localizationTemplate);
+            _ = LoadHostWithLocalizationTemplates(locale, out ISettingsLoader settingsLoader, out ITemplateInfo localizationTemplate);
 
             ITemplate template = settingsLoader.LoadTemplate(localizationTemplate, null);
             Assert.NotNull(template);
@@ -129,7 +132,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             ICreationEffects effects = template.Generator.GetCreationEffects(
                 settingsLoader.EnvironmentSettings,
                 template,
-                new MockParameterSet(),
+                template.Generator.GetParametersForTemplate(settingsLoader.EnvironmentSettings, template),
                 settingsLoader.Components,
                 Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
                 );
@@ -142,43 +145,33 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(expectedManualInstructions, effects.CreationResult.PostActions[postActionIndex].ManualInstructions);
         }
 
-        private ITemplateEngineHost LoadHostWithLocalizationTemplates(string locale, out SettingsLoader settingsLoaderOut, out TemplateInfo localizationTemplate)
+        class TemplatesFactory : ITemplatePackagesProviderFactory
         {
-            var thisDir = Path.GetDirectoryName(typeof(LocalizationTests).Assembly.Location);
-            var testTemplatesFolder = Path.Combine(thisDir, "..", "..", "..", "..", "..",
-                "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates", "TemplateWithLocalization");
+            public string Name => nameof(LocalizationTests);
 
-            testTemplatesFolder = new DirectoryInfo(testTemplatesFolder).FullName;
+            public Guid Id => new Guid("{3DB0E733-6411-4898-B500-65B122309A9B}");
 
-            ITemplateEngineHost host = new TestHost
-            {
-                HostIdentifier = "TestRunner",
-                Version = "1.0.0.0",
-                FallbackHostTemplateConfigNames = Array.Empty<string>(),
-            };
+            public ITemplatePackagesProvider CreateProvider(IEngineEnvironmentSettings settings) =>
+                new DefaultTemplatePackageProvider(this, settings, null, new[] {
+                    Path.Combine(Path.GetDirectoryName(typeof(LocalizationTests).Assembly.Location), "..", "..", "..", "..", "..",
+                "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates", "TemplateWithLocalization") });
+        }
 
-            SettingsLoader settingsLoader = null;
-            var envSettings = new EngineEnvironmentSettings(host, x => settingsLoader = new SettingsLoader(x));
+        private ITemplateEngineHost LoadHostWithLocalizationTemplates(string locale, out ISettingsLoader settingsLoaderOut, out ITemplateInfo localizationTemplate)
+        {
+            var env = _helper.CreateEnvironment(locale);
+            env.SettingsLoader.Components.Register(typeof(TemplatesFactory));
+            settingsLoaderOut = env.SettingsLoader;
 
-            host.VirtualizeDirectory(Path.Combine(
-                Environment.ExpandEnvironmentVariables("%USERPROFILE%"),
-                ".templateengine",
-                "TestRunner"));
-            settingsLoader.Components.Register(typeof(RunnableProjectGenerator));
-
-            settingsLoader.UserTemplateCache.Scan(testTemplatesFolder);
-            settingsLoader.Save();
-            settingsLoaderOut = settingsLoader;
-
-            IReadOnlyList<TemplateInfo> localizedTemplates = settingsLoader.UserTemplateCache.GetTemplatesForLocale(
-                locale,
-                SettingsStore.CurrentVersion);
+            IReadOnlyList<ITemplateInfo> localizedTemplates = settingsLoaderOut.GetTemplatesAsync(default).Result;
 
             Assert.True(localizedTemplates.Count != 0, "Test template couldn't be loaded.");
             localizationTemplate = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
             Assert.NotNull(localizationTemplate);
 
-            return host;
+            return env.Host;
         }
+
+        public void Dispose() => _helper.Dispose();
     }
 }

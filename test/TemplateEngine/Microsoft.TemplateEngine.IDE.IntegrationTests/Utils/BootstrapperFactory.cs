@@ -18,9 +18,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
         private const string HostIdentifier = "IDE.IntegrationTests";
         private const string HostVersion = "v1.0.0";
 
-        internal static Bootstrapper GetBootstrapper(bool installAllTemplates = false, IEnumerable<string> additionalVirtualLocations = null)
+        internal static Bootstrapper GetBootstrapper(IEnumerable<string> additionalVirtualLocations = null, bool loadBuiltInTemplates = false)
         {
-            ITemplateEngineHost host = CreateHost();
+            ITemplateEngineHost host = CreateHost(loadBuiltInTemplates);
             if (additionalVirtualLocations != null)
             {
                 foreach (string virtualLocation in additionalVirtualLocations)
@@ -28,37 +28,28 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
                     host.VirtualizeDirectory(virtualLocation);
                 }
             }
-
-            if (installAllTemplates)
-            {
-                return new Bootstrapper(host, InstallAllTemplatesOnFirstRun, true);
-            }
             return new Bootstrapper(host, null, true);
         }
 
-        private static ITemplateEngineHost CreateHost()
+        private static ITemplateEngineHost CreateHost(bool loadBuiltInTemplates = false)
         {
             var preferences = new Dictionary<string, string>
             {
                 { "prefs:language", "C#" }
             };
 
-            var builtIns = new AssemblyComponentCatalog(new[]
+            var builtIns = new List<Assembly>
             {
                 typeof(RunnableProjectGenerator).GetTypeInfo().Assembly,            // for assembly: Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 typeof(AssemblyComponentCatalog).GetTypeInfo().Assembly,            // for assembly: Microsoft.TemplateEngine.Edge
-            });
-            return new DefaultTemplateEngineHost(HostIdentifier + Guid.NewGuid().ToString(), HostVersion, preferences, builtIns, Array.Empty<string>());
-        }
+            };
 
-        private static void InstallAllTemplatesOnFirstRun(IEngineEnvironmentSettings environmentSettings, IInstaller installer)
-        {
-            string codebase = typeof(BootstrapperFactory).GetTypeInfo().Assembly.Location;
-            string dir = Path.GetDirectoryName(codebase);
+            if (loadBuiltInTemplates)
+            {
+                builtIns.Add(typeof(BootstrapperFactory).GetTypeInfo().Assembly);
+            }
 
-            string templates = Path.Combine(dir, "..", "..", "..", "..", "..", "template_feed") + Path.DirectorySeparatorChar;
-            string testTemplates = Path.Combine(dir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates") + Path.DirectorySeparatorChar;
-            installer.InstallPackages(new[] { templates, testTemplates });
+            return new DefaultTemplateEngineHost(HostIdentifier + Guid.NewGuid().ToString(), HostVersion, preferences, new AssemblyComponentCatalog(builtIns), Array.Empty<string>());
         }
     }
 }

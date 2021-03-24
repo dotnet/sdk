@@ -21,9 +21,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CheckTemplateRootRelativeToInstallPath(string pathToTemplateJson, bool shouldAllPathsBeValid)
         {
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(pathToTemplateJson, BasicTemplateConfig);
-            TestTemplateSetup setup = new TestTemplateSetup(EngineEnvironmentSettings, sourcePath, templateSourceFiles);
+            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
+            templatePackageFiles.Add(pathToTemplateJson, BasicTemplateConfig);
+            TestTemplateSetup setup = new TestTemplateSetup(EngineEnvironmentSettings, sourcePath, templatePackageFiles);
             setup.WriteSource();
 
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
@@ -38,22 +38,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         }
 
         // Tests source paths when the mount point root is the same as the template root.
-        [Theory(DisplayName = nameof(CheckTemplateSourcesRelativeToTemplateRoot))]
+        [Theory(DisplayName = nameof(CheckTemplatePackagesRelativeToTemplateRoot))]
         [InlineData(true, "things/")]
         [InlineData(true, "things/stuff/")]
         [InlineData(true, "./")]
         [InlineData(false, "../")]  // outside the mount point, combining throws and is caught.
         [InlineData(false, "foo/")] // not valid because the path doesn't exist under the root.
-        public void CheckTemplateSourcesRelativeToTemplateRoot(bool shouldAllPathsBeValid, string source)
+        public void CheckTemplatePackagesRelativeToTemplateRoot(bool shouldAllPathsBeValid, string source)
         {
             const string pathToTemplateConfig = ".template.config/template.json";
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
 
             string templateConfig = String.Format(TemplateConfigWithSourcePlaceholder, source);
-            templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
-            templateSourceFiles.Add("things/stuff/_._", "");    // directories under the root - valid source locations.
-            TestTemplateSetup setup = new TestTemplateSetup(EngineEnvironmentSettings, sourcePath, templateSourceFiles);
+            templatePackageFiles.Add(pathToTemplateConfig, templateConfig);
+            templatePackageFiles.Add("things/stuff/_._", "");    // directories under the root - valid source locations.
+            TestTemplateSetup setup = new TestTemplateSetup(EngineEnvironmentSettings, sourcePath, templatePackageFiles);
             setup.WriteSource();
 
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal(shouldAllPathsBeValid, allPathsAreValid);
         }
 
-        [Theory(DisplayName = nameof(CheckTemplateSourcesRelativeToTemplateRootMultipleDirsUnderMountPoint))]
+        [Theory(DisplayName = nameof(CheckTemplatePackagesRelativeToTemplateRootMultipleDirsUnderMountPoint))]
         [InlineData(true, "things/")]
         [InlineData(true, "things/stuff/")]
         [InlineData(true, "./")]
@@ -82,22 +82,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(false, "../../../MountRoot/Other")]  // directory doesn't exist
         [InlineData(true, "../../../ExistingDir/")]
         [InlineData(true, "../../../MountRoot/Subdir")]
-        public void CheckTemplateSourcesRelativeToTemplateRootMultipleDirsUnderMountPoint(bool shouldAllPathsBeValid, string source)
+        public void CheckTemplatePackagesRelativeToTemplateRootMultipleDirsUnderMountPoint(bool shouldAllPathsBeValid, string source)
         {
             const string pathFromMountPointRootToTemplateRoot = "MountRoot/Stuff/TemplateRoot/";
             string pathToTemplateConfig = pathFromMountPointRootToTemplateRoot + ".template.config/template.json";
 
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
 
             string templateConfig = String.Format(TemplateConfigWithSourcePlaceholder, source);
-            templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
+            templatePackageFiles.Add(pathToTemplateConfig, templateConfig);
 
             string sampleContentDir = pathFromMountPointRootToTemplateRoot + "things/stuff/_._";
-            templateSourceFiles.Add(sampleContentDir, "");    // directories under the template root - valid source locations.
-            templateSourceFiles.Add("ExistingDir/_._", "");
-            templateSourceFiles.Add("MountRoot/Subdir/_._", "");
-            TestTemplateSetup setup = new TestTemplateSetup(EngineEnvironmentSettings, sourcePath, templateSourceFiles);
+            templatePackageFiles.Add(sampleContentDir, "");    // directories under the template root - valid source locations.
+            templatePackageFiles.Add("ExistingDir/_._", "");
+            templatePackageFiles.Add("MountRoot/Subdir/_._", "");
+            TestTemplateSetup setup = new TestTemplateSetup(EngineEnvironmentSettings, sourcePath, templatePackageFiles);
             setup.WriteSource();
 
             RunnableProjectGenerator generator = new RunnableProjectGenerator();

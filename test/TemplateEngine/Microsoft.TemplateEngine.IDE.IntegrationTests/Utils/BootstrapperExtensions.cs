@@ -3,35 +3,50 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.TemplateEngine.Abstractions.Installer;
+using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
 {
     internal static class BootstrapperExtensions
     {
-        internal static void InstallTestTemplate(this Bootstrapper bootStrapper, params string[] templates)
+        internal static async Task InstallTestTemplateAsync(this Bootstrapper bootstrapper, params string[] templates)
         {
-            string codebase = typeof(BootstrapperExtensions).GetTypeInfo().Assembly.Location;
-            Uri cb = new Uri(codebase);
-            string asmPath = cb.LocalPath;
-            string dir = Path.GetDirectoryName(asmPath);
-            string baseDir = Path.Combine(dir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates");
+            List<InstallRequest> installRequests = new List<InstallRequest>();
 
             foreach (string template in templates)
             {
-                string path = Path.Combine(baseDir, template) + Path.DirectorySeparatorChar;
-                bootStrapper.Install(path);
+                string path = TestUtils.GetTestTemplateLocation(template);
+                installRequests.Add(new InstallRequest()
+                {
+                    Identifier = Path.GetFullPath(path)
+                });
             }
+
+            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests).ConfigureAwait(false);
+            if (installationResults.Any(result => !result.Success))
+            {
+                throw new Exception($"Failed to install templates: {string.Join(";", installationResults.Select(result => $"path: {result.InstallRequest.Identifier}, details:{result.ErrorMessage}"))}");
+            }
+
         }
 
-        internal static void InstallTemplate(this Bootstrapper bootStrapper, params string[] templates)
+        internal static async Task InstallTemplateAsync(this Bootstrapper bootstrapper, params string[] templates)
         {
+            List<InstallRequest> installRequests = new List<InstallRequest>();
             foreach (string template in templates)
             {
-                string path = Path.Combine(template);
-                bootStrapper.Install(path);
+                installRequests.Add(new InstallRequest()
+                {
+                    Identifier = Path.GetFullPath(template)
+                });
+            }
+
+            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests).ConfigureAwait(false);
+            if (installationResults.Any(result => !result.Success))
+            {
+                throw new Exception($"Failed to install templates: {string.Join(";", installationResults.Select(result => $"path: {result.InstallRequest.Identifier}, details:{result.ErrorMessage}"))}");
             }
         }
     }
