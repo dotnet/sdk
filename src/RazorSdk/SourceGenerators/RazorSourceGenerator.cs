@@ -27,6 +27,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         // https://github.com/dotnet/roslyn/issues/51257 track the long-term resolution for this.
         private static readonly ConcurrentDictionary<Guid, IReadOnlyList<TagHelperDescriptor>> _tagHelperCache = new();
 
+        private static readonly ConcurrentDictionary<string, SourceText> _sourceTextCache = new();
+
         private static readonly SourceText ProvideApplicationPartFactoryAttributeSourceText = GetProvideApplicationPartFactorySourceText();
 
         public void Initialize(GeneratorInitializationContext context)
@@ -109,7 +111,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             for (var i = 0; i < files.Count; i++)
             {
                 var (hint, sourceText) = outputs[i];
-                context.AddSource(hint, sourceText);
+                context.AddSource(hint, ResolveSourceTextFromCache(sourceText, hint));
             }
 
             arraypool.Return(outputs);
@@ -145,10 +147,25 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             for (var i = 0; i < files.Count; i++)
             {
                 var (hint, sourceText) = outputs[i];
-                context.AddSource(hint, sourceText);
+                context.AddSource(hint, ResolveSourceTextFromCache(sourceText, hint));
             }
 
             arraypool.Return(outputs);
+        }
+
+        private static SourceText ResolveSourceTextFromCache(SourceText generatedSourceText, string hint)
+        {
+            var checksum = generatedSourceText.GetChecksum();
+            var cachedSourceTextFound = _sourceTextCache.TryGetValue(hint, out var cachedSourceText);
+            if (cachedSourceTextFound && cachedSourceText.GetChecksum().SequenceEqual(checksum))
+            {
+                return cachedSourceText;
+            }
+            else
+            {
+                _sourceTextCache[hint] = generatedSourceText;
+                return generatedSourceText;
+            }
         }
 
         private static IReadOnlyList<TagHelperDescriptor> ResolveTagHelperDescriptors(GeneratorExecutionContext GeneratorExecutionContext, RazorSourceGenerationContext razorContext)
