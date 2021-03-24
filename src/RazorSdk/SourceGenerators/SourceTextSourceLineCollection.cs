@@ -27,7 +27,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return line.EndIncludingLineBreak - line.Start;
         }
 
-        public override SourceLocation GetLocation(int position)
+        internal override SourceLocation GetLocation(int position)
         {
             var line = _textLines.GetLineFromPosition(position);
             return new SourceLocation(_filePath, position, line.LineNumber, position);
