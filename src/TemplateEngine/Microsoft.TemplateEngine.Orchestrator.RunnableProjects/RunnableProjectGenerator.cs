@@ -155,7 +155,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         ILocalizationLocator locator = new LocalizationLocator()
                         {
                             Locale = locale,
-                            MountPointId = source.Info.MountPointId,
+                            MountPointUri = source.MountPointUri,
                             ConfigPlace = file.FullPath,
                             Identity = locModel.Identity,
                             Author = locModel.Author,

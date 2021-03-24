@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 
         protected void ReadPrimaryInformation(JObject jObject, TemplateInfo info)
         {
-            info.ConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.ConfigMountPointId)));
+            info.MountPointUri = jObject.ToString(nameof(TemplateInfo.MountPointUri));
             info.Author = jObject.ToString(nameof(TemplateInfo.Author));
             JArray? classificationsArray = jObject.Get<JArray>(nameof(TemplateInfo.Classifications));
 
@@ -55,10 +55,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             ReadShortNameInfo(jObject, info);
 
             info.ConfigPlace = jObject.ToString(nameof(TemplateInfo.ConfigPlace));
-            info.LocaleConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.LocaleConfigMountPointId)));
             info.LocaleConfigPlace = jObject.ToString(nameof(TemplateInfo.LocaleConfigPlace));
 
-            info.HostConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.HostConfigMountPointId)));
             info.HostConfigPlace = jObject.ToString(nameof(TemplateInfo.HostConfigPlace));
             info.ThirdPartyNotices = jObject.ToString(nameof(TemplateInfo.ThirdPartyNotices));
 

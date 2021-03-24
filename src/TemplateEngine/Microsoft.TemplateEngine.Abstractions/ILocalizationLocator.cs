@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     {
         string Locale { get; }
 
-        Guid MountPointId { get; }
+        string MountPointUri { get; }
 
         string ConfigPlace { get; }
 

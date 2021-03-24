@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         {
             TemplateInfo info = new TemplateInfo();
 
-            info.ConfigMountPointId = Guid.Parse(entry.ToString(nameof(TemplateInfo.ConfigMountPointId)));
+            info.MountPointUri = entry.ToString(nameof(TemplateInfo.MountPointUri));
             info.Author = entry.ToString(nameof(TemplateInfo.Author));
             JArray classificationsArray = entry.Get<JArray>(nameof(TemplateInfo.Classifications));
 
@@ -51,7 +51,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             }
 
             info.ConfigPlace = entry.ToString(nameof(TemplateInfo.ConfigPlace));
-            info.LocaleConfigMountPointId = Guid.Parse(entry.ToString(nameof(TemplateInfo.LocaleConfigMountPointId)));
             info.LocaleConfigPlace = entry.ToString(nameof(TemplateInfo.LocaleConfigPlace));
 
             return info;

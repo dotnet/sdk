@@ -11,12 +11,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             _localizations = new List<ILocalizationLocator>();
             _templates = new List<ITemplate>();
-            _installedMountPointIds = new HashSet<Guid>();
         }
 
         private List<ILocalizationLocator> _localizations;
         private List<ITemplate> _templates;
-        private HashSet<Guid> _installedMountPointIds;
 
         public void AddLocalization(ILocalizationLocator locater)
         {
@@ -28,15 +26,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _templates.Add(template);
         }
 
-        public void AddInstalledMountPointId(Guid mountPointId)
-        {
-            _installedMountPointIds.Add(mountPointId);
-        }
-
         public IReadOnlyList<ILocalizationLocator> Localizations => _localizations;
 
         public IReadOnlyList<ITemplate> Templates => _templates;
-
-        public IReadOnlyList<Guid> InstalledMountPointIds => _installedMountPointIds.ToList();
     }
 }

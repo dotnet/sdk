@@ -32,7 +32,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Precedence = config.Precedence;
             LocaleConfigFile = localeConfigFile;
             IsNameAgreementWithFolderPreferred = raw.ToBool("preferNameDirectory", false);
-            HostConfigMountPointId = hostConfigFile?.MountPoint?.Info?.MountPointId ?? Guid.Empty;
             HostConfigPlace = hostConfigFile?.FullPath;
             ThirdPartyNotices = raw.ToString("thirdPartyNotices");
             _raw = raw;
@@ -193,7 +192,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IFileSystemInfo Configuration => ConfigFile;
 
-        public Guid ConfigMountPointId => Configuration.MountPoint.Info.MountPointId;
+        public string MountPointUri => Configuration.MountPoint.MountPointUri;
 
         public string ConfigPlace => Configuration.FullPath;
 
@@ -201,13 +200,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IFileSystemInfo LocaleConfiguration => LocaleConfigFile;
 
-        public Guid LocaleConfigMountPointId => LocaleConfiguration.MountPoint.Info.MountPointId;
-
         public string LocaleConfigPlace => LocaleConfiguration.FullPath;
 
         public bool IsNameAgreementWithFolderPreferred { get; }
-
-        public Guid HostConfigMountPointId { get; }
 
         public string HostConfigPlace { get; }
 

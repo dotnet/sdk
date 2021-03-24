@@ -1,5 +1,7 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
@@ -11,40 +13,28 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
         public Guid Id => FactoryId;
 
-        public bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string place, out IMountPoint mountPoint)
+        public bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, out IMountPoint mountPoint)
         {
-            if (parent != null || !environmentSettings.Host.FileSystem.DirectoryExists(place))
+            if (!Uri.TryCreate(mountPointUri, UriKind.Absolute, out var uri))
             {
                 mountPoint = null;
                 return false;
             }
 
-            Guid mountPointId = Guid.NewGuid();
-            MountPointInfo info = new MountPointInfo(Guid.Empty, Id, mountPointId, place);
-            mountPoint = new FileSystemMountPoint(environmentSettings, parent, info);
-            return true;
-        }
-
-        public bool TryMount(IMountPointManager manager, MountPointInfo info, out IMountPoint mountPoint)
-        {
-            if (info.ParentMountPointId != Guid.Empty || !manager.EnvironmentSettings.Host.FileSystem.DirectoryExists(info.Place))
+            if (!uri.IsFile)
             {
                 mountPoint = null;
                 return false;
             }
 
-            mountPoint = new FileSystemMountPoint(manager.EnvironmentSettings, null, info);
-            return true;
-        }
-
-        public void DisposeMountPoint(IMountPoint mountPoint)
-        {
-            FileSystemMountPoint mp = mountPoint as FileSystemMountPoint;
-
-            if(mp?.Parent != null)
+            if (parent != null || !environmentSettings.Host.FileSystem.DirectoryExists(uri.LocalPath))
             {
-                mp.EnvironmentSettings.SettingsLoader.ReleaseMountPoint(mp.Parent);
+                mountPoint = null;
+                return false;
             }
+
+            mountPoint = new FileSystemMountPoint(environmentSettings, parent, mountPointUri, uri.LocalPath);
+            return true;
         }
     }
 }

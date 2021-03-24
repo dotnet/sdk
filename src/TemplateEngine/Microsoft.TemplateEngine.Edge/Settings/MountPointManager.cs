@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Utils;
@@ -8,58 +10,33 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     internal class MountPointManager : IMountPointManager
     {
         private readonly IComponentManager _componentManager;
+        private readonly IReadOnlyList<IMountPointFactory> mountPointFactories;
 
         public MountPointManager(IEngineEnvironmentSettings environmentSettings, IComponentManager componentManager)
         {
             _componentManager = componentManager;
             EnvironmentSettings = environmentSettings;
+            mountPointFactories = componentManager.OfType<IMountPointFactory>().ToList();
         }
 
         public IEngineEnvironmentSettings EnvironmentSettings { get; }
 
-        public bool TryDemandMountPoint(MountPointInfo info, out IMountPoint mountPoint)
+        public bool TryDemandMountPoint(string mountPointUri, out IMountPoint mountPoint)
         {
-            using (Timing.Over(EnvironmentSettings.Host, "Get mount point - inner"))
-            {
-                IMountPointFactory factory;
-                if (_componentManager.TryGetComponent(info.MountPointFactoryId, out factory))
-                {
-                    return factory.TryMount(this, info, out mountPoint);
-                }
-
-                mountPoint = null;
-                return false;
-            }
-        }
-
-        public bool TryDemandMountPoint(Guid mountPointId, out IMountPoint mountPoint)
-        {
+            //TODO: Split mountPointUri with ;(semicolon) and loop parents instead of always `null`
             using (Timing.Over(EnvironmentSettings.Host, "Get mount point"))
             {
-                MountPointInfo info;
-                if (EnvironmentSettings.SettingsLoader.TryGetMountPointInfo(mountPointId, out info))
+                foreach (var factory in mountPointFactories)
                 {
-                    return TryDemandMountPoint(info, out mountPoint);
+                    if (factory.TryMount(EnvironmentSettings, null, mountPointUri, out var myMountPoint))
+                    {
+                        mountPoint = myMountPoint;
+                        return true;
+                    }
                 }
 
                 mountPoint = null;
                 return false;
-            }
-        }
-
-        public void ReleaseMountPoint(IMountPoint mountPoint)
-        {
-            Guid? factoryId = mountPoint?.Info.MountPointFactoryId;
-
-            if (!factoryId.HasValue)
-            {
-                return;
-            }
-
-            IMountPointFactory factory;
-            if (_componentManager.TryGetComponent(factoryId.Value, out factory))
-            {
-                factory.DisposeMountPoint(mountPoint);
             }
         }
     }

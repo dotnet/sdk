@@ -10,6 +10,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class TemplateInfo : ITemplateInfo, IShortNameList, ITemplateWithTimestamp
     {
+        public static readonly string CurrentVersion = "1.0.0.4";
+
         public TemplateInfo()
         {
             ShortNameList = new List<string>();
@@ -108,7 +110,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
 
         [JsonProperty]
-        public Guid ConfigMountPointId { get; set; }
+        public string MountPointUri { get; set; }
 
         [JsonProperty]
         public string Author { get; set; }
@@ -204,13 +206,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public string ConfigPlace { get; set; }
 
         [JsonProperty]
-        public Guid LocaleConfigMountPointId { get; set; }
-
-        [JsonProperty]
         public string LocaleConfigPlace { get; set; }
-
-        [JsonProperty]
-        public Guid HostConfigMountPointId { get; set; }
 
         [JsonProperty]
         public string HostConfigPlace { get; set; }

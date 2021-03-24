@@ -6,10 +6,6 @@ namespace Microsoft.TemplateEngine.Abstractions.Mount
     {
         IEngineEnvironmentSettings EnvironmentSettings { get; }
 
-        bool TryDemandMountPoint(MountPointInfo info, out IMountPoint mountPoint);
-
-        bool TryDemandMountPoint(Guid mountPointId, out IMountPoint mountPoint);
-
-        void ReleaseMountPoint(IMountPoint mountPoint);
+        bool TryDemandMountPoint(string mountPointUri, out IMountPoint mountPoint);
     }
 }

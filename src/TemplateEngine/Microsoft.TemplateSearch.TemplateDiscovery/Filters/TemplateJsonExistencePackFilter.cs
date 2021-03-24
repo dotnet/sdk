@@ -33,7 +33,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
                     if (factory.TryMount(_environemntSettings, null, packInfo.Path, out IMountPoint mountPoint))
                     {
                         bool hasTemplateJson = mountPoint.Root.EnumerateFiles("template.json", SearchOption.AllDirectories).Any();
-                        _environemntSettings.SettingsLoader.ReleaseMountPoint(mountPoint);
+                        mountPoint.Dispose();
 
                         if (hasTemplateJson)
                         {

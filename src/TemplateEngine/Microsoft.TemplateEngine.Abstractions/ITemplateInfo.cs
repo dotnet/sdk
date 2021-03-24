@@ -31,15 +31,11 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IReadOnlyList<ITemplateParameter> Parameters { get; }
 
-        Guid ConfigMountPointId { get; }
+        string MountPointUri { get; }
 
         string ConfigPlace { get; }
 
-        Guid LocaleConfigMountPointId { get; }
-
         string LocaleConfigPlace { get; }
-
-        Guid HostConfigMountPointId { get; }
 
         string HostConfigPlace { get; }
 

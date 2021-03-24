@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         {
             return _paths.EnumerateFileSystemEntries(_physicalPath, pattern, searchOption).Select(x =>
             {
-                string baseName = x.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.Substring(((FileSystemMountPoint)MountPoint).MountPointRootPath.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {
@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         {
             return _paths.EnumerateDirectories(_physicalPath, pattern, searchOption).Select(x =>
             {
-                string baseName = x.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.Substring(((FileSystemMountPoint)MountPoint).MountPointRootPath.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {
@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         {
             return _paths.EnumerateFiles(_physicalPath, pattern, searchOption).Select(x =>
             {
-                string baseName = x.Substring(new DirectoryInfo(MountPoint.Info.Place).FullName.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.Substring(((FileSystemMountPoint)MountPoint).MountPointRootPath.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {

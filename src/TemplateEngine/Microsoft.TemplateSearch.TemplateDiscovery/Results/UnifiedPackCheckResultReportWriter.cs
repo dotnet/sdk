@@ -92,7 +92,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                 additionalData[dataProducer.DataUniqueName] = dataProducer.Data;
             }
 
-            return new TemplateDiscoveryMetadata(SettingsStore.CurrentVersion, templateCache, packToTemplateMap, additionalData);
+            return new TemplateDiscoveryMetadata(TemplateInfo.CurrentVersion, templateCache, packToTemplateMap, additionalData);
         }
 
         private class TemplateIdentityEqualityComparer : IEqualityComparer<ITemplateInfo>

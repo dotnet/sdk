@@ -23,11 +23,9 @@ namespace Microsoft.TemplateEngine.Edge
                 Tags = source.Tags,
                 CacheParameters = source.CacheParameters,
                 Parameters = source.Parameters,
-                ConfigMountPointId = source.ConfigMountPointId,
+                MountPointUri = source.MountPointUri,
                 ConfigPlace = source.ConfigPlace,
-                LocaleConfigMountPointId = source.LocaleConfigMountPointId,
                 LocaleConfigPlace = source.LocaleConfigPlace,
-                HostConfigMountPointId = source.HostConfigMountPointId,
                 HostConfigPlace = source.HostConfigPlace,
                 ThirdPartyNotices = source.ThirdPartyNotices,
                 BaselineInfo = source.BaselineInfo,
@@ -77,15 +75,11 @@ namespace Microsoft.TemplateEngine.Edge
 
         public IReadOnlyList<ITemplateParameter> Parameters { get; private set; }
 
-        public Guid ConfigMountPointId { get; private set; }
+        public string MountPointUri { get; private set; }
 
         public string ConfigPlace { get; private set; }
 
-        public Guid LocaleConfigMountPointId { get; private set; }
-
         public string LocaleConfigPlace { get; private set; }
-
-        public Guid HostConfigMountPointId { get; private set; }
 
         public string HostConfigPlace { get; private set; }
 

@@ -161,17 +161,17 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             if (template.LocaleConfiguration != null)
             {
-                _environmentSettings.SettingsLoader.ReleaseMountPoint(template.LocaleConfiguration.MountPoint);
+                template.LocaleConfiguration.MountPoint.Dispose();
             }
 
             if (template.Configuration != null)
             {
-                _environmentSettings.SettingsLoader.ReleaseMountPoint(template.Configuration.MountPoint);
+                template.Configuration.MountPoint.Dispose();
             }
 
             if (template.TemplateSourceRoot != null && template.TemplateSourceRoot != template.Configuration)
             {
-                _environmentSettings.SettingsLoader.ReleaseMountPoint(template.TemplateSourceRoot.MountPoint);
+                template.TemplateSourceRoot.MountPoint.Dispose();
             }
         }
 
