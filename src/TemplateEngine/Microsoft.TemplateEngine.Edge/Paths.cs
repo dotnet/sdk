@@ -287,6 +287,9 @@ namespace Microsoft.TemplateEngine.Edge
             private string _globalSettingsFile;
             private string _contentDir;
             private string _packagesDir;
+            private string _templatesCacheFile;
+
+            private readonly Paths _parent;
 
             public UserPaths(Paths parent)
             {
@@ -311,42 +314,7 @@ namespace Microsoft.TemplateEngine.Edge
 
             public string GlobalSettingsFile => _parent.GetOrComputePath(ref _globalSettingsFile, _parent._environmentSettings.Paths.TemplateEngineRootDir, "settings.json");
 
-            public string CultureNeutralTemplateCacheFile
-            {
-                get
-                {
-                    return ExplicitLocaleTemplateCacheFile(null);
-                }
-            }
-
-            public string CurrentLocaleTemplateCacheFile
-            {
-                get
-                {
-                    return ExplicitLocaleTemplateCacheFile(CultureInfo.CurrentUICulture.Name);
-                }
-            }
-
-            public readonly string TemplateCacheFileBaseName = "templatecache.json";
-            private readonly Paths _parent;
-
-            public string ExplicitLocaleTemplateCacheFile(string locale)
-            {
-                string filename;
-
-                if (string.IsNullOrEmpty(locale))
-                {
-                    filename = TemplateCacheFileBaseName;
-                }
-                else
-                {
-                    filename = locale + "." + TemplateCacheFileBaseName;
-                }
-
-                // don't cache, the locale could change
-                string tempCache = null;
-                return _parent.GetOrComputePath(ref tempCache, BaseDir, filename);
-            }
+            public string TemplateCacheFile => _parent.GetOrComputePath(ref _templatesCacheFile, BaseDir, "templatecache.json");
 
             public string NuGetConfig => _parent.GetOrComputePath(ref _nuGetConfig, BaseDir, "NuGet.config");
         }

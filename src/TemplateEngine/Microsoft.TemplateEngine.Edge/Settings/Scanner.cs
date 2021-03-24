@@ -21,145 +21,50 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Paths _paths;
 
-        public ScanResult Scan(string baseDir)
+        public ScanResult Scan(string sourceLocation)
         {
-            return Scan(baseDir, false);
-        }
-
-        public ScanResult Scan(string baseDir, bool allowDevInstall)
-        {
-            IReadOnlyList<string> directoriesToScan = DetermineDirectoriesToScan(baseDir);
-            IReadOnlyList<MountPointScanSource> sourceList = SetupMountPointScanInfoForInstallSourceList(directoriesToScan);
+            if (string.IsNullOrWhiteSpace(sourceLocation))
+            {
+                throw new ArgumentException($"{nameof(sourceLocation)} should not be null or empty");
+            }
+            MountPointScanSource source = GetOrCreateMountPointScanInfoForInstallSource(sourceLocation);
 
             ScanResult scanResult = new ScanResult();
-            ScanSourcesForComponents(sourceList, allowDevInstall);
-            ScanSourcesForTemplatesAndLangPacks(sourceList, scanResult);
+            ScanForComponents(source);
+            ScanMountPointForTemplatesAndLangpacks(source, scanResult);
 
-            // Cleanup.
-            // The source mount points are done being used, release them. The caller will delete the source files if needed.
-            foreach (MountPointScanSource source in sourceList)
-            {
-                _environmentSettings.SettingsLoader.ReleaseMountPoint(source.MountPoint);
-            }
+            source.MountPoint.Dispose();
 
             return scanResult;
         }
 
-        private IReadOnlyList<string> DetermineDirectoriesToScan(string baseDir)
-        {
-            List<string> directoriesToScan = new List<string>();
-
-            if (baseDir[baseDir.Length - 1] == '/' || baseDir[baseDir.Length - 1] == '\\')
-            {
-                baseDir = baseDir.Substring(0, baseDir.Length - 1);
-            }
-
-            string searchTarget = Path.Combine(_environmentSettings.Host.FileSystem.GetCurrentDirectory(), baseDir.Trim());
-            List<string> matches = _environmentSettings.Host.FileSystem.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly)
-                                                                                                .Where(x => !x.EndsWith("symbols.nupkg", StringComparison.OrdinalIgnoreCase)).ToList();
-
-            if (matches.Count == 1)
-            {
-                directoriesToScan.Add(matches[0]);
-            }
-            else
-            {
-                foreach (string match in matches)
-                {
-                    IReadOnlyList<string> subDirMatches = DetermineDirectoriesToScan(match);
-                    directoriesToScan.AddRange(subDirMatches);
-                }
-            }
-
-            return directoriesToScan;
-        }
-
-        private IReadOnlyList<MountPointScanSource> SetupMountPointScanInfoForInstallSourceList(IReadOnlyList<string> directoriesToScan)
-        {
-            List<MountPointScanSource> locationList = new List<MountPointScanSource>();
-
-            foreach (string directory in directoriesToScan)
-            {
-                MountPointScanSource locationInfo = GetOrCreateMountPointScanInfoForInstallSource(directory);
-                if (locationInfo != null)
-                {
-                    locationList.Add(locationInfo);
-                }
-            }
-
-            return locationList;
-        }
-
         private MountPointScanSource GetOrCreateMountPointScanInfoForInstallSource(string sourceLocation)
         {
-            if (_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(sourceLocation, out IMountPoint existingMountPoint))
+            foreach (IMountPointFactory factory in _environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>().ToList())
             {
-                return new MountPointScanSource()
+                if (factory.TryMount(_environmentSettings, null, sourceLocation, out IMountPoint mountPoint))
                 {
-                    Location = sourceLocation,
-                    MountPoint = existingMountPoint,
-                    FoundTemplates = false,
-                    FoundComponents = false,
-                    ShouldStayInOriginalLocation = true,
-                };
-            }
-            else
-            {
-                foreach (IMountPointFactory factory in _environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>().ToList())
-                {
-                    if (factory.TryMount(_environmentSettings, null, sourceLocation, out IMountPoint mountPoint))
-                    {
-                        // file-based and not originating in the scratch dir.
-                        bool isLocalFlatFileSource = mountPoint.Info.MountPointFactoryId == FileSystemMountPointFactory.FactoryId
-                                                    && !sourceLocation.StartsWith(_paths.User.ScratchDir);
+                    // file-based and not originating in the scratch dir.
+                    bool isLocalFlatFileSource = mountPoint is FileSystemMountPoint
+                                                && !sourceLocation.StartsWith(_paths.User.ScratchDir);
 
-                        return new MountPointScanSource()
-                        {
-                            Location = sourceLocation,
-                            MountPoint = mountPoint,
-                            ShouldStayInOriginalLocation = isLocalFlatFileSource,
-                            FoundTemplates = false,
-                            FoundComponents = false,
-                        };
-                    }
+                    return new MountPointScanSource()
+                    {
+                        Location = sourceLocation,
+                        MountPoint = mountPoint,
+                        ShouldStayInOriginalLocation = isLocalFlatFileSource,
+                        FoundTemplates = false,
+                        FoundComponents = false,
+                    };
                 }
             }
-
-            return null;
+            throw new Exception($"source location {sourceLocation} is not supported, or doesn't exist.");
         }
 
-        // Iterate over the sourceList, scanning for components.
-        // Track the sources that didn't find any components.
-        // If any source found components, re-try the remaining sources that didn't find any components.
-        // Repeat until all sources have found components, or none of the remaining sources find anything.
-        // This is to avoid problems with the load order - an assembly that depends on another assembly can't be loaded until the dependent assembly has been loaded.
-        private void ScanSourcesForComponents(IReadOnlyList<MountPointScanSource> sourceList, bool allowDevInstall)
+        private void ScanForComponents(MountPointScanSource source)
         {
-            List<MountPointScanSource> workingSet = new List<MountPointScanSource>(sourceList);
+            _ = source ?? throw new ArgumentNullException(nameof(source));
 
-            bool anythingFoundThisRound;
-            do
-            {
-                anythingFoundThisRound = false;
-                List<MountPointScanSource> unhandledSources = new List<MountPointScanSource>();
-
-                foreach (MountPointScanSource source in workingSet)
-                {
-                    ScanForComponents(source, allowDevInstall);
-                    anythingFoundThisRound |= source.FoundComponents;
-
-                    if (!source.FoundComponents)
-                    {
-                        unhandledSources.Add(source);
-                    }
-                }
-
-                workingSet = unhandledSources;
-            } while (anythingFoundThisRound && workingSet.Count > 0);
-        }
-
-        private void ScanForComponents(MountPointScanSource source, bool allowDevInstall)
-        {
             bool isCopiedIntoContentDirectory;
 
             if (!source.MountPoint.Root.EnumerateFiles("*.dll", SearchOption.AllDirectories).Any())
@@ -179,14 +84,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             else
             {
-                if (!allowDevInstall)
-                {
-                    // TODO: localize this message
-                    _environmentSettings.Host.LogDiagnosticMessage("Installing local .dll files is not a standard supported scenario. Either package it in a .zip or .nupkg, or install it using '--dev:install'.", "Install");
-                    // dont allow .dlls to be installed from a file unless the debugging flag is set.
-                    return;
-                }
-
                 actualScanPath = source.Location;
                 isCopiedIntoContentDirectory = false;
             }
@@ -257,60 +154,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return true;
         }
 
-        private void ScanSourcesForTemplatesAndLangPacks(IReadOnlyList<MountPointScanSource> sourceList, ScanResult scanResult)
-        {
-            // only scan for templates & langpacks if no components were found.
-            foreach (MountPointScanSource source in sourceList.Where(x => !x.AnythingFound))
-            {
-                ScanMountPointForTemplatesAndLangpacks(source, scanResult);
-            }
-        }
-
         private void ScanMountPointForTemplatesAndLangpacks(MountPointScanSource source, ScanResult scanResult)
         {
-            bool isCopiedIntoPackagesDirectory;
-            string actualScanPath;
-            IMountPoint scanMountPoint = null;
-
-            if (!source.ShouldStayInOriginalLocation)
-            {
-                if (!TryCopyForNonFileSystemBasedMountPoints(source.MountPoint, source.Location, _paths.User.Packages, false, out actualScanPath))
-                {
-                    return;
-                }
-
-                // Try get an existing mount point for the scan location
-                if (!_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(actualScanPath, out scanMountPoint))
-                {
-                    // The mount point didn't exist, try creating a new one
-                    foreach (IMountPointFactory factory in _environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>())
-                    {
-                        if (factory.TryMount(_environmentSettings, null, actualScanPath, out scanMountPoint))
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                if (scanMountPoint == null)
-                {
-                    _environmentSettings.Host.FileSystem.FileDelete(actualScanPath);
-                    return;
-                }
-
-                isCopiedIntoPackagesDirectory = true;
-            }
-            else
-            {
-                actualScanPath = source.Location;
-                scanMountPoint = source.MountPoint;
-                isCopiedIntoPackagesDirectory = false;
-            }
-
+            _ = source ?? throw new ArgumentNullException(nameof(source));
             // look for things to install
             foreach (IGenerator generator in _environmentSettings.SettingsLoader.Components.OfType<IGenerator>())
             {
-                IList<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(scanMountPoint, out IList<ILocalizationLocator> localizationInfo);
+                IList<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(source.MountPoint, out IList<ILocalizationLocator> localizationInfo);
 
                 foreach (ILocalizationLocator locator in localizationInfo)
                 {
@@ -323,38 +173,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 source.FoundTemplates |= templateList.Count > 0 || localizationInfo.Count > 0;
-            }
-
-            // finalize the result
-            if (source.FoundTemplates)
-            {
-                // add the MP
-                _environmentSettings.SettingsLoader.AddMountPoint(scanMountPoint);
-                // add the MP to the scan result
-                scanResult.AddInstalledMountPointId(scanMountPoint.Info.MountPointId);
-                // release the mount point
-                _environmentSettings.SettingsLoader.ReleaseMountPoint(scanMountPoint);
-            }
-            else
-            {
-                // delete the copy
-                if (!source.FoundTemplates && isCopiedIntoPackagesDirectory)
-                {
-                    try
-                    {
-                        // The source was copied to packages and then scanned for templates.
-                        // Nothing was found, and this is a copy that now has no use, so delete it.
-                        _environmentSettings.SettingsLoader.ReleaseMountPoint(scanMountPoint);
-
-                        // It's always copied as an archive, so it's a file delete, not a directory delete
-                        _environmentSettings.Host.FileSystem.FileDelete(actualScanPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        _environmentSettings.Host.LogDiagnosticMessage($"During ScanMountPointForTemplatesAndLangpacks() cleanup, couldn't delete source copied into the packages dir: {actualScanPath}", "Install");
-                        _environmentSettings.Host.LogDiagnosticMessage($"\tError: {ex.Message}", "Install");
-                    }
-                }
             }
         }
 
