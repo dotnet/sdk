@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="Generic_LatestVersion">
+        <source>latest version</source>
+        <target state="new">latest version</target>
+        <note>small letters, string is used in the sentence</note>
+      </trans-unit>
+      <trans-unit id="Generic_Version">
+        <source>version {0}</source>
+        <target state="new">version {0}</target>
+        <note>small letters, string is used in the sentence</note>
+      </trans-unit>
+      <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled">
+        <source>{0} is already installed, version: {1}, it will be replaced with {2}</source>
+        <target state="new">{0} is already installed, version: {1}, it will be replaced with {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled">
+        <source>{0} was successfully uninstalled</source>
+        <target state="new">{0} was successfully uninstalled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
+        <source>Failed to load the NuGet source {0}</source>
+        <target state="new">Failed to load the NuGet source {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSources">
+        <source>Failed to load NuGet sources configured for the folder {currentDirectory}</source>
+        <target state="new">Failed to load NuGet sources configured for the folder {currentDirectory}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Error_FailedToReadPackage">
+        <source>Failed to read package information from NuGet source {0}</source>
+        <target state="new">Failed to read package information from NuGet source {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Error_FileAlreadyExists">
+        <source>File {0} already exists</source>
+        <target state="new">File {0} already exists</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Error_NoSources">
+        <source>No NuGet sources are defined or enabled</source>
+        <target state="new">No NuGet sources are defined or enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Warning_FailedToDelete">
+        <source>Failed to remove {0} after failed download. Remove the file manually if it exists.</source>
+        <target state="new">Failed to remove {0} after failed download. Remove the file manually if it exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Warning_FailedToDownload">
+        <source>Failed to download {0} from NuGet feed {1}</source>
+        <target state="new">Failed to download {0} from NuGet feed {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Warning_FailedToLoadSource">
+        <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
+        <target state="new">Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
+        <source>{0} is not found in NuGet feeds {1}</source>
+        <target state="new">{0} is not found in NuGet feeds {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetInstaller_Error_CopyFailed">
+        <source>Failed to copy package {0} to {1}</source>
+        <target state="new">Failed to copy package {0} to {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetInstaller_Error_FailedToReadPackage">
+        <source>Failed to read content of package {0}</source>
+        <target state="new">Failed to read content of package {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetInstaller_Error_FileAlreadyExists">
+        <source>File {0} already exists</source>
+        <target state="new">File {0} already exists</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
