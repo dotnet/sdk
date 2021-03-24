@@ -14,7 +14,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         public override TemplateInfo Read(JObject jObject)
         {
             TemplateInfo info = base.Read(jObject);
-            info.ConfigTimestampUtc = (DateTime?) jObject[nameof(TemplateInfo.ConfigTimestampUtc)];
             return info;
         }
     }

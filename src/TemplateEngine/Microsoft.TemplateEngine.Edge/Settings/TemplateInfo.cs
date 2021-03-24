@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    public class TemplateInfo : ITemplateInfo, IShortNameList, ITemplateWithTimestamp
+    public class TemplateInfo : ITemplateInfo, IShortNameList
     {
         public static readonly string CurrentVersion = "1.0.0.4";
 
@@ -219,8 +219,5 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public bool HasScriptRunningPostActions { get; set; }
-
-        [JsonProperty]
-        public DateTime? ConfigTimestampUtc { get; set; }
     }
 }

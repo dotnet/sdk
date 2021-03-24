@@ -14,13 +14,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             return reader.Read(jObject);
         }
 
-        public override TemplateInfo Read(JObject jObject)
-        {
-            TemplateInfo info = base.Read(jObject);
-            info.ConfigTimestampUtc = (DateTime?) jObject["ConfigTimestampUtc"];
-            return info;
-        }
-
         protected override ICacheTag ReadOneTag(JProperty item)
         {
             Dictionary<string, ParameterChoice> choices = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
