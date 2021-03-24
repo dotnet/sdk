@@ -1,4 +1,8 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
@@ -87,6 +91,30 @@ namespace Microsoft.TemplateEngine.Edge.Template
             };
         }
 
+        /// <summary>
+        /// Creates predicate for matching the template and given tag value.
+        /// If the template contains the tag <paramref name="tagFilter"/>, it is exact match, otherwise mismatch.
+        /// If the template has no tages defined, it is a mismatach.
+        /// If tagFilter is <see cref="null"/> or empty the method returns <see cref="null"/>.
+        /// </summary>
+        /// <param name="tagFilter">tag to filter by.</param>
+        /// <returns>A predicate that returns if the given template matches <paramref name="tagFilter"/>.</returns>
+        public static Func<ITemplateInfo, MatchInfo?> TagFilter(string tagFilter)
+        {
+            return (template) =>
+            {
+                if (string.IsNullOrWhiteSpace(tagFilter))
+                {
+                    return null;
+                }
+                if (template.Classifications?.Contains(tagFilter, StringComparer.OrdinalIgnoreCase) ?? false)
+                {
+                    return new MatchInfo { Location = MatchLocation.Classification, Kind = MatchKind.Exact };
+                }
+                return new MatchInfo { Location = MatchLocation.Classification, Kind = MatchKind.Mismatch };
+            };
+        }
+
         // This being case-insensitive depends on the dictionaries on the cache tags being declared as case-insensitive
         // Note: This is specifically designed to provide match info against a user-input language.
         //      All dealings with the host-default language should be separate from this.
@@ -130,6 +158,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             };
         }
 
+        [Obsolete("Use TagsFilter instead")]
         public static Func<ITemplateInfo, MatchInfo?> ClassificationsFilter(string name)
         {
             return (template) =>
@@ -148,7 +177,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
                     foreach (string part in parts)
                     {
-                        if(!template.Classifications.Contains(part, StringComparer.OrdinalIgnoreCase))
+                        if (!template.Classifications.Contains(part, StringComparer.OrdinalIgnoreCase))
                         {
                             allParts = false;
                         }
@@ -171,10 +200,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
         }
 
         /// <summary>
-        /// Creates predicate for matching the template and given author value
+        /// Creates predicate for matching the template and given author value.
         /// </summary>
-        /// <param name="author">author to use for match</param>
-        /// <returns>A predicate that returns if the given template matches defined author</returns>
+        /// <param name="author">author to use for match.</param>
+        /// <returns>A predicate that returns if the given template matches defined author.</returns>
         public static Func<ITemplateInfo, MatchInfo?> AuthorFilter(string author)
         {
             return (template) =>
