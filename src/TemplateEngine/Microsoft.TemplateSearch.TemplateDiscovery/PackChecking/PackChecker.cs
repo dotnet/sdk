@@ -69,12 +69,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 
         private bool TryInstallPackage(string packageFile, EngineEnvironmentSettings environment, out IReadOnlyList<ITemplateInfo> installedTemplates)
         {
-            ((SettingsLoader)(environment.SettingsLoader)).UserTemplateCache.Scan(packageFile);
-            environment.SettingsLoader.Save();
+            var scanner = new Scanner(environment);
+            var scanResult = scanner.Scan(packageFile);
 
-            if (((SettingsLoader)environment.SettingsLoader).UserTemplateCache.TemplateInfo.Count > 0)
+            if (scanResult.Templates.Count > 0)
             {
-                installedTemplates = ((SettingsLoader)environment.SettingsLoader).UserTemplateCache.TemplateInfo;
+                installedTemplates = scanResult.Templates;
             }
             else
             {

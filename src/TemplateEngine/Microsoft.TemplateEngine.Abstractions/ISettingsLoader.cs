@@ -1,43 +1,37 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.TemplateEngine.Abstractions.GlobalSettings;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface ISettingsLoader
     {
         IComponentManager Components { get; }
-   
+
         IEngineEnvironmentSettings EnvironmentSettings { get; }
 
-        IEnumerable<MountPointInfo> MountPoints { get; }
+        IGlobalSettings GlobalSettings { get; }
 
-        void AddMountPoint(IMountPoint mountPoint);
+        ITemplatePackagesManager TemplatePackagesManager { get; }
 
         void AddProbingPath(string probeIn);
 
-        void GetTemplates(HashSet<ITemplateInfo> templates);
+        Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token);
 
         ITemplate LoadTemplate(ITemplateInfo info, string baselineName);
 
         void Save();
 
-        bool TryGetFileFromIdAndPath(Guid mountPointId, string place, out IFile file, out IMountPoint mountPoint);
+        bool TryGetFileFromIdAndPath(string mountPointUri, string filePathInsideMount, out IFile file, out IMountPoint mountPoint);
 
-        bool TryGetMountPointFromPlace(string mountPointPlace, out IMountPoint mountPoint);
-
-        bool TryGetMountPointInfo(Guid mountPointId, out MountPointInfo info);
-
-        void WriteTemplateCache(IList<ITemplateInfo> templates, string locale);
-
-        void WriteTemplateCache(IList<ITemplateInfo> templates, string locale, bool hasContentChanges);
+        bool TryGetMountPoint(string mountPointUri, out IMountPoint mountPoint);
 
         IFile FindBestHostTemplateConfigFile(IFileSystemInfo config);
 
-        void ReleaseMountPoint(IMountPoint mountPoint);
-
-        void RemoveMountPoints(IEnumerable<Guid> mountPoints);
-
-        void RemoveMountPoint(IMountPoint mountPoint);
+        Task RebuildCacheFromSettingsIfNotCurrent(bool forceRebuild);
     }
 }
