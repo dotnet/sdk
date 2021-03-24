@@ -12,7 +12,7 @@
 
       <Rid Condition=" '$(Rid)' == '' ">$(OSName)-$(Architecture)</Rid>
     </PropertyGroup>
-    
+
     <PropertyGroup>
       <IsDebianBaseDistro Condition=" $(HostRid.StartsWith('ubuntu')) OR $(HostRid.StartsWith('debian')) ">true</IsDebianBaseDistro>
       <IsRPMBasedDistro Condition=" $(HostRid.StartsWith('rhel')) AND '$(HostRid)' != 'rhel.6-x64' ">true</IsRPMBasedDistro>
@@ -26,13 +26,13 @@
                                    '$(Rid)' == 'linux-musl-x64' ">$(Rid)</ProductMonikerRid>
       <ProductMonikerRid Condition=" '$(ProductMonikerRid)' == '' ">$(OSName)-$(Architecture)</ProductMonikerRid>
 
-      <ArtifactNameSdk>dotnet-sdk-internal</ArtifactNameSdk>
-      <ArtifactNameCombinedHostHostFxrFrameworkSdk>dotnet-sdk</ArtifactNameCombinedHostHostFxrFrameworkSdk>
+      <ArtifactNameSdk>dotnet-sdk-internal$(PgoTerm)</ArtifactNameSdk>
+      <ArtifactNameCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)</ArtifactNameCombinedHostHostFxrFrameworkSdk>
 
       <ArtifactNameWithVersionSdk>$(ArtifactNameSdk)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
       <ArtifactNameWithVersionMSBuildExtensions>dotnet-standard-support-vs2015-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionMSBuildExtensions>
       <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
-      <!-- Warning: changing the value "ProductBandCombinedHostHostFxrFrameworkSdkName" can only occur on a product-band boundary [CliProductBandVersion], 
+      <!-- Warning: changing the value "ProductBandCombinedHostHostFxrFrameworkSdkName" can only occur on a product-band boundary [CliProductBandVersion],
                Changing "ProductBandCombinedHostHostFxrFrameworkSdkName" mid-product-band will break the upgradablilty of the SDK bundle installer. -->
       <ProductBandCombinedHostHostFxrFrameworkSdkName>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</ProductBandCombinedHostHostFxrFrameworkSdkName>
       <DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(Architecture)</DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>

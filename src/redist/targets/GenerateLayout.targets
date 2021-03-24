@@ -3,6 +3,8 @@
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
     <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet-internal\</SdkInternalLayoutPath>
     <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
+    <!-- add -internal to use the internal builds, except for Mac which already uses internal builds -->
+    <PgoArchiveTerm Condition="'$(PgoTerm)' != '' AND !$([MSBuild]::IsOSPlatform('OSX'))">-internal$(PgoTerm)</PgoArchiveTerm>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -49,7 +51,7 @@
       <AlternateArchitecture Condition="'$(Architecture)' == 'x64'">x86</AlternateArchitecture>
       <DownloadedSharedHostInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-host$(InstallerStartSuffix)-$(SharedHostVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedHostInstallerFileName>
       <DownloadedHostFxrInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-hostfxr$(InstallerStartSuffix)-$(HostFxrVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedHostFxrInstallerFileName>
-      <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
+      <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime$(InstallerStartSuffix)$(PgoArchiveTerm)-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
       <DownloadedRuntimeDepsInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime-deps-$(SharedHostVersion)-$(RuntimeDepsInstallerFileRid)$(InstallerExtension)</DownloadedRuntimeDepsInstallerFileName>
       <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
       <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack-$(MicrosoftNETCoreAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
@@ -70,7 +72,7 @@
       <SharedFrameworkRid>$(CoreSetupRid)</SharedFrameworkRid>
       <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
       <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
-      <CombinedFrameworkHostArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
+      <CombinedFrameworkHostArchiveFileName>dotnet-runtime$(PgoTerm)-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
       <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
 
       <AspNetCoreSharedFxInstallerRid Condition="'$(AspNetCoreSharedFxInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreSharedFxInstallerRid>
