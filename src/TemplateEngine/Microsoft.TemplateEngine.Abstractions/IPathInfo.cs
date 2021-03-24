@@ -4,6 +4,8 @@
     {
         string UserProfileDir { get; }
 
+        string TemplateEngineRootDir { get; }
+
         string BaseDir { get; }
     }
 }

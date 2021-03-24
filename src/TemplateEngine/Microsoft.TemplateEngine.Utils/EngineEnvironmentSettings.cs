@@ -8,18 +8,25 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
 {
-    public class EngineEnvironmentSettings : IEngineEnvironmentSettings
+    public sealed class EngineEnvironmentSettings : IEngineEnvironmentSettings, IDisposable
     {
+        private volatile bool _disposed;
+
         public EngineEnvironmentSettings(ITemplateEngineHost host, Func<IEngineEnvironmentSettings, ISettingsLoader> settingsLoaderFactory)
             : this(host, settingsLoaderFactory, null)
         {
         }
 
         public EngineEnvironmentSettings(ITemplateEngineHost host, Func<IEngineEnvironmentSettings, ISettingsLoader> settingsLoaderFactory, string hiveLocation)
+            :this(host, settingsLoaderFactory, hiveLocation, null)
+        {
+        }
+
+        public EngineEnvironmentSettings(ITemplateEngineHost host, Func<IEngineEnvironmentSettings, ISettingsLoader> settingsLoaderFactory, string hiveLocation, string engineRoot)
         {
             Host = host;
-            Paths = new DefaultPathInfo(this, hiveLocation);
             Environment = new DefaultEnvironment();
+            Paths = new DefaultPathInfo(this, engineRoot, hiveLocation);
             SettingsLoader = settingsLoaderFactory(this);
         }
 
@@ -33,47 +40,24 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class DefaultPathInfo : IPathInfo
         {
-            private string _userProfileDir;
-            private string _baseDir;
-            private readonly IEngineEnvironmentSettings _parent;
-
-            public DefaultPathInfo(IEngineEnvironmentSettings parent, string hiveLocation)
+            public DefaultPathInfo(IEngineEnvironmentSettings parent, string hiveLocation, string engineRoot)
             {
-                _parent = parent;
-                _baseDir = hiveLocation;
+                bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+                UserProfileDir = parent.Environment.GetEnvironmentVariable(isWindows
+                    ? "USERPROFILE"
+                    : "HOME");
+
+                TemplateEngineRootDir = engineRoot ?? Path.Combine(UserProfileDir, ".templateengine");
+
+                BaseDir = hiveLocation ?? Path.Combine(TemplateEngineRootDir, parent.Host.HostIdentifier, parent.Host.Version);
             }
 
-            public string UserProfileDir
-            {
-                get
-                {
-                    if (_userProfileDir == null)
-                    {
-                        bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            public string UserProfileDir { get; }
 
-                        string profileDir = _parent.Environment.GetEnvironmentVariable(isWindows
-                            ? "USERPROFILE"
-                            : "HOME");
+            public string BaseDir { get; }
 
-                        _userProfileDir = profileDir;
-                    }
-
-                    return _userProfileDir;
-                }
-            }
-
-            public string BaseDir
-            {
-                get
-                {
-                    if (_baseDir == null)
-                    {
-                        _baseDir = Path.Combine(UserProfileDir, ".templateengine", _parent.Host.HostIdentifier, _parent.Host.Version);
-                    }
-
-                    return _baseDir;
-                }
-            }
+            public string TemplateEngineRootDir { get; }
         }
 
         private class DefaultEnvironment : IEnvironment
@@ -117,6 +101,16 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 return _environmentVariables;
             }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
+            (SettingsLoader as IDisposable)?.Dispose();
         }
     }
 }
