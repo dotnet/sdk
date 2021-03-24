@@ -1,6 +1,9 @@
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.TemplateEngine.Utils
 {
@@ -29,6 +32,12 @@ namespace Microsoft.TemplateEngine.Utils
         public static string GetTemplateType(this ITemplateInfo template)
         {
             return template.GetTagValues("type")?.Single();
+        }
+
+        public async static Task<ITemplatePackage> GetTemplatePackageAsync (this ITemplateInfo template, IEngineEnvironmentSettings settings)
+        {
+            IReadOnlyList<ITemplatePackage> templatePackages = await settings.SettingsLoader.TemplatePackagesManager.GetTemplatePackages().ConfigureAwait(false);
+            return templatePackages.Single(s => s.MountPointUri == template.MountPointUri);
         }
 
         /// <summary>
