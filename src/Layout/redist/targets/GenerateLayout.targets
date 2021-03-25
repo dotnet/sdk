@@ -135,7 +135,7 @@
           BeforeTargets="Build">
 
     <PropertyGroup>
-      <DotnetWatchOutputDirectory>$(OutputPath)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\</DotnetWatchOutputDirectory>
+      <DotnetWatchOutputDirectory>$(OutputPath)\DotnetTools\dotnet-watch\</DotnetWatchOutputDirectory>
     </PropertyGroup>
 
     <ItemGroup>

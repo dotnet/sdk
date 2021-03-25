@@ -30,7 +30,19 @@ namespace Microsoft.DotNet.CommandFactory
                 return null;
             }
 
-            var packageId = new DirectoryInfo(Path.Combine(_dotnetToolPath, arguments.CommandName));
+            var packagePath = Path.Combine(_dotnetToolPath, arguments.CommandName);
+            if (string.Equals(arguments.CommandName, "dotnet-watch", StringComparison.Ordinal))
+            {
+                var toolAtRootPath = Path.Combine(packagePath, arguments.CommandName + ".dll");
+                if (File.Exists(toolAtRootPath))
+                {
+                    return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
+                        toolAtRootPath,
+                        arguments.CommandArguments);
+                }
+            }
+
+            var packageId = new DirectoryInfo(packagePath);
             if (!packageId.Exists)
             {
                 return null;

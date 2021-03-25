@@ -27,7 +27,7 @@
 
     <PropertyGroup>
       <SdkOutputDirectory>$(RedistLayoutPath)/sdk/$(Version)</SdkOutputDirectory>
-      <DotnetWatchOutputDirectory>$(SdkOutputDirectory)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\</DotnetWatchOutputDirectory>
+      <DotnetWatchOutputDirectory>$(SdkOutputDirectory)\DotnetTools\dotnet-watch\</DotnetWatchOutputDirectory>
     </PropertyGroup>
 
     <Copy SourceFiles="@(OverlaySdkFilesFromStage0)"
