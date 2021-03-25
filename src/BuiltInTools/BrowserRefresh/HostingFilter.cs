@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             {
                 app.Map("/_framework/clear-browser-cache", app1 => app1.Run(context =>
                 {
+                    // Scoped css files can contain links to other css files. We'll try clearing out the http caches to force the browser to re-download.
                     // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Clear-Site-Data#directives
                     context.Response.Headers["Clear-site-data"] = "\"cache\"";
                     return Task.CompletedTask;
