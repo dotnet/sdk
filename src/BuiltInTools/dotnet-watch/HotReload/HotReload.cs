@@ -29,10 +29,32 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask<bool> TryHandleFileChange(DotNetWatchContext context, FileItem file, CancellationToken cancellationToken)
         {
+<<<<<<< HEAD
             return
                 await _staticFileHandler.TryHandleFileChange(context, file, cancellationToken) ||
                 await _scopedCssFileHandler.TryHandleFileChange(context, file, cancellationToken) ||
                 await _compilationHandler.TryHandleFileChange(context, file, cancellationToken);
+=======
+            HotReladEventSource.Log.HotReloadStaticFileStart(file.FilePath);
+            bool staticFileHandlerSuccess = await _staticFileHandler.TryHandleFileChange(context, file, cancellationToken);
+            HotReladEventSource.Log.HotReloadStaticFileEnd(file.FilePath);
+
+            if (staticFileHandlerSuccess)
+            {
+                return true;
+            }
+
+            HotReladEventSource.Log.HotReloadCompilationStart(file.FilePath);
+            bool compilationFileHandlerSuccess = await _compilationHandler.TryHandleFileChange(context, file, cancellationToken);
+            HotReladEventSource.Log.HotReloadCompilationEnd(file.FilePath);
+
+            if (compilationFileHandlerSuccess) // This needs to be 6.0
+            {
+                return true;
+            }
+
+            return false;
+>>>>>>> 0b3df74f1... Add ETW start and stop events for file changes
         }
 
         public void Dispose()

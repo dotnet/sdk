@@ -28,9 +28,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 return false;
             }
-
+            // Event for start to handle static file change
             _reporter.Verbose($"Handling file change event for static content {file.FilePath}.");
             await HandleBrowserRefresh(context.BrowserRefreshServer, file, cancellationToken);
+            // Event for stop to handle static file change
             return true;
         }
 

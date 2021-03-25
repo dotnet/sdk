@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 return false;
             }
-
+            
             Debug.Assert(_editAndContinue != null);
             Debug.Assert(_currentSolution != null);
             Debug.Assert(_deltaApplier != null);
