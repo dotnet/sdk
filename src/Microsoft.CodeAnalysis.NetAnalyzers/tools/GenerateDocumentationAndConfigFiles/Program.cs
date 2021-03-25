@@ -236,7 +236,7 @@ namespace GenerateDocumentationAndConfigFiles
 
                 var fileContents =
 $@"<Project>
-  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsNotAsErrors()}
+  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsNotAsErrors()}{getCompilerVisibleProperties()}
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
@@ -306,6 +306,25 @@ $@"<Project>
     <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
     <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
   </PropertyGroup>";
+            }
+
+            string getCompilerVisibleProperties()
+            {
+                return analyzerPackageName switch
+                {
+                    ResxSourceGeneratorPackageName => @"
+  <ItemGroup>
+    <CompilerVisibleProperty Include=""RootNamespace"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""GenerateSource"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""RelativeDir"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""OmitGetResourceString"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""AsConstants"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""IncludeDefaultValues"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""EmitFormatMethods"" />
+  </ItemGroup>
+",
+                    _ => "",
+                };
             }
 
             void createAnalyzerDocumentationFile()
