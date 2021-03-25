@@ -1,6 +1,7 @@
 <Project>
 
   <Target Name="GenerateBundledVersions"
+          Condition="'$(PgoInstrument)' != 'true'"
           DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps" >
 
     <WriteLinesToFile
