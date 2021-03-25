@@ -6,18 +6,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.GlobalSettings;
+using Microsoft.TemplateEngine.Abstractions.Installer;
+using Microsoft.TemplateEngine.Edge.Settings;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NuGet.Common;
 
-namespace Microsoft.TemplateEngine.Edge.Settings
+namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
     internal sealed class GlobalSettings : IGlobalSettings, IDisposable
     {

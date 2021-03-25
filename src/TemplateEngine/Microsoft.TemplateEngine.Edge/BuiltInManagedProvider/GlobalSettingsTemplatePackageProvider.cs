@@ -8,57 +8,63 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.GlobalSettings;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Utils;
 
-namespace Microsoft.TemplateEngine.Edge
+namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
-    internal class GlobalSettingsTemplatePackagesProvider : IManagedTemplatePackagesProvider
+    internal class GlobalSettingsTemplatePackageProvider : IManagedTemplatePackageProvider, IDisposable
     {
-        private readonly string PackagesFolder;
+        private readonly string _globalSettingsFilePath;
+        private readonly string _packagesFolder;
+
         private IEngineEnvironmentSettings _environmentSettings;
         private Dictionary<Guid, IInstaller> _installersByGuid = new Dictionary<Guid, IInstaller>();
         private Dictionary<string, IInstaller> _installersByName = new Dictionary<string, IInstaller>();
+        private GlobalSettings _globalSettings;
 
-        public GlobalSettingsTemplatePackagesProvider
-            (GlobalSettingsTemplatePackagesProviderFactory factory, IEngineEnvironmentSettings settings)
+        public GlobalSettingsTemplatePackageProvider
+            (GlobalSettingsTemplatePackageProviderFactory factory, IEngineEnvironmentSettings settings)
         {
-            _ = factory ?? throw new ArgumentNullException(nameof(factory));
-            _ = settings ?? throw new ArgumentNullException(nameof(settings));
+            Factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
 
-            Factory = factory;
-            PackagesFolder = Path.Combine(settings.Paths.TemplateEngineRootDir, "packages");
-            if (!settings.Host.FileSystem.DirectoryExists(PackagesFolder))
+            _packagesFolder = Path.Combine(settings.Paths.TemplateEngineRootDir, "packages");
+            if (!settings.Host.FileSystem.DirectoryExists(_packagesFolder))
             {
-                settings.Host.FileSystem.CreateDirectory(PackagesFolder);
+                settings.Host.FileSystem.CreateDirectory(_packagesFolder);
             }
-
-            _environmentSettings = settings;
             foreach (var installerFactory in settings.SettingsLoader.Components.OfType<IInstallerFactory>())
             {
-                var installer = installerFactory.CreateInstaller(this, settings, PackagesFolder);
-                _installersByName[installerFactory.Name] = installer;
-                _installersByGuid[installerFactory.Id] = installer;
+                var installer = installerFactory.CreateInstaller(this, settings, _packagesFolder);
+
+                //this provider cannot work with installers that do not implement ISerializableInstaller
+                if (installer is ISerializableInstaller)
+                {
+                    _installersByName[installerFactory.Name] = installer;
+                    _installersByGuid[installerFactory.Id] = installer;
+                }
             }
 
+            _globalSettingsFilePath = Path.Combine(_environmentSettings.Paths.TemplateEngineRootDir, "settings.json");
+            _globalSettings = new GlobalSettings(_environmentSettings, _globalSettingsFilePath);
             // We can't just add "SettingsChanged+=SourcesChanged", because SourcesChanged is null at this time.
-            settings.SettingsLoader.GlobalSettings.SettingsChanged += () => SourcesChanged?.Invoke();
+            _globalSettings.SettingsChanged += () => SourcesChanged?.Invoke();
         }
 
         public event Action SourcesChanged;
 
-        public ITemplatePackagesProviderFactory Factory { get; }
+        public ITemplatePackageProviderFactory Factory { get; }
 
         public async Task<IReadOnlyList<ITemplatePackage>> GetAllSourcesAsync(CancellationToken cancellationToken)
         {
             var list = new List<ITemplatePackage>();
-            foreach (TemplatePackageData entry in await _environmentSettings.SettingsLoader.GlobalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false))
+            foreach (TemplatePackageData entry in await _globalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false))
             {
                 if (_installersByGuid.TryGetValue(entry.InstallerId, out var installer))
                 {
-                    list.Add(installer.Deserialize(this, entry));
+                    list.Add(((ISerializableInstaller)installer).Deserialize(this, entry));
 
                 }
                 else
@@ -95,9 +101,8 @@ namespace Microsoft.TemplateEngine.Edge
             {
                 return new List<InstallResult>();
             }
-
-            using var disposable = await _environmentSettings.SettingsLoader.GlobalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
-            var packages = new List<TemplatePackageData>(await _environmentSettings.SettingsLoader.GlobalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false));
+            using var disposable = await _globalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
+            var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false));
             var results = await Task.WhenAll(installRequests.Select(async installRequest =>
             {
                 var installersThatCanInstall = new List<IInstaller>();
@@ -116,7 +121,7 @@ namespace Microsoft.TemplateEngine.Edge
                 IInstaller installer = installersThatCanInstall[0];
                 return await InstallAsync(packages, installRequest, installer, cancellationToken).ConfigureAwait(false);
             })).ConfigureAwait(false);
-            await _environmentSettings.SettingsLoader.GlobalSettings.SetInstalledTemplatesPackagesAsync(packages, cancellationToken).ConfigureAwait(false);
+            await _globalSettings.SetInstalledTemplatesPackagesAsync(packages, cancellationToken).ConfigureAwait(false);
             return results;
         }
 
@@ -128,9 +133,9 @@ namespace Microsoft.TemplateEngine.Edge
                 return new List<UninstallResult>();
             }
 
-            using var disposable = await _environmentSettings.SettingsLoader.GlobalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
+            using var disposable = await _globalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
 
-            var packages = new List<TemplatePackageData>(await _environmentSettings.SettingsLoader.GlobalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false));
+            var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false));
             var results = await Task.WhenAll(sources.Select(async source =>
              {
                  UninstallResult result = await source.Installer.UninstallAsync(source, cancellationToken).ConfigureAwait(false);
@@ -143,7 +148,7 @@ namespace Microsoft.TemplateEngine.Edge
                  }
                  return result;
              })).ConfigureAwait(false);
-            await _environmentSettings.SettingsLoader.GlobalSettings.SetInstalledTemplatesPackagesAsync(packages, cancellationToken).ConfigureAwait(false);
+            await _globalSettings.SetInstalledTemplatesPackagesAsync(packages, cancellationToken).ConfigureAwait(false);
             return results;
 
         }
@@ -151,33 +156,33 @@ namespace Microsoft.TemplateEngine.Edge
         public async Task<IReadOnlyList<UpdateResult>> UpdateAsync(IEnumerable<UpdateRequest> updateRequests, CancellationToken cancellationToken)
         {
             _ = updateRequests ?? throw new ArgumentNullException(nameof(updateRequests));
-            IEnumerable<UpdateRequest> updatesToApply = updateRequests.Where(request => request.Version != request.Source.Version);
+            IEnumerable<UpdateRequest> updatesToApply = updateRequests.Where(request => request.Version != request.TemplatePackage.Version);
 
-            using var disposable = await _environmentSettings.SettingsLoader.GlobalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
+            using var disposable = await _globalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
 
-            var packages = new List<TemplatePackageData>(await _environmentSettings.SettingsLoader.GlobalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false));
+            var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false));
             var results = await Task.WhenAll(updatesToApply.Select(updateRequest => UpdateAsync(packages, updateRequest, cancellationToken))).ConfigureAwait(false);
-            await _environmentSettings.SettingsLoader.GlobalSettings.SetInstalledTemplatesPackagesAsync(packages, cancellationToken).ConfigureAwait(false);
+            await _globalSettings.SetInstalledTemplatesPackagesAsync(packages, cancellationToken).ConfigureAwait(false);
             return results;
 
         }
 
         private async Task<UpdateResult> UpdateAsync(List<TemplatePackageData> packages, UpdateRequest updateRequest, CancellationToken cancellationToken)
         {
-            (InstallerErrorCode result, string message) = await EnsureInstallPrerequisites(packages, updateRequest.Source.Identifier, updateRequest.Version, updateRequest.Source.Installer, cancellationToken, update: true).ConfigureAwait(false);
+            (InstallerErrorCode result, string message) = await EnsureInstallPrerequisites(packages, updateRequest.TemplatePackage.Identifier, updateRequest.Version, updateRequest.TemplatePackage.Installer, cancellationToken, update: true).ConfigureAwait(false);
             if (result != InstallerErrorCode.Success)
             {
                 return UpdateResult.CreateFailure(updateRequest, result, message);
             }
 
-            UpdateResult updateResult = await updateRequest.Source.Installer.UpdateAsync(updateRequest, cancellationToken).ConfigureAwait(false);
+            UpdateResult updateResult = await updateRequest.TemplatePackage.Installer.UpdateAsync(updateRequest, cancellationToken).ConfigureAwait(false);
             if (!updateResult.Success)
             {
                 return updateResult;
             }
             lock (packages)
             {
-                packages.Add(updateRequest.Source.Installer.Serialize(updateResult.Source));
+                packages.Add(((ISerializableInstaller)updateRequest.TemplatePackage.Installer).Serialize(updateResult.TemplatePackage));
             }
             return updateResult;
         }
@@ -242,9 +247,14 @@ namespace Microsoft.TemplateEngine.Edge
             }
             lock (packages)
             {
-                packages.Add(installer.Serialize(installResult.Source));
+                packages.Add(((ISerializableInstaller)installer).Serialize(installResult.TemplatePackage));
             }
             return installResult;
+        }
+
+        public void Dispose()
+        {
+            _globalSettings?.Dispose();
         }
     }
 }

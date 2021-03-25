@@ -5,14 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.TemplateEngine.Abstractions.Installer;
 
-namespace Microsoft.TemplateEngine.Abstractions.GlobalSettings
+namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
     /// <summary>
     /// Interface that represents loading/storing data into settings.json file.
     /// That is shared between multiple different hosts of TemplateEngine.
     /// </summary>
-    public interface IGlobalSettings
+    internal interface IGlobalSettings
     {
         /// <summary>
         /// Triggered every time when settings change.
@@ -20,12 +21,12 @@ namespace Microsoft.TemplateEngine.Abstractions.GlobalSettings
         event Action SettingsChanged;
 
         /// <summary>
-        /// Returns uncached list of installer template packages.
+        /// Returns uncached list of the template packages.
         /// </summary>
         Task<IReadOnlyList<TemplatePackageData>> GetInstalledTemplatesPackagesAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Stores list of installer template packages.
+        /// Stores list of the template packages.
         /// </summary>
         Task SetInstalledTemplatesPackagesAsync(IReadOnlyList<TemplatePackageData> packages, CancellationToken cancellationToken);
 

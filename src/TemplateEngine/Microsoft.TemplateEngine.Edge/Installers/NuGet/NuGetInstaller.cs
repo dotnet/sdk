@@ -8,15 +8,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.GlobalSettings;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
-    internal class NuGetInstaller : IInstaller
+    internal class NuGetInstaller : IInstaller, ISerializableInstaller
     {
         private const string DebugLogCategory = "Installer";
         private readonly IEngineEnvironmentSettings _environmentSettings;
@@ -25,7 +24,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         private readonly IDownloader _packageDownloader;
         private readonly IUpdateChecker _updateChecker;
 
-        public NuGetInstaller(IInstallerFactory factory, IManagedTemplatePackagesProvider provider, IEngineEnvironmentSettings settings, string installPath)
+        public NuGetInstaller(IInstallerFactory factory, IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath)
         {
             _factory = factory;
             Provider = provider;
@@ -36,7 +35,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _environmentSettings = settings;
         }
 
-        public NuGetInstaller(IInstallerFactory factory, IManagedTemplatePackagesProvider provider, IEngineEnvironmentSettings settings, string installPath, IDownloader packageDownloader, IUpdateChecker updateChecker)
+        public NuGetInstaller(IInstallerFactory factory, IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath, IDownloader packageDownloader, IUpdateChecker updateChecker)
         {
             _factory = factory;
             Provider = provider;
@@ -48,7 +47,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public Guid FactoryId => _factory.Id;
         public string Name => _factory.Name;
-        public IManagedTemplatePackagesProvider Provider { get; }
+        public IManagedTemplatePackageProvider Provider { get; }
 
         public Task<bool> CanInstallAsync(InstallRequest installationRequest, CancellationToken cancellationToken)
         {
@@ -84,7 +83,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             return Task.FromResult(true);
         }
 
-        public IManagedTemplatePackage Deserialize(IManagedTemplatePackagesProvider provider, TemplatePackageData data)
+        public IManagedTemplatePackage Deserialize(IManagedTemplatePackageProvider provider, TemplatePackageData data)
         {
             return new NuGetManagedTemplatePackage(_environmentSettings, this, data.MountPointUri, data.Details);
         }
@@ -240,26 +239,19 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
 
             //ensure uninstall is performed
-            UninstallResult uninstallResult = await UninstallAsync(updateRequest.Source, cancellationToken).ConfigureAwait(false);
+            UninstallResult uninstallResult = await UninstallAsync(updateRequest.TemplatePackage, cancellationToken).ConfigureAwait(false);
             if (!uninstallResult.Success)
             {
                 return UpdateResult.CreateFailure(updateRequest, uninstallResult.Error, uninstallResult.ErrorMessage);
             }
 
-            InstallRequest installRequest = new InstallRequest
-            {
-                Identifier = updateRequest.Source.Identifier,
-                Version = updateRequest.Version
-            };
-
-            var nuGetManagedSource = updateRequest.Source as NuGetManagedTemplatePackage;
+            var nuGetManagedSource = updateRequest.TemplatePackage as NuGetManagedTemplatePackage;
+            Dictionary<string, string> installationDetails = new Dictionary<string, string>();
             if (nuGetManagedSource != null && !string.IsNullOrWhiteSpace(nuGetManagedSource.NuGetSource))
             {
-                installRequest.Details = new Dictionary<string, string>()
-                {
-                    { InstallerConstants.NuGetSourcesKey, nuGetManagedSource.NuGetSource }
-                };
+                installationDetails.Add(InstallerConstants.NuGetSourcesKey, nuGetManagedSource.NuGetSource);
             }
+            InstallRequest installRequest = new InstallRequest(updateRequest.TemplatePackage.Identifier, updateRequest.Version, details: installationDetails);
             return UpdateResult.FromInstallResult(updateRequest, await InstallAsync(installRequest, cancellationToken).ConfigureAwait(false));
         }
 

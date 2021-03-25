@@ -284,7 +284,6 @@ namespace Microsoft.TemplateEngine.Edge
             private string _packageCache;
             private string _scratchDir;
             private string _settingsFile;
-            private string _globalSettingsFile;
             private string _contentDir;
             private string _packagesDir;
             private string _templatesCacheFile;
@@ -311,8 +310,6 @@ namespace Microsoft.TemplateEngine.Edge
             public string ScratchDir => _parent.GetOrComputePath(ref _scratchDir, BaseDir, "scratch");
 
             public string SettingsFile => _parent.GetOrComputePath(ref _settingsFile, BaseDir, "settings.json");
-
-            public string GlobalSettingsFile => _parent.GetOrComputePath(ref _globalSettingsFile, _parent._environmentSettings.Paths.TemplateEngineRootDir, "settings.json");
 
             public string TemplateCacheFile => _parent.GetOrComputePath(ref _templatesCacheFile, BaseDir, "templatecache.json");
 

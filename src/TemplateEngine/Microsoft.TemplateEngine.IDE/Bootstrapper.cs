@@ -17,14 +17,6 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.IDE
 {
-    public enum InstallationScope
-    {
-        Global = 0,
-//TODO: enable when providers are enabled
-//        Host = 1,
-//        Version = 2
-    }
-
     public class Bootstrapper
     {
         private readonly ITemplateEngineHost _host;

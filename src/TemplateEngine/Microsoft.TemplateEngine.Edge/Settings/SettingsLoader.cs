@@ -6,10 +6,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.GlobalSettings;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
@@ -30,7 +29,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private bool _templatesLoaded;
         private readonly Paths _paths;
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private TemplatePackagesManager _templatePackagesManager;
+        private TemplatePackageManager _templatePackagesManager;
         private volatile bool _disposed;
 
         public SettingsLoader(IEngineEnvironmentSettings environmentSettings)
@@ -38,7 +37,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _environmentSettings = environmentSettings;
             _paths = new Paths(environmentSettings);
             _userTemplateCache = new TemplateCache(environmentSettings);
-            _templatePackagesManager = new TemplatePackagesManager(environmentSettings);
+            _templatePackagesManager = new TemplatePackageManager(environmentSettings);
         }
 
         public void Save()
@@ -58,16 +57,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 return;
             }
-
-            using (Timing.Over(_environmentSettings.Host, "Parse and deserialize global settings"))
-                try
-                {
-                    GlobalSettings = new GlobalSettings(EnvironmentSettings, _paths.User.GlobalSettingsFile);
-                }
-                catch (Exception ex)
-                {
-                    throw new EngineInitializationException("Error parsing the user settings file", "Settings File", ex);
-                }
 
             string userSettings = null;
             using (Timing.Over(_environmentSettings.Host, "Read settings"))
@@ -300,9 +289,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public IEngineEnvironmentSettings EnvironmentSettings => _environmentSettings;
 
-        public IGlobalSettings GlobalSettings { get; private set; }
-
-        public ITemplatePackagesManager TemplatePackagesManager => _templatePackagesManager;
+        public ITemplatePackageManager TemplatePackagesManager => _templatePackagesManager;
 
         public async Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token)
         {
@@ -380,7 +367,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
             _disposed = true;
-            (GlobalSettings as GlobalSettings)?.Dispose();
+            _templatePackagesManager.Dispose();
         }
     }
 }
