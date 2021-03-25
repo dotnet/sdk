@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.IDE.IntegrationTests.Utils;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
@@ -29,10 +29,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string packageLocation = _packageManager.PackProjectTemplatesNuGetPackage("microsoft.dotnet.common.projecttemplates.5.0");
 
-            InstallRequest installRequest = new InstallRequest
-            {
-                Identifier = Path.GetFullPath(packageLocation)
-            };
+            InstallRequest installRequest = new InstallRequest(Path.GetFullPath(packageLocation));
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
@@ -42,7 +39,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             result.First().ErrorMessage.Should().BeNullOrEmpty();
             Assert.Equal(installRequest, result.First().InstallRequest);
 
-            IManagedTemplatePackage source = result.First().Source;
+            IManagedTemplatePackage source = result.First().TemplatePackage;
             Assert.Equal("Microsoft.DotNet.Common.ProjectTemplates.5.0", source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.Name);
             Assert.Equal("NuGet", source.Installer.Name);
@@ -65,15 +62,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         internal async Task CanInstall_RemoteNuGetPackage()
         {
             Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
-            InstallRequest installRequest = new InstallRequest
-            {
-                Identifier = "Take.Blip.Client.Templates",
-                Version = "0.5.135",
-                Details = new Dictionary<string, string>
+            InstallRequest installRequest = new InstallRequest(
+                "Take.Blip.Client.Templates",
+                "0.5.135",
+                details: new Dictionary<string, string>
                 {
                     { InstallerConstants.NuGetSourcesKey, "https://api.nuget.org/v3/index.json" }
-                }
-            };
+                });
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
@@ -83,7 +78,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.True(string.IsNullOrEmpty(result.First().ErrorMessage));
             Assert.Equal(installRequest, result.First().InstallRequest);
 
-            IManagedTemplatePackage source = result.First().Source;
+            IManagedTemplatePackage source = result.First().TemplatePackage;
             Assert.Equal("Take.Blip.Client.Templates", source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.Name);
             Assert.Equal("NuGet", source.Installer.Name);
@@ -109,10 +104,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithSourceName");
 
-            InstallRequest installRequest = new InstallRequest
-            {
-                Identifier = Path.GetFullPath(templateLocation)
-            };
+            InstallRequest installRequest = new InstallRequest(Path.GetFullPath(templateLocation));
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
@@ -122,7 +114,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             result.First().ErrorMessage.Should().BeNullOrEmpty();
             Assert.Equal(installRequest, result.First().InstallRequest);
 
-            IManagedTemplatePackage source = result.First().Source;
+            IManagedTemplatePackage source = result.First().TemplatePackage;
             Assert.Equal(Path.GetFullPath(templateLocation), source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.Name);
             Assert.Equal("Folder", source.Installer.Name);
@@ -144,17 +136,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         internal async Task CanCheckForLatestVersion_NuGetPackage()
         {
             Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
-            InstallRequest installRequest = new InstallRequest
-            {
-                Identifier = "Microsoft.DotNet.Common.ProjectTemplates.5.0",
-                Version = "5.0.0",
-            };
+            InstallRequest installRequest = new InstallRequest("Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0");
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
             Assert.True(result.First().Success);
-            IManagedTemplatePackage source = result.First().Source;
+            IManagedTemplatePackage source = result.First().TemplatePackage;
 
             IReadOnlyList<CheckUpdateResult> checkUpdateResults = await bootstrapper.GetLatestVersionsAsync(new[] { source }, CancellationToken.None).ConfigureAwait(false);
 
@@ -162,7 +150,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.True(checkUpdateResults.First().Success);
             Assert.Equal(InstallerErrorCode.Success, checkUpdateResults.First().Error);
             Assert.True(string.IsNullOrEmpty(checkUpdateResults.First().ErrorMessage));
-            Assert.Equal(source, checkUpdateResults.First().Source);
+            Assert.Equal(source, checkUpdateResults.First().TemplatePackage);
             Assert.False(checkUpdateResults.First().IsLatestVersion);
             Assert.NotEqual("5.0.0", checkUpdateResults.First().LatestVersion);
         }
@@ -173,16 +161,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithSourceName");
 
-            InstallRequest installRequest = new InstallRequest
-            {
-                Identifier = Path.GetFullPath(templateLocation)
-            };
+            InstallRequest installRequest = new InstallRequest(Path.GetFullPath(templateLocation));
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
             Assert.True(result.First().Success);
-            IManagedTemplatePackage source = result.First().Source;
+            IManagedTemplatePackage source = result.First().TemplatePackage;
 
             IReadOnlyList<CheckUpdateResult> checkUpdateResults = await bootstrapper.GetLatestVersionsAsync(new[] { source }, CancellationToken.None).ConfigureAwait(false);
 
@@ -190,7 +175,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.True(checkUpdateResults.First().Success);
             Assert.Equal(InstallerErrorCode.Success, checkUpdateResults.First().Error);
             Assert.True(string.IsNullOrEmpty(checkUpdateResults.First().ErrorMessage));
-            Assert.Equal(source, checkUpdateResults.First().Source);
+            Assert.Equal(source, checkUpdateResults.First().TemplatePackage);
             Assert.True(checkUpdateResults.First().IsLatestVersion);
         }
 
@@ -198,23 +183,15 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         internal async Task CanUpdate_NuGetPackage()
         {
             Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
-            InstallRequest installRequest = new InstallRequest
-            {
-                Identifier = "Microsoft.DotNet.Common.ProjectTemplates.5.0",
-                Version = "5.0.0",
-            };
+            InstallRequest installRequest = new InstallRequest("Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0");
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
             Assert.True(result.First().Success);
-            IManagedTemplatePackage source = result.First().Source;
+            IManagedTemplatePackage source = result.First().TemplatePackage;
 
-            UpdateRequest updateRequest = new UpdateRequest()
-            {
-                Source = source,
-                Version = "5.0.1"
-            };
+            UpdateRequest updateRequest = new UpdateRequest(source, "5.0.1");
 
             IReadOnlyList<UpdateResult> updateResults = await bootstrapper.UpdateTemplatePackagesAsync(new[] { updateRequest }, CancellationToken.None).ConfigureAwait(false);
 
@@ -224,7 +201,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.True(string.IsNullOrEmpty(updateResults.First().ErrorMessage));
             Assert.Equal(updateRequest, updateResults.First().UpdateRequest);
 
-            IManagedTemplatePackage updatedSource = updateResults.First().Source;
+            IManagedTemplatePackage updatedSource = updateResults.First().TemplatePackage;
             Assert.Equal("Global Settings", updatedSource.Provider.Factory.Name);
             Assert.Equal("NuGet", updatedSource.Installer.Name);
             Assert.Equal("5.0.1", updatedSource.Version);
@@ -245,17 +222,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         internal async Task CanUninstall_NuGetPackage()
         {
             Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
-            InstallRequest installRequest = new InstallRequest
-            {
-                Identifier = "Microsoft.DotNet.Common.ProjectTemplates.5.0",
-                Version = "5.0.0",
-            };
+            InstallRequest installRequest = new InstallRequest("Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0");
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
             Assert.True(result.First().Success);
-            IManagedTemplatePackage source = result.First().Source;
+            IManagedTemplatePackage source = result.First().TemplatePackage;
 
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
@@ -268,7 +241,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.True(uninstallResults.First().Success);
             Assert.Equal(InstallerErrorCode.Success, uninstallResults.First().Error);
             uninstallResults.First().ErrorMessage.Should().BeNullOrEmpty();
-            Assert.Equal(source, uninstallResults.First().Source);
+            Assert.Equal(source, uninstallResults.First().TemplatePackage);
 
             IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
@@ -281,16 +254,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithSourceName");
 
-            InstallRequest installRequest = new InstallRequest
-            {
-                Identifier = Path.GetFullPath(templateLocation)
-            };
+            InstallRequest installRequest = new InstallRequest(Path.GetFullPath(templateLocation));
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
             Assert.True(result.First().Success);
-            IManagedTemplatePackage source = result.First().Source;
+            IManagedTemplatePackage source = result.First().TemplatePackage;
             Assert.Equal(templateLocation, source.MountPointUri);
 
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
@@ -304,7 +274,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.True(uninstallResults.First().Success);
             Assert.Equal(InstallerErrorCode.Success, uninstallResults.First().Error);
             uninstallResults.First().ErrorMessage.Should().BeNullOrEmpty();
-            Assert.Equal(source, uninstallResults.First().Source);
+            Assert.Equal(source, uninstallResults.First().TemplatePackage);
 
             IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 

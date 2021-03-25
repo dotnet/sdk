@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.TemplateEngine.Abstractions.GlobalSettings;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
@@ -14,9 +13,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IEngineEnvironmentSettings EnvironmentSettings { get; }
 
-        IGlobalSettings GlobalSettings { get; }
-
-        ITemplatePackagesManager TemplatePackagesManager { get; }
+        ITemplatePackageManager TemplatePackagesManager { get; }
 
         void AddProbingPath(string probeIn);
 

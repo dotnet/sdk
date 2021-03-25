@@ -5,12 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Castle.Core.Internal;
-using Microsoft.TemplateEngine.Abstractions.GlobalSettings;
-using Microsoft.TemplateEngine.Edge.Settings;
+using Microsoft.TemplateEngine.Abstractions.Installer;
+using Microsoft.TemplateEngine.Edge.BuiltInManagedProvider;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 

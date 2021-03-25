@@ -5,79 +5,68 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.TemplateEngine.Abstractions.GlobalSettings;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Abstractions.Installer
 {
     public interface IInstaller
     {
         /// <summary>
-        /// User can specify name of specific installer to be used to install package.
-        /// e.g: nuget, folder, vsix(to download from VS marketplace), npm, maven...
-        /// This is useful when installer can't be determined based on <see cref="InstallRequest.Identifier"/> and <see cref="InstallRequest.Details"/>
+        /// Gets The ID of <see cref="IInstallerFactory."/> created the installer.
         /// </summary>
         Guid FactoryId { get; }
 
         /// <summary>
-        /// User can specify name of specific installer to be used to install package.
-        /// e.g: nuget, folder, vsix(to download from VS marketplace), npm, maven...
-        /// This is useful when installer can't be determined based on <see cref="InstallRequest.Identifier"/> and <see cref="InstallRequest.Details"/>
+        /// Gets the installer name.
         /// </summary>
+        /// <remarks>
+        /// The caller can specify <see cref="Name"/> in <see cref="InstallRequest.InstallerName"/> to use the installer for installation.
+        /// This is useful when the installer cannot be determined by using <see cref="CanInstallAsync"/>.
+        /// </remarks>
         string Name { get; }
 
-        IManagedTemplatePackagesProvider Provider { get; }
+        /// <summary>
+        /// Gets <see cref="IManagedTemplatePackageProvider"/> that created the installer.
+        /// </summary>
+        IManagedTemplatePackageProvider Provider { get; }
 
         /// <summary>
-        /// Installer should determine if it can install specific <see cref="InstallRequest"/>.
-        /// Ideally it should as far as calling backend server to determine if such identifier exists.
+        /// Determines in the installer can install specific <see cref="InstallRequest"/>.
         /// </summary>
+        /// <remarks>
+        /// Ideally it should as far as calling backend server to determine if such identifier exists.
+        /// </remarks>
         Task<bool> CanInstallAsync(InstallRequest installationRequest, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Deserializes <see cref="TemplatePackageData"/> to <see cref="IManagedTemplatePackage"/>
+        /// Gets latest versions for <paramref name="templatePackages"/>.
         /// </summary>
-        /// <param name="provider">The provider that provides the data</param>
-        /// <param name="data">Data to serialize</param>
-        /// <returns>deserialized <see cref="IManagedTemplatePackage"/></returns>
-        IManagedTemplatePackage Deserialize(IManagedTemplatePackagesProvider provider, TemplatePackageData data);
-
-        /// <summary>
-        /// Gets latest versions for <paramref name="sources"/>
-        /// </summary>
-        /// <param name="sources">sources to get latest versions for</param>
-        /// <returns>list of <see cref="CheckUpdateResult"/> containing latest versions for the sources</returns>
+        /// <param name="templatePackages">the template packages to get latest versions for.</param>
+        /// <returns>list of <see cref="CheckUpdateResult"/> containing latest versions for the sources.</returns>
         /// <param name="cancellationToken"></param>
-        Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> sources, CancellationToken cancellationToken);
+        Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> templatePackages, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Installs the template source
+        /// Installs the template package defined by <paramref name="installRequest"/>.
         /// </summary>
-        /// <param name="installRequest">details for installation</param>
-        /// <returns><see cref="InstallResult"/> containing installation results and <see cref="IManagedTemplatePackage"/> if installation was successful</returns>
+        /// <param name="installRequest">the template package to be installed.</param>
+        /// <returns><see cref="InstallResult"/> containing installation results and <see cref="IManagedTemplatePackage"/> if installation was successful.</returns>
         /// <param name="cancellationToken"></param>
         Task<InstallResult> InstallAsync(InstallRequest installRequest, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Serializes <see cref="IManagedTemplatePackage"/> to <see cref="TemplatePackageData"/>
+        /// Uninstalls the <paramref name="templatePackage"/>.
         /// </summary>
-        /// <param name="managedSource">source to serialize </param>
-        /// <returns>serialized <see cref="TemplatePackageData"/></returns>
-        TemplatePackageData Serialize(IManagedTemplatePackage managedSource);
-
-        /// <summary>
-        /// Uninstalls the template source
-        /// </summary>
-        /// <param name="managedSource">source to uninstall</param>
-        /// <returns><see cref="UninstallResult"/> containing uninstallation result</returns>
+        /// <param name="templatePackage">the template package to uninstall.</param>
+        /// <returns><see cref="UninstallResult"/> containing the result for operation.</returns>
         /// <param name="cancellationToken"></param>
-        Task<UninstallResult> UninstallAsync(IManagedTemplatePackage managedSource, CancellationToken cancellationToken);
+        Task<UninstallResult> UninstallAsync(IManagedTemplatePackage templatePackage, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Updates the template source
+        /// Updates the template package defined by <paramref name="updateRequest"/>.
         /// </summary>
-        /// <param name="updateRequest"><see cref="UpdateRequest"/> defining source to update and target version</param>
-        /// <returns><see cref="UpdateResult"/> containing update results and <see cref="IManagedTemplatePackage"/> if update was successful</returns>
+        /// <param name="updateRequest"><see cref="UpdateRequest"/> defining the template package to update and target version.</param>
+        /// <returns><see cref="UpdateResult"/> containing update results and <see cref="IManagedTemplatePackage"/> if update was successful.</returns>
         /// <param name="cancellationToken"></param>
         Task<UpdateResult> UpdateAsync(UpdateRequest updateRequest, CancellationToken cancellationToken);
     }

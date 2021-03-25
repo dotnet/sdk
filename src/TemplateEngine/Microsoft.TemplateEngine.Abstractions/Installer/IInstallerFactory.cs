@@ -1,16 +1,24 @@
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Abstractions.Installer
 {
     public interface IInstallerFactory : IIdentifiedComponent
     {
         /// <summary>
-        /// User can specify name of specific installer to be used to install package.
-        /// e.g: nuget, folder, vsix(to download from VS marketplace), npm, maven...
-        /// This is useful when installer can't be determined based on <see cref="InstallRequest.Identifier"/> and <see cref="InstallRequest.Details"/>
+        /// The factory name.
         /// </summary>
         string Name { get; }
 
-        IInstaller CreateInstaller(IManagedTemplatePackagesProvider provider, IEngineEnvironmentSettings settings, string installPath);
+        /// <summary>
+        /// Creates the <see cref="IInstaller"/> managed by this factory.
+        /// </summary>
+        /// <param name="provider"><see cref="IManagedTemplatePackageProvider"/> creating the instance.</param>
+        /// <param name="settings">environment settings of the template engine host.</param>
+        /// <param name="installPath">path to install the template packages to.</param>
+        /// <returns>created <see cref="IInstaller"/>.</returns>
+        IInstaller CreateInstaller(IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath);
     }
 }

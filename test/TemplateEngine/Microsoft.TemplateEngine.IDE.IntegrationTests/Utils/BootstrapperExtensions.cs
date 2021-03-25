@@ -18,10 +18,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             foreach (string template in templates)
             {
                 string path = TestUtils.GetTestTemplateLocation(template);
-                installRequests.Add(new InstallRequest()
-                {
-                    Identifier = Path.GetFullPath(path)
-                });
+                installRequests.Add(new InstallRequest(Path.GetFullPath(path)));
             }
 
             IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests).ConfigureAwait(false);
@@ -37,10 +34,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             List<InstallRequest> installRequests = new List<InstallRequest>();
             foreach (string template in templates)
             {
-                installRequests.Add(new InstallRequest()
-                {
-                    Identifier = Path.GetFullPath(template)
-                });
+                installRequests.Add(new InstallRequest(Path.GetFullPath(template)));
             }
 
             IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests).ConfigureAwait(false);

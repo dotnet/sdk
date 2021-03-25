@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Edge.Template;
@@ -125,13 +125,13 @@ namespace Microsoft.TemplateEngine.IDE
                 return Task.FromResult((IReadOnlyList<InstallResult>)new List<InstallResult>());
             }
 
-            IManagedTemplatePackagesProvider managedSourceProvider;
+            IManagedTemplatePackageProvider managedSourceProvider;
             switch (scope)
             {
                 case InstallationScope.Global:
                 default:
                     {
-                        managedSourceProvider = EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetManagedProvider(GlobalSettingsTemplatePackagesProviderFactory.FactoryId);
+                        managedSourceProvider = EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetBuiltInManagedProvider(InstallationScope.Global);
                         break;
                     }
             };
@@ -156,7 +156,7 @@ namespace Microsoft.TemplateEngine.IDE
                 return new List<CheckUpdateResult>();
             }
 
-            IEnumerable<IGrouping<IManagedTemplatePackagesProvider, IManagedTemplatePackage>> requestsGroupedByProvider = managedSources.GroupBy(source => source.ManagedProvider, source => source);
+            IEnumerable<IGrouping<IManagedTemplatePackageProvider, IManagedTemplatePackage>> requestsGroupedByProvider = managedSources.GroupBy(source => source.ManagedProvider, source => source);
             IReadOnlyList<CheckUpdateResult>[] results = await Task.WhenAll(requestsGroupedByProvider.Select(sources => sources.Key.GetLatestVersionsAsync(sources, cancellationToken))).ConfigureAwait(false);
 
             return results.SelectMany(result => result).ToList();
@@ -179,7 +179,7 @@ namespace Microsoft.TemplateEngine.IDE
                 return new List<UpdateResult>();
             }
 
-            IEnumerable<IGrouping<IManagedTemplatePackagesProvider, UpdateRequest>> requestsGroupedByProvider = updateRequests.GroupBy(request => request.Source.ManagedProvider, request => request);
+            IEnumerable<IGrouping<IManagedTemplatePackageProvider, UpdateRequest>> requestsGroupedByProvider = updateRequests.GroupBy(request => request.TemplatePackage.ManagedProvider, request => request);
             IReadOnlyList<UpdateResult>[] updateResults = await Task.WhenAll(requestsGroupedByProvider.Select(requests => requests.Key.UpdateAsync(requests, cancellationToken))).ConfigureAwait(false);
 
             return updateResults.SelectMany(result => result).ToList();
@@ -202,7 +202,7 @@ namespace Microsoft.TemplateEngine.IDE
                 return new List<UninstallResult>();
             }
 
-            IEnumerable<IGrouping<IManagedTemplatePackagesProvider, IManagedTemplatePackage>> requestsGroupedByProvider = managedSources.GroupBy(source => source.ManagedProvider, source => source);
+            IEnumerable<IGrouping<IManagedTemplatePackageProvider, IManagedTemplatePackage>> requestsGroupedByProvider = managedSources.GroupBy(source => source.ManagedProvider, source => source);
             IReadOnlyList<UninstallResult>[] uninstallResults = await Task.WhenAll(requestsGroupedByProvider.Select(sources => sources.Key.UninstallAsync(sources, cancellationToken))).ConfigureAwait(false);
 
             return uninstallResults.SelectMany(result => result).ToList();
@@ -234,7 +234,7 @@ namespace Microsoft.TemplateEngine.IDE
                 return;
             }
 
-            var installRequests = paths.Select(path => new InstallRequest() { Identifier = path }).ToList();
+            var installRequests = paths.Select(path => new InstallRequest(path)).ToList();
             Task<IReadOnlyList<InstallResult>> t = InstallTemplatePackagesAsync(installRequests);
             t.Wait();
         }
@@ -274,7 +274,7 @@ namespace Microsoft.TemplateEngine.IDE
 
             Task<IReadOnlyList<UninstallResult>> uninstallTask = UninstallTemplatePackagesAsync(sourcesToUninstall);
             uninstallTask.Wait();
-            return uninstallTask.Result.Select(result => result.Source.Identifier);
+            return uninstallTask.Result.Select(result => result.TemplatePackage.Identifier);
         }
         #endregion
     }

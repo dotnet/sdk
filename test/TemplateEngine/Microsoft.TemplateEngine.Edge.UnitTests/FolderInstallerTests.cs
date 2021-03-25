@@ -36,10 +36,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory, provider);
 
-            InstallRequest request = new InstallRequest
-            {
-                Identifier = installPath
-            };
+            InstallRequest request = new InstallRequest(installPath);
+
             Assert.True(await folderInstaller.CanInstallAsync(request, CancellationToken.None).ConfigureAwait(false));
 
             InstallResult result = await folderInstaller.InstallAsync(request, CancellationToken.None).ConfigureAwait(false);
@@ -49,7 +47,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(InstallerErrorCode.Success, result.Error);
             result.ErrorMessage.Should().BeNullOrEmpty();
 
-            var source = (FolderManagedTemplatePackage)result.Source;
+            var source = (FolderManagedTemplatePackage)result.TemplatePackage;
             source.MountPointUri.Should().Be(installPath);
             source.Version.Should().BeNullOrEmpty();
             source.DisplayName.Should().Be(installPath);
@@ -67,10 +65,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory, provider);
 
-            InstallRequest request = new InstallRequest
-            {
-                Identifier = Path.GetTempFileName()
-            };
+            InstallRequest request = new InstallRequest(Path.GetTempFileName());
             Assert.False(await folderInstaller.CanInstallAsync(request, CancellationToken.None).ConfigureAwait(false));
 
             InstallResult result = await folderInstaller.InstallAsync(request, CancellationToken.None).ConfigureAwait(false);
@@ -79,7 +74,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(request, result.InstallRequest);
             Assert.Equal(InstallerErrorCode.PackageNotFound, result.Error);
             result.ErrorMessage.Should().NotBeNullOrEmpty();
-            result.Source.Should().BeNull();
+            result.TemplatePackage.Should().BeNull();
         }
 
         [Fact]
@@ -91,10 +86,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory, provider);
 
-            InstallRequest request = new InstallRequest
-            {
-                Identifier = "not found"
-            };
+            InstallRequest request = new InstallRequest("not found");
             Assert.False(await folderInstaller.CanInstallAsync(request, CancellationToken.None).ConfigureAwait(false));
 
             InstallResult result = await folderInstaller.InstallAsync(request, CancellationToken.None).ConfigureAwait(false);
@@ -103,7 +95,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(request, result.InstallRequest);
             Assert.Equal(InstallerErrorCode.PackageNotFound, result.Error);
             result.ErrorMessage.Should().NotBeNullOrEmpty();
-            result.Source.Should().BeNull();
+            result.TemplatePackage.Should().BeNull();
         }
 
         [Fact]
@@ -122,7 +114,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             CheckUpdateResult result = results.Single();
 
             Assert.True(result.Success);
-            Assert.Equal(source, result.Source);
+            Assert.Equal(source, result.TemplatePackage);
             Assert.Equal(InstallerErrorCode.Success, result.Error);
             result.ErrorMessage.Should().BeNullOrEmpty();
             result.LatestVersion.Should().BeNullOrEmpty();
@@ -150,18 +142,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory, provider);
 
             FolderManagedTemplatePackage source = new FolderManagedTemplatePackage(engineEnvironmentSettings, folderInstaller, Path.GetRandomFileName());
-            UpdateRequest updateRequest = new UpdateRequest
-            {
-                Source = source,
-                Version = "1.0.0"
-            };
-
+            UpdateRequest updateRequest = new UpdateRequest(source, "1.0.0");
             UpdateResult result = await folderInstaller.UpdateAsync(updateRequest, CancellationToken.None).ConfigureAwait(false);
 
             Assert.True(result.Success);
             Assert.Equal(updateRequest, result.UpdateRequest);
             Assert.Equal(InstallerErrorCode.Success, result.Error);
-            Assert.Equal(source, result.Source);
+            Assert.Equal(source, result.TemplatePackage);
         }
 
         [Fact]
@@ -184,10 +171,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory, provider);
 
-            InstallRequest request = new InstallRequest
-            {
-                Identifier = installPath
-            };
+            InstallRequest request = new InstallRequest(installPath);
 
             InstallResult result = await folderInstaller.InstallAsync(request, CancellationToken.None).ConfigureAwait(false);
 
@@ -196,7 +180,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(InstallerErrorCode.Success, result.Error);
             result.ErrorMessage.Should().BeNullOrEmpty();
 
-            var source = (FolderManagedTemplatePackage)result.Source;
+            var source = (FolderManagedTemplatePackage)result.TemplatePackage;
             source.Should().NotBeNull();
             source.MountPointUri.Should().Be(installPath);
             Directory.Exists(installPath);
@@ -204,7 +188,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             UninstallResult uninstallResult = await folderInstaller.UninstallAsync(source, CancellationToken.None).ConfigureAwait(false);
 
             Assert.True(uninstallResult.Success);
-            Assert.Equal(source, uninstallResult.Source);
+            Assert.Equal(source, uninstallResult.TemplatePackage);
             Assert.Equal(InstallerErrorCode.Success, result.Error);
             result.ErrorMessage.Should().BeNullOrEmpty();
 

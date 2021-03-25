@@ -1,21 +1,46 @@
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Abstractions.Installer
 {
-    public class InstallResult : Result
+
+    /// <summary>
+    /// Represents the result of template package installation using <see cref="IInstaller.InstallAsync"/>.
+    /// </summary>
+    public sealed class InstallResult : Result
     {
+        private InstallResult() { }
+
+        /// <summary>
+        /// <see cref="InstallRequest"/> processed by <see cref="IInstaller.InstallAsync"/> operation.
+        /// </summary>
         public InstallRequest InstallRequest { get; private set; }
 
-        public static InstallResult CreateSuccess(InstallRequest request, IManagedTemplatePackage source)
+        /// <summary>
+        /// Creates successful result for the operation.
+        /// </summary>
+        /// <param name="request">the processed installation request.</param>
+        /// <param name="templatePackage">the installed <see cref="IManagedTemplatePackage"/>.</param>
+        /// <returns></returns>
+        public static InstallResult CreateSuccess(InstallRequest request, IManagedTemplatePackage templatePackage)
         {
             return new InstallResult()
             {
                 InstallRequest = request,
                 Error = InstallerErrorCode.Success,
-                Source = source
+                TemplatePackage = templatePackage
             };
         }
 
+        /// <summary>
+        /// Creates failure result for the operation.
+        /// </summary>
+        /// <param name="request">the processed installation request.</param>
+        /// <param name="error">error code, see <see cref="InstallerErrorCode"/> for details.</param>
+        /// <param name="localizedFailureMessage">detailed error message.</param>
+        /// <returns></returns>
         public static InstallResult CreateFailure(InstallRequest request, InstallerErrorCode error, string localizedFailureMessage)
         {
             return new InstallResult()
