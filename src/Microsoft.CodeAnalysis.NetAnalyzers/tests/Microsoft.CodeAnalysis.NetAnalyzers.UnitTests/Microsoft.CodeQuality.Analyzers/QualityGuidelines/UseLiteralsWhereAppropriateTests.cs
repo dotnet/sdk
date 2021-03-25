@@ -135,7 +135,11 @@ public class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             };
             csTest.ExpectedDiagnostics.AddRange(expected);
@@ -162,7 +166,11 @@ Public Class Test
 End Class
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(expected);

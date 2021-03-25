@@ -550,7 +550,11 @@ public class {|#0:SomeClass|}
 }
 ",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                     ExpectedDiagnostics = { VerifyCS.Diagnostic().WithLocation(0).WithArguments("SomeClass", args), },
                 },
             }.RunAsync();
@@ -570,7 +574,11 @@ Public Class {|#0:SomeClass|}
 End Class
 ",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                     ExpectedDiagnostics = { VerifyVB.Diagnostic().WithLocation(0).WithArguments("SomeClass", args), },
                 },
             }.RunAsync();

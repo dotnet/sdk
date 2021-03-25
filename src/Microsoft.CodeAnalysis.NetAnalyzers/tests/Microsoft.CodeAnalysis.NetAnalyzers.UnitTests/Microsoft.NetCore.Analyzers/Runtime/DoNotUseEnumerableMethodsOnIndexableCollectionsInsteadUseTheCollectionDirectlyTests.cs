@@ -218,7 +218,11 @@ public class C
                 TestState =
                 {
                     Sources = { csharpSource, },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                     ExpectedDiagnostics =
                     {
                         GetCSharpResultAt(10, 9),
@@ -258,7 +262,11 @@ End Class";
                 TestState =
                 {
                     Sources = { vbSource, },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                     ExpectedDiagnostics =
                     {
                         GetBasicResultAt(8, 13),

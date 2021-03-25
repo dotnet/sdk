@@ -866,7 +866,11 @@ public class C
     }}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
 
@@ -882,7 +886,11 @@ Public Class C
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
         }
@@ -1005,7 +1013,11 @@ public class C
     }}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
                 SolutionTransforms = { WithAnalyzerConfigDocument }
             };
@@ -1029,7 +1041,11 @@ Public Class C
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
                 SolutionTransforms = { WithAnalyzerConfigDocument }
             };

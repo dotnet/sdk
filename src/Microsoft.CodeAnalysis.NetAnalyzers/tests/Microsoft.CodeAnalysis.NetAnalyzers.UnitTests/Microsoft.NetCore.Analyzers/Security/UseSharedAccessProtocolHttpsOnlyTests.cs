@@ -37,7 +37,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             };
 
