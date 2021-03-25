@@ -1,0 +1,27 @@
+From aa5f3a1150067505060cdd2346286123cbe64ed9 Mon Sep 17 00:00:00 2001
+From: dseefeld <dseefeld@microsoft.com>
+Date: Sat, 20 Jun 2020 18:56:37 -0400
+Subject: [PATCH] Update versions of Microsoft.Build packages
+
+---
+ .../Microsoft.DotNet.Cli.Utils.csproj                         | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj b/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
+index 87a1be5ab..513b246b9 100644
+--- a/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
++++ b/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
+@@ -24,8 +24,8 @@
+     <PackageReference Include="NuGet.Packaging.Core" Version="$(NuGetPackagingPackageVersion)" />
+     <PackageReference Include="NuGet.Frameworks" Version="$(NuGetFrameworksPackageVersion)" />
+     <PackageReference Include="NuGet.ProjectModel" Version="$(NuGetProjectModelPackageVersion)" />
+-    <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
+-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
++    <PackageReference Include="Microsoft.Build" Version="15.7.179" />
++    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.7.179" />
+     <PackageReference Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
+   </ItemGroup>
+ 
+-- 
+2.25.4
+
