@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
 using Microsoft.TemplateEngine.TestHelper;
@@ -17,13 +17,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class SettingsLoaderTests : IDisposable
     {
-        class FakeFactory : ITemplatePackagesProviderFactory
+        class FakeFactory : ITemplatePackageProviderFactory
         {
             public string Name => nameof(FakeFactory);
 
             public Guid Id { get; } = new Guid("{61CFA828-97B6-44EB-A44D-0AE673D6DF52}");
 
-            public ITemplatePackagesProvider CreateProvider(IEngineEnvironmentSettings settings)
+            public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
             {
                 var defaultTemplatePackageProvider = new DefaultTemplatePackageProvider(this, settings, NuPkgs, Folders);
                 allCreatedProviders.Add(new WeakReference<DefaultTemplatePackageProvider>(defaultTemplatePackageProvider));

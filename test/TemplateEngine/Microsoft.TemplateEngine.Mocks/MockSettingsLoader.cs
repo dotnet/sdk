@@ -1,11 +1,13 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.GlobalSettings;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
@@ -24,9 +26,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IEngineEnvironmentSettings EnvironmentSettings => _environmentSettings;
 
-        public IGlobalSettings GlobalSettings => throw new NotImplementedException();
-
-        public ITemplatePackagesManager TemplatePackagesManager => throw new NotImplementedException();
+        public ITemplatePackageManager TemplatePackagesManager => throw new NotImplementedException();
 
         public void AddProbingPath(string probeIn)
         {

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.TemplateEngine.Abstractions.TemplatePackages
+namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
 {
     /// <summary>
     /// This provider is responsible for managing <see cref="IManagedTemplatePackage"/>.
     /// </summary>
-    public interface IManagedTemplatePackagesProvider : ITemplatePackagesProvider
+    public interface IManagedTemplatePackageProvider : ITemplatePackageProvider
     {
         /// <summary>
         /// Takes list of <see cref="IManagedTemplatePackage"/> as input so it can check for latest versions in batch.

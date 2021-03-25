@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockManagedTemplatesPackageProvider : IManagedTemplatePackagesProvider
+    public class MockManagedTemplatesPackageProvider : IManagedTemplatePackageProvider
     {
         public event Action SourcesChanged
         {
@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Mocks
             remove { }
         }
 
-        public ITemplatePackagesProviderFactory Factory => throw new NotImplementedException();
+        public ITemplatePackageProviderFactory Factory => throw new NotImplementedException();
 
         public Task<IReadOnlyList<ITemplatePackage>> GetAllSourcesAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionsAsync(IEnumerable<IManagedTemplatePackage> managedSources, CancellationToken cancellationToken) => throw new NotImplementedException();

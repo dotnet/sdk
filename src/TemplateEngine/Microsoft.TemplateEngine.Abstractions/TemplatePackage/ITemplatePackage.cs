@@ -1,10 +1,10 @@
 using System;
 
-namespace Microsoft.TemplateEngine.Abstractions.TemplatePackages
+namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
 {
     /// <summary>
     /// Templates source is folder, .nupkg or other container that can contain single or multiple templates.
-    /// <seealso cref="ITemplatePackagesProvider"/> for more information.
+    /// <seealso cref="ITemplatePackageProvider"/> for more information.
     /// </summary>
     public interface ITemplatePackage
     {
@@ -24,6 +24,6 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackages
         /// This is mostly helper for grouping sources by provider
         /// so caller doesn't need to keep track of provider->source relation.
         /// </summary>
-        ITemplatePackagesProvider Provider { get; }
+        ITemplatePackageProvider Provider { get; }
     }
 }

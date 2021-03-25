@@ -4,13 +4,13 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 
-namespace Microsoft.TemplateEngine.Abstractions.TemplatePackages
+namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
 {
     /// <summary>
     /// This is more advanced <see cref="ITemplatePackage"/>. Managed means that this templates source can be:<br/>
-    /// Uninstalled via <see cref="ManagedProvider"/>.<see cref="IManagedTemplatePackagesProvider.UninstallAsync(IManagedTemplatePackage)"/><br/>
-    /// Check for latest version via <see cref="ManagedProvider"/>.<see cref="IManagedTemplatePackagesProvider.GetLatestVersionsAsync(IEnumerable{IManagedTemplatePackage}, System.Threading.CancellationToken)"/><br/>
-    /// Updated  via <see cref="ManagedProvider"/>.<see cref="IManagedTemplatePackagesProvider.UpdateAsync(IEnumerable{ManagedTemplatePackageUpdate})"/>
+    /// Uninstalled via <see cref="ManagedProvider"/>.<see cref="IManagedTemplatePackageProvider.UninstallAsync(IManagedTemplatePackage)"/><br/>
+    /// Check for latest version via <see cref="ManagedProvider"/>.<see cref="IManagedTemplatePackageProvider.GetLatestVersionsAsync(IEnumerable{IManagedTemplatePackage}, System.Threading.CancellationToken)"/><br/>
+    /// Updated  via <see cref="ManagedProvider"/>.<see cref="IManagedTemplatePackageProvider.UpdateAsync(IEnumerable{ManagedTemplatePackageUpdate})"/>
     /// </summary>
     public interface IManagedTemplatePackage : ITemplatePackage
     {
@@ -34,10 +34,10 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackages
 
         /// <summary>
         /// Installer that created this source.
-        /// This serves as helper for grouping sources by <see cref="IManagedTemplatePackagesProvider"/>
+        /// This serves as helper for grouping sources by <see cref="IManagedTemplatePackageProvider"/>
         /// so caller doesn't need to keep track of "managed provider"->"source" relation.
         /// </summary>
-        IManagedTemplatePackagesProvider ManagedProvider { get; }
+        IManagedTemplatePackageProvider ManagedProvider { get; }
 
         /// <summary>
         /// Version of templates source.

@@ -1,5 +1,5 @@
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,18 +9,18 @@ using System.Threading.Tasks;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
 {
-    class BuiltInTemplatePackagesProviderFactory : ITemplatePackagesProviderFactory
+    class BuiltInTemplatePackagesProviderFactory : ITemplatePackageProviderFactory
     {
         public string Name => "IDE.IntegrationTests BuiltIn";
 
         public Guid Id { get; } = new Guid("{3227D09D-C1EA-48F1-A33B-1F132BFD9F01}");
 
-        public ITemplatePackagesProvider CreateProvider(IEngineEnvironmentSettings settings)
+        public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
         {
             return new BuiltInTemplatePackagesProvider(this, settings);
         }
 
-        class BuiltInTemplatePackagesProvider : ITemplatePackagesProvider
+        class BuiltInTemplatePackagesProvider : ITemplatePackageProvider
         {
             private readonly IEngineEnvironmentSettings settings;
 
@@ -30,9 +30,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
                 this.Factory = factory;
             }
 
-            public ITemplatePackagesProviderFactory Factory { get; }
+            public ITemplatePackageProviderFactory Factory { get; }
 
-            event Action ITemplatePackagesProvider.SourcesChanged
+            event Action ITemplatePackageProvider.SourcesChanged
             {
                 add { }
                 remove { }

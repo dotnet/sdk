@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.TemplateEngine.Abstractions.TemplatePackages
+namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
 {
-    public interface ITemplatePackagesProvider
+    public interface ITemplatePackageProvider
     {
 
         Task<IReadOnlyList<ITemplatePackage>> GetAllSourcesAsync(CancellationToken cancellationToken);
@@ -14,6 +14,6 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackages
         event Action SourcesChanged;
 
 
-        ITemplatePackagesProviderFactory Factory { get; }
+        ITemplatePackageProviderFactory Factory { get; }
     }
 }

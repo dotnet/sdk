@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 #nullable enable
 
@@ -20,15 +20,15 @@ namespace Microsoft.TemplateEngine.Utils
     /// This is generic provider that can be used by different factories that have
     /// fixed list of ".nupkgs" or "folders". And don't want to re-implement this interface.
     /// </summary>
-    public class DefaultTemplatePackageProvider : ITemplatePackagesProvider
+    public class DefaultTemplatePackageProvider : ITemplatePackageProvider
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly IEnumerable<string> _nupkgs;
         private readonly IEnumerable<string> _folders;
 
-        public ITemplatePackagesProviderFactory Factory { get; }
+        public ITemplatePackageProviderFactory Factory { get; }
 
-        public DefaultTemplatePackageProvider(ITemplatePackagesProviderFactory factory, IEngineEnvironmentSettings environmentSettings, IEnumerable<string>? nupkgs = null, IEnumerable<string>? folders = null)
+        public DefaultTemplatePackageProvider(ITemplatePackageProviderFactory factory, IEngineEnvironmentSettings environmentSettings, IEnumerable<string>? nupkgs = null, IEnumerable<string>? folders = null)
         {
             Factory = factory;
             _environmentSettings = environmentSettings;

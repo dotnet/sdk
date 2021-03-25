@@ -1,6 +1,6 @@
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 
         public string Name => "Folder";
 
-        public IInstaller CreateInstaller(IManagedTemplatePackagesProvider provider, IEngineEnvironmentSettings settings, string installPath)
+        public IInstaller CreateInstaller(IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath)
         {
             return new FolderInstaller(settings, this, provider);
         }

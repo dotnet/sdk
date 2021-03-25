@@ -1,5 +1,5 @@
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackages;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
