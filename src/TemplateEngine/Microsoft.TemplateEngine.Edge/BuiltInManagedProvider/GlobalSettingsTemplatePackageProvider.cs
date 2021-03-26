@@ -16,6 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
     internal class GlobalSettingsTemplatePackageProvider : IManagedTemplatePackageProvider, IDisposable
     {
+        private const string DebugLogCategory = "Installer";
         private readonly string _globalSettingsFilePath;
         private readonly string _packagesFolder;
 
@@ -64,7 +65,16 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             {
                 if (_installersByGuid.TryGetValue(entry.InstallerId, out var installer))
                 {
-                    list.Add(((ISerializableInstaller)installer).Deserialize(this, entry));
+                    try
+                    {
+                        list.Add(((ISerializableInstaller)installer).Deserialize(this, entry));
+                    }
+                    catch (Exception e)
+                    {
+                        _environmentSettings.Host.LogDiagnosticMessage($"[{Factory.Name}] Failed to deserialize template package data entry {entry.MountPointUri}, details: {e.ToString()}.", DebugLogCategory);
+                        //adding template package as non-managed
+                        list.Add(new TemplatePackage(this, entry.MountPointUri, entry.LastChangeTime));
+                    }
                 }
                 else
                 {

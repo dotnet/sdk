@@ -283,10 +283,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
-
-            Dictionary<string, string> sourceDetails = new Dictionary<string, string>();
-            sourceDetails[NuGetManagedTemplatePackage.PackageIdKey] = exception;
-            NuGetManagedTemplatePackage source = new NuGetManagedTemplatePackage(engineEnvironmentSettings, installer, provider, installPath, sourceDetails);
+            NuGetManagedTemplatePackage source = new NuGetManagedTemplatePackage(engineEnvironmentSettings, installer, provider, installPath, exception);
             IReadOnlyList<CheckUpdateResult> checkUpdateResults = await installer.GetLatestVersionAsync(new[] { source }, provider, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Single(checkUpdateResults);
@@ -397,7 +394,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                      MountPointUri = "MountPointUri",
                      Details = new Dictionary<string, string>
                      {
-                         { "Irrelevant", "not nedeed" },
+                         { "Irrelevant", "not needed" },
                          { "NuGetSource", "https://api.nuget.org/v3/index.json" },
                          { "PackageId", "TestPackage" },
                          { "Version", "4.7.0.395" }
@@ -428,6 +425,50 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source.LocalPackage.Should().Be(local);
             source.Provider.Should().Be(provider);
             source.NuGetSource.Should().Be(nugetFeed);
+        }
+
+        [Fact]
+        public void Deserialize_ThrowsWhenDetailsDoNotHavePackageID()
+        {
+            var templateData = new TemplatePackageData()
+            {
+                MountPointUri = "MountPointUri",
+                Details = new Dictionary<string, string>
+                     {
+                         { "Irrelevant", "not needed" },
+                         { "Version", "4.7.0.395" }
+                     }
+            };
+            MockInstallerFactory factory = new MockInstallerFactory();
+            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            MockPackageManager mockPackageManager = new MockPackageManager();
+            NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
+
+            Assert.Throws<ArgumentException>(() => installer.Deserialize(provider, templateData));
+        }
+
+        [Fact]
+        public void Deserialize_ThrowsWhenInstallerIdDoesNotMatch()
+        {
+            var templateData = new TemplatePackageData()
+            {
+                MountPointUri = "MountPointUri",
+                Details = new Dictionary<string, string>
+                {
+                    { "Irrelevant", "not needed" },
+                    { "Version", "4.7.0.395" }
+                },
+                InstallerId = Guid.NewGuid()
+            };
+            MockInstallerFactory factory = new MockInstallerFactory();
+            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            MockPackageManager mockPackageManager = new MockPackageManager();
+            NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
+            Assert.Throws<ArgumentException>(() => installer.Deserialize(provider, templateData));
         }
     }
 }

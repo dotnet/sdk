@@ -99,7 +99,12 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public IManagedTemplatePackage Deserialize(IManagedTemplatePackageProvider provider, TemplatePackageData data)
         {
-            return new NuGetManagedTemplatePackage(_environmentSettings, installer: this, provider, data.MountPointUri, data.Details);
+            _ = provider ?? throw new ArgumentNullException(nameof(provider));
+            if (data.InstallerId != Factory.Id)
+            {
+                throw new ArgumentException($"{nameof(NuGetInstaller)} can only deserialize packages with {nameof(data.InstallerId)} {Factory.Id}", nameof(data));
+            }
+            return NuGetManagedTemplatePackage.Deserialize(_environmentSettings, this, provider, data.MountPointUri, data.Details);
         }
 
         public async Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> packages, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
@@ -148,11 +153,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             try
             {
-                Dictionary<string, string> sourceDetails = new Dictionary<string, string>();
+                bool isLocalPackage = IsLocalPackage(installRequest);
                 NuGetPackageInfo nuGetPackageInfo;
-                if (IsLocalPackage(installRequest))
+                if (isLocalPackage)
                 {
-                    sourceDetails[NuGetManagedTemplatePackage.LocalPackageKey] = true.ToString();
                     nuGetPackageInfo = InstallLocalPackage(installRequest);
                 }
                 else
@@ -172,11 +176,19 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         .ConfigureAwait(false);
                 }
 
-                sourceDetails[NuGetManagedTemplatePackage.AuthorKey] = nuGetPackageInfo.Author;
-                sourceDetails[NuGetManagedTemplatePackage.NuGetSourceKey] = nuGetPackageInfo.NuGetSource;
-                sourceDetails[NuGetManagedTemplatePackage.PackageIdKey] = nuGetPackageInfo.PackageIdentifier;
-                sourceDetails[NuGetManagedTemplatePackage.PackageVersionKey] = nuGetPackageInfo.PackageVersion.ToString();
-                NuGetManagedTemplatePackage source = new NuGetManagedTemplatePackage(_environmentSettings, installer: this, provider, nuGetPackageInfo.FullPath, sourceDetails);
+                NuGetManagedTemplatePackage source = new NuGetManagedTemplatePackage(
+                    _environmentSettings,
+                    installer: this,
+                    provider,
+                    nuGetPackageInfo.FullPath,
+                    nuGetPackageInfo.PackageIdentifier)
+                {
+                    Author = nuGetPackageInfo.Author,
+                    NuGetSource = nuGetPackageInfo.NuGetSource,
+                    Version = nuGetPackageInfo.PackageVersion.ToString(),
+                    LocalPackage = isLocalPackage
+                };
+
                 return InstallResult.CreateSuccess(installRequest, source);
             }
             catch (DownloadException e)
@@ -206,15 +218,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         public TemplatePackageData Serialize(IManagedTemplatePackage templatePackage)
         {
             _ = templatePackage ?? throw new ArgumentNullException(nameof(templatePackage));
-            if (!(templatePackage is NuGetManagedTemplatePackage nuGetTemplatePackage))
-            {
-                return new TemplatePackageData()
-                {
-                    InstallerId = Factory.Id,
-                    MountPointUri = templatePackage.MountPointUri,
-                    LastChangeTime = default
-                };
-            }
+            NuGetManagedTemplatePackage nuGetTemplatePackage = templatePackage as NuGetManagedTemplatePackage
+                ?? throw new ArgumentException($"{nameof(templatePackage)} should be of type {nameof(NuGetManagedTemplatePackage)}", nameof(templatePackage));
 
             return new TemplatePackageData()
             {

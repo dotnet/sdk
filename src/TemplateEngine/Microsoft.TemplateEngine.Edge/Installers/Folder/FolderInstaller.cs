@@ -35,6 +35,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         public IManagedTemplatePackage Deserialize(IManagedTemplatePackageProvider provider, TemplatePackageData data)
         {
             _ = provider ?? throw new ArgumentNullException(nameof(provider));
+            if (data.InstallerId != Factory.Id)
+            {
+                throw new ArgumentException($"{nameof(FolderInstaller)} can only deserialize packages with {nameof(data.InstallerId)} {Factory.Id}", nameof(data));
+            }
 
             return new FolderManagedTemplatePackage(_settings, this, provider, data.MountPointUri);
         }
@@ -64,11 +68,18 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         public TemplatePackageData Serialize(IManagedTemplatePackage templatePackage)
         {
             _ = templatePackage ?? throw new ArgumentNullException(nameof(templatePackage));
+            if (!(templatePackage is FolderManagedTemplatePackage))
+            {
+                throw new ArgumentException($"{nameof(templatePackage)} should be of type {nameof(FolderManagedTemplatePackage)}", nameof(templatePackage));
+            }
+
+            FolderManagedTemplatePackage folderTemplatePackage = templatePackage as FolderManagedTemplatePackage
+                ?? throw new ArgumentException($"{nameof(templatePackage)} should be of type {nameof(FolderManagedTemplatePackage)}", nameof(templatePackage));
 
             return new TemplatePackageData
             {
-                MountPointUri = templatePackage.MountPointUri,
-                LastChangeTime = templatePackage.LastChangeTime,
+                MountPointUri = folderTemplatePackage.MountPointUri,
+                LastChangeTime = folderTemplatePackage.LastChangeTime,
                 InstallerId = Factory.Id
             };
         }
