@@ -13,20 +13,41 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 {
     internal class FolderManagedTemplatePackage : IManagedTemplatePackage
     {
-        public FolderManagedTemplatePackage(IEngineEnvironmentSettings settings, IInstaller installer, string mountPointUri)
+        private const string DebugLogCategory = "Installer";
+        private IEngineEnvironmentSettings _settings;
+        public FolderManagedTemplatePackage(IEngineEnvironmentSettings settings, IInstaller installer, IManagedTemplatePackageProvider provider, string mountPointUri)
         {
+            if (string.IsNullOrWhiteSpace(mountPointUri))
+            {
+                throw new ArgumentException($"{nameof(mountPointUri)} cannot be null or empty", nameof(mountPointUri));
+            }
             MountPointUri = mountPointUri;
-            Installer = installer;
-            LastChangeTime = (settings.Host.FileSystem as IFileLastWriteTimeSource)?.GetLastWriteTimeUtc(mountPointUri) ?? File.GetLastWriteTime(mountPointUri);
+            Installer = installer ?? throw new ArgumentNullException(nameof(installer));
+            ManagedProvider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         public string DisplayName => Identifier;
         public string Identifier => MountPointUri;
         public IInstaller Installer { get; }
-        public DateTime LastChangeTime { get; }
+        public DateTime LastChangeTime
+        {
+            get
+            {
+                try
+                {
+                    return (_settings.Host.FileSystem as IFileLastWriteTimeSource)?.GetLastWriteTimeUtc(MountPointUri) ?? File.GetLastWriteTime(MountPointUri);
+                }
+                catch (Exception e)
+                {
+                    _settings.Host.LogDiagnosticMessage($"Failed to get last changed time for {MountPointUri}, details: {e.ToString()}", DebugLogCategory);
+                    return default;
+                }
+            }
+        }
         public string MountPointUri { get; }
-        public ITemplatePackageProvider Provider => Installer.Provider;
-        public IManagedTemplatePackageProvider ManagedProvider => Installer.Provider;
+        public ITemplatePackageProvider Provider => ManagedProvider;
+        public IManagedTemplatePackageProvider ManagedProvider { get; }
         public string Version => null;
 
         public IReadOnlyDictionary<string, string> GetDetails() => new Dictionary<string, string>();

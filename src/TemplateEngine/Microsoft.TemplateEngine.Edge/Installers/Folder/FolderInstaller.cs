@@ -17,16 +17,13 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
     {
         private readonly IEngineEnvironmentSettings _settings;
 
-        public FolderInstaller(IEngineEnvironmentSettings settings, IInstallerFactory factory, IManagedTemplatePackageProvider provider)
+        public FolderInstaller(IEngineEnvironmentSettings settings, IInstallerFactory factory)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             Factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            Provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
         public IInstallerFactory Factory { get; }
-
-        public IManagedTemplatePackageProvider Provider { get; }
 
         public Task<bool> CanInstallAsync(InstallRequest installationRequest, CancellationToken cancellationToken)
         {
@@ -39,23 +36,24 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         {
             _ = provider ?? throw new ArgumentNullException(nameof(provider));
 
-            return new FolderManagedTemplatePackage(_settings, this, data.MountPointUri);
+            return new FolderManagedTemplatePackage(_settings, this, provider, data.MountPointUri);
         }
 
-        public Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> sources, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> packages, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
         {
-            _ = sources ?? throw new ArgumentNullException(nameof(sources));
+            _ = packages ?? throw new ArgumentNullException(nameof(packages));
 
-            return Task.FromResult<IReadOnlyList<CheckUpdateResult>>(sources.Select(s => CheckUpdateResult.CreateSuccess(s, null, true)).ToList());
+            return Task.FromResult<IReadOnlyList<CheckUpdateResult>>(packages.Select(s => CheckUpdateResult.CreateSuccess(s, null, true)).ToList());
         }
 
-        public Task<InstallResult> InstallAsync(InstallRequest installRequest, CancellationToken cancellationToken)
+        public Task<InstallResult> InstallAsync(InstallRequest installRequest, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
         {
             _ = installRequest ?? throw new ArgumentNullException(nameof(installRequest));
+            _ = provider ?? throw new ArgumentNullException(nameof(provider));
 
             if (Directory.Exists(installRequest.Identifier))
             {
-                return Task.FromResult(InstallResult.CreateSuccess(installRequest, new FolderManagedTemplatePackage(_settings, this, installRequest.Identifier)));
+                return Task.FromResult(InstallResult.CreateSuccess(installRequest, new FolderManagedTemplatePackage(_settings, this, provider, installRequest.Identifier)));
             }
             else
             {
@@ -63,26 +61,26 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             }
         }
 
-        public TemplatePackageData Serialize(IManagedTemplatePackage managedSource)
+        public TemplatePackageData Serialize(IManagedTemplatePackage templatePackage)
         {
-            _ = managedSource ?? throw new ArgumentNullException(nameof(managedSource));
+            _ = templatePackage ?? throw new ArgumentNullException(nameof(templatePackage));
 
             return new TemplatePackageData
             {
-                MountPointUri = managedSource.MountPointUri,
-                LastChangeTime = managedSource.LastChangeTime,
+                MountPointUri = templatePackage.MountPointUri,
+                LastChangeTime = templatePackage.LastChangeTime,
                 InstallerId = Factory.Id
             };
         }
 
-        public Task<UninstallResult> UninstallAsync(IManagedTemplatePackage managedSource, CancellationToken cancellationToken)
+        public Task<UninstallResult> UninstallAsync(IManagedTemplatePackage templatePackage, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
         {
-            _ = managedSource ?? throw new ArgumentNullException(nameof(managedSource));
+            _ = templatePackage ?? throw new ArgumentNullException(nameof(templatePackage));
 
-            return Task.FromResult(UninstallResult.CreateSuccess(managedSource));
+            return Task.FromResult(UninstallResult.CreateSuccess(templatePackage));
         }
 
-        public Task<UpdateResult> UpdateAsync(UpdateRequest updateRequest, CancellationToken cancellationToken)
+        public Task<UpdateResult> UpdateAsync(UpdateRequest updateRequest, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
         {
             _ = updateRequest ?? throw new ArgumentNullException(nameof(updateRequest));
 

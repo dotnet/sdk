@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
@@ -19,25 +20,51 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         public const string PackageVersionKey = "Version";
 
         private IEngineEnvironmentSettings _settings;
+        private const string DebugLogCategory = "Installer";
 
-        public NuGetManagedTemplatePackage(IEngineEnvironmentSettings settings, IInstaller installer, string mountPoint, IReadOnlyDictionary<string, string> details)
+        public NuGetManagedTemplatePackage(
+            IEngineEnvironmentSettings settings,
+            IInstaller installer,
+            IManagedTemplatePackageProvider provider,
+            string mountPointUri,
+            IReadOnlyDictionary<string, string> details)
         {
-            Installer = installer;
-            MountPointUri = mountPoint;
-            Details = details;
-            _settings = settings;
+            if (string.IsNullOrWhiteSpace(mountPointUri))
+            {
+                throw new ArgumentException($"{nameof(mountPointUri)} cannot be null or empty", nameof(mountPointUri));
+            }
+            MountPointUri = mountPointUri;
+            Installer = installer ?? throw new ArgumentNullException(nameof(installer));
+            ManagedProvider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            Details = details ?? throw new ArgumentNullException(nameof(details));
         }
 
         public string Author => Details.TryGetValue(AuthorKey, out string author) ? author : null;
         public string DisplayName => string.IsNullOrWhiteSpace(Version) ? Identifier : $"{Identifier}::{Version}";
         public string Identifier => Details.TryGetValue(PackageIdKey, out string identifier) ? identifier : null;
         public IInstaller Installer { get; }
-        public DateTime LastChangeTime => (_settings.Host.FileSystem as IFileLastWriteTimeSource)?.GetLastWriteTimeUtc(MountPointUri) ?? default;
+
+        public DateTime LastChangeTime
+        {
+            get
+            {
+                try
+                {
+                    return (_settings.Host.FileSystem as IFileLastWriteTimeSource)?.GetLastWriteTimeUtc(MountPointUri) ?? File.GetLastWriteTime(MountPointUri);
+                }
+                catch (Exception e)
+                {
+                    _settings.Host.LogDiagnosticMessage($"Failed to get last changed time for {MountPointUri}, details: {e.ToString()}", DebugLogCategory);
+                    return default;
+                }
+            }
+        }
         public bool LocalPackage => Details.TryGetValue(LocalPackageKey, out string isLocalPackage) && bool.TryParse(isLocalPackage, out bool result) ? result : false;
         public string MountPointUri { get; }
         public string NuGetSource => Details.TryGetValue(NuGetSourceKey, out string nugetSource) ? nugetSource : null;
-        public ITemplatePackageProvider Provider => Installer.Provider;
-        public IManagedTemplatePackageProvider ManagedProvider => Installer.Provider;
+        public ITemplatePackageProvider Provider => ManagedProvider;
+        public IManagedTemplatePackageProvider ManagedProvider { get; }
         public string Version => Details.TryGetValue(PackageVersionKey, out string version) ? version : null;
         internal IReadOnlyDictionary<string, string> Details { get; }
 

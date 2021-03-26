@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             }
             foreach (var installerFactory in settings.SettingsLoader.Components.OfType<IInstallerFactory>())
             {
-                var installer = installerFactory.CreateInstaller(this, settings, _packagesFolder);
+                var installer = installerFactory.CreateInstaller(settings, _packagesFolder);
 
                 //this provider cannot work with installers that do not implement ISerializableInstaller
                 if (installer is ISerializableInstaller)
@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             var tasks = new List<Task<IReadOnlyList<CheckUpdateResult>>>();
             foreach (var sourcesGroupedByInstaller in sources.GroupBy(s => s.Installer))
             {
-                tasks.Add(sourcesGroupedByInstaller.Key.GetLatestVersionAsync(sourcesGroupedByInstaller, cancellationToken));
+                tasks.Add(sourcesGroupedByInstaller.Key.GetLatestVersionAsync(sourcesGroupedByInstaller, this, cancellationToken));
             }
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -137,7 +137,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false));
             var results = await Task.WhenAll(sources.Select(async source =>
              {
-                 UninstallResult result = await source.Installer.UninstallAsync(source, cancellationToken).ConfigureAwait(false);
+                 UninstallResult result = await source.Installer.UninstallAsync(source, this, cancellationToken).ConfigureAwait(false);
                  if (result.Success)
                  {
                      lock (packages)
@@ -174,7 +174,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 return UpdateResult.CreateFailure(updateRequest, result, message);
             }
 
-            UpdateResult updateResult = await updateRequest.TemplatePackage.Installer.UpdateAsync(updateRequest, cancellationToken).ConfigureAwait(false);
+            UpdateResult updateResult = await updateRequest.TemplatePackage.Installer.UpdateAsync(updateRequest, provider: this, cancellationToken).ConfigureAwait(false);
             if (!updateResult.Success)
             {
                 return updateResult;
@@ -210,7 +210,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                                 string.Format(LocalizableStrings.Generic_Version, version)));
                 }
                 //if different version is installed - uninstall previous version first
-                UninstallResult uninstallResult = await installer.UninstallAsync(sourceToBeUpdated, cancellationToken).ConfigureAwait(false);
+                UninstallResult uninstallResult = await installer.UninstallAsync(sourceToBeUpdated, this, cancellationToken).ConfigureAwait(false);
                 if (!uninstallResult.Success)
                 {
                     return (InstallerErrorCode.UpdateUninstallFailed, uninstallResult.ErrorMessage);
@@ -239,7 +239,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 return InstallResult.CreateFailure(installRequest, result, message);
             }
 
-            InstallResult installResult = await installer.InstallAsync(installRequest, cancellationToken).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(installRequest, this, cancellationToken).ConfigureAwait(false);
             if (!installResult.Success)
             {
                 return installResult;

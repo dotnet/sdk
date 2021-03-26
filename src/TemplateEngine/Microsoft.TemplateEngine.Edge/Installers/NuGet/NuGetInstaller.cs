@@ -23,10 +23,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         private readonly IDownloader _packageDownloader;
         private readonly IUpdateChecker _updateChecker;
 
-        public NuGetInstaller(IInstallerFactory factory, IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath) 
+        public NuGetInstaller(IInstallerFactory factory, IEngineEnvironmentSettings settings, string installPath)
         {
             Factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            Provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
 
             if (string.IsNullOrWhiteSpace(installPath))
@@ -44,10 +43,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _updateChecker = packageManager;
         }
 
-        public NuGetInstaller(IInstallerFactory factory, IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath, IDownloader packageDownloader, IUpdateChecker updateChecker)
+        public NuGetInstaller(IInstallerFactory factory, IEngineEnvironmentSettings settings, string installPath, IDownloader packageDownloader, IUpdateChecker updateChecker)
         {
             Factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            Provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
             _packageDownloader = packageDownloader ?? throw new ArgumentNullException(nameof(packageDownloader));
             _updateChecker = updateChecker ?? throw new ArgumentNullException(nameof(updateChecker));
@@ -64,8 +62,6 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         }
 
         public IInstallerFactory Factory { get; }
-
-        public IManagedTemplatePackageProvider Provider { get; }
 
         public Task<bool> CanInstallAsync(InstallRequest installationRequest, CancellationToken cancellationToken)
         {
@@ -103,13 +99,13 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public IManagedTemplatePackage Deserialize(IManagedTemplatePackageProvider provider, TemplatePackageData data)
         {
-            return new NuGetManagedTemplatePackage(_environmentSettings, this, data.MountPointUri, data.Details);
+            return new NuGetManagedTemplatePackage(_environmentSettings, installer: this, provider, data.MountPointUri, data.Details);
         }
 
-        public async Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> sources, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> packages, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
         {
-            _ = sources ?? throw new ArgumentNullException(nameof(sources));
-            return await Task.WhenAll(sources.Select(async source =>
+            _ = packages ?? throw new ArgumentNullException(nameof(packages));
+            return await Task.WhenAll(packages.Select(async source =>
                 {
                     if (source is NuGetManagedTemplatePackage nugetSource)
                     {
@@ -128,7 +124,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         }
                         catch (Exception e)
                         {
-                            _environmentSettings.Host.LogDiagnosticMessage($"Retreving latest version for package {source.DisplayName} failed.", DebugLogCategory);
+                            _environmentSettings.Host.LogDiagnosticMessage($"Retrieving latest version for package {source.DisplayName} failed.", DebugLogCategory);
                             _environmentSettings.Host.LogDiagnosticMessage($"Details:{e.ToString()}", DebugLogCategory);
                             return CheckUpdateResult.CreateFailure(source, InstallerErrorCode.GenericError, $"Failed to check the update for the package {source.Identifier}, reason: {e.Message}");
                         }
@@ -140,9 +136,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 })).ConfigureAwait(false);
         }
 
-        public async Task<InstallResult> InstallAsync(InstallRequest installRequest, CancellationToken cancellationToken)
+        public async Task<InstallResult> InstallAsync(InstallRequest installRequest, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
         {
             _ = installRequest ?? throw new ArgumentNullException(nameof(installRequest));
+            _ = provider ?? throw new ArgumentNullException(nameof(provider));
 
             if (!await CanInstallAsync(installRequest, cancellationToken).ConfigureAwait(false))
             {
@@ -179,7 +176,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 sourceDetails[NuGetManagedTemplatePackage.NuGetSourceKey] = nuGetPackageInfo.NuGetSource;
                 sourceDetails[NuGetManagedTemplatePackage.PackageIdKey] = nuGetPackageInfo.PackageIdentifier;
                 sourceDetails[NuGetManagedTemplatePackage.PackageVersionKey] = nuGetPackageInfo.PackageVersion.ToString();
-                NuGetManagedTemplatePackage source = new NuGetManagedTemplatePackage(_environmentSettings, this, nuGetPackageInfo.FullPath, sourceDetails);
+                NuGetManagedTemplatePackage source = new NuGetManagedTemplatePackage(_environmentSettings, installer: this, provider, nuGetPackageInfo.FullPath, sourceDetails);
                 return InstallResult.CreateSuccess(installRequest, source);
             }
             catch (DownloadException e)
@@ -206,15 +203,15 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
         }
 
-        public TemplatePackageData Serialize(IManagedTemplatePackage managedSource)
+        public TemplatePackageData Serialize(IManagedTemplatePackage templatePackage)
         {
-            _ = managedSource ?? throw new ArgumentNullException(nameof(managedSource));
-            if (!(managedSource is NuGetManagedTemplatePackage nuGetTemplatePackage))
+            _ = templatePackage ?? throw new ArgumentNullException(nameof(templatePackage));
+            if (!(templatePackage is NuGetManagedTemplatePackage nuGetTemplatePackage))
             {
                 return new TemplatePackageData()
                 {
                     InstallerId = Factory.Id,
-                    MountPointUri = managedSource.MountPointUri,
+                    MountPointUri = templatePackage.MountPointUri,
                     LastChangeTime = default
                 };
             }
@@ -228,36 +225,38 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             };
         }
 
-        public Task<UninstallResult> UninstallAsync(IManagedTemplatePackage managedSource, CancellationToken cancellationToken)
+        public Task<UninstallResult> UninstallAsync(IManagedTemplatePackage templatePackage, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
         {
-            _ = managedSource ?? throw new ArgumentNullException(nameof(managedSource));
-            if (!(managedSource is NuGetManagedTemplatePackage))
+            _ = templatePackage ?? throw new ArgumentNullException(nameof(templatePackage));
+            if (!(templatePackage is NuGetManagedTemplatePackage))
             {
-                return Task.FromResult(UninstallResult.CreateFailure(managedSource, InstallerErrorCode.UnsupportedRequest, $"{managedSource.Identifier} is not supported by {Factory.Name}"));
+                return Task.FromResult(UninstallResult.CreateFailure(templatePackage, InstallerErrorCode.UnsupportedRequest, $"{templatePackage.Identifier} is not supported by {Factory.Name}"));
             }
             try
             {
-                _environmentSettings.Host.FileSystem.FileDelete(managedSource.MountPointUri);
-                return Task.FromResult(UninstallResult.CreateSuccess(managedSource));
+                _environmentSettings.Host.FileSystem.FileDelete(templatePackage.MountPointUri);
+                return Task.FromResult(UninstallResult.CreateSuccess(templatePackage));
             }
             catch (Exception ex)
             {
-                _environmentSettings.Host.LogDiagnosticMessage($"Uninstalling {managedSource.DisplayName} failed.", DebugLogCategory);
+                _environmentSettings.Host.LogDiagnosticMessage($"Uninstalling {templatePackage.DisplayName} failed.", DebugLogCategory);
                 _environmentSettings.Host.LogDiagnosticMessage($"Details:{ex.ToString()}", DebugLogCategory);
-                return Task.FromResult(UninstallResult.CreateFailure(managedSource, InstallerErrorCode.GenericError, $"Failed to uninstall {managedSource.DisplayName}, reason: {ex.Message}"));
+                return Task.FromResult(UninstallResult.CreateFailure(templatePackage, InstallerErrorCode.GenericError, $"Failed to uninstall {templatePackage.DisplayName}, reason: {ex.Message}"));
             }
         }
 
-        public async Task<UpdateResult> UpdateAsync(UpdateRequest updateRequest, CancellationToken cancellationToken)
+        public async Task<UpdateResult> UpdateAsync(UpdateRequest updateRequest, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
         {
             _ = updateRequest ?? throw new ArgumentNullException(nameof(updateRequest));
+            _ = provider ?? throw new ArgumentNullException(nameof(provider));
+
             if (string.IsNullOrWhiteSpace(updateRequest.Version))
             {
                 throw new ArgumentException("Version cannot be null or empty", nameof(updateRequest.Version));
             }
 
             //ensure uninstall is performed
-            UninstallResult uninstallResult = await UninstallAsync(updateRequest.TemplatePackage, cancellationToken).ConfigureAwait(false);
+            UninstallResult uninstallResult = await UninstallAsync(updateRequest.TemplatePackage, provider, cancellationToken).ConfigureAwait(false);
             if (!uninstallResult.Success)
             {
                 return UpdateResult.CreateFailure(updateRequest, uninstallResult.Error, uninstallResult.ErrorMessage);
@@ -270,7 +269,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 installationDetails.Add(InstallerConstants.NuGetSourcesKey, nuGetManagedSource.NuGetSource);
             }
             InstallRequest installRequest = new InstallRequest(updateRequest.TemplatePackage.Identifier, updateRequest.Version, details: installationDetails);
-            return UpdateResult.FromInstallResult(updateRequest, await InstallAsync(installRequest, cancellationToken).ConfigureAwait(false));
+            return UpdateResult.FromInstallResult(updateRequest, await InstallAsync(installRequest, provider, cancellationToken).ConfigureAwait(false));
         }
 
         private bool IsLocalPackage(InstallRequest installRequest)

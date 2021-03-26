@@ -4,7 +4,6 @@
 using System;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
@@ -15,6 +14,6 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public Guid Id => _factoryId;
 
-        public IInstaller CreateInstaller(IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath) => throw new NotImplementedException();
+        public IInstaller CreateInstaller(IEngineEnvironmentSettings settings, string installPath) => throw new NotImplementedException();
     }
 }

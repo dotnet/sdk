@@ -15,9 +15,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 
         public string Name => "Folder";
 
-        public IInstaller CreateInstaller(IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath)
+        public IInstaller CreateInstaller(IEngineEnvironmentSettings settings, string installPath)
         {
-            return new FolderInstaller(settings, this, provider);
+            return new FolderInstaller(settings, this);
         }
     }
 }

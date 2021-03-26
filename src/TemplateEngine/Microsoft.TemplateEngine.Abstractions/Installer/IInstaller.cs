@@ -17,11 +17,6 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         IInstallerFactory Factory { get; }
 
         /// <summary>
-        /// Gets <see cref="IManagedTemplatePackageProvider"/> that created the installer.
-        /// </summary>
-        IManagedTemplatePackageProvider Provider { get; }
-
-        /// <summary>
         /// Determines if the installer can install specific <see cref="InstallRequest"/>.
         /// </summary>
         /// <remarks>
@@ -33,32 +28,36 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// Gets latest versions for <paramref name="templatePackages"/>.
         /// </summary>
         /// <param name="templatePackages">the template packages to get latest versions for.</param>
-        /// <returns>list of <see cref="CheckUpdateResult"/> containing latest versions for the sources.</returns>
+        /// <param name="provider"><see cref="IManagedTemplatePackageProvider"/> requesting latest version.</param>
         /// <param name="cancellationToken"></param>
-        Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> templatePackages, CancellationToken cancellationToken);
+        /// <returns>list of <see cref="CheckUpdateResult"/> containing latest versions for the sources.</returns>
+        Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> templatePackages, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken);
 
         /// <summary>
         /// Installs the template package defined by <paramref name="installRequest"/>.
         /// </summary>
         /// <param name="installRequest">the template package to be installed.</param>
-        /// <returns><see cref="InstallResult"/> containing installation results and installed <see cref="InstallResult.TemplatePackage"/> if installation was successful.</returns>
+        /// <param name="provider"><see cref="IManagedTemplatePackageProvider"/> installing the package.</param>
         /// <param name="cancellationToken"></param>
-        Task<InstallResult> InstallAsync(InstallRequest installRequest, CancellationToken cancellationToken);
+        /// <returns><see cref="InstallResult"/> containing installation results and installed <see cref="InstallResult.TemplatePackage"/> if installation was successful.</returns>
+        Task<InstallResult> InstallAsync(InstallRequest installRequest, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken);
 
         /// <summary>
         /// Uninstalls the <paramref name="templatePackage"/>.
         /// </summary>
         /// <param name="templatePackage">the template package to uninstall.</param>
-        /// <returns><see cref="UninstallResult"/> containing the result for operation.</returns>
+        /// <param name="provider"><see cref="IManagedTemplatePackageProvider"/> uninstalling the template package.</param>
         /// <param name="cancellationToken"></param>
-        Task<UninstallResult> UninstallAsync(IManagedTemplatePackage templatePackage, CancellationToken cancellationToken);
+        /// <returns><see cref="UninstallResult"/> containing the result for operation.</returns>
+        Task<UninstallResult> UninstallAsync(IManagedTemplatePackage templatePackage, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the template package defined by <paramref name="updateRequest"/>.
         /// </summary>
         /// <param name="updateRequest"><see cref="UpdateRequest"/> defining the template package to update and target version.</param>
-        /// <returns><see cref="UpdateResult"/> containing the result for operation and installed <see cref="UpdateResult.TemplatePackage"/> if update was successful.</returns>
+        /// <param name="provider"><see cref="IManagedTemplatePackageProvider"/> updating the package.</param>
         /// <param name="cancellationToken"></param>
-        Task<UpdateResult> UpdateAsync(UpdateRequest updateRequest, CancellationToken cancellationToken);
+        /// <returns><see cref="UpdateResult"/> containing the result for operation and installed <see cref="UpdateResult.TemplatePackage"/> if update was successful.</returns>
+        Task<UpdateResult> UpdateAsync(UpdateRequest updateRequest, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken);
     }
 }

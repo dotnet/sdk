@@ -16,9 +16,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public string Name => "NuGet";
 
-        public IInstaller CreateInstaller(IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath)
+        public IInstaller CreateInstaller(IEngineEnvironmentSettings settings, string installPath)
         {
-            return new NuGetInstaller(this, provider, settings, installPath);
+            return new NuGetInstaller(this, settings, installPath);
         }
     }
 }

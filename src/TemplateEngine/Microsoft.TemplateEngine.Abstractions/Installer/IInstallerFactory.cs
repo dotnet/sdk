@@ -15,10 +15,9 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <summary>
         /// Creates the <see cref="IInstaller"/> managed by this factory.
         /// </summary>
-        /// <param name="provider"><see cref="IManagedTemplatePackageProvider"/> creating the instance.</param>
         /// <param name="settings">environment settings of the template engine host.</param>
         /// <param name="installPath">path to install the template packages to.</param>
         /// <returns>created <see cref="IInstaller"/>.</returns>
-        IInstaller CreateInstaller(IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath);
+        IInstaller CreateInstaller(IEngineEnvironmentSettings settings, string installPath);
     }
 }
