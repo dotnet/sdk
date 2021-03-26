@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
             }
 
-            _globalSettingsFilePath = Path.Combine(_environmentSettings.Paths.TemplateEngineRootDir, "settings.json");
+            _globalSettingsFilePath = Path.Combine(_environmentSettings.Paths.TemplateEngineRootDir, "packages.json");
             _globalSettings = new GlobalSettings(_environmentSettings, _globalSettingsFilePath);
             // We can't just add "SettingsChanged+=SourcesChanged", because SourcesChanged is null at this time.
             _globalSettings.SettingsChanged += () => TemplatePackagesChanged?.Invoke();
@@ -65,7 +65,6 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 if (_installersByGuid.TryGetValue(entry.InstallerId, out var installer))
                 {
                     list.Add(((ISerializableInstaller)installer).Deserialize(this, entry));
-
                 }
                 else
                 {
