@@ -1,50 +1,54 @@
-using Microsoft.TemplateEngine.Abstractions.Installer;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.TemplateEngine.Abstractions.Installer;
 
 namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
 {
     /// <summary>
-    /// This provider is responsible for managing <see cref="IManagedTemplatePackage"/>.
+    /// The provider is responsible for managing <see cref="IManagedTemplatePackage"/>.
+    /// Besides base functionality of <see cref="ITemplatePackageProvider"/>, it adds ability to install, update and uninstall template packages.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="IManagedTemplatePackageProvider"/> keeps track of template packages managed by the provider. The actual installation is done by <see cref="IInstaller"/> implementations.
+    /// </remarks>
     public interface IManagedTemplatePackageProvider : ITemplatePackageProvider
     {
         /// <summary>
-        /// Takes list of <see cref="IManagedTemplatePackage"/> as input so it can check for latest versions in batch.
-        /// And returns list of <see cref="CheckUpdateResult"/> which contains original <see cref="IManagedTemplatePackage"/>
-        /// so caller can compare <see cref="CheckUpdateResult.LatestVersion"/> with <see cref="IManagedTemplatePackage.Version"/>
+        /// Gets the latest version for the template packages.
         /// </summary>
-        /// <param name="managedSources">List of <see cref="IManagedTemplatePackage"/> to get latest version for.</param>
-        /// <returns>List of <see cref="ManagedTemplatePackageUpdate"/></returns>
+        /// <param name="templatePackages">List of <see cref="IManagedTemplatePackage"/> to get latest version for.</param>
         /// <param name="cancellationToken"></param>
-        Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionsAsync(IEnumerable<IManagedTemplatePackage> managedSources, CancellationToken cancellationToken);
+        /// <returns>List of <see cref="CheckUpdateResult"/> containing the check results.</returns>
+        Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionsAsync(IEnumerable<IManagedTemplatePackage> templatePackages, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Updates specified <see cref="IManagedTemplatePackage"/>s and returns <see cref="UpdateResult"/>s which contain
-        /// new <see cref="IManagedTemplatePackage"/>, if update failed <see cref="UpdateResult.Success"/> will be <c>false</c>.
+        /// Updates the template packages given in <paramref name="updateRequests"/> to specified version.
         /// </summary>
-        /// <param name="updateRequests">List of <see cref="IManagedTemplatePackage"/> to be updated.</param>
-        /// <returns>List of <see cref="UpdateResult"/> with install information.</returns>
+        /// <param name="updateRequests">List of <see cref="UpdateRequest"/> to be processed.</param>
         /// <param name="cancellationToken"></param>
+        /// <returns>List of <see cref="UpdateResult"/> with update results.</returns>
         Task<IReadOnlyList<UpdateResult>> UpdateAsync(IEnumerable<UpdateRequest> updateRequests, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Uninstalls specified <see cref="IManagedTemplatePackage"/>.
+        /// Uninstalls the template packages.
         /// </summary>
-        /// <param name="managedSources">list of <see cref="IManagedTemplatePackage"/>s to be uninstalled.</param>
-        /// <returns><see cref="UninstallResult"/> which has <see cref="UninstallResult.Success"/> which should be checked.</returns>
+        /// <param name="templatePackages">list of <see cref="IManagedTemplatePackage"/>s to be uninstalled.</param>
         /// <param name="cancellationToken"></param>
-        Task<IReadOnlyList<UninstallResult>> UninstallAsync(IEnumerable<IManagedTemplatePackage> managedSources, CancellationToken cancellationToken);
+        /// <returns>List of <see cref="UninstallResult"/> with uninstall results.</returns>
+        Task<IReadOnlyList<UninstallResult>> UninstallAsync(IEnumerable<IManagedTemplatePackage> templatePackages, CancellationToken cancellationToken);
 
         /// <summary>
         /// Installs new <see cref="IManagedTemplatePackage"/> based on <see cref="InstallRequest"/> data.
         /// All <see cref="IInstaller"/>s are considered via <see cref="IInstaller.CanInstallAsync(InstallRequest, CancellationToken)"/> and if only 1 <see cref="IInstaller"/>
         /// returns <c>true</c>. <see cref="IInstaller.InstallAsync(InstallRequest, CancellationToken)"/> is executed and result is returned.
         /// </summary>
-        /// <param name="installRequests">Contains the list of install requests to perform.</param>
-        /// <returns><see cref="InstallResult"/> containing <see cref="IManagedTemplatePackage"/>, if <see cref="InstallResult.Success" /> is <c>true</c>.</returns>
+        /// <param name="installRequests">Contains the list of <see cref="InstallRequest"/> to perform.</param>
         /// <param name="cancellationToken"></param>
+        /// <returns>List of <see cref="InstallResult"/> with installation results.</returns>
         Task<IReadOnlyList<InstallResult>> InstallAsync(IEnumerable<InstallRequest> installRequests, CancellationToken cancellationToken);
     }
 }

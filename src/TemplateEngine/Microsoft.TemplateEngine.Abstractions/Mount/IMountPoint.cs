@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 
 namespace Microsoft.TemplateEngine.Abstractions.Mount
@@ -5,7 +8,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Mount
     public interface IMountPoint : IDisposable
     {
         /// <summary>
-        /// Returns mount point URI (as received from source = not normalized).
+        /// Returns mount point URI (as received from template package provider = not normalized).
         /// </summary>
         string MountPointUri { get; }
 
@@ -31,7 +34,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Mount
         IDirectory DirectoryInfo(string path);
 
         /// <summary>
-        /// Gets the file system entry (file or directory) info for the entry in the mount point. 
+        /// Gets the file system entry (file or directory) info for the entry in the mount point.
         /// </summary>
         /// <param name="path">The path to the file system entry relative to mount point root.</param>
         /// <returns></returns>

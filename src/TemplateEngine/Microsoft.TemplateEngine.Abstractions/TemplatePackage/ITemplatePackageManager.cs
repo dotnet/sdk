@@ -29,29 +29,29 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
     }
 
     /// <summary>
-    /// Class manages all <see cref="ITemplatePackageProvider"/> available to the host.
+    /// Manages all <see cref="ITemplatePackageProvider"/> available to the host.
     /// </summary>
     public interface ITemplatePackageManager
     {
         /// <summary>
-        /// Triggered every time when list of <see cref="ITemplatePackage"/> changes, this is triggered by <see cref="ITemplatePackageProvider.SourcesChanged"/>.
+        /// Triggered every time when list of <see cref="ITemplatePackage"/> changes, this is triggered by <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/>.
         /// </summary>
-        event Action SourcesChanged;
+        event Action TemplatePackagesChanged;
 
         /// <summary>
         /// Returns combined list of <see cref="ITemplatePackage"/> that all <see cref="ITemplatePackageProvider"/>s and <see cref="IManagedTemplatePackagesProvider"/>s return.
-        /// <see cref="ITemplatePackageManager"/> caches the responses from <see cref="ITemplatePackageProvider"/>, to get uncached response <paramref name="force"/> should be set to true.
+        /// <see cref="ITemplatePackageManager"/> caches the responses from <see cref="ITemplatePackageProvider"/>, to get non-cached response <paramref name="force"/> should be set to true.
         /// </summary>
         /// <param name="force">Invalidates cache and queries all providers.</param>
         /// <returns>The list of <see cref="ITemplatePackage"/>.</returns>
-        Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackages(bool force = false);
+        Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(bool force = false);
 
         /// <summary>
-        /// Same as <see cref="GetTemplatePackages"/> but filters only <see cref="IManagedTemplatePackage"/> packages.
+        /// Same as <see cref="GetTemplatePackagesAsync"/> but filters only <see cref="IManagedTemplatePackage"/> packages.
         /// </summary>
         /// <param name="force">Invalidates cache and queries all providers.</param>
         /// <returns>The list of <see cref="IManagedTemplatePackage"/>.</returns>
-        Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackages(bool force = false);
+        Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackagesAsync(bool force = false);
 
         /// <summary>
         /// Returns built-in <see cref="IManagedTemplatePackageProvider"/> of specified <see cref="InstallationScope"/>.
@@ -69,9 +69,9 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
         IManagedTemplatePackageProvider GetManagedProvider(string name);
 
         /// <summary>
-        /// Returns <see cref="IManagedTemplatePackageProvider"/> with specified Guid.
+        /// Returns <see cref="IManagedTemplatePackageProvider"/> with specified <see cref="Guid"/>.
         /// </summary>
-        /// <param name="id">Guid from <see cref="IIdentifiedComponent.Id"/> of <see cref="ITemplatePackageProviderFactory"/>.</param>
+        /// <param name="id"><see cref="Guid"/> from <see cref="IIdentifiedComponent.Id"/> of <see cref="ITemplatePackageProviderFactory"/>.</param>
         /// <returns></returns>
         /// <remarks>For default built-in providers use <see cref="GetBuiltInManagedProvider"/> method instead.</remarks>
         IManagedTemplatePackageProvider GetManagedProvider(Guid id);
