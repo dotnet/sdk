@@ -29,6 +29,6 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         public IManagedTemplatePackageProvider ManagedProvider => Installer.Provider;
         public string Version => null;
 
-        public IReadOnlyDictionary<string, string> GetDisplayDetails() => new Dictionary<string, string>();
+        public IReadOnlyDictionary<string, string> GetDetails() => new Dictionary<string, string>();
     }
 }

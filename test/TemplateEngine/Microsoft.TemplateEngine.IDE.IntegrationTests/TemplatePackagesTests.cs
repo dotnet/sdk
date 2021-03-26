@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.Equal("Microsoft.DotNet.Common.ProjectTemplates.5.0", source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.Name);
             Assert.Equal("NuGet", source.Installer.Name);
-            Assert.Equal("Microsoft", source.GetDisplayDetails()["Author"]);
+            Assert.Equal("Microsoft", source.GetDetails()["Author"]);
             source.Version.Should().NotBeNullOrEmpty();
 
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
@@ -82,8 +82,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.Equal("Take.Blip.Client.Templates", source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.Name);
             Assert.Equal("NuGet", source.Installer.Name);
-            source.GetDisplayDetails()["Author"].Should().NotBeNullOrEmpty();
-            Assert.Equal("https://api.nuget.org/v3/index.json", source.GetDisplayDetails()["NuGetSource"]);
+            source.GetDetails()["Author"].Should().NotBeNullOrEmpty();
+            Assert.Equal("https://api.nuget.org/v3/index.json", source.GetDetails()["NuGetSource"]);
             Assert.Equal("0.5.135", source.Version);
 
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);

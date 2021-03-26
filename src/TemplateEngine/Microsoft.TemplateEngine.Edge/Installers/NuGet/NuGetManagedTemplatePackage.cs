@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         public string Version => Details.TryGetValue(PackageVersionKey, out string version) ? version : null;
         internal IReadOnlyDictionary<string, string> Details { get; }
 
-        public IReadOnlyDictionary<string, string> GetDisplayDetails()
+        public IReadOnlyDictionary<string, string> GetDetails()
         {
             Dictionary<string, string> details = new Dictionary<string, string>();
             if (!string.IsNullOrWhiteSpace(Author))

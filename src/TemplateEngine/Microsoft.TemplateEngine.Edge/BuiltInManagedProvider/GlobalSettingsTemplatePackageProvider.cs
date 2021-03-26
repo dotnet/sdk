@@ -50,14 +50,14 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             _globalSettingsFilePath = Path.Combine(_environmentSettings.Paths.TemplateEngineRootDir, "settings.json");
             _globalSettings = new GlobalSettings(_environmentSettings, _globalSettingsFilePath);
             // We can't just add "SettingsChanged+=SourcesChanged", because SourcesChanged is null at this time.
-            _globalSettings.SettingsChanged += () => SourcesChanged?.Invoke();
+            _globalSettings.SettingsChanged += () => TemplatePackagesChanged?.Invoke();
         }
 
-        public event Action SourcesChanged;
+        public event Action TemplatePackagesChanged;
 
         public ITemplatePackageProviderFactory Factory { get; }
 
-        public async Task<IReadOnlyList<ITemplatePackage>> GetAllSourcesAsync(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken)
         {
             var list = new List<ITemplatePackage>();
             foreach (TemplatePackageData entry in await _globalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false))
@@ -189,7 +189,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
         private async Task<(InstallerErrorCode, string)> EnsureInstallPrerequisites(List<TemplatePackageData> packages, string identifier, string version, IInstaller installer, CancellationToken cancellationToken, bool update = false)
         {
-            var sources = await GetAllSourcesAsync(cancellationToken).ConfigureAwait(false);
+            var sources = await GetAllTemplatePackagesAsync(cancellationToken).ConfigureAwait(false);
 
             //check if the source with same identifier is already installed
             if (sources.OfType<IManagedTemplatePackage>().FirstOrDefault(s => s.Identifier == identifier && s.Installer == installer) is IManagedTemplatePackage sourceToBeUpdated)

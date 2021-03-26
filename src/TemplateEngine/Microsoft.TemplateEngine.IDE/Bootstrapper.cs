@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.IDE
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureInitialized();
-            return EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetTemplatePackages();
+            return EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync();
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Microsoft.TemplateEngine.IDE
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureInitialized();
-            return EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetManagedTemplatePackages();
+            return EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetManagedTemplatePackagesAsync();
         }
 
         /// <summary>

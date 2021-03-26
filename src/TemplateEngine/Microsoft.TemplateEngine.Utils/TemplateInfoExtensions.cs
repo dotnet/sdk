@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public async static Task<ITemplatePackage> GetTemplatePackageAsync (this ITemplateInfo template, IEngineEnvironmentSettings settings)
         {
-            IReadOnlyList<ITemplatePackage> templatePackages = await settings.SettingsLoader.TemplatePackagesManager.GetTemplatePackages().ConfigureAwait(false);
+            IReadOnlyList<ITemplatePackage> templatePackages = await settings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync().ConfigureAwait(false);
             return templatePackages.Single(s => s.MountPointUri == template.MountPointUri);
         }
 

@@ -148,7 +148,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             forceRebuild |= _userTemplateCache.Locale != CultureInfo.CurrentUICulture.Name;
 
             var placesThatNeedScanning = new HashSet<string>();
-            var allTemplatePackages = await _templatePackagesManager.GetTemplatePackages(forceRebuild).ConfigureAwait(false);
+            var allTemplatePackages = await _templatePackagesManager.GetTemplatePackagesAsync(forceRebuild).ConfigureAwait(false);
             var mountPoints = new Dictionary<string, DateTime>();
 
             if (forceRebuild)

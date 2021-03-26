@@ -36,14 +36,14 @@ namespace Microsoft.TemplateEngine.Utils
             _folders = folders ?? Array.Empty<string>();
         }
 
-        public event Action? SourcesChanged;
+        public event Action? TemplatePackagesChanged;
 
         public void TriggerSourcesChangedEvent()
         {
-            SourcesChanged?.Invoke();
+            TemplatePackagesChanged?.Invoke();
         }
 
-        public Task<IReadOnlyList<ITemplatePackage>> GetAllSourcesAsync(CancellationToken cancellationToken)
+        public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken)
         {
             var expandedNupkgs = _nupkgs.SelectMany(p => InstallRequestPathResolution.Expand(p, _environmentSettings));
             var expandedFolders = _folders.SelectMany(p => InstallRequestPathResolution.Expand(p, _environmentSettings));

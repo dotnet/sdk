@@ -33,16 +33,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             var providers = environmentSettings.SettingsLoader.Components.OfType<ITemplatePackageProviderFactory>().Select(f => f.CreateProvider(environmentSettings));
             foreach (var provider in providers)
             {
-                provider.SourcesChanged += () =>
+                provider.TemplatePackagesChanged += () =>
                 {
-                    cachedSources[provider] = provider.GetAllSourcesAsync(default);
-                    SourcesChanged?.Invoke();
+                    cachedSources[provider] = provider.GetAllTemplatePackagesAsync(default);
+                    TemplatePackagesChanged?.Invoke();
                 };
-                cachedSources[provider] = Task.Run(() => provider.GetAllSourcesAsync(default));
+                cachedSources[provider] = Task.Run(() => provider.GetAllTemplatePackagesAsync(default));
             }
         }
 
-        public event Action SourcesChanged;
+        public event Action TemplatePackagesChanged;
 
         public IManagedTemplatePackageProvider GetManagedProvider(string name)
         {
@@ -56,20 +56,20 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return cachedSources.Keys.OfType<IManagedTemplatePackageProvider>().FirstOrDefault(p => p.Factory.Id == id);
         }
 
-        public async Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackages(bool force = false)
+        public async Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackagesAsync(bool force = false)
         {
             EnsureLoaded();
-            return (await GetTemplatePackages(force).ConfigureAwait(false)).OfType<IManagedTemplatePackage>().ToList();
+            return (await GetTemplatePackagesAsync(force).ConfigureAwait(false)).OfType<IManagedTemplatePackage>().ToList();
         }
 
-        public async Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackages(bool force)
+        public async Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(bool force)
         {
             EnsureLoaded();
             if (force)
             {
                 foreach (var provider in cachedSources.Keys)
                 {
-                    cachedSources[provider] = Task.Run(() => provider.GetAllSourcesAsync(default));
+                    cachedSources[provider] = Task.Run(() => provider.GetAllTemplatePackagesAsync(default));
                 }
             }
 

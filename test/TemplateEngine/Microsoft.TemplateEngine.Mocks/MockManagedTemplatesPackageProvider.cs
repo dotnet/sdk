@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockManagedTemplatesPackageProvider : IManagedTemplatePackageProvider
     {
-        public event Action SourcesChanged
+        public event Action TemplatePackagesChanged
         {
             add { throw new NotSupportedException(); }
             remove { }
@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public ITemplatePackageProviderFactory Factory => throw new NotImplementedException();
 
-        public Task<IReadOnlyList<ITemplatePackage>> GetAllSourcesAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionsAsync(IEnumerable<IManagedTemplatePackage> managedSources, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<IReadOnlyList<InstallResult>> InstallAsync(IEnumerable<InstallRequest> installRequests, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<IReadOnlyList<UninstallResult>> UninstallAsync(IEnumerable<IManagedTemplatePackage> managedSources, CancellationToken cancellationToken) => throw new NotImplementedException();

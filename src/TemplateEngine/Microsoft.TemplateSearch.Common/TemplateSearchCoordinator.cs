@@ -46,7 +46,7 @@ namespace Microsoft.TemplateSearch.Common
 
             if (_environmentSettings.SettingsLoader is SettingsLoader settingsLoader)
             {
-                existingTemplatePackage = (await settingsLoader.TemplatePackagesManager.GetTemplatePackages(false)).OfType<IManagedTemplatePackage>().ToList();
+                existingTemplatePackage = (await settingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync(false)).OfType<IManagedTemplatePackage>().ToList();
             }
             else
             {
