@@ -4,7 +4,7 @@ using System.Diagnostics.Tracing;
 namespace Microsoft.DotNet.Watcher.Tools
 {
     [EventSource(Name = "HotReload")]
-    class HotReladEventSource : EventSource
+    class HotReloadEventSource : EventSource
     {
 
         public static enum StartType
@@ -26,6 +26,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [Event(2, Message = "Hot reload finished for {0}", Level = EventLevel.Informational, Keywords = Keywords.Perf)]
         public void HotReloadEnd(StartType s) { WriteEvent(2, s); }
 
-        public static HotReladEventSource Log = new HotReladEventSource();
+        public static HotReloadEventSource Log = new HotReloadEventSource();
     }
 }
