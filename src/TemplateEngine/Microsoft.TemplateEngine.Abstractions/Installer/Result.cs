@@ -29,6 +29,6 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <summary>
         /// Indicates if the operation completed successfully.
         /// </summary>
-        public bool Success => Error == 0;
+        public bool Success => Error == InstallerErrorCode.Success;
     }
 }
