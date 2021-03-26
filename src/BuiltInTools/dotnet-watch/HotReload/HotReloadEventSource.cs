@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watcher.Tools
     class HotReloadEventSource : EventSource
     {
 
-        public static enum StartType
+        public enum StartType
         {
             Main,
             StaticHandler,
