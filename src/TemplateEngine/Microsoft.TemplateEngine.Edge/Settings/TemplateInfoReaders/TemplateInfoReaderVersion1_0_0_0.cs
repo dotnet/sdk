@@ -4,6 +4,8 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
+#nullable enable
+
 namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 {
     public class TemplateInfoReaderVersion1_0_0_0
@@ -29,14 +31,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         {
             info.ConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.ConfigMountPointId)));
             info.Author = jObject.ToString(nameof(TemplateInfo.Author));
-            JArray classificationsArray = jObject.Get<JArray>(nameof(TemplateInfo.Classifications));
+            JArray? classificationsArray = jObject.Get<JArray>(nameof(TemplateInfo.Classifications));
 
             List<string> classifications = new List<string>();
             info.Classifications = classifications;
             //using (Timing.Over("Read classifications"))
-            foreach (JToken item in classificationsArray)
+            if (classificationsArray != null)
             {
-                classifications.Add(item.ToString());
+                foreach (JToken item in classificationsArray)
+                {
+                    classifications.Add(item.ToString());
+                }
             }
 
             info.DefaultName = jObject.ToString(nameof(TemplateInfo.DefaultName));
@@ -57,7 +62,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             info.HostConfigPlace = jObject.ToString(nameof(TemplateInfo.HostConfigPlace));
             info.ThirdPartyNotices = jObject.ToString(nameof(TemplateInfo.ThirdPartyNotices));
 
-            JObject baselineJObject = jObject.Get<JObject>(nameof(ITemplateInfo.BaselineInfo));
+            JObject? baselineJObject = jObject.Get<JObject>(nameof(ITemplateInfo.BaselineInfo));
             Dictionary<string, IBaselineInfo> baselineInfo = new Dictionary<string, IBaselineInfo>();
             if (baselineJObject != null)
             {
@@ -82,7 +87,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         protected virtual IReadOnlyDictionary<string, ICacheTag> ReadTags(JObject jObject)
         {
             Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
-            JObject tagsObject = jObject.Get<JObject>(nameof(TemplateInfo.Tags));
+            JObject? tagsObject = jObject.Get<JObject>(nameof(TemplateInfo.Tags));
 
             if (tagsObject != null)
             {
@@ -98,10 +103,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         protected virtual ICacheTag ReadOneTag(JProperty item)
         {
             Dictionary<string, ParameterChoice> choicesAndDescriptions = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
-            JObject cdToken = item.Value.Get<JObject>("ChoicesAndDescriptions");
-            foreach (JProperty cdPair in cdToken.Properties())
+            JObject? cdToken = item.Value.Get<JObject>("ChoicesAndDescriptions");
+            if (cdToken != null)
             {
-                choicesAndDescriptions.Add(cdPair.Name.ToString(), new ParameterChoice(null, cdPair.Value.ToString()));
+                foreach (JProperty cdPair in cdToken.Properties())
+                {
+                    choicesAndDescriptions.Add(cdPair.Name.ToString(), new ParameterChoice(null, cdPair.Value.ToString()));
+                }
             }
 
             return new CacheTag(
@@ -114,7 +122,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         protected virtual IReadOnlyDictionary<string, ICacheParameter> ReadParameters(JObject jObject)
         {
             Dictionary<string, ICacheParameter> cacheParams = new Dictionary<string, ICacheParameter>();
-            JObject cacheParamsObject = jObject.Get<JObject>(nameof(TemplateInfo.CacheParameters));
+            JObject? cacheParamsObject = jObject.Get<JObject>(nameof(TemplateInfo.CacheParameters));
 
             if (cacheParamsObject != null)
             {
