@@ -19,34 +19,52 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
     {
         private const string DebugLogCategory = "Installer";
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly IInstallerFactory _factory;
         private readonly string _installPath;
         private readonly IDownloader _packageDownloader;
         private readonly IUpdateChecker _updateChecker;
 
-        public NuGetInstaller(IInstallerFactory factory, IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath)
+        public NuGetInstaller(IInstallerFactory factory, IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath) 
         {
-            _factory = factory;
-            Provider = provider;
+            Factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            Provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
+
+            if (string.IsNullOrWhiteSpace(installPath))
+            {
+                throw new ArgumentException($"{nameof(installPath)} should not be null or empty", nameof(installPath));
+            }
+            if (!_environmentSettings.Host.FileSystem.DirectoryExists(installPath))
+            {
+                _environmentSettings.Host.FileSystem.CreateDirectory(installPath);
+            }
             _installPath = installPath;
+
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(settings);
             _packageDownloader = packageManager;
             _updateChecker = packageManager;
-            _environmentSettings = settings;
         }
 
         public NuGetInstaller(IInstallerFactory factory, IManagedTemplatePackageProvider provider, IEngineEnvironmentSettings settings, string installPath, IDownloader packageDownloader, IUpdateChecker updateChecker)
         {
-            _factory = factory;
-            Provider = provider;
+            Factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            Provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _packageDownloader = packageDownloader ?? throw new ArgumentNullException(nameof(packageDownloader));
+            _updateChecker = updateChecker ?? throw new ArgumentNullException(nameof(updateChecker));
+
+            if (string.IsNullOrWhiteSpace(installPath))
+            {
+                throw new ArgumentException($"{nameof(installPath)} should not be null or empty", nameof(installPath));
+            }
+            if (!_environmentSettings.Host.FileSystem.DirectoryExists(installPath))
+            {
+                _environmentSettings.Host.FileSystem.CreateDirectory(installPath);
+            }
             _installPath = installPath;
-            _packageDownloader = packageDownloader;
-            _updateChecker = updateChecker;
-            _environmentSettings = settings;
         }
 
-        public Guid FactoryId => _factory.Id;
-        public string Name => _factory.Name;
+        public IInstallerFactory Factory { get; }
+
         public IManagedTemplatePackageProvider Provider { get; }
 
         public Task<bool> CanInstallAsync(InstallRequest installationRequest, CancellationToken cancellationToken)
@@ -117,7 +135,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     }
                     else
                     {
-                        return CheckUpdateResult.CreateFailure(source, InstallerErrorCode.UnsupportedRequest, $"source {source.Identifier} is not supported by installer {Name}");
+                        return CheckUpdateResult.CreateFailure(source, InstallerErrorCode.UnsupportedRequest, $"source {source.Identifier} is not supported by installer {Factory.Name}");
                     }
                 })).ConfigureAwait(false);
         }
@@ -128,7 +146,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             if (!await CanInstallAsync(installRequest, cancellationToken).ConfigureAwait(false))
             {
-                return InstallResult.CreateFailure(installRequest, InstallerErrorCode.UnsupportedRequest, $"The install request {installRequest} cannot be processed by installer {Name}");
+                return InstallResult.CreateFailure(installRequest, InstallerErrorCode.UnsupportedRequest, $"The install request {installRequest} cannot be processed by installer {Factory.Name}");
             }
 
             try
@@ -195,7 +213,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 return new TemplatePackageData()
                 {
-                    InstallerId = FactoryId,
+                    InstallerId = Factory.Id,
                     MountPointUri = managedSource.MountPointUri,
                     LastChangeTime = default
                 };
@@ -203,7 +221,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             return new TemplatePackageData()
             {
-                InstallerId = FactoryId,
+                InstallerId = Factory.Id,
                 MountPointUri = nuGetTemplatePackage.MountPointUri,
                 LastChangeTime = nuGetTemplatePackage.LastChangeTime,
                 Details = nuGetTemplatePackage.Details
@@ -215,7 +233,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _ = managedSource ?? throw new ArgumentNullException(nameof(managedSource));
             if (!(managedSource is NuGetManagedTemplatePackage))
             {
-                return Task.FromResult(UninstallResult.CreateFailure(managedSource, InstallerErrorCode.UnsupportedRequest, $"{managedSource.Identifier} is not supported by {Name}"));
+                return Task.FromResult(UninstallResult.CreateFailure(managedSource, InstallerErrorCode.UnsupportedRequest, $"{managedSource.Identifier} is not supported by {Factory.Name}"));
             }
             try
             {

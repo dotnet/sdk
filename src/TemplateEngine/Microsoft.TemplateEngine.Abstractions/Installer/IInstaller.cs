@@ -12,18 +12,9 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     public interface IInstaller
     {
         /// <summary>
-        /// Gets The ID of <see cref="IInstallerFactory."/> created the installer.
+        /// Gets the <see cref="IInstallerFactory"/> that created this installer.
         /// </summary>
-        Guid FactoryId { get; }
-
-        /// <summary>
-        /// Gets the installer name.
-        /// </summary>
-        /// <remarks>
-        /// The caller can specify <see cref="Name"/> in <see cref="InstallRequest.InstallerName"/> to use the installer for installation.
-        /// This is useful when the installer cannot be determined by using <see cref="CanInstallAsync"/>.
-        /// </remarks>
-        string Name { get; }
+        IInstallerFactory Factory { get; }
 
         /// <summary>
         /// Gets <see cref="IManagedTemplatePackageProvider"/> that created the installer.

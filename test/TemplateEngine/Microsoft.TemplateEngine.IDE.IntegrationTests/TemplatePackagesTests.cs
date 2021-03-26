@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IManagedTemplatePackage source = result.First().TemplatePackage;
             Assert.Equal("Microsoft.DotNet.Common.ProjectTemplates.5.0", source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.Name);
-            Assert.Equal("NuGet", source.Installer.Name);
+            Assert.Equal("NuGet", source.Installer.Factory.Name);
             Assert.Equal("Microsoft", source.GetDetails()["Author"]);
             source.Version.Should().NotBeNullOrEmpty();
 
@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IManagedTemplatePackage source = result.First().TemplatePackage;
             Assert.Equal("Take.Blip.Client.Templates", source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.Name);
-            Assert.Equal("NuGet", source.Installer.Name);
+            Assert.Equal("NuGet", source.Installer.Factory.Name);
             source.GetDetails()["Author"].Should().NotBeNullOrEmpty();
             Assert.Equal("https://api.nuget.org/v3/index.json", source.GetDetails()["NuGetSource"]);
             Assert.Equal("0.5.135", source.Version);
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IManagedTemplatePackage source = result.First().TemplatePackage;
             Assert.Equal(Path.GetFullPath(templateLocation), source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.Name);
-            Assert.Equal("Folder", source.Installer.Name);
+            Assert.Equal("Folder", source.Installer.Factory.Name);
             source.Version.Should().BeNullOrEmpty();
 
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
@@ -203,7 +203,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             IManagedTemplatePackage updatedSource = updateResults.First().TemplatePackage;
             Assert.Equal("Global Settings", updatedSource.Provider.Factory.Name);
-            Assert.Equal("NuGet", updatedSource.Installer.Name);
+            Assert.Equal("NuGet", updatedSource.Installer.Factory.Name);
             Assert.Equal("5.0.1", updatedSource.Version);
 
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);

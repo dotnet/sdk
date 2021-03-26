@@ -19,14 +19,13 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 
         public FolderInstaller(IEngineEnvironmentSettings settings, IInstallerFactory factory, IManagedTemplatePackageProvider provider)
         {
-            Name = factory.Name;
-            FactoryId = factory.Id;
-            _settings = settings;
-            Provider = provider;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            Factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            Provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
-        public Guid FactoryId { get; }
-        public string Name { get; }
+        public IInstallerFactory Factory { get; }
+
         public IManagedTemplatePackageProvider Provider { get; }
 
         public Task<bool> CanInstallAsync(InstallRequest installationRequest, CancellationToken cancellationToken)
@@ -72,7 +71,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             {
                 MountPointUri = managedSource.MountPointUri,
                 LastChangeTime = managedSource.LastChangeTime,
-                InstallerId = FactoryId
+                InstallerId = Factory.Id
             };
         }
 
