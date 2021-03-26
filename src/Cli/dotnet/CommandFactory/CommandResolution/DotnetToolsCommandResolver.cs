@@ -6,6 +6,10 @@ using System.IO;
 
 namespace Microsoft.DotNet.CommandFactory
 {
+    /// <summary>
+    /// A <see cref="ICommandResolver" /> for tools built-in with the .NET SDK.
+    /// This includes <c>dotnet-watch</c>, <c>dotnet-dev-certs<c>, <c>dotnet-sql-cache<c>, and <c>dotnet-user-secrets</c>.
+    /// </summary>
     public class DotnetToolsCommandResolver : ICommandResolver
     {
         private string _dotnetToolPath;
@@ -31,32 +35,15 @@ namespace Microsoft.DotNet.CommandFactory
             }
 
             var packagePath = Path.Combine(_dotnetToolPath, arguments.CommandName);
-            if (string.Equals(arguments.CommandName, "dotnet-watch", StringComparison.Ordinal))
+            var toolAtRootPath = Path.Combine(packagePath, arguments.CommandName + ".dll");
+            if (File.Exists(toolAtRootPath))
             {
-                var toolAtRootPath = Path.Combine(packagePath, arguments.CommandName + ".dll");
-                if (File.Exists(toolAtRootPath))
-                {
-                    return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
-                        toolAtRootPath,
-                        arguments.CommandArguments);
-                }
-            }
-
-            var packageId = new DirectoryInfo(packagePath);
-            if (!packageId.Exists)
-            {
-                return null;
-            }
-
-            var version = packageId.GetDirectories()[0];
-            var dll = version.GetDirectories("tools")[0]
-                .GetDirectories()[0] // TFM
-                .GetDirectories()[0] // RID
-                .GetFiles($"{arguments.CommandName}.dll")[0];
-
-            return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
-                    dll.FullName,
+                return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
+                    toolAtRootPath,
                     arguments.CommandArguments);
+            }
+
+            return null;
         }
     }
 }
