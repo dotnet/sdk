@@ -492,6 +492,14 @@
 
   </Target>
 
+  <Target Name="GeneratePrecomputedRarCache" DependsOnTargets="LayoutTemplates;LayoutManifests;LayoutBundledTools">
+    <ItemGroup>
+      <SampleProjectForResolveAssemblyReferenceCache Include="$(RepoRoot)\TestAssets\TestProjects\RARPreCacheProject\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SampleProjectForResolveAssemblyReferenceCache)" DestinationFiles="$(RepoRoot)\artifacts\bin\redist\$(Configuration)\RARPreCacheProject\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Exec Command="$(RepoRoot)\artifacts\bin\redist\$(Configuration)\dotnet\dotnet.exe msbuild $(RepoRoot)\artifacts\bin\redist\$(Configuration)\RARPreCacheProject\RARPreCacheProject.csproj /t:ResolveAssemblyReferences /p:AssemblyInformationCacheOutputPath=$(SdkInternalLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" />
+  </Target>
+
   <Target Name="GenerateLayout"
           DependsOnTargets="DownloadBundledComponents;
                             CleanLayoutPath;
@@ -506,6 +514,7 @@
                             RetargetTools;
                             CrossgenLayout;
                             LayoutAppHostTemplate;
+                            GeneratePrecomputedRarCache;
                             SignLayout"
           BeforeTargets="AfterBuild">
 
