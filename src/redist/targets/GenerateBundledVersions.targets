@@ -107,10 +107,12 @@
           @(Net50AppHostRids);
           ios-arm64;
           ios-arm;
-          ios-x64;
-          ios-x86;
+          iossimulator-arm64;
+          iossimulator-x64;
+          iossimulator-x86;
           tvos-arm64;
-          tvos-x64;
+          tvossimulator-arm64;
+          tvossimulator-x64;
           maccatalyst-x64;
           maccatalyst-arm64;
           android-arm64;
