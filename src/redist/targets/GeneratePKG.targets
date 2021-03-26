@@ -136,6 +136,10 @@
       <ItemGroup>
         <TemplateFiles Include="$(RedistLayoutPath)templates/**/*" />
       </ItemGroup>
+
+      <ItemGroup>
+        <ManifestFiles Include="$(RedistLayoutPath)sdk-manifests/**/*" />
+      </ItemGroup>
       
       <!-- Copy ASP.NET runtime and targeting pack to internal layout, as we don't currently chain that in with a pkg dependency -->
       <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetCoreSharedFxArchiveFileName)"
@@ -145,6 +149,9 @@
 
       <Copy SourceFiles="@(TemplateFiles)"
             DestinationFiles="@(TemplateFiles->'$(SdkInternalLayoutPath)/templates/%(RecursiveDir)%(Filename)%(Extension)')" />
+
+      <Copy SourceFiles="@(ManifestFiles)"
+            DestinationFiles="@(ManifestFiles->'$(SdkInternalLayoutPath)/sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')" />
 
       <ReplaceFileContents
         InputFiles="$(SdkPkgScriptTemplateFile)"
