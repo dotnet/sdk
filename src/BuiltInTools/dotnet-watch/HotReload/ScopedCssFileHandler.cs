@@ -24,18 +24,22 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask<bool> TryHandleFileChange(DotNetWatchContext context, FileItem file, CancellationToken cancellationToken)
         {
+            HotReladEventSource.Log.HotReloadStart(HotReladEventSource.StartType.ScopedCssHandler);
             if (!file.FilePath.EndsWith(".razor.css", StringComparison.Ordinal) &&
                 !file.FilePath.EndsWith(".cshtml.css", StringComparison.Ordinal))
             {
+                HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.ScopedCssHandler);
                 return default;
             }
 
             _reporter.Verbose($"Handling file change event for scoped css file {file.FilePath}.");
             if (!await RebuildScopedCss(file.ProjectPath, cancellationToken))
             {
+                HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.ScopedCssHandler);
                 return false;
             }
             await HandleBrowserRefresh(context.BrowserRefreshServer, file, cancellationToken);
+            HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.ScopedCssHandler);
             return true;
         }
 

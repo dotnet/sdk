@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 return false;
             }
-            
+            HotReladEventSource.Log.HotReloadStart(HotReladEventSource.StartType.CompilationHandler);
             Debug.Assert(_editAndContinue != null);
             Debug.Assert(_currentSolution != null);
             Debug.Assert(_deltaApplier != null);
@@ -99,6 +99,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             else
             {
                 _reporter.Verbose($"Could not find document with path {file.FilePath} in the workspace.");
+                HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.CompilationHandler);
                 return false;
             }
 
@@ -110,6 +111,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 _editAndContinue.EndEditSession();
 
                 await _deltaApplier.Apply(context, file.FilePath, default, cancellationToken);
+                HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.CompilationHandler);
                 return true;
             }
             else if (updates.Status == DotNetWatchManagedModuleUpdateStatus.Blocked)
@@ -135,11 +137,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                     // We'll instead simply keep track of the updated solution.
                     _currentSolution = updatedSolution;
 
+                    HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.CompilationHandler);
                     // Figure out how to recover from errors. Currently it seems unrecoverable.
                     return false;
                 }
 
                 _reporter.Verbose("Unable to apply update.");
+                HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.CompilationHandler);
                 return false;
             }
 
@@ -150,7 +154,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             // We'll instead simply keep track of the updated solution.
             _currentSolution = updatedSolution;
 
-            return await _deltaApplier.Apply(context, file.FilePath, updates, cancellationToken);
+            var applyState = await _deltaApplier.Apply(context, file.FilePath, updates, cancellationToken);
+            HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.CompilationHandler);
+            return applyState;
         }
 
         private IReadOnlyList<string> GetDiagnostics(Project project, CancellationToken cancellationToken)

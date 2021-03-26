@@ -6,22 +6,25 @@ namespace Microsoft.DotNet.Watcher.Tools
     [EventSource(Name = "HotReload")]
     class HotReladEventSource : EventSource
     {
+
+        public static enum StartType
+        {
+            Main,
+            StaticHandler,
+            CompilationHandler,
+            ScopedCssHandler
+        }
+
         public class Keywords
         {
             public const EventKeywords Perf = (EventKeywords)1;
         }
 
         [Event(1, Message = "Hot reload started for {0}", Level = EventLevel.Informational, Keywords = Keywords.Perf)]
-        public void HotReloadStaticFileStart(string fileChanged) { WriteEvent(1, fileChanged); }
+        public void HotReloadStart(StartType s) { WriteEvent(1, s); }
 
         [Event(2, Message = "Hot reload finished for {0}", Level = EventLevel.Informational, Keywords = Keywords.Perf)]
-        public void HotReloadStaticFileEnd(string fileChanged) { WriteEvent(2, fileChanged); }
-
-        [Event(3, Message = "Hot reload started for {0}", Level = EventLevel.Informational, Keywords = Keywords.Perf)]
-        public void HotReloadCompilationStart(string fileChanged) { WriteEvent(3, fileChanged); }
-
-        [Event(4, Message = "Hot reload finished for {0}", Level = EventLevel.Informational, Keywords = Keywords.Perf)]
-        public void HotReloadCompilationEnd(string fileChanged) { WriteEvent(4, fileChanged); }
+        public void HotReloadEnd(StartType s) { WriteEvent(2, s); }
 
         public static HotReladEventSource Log = new HotReladEventSource();
     }
