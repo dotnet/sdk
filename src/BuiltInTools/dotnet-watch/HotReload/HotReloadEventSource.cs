@@ -24,10 +24,10 @@ namespace Microsoft.DotNet.Watcher.Tools
         }
 
         [Event(1, Message = "Hot reload started for {0}", Level = EventLevel.Informational, Keywords = Keywords.Perf)]
-        public void HotReloadStart(StartType s) { WriteEvent(1, s); }
+        public void HotReloadStart(StartType handlerType) { WriteEvent(1, handlerType); }
 
         [Event(2, Message = "Hot reload finished for {0}", Level = EventLevel.Informational, Keywords = Keywords.Perf)]
-        public void HotReloadEnd(StartType s) { WriteEvent(2, s); }
+        public void HotReloadEnd(StartType handlerType) { WriteEvent(2, handlerType); }
 
         public static readonly HotReloadEventSource Log = new HotReloadEventSource();
     }
