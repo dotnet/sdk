@@ -64,18 +64,20 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask<bool> TryHandleFileChange(DotNetWatchContext context, FileItem file, CancellationToken cancellationToken)
         {
+            HotReladEventSource.Log.HotReloadStart(HotReladEventSource.StartType.CompilationHandler);
             if (!file.FilePath.EndsWith(".cs", StringComparison.Ordinal) &&
                 !file.FilePath.EndsWith(".razor", StringComparison.Ordinal) &&
                 !file.FilePath.EndsWith(".cshtml", StringComparison.Ordinal))
             {
+                HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.CompilationHandler);
                 return false;
             }
 
             if (!await EnsureSolutionInitializedAsync())
             {
+                HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.CompilationHandler);
                 return false;
             }
-            HotReladEventSource.Log.HotReloadStart(HotReladEventSource.StartType.CompilationHandler);
             Debug.Assert(_editAndContinue != null);
             Debug.Assert(_currentSolution != null);
             Debug.Assert(_deltaApplier != null);

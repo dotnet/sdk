@@ -24,11 +24,12 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask<bool> TryHandleFileChange(DotNetWatchContext context, FileItem file, CancellationToken cancellationToken)
         {
+            HotReladEventSource.Log.HotReloadStart(HotReladEventSource.StartType.StaticHandler);
             if (!file.IsStaticFile || context.BrowserRefreshServer is null)
             {
+                HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.StaticHandler);
                 return false;
             }
-            HotReladEventSource.Log.HotReloadStart(HotReladEventSource.StartType.StaticHandler);
             _reporter.Verbose($"Handling file change event for static content {file.FilePath}.");
             await HandleBrowserRefresh(context.BrowserRefreshServer, file, cancellationToken);
             HotReladEventSource.Log.HotReloadEnd(HotReladEventSource.StartType.StaticHandler);
