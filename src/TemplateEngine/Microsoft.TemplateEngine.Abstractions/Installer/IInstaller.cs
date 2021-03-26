@@ -31,10 +31,10 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         IManagedTemplatePackageProvider Provider { get; }
 
         /// <summary>
-        /// Determines in the installer can install specific <see cref="InstallRequest"/>.
+        /// Determines if the installer can install specific <see cref="InstallRequest"/>.
         /// </summary>
         /// <remarks>
-        /// Ideally it should as far as calling backend server to determine if such identifier exists.
+        /// Ideally it should go as far as calling backend server to determine if such identifier exists.
         /// </remarks>
         Task<bool> CanInstallAsync(InstallRequest installationRequest, CancellationToken cancellationToken);
 
