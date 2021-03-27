@@ -163,6 +163,10 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             }
             else
             {
+                if (_sourceTextCache.Count > 200)
+                {
+                    _sourceTextCache.Clear();
+                }
                 _sourceTextCache[hint] = generatedSourceText;
                 return generatedSourceText;
             }
