@@ -156,6 +156,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [Fact]
+        public void CommandLine_FolderValidation_FailsIfNoRestoreSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--folder", "--no-restore" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+        }
+
+        [Fact]
         public void CommandLine_AnalyzerOptions_CanSpecifyBothWithDefaults()
         {
             // Arrange
@@ -180,6 +193,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             Task<int> TestRun(
                 string workspace,
+                bool noRestore,
                 bool folder,
                 bool fixWhitespace,
                 string fixStyle,
@@ -191,9 +205,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 string[] exclude,
                 string report,
                 bool includeGenerated,
+                string binaryLogPath,
                 IConsole console = null)
             {
                 Assert.Equal("./src", workspace);
+                Assert.True(noRestore);
                 Assert.False(folder);
                 Assert.True(fixWhitespace);
                 Assert.Equal("warn", fixStyle);
@@ -211,6 +227,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             var args = @"
 ./src
+--no-restore
 --fix-whitespace
 --fix-style
 warn
@@ -237,6 +254,47 @@ report.json
             // Assert
             Assert.Equal(0, parseResult.Errors.Count);
             Assert.Equal(uniqueExitCode, result);
+        }
+
+        [Fact]
+        public void CommandLine_BinaryLog_DoesNotFailIfPathNotSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--binarylog" });
+
+            // Assert
+            Assert.Equal(0, result.Errors.Count);
+            Assert.True(result.WasOptionUsed("--binarylog"));
+        }
+
+        [Fact]
+        public void CommandLine_BinaryLog_DoesNotFailIfPathIsSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--binarylog", "log" });
+
+            // Assert
+            Assert.Equal(0, result.Errors.Count);
+            Assert.True(result.WasOptionUsed("--binarylog"));
+        }
+
+        [Fact]
+        public void CommandLine_BinaryLog_FailsIfFolderIsSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--folder", "--binarylog" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
         }
     }
 }

@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                 var workspacePath = Path.Combine(TestProjectsPathHelper.GetProjectsDirectory(), s_analyzerProjectFilePath);
 
                 MSBuildRegistrar.RegisterInstance(logger);
-                var analyzerWorkspace = await MSBuildWorkspaceLoader.LockedLoadAsync(workspacePath, WorkspaceType.Project, createBinaryLog: false, logWorkspaceWarnings: true, logger, CancellationToken.None);
+                var analyzerWorkspace = await MSBuildWorkspaceLoader.LockedLoadAsync(workspacePath, WorkspaceType.Project, binaryLogPath: null, logWorkspaceWarnings: true, logger, CancellationToken.None);
 
                 // From this project we can get valid AnalyzerReferences to add to our test project.
                 _analyzerReferencesProject = analyzerWorkspace.CurrentSolution.Projects.Single();

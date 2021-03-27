@@ -10,6 +10,7 @@ namespace Microsoft.CodeAnalysis.Tools
     {
         public string WorkspaceFilePath { get; }
         public WorkspaceType WorkspaceType { get; }
+        public bool NoRestore { get; }
         public LogLevel LogLevel { get; }
         public FixCategory FixCategory { get; }
         public DiagnosticSeverity CodeStyleSeverity { get; }
@@ -24,6 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public FormatOptions(
             string workspaceFilePath,
             WorkspaceType workspaceType,
+            bool noRestore,
             LogLevel logLevel,
             FixCategory fixCategory,
             DiagnosticSeverity codeStyleSeverity,
@@ -37,6 +39,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             WorkspaceFilePath = workspaceFilePath;
             WorkspaceType = workspaceType;
+            NoRestore = noRestore;
             LogLevel = logLevel;
             FixCategory = fixCategory;
             CodeStyleSeverity = codeStyleSeverity;
@@ -52,6 +55,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public void Deconstruct(
             out string workspaceFilePath,
             out WorkspaceType workspaceType,
+            out bool noRestore,
             out LogLevel logLevel,
             out FixCategory fixCategory,
             out DiagnosticSeverity codeStyleSeverity,
@@ -65,6 +69,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             workspaceFilePath = WorkspaceFilePath;
             workspaceType = WorkspaceType;
+            noRestore = NoRestore;
             logLevel = LogLevel;
             fixCategory = FixCategory;
             codeStyleSeverity = CodeStyleSeverity;

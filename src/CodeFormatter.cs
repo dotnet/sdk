@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
+using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Microsoft.Extensions.Logging;
@@ -32,7 +33,7 @@ namespace Microsoft.CodeAnalysis.Tools
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken,
-            bool createBinaryLog = false)
+            string? binaryLogPath = null)
         {
             var logWorkspaceWarnings = formatOptions.LogLevel == LogLevel.Trace;
 
@@ -44,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             using var workspace = formatOptions.WorkspaceType == WorkspaceType.Folder
                 ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
-                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, createBinaryLog, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
+                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
 
             if (workspace is null)
             {
@@ -120,15 +121,24 @@ namespace Microsoft.CodeAnalysis.Tools
             return folderWorkspace;
         }
 
-        private static Task<Workspace?> OpenMSBuildWorkspaceAsync(
+        private static async Task<Workspace?> OpenMSBuildWorkspaceAsync(
             string solutionOrProjectPath,
             WorkspaceType workspaceType,
-            bool createBinaryLog,
+            bool noRestore,
+            bool requiresSemantics,
+            string? binaryLogPath,
             bool logWorkspaceWarnings,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            return MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, createBinaryLog, logWorkspaceWarnings, logger, cancellationToken);
+            if (requiresSemantics &&
+                !noRestore &&
+                await DotNetHelper.PerformRestoreAsync(solutionOrProjectPath, logger) != 0)
+            {
+                throw new Exception("Restore operation failed.");
+            }
+
+            return await MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken);
         }
 
         private static async Task<Solution> RunCodeFormattersAsync(

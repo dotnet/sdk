@@ -36,6 +36,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         private static readonly string s_codeStyleSolutionPath = Path.Combine("for_code_formatter", "codestyle_solution");
         private static readonly string s_codeStyleSolutionFilePath = Path.Combine(s_codeStyleSolutionPath, "codestyle_solution.sln");
 
+        private static readonly string s_codeStyleSolutionFilterFilePath = Path.Combine(s_codeStyleSolutionPath, "codestyle_solution_filter.slnf");
+
         private static readonly string s_analyzersSolutionPath = Path.Combine("for_code_formatter", "analyzers_solution");
         private static readonly string s_analyzersSolutionFilePath = Path.Combine(s_analyzersSolutionPath, "analyzers_solution.sln");
 
@@ -414,9 +416,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenNotFixingCodeStyle()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -431,9 +430,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenFixingCodeStyleErrors()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -449,9 +445,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task FilesFormattedInCodeStyleSolution_WhenFixingCodeStyleWarnings()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -465,11 +458,26 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [MSBuildFact]
-        public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
+        public async Task FilesFormattedInCodeStyleSolutionFilter_WhenFixingCodeStyleWarnings()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_analyzersSolutionFilePath, _output);
+            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilterFilePath, _output);
             Assert.Equal(0, restoreExitCode);
 
+            await TestFormatWorkspaceAsync(
+                s_codeStyleSolutionFilterFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 1,
+                expectedFileCount: 3,
+                fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle,
+                codeStyleSeverity: DiagnosticSeverity.Warning);
+        }
+
+        [MSBuildFact]
+        public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
+        {
             await TestFormatWorkspaceAsync(
                 s_analyzersSolutionFilePath,
                 include: EmptyFilesList,
@@ -484,9 +492,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task FilesFormattedInAnalyzersSolution_WhenFixingAnalyzerErrors()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_analyzersSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_analyzersSolutionFilePath,
                 include: EmptyFilesList,
@@ -510,7 +515,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             FixCategory fixCategory = FixCategory.Whitespace,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
-            string[] diagnostics = null)
+            string[] diagnostics = null,
+            bool noRestore = false)
         {
             var currentDirectory = Environment.CurrentDirectory;
             Environment.CurrentDirectory = TestProjectsPathHelper.GetProjectsDirectory();
@@ -524,9 +530,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
             else
             {
-                workspaceType = workspacePath.EndsWith(".sln")
-                    ? WorkspaceType.Solution
-                    : WorkspaceType.Project;
+                workspaceType = workspacePath.EndsWith("proj")
+                    ? WorkspaceType.Project
+                    : WorkspaceType.Solution;
             }
 
             var logger = new TestLogger();
@@ -539,6 +545,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var formatOptions = new FormatOptions(
                 workspacePath,
                 workspaceType,
+                noRestore,
                 LogLevel.Trace,
                 fixCategory,
                 codeStyleSeverity,

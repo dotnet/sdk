@@ -60,7 +60,7 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
         private static (bool isSolution, string workspacePath) FindFile(string workspacePath)
         {
             var workspaceExtension = Path.GetExtension(workspacePath);
-            var isSolution = workspaceExtension.Equals(".sln", StringComparison.OrdinalIgnoreCase);
+            var isSolution = workspaceExtension.Equals(".sln", StringComparison.OrdinalIgnoreCase) || workspaceExtension.Equals(".slnf", StringComparison.OrdinalIgnoreCase);
             var isProject = !isSolution
                 && workspaceExtension.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
                 && !workspaceExtension.Equals(DnxProjectExtension, StringComparison.OrdinalIgnoreCase);
@@ -81,7 +81,8 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
             return (isSolution, workspacePath);
         }
 
-        private static IEnumerable<string> FindSolutionFiles(string basePath) => Directory.EnumerateFileSystemEntries(basePath, "*.sln", SearchOption.TopDirectoryOnly);
+        private static IEnumerable<string> FindSolutionFiles(string basePath) => Directory.EnumerateFileSystemEntries(basePath, "*.sln", SearchOption.TopDirectoryOnly)
+            .Concat(Directory.EnumerateFileSystemEntries(basePath, "*.slnf", SearchOption.TopDirectoryOnly));
 
         private static IEnumerable<string> FindProjectFiles(string basePath) => Directory.EnumerateFileSystemEntries(basePath, "*.*proj", SearchOption.TopDirectoryOnly)
                     .Where(f => !DnxProjectExtension.Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
