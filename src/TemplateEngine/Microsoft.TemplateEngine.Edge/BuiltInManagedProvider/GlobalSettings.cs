@@ -17,6 +17,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
     internal sealed class GlobalSettings : IGlobalSettings, IDisposable
     {
+        private const int FileReadWriteRetries = 5;
         private readonly Paths _paths;
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly string _globalSettingsFile;
@@ -82,7 +83,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 return Array.Empty<TemplatePackageData>();
             }
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < FileReadWriteRetries; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -94,12 +95,12 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
                 catch (Exception)
                 {
-                    if (i == 4)
+                    if (i == (FileReadWriteRetries - 1))
                     {
                         throw;
                     }
                 }
-                await Task.Delay(20).ConfigureAwait(false);
+                await Task.Delay(20, cancellationToken).ConfigureAwait(false);
             }
             throw new InvalidOperationException();
         }
@@ -121,7 +122,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 Packages = packages
             });
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < FileReadWriteRetries; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -133,12 +134,12 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
                 catch (Exception)
                 {
-                    if (i == 4)
+                    if (i == (FileReadWriteRetries - 1))
                     {
                         throw;
                     }
                 }
-                await Task.Delay(20).ConfigureAwait(false);
+                await Task.Delay(20, cancellationToken).ConfigureAwait(false);
             }
             throw new InvalidOperationException();
         }
