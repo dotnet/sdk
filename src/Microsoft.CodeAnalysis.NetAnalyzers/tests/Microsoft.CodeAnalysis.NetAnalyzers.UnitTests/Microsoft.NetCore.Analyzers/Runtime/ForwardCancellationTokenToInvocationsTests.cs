@@ -437,6 +437,29 @@ class C
             ");
         }
 
+        [Fact]
+        [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task CS_NoDiagnostic_ReturnTypesDiffer()
+        {
+            return VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class P
+{
+    static void M1(string s, CancellationToken cancellationToken)
+    {
+        var result = M2(s);
+    }
+
+    static Task M2(string s) { throw new NotImplementedException(); }
+
+    static int M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
+}
+            ");
+        }
+
         #endregion
 
         #region Diagnostics with no fix = C#

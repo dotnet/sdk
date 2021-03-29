@@ -27,6 +27,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     ///     - The invocation method signature receives a ct and one is already being explicitly passed, or...
     ///     - The invocation method does not have an overload with the exact same arguments that also receives a ct, or...
     ///     - The invocation method only has overloads that receive more than one ct.
+    ///     - The invocation method return type differs.
     /// </summary>
     public abstract class ForwardCancellationTokenToInvocationsAnalyzer : DiagnosticAnalyzer
     {
@@ -336,6 +337,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // Checks if the parameters of the two passed methods only differ in a ct.
             static bool HasSameParametersPlusCancellationToken(ITypeSymbol cancellationTokenType, IMethodSymbol originalMethod, IMethodSymbol methodToCompare)
             {
+                // Overload is not valid if it has a different return type
+                if (!originalMethod.ReturnType.Equals(methodToCompare.ReturnType))
+                {
+                    return false;
+                }
+
                 // Avoid comparing to itself, or when there are no parameters, or when the last parameter is not a ct
                 if (originalMethod.Equals(methodToCompare) ||
                     methodToCompare.Parameters.Count(p => p.Type.Equals(cancellationTokenType)) != 1 ||
