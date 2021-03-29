@@ -297,7 +297,7 @@ namespace Microsoft.TemplateEngine.Edge
 
             public string AliasesFile => _parent.GetOrComputePath(ref _aliasesFile, BaseDir, "aliases.json");
 
-            public string BaseDir => _parent._environmentSettings.Paths.BaseDir;
+            public string BaseDir => _parent._environmentSettings.Paths.TemplateEngineHostVersionDir;
 
             public string Content => _parent.GetOrComputePath(ref _contentDir, BaseDir, "content");
 
