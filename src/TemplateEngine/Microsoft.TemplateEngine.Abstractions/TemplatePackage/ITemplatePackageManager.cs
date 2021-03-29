@@ -40,18 +40,18 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
 
         /// <summary>
         /// Returns combined list of <see cref="ITemplatePackage"/> that all <see cref="ITemplatePackageProvider"/>s and <see cref="IManagedTemplatePackagesProvider"/>s return.
-        /// <see cref="ITemplatePackageManager"/> caches the responses from <see cref="ITemplatePackageProvider"/>, to get non-cached response <paramref name="force"/> should be set to true.
+        /// <see cref="ITemplatePackageManager"/> caches the responses from <see cref="ITemplatePackageProvider"/>, to get non-cached response <paramref name="invalidateCache"/> should be set to true.
         /// </summary>
-        /// <param name="force">Invalidates cache and queries all providers.</param>
+        /// <param name="invalidateCache">Useful when <see cref="ITemplatePackageProvider"/> doesn't trigger <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/> event.</param>
         /// <returns>The list of <see cref="ITemplatePackage"/>.</returns>
-        Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(bool force = false);
+        Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(bool invalidateCache = false);
 
         /// <summary>
         /// Same as <see cref="GetTemplatePackagesAsync"/> but filters only <see cref="IManagedTemplatePackage"/> packages.
         /// </summary>
-        /// <param name="force">Invalidates cache and queries all providers.</param>
+        /// <param name="invalidateCache">Useful when <see cref="IManagedTemplatePackage"/> doesn't trigger <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/> event.</param>
         /// <returns>The list of <see cref="IManagedTemplatePackage"/>.</returns>
-        Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackagesAsync(bool force = false);
+        Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackagesAsync(bool invalidateCache = false);
 
         /// <summary>
         /// Returns built-in <see cref="IManagedTemplatePackageProvider"/> of specified <see cref="InstallationScope"/>.
