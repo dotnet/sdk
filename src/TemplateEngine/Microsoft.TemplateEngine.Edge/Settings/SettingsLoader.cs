@@ -137,7 +137,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _templatesLoaded = true;
         }
 
-        public async Task RebuildCacheFromSettingsIfNotCurrent(bool forceRebuild)
+        public Task RebuildCacheAsync(CancellationToken token)
+        {
+            return RebuildCacheFromSettingsIfNotCurrent(true);
+        }
+
+        private async Task RebuildCacheFromSettingsIfNotCurrent(bool forceRebuild)
         {
             if (_disposed)
             {
@@ -331,24 +336,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     Task.Delay(10).Wait();
                 }
             }
-        }
-
-        public bool TryGetFileFromIdAndPath(string mountPointUri, string place, out IFile file, out IMountPoint mountPoint)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(SettingsLoader));
-            }
-
-            if (!string.IsNullOrEmpty(place) && _mountPointManager.TryDemandMountPoint(mountPointUri, out mountPoint))
-            {
-                file = mountPoint.FileInfo(place);
-                return file != null && file.Exists;
-            }
-
-            mountPoint = null;
-            file = null;
-            return false;
         }
 
         public bool TryGetMountPoint(string mountPointUri, out IMountPoint mountPoint)
