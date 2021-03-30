@@ -42,7 +42,10 @@ namespace Microsoft.TemplateEngine.Utils
         {
             public DefaultPathInfo(IEngineEnvironmentSettings parent, string hiveLocation, string engineRoot)
             {
-                UserProfileDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
+                bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                UserProfileDir = parent.Environment.GetEnvironmentVariable(isWindows
+                    ? "USERPROFILE"
+                    : "HOME");
                 TemplateEngineRootDir = engineRoot ?? Path.Combine(UserProfileDir, ".templateengine");
                 TemplateEngineHostDir = hiveLocation ?? Path.Combine(TemplateEngineRootDir, parent.Host.HostIdentifier);
                 TemplateEngineHostVersionDir = hiveLocation ?? Path.Combine(TemplateEngineRootDir, parent.Host.HostIdentifier, parent.Host.Version);

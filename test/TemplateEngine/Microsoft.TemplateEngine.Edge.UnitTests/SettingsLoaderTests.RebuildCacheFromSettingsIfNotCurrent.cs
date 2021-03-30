@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
             engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheFromSettingsIfNotCurrent(false);
+            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default);
 
             var allNupkgs = Directory.GetFiles(nupkgFolder);
             // All mount points should have been scanned
@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FakeFactory.SetNuPkgsAndFolders(validAndInvalidNuPkg);
             engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheFromSettingsIfNotCurrent(false);
+            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default);
 
             var allNupkgs = validAndInvalidNuPkg.Take(1);
             // All mount points should have been scanned
@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
             engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheFromSettingsIfNotCurrent(false);
+            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default);
 
             var allNupkgs = Directory.GetFiles(nupkgFolder);
             // All mount points should have been scanned
@@ -113,12 +113,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var monitoredFileSystem = (MonitoredFileSystem)engineEnvironmentSettings.Host.FileSystem;
 
             monitoredFileSystem.Reset();
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheFromSettingsIfNotCurrent(false);
+            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default);
             // Make sure that we don't rescan with force=false
             AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
 
             monitoredFileSystem.Reset();
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheFromSettingsIfNotCurrent(true);
+            await engineEnvironmentSettings.SettingsLoader.RebuildCacheAsync(default);
             // Make sure that we rescan with force=false
             AssertMountPointsWereOpened(allNupkgs, engineEnvironmentSettings);
         }
@@ -138,7 +138,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
             engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheFromSettingsIfNotCurrent(false);
+            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default);
 
             var allNupkgs = Directory.GetFiles(tmpFolder);
             // All mount points should have been scanned
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var monitoredFileSystem = (MonitoredFileSystem)engineEnvironmentSettings.Host.FileSystem;
 
             monitoredFileSystem.Reset();
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheFromSettingsIfNotCurrent(false);
+            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default);
             // Make sure that we don't rescan with force=false
             AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
 
@@ -158,7 +158,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             FakeFactory.TriggerChanged();
 
             monitoredFileSystem.Reset();
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheFromSettingsIfNotCurrent(false);
+            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default);
             // Make sure that we rescan with force=false
             AssertMountPointsWereOpened(new[] { modifiedFile }, engineEnvironmentSettings);
         }
@@ -173,7 +173,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
             engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheFromSettingsIfNotCurrent(false);
+            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default);
 
             var allNupkgs = Directory.GetFiles(nupkgFolder);
             // All mount points should have been scanned
@@ -186,7 +186,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             FakeFactory.TriggerChanged();
 
             monitoredFileSystem.Reset();
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheFromSettingsIfNotCurrent(false);
+            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default);
             // Make sure that we don't rescan with force=false
             AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
         }
