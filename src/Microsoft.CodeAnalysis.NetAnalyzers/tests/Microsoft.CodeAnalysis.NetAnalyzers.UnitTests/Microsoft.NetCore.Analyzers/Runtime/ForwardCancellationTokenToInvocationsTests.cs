@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -2291,6 +2288,47 @@ class P
 }";
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
+
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task CS_NoDiagnostic_SpecialCaseTaskLikeReturnTypes()
+        {
+            // Local static functions are available in C# >= 8.0
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class P
+{
+    static async Task M1Async(string s, CancellationToken cancellationToken)
+    {
+        int result = await [|M2|](s); // CA2016
+    }
+
+    static Task<int> M2(string s) { throw new NotImplementedException(); }
+
+    static ValueTask<int> M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
+}";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class P
+{
+    static async Task M1Async(string s, CancellationToken cancellationToken)
+    {
+        int result = await M2(s, cancellationToken); // CA2016
+    }
+
+    static Task<int> M2(string s) { throw new NotImplementedException(); }
+
+    static ValueTask<int> M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
+}";
+            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
         #endregion
 
         #region No Diagnostic - VB

@@ -77,6 +77,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
+            // We don't care if these symbols are not defined in our compilation. They are used to special case the Task<T> <-> ValueTask<T> logic
+            context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1, out INamedTypeSymbol? genericTask);
+            context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask1, out INamedTypeSymbol? genericValueTask);
+
             context.RegisterOperationAction(context =>
             {
                 IInvocationOperation invocation = (IInvocationOperation)context.Operation;
@@ -91,6 +95,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     invocation,
                     containingMethod,
                     cancellationTokenType,
+                    genericTask,
+                    genericValueTask,
                     out int shouldFix,
                     out string? cancellationTokenArgumentName,
                     out string? invocationTokenParameterName))
@@ -121,9 +127,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             IInvocationOperation invocation,
             IMethodSymbol containingSymbol,
             INamedTypeSymbol cancellationTokenType,
-            out int shouldFix,
-            [NotNullWhen(returnValue: true)] out string? ancestorTokenParameterName,
-            out string? invocationTokenParameterName)
+            INamedTypeSymbol? genericTask,
+            INamedTypeSymbol? genericValueTask,
+            out int shouldFix, [NotNullWhen(returnValue: true)] out string? ancestorTokenParameterName, out string? invocationTokenParameterName)
         {
             shouldFix = 1;
             ancestorTokenParameterName = null;
@@ -148,7 +154,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
             // or an overload that takes a ct at the end
-            else if (MethodHasCancellationTokenOverload(compilation, method, cancellationTokenType, out overload))
+            else if (MethodHasCancellationTokenOverload(compilation, method, cancellationTokenType, genericTask, genericValueTask, out overload))
             {
                 if (ArgumentsImplicitOrNamed(cancellationTokenType, invocation.Arguments))
                 {
@@ -327,18 +333,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             Compilation compilation,
             IMethodSymbol method,
             ITypeSymbol cancellationTokenType,
+            INamedTypeSymbol? genericTask,
+            INamedTypeSymbol? genericValueTask,
             [NotNullWhen(returnValue: true)] out IMethodSymbol? overload)
         {
             overload = method.ContainingType
                                 .GetMembers(method.Name)
                                 .OfType<IMethodSymbol>()
                                 .FirstOrDefault(methodToCompare =>
-                HasSameParametersPlusCancellationToken(compilation, cancellationTokenType, method, methodToCompare));
+                HasSameParametersPlusCancellationToken(compilation, cancellationTokenType, genericTask, genericValueTask, method, methodToCompare));
 
             return overload != null;
 
             // Checks if the parameters of the two passed methods only differ in a ct.
-            static bool HasSameParametersPlusCancellationToken(Compilation compilation, ITypeSymbol cancellationTokenType, IMethodSymbol originalMethod, IMethodSymbol methodToCompare)
+            static bool HasSameParametersPlusCancellationToken(
+                Compilation compilation,
+                ITypeSymbol cancellationTokenType,
+                INamedTypeSymbol? genericTask,
+                INamedTypeSymbol? genericValueTask,
+                IMethodSymbol originalMethod,
+                IMethodSymbol methodToCompare)
             {
                 // Avoid comparing to itself, or when there are no parameters, or when the last parameter is not a ct
                 if (originalMethod.Equals(methodToCompare) ||
@@ -369,13 +383,62 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                 }
 
-                // Overload is not valid if its return type is not implicitly convertable
-                if (!compilation.ClassifyCommonConversion(methodToCompareWithAllParameters.ReturnType, originalMethodWithAllParameters.ReturnType).IsImplicit)
+                // Overload is  valid if its return type is implicitly convertable
+                var toCompareReturnType = methodToCompareWithAllParameters.ReturnType;
+                var originalReturnType = originalMethodWithAllParameters.ReturnType;
+                if (!compilation.ClassifyCommonConversion(toCompareReturnType, originalReturnType).IsImplicit)
                 {
+                    // Generic Task-like types are special since awaiting them essentially erases the task-like type.
+                    // If both types are Task-like we will warn if their generic arguments are convertable to each other.
+                    if (IsTaskLikeType(originalReturnType) && IsTaskLikeType(toCompareReturnType) &&
+                        originalReturnType is INamedTypeSymbol originalNamedType &&
+                        toCompareReturnType is INamedTypeSymbol toCompareNamedType &&
+                        TypeArgumentsAreConvertable(originalNamedType, toCompareNamedType))
+                    {
+                        return true;
+                    }
+
                     return false;
                 }
 
                 return true;
+
+                bool IsTaskLikeType(ITypeSymbol typeSymbol)
+                {
+                    if (genericTask is not null &&
+                        typeSymbol.OriginalDefinition.Equals(genericTask))
+                    {
+                        return true;
+                    }
+
+                    if (genericValueTask is not null &&
+                        typeSymbol.OriginalDefinition.Equals(genericValueTask))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                bool TypeArgumentsAreConvertable(INamedTypeSymbol left, INamedTypeSymbol right)
+                {
+                    if (left.Arity != right.Arity)
+                    {
+                        return false;
+                    }
+
+                    var leftTypeArguments = left.TypeArguments;
+                    var rightTypeArguments = right.TypeArguments;
+                    for (int i = 0; i < leftTypeArguments.Length; i++)
+                    {
+                        if (!compilation.ClassifyCommonConversion(rightTypeArguments[i], leftTypeArguments[i]).IsImplicit)
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
             }
         }
     }
