@@ -111,10 +111,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         private static (string, SourceText?) ResolveGeneratedSourceTextFromFile(RazorInputItem file, RazorProjectEngine projectEngine, GeneratorExecutionContext context)
         {
             var hint = GetIdentifierFromPath(file.NormalizedPath);
-            if (file.FileKind == FileKinds.Legacy)
-            {
-                hint = GetIdentifierFromPath(file.GeneratedOutputPath ?? file.NormalizedPath);
-            }
 
             var entryFound = _sourceTextCache.TryGetValue(hint, out (SourceText cachedSourceText, SourceText cachedGeneratedSourceText) cachedValues);
 
