@@ -114,13 +114,13 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>dd5546b3d9ba0c2947c94b56a7f77169ce8d5e9c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="6.0.100-preview.2.21179.1">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="6.0.100-preview.2.21180.3">
       <Uri>https://github.com/mono/linker</Uri>
-      <Sha>3f78b9ca879f8209dea446432026faaeefbc1bf4</Sha>
+      <Sha>28d5013b48f1684cc305baa017b2b716230a1377</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="6.0.100-preview.2.21179.1">
+    <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="6.0.100-preview.2.21180.3">
       <Uri>https://github.com/mono/linker</Uri>
-      <Sha>3f78b9ca879f8209dea446432026faaeefbc1bf4</Sha>
+      <Sha>28d5013b48f1684cc305baa017b2b716230a1377</Sha>
     </Dependency>
     <Dependency Name="System.CodeDom" Version="6.0.0-preview.4.21178.6">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -177,10 +177,6 @@
     <Dependency Name="dotnet-user-secrets" Version="6.0.0-preview.4.21180.3">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>afce624fbf07e341eee2dfa53ff3812b33678ab0</Sha>
-    </Dependency>
-    <Dependency Name="dotnet-watch" Version="6.0.0-preview.2.21108.6">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>0d981a053fd45a73f52f93da2855d986c4cc7b62</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzers" Version="6.0.0-preview.4.21180.3">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
