@@ -5,6 +5,11 @@ using System;
 
 namespace Microsoft.TemplateEngine.Abstractions.Mount
 {
+    /// <summary>
+    /// Represents abstract directory.
+    /// This could be regular folder on file system, zip file, HTTP server or anything else that can
+    /// present files in file system hierarchy.
+    /// </summary>
     public interface IMountPoint : IDisposable
     {
         /// <summary>
@@ -17,6 +22,9 @@ namespace Microsoft.TemplateEngine.Abstractions.Mount
         /// </summary>
         IDirectory Root { get; }
 
+        /// <summary>
+        /// <see cref="IEngineEnvironmentSettings"/> used to create this instance.
+        /// </summary>
         IEngineEnvironmentSettings EnvironmentSettings { get; }
 
         /// <summary>
