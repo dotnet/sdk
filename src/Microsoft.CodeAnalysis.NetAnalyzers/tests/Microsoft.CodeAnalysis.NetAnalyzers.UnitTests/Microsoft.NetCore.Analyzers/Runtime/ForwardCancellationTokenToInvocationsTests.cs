@@ -2252,6 +2252,45 @@ class C
             return CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task CS_NoDiagnostic_ReturnTypeIsConvertable()
+        {
+            // Local static functions are available in C# >= 8.0
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class P
+{
+    static void M1(string s, CancellationToken cancellationToken)
+    {
+        long result = [|M2|](s);
+    }
+
+    static long M2(string s) { throw new NotImplementedException(); }
+
+    static int M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
+}";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class P
+{
+    static void M1(string s, CancellationToken cancellationToken)
+    {
+        long result = M2(s, cancellationToken);
+    }
+
+    static long M2(string s) { throw new NotImplementedException(); }
+
+    static int M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
+}";
+            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
         #endregion
 
         #region No Diagnostic - VB

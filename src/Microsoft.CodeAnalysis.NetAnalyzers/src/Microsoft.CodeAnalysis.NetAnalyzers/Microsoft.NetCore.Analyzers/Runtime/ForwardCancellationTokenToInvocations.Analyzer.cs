@@ -27,7 +27,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     ///     - The invocation method signature receives a ct and one is already being explicitly passed, or...
     ///     - The invocation method does not have an overload with the exact same arguments that also receives a ct, or...
     ///     - The invocation method only has overloads that receive more than one ct.
-    ///     - The invocation method return type differs.
+    ///     - The invocation method return types are not implicitly convertable to one another.
     /// </summary>
     public abstract class ForwardCancellationTokenToInvocationsAnalyzer : DiagnosticAnalyzer
     {
@@ -87,6 +87,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 if (!ShouldDiagnose(
+                    context.Compilation,
                     invocation,
                     containingMethod,
                     cancellationTokenType,
@@ -116,6 +117,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         // Determines if an invocation should trigger a diagnostic for this rule or not.
         private bool ShouldDiagnose(
+            Compilation compilation,
             IInvocationOperation invocation,
             IMethodSymbol containingSymbol,
             INamedTypeSymbol cancellationTokenType,
@@ -146,7 +148,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
             // or an overload that takes a ct at the end
-            else if (MethodHasCancellationTokenOverload(method, cancellationTokenType, out overload))
+            else if (MethodHasCancellationTokenOverload(compilation, method, cancellationTokenType, out overload))
             {
                 if (ArgumentsImplicitOrNamed(cancellationTokenType, invocation.Arguments))
                 {
@@ -322,6 +324,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         // Check if there's a method overload with the same parameters as this one, in the same order, plus a ct at the end.
         private static bool MethodHasCancellationTokenOverload(
+            Compilation compilation,
             IMethodSymbol method,
             ITypeSymbol cancellationTokenType,
             [NotNullWhen(returnValue: true)] out IMethodSymbol? overload)
@@ -330,19 +333,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 .GetMembers(method.Name)
                                 .OfType<IMethodSymbol>()
                                 .FirstOrDefault(methodToCompare =>
-                HasSameParametersPlusCancellationToken(cancellationTokenType, method, methodToCompare));
+                HasSameParametersPlusCancellationToken(compilation, cancellationTokenType, method, methodToCompare));
 
             return overload != null;
 
             // Checks if the parameters of the two passed methods only differ in a ct.
-            static bool HasSameParametersPlusCancellationToken(ITypeSymbol cancellationTokenType, IMethodSymbol originalMethod, IMethodSymbol methodToCompare)
+            static bool HasSameParametersPlusCancellationToken(Compilation compilation, ITypeSymbol cancellationTokenType, IMethodSymbol originalMethod, IMethodSymbol methodToCompare)
             {
-                // Overload is not valid if it has a different return type
-                if (!originalMethod.ReturnType.Equals(methodToCompare.ReturnType))
-                {
-                    return false;
-                }
-
                 // Avoid comparing to itself, or when there are no parameters, or when the last parameter is not a ct
                 if (originalMethod.Equals(methodToCompare) ||
                     methodToCompare.Parameters.Count(p => p.Type.Equals(cancellationTokenType)) != 1 ||
@@ -370,6 +367,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         return false;
                     }
+                }
+
+                // Overload is not valid if its return type is not implicitly convertable
+                if (!compilation.ClassifyCommonConversion(methodToCompareWithAllParameters.ReturnType, originalMethodWithAllParameters.ReturnType).IsImplicit)
+                {
+                    return false;
                 }
 
                 return true;
