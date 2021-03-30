@@ -422,19 +422,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 bool TypeArgumentsAreConvertable(INamedTypeSymbol left, INamedTypeSymbol right)
                 {
-                    if (left.Arity != right.Arity)
+                    if (left.Arity != 1 ||
+                        right.Arity != 1 ||
+                        left.Arity != right.Arity)
                     {
                         return false;
                     }
 
-                    var leftTypeArguments = left.TypeArguments;
-                    var rightTypeArguments = right.TypeArguments;
-                    for (int i = 0; i < leftTypeArguments.Length; i++)
+                    var leftTypeArgument = left.TypeArguments[0];
+                    var rightTypeArgument = right.TypeArguments[0];
+                    if (!compilation.ClassifyCommonConversion(rightTypeArgument, leftTypeArgument).IsImplicit)
                     {
-                        if (!compilation.ClassifyCommonConversion(rightTypeArguments[i], leftTypeArguments[i]).IsImplicit)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
 
                     return true;
