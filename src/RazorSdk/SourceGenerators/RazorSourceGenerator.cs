@@ -27,7 +27,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         // https://github.com/dotnet/roslyn/issues/51257 track the long-term resolution for this.
         private static readonly ConcurrentDictionary<Guid, IReadOnlyList<TagHelperDescriptor>> _tagHelperCache = new();
 
-        private static readonly ConcurrentDictionary<string, SourceText> _sourceTextCache = new();
+        private static readonly ConcurrentDictionary<string, (SourceText, SourceText)> _sourceTextCache = new();
 
         private static readonly SourceText ProvideApplicationPartFactoryAttributeSourceText = GetProvideApplicationPartFactorySourceText();
 
@@ -72,104 +72,88 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 b.SetCSharpLanguageVersion(((CSharpParseOptions)context.ParseOptions).LanguageVersion);
             });
 
-            CodeGenerateRazorComponents(context, razorContext, projectEngine);
-            GenerateViews(context, razorContext, projectEngine);
+            if (razorContext.CshtmlFiles.Count != 0)
+            {
+                context.AddSource($"{context.Compilation.AssemblyName}.UnifiedAssembly.Info", ProvideApplicationPartFactoryAttributeSourceText);
+            }
+
+            RazorGenerateForSourceTexts(razorContext.CshtmlFiles, context, projectEngine);
+            RazorGenerateForSourceTexts(razorContext.RazorFiles, context, projectEngine);
         }
 
-        private void GenerateViews(GeneratorExecutionContext context, RazorSourceGenerationContext razorContext, RazorProjectEngine projectEngine)
+        private void RazorGenerateForSourceTexts(IReadOnlyList<RazorInputItem> files, GeneratorExecutionContext context, RazorProjectEngine projectEngine)
         {
-            var files = razorContext.CshtmlFiles;
-
             if (files.Count == 0)
             {
                 return;
             }
 
-            var arraypool = ArrayPool<(string, SourceText)>.Shared;
+            var arraypool = ArrayPool<(string, SourceText?)>.Shared;
             var outputs = arraypool.Rent(files.Count);
-
-            context.AddSource($"{context.Compilation.AssemblyName}.UnifiedAssembly.Info", ProvideApplicationPartFactoryAttributeSourceText);
 
             Parallel.For(0, files.Count, GetParallelOptions(context), i =>
             {
-                var file = files[i];
-
-                var codeDocument = projectEngine.Process(projectEngine.FileSystem.GetItem(file.NormalizedPath, FileKinds.Legacy));
-                var csharpDocument = codeDocument.GetCSharpDocument();
-                for (var j = 0; j < csharpDocument.Diagnostics.Count; j++)
-                {
-                    var razorDiagnostic = csharpDocument.Diagnostics[j];
-                    var csharpDiagnostic = razorDiagnostic.AsDiagnostic();
-                    context.ReportDiagnostic(csharpDiagnostic);
-                }
-
-                var generatedCode = csharpDocument.GeneratedCode;
-                var hint = GetIdentifierFromPath(file.GeneratedOutputPath ?? file.NormalizedPath);
-                outputs[i] = (hint, SourceText.From(generatedCode, Encoding.UTF8));
+                outputs[i] = ResolveGeneratedSourceTextFromFile(files[i], projectEngine, context);
             });
 
             for (var i = 0; i < files.Count; i++)
             {
                 var (hint, sourceText) = outputs[i];
-                context.AddSource(hint, ResolveSourceTextFromCache(sourceText, hint));
+                if (sourceText != null)
+                {
+                    context.AddSource(hint, sourceText);
+                }
             }
 
             arraypool.Return(outputs);
         }
 
-        private static void CodeGenerateRazorComponents(GeneratorExecutionContext context, RazorSourceGenerationContext razorContext, RazorProjectEngine projectEngine)
+        private static (string, SourceText?) ResolveGeneratedSourceTextFromFile(RazorInputItem file, RazorProjectEngine projectEngine, GeneratorExecutionContext context)
         {
-            var files = razorContext.RazorFiles;
-
-            var arraypool = ArrayPool<(string, SourceText)>.Shared;
-            var outputs = arraypool.Rent(files.Count);
-
-            Parallel.For(0, files.Count, GetParallelOptions(context), i =>
+            var hint = GetIdentifierFromPath(file.NormalizedPath);
+            if (file.FileKind == FileKinds.Legacy)
             {
-                var file = files[i];
-                var projectItem = projectEngine.FileSystem.GetItem(file.NormalizedPath, FileKinds.Component);
-
-                var codeDocument = projectEngine.Process(projectItem);
-                var csharpDocument = codeDocument.GetCSharpDocument();
-                for (var j = 0; j < csharpDocument.Diagnostics.Count; j++)
-                {
-                    var razorDiagnostic = csharpDocument.Diagnostics[j];
-                    var csharpDiagnostic = razorDiagnostic.AsDiagnostic();
-                    context.ReportDiagnostic(csharpDiagnostic);
-                }
-
-                var hint = GetIdentifierFromPath(file.NormalizedPath);
-
-                var generatedCode = csharpDocument.GeneratedCode;
-                outputs[i] = (hint, SourceText.From(generatedCode, Encoding.UTF8));
-            });
-
-            for (var i = 0; i < files.Count; i++)
-            {
-                var (hint, sourceText) = outputs[i];
-                context.AddSource(hint, ResolveSourceTextFromCache(sourceText, hint));
+                hint = GetIdentifierFromPath(file.GeneratedOutputPath ?? file.NormalizedPath);
             }
 
-            arraypool.Return(outputs);
-        }
+            var entryFound = _sourceTextCache.TryGetValue(hint, out (SourceText cachedSourceText, SourceText cachedGeneratedSourceText) cachedValues);
 
-        private static SourceText ResolveSourceTextFromCache(SourceText generatedSourceText, string hint)
-        {
-            var checksum = generatedSourceText.GetChecksum();
-            var cachedSourceTextFound = _sourceTextCache.TryGetValue(hint, out var cachedSourceText);
-            if (cachedSourceTextFound && cachedSourceText.GetChecksum().SequenceEqual(checksum))
+            var sourceText = file.AdditionalText.GetText();
+
+            if (sourceText is null)
             {
-                return cachedSourceText;
+                context.ReportDiagnostic(Diagnostic.Create(RazorDiagnostics.SourceTextNotFoundDescriptor, Location.None, hint));
+                return (hint, null);
             }
-            else
+
+            var checksum = sourceText.GetChecksum();
+            var cachedSourceText = cachedValues.cachedSourceText;
+            if (entryFound && cachedSourceText.GetChecksum().Equals(checksum))
             {
-                if (_sourceTextCache.Count > 200)
-                {
-                    _sourceTextCache.Clear();
-                }
-                _sourceTextCache[hint] = generatedSourceText;
-                return generatedSourceText;
+                return (hint, cachedValues.cachedGeneratedSourceText);
             }
+
+            var projectItem = projectEngine.FileSystem.GetItem(file.NormalizedPath, file.FileKind);
+            var codeDocument = projectEngine.Process(projectItem);
+            var csharpDocument = codeDocument.GetCSharpDocument();
+
+            for (var j = 0; j < csharpDocument.Diagnostics.Count; j++)
+            {
+                var razorDiagnostic = csharpDocument.Diagnostics[j];
+                var csharpDiagnostic = razorDiagnostic.AsDiagnostic();
+                context.ReportDiagnostic(csharpDiagnostic);
+            }
+
+            var generatedCode = csharpDocument.GeneratedCode;
+            var generatedSourceText = SourceText.From(generatedCode, Encoding.UTF8);
+
+            if (_sourceTextCache.Count > 200)
+            {
+                _sourceTextCache.Clear();
+            }
+                    
+            _sourceTextCache[hint] = (sourceText, generatedSourceText);
+            return (hint, generatedSourceText);
         }
 
         private static IReadOnlyList<TagHelperDescriptor> ResolveTagHelperDescriptors(GeneratorExecutionContext GeneratorExecutionContext, RazorSourceGenerationContext razorContext)
