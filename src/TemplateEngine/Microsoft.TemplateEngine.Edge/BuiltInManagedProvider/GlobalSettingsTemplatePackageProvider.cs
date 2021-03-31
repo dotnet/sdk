@@ -22,13 +22,12 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         private readonly string _globalSettingsFilePath;
         private readonly string _packagesFolder;
 
-        private IEngineEnvironmentSettings _environmentSettings;
-        private Dictionary<Guid, IInstaller> _installersByGuid = new Dictionary<Guid, IInstaller>();
-        private Dictionary<string, IInstaller> _installersByName = new Dictionary<string, IInstaller>();
+        private readonly IEngineEnvironmentSettings _environmentSettings;
+        private readonly Dictionary<Guid, IInstaller> _installersByGuid = new Dictionary<Guid, IInstaller>();
+        private readonly Dictionary<string, IInstaller> _installersByName = new Dictionary<string, IInstaller>();
         private readonly GlobalSettings _globalSettings;
 
-        public GlobalSettingsTemplatePackageProvider
-            (GlobalSettingsTemplatePackageProviderFactory factory, IEngineEnvironmentSettings settings)
+        public GlobalSettingsTemplatePackageProvider(GlobalSettingsTemplatePackageProviderFactory factory, IEngineEnvironmentSettings settings)
         {
             Factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -56,7 +55,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             _globalSettings.SettingsChanged += () => TemplatePackagesChanged?.Invoke();
         }
 
-        public event Action TemplatePackagesChanged;
+        public event Action? TemplatePackagesChanged;
 
         public ITemplatePackageProviderFactory Factory { get; }
 
@@ -73,7 +72,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                     }
                     catch (Exception e)
                     {
-                        _environmentSettings.Host.LogDiagnosticMessage($"[{Factory.DisplayName}] Failed to deserialize template package data entry {entry.MountPointUri}, details: {e.ToString()}.", DebugLogCategory);
+                        _environmentSettings.Host.LogDiagnosticMessage($"[{Factory.DisplayName}] Failed to deserialize template package data entry {entry.MountPointUri}, details: {e}.", DebugLogCategory);
                         //adding template package as non-managed
                         list.Add(new TemplatePackage(this, entry.MountPointUri, entry.LastChangeTime));
                     }
@@ -161,7 +160,6 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
              })).ConfigureAwait(false);
             await _globalSettings.SetInstalledTemplatePackagesAsync(packages, cancellationToken).ConfigureAwait(false);
             return results;
-
         }
 
         public async Task<IReadOnlyList<UpdateResult>> UpdateAsync(IEnumerable<UpdateRequest> updateRequests, CancellationToken cancellationToken)
@@ -175,7 +173,6 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             var results = await Task.WhenAll(updatesToApply.Select(updateRequest => UpdateAsync(packages, updateRequest, cancellationToken))).ConfigureAwait(false);
             await _globalSettings.SetInstalledTemplatePackagesAsync(packages, cancellationToken).ConfigureAwait(false);
             return results;
-
         }
 
         private async Task<UpdateResult> UpdateAsync(List<TemplatePackageData> packages, UpdateRequest updateRequest, CancellationToken cancellationToken)
