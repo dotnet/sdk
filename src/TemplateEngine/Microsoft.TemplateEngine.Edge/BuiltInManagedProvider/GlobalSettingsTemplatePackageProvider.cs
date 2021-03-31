@@ -124,7 +124,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
                 if (installersThatCanInstall.Count == 0)
                 {
-                    return InstallResult.CreateFailure(installRequest, InstallerErrorCode.UnsupportedRequest, $"{installRequest.Identifier} cannot be installed");
+                    return InstallResult.CreateFailure(installRequest, InstallerErrorCode.UnsupportedRequest, $"{installRequest.PackageIdentifier} cannot be installed");
                 }
 
                 IInstaller installer = installersThatCanInstall[0];
@@ -243,7 +243,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             _ = installRequest ?? throw new ArgumentNullException(nameof(installRequest));
             _ = installer ?? throw new ArgumentNullException(nameof(installer));
 
-            (InstallerErrorCode result, string message) = await EnsureInstallPrerequisites(packages, installRequest.Identifier, installRequest.Version, installer, cancellationToken).ConfigureAwait(false);
+            (InstallerErrorCode result, string message) = await EnsureInstallPrerequisites(packages, installRequest.PackageIdentifier, installRequest.Version, installer, cancellationToken).ConfigureAwait(false);
             if (result != InstallerErrorCode.Success)
             {
                 return InstallResult.CreateFailure(installRequest, result, message);

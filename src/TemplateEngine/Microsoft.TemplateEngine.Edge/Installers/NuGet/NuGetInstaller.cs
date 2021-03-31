@@ -67,19 +67,19 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         {
             try
             {
-                ReadPackageInformation(installationRequest.Identifier);
+                ReadPackageInformation(installationRequest.PackageIdentifier);
             }
             catch (Exception)
             {
-                _environmentSettings.Host.LogDiagnosticMessage($"{installationRequest.Identifier} is not a local NuGet package.", DebugLogCategory);
+                _environmentSettings.Host.LogDiagnosticMessage($"{installationRequest.PackageIdentifier} is not a local NuGet package.", DebugLogCategory);
 
                 //check if identifier is a valid package ID
-                bool validPackageId = PackageIdValidator.IsValidPackageId(installationRequest.Identifier);
+                bool validPackageId = PackageIdValidator.IsValidPackageId(installationRequest.PackageIdentifier);
                 //check if version is specified it is correct version
                 bool hasValidVersion = string.IsNullOrWhiteSpace(installationRequest.Version) || NuGetVersion.TryParse(installationRequest.Version, out _);
                 if (!validPackageId)
                 {
-                    _environmentSettings.Host.LogDiagnosticMessage($"{installationRequest.Identifier} is not a valid NuGet package ID.", DebugLogCategory);
+                    _environmentSettings.Host.LogDiagnosticMessage($"{installationRequest.PackageIdentifier} is not a valid NuGet package ID.", DebugLogCategory);
                 }
                 if (!hasValidVersion)
                 {
@@ -93,7 +93,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 //not a local package file
                 return Task.FromResult(validPackageId && hasValidVersion);
             }
-            _environmentSettings.Host.LogDiagnosticMessage($"{installationRequest.Identifier} is identified as the local NuGet package.", DebugLogCategory);
+            _environmentSettings.Host.LogDiagnosticMessage($"{installationRequest.PackageIdentifier} is identified as the local NuGet package.", DebugLogCategory);
             return Task.FromResult(true);
         }
 
@@ -169,7 +169,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
                     nuGetPackageInfo = await _packageDownloader.DownloadPackageAsync(
                         _installPath,
-                        installRequest.Identifier,
+                        installRequest.PackageIdentifier,
                         installRequest.Version,
                         additionalNuGetSources,
                         cancellationToken)
@@ -279,7 +279,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         private bool IsLocalPackage(InstallRequest installRequest)
         {
-            return _environmentSettings.Host.FileSystem.FileExists(installRequest.Identifier);
+            return _environmentSettings.Host.FileSystem.FileExists(installRequest.PackageIdentifier);
         }
 
         private NuGetPackageInfo InstallLocalPackage(InstallRequest installRequest)
@@ -289,32 +289,32 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             NuGetPackageInfo packageInfo;
             try
             {
-                packageInfo = ReadPackageInformation(installRequest.Identifier);
+                packageInfo = ReadPackageInformation(installRequest.PackageIdentifier);
             }
             catch (Exception ex)
             {
-                _environmentSettings.Host.OnCriticalError(null, string.Format(LocalizableStrings.NuGetInstaller_Error_FailedToReadPackage, installRequest.Identifier), null, 0);
+                _environmentSettings.Host.OnCriticalError(null, string.Format(LocalizableStrings.NuGetInstaller_Error_FailedToReadPackage, installRequest.PackageIdentifier), null, 0);
                 _environmentSettings.Host.LogDiagnosticMessage(DebugLogCategory, $"Details: {ex.ToString()}.");
-                throw new InvalidNuGetPackageException(installRequest.Identifier, ex);
+                throw new InvalidNuGetPackageException(installRequest.PackageIdentifier, ex);
             }
             string targetPackageLocation = Path.Combine(_installPath, packageInfo.PackageIdentifier + "." + packageInfo.PackageVersion + ".nupkg");
             if (_environmentSettings.Host.FileSystem.FileExists(targetPackageLocation))
             {
-                _environmentSettings.Host.OnCriticalError(null, string.Format(LocalizableStrings.NuGetInstaller_Error_CopyFailed, installRequest.Identifier, targetPackageLocation), null, 0);
+                _environmentSettings.Host.OnCriticalError(null, string.Format(LocalizableStrings.NuGetInstaller_Error_CopyFailed, installRequest.PackageIdentifier, targetPackageLocation), null, 0);
                 _environmentSettings.Host.OnCriticalError(null, string.Format(LocalizableStrings.NuGetInstaller_Error_FileAlreadyExists, targetPackageLocation), null, 0);
-                throw new DownloadException(packageInfo.PackageIdentifier, packageInfo.PackageVersion, installRequest.Identifier);
+                throw new DownloadException(packageInfo.PackageIdentifier, packageInfo.PackageVersion, installRequest.PackageIdentifier);
             }
 
             try
             {
-                _environmentSettings.Host.FileSystem.FileCopy(installRequest.Identifier, targetPackageLocation, overwrite: false);
+                _environmentSettings.Host.FileSystem.FileCopy(installRequest.PackageIdentifier, targetPackageLocation, overwrite: false);
                 packageInfo.FullPath = targetPackageLocation;
             }
             catch (Exception ex)
             {
-                _environmentSettings.Host.OnCriticalError(null, string.Format(LocalizableStrings.NuGetInstaller_Error_CopyFailed, installRequest.Identifier, targetPackageLocation), null, 0);
+                _environmentSettings.Host.OnCriticalError(null, string.Format(LocalizableStrings.NuGetInstaller_Error_CopyFailed, installRequest.PackageIdentifier, targetPackageLocation), null, 0);
                 _environmentSettings.Host.LogDiagnosticMessage(DebugLogCategory, $"Details: {ex.ToString()}.");
-                throw new DownloadException(packageInfo.PackageIdentifier, packageInfo.PackageVersion, installRequest.Identifier);
+                throw new DownloadException(packageInfo.PackageIdentifier, packageInfo.PackageVersion, installRequest.PackageIdentifier);
             }
             return packageInfo;
         }

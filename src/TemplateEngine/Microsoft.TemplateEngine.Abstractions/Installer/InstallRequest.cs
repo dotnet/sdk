@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
             {
                 throw new ArgumentException("identifier cannot be null or empty", nameof(identifier));
             }
-            Identifier = identifier;
+            PackageIdentifier = identifier;
             Version = version;
             InstallerName = installerName;
             Details = details ?? new Dictionary<string, string>();
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <summary>
         /// Name to be used when display the request.
         /// </summary>
-        public string DisplayName => string.IsNullOrWhiteSpace(Version) ? Identifier : $"{Identifier}::{Version}";
+        public string DisplayName => string.IsNullOrWhiteSpace(Version) ? PackageIdentifier : $"{PackageIdentifier}::{Version}";
 
         /// <summary>
         /// Installer to be used to install the request.
@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <remarks>
         /// Could be folder name, NuGet PackageId, path to .nupkg...
         /// </remarks>
-        public string Identifier { get; private set; }
+        public string PackageIdentifier { get; private set; }
 
         /// <summary>
         /// Specific version to be installed or null to install latest.

@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         {
             _ = installationRequest ?? throw new ArgumentNullException(nameof(installationRequest));
 
-            return Task.FromResult(Directory.Exists(installationRequest.Identifier));
+            return Task.FromResult(Directory.Exists(installationRequest.PackageIdentifier));
         }
 
         public IManagedTemplatePackage Deserialize(IManagedTemplatePackageProvider provider, TemplatePackageData data)
@@ -55,13 +55,13 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             _ = installRequest ?? throw new ArgumentNullException(nameof(installRequest));
             _ = provider ?? throw new ArgumentNullException(nameof(provider));
 
-            if (Directory.Exists(installRequest.Identifier))
+            if (Directory.Exists(installRequest.PackageIdentifier))
             {
-                return Task.FromResult(InstallResult.CreateSuccess(installRequest, new FolderManagedTemplatePackage(_settings, this, provider, installRequest.Identifier)));
+                return Task.FromResult(InstallResult.CreateSuccess(installRequest, new FolderManagedTemplatePackage(_settings, this, provider, installRequest.PackageIdentifier)));
             }
             else
             {
-                return Task.FromResult(InstallResult.CreateFailure(installRequest, InstallerErrorCode.PackageNotFound, $"The folder {installRequest.Identifier} doesn't exist"));
+                return Task.FromResult(InstallResult.CreateFailure(installRequest, InstallerErrorCode.PackageNotFound, $"The folder {installRequest.PackageIdentifier} doesn't exist"));
             }
         }
 
