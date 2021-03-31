@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// <summary>
     /// Represents <see cref="IInstaller"/> operation result.
     /// </summary>
-    public abstract class Result
+    public abstract class InstallerOperationResult
     {
         /// <summary>
         /// Error code, <seealso cref="InstallerErrorCode"/>.

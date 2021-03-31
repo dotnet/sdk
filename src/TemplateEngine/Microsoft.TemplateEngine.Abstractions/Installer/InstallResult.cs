@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// <summary>
     /// Represents the result of template package installation using <see cref="IInstaller.InstallAsync"/>.
     /// </summary>
-    public sealed class InstallResult : Result
+    public sealed class InstallResult : InstallerOperationResult
     {
         private InstallResult() { }
 

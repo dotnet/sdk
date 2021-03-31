@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// <summary>
     /// Represents the result of checking the latest version of template package using <see cref="IInstaller.GetLatestVersionAsync"/>.
     /// </summary>
-    public sealed class CheckUpdateResult : Result
+    public sealed class CheckUpdateResult : InstallerOperationResult
     {
         private CheckUpdateResult() { }
 

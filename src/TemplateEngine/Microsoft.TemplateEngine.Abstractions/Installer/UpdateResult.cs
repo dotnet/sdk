@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// <summary>
     /// Represents the result of template package update using <see cref="IInstaller.UpdateAsync"/>.
     /// </summary>
-    public sealed class UpdateResult : Result
+    public sealed class UpdateResult : InstallerOperationResult
     {
         private UpdateResult() { }
 
