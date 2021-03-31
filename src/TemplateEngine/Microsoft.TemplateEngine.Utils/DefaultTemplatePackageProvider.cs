@@ -17,14 +17,13 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 namespace Microsoft.TemplateEngine.Utils
 {
     /// <summary>
-    /// This is generic provider that can be used by different factories that have
-    /// fixed list of ".nupkgs" or "folders". And don't want to re-implement this interface.
+    /// Generic provider that can be used by different factories that have a fixed list of ".nupkgs" or folders.
     /// </summary>
     public class DefaultTemplatePackageProvider : ITemplatePackageProvider
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly IEnumerable<string> _nupkgs;
-        private readonly IEnumerable<string> _folders;
+        private IEnumerable<string> _nupkgs;
+        private IEnumerable<string> _folders;
 
         public ITemplatePackageProviderFactory Factory { get; }
 
@@ -38,8 +37,10 @@ namespace Microsoft.TemplateEngine.Utils
 
         public event Action? TemplatePackagesChanged;
 
-        public void TriggerSourcesChangedEvent()
+        public void UpdatePackages(IEnumerable<string>? nupkgs = null, IEnumerable<string>? folders = null)
         {
+            _nupkgs = nupkgs ?? Array.Empty<string>();
+            _folders = folders ?? Array.Empty<string>();
             TemplatePackagesChanged?.Invoke();
         }
 

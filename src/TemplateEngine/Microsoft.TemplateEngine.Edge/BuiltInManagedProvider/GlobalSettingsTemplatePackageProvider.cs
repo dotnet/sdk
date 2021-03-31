@@ -12,6 +12,8 @@ using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Utils;
 
+#nullable enable
+
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
     internal class GlobalSettingsTemplatePackageProvider : IManagedTemplatePackageProvider, IDisposable
@@ -23,7 +25,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         private IEngineEnvironmentSettings _environmentSettings;
         private Dictionary<Guid, IInstaller> _installersByGuid = new Dictionary<Guid, IInstaller>();
         private Dictionary<string, IInstaller> _installersByName = new Dictionary<string, IInstaller>();
-        private GlobalSettings _globalSettings;
+        private readonly GlobalSettings _globalSettings;
 
         public GlobalSettingsTemplatePackageProvider
             (GlobalSettingsTemplatePackageProviderFactory factory, IEngineEnvironmentSettings settings)
@@ -263,7 +265,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
         public void Dispose()
         {
-            _globalSettings?.Dispose();
+            _globalSettings.Dispose();
         }
     }
 }

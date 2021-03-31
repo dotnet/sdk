@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 {
                     if(provider.TryGetTarget(out var actualProvider))
                     {
-                        actualProvider.TriggerSourcesChangedEvent();
+                        actualProvider.UpdatePackages(NuPkgs, Folders);
                     }
                 }
             }
