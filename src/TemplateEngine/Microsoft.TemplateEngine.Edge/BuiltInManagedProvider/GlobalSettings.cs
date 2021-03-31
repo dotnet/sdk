@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             _watcher = null;
         }
 
-        public async Task<IReadOnlyList<TemplatePackageData>> GetInstalledTemplatesPackagesAsync(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<TemplatePackageData>> GetInstalledTemplatePackagesAsync(CancellationToken cancellationToken)
         {
             if (_disposed)
             {
@@ -105,7 +105,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             throw new InvalidOperationException();
         }
 
-        public async Task SetInstalledTemplatesPackagesAsync(IReadOnlyList<TemplatePackageData> packages, CancellationToken cancellationToken)
+        public async Task SetInstalledTemplatePackagesAsync(IReadOnlyList<TemplatePackageData> packages, CancellationToken cancellationToken)
         {
             if (_disposed)
             {
@@ -114,7 +114,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
             if (!_locked)
             {
-                throw new InvalidOperationException($"Before calling {nameof(SetInstalledTemplatesPackagesAsync)}, {nameof(LockAsync)} must be called.");
+                throw new InvalidOperationException($"Before calling {nameof(SetInstalledTemplatePackagesAsync)}, {nameof(LockAsync)} must be called.");
             }
 
             string? serializedText = JsonConvert.SerializeObject(new GlobalSettingsData()

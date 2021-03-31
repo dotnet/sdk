@@ -23,12 +23,12 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         /// <summary>
         /// Returns uncached list of the template packages.
         /// </summary>
-        Task<IReadOnlyList<TemplatePackageData>> GetInstalledTemplatesPackagesAsync(CancellationToken cancellationToken);
+        Task<IReadOnlyList<TemplatePackageData>> GetInstalledTemplatePackagesAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Stores list of the template packages.
         /// </summary>
-        Task SetInstalledTemplatesPackagesAsync(IReadOnlyList<TemplatePackageData> packages, CancellationToken cancellationToken);
+        Task SetInstalledTemplatePackagesAsync(IReadOnlyList<TemplatePackageData> packages, CancellationToken cancellationToken);
 
         /// <summary>
         /// This method must be called before making any modifications to settings to ensure other processes on system

@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         public async Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken)
         {
             var list = new List<ITemplatePackage>();
-            foreach (TemplatePackageData entry in await _globalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false))
+            foreach (TemplatePackageData entry in await _globalSettings.GetInstalledTemplatePackagesAsync(cancellationToken).ConfigureAwait(false))
             {
                 if (_installersByGuid.TryGetValue(entry.InstallerId, out var installer))
                 {
@@ -111,7 +111,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 return new List<InstallResult>();
             }
             using var disposable = await _globalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
-            var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false));
+            var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatePackagesAsync(cancellationToken).ConfigureAwait(false));
             var results = await Task.WhenAll(installRequests.Select(async installRequest =>
             {
                 var installersThatCanInstall = new List<IInstaller>();
@@ -130,7 +130,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 IInstaller installer = installersThatCanInstall[0];
                 return await InstallAsync(packages, installRequest, installer, cancellationToken).ConfigureAwait(false);
             })).ConfigureAwait(false);
-            await _globalSettings.SetInstalledTemplatesPackagesAsync(packages, cancellationToken).ConfigureAwait(false);
+            await _globalSettings.SetInstalledTemplatePackagesAsync(packages, cancellationToken).ConfigureAwait(false);
             return results;
         }
 
@@ -144,7 +144,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
             using var disposable = await _globalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
 
-            var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false));
+            var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatePackagesAsync(cancellationToken).ConfigureAwait(false));
             var results = await Task.WhenAll(sources.Select(async source =>
              {
                  UninstallResult result = await source.Installer.UninstallAsync(source, this, cancellationToken).ConfigureAwait(false);
@@ -157,7 +157,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                  }
                  return result;
              })).ConfigureAwait(false);
-            await _globalSettings.SetInstalledTemplatesPackagesAsync(packages, cancellationToken).ConfigureAwait(false);
+            await _globalSettings.SetInstalledTemplatePackagesAsync(packages, cancellationToken).ConfigureAwait(false);
             return results;
 
         }
@@ -169,9 +169,9 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
             using var disposable = await _globalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
 
-            var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatesPackagesAsync(cancellationToken).ConfigureAwait(false));
+            var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatePackagesAsync(cancellationToken).ConfigureAwait(false));
             var results = await Task.WhenAll(updatesToApply.Select(updateRequest => UpdateAsync(packages, updateRequest, cancellationToken))).ConfigureAwait(false);
-            await _globalSettings.SetInstalledTemplatesPackagesAsync(packages, cancellationToken).ConfigureAwait(false);
+            await _globalSettings.SetInstalledTemplatePackagesAsync(packages, cancellationToken).ConfigureAwait(false);
             return results;
 
         }

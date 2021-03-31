@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             using var globalSettings1 = new GlobalSettings(envSettings, settingsFile);
             using var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
             var taskSource = new TaskCompletionSource<TemplatePackageData>();
-            globalSettings2.SettingsChanged += async () => taskSource.TrySetResult((await globalSettings2.GetInstalledTemplatesPackagesAsync(default).ConfigureAwait(false)).Single());
+            globalSettings2.SettingsChanged += async () => taskSource.TrySetResult((await globalSettings2.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false)).Single());
             var mutex = await globalSettings1.LockAsync(default).ConfigureAwait(false);
             var newData = new TemplatePackageData()
             {
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 Details = new Dictionary<string, string>() { { "a", "b" } },
                 LastChangeTime = DateTime.UtcNow
             };
-            await globalSettings1.SetInstalledTemplatesPackagesAsync(new[] { newData }, default).ConfigureAwait(false);
+            await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, default).ConfigureAwait(false);
             mutex.Dispose();
             var timeoutTask = Task.Delay(1000);
             var firstFinishedTask = await Task.WhenAny(timeoutTask, taskSource.Task).ConfigureAwait(false);
@@ -92,19 +92,19 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                     Details = new Dictionary<string, string>() { { "a", "b" } },
                     LastChangeTime = DateTime.UtcNow
                 };
-                await globalSettings1.SetInstalledTemplatesPackagesAsync(new[] { newData }, default).ConfigureAwait(false);
+                await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, default).ConfigureAwait(false);
             }
             #endregion
 
             #region Open2LoadAndLock
             using var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
-            Assert.Equal((await globalSettings1.GetInstalledTemplatesPackagesAsync(default).ConfigureAwait(false))[0].InstallerId, (await globalSettings2.GetInstalledTemplatesPackagesAsync(default).ConfigureAwait(false))[0].InstallerId);
+            Assert.Equal((await globalSettings1.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false))[0].InstallerId, (await globalSettings2.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false))[0].InstallerId);
             var mutex2 = await globalSettings2.LockAsync(default).ConfigureAwait(false);
             #endregion
 
             #region Open3Load
             using var globalSettings3 = new GlobalSettings(envSettings, settingsFile);
-            Assert.Equal((await globalSettings1.GetInstalledTemplatesPackagesAsync(default).ConfigureAwait(false))[0].InstallerId, (await globalSettings3.GetInstalledTemplatesPackagesAsync(default).ConfigureAwait(false))[0].InstallerId);
+            Assert.Equal((await globalSettings1.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false))[0].InstallerId, (await globalSettings3.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false))[0].InstallerId);
             #endregion
 
             mutex2.Dispose();
