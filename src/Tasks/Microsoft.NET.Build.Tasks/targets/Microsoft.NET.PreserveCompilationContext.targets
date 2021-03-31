@@ -6,15 +6,24 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
           created a backup copy.  Incorrect changes to this file will make it
           impossible to load or build your projects from the command-line or the IDE.
 
-Copyright (c) .NET Foundation. All rights reserved. 
+Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!--
+    Optional targets used to initialize PreserveCompilationContext.
+    This property is configured by the RazorSDK if it is referenced by the app.
+  -->
+  <Import Project="$(_NETSdkInitializePreserveCompilationTargets)" Condition="'$(_NETSdkInitializePreserveCompilationTargets)' != ''" />
+
   <PropertyGroup>
     <RefAssembliesFolderName Condition="'$(RefAssembliesFolderName)' == ''">refs</RefAssembliesFolderName>
-    
+
     <PreserveCompilationReferences Condition=" '$(PreserveCompilationReferences)' == ''">$(PreserveCompilationContext)</PreserveCompilationReferences>
+
+    <!-- Regardless of platform, enable dependency file generation if PreserveCompilationContext is set. -->
+    <GenerateDependencyFile Condition="'$(GenerateDependencyFile)' == ''">$(PreserveCompilationContext)</GenerateDependencyFile>
   </PropertyGroup>
 
   <Target Name="ComputeDependencyFileCompilerOptions"

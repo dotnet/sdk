@@ -67,12 +67,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <RazorGenerateOutputFileExtension>.g.cs</RazorGenerateOutputFileExtension>
 
-    <!-- Determines if the deps file includes complication context -->
-    <PreserveCompilationContext>true</PreserveCompilationContext>
-
-    <!-- Determines if the refs folder is produced as part of build \ publish -->
-    <PreserveCompilationReferences>false</PreserveCompilationReferences>
-
     <!--
     List of file extensions that will cause VS to restart the application when RazorSDK is effective.
     This property affects C# projects targeting 3.0 or later.
@@ -83,6 +77,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     Target used by dotnet-watch to resolve additional items.
     -->
     <CustomCollectWatchItems>$(CustomCollectWatchItems);_RazorSdkCustomCollectWatchItems</CustomCollectWatchItems>
+
+    <_NETSdkInitializePreserveCompilationTargets>$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Razor.InitializePreserveCompilationContext.targets</_NETSdkInitializePreserveCompilationTargets>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">

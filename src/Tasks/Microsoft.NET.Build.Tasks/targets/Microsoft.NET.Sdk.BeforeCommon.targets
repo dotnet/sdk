@@ -65,8 +65,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Also, enforce that RuntimeIdentifier is always specified for .NETFramework executables.
   -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.RuntimeIdentifierInference.targets" />
-  
-  
+
   <!-- Import workload targets -->
   <Import Project="Microsoft.NET.Sdk.ImportWorkloads.targets" Condition="'$(MSBuildEnableWorkloadResolver)' == 'true'" />
 
@@ -103,11 +102,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Disable the use of FrameworkPathOverride in Microsoft.Common.CurrentVersion.targets which can slow down evaluation.  FrameworkPathOverride
     is not needed for NETStandard or NETCore since references come from NuGet packages-->
     <EnableFrameworkPathOverride Condition="'$(EnableFrameworkPathOverride)' == ''">false</EnableFrameworkPathOverride>
-  </PropertyGroup>
-
-  <!-- Regardless of platform, enable dependency file generation if PreserveCompilationContext is set. -->
-  <PropertyGroup>
-    <GenerateDependencyFile Condition="'$(GenerateDependencyFile)' == ''">$(PreserveCompilationContext)</GenerateDependencyFile>
   </PropertyGroup>
 
   <!-- Set PublishDir here, before Microsoft.Common.targets, to avoid a competing default there. -->
@@ -181,7 +175,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_FrameworkIdentifierForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">NET</_FrameworkIdentifierForImplicitDefine>
 
     <_FrameworkVersionForImplicitDefine>$(TargetFrameworkVersion.TrimStart('vV'))</_FrameworkVersionForImplicitDefine>
-    
+
     <_FrameworkVersionForImplicitDefine>$(_FrameworkVersionForImplicitDefine.Replace('.', '_'))</_FrameworkVersionForImplicitDefine>
 
     <_FrameworkVersionForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">$(_FrameworkVersionForImplicitDefine.Replace('_', ''))</_FrameworkVersionForImplicitDefine>
@@ -214,9 +208,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_CompatibleFrameworkVersions Include="@(_SupportedFrameworkVersions)" Condition=" $([MSBuild]::VersionLessThanOrEquals(%(Identity), $(TargetFrameworkVersion))) " />
       <_FormattedCompatibleFrameworkVersions Include="@(_CompatibleFrameworkVersions)" Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' or '$(TargetFrameworkIdentifier)' == '.NETStandard' " />
       <_FormattedCompatibleFrameworkVersions Include="@(_CompatibleFrameworkVersions->'%(Identity)'->Replace('.', ''))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' " />
-      <_ImplicitDefineConstant Include="@(_FormattedCompatibleFrameworkVersions->'$(_FrameworkIdentifierForImplicitDefine)%(Identity)_OR_GREATER'->Replace('.', '_'))" 
+      <_ImplicitDefineConstant Include="@(_FormattedCompatibleFrameworkVersions->'$(_FrameworkIdentifierForImplicitDefine)%(Identity)_OR_GREATER'->Replace('.', '_'))"
                                Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' or $([MSBuild]::VersionGreaterThanOrEquals(%(_FormattedCompatibleFrameworkVersions.Identity), 5.0)) " />
-      <_ImplicitDefineConstant Include="@(_FormattedCompatibleFrameworkVersions->'NETCOREAPP%(Identity)_OR_GREATER'->Replace('.', '_'))" 
+      <_ImplicitDefineConstant Include="@(_FormattedCompatibleFrameworkVersions->'NETCOREAPP%(Identity)_OR_GREATER'->Replace('.', '_'))"
                                Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionLessThan(%(_FormattedCompatibleFrameworkVersions.Identity), 5.0)) " />
     </ItemGroup>
   </Target>
