@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
         ///     1) To show user which provider is source of template packages (when debug/verbose flag is set)
         ///     2) To allow the user to pick specific provider to install templates to.
         /// </summary>
-        string Name { get; }
+        string DisplayName { get; }
 
         /// <summary>
         /// Creates new provider with specified environment, the provider may also implement <see cref="IManagedTemplatePackageProvider"/>.

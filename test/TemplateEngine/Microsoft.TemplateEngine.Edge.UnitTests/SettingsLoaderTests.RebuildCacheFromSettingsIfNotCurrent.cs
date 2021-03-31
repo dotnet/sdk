@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
     {
         class FakeFactory : ITemplatePackageProviderFactory
         {
-            public string Name => nameof(FakeFactory);
+            public string DisplayName => nameof(FakeFactory);
 
             public Guid Id { get; } = new Guid("{61CFA828-97B6-44EB-A44D-0AE673D6DF52}");
 

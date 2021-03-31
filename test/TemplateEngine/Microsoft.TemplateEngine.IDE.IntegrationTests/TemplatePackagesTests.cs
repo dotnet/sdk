@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             IManagedTemplatePackage source = result.First().TemplatePackage;
             Assert.Equal("Microsoft.DotNet.Common.ProjectTemplates.5.0", source.Identifier);
-            Assert.Equal("Global Settings", source.Provider.Factory.Name);
+            Assert.Equal("Global Settings", source.Provider.Factory.DisplayName);
             Assert.Equal("NuGet", source.Installer.Factory.Name);
             Assert.Equal("Microsoft", source.GetDetails()["Author"]);
             source.Version.Should().NotBeNullOrEmpty();
@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             IManagedTemplatePackage source = result.First().TemplatePackage;
             Assert.Equal("Take.Blip.Client.Templates", source.Identifier);
-            Assert.Equal("Global Settings", source.Provider.Factory.Name);
+            Assert.Equal("Global Settings", source.Provider.Factory.DisplayName);
             Assert.Equal("NuGet", source.Installer.Factory.Name);
             source.GetDetails()["Author"].Should().NotBeNullOrEmpty();
             Assert.Equal("https://api.nuget.org/v3/index.json", source.GetDetails()["NuGetSource"]);
@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             IManagedTemplatePackage source = result.First().TemplatePackage;
             Assert.Equal(Path.GetFullPath(templateLocation), source.Identifier);
-            Assert.Equal("Global Settings", source.Provider.Factory.Name);
+            Assert.Equal("Global Settings", source.Provider.Factory.DisplayName);
             Assert.Equal("Folder", source.Installer.Factory.Name);
             source.Version.Should().BeNullOrEmpty();
 
@@ -202,7 +202,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.Equal(updateRequest, updateResults.First().UpdateRequest);
 
             IManagedTemplatePackage updatedSource = updateResults.First().TemplatePackage;
-            Assert.Equal("Global Settings", updatedSource.Provider.Factory.Name);
+            Assert.Equal("Global Settings", updatedSource.Provider.Factory.DisplayName);
             Assert.Equal("NuGet", updatedSource.Installer.Factory.Name);
             Assert.Equal("5.0.1", updatedSource.Version);
 

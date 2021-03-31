@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
         public Guid Id => FactoryId;
 
-        public string Name => "Global Settings";
+        public string DisplayName => "Global Settings";
 
         public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
         {

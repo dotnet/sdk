@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public IManagedTemplatePackageProvider GetManagedProvider(string name)
         {
             EnsureLoaded();
-            return cachedSources.Keys.OfType<IManagedTemplatePackageProvider>().FirstOrDefault(p => p.Factory.Name == name);
+            return cachedSources.Keys.OfType<IManagedTemplatePackageProvider>().FirstOrDefault(p => p.Factory.DisplayName == name);
         }
 
         public IManagedTemplatePackageProvider GetManagedProvider(Guid id)

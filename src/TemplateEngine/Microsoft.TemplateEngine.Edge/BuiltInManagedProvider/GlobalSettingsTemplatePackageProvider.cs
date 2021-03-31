@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                     }
                     catch (Exception e)
                     {
-                        _environmentSettings.Host.LogDiagnosticMessage($"[{Factory.Name}] Failed to deserialize template package data entry {entry.MountPointUri}, details: {e.ToString()}.", DebugLogCategory);
+                        _environmentSettings.Host.LogDiagnosticMessage($"[{Factory.DisplayName}] Failed to deserialize template package data entry {entry.MountPointUri}, details: {e.ToString()}.", DebugLogCategory);
                         //adding template package as non-managed
                         list.Add(new TemplatePackage(this, entry.MountPointUri, entry.LastChangeTime));
                     }

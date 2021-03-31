@@ -63,7 +63,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
         /// <summary>
         /// Returns <see cref="IManagedTemplatePackageProvider"/> with specified name.
         /// </summary>
-        /// <param name="name">Name from <see cref="ITemplatePackageProviderFactory.Name"/>.</param>
+        /// <param name="name">Name from <see cref="ITemplatePackageProviderFactory.DisplayName"/>.</param>
         /// <returns></returns>
         /// <remarks>For default built-in providers use <see cref="GetBuiltInManagedProvider"/> method instead.</remarks>
         IManagedTemplatePackageProvider GetManagedProvider(string name);

@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
 {
     class BuiltInTemplatePackagesProviderFactory : ITemplatePackageProviderFactory
     {
-        public string Name => "IDE.IntegrationTests BuiltIn";
+        public string DisplayName => "IDE.IntegrationTests BuiltIn";
 
         public Guid Id { get; } = new Guid("{3227D09D-C1EA-48F1-A33B-1F132BFD9F01}");
 

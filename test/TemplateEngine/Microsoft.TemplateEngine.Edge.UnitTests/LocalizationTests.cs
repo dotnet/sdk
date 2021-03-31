@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         class TemplatesFactory : ITemplatePackageProviderFactory
         {
-            public string Name => nameof(LocalizationTests);
+            public string DisplayName => nameof(LocalizationTests);
 
             public Guid Id => new Guid("{3DB0E733-6411-4898-B500-65B122309A9B}");
 
