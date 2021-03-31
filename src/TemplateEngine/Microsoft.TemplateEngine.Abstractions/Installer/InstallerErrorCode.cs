@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         AlreadyInstalled = 6,
 
         /// <summary>
-        /// The update has failed due to installation of previous template package version has failed.
+        /// The update has failed due to uninstallation of previous template package version has failed.
         /// </summary>
         UpdateUninstallFailed = 7,
 

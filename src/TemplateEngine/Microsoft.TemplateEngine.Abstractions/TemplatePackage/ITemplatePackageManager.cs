@@ -29,21 +29,21 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
     }
 
     /// <summary>
-    /// Manages all <see cref="ITemplatePackageProvider"/> available to the host.
+    /// Manages all <see cref="ITemplatePackageProvider"/>s available to the host.
     /// </summary>
     public interface ITemplatePackageManager
     {
         /// <summary>
-        /// Triggered every time when list of <see cref="ITemplatePackage"/> changes, this is triggered by <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/>.
+        /// Triggered every time when the list of <see cref="ITemplatePackage"/>s changes, this is triggered by <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/>.
         /// </summary>
         event Action TemplatePackagesChanged;
 
         /// <summary>
-        /// Returns combined list of <see cref="ITemplatePackage"/> that all <see cref="ITemplatePackageProvider"/>s and <see cref="IManagedTemplatePackagesProvider"/>s return.
-        /// <see cref="ITemplatePackageManager"/> caches the responses from <see cref="ITemplatePackageProvider"/>, to get non-cached response <paramref name="invalidateCache"/> should be set to true.
+        /// Returns combined list of <see cref="ITemplatePackage"/>s that all <see cref="ITemplatePackageProvider"/>s and <see cref="IManagedTemplatePackagesProvider"/>s return.
+        /// <see cref="ITemplatePackageManager"/> caches the responses from <see cref="ITemplatePackageProvider"/>s, to get non-cached response <paramref name="invalidateCache"/> should be set to true.
         /// </summary>
         /// <param name="invalidateCache">Useful when <see cref="ITemplatePackageProvider"/> doesn't trigger <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/> event.</param>
-        /// <returns>The list of <see cref="ITemplatePackage"/>.</returns>
+        /// <returns>The list of <see cref="ITemplatePackage"/>s.</returns>
         Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(bool invalidateCache = false);
 
         /// <summary>

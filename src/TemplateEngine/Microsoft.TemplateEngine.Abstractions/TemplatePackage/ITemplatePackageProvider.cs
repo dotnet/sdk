@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
 {
     /// <summary>
-    /// Provides set of <see cref="ITemplatePackage"/> available to the host.
+    /// Provides set of <see cref="ITemplatePackage"/>s available to the host.
     /// </summary>
     public interface ITemplatePackageProvider
     {
@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
         /// Gets the list of template packages available for the provider.
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns>The list of <see cref="ITemplatePackage"/>.</returns>
+        /// <returns>The list of <see cref="ITemplatePackage"/>s.</returns>
         Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken);
     }
 }

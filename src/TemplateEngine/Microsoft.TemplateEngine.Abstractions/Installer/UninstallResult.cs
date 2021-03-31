@@ -6,7 +6,7 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 namespace Microsoft.TemplateEngine.Abstractions.Installer
 {
     /// <summary>
-    /// Represents the result of template package installation using <see cref="IInstaller.InstallAsync"/>.
+    /// Represents the result of template package uninstallation using <see cref="IInstaller.UninstallAsync"/>.
     /// </summary>
     public sealed class UninstallResult : InstallerOperationResult
     {

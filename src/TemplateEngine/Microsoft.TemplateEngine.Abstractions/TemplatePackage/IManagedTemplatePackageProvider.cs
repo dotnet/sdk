@@ -9,7 +9,7 @@ using Microsoft.TemplateEngine.Abstractions.Installer;
 namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
 {
     /// <summary>
-    /// The provider is responsible for managing <see cref="IManagedTemplatePackage"/>.
+    /// The provider is responsible for managing <see cref="IManagedTemplatePackage"/>s.
     /// Besides base functionality of <see cref="ITemplatePackageProvider"/>, it adds ability to install, update and uninstall template packages.
     /// </summary>
     /// <remarks>
