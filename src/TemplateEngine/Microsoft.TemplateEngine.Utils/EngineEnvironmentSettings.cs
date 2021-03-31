@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Utils
         {
             Host = host;
             Environment = new DefaultEnvironment();
-            Paths = new DefaultPathInfo(this, engineRoot, hiveLocation);
+            Paths = new DefaultPathInfo(this, hiveLocation, engineRoot);
             SettingsLoader = settingsLoaderFactory(this);
         }
 

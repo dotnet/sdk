@@ -183,11 +183,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            foreach (var place in placesThatNeedScanning)
+            foreach (var place in mountPoints.Where(k => placesThatNeedScanning.Contains(k.Key)).OrderBy(k => k.Value))
             {
                 try
                 {
-                    _userTemplateCache.Scan(place);
+                    _userTemplateCache.Scan(place.Key);
                 }
                 catch (Exception ex)
                 {
