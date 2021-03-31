@@ -8,11 +8,6 @@
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="6.0.100-preview.3.21179.1">
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>e9ac0a1bc326a50bc73e57dbb832565bc22d3055</Sha>
-      <Sha>31980633108a1bef00c798136fcd30a873c90fa3</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Cli.Localization" Version="6.0.100-preview.3.21153.3">
-      <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>4bcc8cfb4753f6333a0a7e0f57ca795e02688ee0</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="6.0.100-preview.3.21179.1">
       <Uri>https://github.com/dotnet/templating</Uri>
