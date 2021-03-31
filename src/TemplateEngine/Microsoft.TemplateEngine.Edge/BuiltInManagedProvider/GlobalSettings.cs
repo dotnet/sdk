@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             }
             token.ThrowIfCancellationRequested();
             // We must use Mutex because we want to lock across different processes that might want to modify this settings file
-            var mutex = await AsyncMutex.WaitAsync($"812CA7F3-7CD8-44B4-B3F0-0159355C0BD5{_globalSettingsFile}".Replace("\\", "_").Replace("/", "_"), token, Unlocked).ConfigureAwait(false);
+            var mutex = await AsyncMutex.WaitAsync($"Global\\812CA7F3-7CD8-44B4-B3F0-0159355C0BD5{_globalSettingsFile}".Replace("\\", "_").Replace("/", "_"), token, Unlocked).ConfigureAwait(false);
             _locked = true;
             return mutex;
         }
