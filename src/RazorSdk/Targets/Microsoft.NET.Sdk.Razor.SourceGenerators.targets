@@ -9,7 +9,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 
 <Project ToolsVersion="14.0">
-
+  <!-- Temporary workaround for design-time and build-time files being produced at
+        the same time. See https://github.com/dotnet/sdk/pull/16648 for more info. -->
   <Target Name="_PrepareRazorSourceGenerators"
     Condition="'$(DesignTimeBuild)'!='true'"
     BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
