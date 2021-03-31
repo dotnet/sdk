@@ -76,12 +76,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             FolderManagedTemplatePackage folderTemplatePackage = templatePackage as FolderManagedTemplatePackage
                 ?? throw new ArgumentException($"{nameof(templatePackage)} should be of type {nameof(FolderManagedTemplatePackage)}", nameof(templatePackage));
 
-            return new TemplatePackageData
-            {
-                MountPointUri = folderTemplatePackage.MountPointUri,
-                LastChangeTime = folderTemplatePackage.LastChangeTime,
-                InstallerId = Factory.Id
-            };
+            return new TemplatePackageData(Factory.Id, folderTemplatePackage.MountPointUri, folderTemplatePackage.LastChangeTime, null);
         }
 
         public Task<UninstallResult> UninstallAsync(IManagedTemplatePackage templatePackage, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)

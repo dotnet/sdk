@@ -54,13 +54,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var taskSource = new TaskCompletionSource<TemplatePackageData>();
             globalSettings2.SettingsChanged += async () => taskSource.TrySetResult((await globalSettings2.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false)).Single());
             var mutex = await globalSettings1.LockAsync(default).ConfigureAwait(false);
-            var newData = new TemplatePackageData()
-            {
-                InstallerId = Guid.NewGuid(),
-                MountPointUri = "Hi",
-                Details = new Dictionary<string, string>() { { "a", "b" } },
-                LastChangeTime = DateTime.UtcNow
-            };
+            var newData = new TemplatePackageData(
+                Guid.NewGuid(),
+                "Hi",
+                DateTime.UtcNow,
+                new Dictionary<string, string>() { { "a", "b" } });
             await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, default).ConfigureAwait(false);
             mutex.Dispose();
             var timeoutTask = Task.Delay(1000);
@@ -85,13 +83,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             #region Open1AndPopulateAndSave
             using (await globalSettings1.LockAsync(default).ConfigureAwait(false))
             {
-                var newData = new TemplatePackageData()
-                {
-                    InstallerId = Guid.NewGuid(),
-                    MountPointUri = "Hi",
-                    Details = new Dictionary<string, string>() { { "a", "b" } },
-                    LastChangeTime = DateTime.UtcNow
-                };
+                var newData = new TemplatePackageData(
+                Guid.NewGuid(),
+                    "Hi",
+                    DateTime.UtcNow,
+                    new Dictionary<string, string>() { { "a", "b" } });
                 await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, default).ConfigureAwait(false);
             }
             #endregion

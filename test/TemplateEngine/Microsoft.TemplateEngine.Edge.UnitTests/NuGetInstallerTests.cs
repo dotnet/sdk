@@ -374,32 +374,32 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             //can read details
             yield return new object[] {
-                new TemplatePackageData()
-                {
-                     MountPointUri = "MountPointUri",
-                     Details = new Dictionary<string, string>
+                new TemplatePackageData(
+                    default,
+                    "MountPointUri",
+                    default,
+                    new Dictionary<string, string>
                      {
                          { "Author", "TestAuthor" },
                          { "NuGetSource", "https://api.nuget.org/v3/index.json" },
                          { "PackageId", "TestPackage" },
                          { "Version", "4.7.0.395" }
-                     }
-                },
+                     }),
                 "TestPackage", "4.7.0.395", "TestAuthor", "https://api.nuget.org/v3/index.json", false
             };
             //skips irrelevant details
             yield return new object[] {
-                new TemplatePackageData()
-                {
-                     MountPointUri = "MountPointUri",
-                     Details = new Dictionary<string, string>
+                new TemplatePackageData(
+                     default,
+                     "MountPointUri",
+                     default,
+                     new Dictionary<string, string>
                      {
                          { "Irrelevant", "not needed" },
                          { "NuGetSource", "https://api.nuget.org/v3/index.json" },
                          { "PackageId", "TestPackage" },
                          { "Version", "4.7.0.395" }
-                     }
-                },
+                     }),
                 "TestPackage", "4.7.0.395", null, "https://api.nuget.org/v3/index.json", false
             };
         }
@@ -430,15 +430,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [Fact]
         public void Deserialize_ThrowsWhenDetailsDoNotHavePackageID()
         {
-            var templateData = new TemplatePackageData()
-            {
-                MountPointUri = "MountPointUri",
-                Details = new Dictionary<string, string>
+            var templateData = new TemplatePackageData(
+                default,
+                "MountPointUri",
+                default,
+                new Dictionary<string, string>
                      {
                          { "Irrelevant", "not needed" },
                          { "Version", "4.7.0.395" }
-                     }
-            };
+                     });
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
@@ -452,16 +452,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [Fact]
         public void Deserialize_ThrowsWhenInstallerIdDoesNotMatch()
         {
-            var templateData = new TemplatePackageData()
-            {
-                MountPointUri = "MountPointUri",
-                Details = new Dictionary<string, string>
+            var templateData = new TemplatePackageData(
+                Guid.NewGuid(),
+                "MountPointUri",
+                default,
+                new Dictionary<string, string>
                 {
                     { "Irrelevant", "not needed" },
                     { "Version", "4.7.0.395" }
-                },
-                InstallerId = Guid.NewGuid()
-            };
+                });
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();

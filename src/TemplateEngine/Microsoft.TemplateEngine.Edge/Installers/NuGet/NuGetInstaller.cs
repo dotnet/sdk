@@ -221,13 +221,11 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             NuGetManagedTemplatePackage nuGetTemplatePackage = templatePackage as NuGetManagedTemplatePackage
                 ?? throw new ArgumentException($"{nameof(templatePackage)} should be of type {nameof(NuGetManagedTemplatePackage)}", nameof(templatePackage));
 
-            return new TemplatePackageData()
-            {
-                InstallerId = Factory.Id,
-                MountPointUri = nuGetTemplatePackage.MountPointUri,
-                LastChangeTime = nuGetTemplatePackage.LastChangeTime,
-                Details = nuGetTemplatePackage.Details
-            };
+            return new TemplatePackageData(
+                Factory.Id,
+                nuGetTemplatePackage.MountPointUri,
+                nuGetTemplatePackage.LastChangeTime,
+                nuGetTemplatePackage.Details);
         }
 
         public Task<UninstallResult> UninstallAsync(IManagedTemplatePackage templatePackage, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
