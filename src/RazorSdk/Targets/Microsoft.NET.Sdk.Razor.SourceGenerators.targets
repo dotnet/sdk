@@ -12,6 +12,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_PrepareRazorSourceGenerators"
     BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
+    Condition="'$(DesignTimeBuild)'!='true'"
     DependsOnTargets="PrepareForRazorGenerate;PrepareForRazorComponentGenerate">
 
     <PropertyGroup>
