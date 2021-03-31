@@ -34,6 +34,7 @@ Here is a list (alpha sorted) of templates which are available for use with `dot
 | [Prism Forms QuickStarts](https://github.com/dansiegel/Prism-Templates) - Empty &amp; QuickStart project Templates for Prism for Xamarin Forms. *Requires dotnet cli 2.0 pre3+* | `dotnet new -i "Prism.Forms.QuickstartTemplates::*"` |
 | [Raspberry Pi 3](https://github.com/jeremylindsayni/RaspberryPiTemplate) - C# template for .NET Core 2 IoT applications. | `dotnet new -i "RaspberryPi.Template::*"` |
 | [ServiceStack](https://github.com/NetCoreApps/templates) | `dotnet new -i "ServiceStack.Core.Templates::*"` |
+| [SpecFlow.Templates.DotNet](https://github.com/SpecFlowOSS/SpecFlow) - A project template for creating executable specifications with SpecFlow. You can choose from different .NET frameworks and test frameworks. |`dotnet new -i "SpecFlow.Templates.DotNet::*"` |
 | [Template templates](https://github.com/tintoy/dotnet-template-templates) - Templates to create new project and item templates. Requires `new3`. | `dotnet new -i "FiftyProtons.Templates.DotNetNew::*"` |
 | [Zahasoft Templates](https://github.com/zahasoft/skele) | `dotnet new -i "Zahasoft.Skele::*"` |
 | [ASP.NET Core Web API (extended)](https://github.com/popov1024/httpapi-template-sharp) | `dotnet new -i "Popov1024.HttpApi.Template.CSharp::*"` |
