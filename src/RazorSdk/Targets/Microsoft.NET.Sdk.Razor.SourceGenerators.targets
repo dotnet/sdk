@@ -9,10 +9,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 
 <Project ToolsVersion="14.0">
-  <!-- Temporary workaround for design-time and build-time files being produced at
-        the same time. See https://github.com/dotnet/sdk/pull/16648 for more info. -->
   <Target Name="_PrepareRazorSourceGenerators"
-    Condition="'$(DesignTimeBuild)'!='true'"
     BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
     DependsOnTargets="PrepareForRazorGenerate;PrepareForRazorComponentGenerate">
 
@@ -28,7 +25,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RazorAnalyzer Include="$(_RazorSdkToolsDirectoryRoot)Microsoft.CodeAnalysis.Razor.dll" />
       <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.NET.Sdk.Razor.SourceGenerators.dll" />
 
-      <Analyzer Include="@(_RazorAnalyzer)" />
+      <!--
+        Temporary workaround for design-time and build-time files being produced at
+        the same time. See https://github.com/dotnet/sdk/pull/16648 for more info.
+      -->
+      <Analyzer Include="@(_RazorAnalyzer)" Condition="'$(BuildingInsideVisualStudio)' != 'true' OR '$(DesignTimeBuild)' != 'true'" />
 
       <RazorComponentWithTargetPath
         GeneratedOutputFullPath="$([System.IO.Path]::GetFullPath(%(GeneratedOutput)))"
