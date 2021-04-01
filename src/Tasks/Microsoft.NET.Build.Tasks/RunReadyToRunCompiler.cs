@@ -330,7 +330,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            foreach (var mibc in Crossgen2PgoData)
+            foreach (var mibc in Crossgen2PgoFiles)
             {
                 result.AppendLine($"-m:\"{mibc.ItemSpec}\"");
             }
