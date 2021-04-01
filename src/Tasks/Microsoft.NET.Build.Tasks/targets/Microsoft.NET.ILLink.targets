@@ -145,6 +145,7 @@ Copyright (c) .NET Foundation. All rights reserved.
             TreatWarningsAsErrors="$(ILLinkTreatWarningsAsErrors)"
             WarningsAsErrors="$(WarningsAsErrors)"
             WarningsNotAsErrors="$(WarningsNotAsErrors)"
+            CollapseWarnings="$(CollapseTrimWarnings)"
 
             CustomSteps="@(_TrimmerCustomSteps)"
             RootDescriptorFiles="@(TrimmerRootDescriptor)"
@@ -200,6 +201,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_TrimmerDefaultAction Condition=" '$(_TrimmerDefaultAction)' == '' ">copy</_TrimmerDefaultAction>
       <ILLinkTreatWarningsAsErrors Condition=" '$(ILLinkTreatWarningsAsErrors)' == '' ">$(TreatWarningsAsErrors)</ILLinkTreatWarningsAsErrors>
       <_ExtraTrimmerArgs>--skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
+      <CollapseTrimWarnings Condition=" '$(CollapseTrimWarnings)' == '' ">true</CollapseTrimWarnings>
     </PropertyGroup>
     
     <!-- Suppress warnings produced by the linker. Any warnings shared with the analyzer should be
@@ -288,6 +290,24 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ManagedAssemblyToLink>
     </ItemGroup>
 
+    <ItemGroup>
+      <!-- Don't collapse warnings for the intermediate assembly -->
+      <__CollapseIntermediateAssembly Include="@(ManagedAssemblyToLink)" />
+      <__CollapseIntermediateAssembly Remove="@(IntermediateAssembly)" />
+      <_CollapseIntermediateAssembly Include="@(ManagedAssemblyToLink)" />
+      <_CollapseIntermediateAssembly Remove="@(__CollapseIntermediateAssembly)" />
+      <_CollapseIntermediateAssembly>
+        <CollapseWarnings Condition=" '%(_CollapseIntermediateAssembly.CollapseWarnings)' == '' ">false</CollapseWarnings>
+      </_CollapseIntermediateAssembly>
+      <ManagedAssemblyToLink Remove="@(_CollapseIntermediateAssembly)" />
+      <ManagedAssemblyToLink Include="@(_CollapseIntermediateAssembly)" />
+
+      <!-- Don't collapse warnings for project references -->
+      <ManagedAssemblyToLink Condition=" '%(ManagedAssemblyToLink.ProjectReferenceOriginalItemSpec)' != '' ">
+        <CollapseWarnings Condition=" '%(ManagedAssemblyToLink.CollapseWarnings)' == '' ">false</CollapseWarnings>
+      </ManagedAssemblyToLink>
+    </ItemGroup>
+  
     <ItemGroup>
       <_TrimmerFeatureSettings Include="@(RuntimeHostConfigurationOption)" Condition="'%(RuntimeHostConfigurationOption.Trim)' == 'true'" />
     </ItemGroup>
