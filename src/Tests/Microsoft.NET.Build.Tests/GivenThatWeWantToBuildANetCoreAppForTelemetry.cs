@@ -18,19 +18,19 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [CoreMSBuildOnlyFact]
-        public void It_collects_TargetFramework_version_and_other_properties()
+        public void It_collects_single_TargetFramework_moniker_and_other_properties()
         {
             string targetFramework = "netcoreapp1.0";
             var testProject = new TestProject()
             {
-                Name = "FrameworkTargetTelemetryTest",
+                Name = "TelemetryTest-SingleTarget",
                 TargetFrameworks = targetFramework,
             };
             Type loggerType = typeof(LogTelemetryToStdOutForTest);
             var TelemetryTestLogger = new[]
-                {
-                    $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
-                };
+            {
+                $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
+            };
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -38,24 +38,23 @@ namespace Microsoft.NET.Build.Tests
             buildCommand
                 .Execute(TelemetryTestLogger)
                 .StdOut.Should()
-                .Contain("{\"EventName\":\"targetframeworkeval\",\"Properties\":{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v1.0\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\"}");
+                .Contain("{\"EventName\":\"TargetFrameworkEval\",\"Properties\":{\"TargetFrameworkMoniker\":\".NETCoreApp,Version=v1.0\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\"}");
         }
 
         [CoreMSBuildOnlyFact]
-        public void It_collects_multi_TargetFramework_version_and_other_properties()
+        public void It_collects_multiple_TargetFramework_monikers_and_other_properties()
         {
-            string targetFramework = "net46;netcoreapp1.1";
-
+            string targetFrameworks = "net46;netcoreapp1.1";
             var testProject = new TestProject()
             {
-                Name = "MultitargetTelemetry",
-                TargetFrameworks = targetFramework,
+                Name = "TelemetryTest-MultipleTargets",
+                TargetFrameworks = targetFrameworks,
             };
             Type loggerType = typeof(LogTelemetryToStdOutForTest);
             var TelemetryTestLogger = new[]
-                {
-                    $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
-                };
+            {
+                $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
+            };
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -64,10 +63,10 @@ namespace Microsoft.NET.Build.Tests
                 .Execute(TelemetryTestLogger)
                 .StdOut.Should()
                 .Contain(
-                    "{\"EventName\":\"targetframeworkeval\",\"Properties\":{\"TargetFrameworkVersion\":\".NETFramework,Version=v4.6\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\"}")
+                    "{\"EventName\":\"TargetFrameworkEval\",\"Properties\":{\"TargetFrameworkMoniker\":\".NETFramework,Version=v4.6\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\"}")
                 .And
                 .Contain(
-                    "{\"EventName\":\"targetframeworkeval\",\"Properties\":{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v1.1\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\"}");
+                    "{\"EventName\":\"TargetFrameworkEval\",\"Properties\":{\"TargetFrameworkMoniker\":\".NETCoreApp,Version=v1.1\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\"}");
         }
     }
 }

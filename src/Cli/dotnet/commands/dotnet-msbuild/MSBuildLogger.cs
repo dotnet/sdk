@@ -14,16 +14,17 @@ namespace Microsoft.DotNet.Tools.MSBuild
 {
     public sealed class MSBuildLogger : INodeLogger
     {
-        private readonly IFirstTimeUseNoticeSentinel _sentinel =
-            new FirstTimeUseNoticeSentinel();
+        private readonly IFirstTimeUseNoticeSentinel _sentinel = new FirstTimeUseNoticeSentinel();
         private readonly ITelemetry _telemetry;
-        private const string NewEventName = "msbuild";
-        internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
-        internal const string SdkTaskBaseCatchExceptionTelemetryEventName = "taskBaseCatchException";
+
+        private const string MSBuildEventName = "MSBuild";
+
+        internal const string TargetFrameworkTelemetryEventName = "TargetFrameworkEval";
+        internal const string SdkTaskBaseCatchExceptionTelemetryEventName = "TaskBaseCatchException";
         internal const string PublishPropertiesTelemetryEventName = "PublishProperties";
         internal const string ReadyToRunTelemetryEventName = "ReadyToRun";
 
-        internal const string TargetFrameworkVersionTelemetryPropertyKey = "TargetFrameworkVersion";
+        internal const string TargetFrameworkMonikerTelemetryPropertyKey = "TargetFrameworkMoniker";
         internal const string RuntimeIdentifierTelemetryPropertyKey = "RuntimeIdentifier";
         internal const string SelfContainedTelemetryPropertyKey = "SelfContained";
         internal const string UseApphostTelemetryPropertyKey = "UseApphost";
@@ -81,16 +82,19 @@ namespace Microsoft.DotNet.Tools.MSBuild
         {
             if (args.EventName == TargetFrameworkTelemetryEventName)
             {
-                var newEventName = $"msbuild/{TargetFrameworkTelemetryEventName}";
+                var newEventName = $"{MSBuildEventName}/{TargetFrameworkTelemetryEventName}";
                 Dictionary<string, string> maskedProperties = new Dictionary<string, string>();
 
-                foreach (var key in new[] {
-                    TargetFrameworkVersionTelemetryPropertyKey,
+                var telemetryKeys = new[]
+                {
+                    TargetFrameworkMonikerTelemetryPropertyKey,
                     RuntimeIdentifierTelemetryPropertyKey,
                     SelfContainedTelemetryPropertyKey,
                     UseApphostTelemetryPropertyKey,
                     OutputTypeTelemetryPropertyKey
-                })
+                };
+
+                foreach (var key in telemetryKeys)
                 {
                     if (args.Properties.TryGetValue(key, out string value))
                     {
@@ -101,10 +105,12 @@ namespace Microsoft.DotNet.Tools.MSBuild
                 telemetry.TrackEvent(newEventName, maskedProperties, measurements: null);
             }
 
-            var passthroughEvents = new string[] {
-                    SdkTaskBaseCatchExceptionTelemetryEventName,
-                    PublishPropertiesTelemetryEventName,
-                    ReadyToRunTelemetryEventName };
+            var passthroughEvents = new[]
+            {
+                SdkTaskBaseCatchExceptionTelemetryEventName,
+                PublishPropertiesTelemetryEventName,
+                ReadyToRunTelemetryEventName
+            };
 
             if (passthroughEvents.Contains(args.EventName))
             {

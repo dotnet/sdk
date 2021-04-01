@@ -43,7 +43,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             catch (Exception e)
             {
-                LogErrorTelemetry("taskBaseCatchException", e);
+                LogErrorTelemetry("TaskBaseCatchException", e);
                 throw;
             }
 

@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
             mSBuildCommand
                 .Execute(telemetryTestLogger, causeTaskToFail)
                 .StdOut.Should()
-                .Contain("\"EventName\":\"taskBaseCatchException\",\"Properties\":{\"exceptionType\":\"System.IO.FileNotFoundException\"")
+                .Contain("\"EventName\":\"TaskBaseCatchException\",\"Properties\":{\"exceptionType\":\"System.IO.FileNotFoundException\"")
                 .And.Contain("detail");
         }
     }

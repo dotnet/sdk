@@ -114,7 +114,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="AllowEmptyTelemetry" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <Target Name="_CollectTargetFrameworkForTelemetry" AfterTargets="_CheckForUnsupportedTargetFramework">
-    <AllowEmptyTelemetry EventName="targetframeworkeval" EventData="TargetFrameworkVersion=$([MSBuild]::Escape('$(TargetFrameworkMoniker)'));RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=$(SelfContained);UseApphost=$(UseApphost);OutputType=$(OutputType)" />
+    <AllowEmptyTelemetry EventName="TargetFrameworkEval" EventData="TargetFrameworkMoniker=$([MSBuild]::Escape('$(TargetFrameworkMoniker)'));RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=$(SelfContained);UseApphost=$(UseApphost);OutputType=$(OutputType)" />
   </Target>
 
   <!--

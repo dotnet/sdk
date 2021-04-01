@@ -103,10 +103,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var fakeTelemetry = new FakeTelemetry();
             var telemetryEventArgs = new TelemetryEventArgs
             {
-                EventName = "targetframeworkeval",
+                EventName = "TargetFrameworkEval",
                 Properties = new Dictionary<string, string>
                 {
-                    { "TargetFrameworkVersion", ".NETFramework,Version=v4.6"},
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.6"},
                     { "RuntimeIdentifier", "null"},
                     { "SelfContained", "null"},
                     { "UseApphost", "null"},
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             fakeTelemetry.LogEntry.Properties.ShouldBeEquivalentTo(new Dictionary<string, string>
                 {
-                    { "TargetFrameworkVersion", "9a871d7066260764d4cb5047e4b10570271d04bd1da275681a4b12bce0b27496"},
+                    { "TargetFrameworkMoniker", "9a871d7066260764d4cb5047e4b10570271d04bd1da275681a4b12bce0b27496"},
                     { "RuntimeIdentifier", "fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921"},
                     { "SelfContained", "fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921"},
                     { "UseApphost", "fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921"},
