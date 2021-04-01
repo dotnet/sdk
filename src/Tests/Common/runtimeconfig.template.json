@@ -1,3 +1,6 @@
 {
-    "rollForwardOnNoCandidateFx": 2
+    "rollForwardOnNoCandidateFx": 2,
+    "configProperties": {
+        "System.IO.UseNet5CompatFileStream": false
+    }
 }
