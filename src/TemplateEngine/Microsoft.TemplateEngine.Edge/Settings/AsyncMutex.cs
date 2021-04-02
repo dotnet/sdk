@@ -16,32 +16,32 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     /// </summary>
     internal sealed class AsyncMutex : IDisposable
     {
-        private readonly TaskCompletionSource<IDisposable> _taskCompletionSource;
+        private readonly TaskCompletionSource<AsyncMutex> _taskCompletionSource;
         private readonly ManualResetEvent _blockReleasingMutex = new ManualResetEvent(false);
         private readonly string _mutexName;
         private readonly CancellationToken _token;
-        private readonly Action _unlockCallback;
         private volatile bool _disposed;
+        private volatile bool _isLocked = true;
 
-        private AsyncMutex(string mutexName, CancellationToken token, Action unlockCallback)
+        public bool IsLocked { get { return _isLocked; } }
+
+        private AsyncMutex(string mutexName, CancellationToken token)
         {
             _mutexName = mutexName;
             _token = token;
-            _unlockCallback = unlockCallback;
-            _taskCompletionSource = new TaskCompletionSource<IDisposable>();
+            _taskCompletionSource = new TaskCompletionSource<AsyncMutex>();
             ThreadPool.QueueUserWorkItem(WaitLoop);
         }
 
-        public static Task<IDisposable> WaitAsync(string mutexName, CancellationToken token, Action unlockCallback)
+        public static Task<AsyncMutex> WaitAsync(string mutexName, CancellationToken token)
         {
-            var mutex = new AsyncMutex(mutexName, token, unlockCallback);
+            var mutex = new AsyncMutex(mutexName, token);
             return mutex._taskCompletionSource.Task;
         }
 
         private void WaitLoop(object state)
         {
             var mutex = new Mutex(false, _mutexName);
-            bool mutexTaken = false;
             try
             {
                 while (true)
@@ -53,27 +53,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                     if (mutex.WaitOne(100))
                     {
-                        mutexTaken = true;
-                        //Check if we were cancalled while waiting for mutex...
-                        if (_token.IsCancellationRequested)
-                        {
-                            _taskCompletionSource.SetCanceled();
-                            return;
-                        }
                         break;
                     }
                 }
                 _taskCompletionSource.SetResult(this);
                 _blockReleasingMutex.WaitOne();
-                _unlockCallback();
             }
             finally
             {
-                if (mutexTaken)
-                {
-                    mutex.ReleaseMutex();
-                }
-
+                mutex.ReleaseMutex();
                 mutex.Dispose();
                 _blockReleasingMutex.Dispose();
             }
@@ -86,6 +74,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
             _disposed = true;
+            _isLocked = false;
 
             _blockReleasingMutex.Set();
         }

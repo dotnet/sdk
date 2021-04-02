@@ -22,8 +22,8 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly string _globalSettingsFile;
         private IDisposable? _watcher;
-        private bool _locked;
         private volatile bool _disposed;
+        private volatile AsyncMutex? _mutex;
 
         public GlobalSettings(IEngineEnvironmentSettings environmentSettings, string globalSettingsFile)
         {
@@ -48,15 +48,14 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 throw new ObjectDisposedException(nameof(GlobalSettings));
             }
             token.ThrowIfCancellationRequested();
+            while (_mutex?.IsLocked ?? false)
+            {
+                throw new InvalidOperationException("Lock is already taken.");
+            }
             // We must use Mutex because we want to lock across different processes that might want to modify this settings file
-            var mutex = await AsyncMutex.WaitAsync($"Global\\812CA7F3-7CD8-44B4-B3F0-0159355C0BD5{_globalSettingsFile}".Replace("\\", "_").Replace("/", "_"), token, Unlocked).ConfigureAwait(false);
-            _locked = true;
+            var mutex = await AsyncMutex.WaitAsync($"Global\\812CA7F3-7CD8-44B4-B3F0-0159355C0BD5{_globalSettingsFile}".Replace("\\", "_").Replace("/", "_"), token).ConfigureAwait(false);
+            _mutex = mutex;
             return mutex;
-        }
-
-        private void Unlocked()
-        {
-            _locked = false;
         }
 
         public void Dispose()
@@ -66,7 +65,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 return;
             }
             _disposed = true;
-
+            
             _watcher?.Dispose();
             _watcher = null;
         }
@@ -112,7 +111,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 throw new ObjectDisposedException(nameof(GlobalSettings));
             }
 
-            if (!_locked)
+            if (!(_mutex?.IsLocked ?? false))
             {
                 throw new InvalidOperationException($"Before calling {nameof(SetInstalledTemplatePackagesAsync)}, {nameof(LockAsync)} must be called.");
             }
