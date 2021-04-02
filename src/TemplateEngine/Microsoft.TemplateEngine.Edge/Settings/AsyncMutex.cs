@@ -42,6 +42,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private void WaitLoop(object state)
         {
             var mutex = new Mutex(false, _mutexName);
+            var mutexAcquired = false;
             try
             {
                 while (true)
@@ -53,6 +54,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                     if (mutex.WaitOne(100))
                     {
+                        mutexAcquired = true;
                         break;
                     }
                 }
@@ -61,7 +63,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             finally
             {
-                mutex.ReleaseMutex();
+                if (mutexAcquired)
+                {
+                    mutex.ReleaseMutex();
+                }
                 mutex.Dispose();
                 _blockReleasingMutex.Dispose();
             }
