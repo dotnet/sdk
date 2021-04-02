@@ -297,14 +297,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_CollapseIntermediateAssembly Include="@(ManagedAssemblyToLink)" />
       <_CollapseIntermediateAssembly Remove="@(__CollapseIntermediateAssembly)" />
       <_CollapseIntermediateAssembly>
-        <CollapseWarnings Condition=" '%(_CollapseIntermediateAssembly.CollapseWarnings)' == '' ">false</CollapseWarnings>
+        <CollapseTrimWarnings Condition=" '%(_CollapseIntermediateAssembly.CollapseTrimWarnings)' == '' ">false</CollapseTrimWarnings>
       </_CollapseIntermediateAssembly>
       <ManagedAssemblyToLink Remove="@(_CollapseIntermediateAssembly)" />
       <ManagedAssemblyToLink Include="@(_CollapseIntermediateAssembly)" />
 
       <!-- Don't collapse warnings for project references -->
       <ManagedAssemblyToLink Condition=" '%(ManagedAssemblyToLink.ProjectReferenceOriginalItemSpec)' != '' ">
-        <CollapseWarnings Condition=" '%(ManagedAssemblyToLink.CollapseWarnings)' == '' ">false</CollapseWarnings>
+        <CollapseTrimWarnings Condition=" '%(ManagedAssemblyToLink.CollapseTrimWarnings)' == '' ">false</CollapseTrimWarnings>
       </ManagedAssemblyToLink>
     </ItemGroup>
   
