@@ -8,9 +8,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
 using Analyzer.Utilities.PooledObjects.Extensions;
@@ -24,7 +26,9 @@ namespace GenerateDocumentationAndConfigFiles
 {
     public static class Program
     {
-        public static int Main(string[] args)
+        private static readonly HttpClient httpClient = new();
+
+        public static async Task<int> Main(string[] args)
         {
             const int expectedArguments = 22;
             const string validateOnlyPrefix = "-validateOnly:";
@@ -187,7 +191,7 @@ namespace GenerateDocumentationAndConfigFiles
 
             if (generateAnalyzerRulesMissingDocumentationFile)
             {
-                createAnalyzerRulesMissingDocumentationFile();
+                await createAnalyzerRulesMissingDocumentationFileAsync().ConfigureAwait(false);
             }
 
             if (fileNamesWithValidationFailures.Count > 0)
@@ -549,7 +553,7 @@ $@"<Project>
                 }
             }
 
-            void createAnalyzerRulesMissingDocumentationFile()
+            async ValueTask createAnalyzerRulesMissingDocumentationFileAsync()
             {
                 if (string.IsNullOrEmpty(analyzerDocumentationFileDir) || allRulesById.Count == 0)
                 {
@@ -579,7 +583,7 @@ Rule ID | Missing Help Link | Title |
 
                     var helpLinkUri = descriptor.HelpLinkUri;
                     if (!string.IsNullOrWhiteSpace(helpLinkUri) &&
-                        checkHelpLink(helpLinkUri))
+                        await checkHelpLinkAsync(helpLinkUri).ConfigureAwait(false))
                     {
                         // Rule with valid documentation link
                         continue;
@@ -620,7 +624,7 @@ Rule ID | Missing Help Link | Title |
                 }
                 return;
 
-                static bool checkHelpLink(string helpLink)
+                static async Task<bool> checkHelpLinkAsync(string helpLink)
                 {
                     try
                     {
@@ -629,9 +633,8 @@ Rule ID | Missing Help Link | Title |
                             return false;
                         }
 
-                        var request = (HttpWebRequest)WebRequest.Create(uri);
-                        request.Method = "HEAD";
-                        using var response = request.GetResponse() as HttpWebResponse;
+                        var request = new HttpRequestMessage(HttpMethod.Head, uri);
+                        using var response = await httpClient.SendAsync(request).ConfigureAwait(false);
                         return response?.StatusCode == HttpStatusCode.OK;
                     }
                     catch (WebException)
