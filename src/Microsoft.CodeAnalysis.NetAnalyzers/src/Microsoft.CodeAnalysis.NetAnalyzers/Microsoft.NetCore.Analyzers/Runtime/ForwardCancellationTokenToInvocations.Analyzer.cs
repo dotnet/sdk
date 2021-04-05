@@ -386,7 +386,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // Overload is  valid if its return type is implicitly convertable
                 var toCompareReturnType = methodToCompareWithAllParameters.ReturnType;
                 var originalReturnType = originalMethodWithAllParameters.ReturnType;
-                if (!compilation.ClassifyCommonConversion(toCompareReturnType, originalReturnType).IsImplicit)
+                if (!toCompareReturnType.IsAssignableTo(originalReturnType, compilation))
                 {
                     // Generic Task-like types are special since awaiting them essentially erases the task-like type.
                     // If both types are Task-like we will warn if their generic arguments are convertable to each other.
@@ -431,7 +431,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     var leftTypeArgument = left.TypeArguments[0];
                     var rightTypeArgument = right.TypeArguments[0];
-                    if (!compilation.ClassifyCommonConversion(rightTypeArgument, leftTypeArgument).IsImplicit)
+                    if (!leftTypeArgument.IsAssignableTo(rightTypeArgument, compilation))
                     {
                         return false;
                     }
