@@ -549,7 +549,8 @@ namespace Microsoft.NET.Publish.Tests
 
             // Please keep list below sorted and de-duplicated
             List<string> expectedOutput = new List<string>() {
-                "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized("
+                "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized(",
+                "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper,String,RuntimeLicenseContext",
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
