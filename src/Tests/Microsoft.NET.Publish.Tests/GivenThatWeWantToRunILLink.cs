@@ -522,6 +522,7 @@ namespace Microsoft.NET.Publish.Tests
             // Please keep list below sorted and de-duplicated
             List<string> expectedOutput = new List<string> () {
                 "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.Deserialize(Stream,String,RuntimeLicenseContext",
+                "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper,String,RuntimeLicenseContext",
                 "ILLink : Trim analysis warning IL2067: System.ComponentModel.LicenseManager.CreateWithContext(Type,LicenseContext,Object[]",
                 "ILLink : Trim analysis warning IL2072: System.ComponentModel.LicenseManager.ValidateInternalRecursive(LicenseContext,Type,Object,Boolean,License&,String&",
                 "ILLink : Trim analysis warning IL2057: System.ComponentModel.LicenseProviderAttribute.LicenseProvider.get: Unrecognized value passed to the parameter 'typeName' of method 'System.Type.GetType(String",
@@ -550,7 +551,7 @@ namespace Microsoft.NET.Publish.Tests
             // Please keep list below sorted and de-duplicated
             List<string> expectedOutput = new List<string>() {
                 "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized(",
-                "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper,String,RuntimeLicenseContext",
+                "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper,String,RuntimeLicenseContext"
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
