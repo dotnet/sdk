@@ -626,11 +626,15 @@ namespace Microsoft.NET.Publish.Tests
                 runtimeConfig["runtimeOptions"]["configProperties"]
                     ["System.Resources.ResourceManager.AllowCustomResourceTypes"].Value<bool>()
                     .Should().Be(false);
+                runtimeConfig["runtimeOptions"]["configProperties"]
+                    ["System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"].Value<bool>()
+                    .Should().Be(false);
             }
             else
             {
                 runtimeConfigContents.Should().NotContain("System.StartupHookProvider.IsSupported");
                 runtimeConfigContents.Should().NotContain("System.Resources.ResourceManager.AllowCustomResourceTypes");
+                runtimeConfigContents.Should().NotContain("System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization");
             }
         }
 

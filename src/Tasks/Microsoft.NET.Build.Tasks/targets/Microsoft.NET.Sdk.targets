@@ -431,6 +431,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(UseNativeHttpHandler)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"
+                                    Condition="'$(EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization)' != ''"
+                                    Value="$(EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Resources.ResourceManager.AllowCustomResourceTypes"
                                     Condition="'$(CustomResourceTypesSupport)' != ''"
                                     Value="$(CustomResourceTypesSupport)"
