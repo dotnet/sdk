@@ -2,10 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using FluentAssertions;
+using FluentAssertions.Execution;
+
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.NET.TestFramework;
+
+using System;
 using System.IO;
 using System.Linq;
+using System.Text;
+
 using Xunit;
 using Xunit.Abstractions;
 
@@ -126,6 +132,60 @@ namespace ManifestReaderTests
             pack.Should().NotBeNull();
 
             pack.Path.Should().Be(defaultPackPath);
+        }
+
+        [Fact]
+        public void ItChecksDependencies ()
+        {
+            string MakeManifest(long version, params (string id, long version)[] dependsOn)
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("{");
+                sb.AppendFormat("  \"version\": {0}", version);
+                sb.AppendLine(dependsOn.Length > 0? "," : "");
+                if (dependsOn.Length > 0)
+                {
+                    sb.AppendLine("  \"depends-on\": {");
+                    for (int i = 0; i < dependsOn.Length; i++)
+                    {
+                        var dep = dependsOn[i];
+                        sb.AppendFormat("    \"{0}\": {1}", dep.id, dep.version);
+                        sb.AppendLine(i < dependsOn.Length - 1? "," : "");
+                    }
+                    sb.AppendLine("  }");
+                }
+                sb.AppendLine("}");
+                return sb.ToString();
+            }
+
+            var goodManifestProvider = new InMemoryFakeManifestProvider
+            {
+                {  "AAA", MakeManifest(20, ("BBB", 5), ("CCC", 63), ("DDD", 25)) },
+                {  "BBB", MakeManifest(8, ("DDD", 22)) },
+                {  "CCC", MakeManifest(63) },
+                {  "DDD", MakeManifest(25) },
+            };
+
+            WorkloadResolver.CreateForTests(goodManifestProvider, new[] { fakeRootPath });
+
+            var missingManifestProvider = new InMemoryFakeManifestProvider
+            {
+                {  "AAA", MakeManifest(20, ("BBB", 5), ("CCC", 63), ("DDD", 25)) }
+            };
+
+            var missingManifestEx = Assert.Throws<Exception>(() => WorkloadResolver.CreateForTests(missingManifestProvider, new[] { fakeRootPath }));
+            Assert.Contains("missing dependency", missingManifestEx.Message);
+
+            var inconsistentManifestProvider = new InMemoryFakeManifestProvider
+            {
+                {  "AAA", MakeManifest(20, ("BBB", 5), ("CCC", 63), ("DDD", 25)) },
+                {  "BBB", MakeManifest(8, ("DDD", 39)) },
+                {  "CCC", MakeManifest(63) },
+                {  "DDD", MakeManifest(30) },
+            };
+
+            var inconsistentManifestEx = Assert.Throws<Exception>(() => WorkloadResolver.CreateForTests(inconsistentManifestProvider, new[] { fakeRootPath }));
+            Assert.Contains("Inconsistency in workload manifest", inconsistentManifestEx.Message);
         }
     }
 }
