@@ -599,7 +599,7 @@ namespace Microsoft.NET.Publish.Tests
         [Theory]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
-        public void StartupHookSupport_is_false_by_default_on_trimmed_apps(string targetFramework)
+        public void TrimmingOptions_are_defaulted_correctly_on_trimmed_apps(string targetFramework)
         {
             var projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
