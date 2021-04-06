@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 namespace Microsoft.TemplateEngine.Abstractions
 {
     /// <summary>
-    /// Responsible for loading/storing settings, handling of templates cache, mount points.
+    /// Responsible for loading/storing settings, handling of template cache, mount points.
     /// </summary>
     public interface ISettingsLoader
     {
@@ -36,6 +36,9 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Gets all templates based on current settings.
         /// </summary>
+        /// <remarks>
+        /// This call is cached. And can be invalidated by <see cref="RebuildCacheAsync"/>.
+        /// </remarks>
         Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token);
 
         /// <summary>
@@ -49,7 +52,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         ITemplate LoadTemplate(ITemplateInfo info, string baselineName);
 
         /// <summary>
-        /// Saves settings.
+        /// Saves settings to file.
         /// </summary>
         void Save();
 
@@ -70,7 +73,8 @@ namespace Microsoft.TemplateEngine.Abstractions
         IFile FindBestHostTemplateConfigFile(IFileSystemInfo config);
 
         /// <summary>
-        /// Forces invalidation of caches.
+        /// Deletes templates cache and rebuilds it.
+        /// Useful if user suspects cache is corrupted and wants to rebuild it.
         /// </summary>
         Task RebuildCacheAsync(CancellationToken token);
     }

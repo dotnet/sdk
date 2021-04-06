@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanInstall_Directory()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CannotInstall_File()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CannotInstall_NotExist()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task GetLatestVersion_Success()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
@@ -125,7 +125,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task GetLatestVersion_HandleExceptions()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
 
@@ -136,7 +136,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task Update_Success()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
@@ -155,7 +155,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task Update_HandleExceptions()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
             _ = await Assert.ThrowsAsync<ArgumentNullException>(() => folderInstaller.UpdateAsync(null, provider, CancellationToken.None)).ConfigureAwait(false);
@@ -165,7 +165,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanUninstall_Success()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 

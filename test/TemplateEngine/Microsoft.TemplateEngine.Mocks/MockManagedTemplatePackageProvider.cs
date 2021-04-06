@@ -10,7 +10,8 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockManagedTemplatesPackageProvider : IManagedTemplatePackageProvider
+    public class MockManagedTemplatePackageProvider
+        : IManagedTemplatePackageProvider
     {
         public event Action TemplatePackagesChanged
         {

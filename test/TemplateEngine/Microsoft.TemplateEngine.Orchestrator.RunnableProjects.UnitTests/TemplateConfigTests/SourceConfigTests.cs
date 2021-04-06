@@ -142,13 +142,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         private static TestTemplateSetup SetupTwoFilesWithConfigExtensionTemplate(IEngineEnvironmentSettings environment, string basePath)
         {
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             // config
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, ExcludesWithIncludeModifierConfigText);
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, ExcludesWithIncludeModifierConfigText);
             // content
-            templatePackageFiles.Add("core.config", null);
-            templatePackageFiles.Add("full.config", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templatePackageFiles);
+            templateSourceFiles.Add("core.config", null);
+            templateSourceFiles.Add("full.config", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
         }
@@ -176,11 +176,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         private static TestTemplateSetup SetupCopyOnlyWithoutCorrespondingIncludeTemplate(IEngineEnvironmentSettings environment, string basePath)
         {
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithoutCorrespondingIncludeConfigText);
-            templatePackageFiles.Add("something.txt", null);
-            templatePackageFiles.Add("copy.me", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templatePackageFiles);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithoutCorrespondingIncludeConfigText);
+            templateSourceFiles.Add("something.txt", null);
+            templateSourceFiles.Add("copy.me", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
         }
@@ -208,10 +208,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         private static TestTemplateSetup SetupCopyOnlyWithParentInclude(IEngineEnvironmentSettings environment, string basePath)
         {
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithIncludeInParentConfigText);
-            templatePackageFiles.Add("copy.me", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templatePackageFiles);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithIncludeInParentConfigText);
+            templateSourceFiles.Add("copy.me", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
         }
@@ -240,10 +240,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         private static TestTemplateSetup SetupCopyOnlyWithWildcardAndParentInclude(IEngineEnvironmentSettings environment, string basePath)
         {
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithWildcardAndParentIncludeConfigText);
-            templatePackageFiles.Add("copy.me", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templatePackageFiles);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithWildcardAndParentIncludeConfigText);
+            templateSourceFiles.Add("copy.me", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
         }
@@ -272,12 +272,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         private static TestTemplateSetup SetupXYZFilesForModifierOverrideTestsTemplate(IEngineEnvironmentSettings environment, string basePath, string templateConfig)
         {
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, templateConfig);
-            templatePackageFiles.Add("other.xyz", null);
-            templatePackageFiles.Add("include.xyz", null);
-            templatePackageFiles.Add("exclude.xyz", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templatePackageFiles);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, templateConfig);
+            templateSourceFiles.Add("other.xyz", null);
+            templateSourceFiles.Add("include.xyz", null);
+            templateSourceFiles.Add("exclude.xyz", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
         }

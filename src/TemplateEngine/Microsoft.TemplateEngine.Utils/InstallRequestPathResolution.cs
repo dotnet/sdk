@@ -44,20 +44,25 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns absolute path to files or folders resolved from <paramref name="unexpandedInstallRequest"/>.
+        /// Returns absolute path to files or folders resolved from <paramref name="maskedPath"/>.
         /// </summary>
-        public static IEnumerable<string> Expand(string unexpandedInstallRequest, IEngineEnvironmentSettings environmentSettings)
+        /// <remarks>
+        /// Example of <paramref name="maskedPath"/> would be "C:\Users\username\packages\*.nupkg".
+        /// </remarks>
+        /// <param name="maskedPath">This parameter can contain a wildcard (*) character.</param>
+        /// <returns>List of paths to files or folders.</returns>
+        public static IEnumerable<string> ExpandMaskedPath(string maskedPath, IEngineEnvironmentSettings environmentSettings)
         {
-            if (unexpandedInstallRequest.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+            if (maskedPath.IndexOfAny(Path.GetInvalidPathChars()) != -1)
             {
-                yield return unexpandedInstallRequest;
+                yield return maskedPath;
                 yield break;
             }
-            var matches = DetermineDirectoriesToScan(unexpandedInstallRequest, environmentSettings).ToList();
+            var matches = DetermineDirectoriesToScan(maskedPath, environmentSettings).ToList();
             //This can happen when user specifies "PackageId"
             if (matches.Count == 0)
             {
-                yield return unexpandedInstallRequest;
+                yield return maskedPath;
                 yield break;
             }
             foreach (var path in matches)

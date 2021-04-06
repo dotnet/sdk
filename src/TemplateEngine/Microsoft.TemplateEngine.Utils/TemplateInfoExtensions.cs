@@ -34,6 +34,9 @@ namespace Microsoft.TemplateEngine.Utils
             return template.GetTagValues("type")?.Single();
         }
 
+        /// <summary>
+        /// Helper method that returns <see cref="ITemplatePackage"/> that contains <paramref name="template"/>.
+        /// </summary>
         public async static Task<ITemplatePackage> GetTemplatePackageAsync (this ITemplateInfo template, IEngineEnvironmentSettings settings)
         {
             IReadOnlyList<ITemplatePackage> templatePackages = await settings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync().ConfigureAwait(false);

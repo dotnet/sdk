@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanInstall_LocalPackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanInstall_CannotInstallDirectory()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanInstall_CannotInstallFile()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanInstall_RemotePackage(string identifier, string version, bool result)
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task Install_LocalPackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -135,7 +135,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task Install_LocalPackage_CannotInstallUnsupportedRequest()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -158,7 +158,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task Install_LocalPackage_CannotInstallSamePackageTwice()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -187,7 +187,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task Install_RemotePackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager(_packageManager);
@@ -222,7 +222,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task Install_RemotePackage_HandleExceptions(string exception, InstallerErrorCode expectedErrorCode)
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -243,7 +243,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task GetLatestVersion_RemotePackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager(_packageManager);
@@ -277,7 +277,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task GetLatestVersion_RemotePackage_HandleExceptions(string exception, InstallerErrorCode expectedErrorCode)
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -299,7 +299,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task Uninstall_RemotePackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager(_packageManager);
@@ -329,7 +329,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task Update_RemotePackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager(_packageManager);
@@ -409,7 +409,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public void Deserialize(TemplatePackageData data, string identifier, string version, string author, string nugetFeed, bool local)
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -440,7 +440,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                          { "Version", "4.7.0.395" }
                      });
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -462,7 +462,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                     { "Version", "4.7.0.395" }
                 });
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatesPackageProvider provider = new MockManagedTemplatesPackageProvider();
+            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();

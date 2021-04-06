@@ -29,13 +29,13 @@ namespace Microsoft.TemplateEngine.Abstractions
             where T : class, IIdentifiedComponent;
 
         /// <summary>
-        /// Adds component to manager. Which can be looked up later via <see cref="TryGetComponent{T}(Guid, out T)"/> or <see cref="OfType{T}"/>.
+        /// Adds component to manager, which can be looked up later via <see cref="TryGetComponent{T}(Guid, out T)"/> or <see cref="OfType{T}"/>.
         /// </summary>
         /// <param name="type">type that implements <see cref="IIdentifiedComponent"/>.</param>
         void Register(Type type);
 
         /// <summary>
-        /// Adds list of components to manager. Which can be looked up later via <see cref="TryGetComponent{T}(Guid, out T)"/> or <see cref="OfType{T}"/>.
+        /// Adds list of components to manager, which can be looked up later via <see cref="TryGetComponent{T}(Guid, out T)"/> or <see cref="OfType{T}"/>.
         /// </summary>
         /// <param name="typeList"></param>
         void RegisterMany(IEnumerable<Type> typeList);

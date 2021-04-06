@@ -37,6 +37,11 @@ namespace Microsoft.TemplateEngine.Utils
 
         public event Action? TemplatePackagesChanged;
 
+        /// <summary>
+        /// Updates list of packages and triggers <see cref="TemplatePackagesChanged"/> event.
+        /// </summary>
+        /// <param name="nupkgs">List of "*.nupkg" files.</param>
+        /// <param name="folders">List of folders.</param>
         public void UpdatePackages(IEnumerable<string>? nupkgs = null, IEnumerable<string>? folders = null)
         {
             _nupkgs = nupkgs ?? Array.Empty<string>();
@@ -46,8 +51,8 @@ namespace Microsoft.TemplateEngine.Utils
 
         public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken)
         {
-            var expandedNupkgs = _nupkgs.SelectMany(p => InstallRequestPathResolution.Expand(p, _environmentSettings));
-            var expandedFolders = _folders.SelectMany(p => InstallRequestPathResolution.Expand(p, _environmentSettings));
+            var expandedNupkgs = _nupkgs.SelectMany(p => InstallRequestPathResolution.ExpandMaskedPath(p, _environmentSettings));
+            var expandedFolders = _folders.SelectMany(p => InstallRequestPathResolution.ExpandMaskedPath(p, _environmentSettings));
 
             var list = new List<ITemplatePackage>();
             foreach (var nupkg in expandedNupkgs)

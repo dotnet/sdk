@@ -110,33 +110,33 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         public async Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> packages, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
         {
             _ = packages ?? throw new ArgumentNullException(nameof(packages));
-            return await Task.WhenAll(packages.Select(async source =>
+            return await Task.WhenAll(packages.Select(async package =>
                 {
-                    if (source is NuGetManagedTemplatePackage nugetSource)
+                    if (package is NuGetManagedTemplatePackage nugetPackage)
                     {
                         try
                         {
-                            (string latestVersion, bool isLatestVersion) = await _updateChecker.GetLatestVersionAsync(nugetSource.Identifier, nugetSource.Version, nugetSource.NuGetSource, cancellationToken).ConfigureAwait(false);
-                            return CheckUpdateResult.CreateSuccess(source, latestVersion, isLatestVersion);
+                            (string latestVersion, bool isLatestVersion) = await _updateChecker.GetLatestVersionAsync(nugetPackage.Identifier, nugetPackage.Version, nugetPackage.NuGetSource, cancellationToken).ConfigureAwait(false);
+                            return CheckUpdateResult.CreateSuccess(package, latestVersion, isLatestVersion);
                         }
                         catch (PackageNotFoundException e)
                         {
-                            return CheckUpdateResult.CreateFailure(source, InstallerErrorCode.PackageNotFound, e.Message);
+                            return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.PackageNotFound, e.Message);
                         }
                         catch (InvalidNuGetSourceException e)
                         {
-                            return CheckUpdateResult.CreateFailure(source, InstallerErrorCode.InvalidSource, e.Message);
+                            return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.InvalidSource, e.Message);
                         }
                         catch (Exception e)
                         {
-                            _environmentSettings.Host.LogDiagnosticMessage($"Retrieving latest version for package {source.DisplayName} failed.", DebugLogCategory);
+                            _environmentSettings.Host.LogDiagnosticMessage($"Retrieving latest version for package {package.DisplayName} failed.", DebugLogCategory);
                             _environmentSettings.Host.LogDiagnosticMessage($"Details:{e.ToString()}", DebugLogCategory);
-                            return CheckUpdateResult.CreateFailure(source, InstallerErrorCode.GenericError, $"Failed to check the update for the package {source.Identifier}, reason: {e.Message}");
+                            return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.GenericError, $"Failed to check the update for the package {package.Identifier}, reason: {e.Message}");
                         }
                     }
                     else
                     {
-                        return CheckUpdateResult.CreateFailure(source, InstallerErrorCode.UnsupportedRequest, $"source {source.Identifier} is not supported by installer {Factory.Name}");
+                        return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.UnsupportedRequest, $"package {package.Identifier} is not supported by installer {Factory.Name}");
                     }
                 })).ConfigureAwait(false);
         }
@@ -176,7 +176,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         .ConfigureAwait(false);
                 }
 
-                NuGetManagedTemplatePackage source = new NuGetManagedTemplatePackage(
+                NuGetManagedTemplatePackage package = new NuGetManagedTemplatePackage(
                     _environmentSettings,
                     installer: this,
                     provider,
@@ -189,7 +189,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     LocalPackage = isLocalPackage
                 };
 
-                return InstallResult.CreateSuccess(installRequest, source);
+                return InstallResult.CreateSuccess(installRequest, package);
             }
             catch (DownloadException e)
             {

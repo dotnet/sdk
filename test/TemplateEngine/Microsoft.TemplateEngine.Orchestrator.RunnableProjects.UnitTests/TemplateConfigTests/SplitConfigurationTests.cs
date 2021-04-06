@@ -26,9 +26,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         // It doesn't need to exist, the reader will fail in trying to read it.
         private static TestTemplateSetup SetupSplitConfigWithAFileOutsideMountPoint(IEngineEnvironmentSettings environment, string basePath)
         {
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
-            templatePackageFiles.Add(".template.config/template.json", TemplateJsonWithAdditionalFileOutsideBasePath);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templatePackageFiles);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(".template.config/template.json", TemplateJsonWithAdditionalFileOutsideBasePath);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
         }
@@ -50,9 +50,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         // But doesn't create the additional file
         private static TestTemplateSetup SetupSplitConfigWithAMissingReferencedFile(IEngineEnvironmentSettings environment, string basePath)
         {
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
-            templatePackageFiles.Add(".template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templatePackageFiles);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(".template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
         }
@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestTemplateSetup setup = SetupSplitConfigTestTemplate(EngineEnvironmentSettings, sourcePath);
 
             IGenerator generator = new RunnableProjectGenerator();
-            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile("templatePackage/.template.config/template.json");
+            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile("templateSource/.template.config/template.json");
             generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
 
             IDictionary<string, ITemplateParameter> parameters = template.Parameters.ToDictionary(p => p.Name, p => p);
@@ -78,10 +78,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         private static TestTemplateSetup SetupSplitConfigTestTemplate(IEngineEnvironmentSettings environment, string basePath)
         {
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
-            templatePackageFiles.Add("templatePackage/.template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
-            templatePackageFiles.Add("templatePackage/.template.config/symbols.template.json", SymbolsTemplateJsonString);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templatePackageFiles);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add("templateSource/.template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
+            templateSourceFiles.Add("templateSource/.template.config/symbols.template.json", SymbolsTemplateJsonString);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
         }

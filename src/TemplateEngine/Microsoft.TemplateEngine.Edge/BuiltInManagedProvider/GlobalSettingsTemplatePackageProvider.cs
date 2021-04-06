@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
             _globalSettingsFilePath = Path.Combine(_environmentSettings.Paths.TemplateEngineRootDir, "packages.json");
             _globalSettings = new GlobalSettings(_environmentSettings, _globalSettingsFilePath);
-            // We can't just add "SettingsChanged+=SourcesChanged", because SourcesChanged is null at this time.
+            // We can't just add "SettingsChanged+=TemplatePackagesChanged", because TemplatePackagesChanged is null at this time.
             _globalSettings.SettingsChanged += () => TemplatePackagesChanged?.Invoke();
         }
 
@@ -85,14 +85,14 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             return list;
         }
 
-        public async Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionsAsync(IEnumerable<IManagedTemplatePackage> sources, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionsAsync(IEnumerable<IManagedTemplatePackage> packages, CancellationToken cancellationToken)
         {
-            _ = sources ?? throw new ArgumentNullException(nameof(sources));
+            _ = packages ?? throw new ArgumentNullException(nameof(packages));
 
             var tasks = new List<Task<IReadOnlyList<CheckUpdateResult>>>();
-            foreach (var sourcesGroupedByInstaller in sources.GroupBy(s => s.Installer))
+            foreach (var packagesGroupedByInstaller in packages.GroupBy(s => s.Installer))
             {
-                tasks.Add(sourcesGroupedByInstaller.Key.GetLatestVersionAsync(sourcesGroupedByInstaller, this, cancellationToken));
+                tasks.Add(packagesGroupedByInstaller.Key.GetLatestVersionAsync(packagesGroupedByInstaller, this, cancellationToken));
             }
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -135,30 +135,30 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             return results;
         }
 
-        public async Task<IReadOnlyList<UninstallResult>> UninstallAsync(IEnumerable<IManagedTemplatePackage> sources, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<UninstallResult>> UninstallAsync(IEnumerable<IManagedTemplatePackage> packages, CancellationToken cancellationToken)
         {
-            _ = sources ?? throw new ArgumentNullException(nameof(sources));
-            if (!sources.Any())
+            _ = packages ?? throw new ArgumentNullException(nameof(packages));
+            if (!packages.Any())
             {
                 return new List<UninstallResult>();
             }
 
             using var disposable = await _globalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
 
-            var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatePackagesAsync(cancellationToken).ConfigureAwait(false));
-            var results = await Task.WhenAll(sources.Select(async source =>
+            var packagesInSettings = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatePackagesAsync(cancellationToken).ConfigureAwait(false));
+            var results = await Task.WhenAll(packages.Select(async package =>
              {
-                 UninstallResult result = await source.Installer.UninstallAsync(source, this, cancellationToken).ConfigureAwait(false);
+                 UninstallResult result = await package.Installer.UninstallAsync(package, this, cancellationToken).ConfigureAwait(false);
                  if (result.Success)
                  {
-                     lock (packages)
+                     lock (packagesInSettings)
                      {
-                         packages.RemoveAll(p => p.MountPointUri == source.MountPointUri);
+                         packagesInSettings.RemoveAll(p => p.MountPointUri == package.MountPointUri);
                      }
                  }
                  return result;
              })).ConfigureAwait(false);
-            await _globalSettings.SetInstalledTemplatePackagesAsync(packages, cancellationToken).ConfigureAwait(false);
+            await _globalSettings.SetInstalledTemplatePackagesAsync(packagesInSettings, cancellationToken).ConfigureAwait(false);
             return results;
         }
 
@@ -195,31 +195,31 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             return updateResult;
         }
 
-        private async Task<(InstallerErrorCode, string)> EnsureInstallPrerequisites(List<TemplatePackageData> packages, string identifier, string version, IInstaller installer, CancellationToken cancellationToken, bool update = false)
+        private async Task<(InstallerErrorCode, string)> EnsureInstallPrerequisites(List<TemplatePackageData> packagesInSettings, string identifier, string version, IInstaller installer, CancellationToken cancellationToken, bool update = false)
         {
-            var sources = await GetAllTemplatePackagesAsync(cancellationToken).ConfigureAwait(false);
+            var packages = await GetAllTemplatePackagesAsync(cancellationToken).ConfigureAwait(false);
 
-            //check if the source with same identifier is already installed
-            if (sources.OfType<IManagedTemplatePackage>().FirstOrDefault(s => s.Identifier == identifier && s.Installer == installer) is IManagedTemplatePackage sourceToBeUpdated)
+            //check if the package with same identifier is already installed
+            if (packages.OfType<IManagedTemplatePackage>().FirstOrDefault(s => s.Identifier == identifier && s.Installer == installer) is IManagedTemplatePackage packageToBeUpdated)
             {
                 //if same version is already installed - return
-                if (sourceToBeUpdated.Version == version)
+                if (packageToBeUpdated.Version == version)
                 {
-                    return (InstallerErrorCode.AlreadyInstalled, $"{sourceToBeUpdated.DisplayName} is already installed.");
+                    return (InstallerErrorCode.AlreadyInstalled, $"{packageToBeUpdated.DisplayName} is already installed.");
                 }
                 if (!update)
                 {
                     _environmentSettings.Host.LogMessage(
                         string.Format(
                             LocalizableStrings.GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled,
-                            sourceToBeUpdated.Identifier,
-                            sourceToBeUpdated.Version,
+                            packageToBeUpdated.Identifier,
+                            packageToBeUpdated.Version,
                             string.IsNullOrWhiteSpace(identifier) ?
                                 LocalizableStrings.Generic_LatestVersion :
                                 string.Format(LocalizableStrings.Generic_Version, version)));
                 }
                 //if different version is installed - uninstall previous version first
-                UninstallResult uninstallResult = await installer.UninstallAsync(sourceToBeUpdated, this, cancellationToken).ConfigureAwait(false);
+                UninstallResult uninstallResult = await installer.UninstallAsync(packageToBeUpdated, this, cancellationToken).ConfigureAwait(false);
                 if (!uninstallResult.Success)
                 {
                     return (InstallerErrorCode.UpdateUninstallFailed, uninstallResult.ErrorMessage);
@@ -227,11 +227,11 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 _environmentSettings.Host.LogMessage(
                     string.Format(
                         LocalizableStrings.GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled,
-                        sourceToBeUpdated.DisplayName));
+                        packageToBeUpdated.DisplayName));
 
-                lock (packages)
+                lock (packagesInSettings)
                 {
-                    packages.RemoveAll(p => p.MountPointUri == sourceToBeUpdated.MountPointUri);
+                    packagesInSettings.RemoveAll(p => p.MountPointUri == packageToBeUpdated.MountPointUri);
                 }
             }
             return (InstallerErrorCode.Success, string.Empty);

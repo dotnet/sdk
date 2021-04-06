@@ -1,11 +1,9 @@
-using System.Collections.Generic;
-
 namespace Microsoft.TemplateEngine.Abstractions.Mount
 {
     /// <summary>
     /// Implement this factory and register it with <see cref="IComponentManager"/>.
-    /// When template engine will get Uri to mount it will call <see cref="TryMount(IEngineEnvironmentSettings, IMountPoint, string, out IMountPoint)"/>
-    /// on all factories and use mount point from first successful factory.
+    /// Template engine calls <see cref="TryMount"/> with Uri as parameter on all factories
+    /// and use mount point from first successful factory.
     /// </summary>
     public interface IMountPointFactory : IIdentifiedComponent
     {

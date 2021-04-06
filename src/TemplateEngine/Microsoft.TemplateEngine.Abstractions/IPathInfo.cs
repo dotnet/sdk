@@ -1,12 +1,12 @@
 ﻿namespace Microsoft.TemplateEngine.Abstractions
 {
     /// <summary>
-    /// Contains common folder paths used be TemplateEngine.
+    /// Contains common folder paths used by TemplateEngine.
     /// </summary>
     public interface IPathInfo
     {
         /// <summary>
-        /// The user's profile folder.
+        /// The user profile folder.
         /// E.g: "/home/userName/" on Unix and "C:\Users\userName\" on Windows.
         /// </summary>
         string UserProfileDir { get; }

@@ -47,13 +47,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   ]
 }";
 
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             // template.json
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, sourceConfig);
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, sourceConfig);
             // content
-            templatePackageFiles.Add("RenameMe.txt", null);
-            templatePackageFiles.Add("dontrenameme.txt", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templatePackageFiles);
+            templateSourceFiles.Add("RenameMe.txt", null);
+            templateSourceFiles.Add("dontrenameme.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
         }
@@ -96,13 +96,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 }
 ";
 
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             // template.json
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, sourceConfig);
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, sourceConfig);
             // content
-            templatePackageFiles.Add("RenameMe.txt", null);
-            templatePackageFiles.Add("dontrenameme.txt", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templatePackageFiles);
+            templateSourceFiles.Add("RenameMe.txt", null);
+            templateSourceFiles.Add("dontrenameme.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
         }
@@ -210,13 +210,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             // template.json
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
             // content
-            templatePackageFiles.Add("Replace1_file.txt", null);
-            templatePackageFiles.Add("Replace2_file.txt", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templatePackageFiles);
+            templateSourceFiles.Add("Replace1_file.txt", null);
+            templateSourceFiles.Add("Replace2_file.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
             //get target directory
@@ -255,14 +255,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             // template.json
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
             // content
-            templatePackageFiles.Add("Replace1_file.txt", null);
-            templatePackageFiles.Add("replace2_file.txt", null);
-            templatePackageFiles.Add("REPLACE3_file.txt", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templatePackageFiles);
+            templateSourceFiles.Add("Replace1_file.txt", null);
+            templateSourceFiles.Add("replace2_file.txt", null);
+            templateSourceFiles.Add("REPLACE3_file.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
             //get target directory
@@ -317,13 +317,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             // template.json
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
             // content
-            templatePackageFiles.Add("replace1_file.txt", null);
-            templatePackageFiles.Add("replace2_file.txt", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templatePackageFiles);
+            templateSourceFiles.Add("replace1_file.txt", null);
+            templateSourceFiles.Add("replace2_file.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
             //get target directory
@@ -370,13 +370,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             // template.json
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
             // content
-            templatePackageFiles.Add("Replace1_file.txt", null);
-            templatePackageFiles.Add("Replace2_file.txt", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templatePackageFiles);
+            templateSourceFiles.Add("Replace1_file.txt", null);
+            templateSourceFiles.Add("Replace2_file.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
             //get target directory
@@ -416,12 +416,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string> templatePackageFiles = new Dictionary<string, string>();
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             // template.json
-            templatePackageFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
             // content
-            templatePackageFiles.Add(@"Replace_dir/Replace_file.txt", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templatePackageFiles);
+            templateSourceFiles.Add(@"Replace_dir/Replace_file.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
             //get target directory
