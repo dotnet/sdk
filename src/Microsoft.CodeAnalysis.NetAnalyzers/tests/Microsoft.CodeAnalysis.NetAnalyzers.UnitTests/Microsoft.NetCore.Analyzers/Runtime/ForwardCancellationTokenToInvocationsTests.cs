@@ -435,7 +435,7 @@ class C
         }
 
         [Fact]
-        [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
         public Task CS_NoDiagnostic_ReturnTypesDiffer()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -2251,7 +2251,7 @@ class C
 
         [Fact]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task CS_NoDiagnostic_ReturnTypeIsConvertable()
+        public Task CS_Diagnostic_ReturnTypeIsConvertable()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -2291,7 +2291,7 @@ class P
 
         [Fact]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task CS_NoDiagnostic_SpecialCaseTaskLikeReturnTypes()
+        public Task CS_SpecialCaseTaskLikeReturnTypes()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -2728,6 +2728,31 @@ Class C
     End Sub
 End Class
             ");
+        }
+
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task VB_NoDiagnostic_ReturnTypesDiffer()
+        {
+            return VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Module Program
+    Sub M1(s As String, cancellationToken As CancellationToken)
+        Dim result = M2(s)
+    End Sub
+
+    Function M2(s As String) As Task
+        Throw New NotImplementedException
+    End Function
+
+    Function M2(s As String, cancellationToken As CancellationToken) As Integer
+        Throw New NotImplementedException
+    End Function
+End Module
+");
         }
 
         #endregion
@@ -4297,6 +4322,98 @@ Class C
     End Sub
 End Class
             ";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task VB_Diagnostic_ReturnTypeIsConvertable()
+        {
+            // Local static functions are available in C# >= 8.0
+            string originalCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Module Program
+    Sub M1(s As String, cancellationToken As CancellationToken)
+        Dim result As Long = [|M2|](s)
+    End Sub
+
+    Function M2(s As String) As Long
+        Throw New NotImplementedException
+    End Function
+
+    Function M2(s As String, cancellationToken As CancellationToken) As Integer
+        Throw New NotImplementedException
+    End Function
+End Module
+";
+            string fixedCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Module Program
+    Sub M1(s As String, cancellationToken As CancellationToken)
+        Dim result As Long = M2(s, cancellationToken)
+    End Sub
+
+    Function M2(s As String) As Long
+        Throw New NotImplementedException
+    End Function
+
+    Function M2(s As String, cancellationToken As CancellationToken) As Integer
+        Throw New NotImplementedException
+    End Function
+End Module
+";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task VB_SpecialCaseTaskLikeReturnTypes()
+        {
+            // Local static functions are available in C# >= 8.0
+            string originalCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Module Program
+    Async Function M1Async(s As String, cancellationToken As CancellationToken) As Task
+        Dim result As Integer = Await [|M2|](s)
+    End Function
+
+    Function M2(s As String) As Task(Of Integer)
+        Throw New NotImplementedException
+    End Function
+
+    Function M2(s As String, cancellationToken As CancellationToken) As ValueTask(Of Integer)
+        Throw New NotImplementedException
+    End Function
+End Module
+";
+            string fixedCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Module Program
+    Async Function M1Async(s As String, cancellationToken As CancellationToken) As Task
+        Dim result As Integer = Await M2(s, cancellationToken)
+    End Function
+
+    Function M2(s As String) As Task(Of Integer)
+        Throw New NotImplementedException
+    End Function
+
+    Function M2(s As String, cancellationToken As CancellationToken) As ValueTask(Of Integer)
+        Throw New NotImplementedException
+    End Function
+End Module
+";
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
