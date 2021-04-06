@@ -47,10 +47,13 @@ namespace Microsoft.TemplateEngine.Utils
         /// Returns absolute path to files or folders resolved from <paramref name="maskedPath"/>.
         /// </summary>
         /// <remarks>
-        /// Example of <paramref name="maskedPath"/> would be "C:\Users\username\packages\*.nupkg".
+        /// Example of <paramref name="maskedPath"/> would be "C:\Users\username\packages\*.nupkg".<br/>
+        /// Wildcards are supported only in file name.
+        /// Supported wildcards and rules are identical as for <see cref="searchPattern"/> for <see cref="Directory.EnumerateDirectories(string, string)"/>.
         /// </remarks>
-        /// <param name="maskedPath">This parameter can contain a wildcard (*) character.</param>
-        /// <returns>List of paths to files or folders.</returns>
+        /// <param name="maskedPath">This parameter can contain a wildcard (*) character in the filename.</param>
+        /// <param name="environmentSettings"></param>
+        /// <returns>List of absolute paths to files or folders that match <paramref name="maskedPath"/>.</returns>
         public static IEnumerable<string> ExpandMaskedPath(string maskedPath, IEngineEnvironmentSettings environmentSettings)
         {
             if (maskedPath.IndexOfAny(Path.GetInvalidPathChars()) != -1)
