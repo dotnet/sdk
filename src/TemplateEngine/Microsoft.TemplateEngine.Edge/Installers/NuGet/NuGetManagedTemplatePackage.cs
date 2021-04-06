@@ -90,6 +90,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 {
                     Details[AuthorKey] = value;
                 }
+                else
+                {
+                    Details.Remove(AuthorKey);
+                }
             }
         }
         public string DisplayName => string.IsNullOrWhiteSpace(Version) ? Identifier : $"{Identifier}::{Version}";
@@ -127,6 +131,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 {
                     Details[LocalPackageKey] = true.ToString();
                 }
+                else
+                {
+                    Details.Remove(LocalPackageKey);
+                }
             }
         }
         public string MountPointUri { get; }
@@ -141,6 +149,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 if (!string.IsNullOrWhiteSpace(value))
                 {
                     Details[NuGetSourceKey] = value;
+                }
+                else
+                {
+                    Details.Remove(NuGetSourceKey);
                 }
             }
         }
@@ -157,6 +169,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 if (!string.IsNullOrWhiteSpace(value))
                 {
                     Details[PackageVersionKey] = value;
+                }
+                else
+                {
+                    Details.Remove(PackageVersionKey);
                 }
             }
         }
