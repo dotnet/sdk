@@ -521,13 +521,8 @@ namespace Microsoft.NET.Publish.Tests
 
             // Please keep list below sorted and de-duplicated
             List<string> expectedOutput = new List<string> () {
-                "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.Deserialize(Stream,String,RuntimeLicenseContext",
                 "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper,String,RuntimeLicenseContext",
-                "ILLink : Trim analysis warning IL2067: System.ComponentModel.LicenseManager.CreateWithContext(Type,LicenseContext,Object[]",
-                "ILLink : Trim analysis warning IL2072: System.ComponentModel.LicenseManager.ValidateInternalRecursive(LicenseContext,Type,Object,Boolean,License&,String&",
-                "ILLink : Trim analysis warning IL2057: System.ComponentModel.LicenseProviderAttribute.LicenseProvider.get: Unrecognized value passed to the parameter 'typeName' of method 'System.Type.GetType(String",
                 "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized(",
-                "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.TypeAnalysis.TypeAnalysis(Type,EventDataAttribute,List<Type>",
                 "ILLink : Trim analysis warning IL2026: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
                 "ILLink : Trim analysis warning IL2026: System.StartupHookProvider.ProcessStartupHooks(",
             };
@@ -550,8 +545,7 @@ namespace Microsoft.NET.Publish.Tests
 
             // Please keep list below sorted and de-duplicated
             List<string> expectedOutput = new List<string>() {
-                "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized(",
-                "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper,String,RuntimeLicenseContext"
+                "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized("
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
@@ -599,7 +593,7 @@ namespace Microsoft.NET.Publish.Tests
         [Theory]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
-        public void StartupHookSupport_is_false_by_default_on_trimmed_apps(string targetFramework)
+        public void TrimmingOptions_are_defaulted_correctly_on_trimmed_apps(string targetFramework)
         {
             var projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -626,11 +620,15 @@ namespace Microsoft.NET.Publish.Tests
                 runtimeConfig["runtimeOptions"]["configProperties"]
                     ["System.Resources.ResourceManager.AllowCustomResourceTypes"].Value<bool>()
                     .Should().Be(false);
+                runtimeConfig["runtimeOptions"]["configProperties"]
+                    ["System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"].Value<bool>()
+                    .Should().Be(false);
             }
             else
             {
                 runtimeConfigContents.Should().NotContain("System.StartupHookProvider.IsSupported");
                 runtimeConfigContents.Should().NotContain("System.Resources.ResourceManager.AllowCustomResourceTypes");
+                runtimeConfigContents.Should().NotContain("System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization");
             }
         }
 
