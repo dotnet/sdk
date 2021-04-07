@@ -887,6 +887,10 @@ namespace Microsoft.TemplateEngine.Utils
             targetFile.LastWriteTimeUtc = lastWriteTimeUtc;
         }
 
+        /// <summary>
+        /// Currently not implemented in <see cref="InMemoryFileSystem"/>.
+        /// Just returns <see cref="IDisposable"/> object, but never calls callback.
+        /// </summary>
         public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged)
         {
             return new MemoryStream();//Just some disposable dummy
