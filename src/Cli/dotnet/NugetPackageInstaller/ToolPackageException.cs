@@ -5,17 +5,17 @@ using System;
 
 namespace Microsoft.DotNet.ToolPackage
 {
-    internal class ToolPackageException : Exception
+    internal class NuGetPackageInstallerException : Exception
     {
-        public ToolPackageException()
+        public NuGetPackageInstallerException()
         {
         }
 
-        public ToolPackageException(string message) : base(message)
+        public NuGetPackageInstallerException(string message) : base(message)
         {
         }
 
-        public ToolPackageException(string message, Exception innerException) : base(message, innerException)
+        public NuGetPackageInstallerException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

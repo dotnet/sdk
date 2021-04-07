@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             Directory.CreateDirectory(_installPath);
         }
 
-        public Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion)
+        public Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion, string[] overrideSources = null)
         {
             InstallCallParams.Add((packageId, packageVersion));
             var path = Path.Combine(_installPath, "mock.nupkg");
