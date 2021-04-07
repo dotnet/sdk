@@ -134,7 +134,9 @@ Updating a compiled file requires two requirements -
 
 The former has been available as a compiler feature to support debugger / IDE's Edit and Continue capabilities. Starting in 6.0, the runtime (.NET Core and Mono) [expose APIs](https://github.com/dotnet/runtime/blob/f15722c2c25ce945f2f1c7673ff3f4fbdb244feb/src/mono/System.Private.CoreLib/src/System/Reflection/Metadata/AssemblyExtensions.cs#L28) to patch a running app. The combination of the two makes it possible to hot reload changes to files that are compiled as part of the application. The first bullet point is easy for files that are already compiled as part of the app e.g. .cs or .vb files. For any other file types, source generators offer a way to participate in the compilation process. This is the route taken by Razor Source Generator for .razor and .cshtml files.
 
-To enable this, dotnet-watch hosts a Roslyn workspace that contains the project and all of it's references. When a change to .cs, .razor, or .cshtml file is found, it updates the workspace and uses it's APIs to produce a patch. Not all source changes can however produce a patch. These are called rude-edits (since it rudely interrupts your workflow) and in this case, watch falls back to doing a regular build to update and restart the app. If a patch is successfuly produced, watch now has the task of sending these patches to the app. Since different app models have different constraints, this implementation is app-model specific:
+To enable this, dotnet-watch hosts a Roslyn workspace that contains the project and all of it's references. When a change to .cs, .razor, or .cshtml file is found, it updates the workspace and uses it's APIs to produce a patch. Not all source changes can however produce a patch. These are called rude-edits (since it rudely interrupts your workflow) and in this case, watch falls back to doing a regular build to update and restart the app. If a patch is successfuly produced, watch now has the task of sending these patches to the app. In a webapp, we're able to display these rude-edit diagnostics, as well as any compilation errors using the WebSocket connection that was previously discussed.
+
+Since different app models have different constraints, this implementation is app-model specific:
 
 * For .NET Core apps, dotnet-watch hosts a NamedPipe server. It once again uses a startup hook to inject code (`Microsoft.Extensions.AspNetCoreDeltaApplier`) in to the app that creates a client to listen to this NamedPipe. Each successful hot reload results in a binary payload with the following format:
 
@@ -157,7 +159,9 @@ where each delta item looks like so
 [ILDelta bytes]
 ```
 
-The client reads this payload, and calls `AssemblyExtensions.ApplyUpdate`.
+The client reads this payload, and calls `AssemblyExtensions.ApplyUpdate`. The `ModuleId` in the delta corresponds to `Module.ModuleVersionId` on an Assembly. In general, each .NET assembly only have one module so there's a one-to-one relation here.
+
+An interesting side-effect of adding a startup hook to the launched app is that it makes using `dotnet run` a little trickier. The dotnet CLI is also a managed process and inherits the STARTUP_HOOK for the duration the `run` command executes. To avoid issues here, under hot reload, dotnet-watch emulates the `run` command rather than shelling out to it.
 
 * For Blazor WebAssembly apps, dotnet-watch piggybacks on the same WebSocket connection that it established with the browser to send the payload. The payload format is similar, but this time it's a JSON blob.
 
