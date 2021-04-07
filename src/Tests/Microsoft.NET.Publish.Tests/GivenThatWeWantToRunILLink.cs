@@ -479,7 +479,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net6.0")]
-        public void ILLink_warnings_are_collapsed_for_packagereferences_only(string targetFramework)
+        public void ILLink_shows_single_warning_for_packagereferences_only(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
@@ -502,7 +502,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net6.0")]
-        public void ILLink_accepts_option_to_uncollapse_all_warnings(string targetFramework)
+        public void ILLink_accepts_option_to_show_all_warnings(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
@@ -511,7 +511,7 @@ namespace Microsoft.NET.Publish.Tests
                 .WithSource();
 
             var publishCommand = new PublishCommand(testAsset, "App");
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:CollapseTrimWarnings=false")
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:TrimmerSingleWarn=false")
                 .Should().Pass()
                 .And.HaveStdOutMatching("IL2026: App.Program.Main.*Program.RUC")
                 .And.HaveStdOutMatching("IL2026: ProjectReference.ProjectReferenceLib.Method.*ProjectReferenceLib.RUC")
@@ -522,7 +522,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net6.0")]
-        public void ILLink_can_collapse_warnings_per_assembly(string targetFramework)
+        public void ILLink_can_show_single_warning_per_assembly(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
@@ -530,12 +530,12 @@ namespace Microsoft.NET.Publish.Tests
                 .CopyTestAsset(testAssetName)
                 .WithSource()
                 .WithProjectChanges(project => {
-                    SetMetadata(project, "PackageReference", "CollapseTrimWarnings", "false");
-                    SetMetadata(project, "ProjectReference", "CollapseTrimWarnings", "true");
+                    SetMetadata(project, "PackageReference", "TrimmerSingleWarn", "false");
+                    SetMetadata(project, "ProjectReference", "TrimmerSingleWarn", "true");
                 });
 
             var publishCommand = new PublishCommand(testAsset, "App");
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:CollapseTrimWarnings=false")
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:TrimmerSingleWarn=false")
                 .Should().Pass()
                 .And.HaveStdOutMatching("IL2026: App.Program.Main.*Program.RUC")
                 .And.NotHaveStdOutMatching("IL2026: ProjectReference.ProjectReferenceLib.Method.*ProjectReferenceLib.RUC")
