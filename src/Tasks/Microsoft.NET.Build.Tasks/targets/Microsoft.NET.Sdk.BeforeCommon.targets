@@ -66,6 +66,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.RuntimeIdentifierInference.targets" />
 
+  <!-- Import targets from RazorSDK if referenced -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Razor.BeforeCommon.targets" Condition="'$(UsingMicrosoftNETSdkRazor)' == 'true'" />
+
   <!-- Import workload targets -->
   <Import Project="Microsoft.NET.Sdk.ImportWorkloads.targets" Condition="'$(MSBuildEnableWorkloadResolver)' == 'true'" />
 
@@ -102,6 +105,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Disable the use of FrameworkPathOverride in Microsoft.Common.CurrentVersion.targets which can slow down evaluation.  FrameworkPathOverride
     is not needed for NETStandard or NETCore since references come from NuGet packages-->
     <EnableFrameworkPathOverride Condition="'$(EnableFrameworkPathOverride)' == ''">false</EnableFrameworkPathOverride>
+  </PropertyGroup>
+
+  <!-- Regardless of platform, enable dependency file generation if PreserveCompilationContext is set. -->
+  <PropertyGroup>
+    <GenerateDependencyFile Condition="'$(GenerateDependencyFile)' == ''">$(PreserveCompilationContext)</GenerateDependencyFile>
   </PropertyGroup>
 
   <!-- Set PublishDir here, before Microsoft.Common.targets, to avoid a competing default there. -->

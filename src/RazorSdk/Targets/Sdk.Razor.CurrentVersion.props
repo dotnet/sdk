@@ -77,8 +77,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     Target used by dotnet-watch to resolve additional items.
     -->
     <CustomCollectWatchItems>$(CustomCollectWatchItems);_RazorSdkCustomCollectWatchItems</CustomCollectWatchItems>
-
-    <_NETSdkInitializePreserveCompilationTargets>$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Razor.InitializePreserveCompilationContext.targets</_NETSdkInitializePreserveCompilationTargets>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
