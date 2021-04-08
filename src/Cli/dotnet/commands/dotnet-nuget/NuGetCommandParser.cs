@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Cli
             command.AddCommand(GetDeleteCommand());
             command.AddCommand(GetLocalsCommand());
             command.AddCommand(GetPushCommand());
+            command.AddCommand(GetVerifyCommand());
 
             return command;
         }
@@ -72,6 +73,30 @@ namespace Microsoft.DotNet.Cli
             pushCommand.AddOption(new Option<bool>("--skip-duplicate"));
 
             return pushCommand;
+        }
+
+        private static Command GetVerifyCommand()
+        {
+            var verifyCommand = new Command("verify");
+
+            verifyCommand.AddArgument(new Argument<IEnumerable<string>>() { Arity = ArgumentArity.OneOrMore });
+
+            verifyCommand.AddOption(new Option<bool>("--all"));
+            verifyCommand.AddOption(new ForwardedOption<IEnumerable<string>>("--certificate-fingerprint", "certificatefingerprint")
+                .ForwardAsMany(o => ForwardedArguments("--certificate-fingerprint", o))
+                .AllowSingleArgPerToken());
+            verifyCommand.AddOption(CommonOptions.VerbosityOption(o => $"--verbosity:{o}"));
+
+            return verifyCommand;
+        }
+
+        public static IEnumerable<string> ForwardedArguments(string token, IEnumerable<string> arguments)
+        {
+            foreach (var arg in arguments)
+            {
+                yield return token;
+                yield return arg;
+            }
         }
     }
 }
