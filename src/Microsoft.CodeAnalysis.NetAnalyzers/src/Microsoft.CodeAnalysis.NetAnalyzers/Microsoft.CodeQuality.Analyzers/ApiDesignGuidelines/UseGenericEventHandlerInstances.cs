@@ -84,9 +84,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     static bool IsDelegateTypeWithInvokeMethod(INamedTypeSymbol namedType) =>
-#pragma warning disable IDE0078 // Use pattern matching - https://github.com/dotnet/roslyn/issues/51691
                         namedType.TypeKind == TypeKind.Delegate && namedType.DelegateInvokeMethod != null;
-#pragma warning restore IDE0078 // Use pattern matching
 
                     context.RegisterSymbolAction(symbolContext =>
                     {

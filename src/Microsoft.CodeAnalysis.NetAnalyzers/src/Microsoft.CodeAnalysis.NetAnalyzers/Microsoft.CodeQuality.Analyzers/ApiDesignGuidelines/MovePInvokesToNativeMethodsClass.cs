@@ -58,9 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static bool IsDllImport(ISymbol symbol)
         {
-#pragma warning disable IDE0078 // Use pattern matching - https://github.com/dotnet/roslyn/issues/51691
             return symbol.Kind == SymbolKind.Method && ((IMethodSymbol)symbol).GetDllImportData() != null;
-#pragma warning restore IDE0078 // Use pattern matching
         }
 
         private static bool IsTypeNamedCorrectly(string name)
