@@ -1756,6 +1756,67 @@ namespace CallerSupportsSubsetOfTarget
         }
 
         [Fact]
+        public async Task AllowDenyListMixedApisTest()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+
+namespace ns
+{
+    class Caller
+    {
+        public static void CrossPlatfomr()
+        {
+            [|Target.UnsupportedBrowserSupportedOnWindowsLinux()|];
+            [|Target.SupportedOnWindowsLinuxUnsupportedBrowser()|];
+        }
+
+        [SupportedOSPlatform(""windows"")]
+        public static void SupportedWindows()
+        {
+            Target.UnsupportedBrowserSupportedOnWindowsLinux();
+            Target.SupportedOnWindowsLinuxUnsupportedBrowser();
+        }
+
+        [UnsupportedOSPlatform(""windows"")]
+        public static void UnsuportedWindows()
+        {
+            [|Target.UnsupportedBrowserSupportedOnWindowsLinux()|];
+            [|Target.SupportedOnWindowsLinuxUnsupportedBrowser()|];
+        }
+
+        [UnsupportedOSPlatform(""browser"")]
+        public static void UnsupportedBrowser()
+        {
+            [|Target.UnsupportedBrowserSupportedOnWindowsLinux()|];
+            [|Target.SupportedOnWindowsLinuxUnsupportedBrowser()|];
+        }
+
+        [SupportedOSPlatform(""browser"")]
+        public static void SupportedBrowser()
+        {
+            [|Target.UnsupportedBrowserSupportedOnWindowsLinux()|];
+            [|Target.SupportedOnWindowsLinuxUnsupportedBrowser()|];
+        }
+    }
+
+    class Target
+    {
+        [UnsupportedOSPlatform(""browser"")]
+        [SupportedOSPlatform(""windows"")]
+        [SupportedOSPlatform(""Linux"")]
+        public static void UnsupportedBrowserSupportedOnWindowsLinux() { }
+
+        [SupportedOSPlatform(""windows"")]
+        [SupportedOSPlatform(""Linux"")]
+        [UnsupportedOSPlatform(""browser"")]
+        public static void SupportedOnWindowsLinuxUnsupportedBrowser() { }
+    }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
         public async Task UnsupportedSamePlatformMustSuppressSupported()
         {
             var source = @"

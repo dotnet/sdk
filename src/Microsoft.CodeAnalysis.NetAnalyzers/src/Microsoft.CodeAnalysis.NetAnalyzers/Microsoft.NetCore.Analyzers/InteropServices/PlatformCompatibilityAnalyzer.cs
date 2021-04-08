@@ -1413,6 +1413,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return;
                 }
 
+                CheckAttributesConsistency(childAttributes);
                 var pAttributes = parentAttributes.Platforms;
                 if (pAttributes != null && !pAttributes.IsEmpty)
                 {
@@ -1426,7 +1427,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             // if all are deny list then we can add the child attributes
                             foreach (var (name, childAttribute) in childAttributes)
                             {
-                                NormalizeAttribute(childAttribute);
                                 if (pAttributes.TryGetValue(name, out var existing))
                                 {
                                     if (childAttribute.UnsupportedFirst != null)
@@ -1467,7 +1467,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             // only attributes with same platform matter, could narrow the list
                             if (childAttributes.TryGetValue(platform, out var childAttribute))
                             {
-                                childAttribute = NormalizeAttribute(childAttribute);
                                 // only later versions could narrow, other versions ignored
                                 if (childAttribute.SupportedFirst >= attributes.SupportedFirst &&
                                     (attributes.SupportedSecond == null || attributes.SupportedSecond < childAttribute.SupportedFirst))
@@ -1529,12 +1528,39 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     pAttributes ??= new SmallDictionary<string, Versions>(StringComparer.OrdinalIgnoreCase);
                     foreach (var (platform, attributes) in childAttributes)
                     {
-                        pAttributes[platform] = NormalizeAttribute(attributes);
+                        pAttributes[platform] = attributes;
                     }
                     parentAttributes.Platforms = pAttributes;
                 }
 
                 return;
+
+                static void CheckAttributesConsistency(SmallDictionary<string, Versions> childAttributes)
+                {
+                    bool allowList = false;
+                    using var unsupportedList = PooledHashSet<string>.GetInstance();
+
+                    foreach (var (platform, attributes) in childAttributes)
+                    {
+                        NormalizeAttribute(attributes);
+                        if (AllowList(attributes))
+                        {
+                            allowList = true;
+                        }
+                        else
+                        {
+                            Debug.Assert(DenyList(attributes));
+                            unsupportedList.Add(platform);
+                        }
+                    }
+                    if (allowList && unsupportedList.Count > 0)
+                    {
+                        foreach (var name in unsupportedList)
+                        {
+                            childAttributes.Remove(name);
+                        }
+                    }
+                }
 
                 static Versions NormalizeAttribute(Versions attributes)
                 {
