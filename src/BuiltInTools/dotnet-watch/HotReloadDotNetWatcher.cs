@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
+using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
 namespace Microsoft.DotNet.Watcher
 {
@@ -82,7 +84,10 @@ namespace Microsoft.DotNet.Watcher
                     return;
                 }
 
-                ConfigureExecutable(context, processSpec);
+                if (context.Iteration == 0)
+                {
+                    ConfigureExecutable(context, processSpec);
+                }
 
                 using var currentRunCancellationSource = new CancellationTokenSource();
                 var forceReload = _console.ListenForForceReloadRequest();
@@ -93,7 +98,7 @@ namespace Microsoft.DotNet.Watcher
                 using var fileSetWatcher = new FileSetWatcher(fileSet, _reporter);
                 try
                 {
-                    using var hotReload = new HotReload(_reporter);
+                    using var hotReload = new HotReload(_processRunner, _reporter);
                     await hotReload.InitializeAsync(context, cancellationToken);
 
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
@@ -198,6 +203,12 @@ namespace Microsoft.DotNet.Watcher
             if (!string.IsNullOrEmpty(context.DefaultLaunchSettingsProfile.ApplicationUrl))
             {
                 processSpec.EnvironmentVariables["ASPNETCORE_URLS"] = context.DefaultLaunchSettingsProfile.ApplicationUrl;
+            }
+
+            var rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(rootVariableName)))
+            {
+                processSpec.EnvironmentVariables[rootVariableName] = Path.GetDirectoryName(DotnetMuxer.MuxerPath);
             }
 
             if (context.DefaultLaunchSettingsProfile.EnvironmentVariables is IDictionary<string, string> envVariables)

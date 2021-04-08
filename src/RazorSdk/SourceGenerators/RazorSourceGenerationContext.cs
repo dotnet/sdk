@@ -35,6 +35,16 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         /// </summary>
         public bool GenerateMetadataSourceChecksumAttributes { get; private set; }
 
+        /// <summary>
+        /// Gets a flag that determines if the source generator should no-op.
+        /// <para>
+        /// This flag exists to support scenarios in VS where design-time and EnC builds need
+        /// to run without invoking the source generator to avoid duplicate types being produced.
+        /// The property is set by the SDK via an editor config.
+        /// </para>
+        /// </summary>
+        public bool SuppressRazorSourceGenerator { get; private set; }
+
         public RazorSourceGenerationContext(GeneratorExecutionContext context)
         {
             var globalOptions = context.AnalyzerConfigOptions.GlobalOptions;
@@ -61,6 +71,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
             globalOptions.TryGetValue("build_property._RazorSourceGeneratorDebug", out var waitForDebugger);
 
+            globalOptions.TryGetValue("build_property.SuppressRazorSourceGenerator", out var suppressRazorSourceGenerator);
+
             globalOptions.TryGetValue("build_property.GenerateRazorMetadataSourceChecksumAttributes", out var generateMetadataSourceChecksumAttributes);
 
             var razorConfiguration = RazorConfiguration.Create(razorLanguageVersion, configurationName, Enumerable.Empty<RazorExtension>(), true);
@@ -73,6 +85,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             RazorFiles = razorFiles;
             CshtmlFiles = cshtmlFiles;
             WaitForDebugger = waitForDebugger == "true";
+            SuppressRazorSourceGenerator = suppressRazorSourceGenerator == "true";
             GenerateMetadataSourceChecksumAttributes = generateMetadataSourceChecksumAttributes == "true";
         }
 
@@ -136,17 +149,9 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
                 options.TryGetValue("build_metadata.AdditionalFiles.CssScope", out var cssScope);
 
-                if (!options.TryGetValue("build_metadata.AdditionalFiles.GeneratedOutputFullPath", out var generatedOutputPath))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        RazorDiagnostics.GeneratedOutputFullPathNotProvided,
-                        Location.None,
-                        item.Path));
-                }
-
                 var fileKind = isComponent ? FileKinds.GetComponentFileKindFromFilePath(item.Path) : FileKinds.Legacy;
 
-                var inputItem = new RazorInputItem(item, relativePath, fileKind, generatedOutputPath, cssScope);
+                var inputItem = new RazorInputItem(item, relativePath, fileKind, cssScope);
 
                 if (isComponent)
                 {

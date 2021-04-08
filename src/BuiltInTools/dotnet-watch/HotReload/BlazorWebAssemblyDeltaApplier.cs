@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.ExternalAccess.DotNetWatch;
+using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             return default;
         }
 
-        public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, DotNetWatchManagedModuleUpdatesWrapper? updates, CancellationToken cancellationToken)
+        public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, ImmutableArray<WatchHotReloadService.Update> solutionUpdate, CancellationToken cancellationToken)
         {
             if (context.BrowserRefreshServer is null)
             {
@@ -33,18 +34,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            if (updates is null)
-            {
-                return true;
-            }
-
             var payload = new UpdatePayload
             {
-                Deltas = updates.Value.Updates.Select(c => new UpdateDelta
+                Deltas = solutionUpdate.Select(c => new UpdateDelta
                 {
-                    ModuleId = c.Module,
-                    ILDelta = c.ILDelta.ToArray(),
+                    ModuleId = c.ModuleId,
                     MetadataDelta = c.MetadataDelta.ToArray(),
+                    ILDelta = c.ILDelta.ToArray(),
                 }),
             };
 
@@ -53,7 +49,18 @@ namespace Microsoft.DotNet.Watcher.Tools
             return true;
         }
 
-        public ValueTask ReportDiagnosticsAsync(DotNetWatchContext context, IEnumerable<string> diagnostics, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public async ValueTask ReportDiagnosticsAsync(DotNetWatchContext context, IEnumerable<string> diagnostics, CancellationToken cancellationToken)
+        {
+            if (context.BrowserRefreshServer != null)
+            {
+                var message = new HotReloadDiagnostics
+                {
+                    Diagnostics = diagnostics
+                };
+
+                await context.BrowserRefreshServer.SendJsonSerlialized(message, cancellationToken);
+            }
+        }
 
         public void Dispose()
         {
@@ -71,6 +78,13 @@ namespace Microsoft.DotNet.Watcher.Tools
             public Guid ModuleId { get; init; }
             public byte[] MetadataDelta { get; init; }
             public byte[] ILDelta { get; init; }
+        }
+
+        public readonly struct HotReloadDiagnostics
+        {
+            public string Type => "HotReloadDiagnosticsv1";
+
+            public IEnumerable<string> Diagnostics { get; init; }
         }
     }
 }

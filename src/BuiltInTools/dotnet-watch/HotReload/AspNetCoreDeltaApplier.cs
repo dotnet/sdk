@@ -10,7 +10,7 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.ExternalAccess.DotNetWatch;
+using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -25,6 +25,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             _reporter = reporter;
         }
+
+        public bool SuppressBrowserRefreshAfterApply { get; init; }
 
         public async ValueTask InitializeAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
@@ -47,7 +49,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, DotNetWatchManagedModuleUpdatesWrapper? updates, CancellationToken cancellationToken)
+        public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, ImmutableArray<WatchHotReloadService.Update> solutionUpdate, CancellationToken cancellationToken)
         {
             if (!_task.IsCompletedSuccessfully || !_pipe.IsConnected)
             {
@@ -56,18 +58,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            if (updates is null)
-            {
-                await context.BrowserRefreshServer.SendJsonSerlialized(new HotReloadApplied());
-                return true;
-            }
-
             var payload = new UpdatePayload
             {
                 ChangedFile = changedFile,
-                Deltas = ImmutableArray.CreateRange(updates.Value.Updates, c => new UpdateDelta
+                Deltas = ImmutableArray.CreateRange(solutionUpdate, c => new UpdateDelta
                 {
-                    ModuleId = c.Module,
+                    ModuleId = c.ModuleId,
                     ILDelta = c.ILDelta.ToArray(),
                     MetadataDelta = c.MetadataDelta.ToArray(),
                 }),
@@ -84,7 +80,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 #if DEBUG
                  Timeout.InfiniteTimeSpan;
 #else
-                TimeSpan.FromSeconds(5);
+                 TimeSpan.FromSeconds(5);
 #endif
 
                 using var cancellationTokenSource = new CancellationTokenSource(timeout);
@@ -110,7 +106,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            if (context.BrowserRefreshServer != null)
+            if (!SuppressBrowserRefreshAfterApply && context.BrowserRefreshServer is not null)
             {
                 if (result == ApplyResult.Success_RefreshBrowser)
                 {
