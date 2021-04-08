@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.CSharp.Analyzers.Tasks.CSharpDoNotUseWhenAllOrWaitAllWithSingleArgument,
+    Microsoft.NetCore.Analyzers.Tasks.DoNotUseWhenAllOrWaitAllWithSingleArgument,
     Microsoft.NetCore.CSharp.Analyzers.Tasks.CSharpDoNotUseWhenAllOrWaitAllWithSingleArgumentFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.VisualBasic.Analyzers.Tasks.VisualBasicDoNotUseWhenAllOrWaitAllWithSingleArgument,
+    Microsoft.NetCore.Analyzers.Tasks.DoNotUseWhenAllOrWaitAllWithSingleArgument,
     Microsoft.NetCore.VisualBasic.Analyzers.Tasks.VisualBasicDoNotUseWhenAllOrWaitAllWithSingleArgumentFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests

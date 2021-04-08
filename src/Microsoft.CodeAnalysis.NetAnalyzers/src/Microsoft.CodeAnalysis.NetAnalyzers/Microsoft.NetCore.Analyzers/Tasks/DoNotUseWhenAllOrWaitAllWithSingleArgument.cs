@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -11,7 +12,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Tasks
 {
-    public abstract class DoNotUseWhenAllOrWaitAllWithSingleArgument : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public class DoNotUseWhenAllOrWaitAllWithSingleArgument : DiagnosticAnalyzer
     {
         internal const string WhenAllRuleId = "CA2250";
         internal const string WaitAllRuleId = "CA2251";
@@ -35,8 +37,6 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             isDataflowRule: false);
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(WhenAllRule, WaitAllRule);
-
-        protected abstract bool IsSingleTaskArgument(IInvocationOperation invocation, INamedTypeSymbol taskType, INamedTypeSymbol task1Type);
 
         public sealed override void Initialize(AnalysisContext context)
         {
@@ -82,6 +82,22 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                 SymbolEqualityComparer.Default.Equals(targetMethod.ContainingType, taskType) &&
                 parameters.Length == 1 &&
                 parameters[0].IsParams;
+        }
+
+        private static bool IsSingleTaskArgument(IInvocationOperation invocation, INamedTypeSymbol taskType, INamedTypeSymbol task1Type)
+        {
+            if (invocation.Arguments.Length != 1)
+            {
+                return false;
+            }
+
+            var argument = invocation.Arguments.Single();
+            if (argument.Type is INamedTypeSymbol namedTypeSymbol)
+            {
+                return namedTypeSymbol.Equals(taskType) || namedTypeSymbol.ConstructedFrom.Equals(task1Type);
+            }
+
+            return false;
         }
     }
 }
