@@ -28,7 +28,7 @@
         IgnoreExitCode="$(IgnoreTarExitCode)"/>
 
     <TarGzFileCreateFromDirectory
-        Condition=" '$(OSName)' != 'win' "
+        Condition=" '$(OSName)' != 'win' and '$(DotNetBuildFromSource)' != 'true'"
         SourceDirectory="$(SdkInternalLayoutPath)"
         DestinationArchive="$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdk).tar.gz"
         OverwriteDestination="true"
