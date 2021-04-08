@@ -15,13 +15,13 @@ namespace Microsoft.NetCore.Analyzers.Tasks
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class DoNotUseWhenAllOrWaitAllWithSingleArgument : DiagnosticAnalyzer
     {
-        internal const string WhenAllRuleId = "CA2250";
-        internal const string WaitAllRuleId = "CA2251";
+        internal const string WhenAllRuleId = "CA1840";
+        internal const string WaitAllRuleId = "CA1839";
 
         internal static readonly DiagnosticDescriptor WhenAllRule = DiagnosticDescriptorHelper.Create(WhenAllRuleId,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            DiagnosticCategory.Usage,
+            DiagnosticCategory.Performance,
             RuleLevel.BuildWarning,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             isPortedFxCopRule: false,
@@ -30,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         internal static readonly DiagnosticDescriptor WaitAllRule = DiagnosticDescriptorHelper.Create(WaitAllRuleId,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            DiagnosticCategory.Usage,
+            DiagnosticCategory.Performance,
             RuleLevel.BuildWarning,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             isPortedFxCopRule: false,

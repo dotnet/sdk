@@ -180,14 +180,14 @@ class C
         var t1 = CreateTask();
         var objectTask1 = CreateObjectTask();
 
-        await {|CA2250:Task.WhenAll(t1)|};
-        await {|CA2250:Task.WhenAll(CreateTask())|};
-        var t1WhenAll = {|CA2250:Task.WhenAll(t1)|};
+        await {|CA1840:Task.WhenAll(t1)|};
+        await {|CA1840:Task.WhenAll(CreateTask())|};
+        var t1WhenAll = {|CA1840:Task.WhenAll(t1)|};
         DoSomethingWithTask(t1WhenAll);
 
-        await {|CA2250:Task.WhenAll(objectTask1)|};
-        await {|CA2250:Task.WhenAll(CreateObjectTask())|};
-        var ot1WhenAll = {|CA2250:Task.WhenAll(objectTask1)|};
+        await {|CA1840:Task.WhenAll(objectTask1)|};
+        await {|CA1840:Task.WhenAll(CreateObjectTask())|};
+        var ot1WhenAll = {|CA1840:Task.WhenAll(objectTask1)|};
         DoSomethingWithTask(ot1WhenAll);
     }
 
@@ -212,12 +212,12 @@ class C
 
         await t1;
         await CreateTask();
-        var t1WhenAll = {|CA2250:Task.WhenAll(t1)|};
+        var t1WhenAll = {|CA1840:Task.WhenAll(t1)|};
         DoSomethingWithTask(t1WhenAll);
 
         await objectTask1;
         await CreateObjectTask();
-        var ot1WhenAll = {|CA2250:Task.WhenAll(objectTask1)|};
+        var ot1WhenAll = {|CA1840:Task.WhenAll(objectTask1)|};
         DoSomethingWithTask(ot1WhenAll);
     }
 
@@ -253,14 +253,14 @@ Class C
         Dim t1 = CreateTask()
         Dim objectTask1 = CreateObjectTask()
 
-        Await {|CA2250:Task.WhenAll(t1)|}
-        Await {|CA2250:Task.WhenAll(CreateTask())|}
-        Dim t1WhenAll = {|CA2250:Task.WhenAll(t1)|}
+        Await {|CA1840:Task.WhenAll(t1)|}
+        Await {|CA1840:Task.WhenAll(CreateTask())|}
+        Dim t1WhenAll = {|CA1840:Task.WhenAll(t1)|}
         DoSomethingWithTask(t1WhenAll)
 
-        Await {|CA2250:Task.WhenAll(objectTask1)|}
-        Await {|CA2250:Task.WhenAll(CreateObjectTask())|}
-        Dim o1WhenAll = {|CA2250:Task.WhenAll(objectTask1)|}
+        Await {|CA1840:Task.WhenAll(objectTask1)|}
+        Await {|CA1840:Task.WhenAll(CreateObjectTask())|}
+        Dim o1WhenAll = {|CA1840:Task.WhenAll(objectTask1)|}
         DoSomethingWithTask(o1WhenAll)
     End Function
 
@@ -287,12 +287,12 @@ Class C
 
         Await t1
         Await CreateTask()
-        Dim t1WhenAll = {|CA2250:Task.WhenAll(t1)|}
+        Dim t1WhenAll = {|CA1840:Task.WhenAll(t1)|}
         DoSomethingWithTask(t1WhenAll)
 
         Await objectTask1
         Await CreateObjectTask()
-        Dim o1WhenAll = {|CA2250:Task.WhenAll(objectTask1)|}
+        Dim o1WhenAll = {|CA1840:Task.WhenAll(objectTask1)|}
         DoSomethingWithTask(o1WhenAll)
     End Function
 
@@ -335,10 +335,10 @@ class C
         var t1 = CreateTask();
         var objectTask1 = CreateObjectTask();
 
-        {|CA2251:Task.WaitAll(t1)|};
-        {|CA2251:Task.WaitAll(CreateTask())|};
-        {|CA2251:Task.WaitAll(objectTask1)|};
-        {|CA2251:Task.WaitAll(CreateObjectTask())|};
+        {|CA1839:Task.WaitAll(t1)|};
+        {|CA1839:Task.WaitAll(CreateTask())|};
+        {|CA1839:Task.WaitAll(objectTask1)|};
+        {|CA1839:Task.WaitAll(CreateObjectTask())|};
     }
 
     Task CreateTask() => Task.CompletedTask;
@@ -378,10 +378,10 @@ Class C
         Dim t1 = CreateTask()
         Dim objectTask1 = CreateObjectTask()
 
-        {|CA2251:Task.WaitAll(t1)|}
-        {|CA2251:Task.WaitAll(CreateTask())|}
-        {|CA2251:Task.WaitAll(objectTask1)|}
-        {|CA2251:Task.WaitAll(CreateObjectTask())|}
+        {|CA1839:Task.WaitAll(t1)|}
+        {|CA1839:Task.WaitAll(CreateTask())|}
+        {|CA1839:Task.WaitAll(objectTask1)|}
+        {|CA1839:Task.WaitAll(CreateObjectTask())|}
     End Sub
 
     Function CreateTask() As Task
