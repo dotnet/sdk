@@ -6,17 +6,17 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class KebabCaseValueFormModel : IValueForm
+    internal class KebabCaseValueFormModel : IValueForm
     {
         public string Identifier => "kebabCase";
 
         public string Name { get; }
 
-        public KebabCaseValueFormModel()
+        internal KebabCaseValueFormModel()
         {
         }
 
-        public KebabCaseValueFormModel(string name)
+        internal KebabCaseValueFormModel(string name)
         {
             Name = name;
         }

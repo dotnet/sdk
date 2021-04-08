@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public interface ISymbolModel
+    internal interface ISymbolModel
     {
         string Type { get; }
 

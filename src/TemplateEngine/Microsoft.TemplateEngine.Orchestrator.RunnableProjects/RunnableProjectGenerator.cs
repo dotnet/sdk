@@ -17,10 +17,10 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class RunnableProjectGenerator : IGenerator
+    internal class RunnableProjectGenerator : IGenerator
     {
-        public static readonly string TemplateConfigDirectoryName = ".template.config";
-        public static readonly string TemplateConfigFileName = "template.json";
+        internal static readonly string TemplateConfigDirectoryName = ".template.config";
+        internal static readonly string TemplateConfigFileName = "template.json";
         private static readonly string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
         private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
         private static readonly string GeneratorVersion = "1.0.0.0";
@@ -714,7 +714,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             private readonly IDictionary<string, ITemplateParameter> _parameters = new Dictionary<string, ITemplateParameter>(StringComparer.OrdinalIgnoreCase);
 
-            public ParameterSet(IRunnableProjectConfig config)
+            internal ParameterSet(IRunnableProjectConfig config)
             {
                 foreach (KeyValuePair<string, Parameter> p in config.Parameters)
                 {
@@ -727,7 +727,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IEnumerable<string> RequiredBrokerCapabilities => Enumerable.Empty<string>();
             public IDictionary<ITemplateParameter, object> ResolvedValues { get; } = new Dictionary<ITemplateParameter, object>();
-            public void AddParameter(ITemplateParameter param)
+            internal void AddParameter(ITemplateParameter param)
             {
                 _parameters[param.Name] = param;
             }

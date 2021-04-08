@@ -2,14 +2,14 @@
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public class ConditionalOperationOptions
+    internal class ConditionalOperationOptions
     {
         private static readonly string DefaultEvaluatorType = "C++";
         private static readonly bool DefaultWholeLine = true;
         private static readonly bool DefaultTrimWhitespace = true;
         private static readonly string DefaultId = null;
 
-        public ConditionalOperationOptions()
+        internal ConditionalOperationOptions()
         {
             EvaluatorType = DefaultEvaluatorType;
             WholeLine = DefaultWholeLine;
@@ -17,13 +17,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             Id = DefaultId;
         }
 
-        public string EvaluatorType { get; set; }
-        public bool WholeLine { get; set; }
-        public bool TrimWhitespace { get; set; }
-        public string Id { get; set; }
-        public bool OnByDefault { get; set; }
+        internal string EvaluatorType { get; set; }
+        internal bool WholeLine { get; set; }
+        internal bool TrimWhitespace { get; set; }
+        internal string Id { get; set; }
+        internal bool OnByDefault { get; set; }
 
-        public static ConditionalOperationOptions FromJObject(JObject rawConfiguration)
+        internal static ConditionalOperationOptions FromJObject(JObject rawConfiguration)
         {
             ConditionalOperationOptions options = new ConditionalOperationOptions();
 

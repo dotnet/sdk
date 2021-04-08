@@ -11,11 +11,12 @@ using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class GlobalRunSpec : IGlobalRunSpec
+    internal class GlobalRunSpec : IGlobalRunSpec
     {
         private static IReadOnlyDictionary<string, IOperationConfig> _operationConfigLookup;
 
@@ -41,7 +42,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; }
 
-        public IReadOnlyDictionary<string, string> Rename { get; private set; }
+        internal IReadOnlyDictionary<string, string> Rename { get; private set; }
 
         public IReadOnlyList<IOperationProvider> Operations { get; }
 
@@ -58,7 +59,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
 
-        public GlobalRunSpec(
+        internal GlobalRunSpec(
             IDirectory templateRoot,
             IComponentManager componentManager,
             IParameterSet parameters, 
@@ -97,7 +98,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        public void SetupFileSource(FileSourceMatchInfo source)
+        internal void SetupFileSource(FileSourceMatchInfo source)
         {
             FileSourceHierarchicalPathMatcher matcher = new FileSourceHierarchicalPathMatcher(source);
             Include = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Include, matcher) };
@@ -194,7 +195,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal class ProcessorState : IProcessorState
         {
-            public ProcessorState(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, byte[] buffer, Encoding encoding)
+            internal ProcessorState(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, byte[] buffer, Encoding encoding)
             {
                 Config = new EngineConfig(environmentSettings, vars);
                 CurrentBuffer = buffer;

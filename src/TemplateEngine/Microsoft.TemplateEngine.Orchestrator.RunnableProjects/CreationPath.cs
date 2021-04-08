@@ -2,16 +2,15 @@
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class CreationPath : ICreationPath
+    internal class CreationPath : ICreationPath
     {
         public string Path { get; set; }
 
-        public static IReadOnlyList<ICreationPath> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<ICreationPathModel> modelList, IVariableCollection rootVariableCollection)
+        internal static IReadOnlyList<ICreationPath> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<ICreationPathModel> modelList, IVariableCollection rootVariableCollection)
         {
             List<ICreationPath> pathList = new List<ICreationPath>();
 

@@ -4,16 +4,16 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class ReplacementValueFormModel : IValueForm
+    internal class ReplacementValueFormModel : IValueForm
     {
         private readonly Regex _match;
         private readonly string _replacment;
 
-        public ReplacementValueFormModel()
+        internal ReplacementValueFormModel()
         {
         }
 
-        public ReplacementValueFormModel(string name, string pattern, string replacement)
+        internal ReplacementValueFormModel(string name, string pattern, string replacement)
         {
             _match = new Regex(pattern);
             _replacment = replacement;

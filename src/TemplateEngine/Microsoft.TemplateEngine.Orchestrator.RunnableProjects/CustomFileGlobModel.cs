@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class CustomFileGlobModel : ConditionedConfigurationElementBase, ICustomFileGlobModel
+    internal class CustomFileGlobModel : ConditionedConfigurationElementBase, ICustomFileGlobModel
     {
         public string Glob { get; set; }
 
@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string FlagPrefix { get; set; }
 
-        public static CustomFileGlobModel FromJObject(JObject globData, string globName)
+        internal static CustomFileGlobModel FromJObject(JObject globData, string globName)
         {
             // setup the variable config
             IVariableConfig variableConfig;

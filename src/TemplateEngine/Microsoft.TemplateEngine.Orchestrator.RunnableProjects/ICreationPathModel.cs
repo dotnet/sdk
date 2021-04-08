@@ -2,7 +2,7 @@
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public interface ICreationPathModel : IConditionedConfigurationElement
+    internal interface ICreationPathModel : IConditionedConfigurationElement
     {
         string PathOriginal { get; }
 

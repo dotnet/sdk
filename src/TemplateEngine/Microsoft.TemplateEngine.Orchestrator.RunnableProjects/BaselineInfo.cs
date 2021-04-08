@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class BaselineInfo : IBaselineInfo
+    internal class BaselineInfo : IBaselineInfo
     {
         [JsonProperty]
         public string Description { get; set; }

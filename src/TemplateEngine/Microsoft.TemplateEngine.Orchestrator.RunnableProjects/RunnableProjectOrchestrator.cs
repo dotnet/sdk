@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class RunnableProjectOrchestrator : IOrchestrator, IOrchestrator2
+    internal class RunnableProjectOrchestrator : IOrchestrator, IOrchestrator2
     {
         private readonly IOrchestrator2 _basicOrchestrator;
 

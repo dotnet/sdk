@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Core.Contracts;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     [Flags]
-    public enum FileDispositionStates
+    internal enum FileDispositionStates
     {
         None = 0,
         Include = 0x01,
@@ -15,18 +15,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         Exclude = 0x04
     }
 
-    public static class EnumExtensions
+    internal static class EnumExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Has(this FileDispositionStates value, FileDispositionStates check)
+        internal static bool Has(this FileDispositionStates value, FileDispositionStates check)
         {
             return (value & check) == check;
         }
     }
 
-    public class FileSourceHierarchicalPathMatcher
+    internal class FileSourceHierarchicalPathMatcher
     {
-        public FileSourceHierarchicalPathMatcher(FileSourceMatchInfo matchInfo)
+        internal FileSourceHierarchicalPathMatcher(FileSourceMatchInfo matchInfo)
         {
             List<FileSourceEvaluablePathMatcher> evaluators = new List<FileSourceEvaluablePathMatcher>();
 
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private string _cachedEvaluatedPath;
         private FileDispositionStates _cachedStatesForFile;
 
-        public FileDispositionStates Evaluate(string path)
+        internal FileDispositionStates Evaluate(string path)
         {
             if (!string.Equals(path, _cachedEvaluatedPath, StringComparison.Ordinal))
             {
@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private class FileSourceEvaluablePathMatcher
         {
-            public FileSourceEvaluablePathMatcher(FileSourceEvaluable evaluable)
+            internal FileSourceEvaluablePathMatcher(FileSourceEvaluable evaluable)
             {
                 _include = SetupMatcherList(evaluable.Include);
                 _exclude = SetupMatcherList(evaluable.Exclude);
@@ -109,7 +109,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             private IReadOnlyList<IPathMatcher> _copyOnly;
 
-            public FileDispositionStates Evaluate(string path)
+            internal FileDispositionStates Evaluate(string path)
             {
                 if (_exclude.Any(x => x.IsMatch(path)))
                 {

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    public class RegexMacro : IMacro, IDeferredMacro
+    internal class RegexMacro : IMacro, IDeferredMacro
     {
         public Guid Id => new Guid("8A4D4937-E23F-426D-8398-3BDBD1873ADB");
 

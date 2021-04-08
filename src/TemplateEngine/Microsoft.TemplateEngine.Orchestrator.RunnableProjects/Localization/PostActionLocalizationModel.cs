@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
-    public class PostActionLocalizationModel : IPostActionLocalizationModel
+    internal class PostActionLocalizationModel : IPostActionLocalizationModel
     {
         /// <summary>
         /// The key used in JSON to declare manual instructions.
@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
         /// Creates an object containing the localizations of a post action from the given json object.
         /// </summary>
         /// <param name="postActionSection">Json object, containig the localizations of a post action.</param>
-        public static PostActionLocalizationModel FromJObject(JObject postActionSection)
+        internal static PostActionLocalizationModel FromJObject(JObject postActionSection)
         {
             return new PostActionLocalizationModel()
             {

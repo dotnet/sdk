@@ -4,11 +4,12 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public class FlagsConfig : IOperationConfig
+    internal class FlagsConfig : IOperationConfig
     {
         public string Key => SetFlag.OperationName;
 
@@ -42,7 +43,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         private static readonly string FlagFlagsSuffix = ":flags";
 
         // Returns a default flags operations setup for the given switchPrefix
-        public static IReadOnlyList<IOperationProvider> FlagsDefaultSetup(string switchPrefix)
+        internal static IReadOnlyList<IOperationProvider> FlagsDefaultSetup(string switchPrefix)
         {
             List<IOperationProvider> flagOperations = new List<IOperationProvider>();
             string on = string.Format("{0}+{1}", switchPrefix, FlagConditionalSuffix);

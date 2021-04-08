@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    public class JoinMacro : IMacro, IDeferredMacro
+    internal class JoinMacro : IMacro, IDeferredMacro
     {
         public Guid Id => new Guid("6A2C58E5-8743-484B-AF3C-536770D31CEE");
 

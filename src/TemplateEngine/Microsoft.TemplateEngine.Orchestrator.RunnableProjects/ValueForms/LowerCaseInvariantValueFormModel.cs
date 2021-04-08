@@ -3,17 +3,17 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class LowerCaseInvariantValueFormModel : IValueForm
+    internal class LowerCaseInvariantValueFormModel : IValueForm
     {
         public string Identifier => "lowerCaseInvariant";
 
         public string Name { get; }
 
-        public LowerCaseInvariantValueFormModel()
+        internal LowerCaseInvariantValueFormModel()
         {
         }
 
-        public LowerCaseInvariantValueFormModel(string name)
+        internal LowerCaseInvariantValueFormModel(string name)
         {
             Name = name;
         }

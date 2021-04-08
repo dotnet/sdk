@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class XmlEncodeValueFormModel : IValueForm
+    internal class XmlEncodeValueFormModel : IValueForm
     {
         private static readonly XmlWriterSettings Settings = new XmlWriterSettings { ConformanceLevel = ConformanceLevel.Fragment };
 
@@ -13,11 +13,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 
         public string Name { get; }
 
-        public XmlEncodeValueFormModel()
+        internal XmlEncodeValueFormModel()
         {
         }
 
-        public XmlEncodeValueFormModel(string name)
+        internal XmlEncodeValueFormModel(string name)
         {
             Name = name;
         }

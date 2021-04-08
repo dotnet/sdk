@@ -3,13 +3,13 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class GlobbingPatternMatcher : IPathMatcher
+    internal class GlobbingPatternMatcher : IPathMatcher
     {
         private readonly Glob _pattern;
 
         public string Pattern { get; }
 
-        public GlobbingPatternMatcher(string pattern, bool canBeNameOnlyMatch = true)
+        internal GlobbingPatternMatcher(string pattern, bool canBeNameOnlyMatch = true)
         {
             Pattern = pattern;
             _pattern = Glob.Parse(pattern, canBeNameOnlyMatch);

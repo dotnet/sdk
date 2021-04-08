@@ -6,21 +6,21 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
-    public class GeneratePortNumberConfig : IMacroConfig
+    internal class GeneratePortNumberConfig : IMacroConfig
     {
-        public string DataType { get; }
+        internal string DataType { get; }
 
         public string VariableName { get; }
 
         public string Type => "port";
 
-        public Socket Socket { get; }
+        internal Socket Socket { get; }
 
-        public int Port { get; }
+        internal int Port { get; }
 
-        public int Low { get; }
+        internal int Low { get; }
 
-        public int High { get; }
+        internal int High { get; }
 
         private static readonly HashSet<int> UnsafePorts = new HashSet<int>() {
                     2049, // nfs
@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
                     6669, // Alternate IRC [Apple addition]
         };
 
-        public GeneratePortNumberConfig(string variableName, string dataType, int fallback, int low, int high)
+        internal GeneratePortNumberConfig(string variableName, string dataType, int fallback, int low, int high)
         {
             DataType = dataType;
             VariableName = variableName;

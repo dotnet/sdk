@@ -2,25 +2,25 @@
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class FileSourceEvaluable
+    internal class FileSourceEvaluable
     {
-        public FileSourceEvaluable(IReadOnlyList<string> include, IReadOnlyList<string> exclude, IReadOnlyList<string> copyOnly)
+        internal FileSourceEvaluable(IReadOnlyList<string> include, IReadOnlyList<string> exclude, IReadOnlyList<string> copyOnly)
         {
             Include = include;
             Exclude = exclude;
             CopyOnly = copyOnly;
         }
 
-        public IReadOnlyList<string> Include { get; }
+        internal IReadOnlyList<string> Include { get; }
 
-        public IReadOnlyList<string> Exclude { get; }
+        internal IReadOnlyList<string> Exclude { get; }
 
-        public IReadOnlyList<string> CopyOnly { get; }
+        internal IReadOnlyList<string> CopyOnly { get; }
     }
 
-    public class FileSourceMatchInfo
+    internal class FileSourceMatchInfo
     {
-        public FileSourceMatchInfo(string source, string target, FileSourceEvaluable topLevelEvaluable, IReadOnlyDictionary<string, string> renames, IReadOnlyList<FileSourceEvaluable> modifiers)
+        internal FileSourceMatchInfo(string source, string target, FileSourceEvaluable topLevelEvaluable, IReadOnlyDictionary<string, string> renames, IReadOnlyList<FileSourceEvaluable> modifiers)
         {
             Source = source;
             Target = target;
@@ -29,14 +29,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Modifiers = modifiers;
         }
 
-        public string Source { get; }
+        internal string Source { get; }
 
-        public string Target { get; }
+        internal string Target { get; }
 
-        public FileSourceEvaluable TopLevelEvaluable { get; }
+        internal FileSourceEvaluable TopLevelEvaluable { get; }
 
-        public IReadOnlyDictionary<string, string> Renames { get; }
+        internal IReadOnlyDictionary<string, string> Renames { get; }
 
-        public IReadOnlyList<FileSourceEvaluable> Modifiers { get; }
+        internal IReadOnlyList<FileSourceEvaluable> Modifiers { get; }
     }
 }

@@ -5,21 +5,21 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class DefaultSafeNamespaceValueFormModel : IValueForm
+    internal class DefaultSafeNamespaceValueFormModel : IValueForm
     {
         private readonly string _name;
 
-        public DefaultSafeNamespaceValueFormModel()
+        internal DefaultSafeNamespaceValueFormModel()
             : this(null)
         {
         }
 
-        public DefaultSafeNamespaceValueFormModel(string name)
+        internal DefaultSafeNamespaceValueFormModel(string name)
         {
             _name = name;
         }
 
-        public static readonly string FormName = "safe_namespace";
+        internal static readonly string FormName = "safe_namespace";
 
         public virtual string Identifier => _name ?? FormName;
 

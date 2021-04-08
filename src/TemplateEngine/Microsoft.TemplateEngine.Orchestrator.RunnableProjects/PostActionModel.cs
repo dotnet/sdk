@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class PostActionModel : ConditionedConfigurationElementBase, IPostActionModel
+    internal class PostActionModel : ConditionedConfigurationElementBase, IPostActionModel
     {
         public string Description { get; private set; }
 
@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string ConfigFile { get; private set; }
 
-        public static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyDictionary<Guid, IPostActionLocalizationModel> localizations)
+        internal static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyDictionary<Guid, IPostActionLocalizationModel> localizations)
         {
             List<IPostActionModel> modelList = new List<IPostActionModel>();
 

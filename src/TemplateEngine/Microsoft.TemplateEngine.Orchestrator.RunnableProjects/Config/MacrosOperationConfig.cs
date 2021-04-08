@@ -2,20 +2,20 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public class MacrosOperationConfig
+    internal class MacrosOperationConfig
     {
         private static IReadOnlyDictionary<string, IMacro> _macroObjects;
         private static IReadOnlyDictionary<string, IDeferredMacro> _deferredMacroObjects;
 
         // Warning: if there are unknown macro "types", they are quietly ignored here.
         // This applies to both the regular and deferred macros.
-        public IEnumerable<IOperationProvider> ProcessMacros(IEngineEnvironmentSettings environmentSettings, IComponentManager componentManager, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables, IParameterSet parameters)
+        internal IEnumerable<IOperationProvider> ProcessMacros(IEngineEnvironmentSettings environmentSettings, IComponentManager componentManager, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables, IParameterSet parameters)
         {
             EnsureMacros(componentManager);
             EnsureDeferredMacros(componentManager);

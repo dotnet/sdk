@@ -7,9 +7,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public static class ConditionalLineCommentConfig
+    internal static class ConditionalLineCommentConfig
     {
-        public static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
+        internal static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
         {
             string token = rawConfiguration.ToString("token");
 
@@ -24,12 +24,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             return GenerateConditionalSetup(token, keywords, options);
         }
 
-        public static List<IOperationProvider> GenerateConditionalSetup(string token)
+        internal static List<IOperationProvider> GenerateConditionalSetup(string token)
         {
             return GenerateConditionalSetup(token, new ConditionalKeywords(), new ConditionalOperationOptions());
         }
 
-        public static List<IOperationProvider> GenerateConditionalSetup(string token, ConditionalKeywords keywords, ConditionalOperationOptions options)
+        internal static List<IOperationProvider> GenerateConditionalSetup(string token, ConditionalKeywords keywords, ConditionalOperationOptions options)
         {
             string uncommentOperationId = $"Uncomment (line): {token} -> ()";
             string reduceCommentOperationId = $"Reduce comment (line): ({token}{token}) -> ({token})";

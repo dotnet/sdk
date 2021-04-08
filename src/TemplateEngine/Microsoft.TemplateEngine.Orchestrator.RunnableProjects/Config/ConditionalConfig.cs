@@ -4,12 +4,13 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public class ConditionalConfig : IOperationConfig
+    internal class ConditionalConfig : IOperationConfig
     {
         public string Key => Conditional.OperationName;
 
@@ -43,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             }
         }
 
-        public static IReadOnlyList<IOperationProvider> ConditionalSetup(ConditionalType style, string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        internal static IReadOnlyList<IOperationProvider> ConditionalSetup(ConditionalType style, string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             List<IOperationProvider> setup;
 
@@ -111,7 +112,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         }
 
         // Nice to have: Generalize this type of setup similarly to Line, Block, & Custom
-        public static List<IOperationProvider> MSBuildConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        internal static List<IOperationProvider> MSBuildConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
             IOperationProvider conditional = new InlineMarkupConditional(
@@ -131,7 +132,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         }
 
         // Nice to have: Generalize this type of setup similarly to Line, Block, & Custom
-        public static List<IOperationProvider> CStyleNoCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        internal static List<IOperationProvider> CStyleNoCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             ConditionalKeywords defaultKeywords = new ConditionalKeywords();
 

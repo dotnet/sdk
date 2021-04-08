@@ -5,7 +5,7 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public interface IRunnableProjectConfig
+    internal interface IRunnableProjectConfig
     {
         IReadOnlyDictionary<string, Parameter> Parameters { get; }
 

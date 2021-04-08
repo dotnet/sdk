@@ -4,14 +4,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
-    public class FileLocalizationModel : IFileLocalizationModel
+    internal class FileLocalizationModel : IFileLocalizationModel
     {
         public string File { get; set; }
 
         // original -> localized
         public IReadOnlyDictionary<string, string> Localizations { get; set; }
 
-        public static FileLocalizationModel FromJObject(string fileName, JObject fileSection)
+        internal static FileLocalizationModel FromJObject(string fileName, JObject fileSection)
         {
             Dictionary<string, string> localizations = new Dictionary<string, string>();
 

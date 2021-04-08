@@ -4,11 +4,12 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public class BalancedNestingConfig : IOperationConfig
+    internal class BalancedNestingConfig : IOperationConfig
     {
         public string Key => BalancedNesting.OperationName;
 
@@ -26,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             yield return new BalancedNesting(startToken.TokenConfig(), realEndToken.TokenConfig(), pseudoEndToken.TokenConfig(), id, resetFlag, onByDefault);
         }
 
-        public static JObject CreateConfiguration(string startToken, string realEndToken, string pseudoEndToken, string id, string resetFlag)
+        internal static JObject CreateConfiguration(string startToken, string realEndToken, string pseudoEndToken, string id, string resetFlag)
         {
             JObject config = new JObject
             {

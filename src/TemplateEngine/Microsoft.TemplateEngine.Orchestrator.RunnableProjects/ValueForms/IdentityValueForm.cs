@@ -3,19 +3,19 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class IdentityValueForm : IValueForm
+    internal class IdentityValueForm : IValueForm
     {
-        public static readonly string FormName = "identity";
+        internal static readonly string FormName = "identity";
 
         public string Identifier => FormName;
 
         public string Name { get; }
 
-        public IdentityValueForm()
+        internal IdentityValueForm()
         {
         }
 
-        public IdentityValueForm(string name)
+        internal IdentityValueForm(string name)
         {
             Name = name;
         }

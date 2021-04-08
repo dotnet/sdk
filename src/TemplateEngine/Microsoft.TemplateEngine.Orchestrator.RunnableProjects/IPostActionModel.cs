@@ -4,7 +4,7 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public interface IPostActionModel : IConditionedConfigurationElement
+    internal interface IPostActionModel : IConditionedConfigurationElement
     {
         string Description { get; }
 

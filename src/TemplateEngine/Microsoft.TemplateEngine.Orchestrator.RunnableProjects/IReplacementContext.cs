@@ -1,6 +1,6 @@
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public interface IReplacementContext
+    internal interface IReplacementContext
     {
         string OnlyIfBefore { get; }
 

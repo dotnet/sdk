@@ -8,14 +8,14 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class CacheParameter : ICacheParameter, IAllowDefaultIfOptionWithoutValue
+    internal class CacheParameter : ICacheParameter, IAllowDefaultIfOptionWithoutValue
     {
-        public CacheParameter(string dataType, string? defaultValue, string? displayName, string? description)
+        internal CacheParameter(string dataType, string? defaultValue, string? displayName, string? description)
             : this(dataType, defaultValue, displayName, description, null)
         {
         }
 
-        public CacheParameter(string dataType, string? defaultValue, string? displayName, string? description, string? defaultIfOptionWithoutValue)
+        internal CacheParameter(string dataType, string? defaultValue, string? displayName, string? description, string? defaultIfOptionWithoutValue)
         {
             DataType = dataType;
             DefaultValue = defaultValue;
@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         [JsonProperty]
         public string? DefaultIfOptionWithoutValue { get; set; }
 
-        public bool ShouldSerializeDefaultIfOptionWithoutValue()
+        internal bool ShouldSerializeDefaultIfOptionWithoutValue()
         {
             return !string.IsNullOrEmpty(DefaultIfOptionWithoutValue);
         }

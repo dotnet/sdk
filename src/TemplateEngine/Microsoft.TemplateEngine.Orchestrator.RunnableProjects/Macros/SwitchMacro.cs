@@ -7,16 +7,17 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Core.Operations;
 using Newtonsoft.Json.Linq;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    public class SwitchMacro : IMacro, IDeferredMacro
+    internal class SwitchMacro : IMacro, IDeferredMacro
     {
         public Guid Id => new Guid("B57D64E0-9B4F-4ABE-9366-711170FD5294");
 
         public string Type => "switch";
 
-        public static readonly string DefaultEvaluator = "C++";
+        internal static readonly string DefaultEvaluator = "C++";
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {

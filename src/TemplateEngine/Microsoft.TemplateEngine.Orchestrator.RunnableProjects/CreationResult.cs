@@ -3,7 +3,7 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class CreationResult : ICreationResult
+    internal class CreationResult : ICreationResult
     {
         public IReadOnlyList<IPostAction> PostActions { get; set; }
 

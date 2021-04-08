@@ -2,21 +2,21 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
-    public class GuidMacroConfig : IMacroConfig
+    internal class GuidMacroConfig : IMacroConfig
     {
-        public string DataType { get; }
+        internal string DataType { get; }
 
         public string VariableName { get; private set; }
 
         public string Type { get; private set; }
 
-        public string DefaultFormat { get; private set; }
+        internal string DefaultFormat { get; private set; }
 
-        public string Format { get; private set; }
+        internal string Format { get; private set; }
 
-        public static readonly string DefaultFormats = "ndbpxNDPBX";
+        internal static readonly string DefaultFormats = "ndbpxNDPBX";
 
-        public GuidMacroConfig(string variableName, string dataType, string format, string defaultFormat)
+        internal GuidMacroConfig(string variableName, string dataType, string format, string defaultFormat)
         {
             DataType = dataType;
             VariableName = variableName;

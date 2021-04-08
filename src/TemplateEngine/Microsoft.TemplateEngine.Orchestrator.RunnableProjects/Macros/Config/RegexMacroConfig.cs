@@ -3,20 +3,20 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
-    public class RegexMacroConfig : IMacroConfig
+    internal class RegexMacroConfig : IMacroConfig
     {
-        public string DataType { get; }
+        internal string DataType { get; }
 
         public string VariableName { get; private set; }
 
         public string Type { get; private set; }
 
-        public string SourceVariable { get; private set; }
+        internal string SourceVariable { get; private set; }
 
         // Regex -> Replacement
-        public IList<KeyValuePair<string, string>> Steps { get; private set; }
+        internal IList<KeyValuePair<string, string>> Steps { get; private set; }
 
-        public RegexMacroConfig(string variableName, string dataType, string sourceVariable, IList<KeyValuePair<string, string>> steps)
+        internal RegexMacroConfig(string variableName, string dataType, string sourceVariable, IList<KeyValuePair<string, string>> steps)
         {
             DataType = dataType;
             VariableName = variableName;

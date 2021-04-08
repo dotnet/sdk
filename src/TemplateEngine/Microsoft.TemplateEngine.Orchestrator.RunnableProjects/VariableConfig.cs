@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class VariableConfig : IVariableConfig
+    internal class VariableConfig : IVariableConfig
     {
         public IReadOnlyDictionary<string, string> Sources { get; set; }
 
@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public bool Expand { get; set; }
 
-        public static IVariableConfig DefaultVariableSetup(string fallbackFormat)
+        internal static IVariableConfig DefaultVariableSetup(string fallbackFormat)
         {
             IVariableConfig config = new VariableConfig
             {
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return config;
         }
 
-        public static IVariableConfig FromJObject(JObject configData)
+        internal static IVariableConfig FromJObject(JObject configData)
         {
             Dictionary<string, string> sourceFormats = new Dictionary<string, string>();
             List<string> order = new List<string>();

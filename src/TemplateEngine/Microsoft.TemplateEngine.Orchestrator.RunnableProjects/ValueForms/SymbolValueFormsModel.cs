@@ -6,16 +6,16 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class SymbolValueFormsModel
+    internal class SymbolValueFormsModel
     {
         private static readonly string IdentityValueFormName = IdentityValueForm.FormName;
 
-        public static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel(Empty<string>.List.Value);
+        internal static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel(Empty<string>.List.Value);
 
         // by default, symbols get the "identity" value form, for a direct replacement
-        public static SymbolValueFormsModel Default { get; } = new SymbolValueFormsModel(new List<string>() { IdentityValueFormName });
+        internal static SymbolValueFormsModel Default { get; } = new SymbolValueFormsModel(new List<string>() { IdentityValueFormName });
 
-        public IReadOnlyList<string> GlobalForms { get; }
+        internal IReadOnlyList<string> GlobalForms { get; }
 
         private SymbolValueFormsModel(IReadOnlyList<string> globalForms)
         {
@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         // If the symbol doesn't include an "identity" form and the addIdentity flag isn't false,
         // an identity specification is added to the beginning of the symbol's value form list.
         // If there is an identity form listed, its position remains intact irrespective of the addIdentity flag.
-        public static SymbolValueFormsModel FromJObject(JObject configJson)
+        internal static SymbolValueFormsModel FromJObject(JObject configJson)
         {
             JToken globalConfig = configJson.Property("global").Value;
             List<string> globalForms;

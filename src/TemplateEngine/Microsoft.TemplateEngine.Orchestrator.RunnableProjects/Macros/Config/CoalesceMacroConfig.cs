@@ -5,21 +5,21 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
-    public class CoalesceMacroConfig : IMacroConfig
+    internal class CoalesceMacroConfig : IMacroConfig
     {
-        public string DataType { get; }
+        internal string DataType { get; }
 
         public string VariableName { get; }
 
-        public string SourceVariableName { get; }
+        internal string SourceVariableName { get; }
 
-        public string DefaultValue { get; }
+        internal string DefaultValue { get; }
 
-        public string FallbackVariableName { get; }
+        internal string FallbackVariableName { get; }
 
         public string Type => "coalesce";
 
-        public CoalesceMacroConfig(string variableName, string dataType, string sourceVariableName, string defaultValue, string fallbackVariableName)
+        internal CoalesceMacroConfig(string variableName, string dataType, string sourceVariableName, string defaultValue, string fallbackVariableName)
         {
             DataType = dataType;
             VariableName = variableName;

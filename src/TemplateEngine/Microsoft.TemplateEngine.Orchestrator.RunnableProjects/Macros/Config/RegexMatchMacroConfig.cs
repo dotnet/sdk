@@ -5,19 +5,19 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
-    public class RegexMatchMacroConfig : IMacroConfig
+    internal class RegexMatchMacroConfig : IMacroConfig
     {
-        public string DataType { get; }
+        internal string DataType { get; }
 
         public string VariableName { get; }
 
         public string Type { get; }
 
-        public string SourceVariable { get; }
+        internal string SourceVariable { get; }
 
-        public string Pattern { get; }
+        internal string Pattern { get; }
 
-        public RegexMatchMacroConfig(string variableName, string dataType, string sourceVariable, string pattern)
+        internal RegexMatchMacroConfig(string variableName, string dataType, string sourceVariable, string pattern)
         {
             DataType = dataType ?? "bool";
             VariableName = variableName;

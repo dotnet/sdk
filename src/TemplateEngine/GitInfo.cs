@@ -2,8 +2,8 @@ namespace Microsoft.TemplateEngine
 {
     internal static class GitInfo
     {
-        public static string PackageVersion { get; } = "";
-        public static string CommitCount { get; } = "";
-        public static string CommitHash { get; } = "";
+        internal static string PackageVersion { get; } = "";
+        internal static string CommitCount { get; } = "";
+        internal static string CommitHash { get; } = "";
     }
 }

@@ -8,9 +8,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public static class ConditionalBlockCommentConfig
+    internal static class ConditionalBlockCommentConfig
     {
-        public static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
+        internal static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
         {
             string startToken = rawConfiguration.ToString("startToken");
             string endToken = rawConfiguration.ToString("endToken");
@@ -39,12 +39,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             }
         }
 
-        public static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken)
+        internal static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken)
         {
             return GenerateConditionalSetup(startToken, endToken, new ConditionalKeywords(), new ConditionalOperationOptions());
         }
 
-        public static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, ConditionalKeywords keywords, ConditionalOperationOptions options)
+        internal static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, ConditionalKeywords keywords, ConditionalOperationOptions options)
         {
             string pseudoEndComment;
 
@@ -61,12 +61,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             return GenerateConditionalSetup(startToken, endToken, pseudoEndComment, keywords, options);
         }
 
-        public static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, string pseudoEndToken)
+        internal static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, string pseudoEndToken)
         {
             return GenerateConditionalSetup(startToken, endToken, pseudoEndToken, new ConditionalKeywords(), new ConditionalOperationOptions());
         }
 
-        public static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, string pseudoEndToken, ConditionalKeywords keywords, ConditionalOperationOptions options)
+        internal static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, string pseudoEndToken, ConditionalKeywords keywords, ConditionalOperationOptions options)
         {
             ConditionEvaluator evaluator = EvaluatorSelector.Select(options.EvaluatorType);
 

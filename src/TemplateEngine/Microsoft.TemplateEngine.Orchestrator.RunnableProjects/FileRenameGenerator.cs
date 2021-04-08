@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         //  - parameters with a FileRename specified
         //  - the source & target names.
         // Any input fileRenames will be applied before the parameter symbol renames.
-        public static IReadOnlyDictionary<string, string> AugmentFileRenames(
+        internal static IReadOnlyDictionary<string, string> AugmentFileRenames(
             IEngineEnvironmentSettings environmentSettings,
             string sourceName,
             IFileSystemInfo configFile,
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return allRenames;
         }
 
-        public static string ApplyRenameToPrimaryOutput(
+        internal static string ApplyRenameToPrimaryOutput(
             string primaryOutputPath,
             IEngineEnvironmentSettings environmentSettings,
             string sourceName,

@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public interface IValueForm
+    internal interface IValueForm
     {
         string Identifier { get; }
 

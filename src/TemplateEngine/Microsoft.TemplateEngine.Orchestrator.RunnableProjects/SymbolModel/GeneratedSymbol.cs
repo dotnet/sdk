@@ -4,11 +4,11 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 {
-    public class GeneratedSymbol : ISymbolModel
+    internal class GeneratedSymbol : ISymbolModel
     {
         internal const string TypeName = "generated";
 
-        public string DataType { get; set; }
+        internal string DataType { get; set; }
 
         public string Binding { get; set; }
 
@@ -17,15 +17,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         public string FileRename { get; set; }
 
         // Refers to the Type property value of a concrete IMacro
-        public string Generator { get; set; }
+        internal string Generator { get; set; }
 
-        public IReadOnlyDictionary<string, JToken> Parameters { get; set; }
+        internal IReadOnlyDictionary<string, JToken> Parameters { get; set; }
 
         public string Type { get; set; }
 
         public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
 
-        public static GeneratedSymbol FromJObject(JObject jObject)
+        internal static GeneratedSymbol FromJObject(JObject jObject)
         {
             GeneratedSymbol sym = new GeneratedSymbol
             {

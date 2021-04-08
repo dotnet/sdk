@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private readonly IReadOnlyList<IOperationProvider> _overrides;
         private readonly IVariableCollection _vars;
 
-        public RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, IVariableCollection vars, string variableFormatString)
+        internal RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, IVariableCollection vars, string variableFormatString)
         {
             _overrides = operationOverrides;
             _vars = vars ?? new VariableCollection();

@@ -3,9 +3,9 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class FileSourceStateMatcher : IPathMatcher
+    internal class FileSourceStateMatcher : IPathMatcher
     {
-        public FileSourceStateMatcher(FileDispositionStates checkState, FileSourceHierarchicalPathMatcher stateMatcher)
+        internal FileSourceStateMatcher(FileDispositionStates checkState, FileSourceHierarchicalPathMatcher stateMatcher)
         {
             _checkState = checkState;
             _stateMatcher = stateMatcher;

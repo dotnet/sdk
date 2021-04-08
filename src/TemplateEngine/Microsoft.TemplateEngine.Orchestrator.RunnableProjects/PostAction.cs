@@ -8,19 +8,19 @@ using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class PostAction : IPostAction
+    internal class PostAction : IPostAction
     {
-        public string Description { get; private set; }
+        internal string Description { get; private set; }
 
-        public Guid ActionId { get; private set; }
+        internal Guid ActionId { get; private set; }
 
-        public bool ContinueOnError { get; private set; }
+        internal bool ContinueOnError { get; private set; }
 
-        public IReadOnlyDictionary<string, string> Args { get; private set; }
+        internal IReadOnlyDictionary<string, string> Args { get; private set; }
 
-        public string ManualInstructions { get; private set; }
+        internal string ManualInstructions { get; private set; }
 
-        public string ConfigFile { get; private set; }
+        internal string ConfigFile { get; private set; }
 
         string IPostAction.Description => Description;
 
@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string IPostAction.ConfigFile => ConfigFile;
 
-        public static List<IPostAction> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IPostActionModel> modelList, IVariableCollection rootVariableCollection)
+        internal static List<IPostAction> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IPostActionModel> modelList, IVariableCollection rootVariableCollection)
         {
             List<IPostAction> actionList = new List<IPostAction>();
 

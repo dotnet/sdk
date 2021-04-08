@@ -5,36 +5,36 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class Parameter : ITemplateParameter, IExtendedTemplateParameter, IAllowDefaultIfOptionWithoutValue
+    internal class Parameter : ITemplateParameter, IExtendedTemplateParameter, IAllowDefaultIfOptionWithoutValue
     {
         [JsonProperty]
-        public string Description { get; set; }
+        internal string Description { get; set; }
 
         [JsonProperty]
-        public string DefaultValue { get; set; }
+        internal string DefaultValue { get; set; }
 
         [JsonIgnore]
-        public string Name { get; set; }
+        internal string Name { get; set; }
 
         [JsonProperty]
-        public bool IsName { get; set; }
+        internal bool IsName { get; set; }
 
         [JsonProperty]
-        public TemplateParameterPriority Requirement { get; set; }
+        internal TemplateParameterPriority Requirement { get; set; }
 
         [JsonProperty]
-        public string Type { get; set; }
+        internal string Type { get; set; }
 
         [JsonProperty]
-        public bool IsVariable { get; set; }
+        internal bool IsVariable { get; set; }
 
         [JsonProperty]
-        public string DataType { get; set; }
+        internal string DataType { get; set; }
 
         [JsonProperty]
-        public string DefaultIfOptionWithoutValue { get; set; }
+        internal string DefaultIfOptionWithoutValue { get; set; }
 
-        public bool ShouldSerializeDefaultIfOptionWithoutValue()
+        internal bool ShouldSerializeDefaultIfOptionWithoutValue()
         {
             return !string.IsNullOrEmpty(DefaultIfOptionWithoutValue);
         }

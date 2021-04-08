@@ -6,9 +6,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public static class ConditionalCustomConfig
+    internal static class ConditionalCustomConfig
     {
-        public static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
+        internal static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
         {
             IReadOnlyList<string> ifToken = rawConfiguration.ArrayAsStrings("if");
             IReadOnlyList<string> elseToken = rawConfiguration.ArrayAsStrings("else");

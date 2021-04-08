@@ -1,12 +1,13 @@
 using System;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    public class RandomMacro : IMacro, IDeferredMacro
+    internal class RandomMacro : IMacro, IDeferredMacro
     {
         public Guid Id => new Guid("011E8DC1-8544-4360-9B40-65FD916049B7");
 

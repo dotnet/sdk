@@ -4,17 +4,17 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class TitleCaseValueFormModel : IValueForm
+    internal class TitleCaseValueFormModel : IValueForm
     {
         public string Identifier => "titleCase";
 
         public string Name { get; }
 
-        public TitleCaseValueFormModel()
+        internal TitleCaseValueFormModel()
         {
         }
 
-        public TitleCaseValueFormModel(string name)
+        internal TitleCaseValueFormModel(string name)
         {
             Name = name;
         }

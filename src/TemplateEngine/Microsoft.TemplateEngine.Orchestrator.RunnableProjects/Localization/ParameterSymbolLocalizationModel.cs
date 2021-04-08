@@ -8,9 +8,9 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
-    public class ParameterSymbolLocalizationModel : IParameterSymbolLocalizationModel
+    internal class ParameterSymbolLocalizationModel : IParameterSymbolLocalizationModel
     {
-        public ParameterSymbolLocalizationModel(string name, string? displayName, string? description, IReadOnlyDictionary<string, ParameterChoiceLocalizationModel> choices)
+        internal ParameterSymbolLocalizationModel(string name, string? displayName, string? description, IReadOnlyDictionary<string, ParameterChoiceLocalizationModel> choices)
         {
             Name = name;
             DisplayName = displayName;

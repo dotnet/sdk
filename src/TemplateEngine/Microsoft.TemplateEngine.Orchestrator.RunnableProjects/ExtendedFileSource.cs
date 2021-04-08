@@ -4,30 +4,30 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class ExtendedFileSource
+    internal class ExtendedFileSource
     {
         [JsonProperty]
-        public JToken CopyOnly { get; internal set; }
+        internal JToken CopyOnly { get; set; }
 
         [JsonProperty]
-        public JToken Include { get; set; }
+        internal JToken Include { get; set; }
 
         [JsonProperty]
-        public JToken Exclude { get; set; }
+        internal JToken Exclude { get; set; }
 
         [JsonProperty]
-        public Dictionary<string, string> Rename { get; set; }
+        internal Dictionary<string, string> Rename { get; set; }
 
         [JsonProperty]
-        public string Source { get; set; }
+        internal string Source { get; set; }
 
         [JsonProperty]
-        public string Target { get; set; }
+        internal string Target { get; set; }
 
         [JsonProperty]
-        public string Condition { get; set; }
+        internal string Condition { get; set; }
 
         [JsonProperty]
-        public List<SourceModifier> Modifiers { get; internal set; }
+        internal List<SourceModifier> Modifiers { get; set; }
     }
 }

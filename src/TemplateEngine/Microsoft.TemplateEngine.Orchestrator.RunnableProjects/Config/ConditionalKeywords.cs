@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public class ConditionalKeywords
+    internal class ConditionalKeywords
     {
         private static readonly string DefaultPrefix = "#";
         private static readonly IReadOnlyList<string> DefaultIfKeywords = new[] { "if" };
@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         private static readonly IReadOnlyList<string> DefaultElseKeywords = new[] { "else" };
         private static readonly IReadOnlyList<string> DefaultEndIfKeywords = new[] { "endif" };
 
-        public ConditionalKeywords()
+        internal ConditionalKeywords()
         {
             KeywordPrefix = DefaultPrefix;
             IfKeywords = DefaultIfKeywords;
@@ -20,19 +20,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             EndIfKeywords = DefaultEndIfKeywords;
         }
 
-        public string KeywordPrefix { get; set; }
+        internal string KeywordPrefix { get; set; }
 
-        public IReadOnlyList<string> IfKeywords { get; set; }
+        internal IReadOnlyList<string> IfKeywords { get; set; }
 
-        public IReadOnlyList<string> ElseIfKeywords { get; set; }
+        internal IReadOnlyList<string> ElseIfKeywords { get; set; }
 
-        public IReadOnlyList<string> ElseKeywords { get; set; }
+        internal IReadOnlyList<string> ElseKeywords { get; set; }
 
-        public IReadOnlyList<string> EndIfKeywords { get; set; }
+        internal IReadOnlyList<string> EndIfKeywords { get; set; }
 
         // TODO: Allow the rawConfiguration elements to be either strings (as-is) or arrays of strings.
         // The code that consumes instances of this class is already setup to deal with multiple forms of each keyword type.
-        public static ConditionalKeywords FromJObject(JObject rawConfiguration)
+        internal static ConditionalKeywords FromJObject(JObject rawConfiguration)
         {
             ConditionalKeywords keywords = new ConditionalKeywords();
             string ifKeyword = rawConfiguration.ToString("ifKeyword");

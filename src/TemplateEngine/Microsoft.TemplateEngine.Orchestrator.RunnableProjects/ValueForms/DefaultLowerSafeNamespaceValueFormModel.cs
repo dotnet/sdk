@@ -3,17 +3,17 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class DefaultLowerSafeNamespaceValueFormModel : DefaultSafeNamespaceValueFormModel
+    internal class DefaultLowerSafeNamespaceValueFormModel : DefaultSafeNamespaceValueFormModel
     {
-        public new static readonly string FormName = "lower_safe_namespace";
+        internal new static readonly string FormName = "lower_safe_namespace";
         private readonly string _name;
 
-        public DefaultLowerSafeNamespaceValueFormModel()
+        internal DefaultLowerSafeNamespaceValueFormModel()
             : base()
         {
         }
 
-        public DefaultLowerSafeNamespaceValueFormModel(string name)
+        internal DefaultLowerSafeNamespaceValueFormModel(string name)
             : base(name)
         {
             _name = name;

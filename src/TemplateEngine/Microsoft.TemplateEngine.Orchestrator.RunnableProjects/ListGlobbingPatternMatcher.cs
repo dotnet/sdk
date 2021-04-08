@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class ListGlobbingPatternMatcher : IPathMatcher
+    internal class ListGlobbingPatternMatcher : IPathMatcher
     {
-        public ListGlobbingPatternMatcher(IList<string> patternList)
+        internal ListGlobbingPatternMatcher(IList<string> patternList)
         {
             List<IPathMatcher> pathMatchers = new List<IPathMatcher>();
 

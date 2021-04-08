@@ -6,21 +6,21 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 {
-    public abstract class BaseValueSymbol : ISymbolModel
+    internal abstract class BaseValueSymbol : ISymbolModel
     {
         public string Binding { get; set; }
 
-        public string DefaultValue { get; set; }
+        internal string DefaultValue { get; set; }
 
-        public SymbolValueFormsModel Forms { get; set; }
+        internal SymbolValueFormsModel Forms { get; set; }
 
-        public bool IsRequired { get; set; }
+        internal bool IsRequired { get; set; }
 
         public string Type { get; protected set; }
 
         public string Replaces { get; set; }
 
-        public string DataType { get; set; }
+        internal string DataType { get; set; }
 
         public string FileRename { get; set; }
 

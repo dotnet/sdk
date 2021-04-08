@@ -5,17 +5,17 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class FirstUpperCaseInvariantValueFormModel : IValueForm
+    internal class FirstUpperCaseInvariantValueFormModel : IValueForm
     {
         public string Identifier => "firstUpperCaseInvariant";
 
         public string Name { get; }
 
-        public FirstUpperCaseInvariantValueFormModel()
+        internal FirstUpperCaseInvariantValueFormModel()
         {
         }
 
-        public FirstUpperCaseInvariantValueFormModel(string name)
+        internal FirstUpperCaseInvariantValueFormModel(string name)
         {
             Name = name;
         }

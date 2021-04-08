@@ -5,18 +5,19 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public class ReplacementConfig : IOperationConfig
+    internal class ReplacementConfig : IOperationConfig
     {
         public string Key => Replacement.OperationName;
 
         public Guid Id => new Guid("62DB7F1F-A10E-46F0-953F-A28A03A81CD1");
 
-        public static IOperationProvider Setup(IEngineEnvironmentSettings environmentSettings, IReplacementTokens tokens, IParameterSet parameters)
+        internal static IOperationProvider Setup(IEngineEnvironmentSettings environmentSettings, IReplacementTokens tokens, IParameterSet parameters)
         {
             if (parameters.TryGetRuntimeValue(environmentSettings, tokens.VariableName, out object newValueObject))
             {

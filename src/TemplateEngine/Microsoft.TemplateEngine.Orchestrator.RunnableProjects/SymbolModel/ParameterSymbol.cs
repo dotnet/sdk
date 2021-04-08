@@ -7,14 +7,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 {
-    public class ParameterSymbol : BaseValueSymbol
+    internal class ParameterSymbol : BaseValueSymbol
     {
         internal const string TypeName = "parameter";
 
         // Used when the template explicitly defines the symbol "name".
         // The template definition is used exclusively, except for the case where it doesn't define any value forms.
         // When that is the case, the default value forms are used.
-        public static ParameterSymbol ExplicitNameSymbolMergeWithDefaults(ISymbolModel templateDefinedName, ISymbolModel defaultDefinedName)
+        internal static ParameterSymbol ExplicitNameSymbolMergeWithDefaults(ISymbolModel templateDefinedName, ISymbolModel defaultDefinedName)
         {
             if (!(templateDefinedName is ParameterSymbol templateSymbol))
             {
@@ -68,22 +68,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         /// <summary>
         /// Gets or sets the friendly name of the symbol to be displayed to the user.
         /// </summary>
-        public string DisplayName { get; set; }
+        internal string DisplayName { get; set; }
 
-        public string Description { get; set; }
-
-        // only relevant for choice datatype
-        public bool IsTag { get; set; }
+        internal string Description { get; set; }
 
         // only relevant for choice datatype
-        public string TagName { get; set; }
+        internal bool IsTag { get; set; }
+
+        // only relevant for choice datatype
+        internal string TagName { get; set; }
 
         // If this is set, the option can be provided without a value. It will be given this value.
-        public string DefaultIfOptionWithoutValue { get; set; }
+        internal string DefaultIfOptionWithoutValue { get; set; }
 
         private IReadOnlyDictionary<string, ParameterChoice> _choices;
 
-        public IReadOnlyDictionary<string, ParameterChoice> Choices
+        internal IReadOnlyDictionary<string, ParameterChoice> Choices
         {
             get
             {
@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             }
         }
 
-        public static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
+        internal static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
         {
             ParameterSymbol symbol = FromJObject<ParameterSymbol>(jObject, localization, defaultOverride);
             symbol.DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
@@ -136,7 +136,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             return symbol;
         }
 
-        public static ISymbolModel FromDeprecatedConfigTag(string value)
+        internal static ISymbolModel FromDeprecatedConfigTag(string value)
         {
             ParameterSymbol symbol = new ParameterSymbol
             {

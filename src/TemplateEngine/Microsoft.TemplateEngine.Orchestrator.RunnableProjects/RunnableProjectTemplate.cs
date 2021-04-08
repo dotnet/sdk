@@ -6,11 +6,11 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class RunnableProjectTemplate : ITemplate, IShortNameList
+    internal class RunnableProjectTemplate : ITemplate, IShortNameList
     {
         private readonly JObject _raw;
 
-        public RunnableProjectTemplate(JObject raw, IGenerator generator, IFile configFile, IRunnableProjectConfig config, IFile localeConfigFile, IFile hostConfigFile)
+        internal RunnableProjectTemplate(JObject raw, IGenerator generator, IFile configFile, IRunnableProjectConfig config, IFile localeConfigFile, IFile hostConfigFile)
         {
             config.SourceFile = configFile;
             ConfigFile = configFile;
@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<string> Classifications { get; }
 
-        public IRunnableProjectConfig Config { get; private set; }
+        internal IRunnableProjectConfig Config { get; private set; }
 
         public string DefaultName { get; }
 
@@ -93,7 +93,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<string> ShortNameList { get; private set; }
 
-        public IMountPoint Source { get; }
+        internal IMountPoint Source { get; }
 
         public IReadOnlyDictionary<string, ICacheTag> Tags
         {
@@ -184,7 +184,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
         private IReadOnlyList<ITemplateParameter> _parameters;
 
-        public IFile ConfigFile { get; }
+        internal IFile ConfigFile { get; }
 
         public IFileSystemInfo Configuration => ConfigFile;
 
@@ -192,7 +192,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string ConfigPlace => Configuration.FullPath;
 
-        public IFile LocaleConfigFile { get; }
+        internal IFile LocaleConfigFile { get; }
 
         public IFileSystemInfo LocaleConfiguration => LocaleConfigFile;
 

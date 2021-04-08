@@ -4,9 +4,9 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
-    public class ProcessValueFormMacroConfig : IMacroConfig
+    internal class ProcessValueFormMacroConfig : IMacroConfig
     {
-        public ProcessValueFormMacroConfig(string sourceSymbol, string symbolName, string dataType, string valueForm, IReadOnlyDictionary<string, IValueForm> forms)
+        internal ProcessValueFormMacroConfig(string sourceSymbol, string symbolName, string dataType, string valueForm, IReadOnlyDictionary<string, IValueForm> forms)
         {
             DataType = dataType;
             SourceVariable = sourceSymbol;
@@ -15,16 +15,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             Forms = forms;
         }
 
-        public string DataType { get; }
+        internal string DataType { get; }
 
         public string VariableName { get; }
 
         public string Type => "processValueForm";
 
-        public string SourceVariable { get; }
+        internal string SourceVariable { get; }
 
-        public string FormName { get; }
+        internal string FormName { get; }
 
-        public IReadOnlyDictionary<string, IValueForm> Forms { get; }
+        internal IReadOnlyDictionary<string, IValueForm> Forms { get; }
     }
 }

@@ -1,17 +1,18 @@
 using System;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    public class NowMacro : IMacro, IDeferredMacro
+    internal class NowMacro : IMacro, IDeferredMacro
     {
         public Guid Id => new Guid("F2B423D7-3C23-4489-816A-41D8D2A98596");
 
         public string Type => "now";
-         
+
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             NowMacroConfig config = rawConfig as NowMacroConfig;

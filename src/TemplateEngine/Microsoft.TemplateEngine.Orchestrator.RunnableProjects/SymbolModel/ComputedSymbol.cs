@@ -4,17 +4,17 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 {
-    public class ComputedSymbol : ISymbolModel
+    internal class ComputedSymbol : ISymbolModel
     {
         internal const string TypeName = "computed";
 
-        public string DataType { get; private set; }
+        internal string DataType { get; private set; }
 
         public string Value { get; internal set; }
 
         public string Type { get; private set; }
 
-        public string Evaluator { get; private set; }
+        internal string Evaluator { get; private set; }
 
         public IReadOnlyList<IReplacementContext> ReplacementContexts => Empty<IReplacementContext>.List.Value;
 
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             set { }
         }
 
-        public static ISymbolModel FromJObject(JObject jObject)
+        internal static ISymbolModel FromJObject(JObject jObject)
         {
             ComputedSymbol sym = new ComputedSymbol
             {

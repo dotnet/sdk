@@ -3,15 +3,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class CustomOperationModel : ICustomOperationModel
+    internal class CustomOperationModel : ICustomOperationModel
     {
         public string Type { get; set; }
 
         public string Condition { get; set; }
 
-        public JObject Configuration { get; set; }
+        internal JObject Configuration { get; set; }
 
-        public static ICustomOperationModel FromJObject(JObject jObject)
+        internal static ICustomOperationModel FromJObject(JObject jObject)
         {
             CustomOperationModel model = new CustomOperationModel
             {

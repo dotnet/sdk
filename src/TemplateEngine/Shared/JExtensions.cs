@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine
 {
     internal static class JExtensions
     {
-        public static string? ToString(this JToken? token, string? key)
+        internal static string? ToString(this JToken? token, string? key)
         {
             if (key == null)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine
             return element.ToString();
         }
 
-        public static bool ToBool(this JToken? token, string? key = null, bool defaultValue = false)
+        internal static bool ToBool(this JToken? token, string? key = null, bool defaultValue = false)
         {
             JToken checkToken;
 
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine
             }
         }
 
-        public static int ToInt32(this JToken? token, string? key = null, int defaultValue = 0)
+        internal static int ToInt32(this JToken? token, string? key = null, int defaultValue = 0)
         {
             int value = defaultValue;
             if (key == null)
@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine
             return defaultValue;
         }
 
-        public static T ToEnum<T>(this JToken token, string? key = null, T defaultValue = default(T))
+        internal static T ToEnum<T>(this JToken token, string? key = null, T defaultValue = default(T))
             where T : struct
         {
             string? val = token.ToString(key);
@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine
             return result;
         }
 
-        public static Guid ToGuid(this JToken token, string? key = null, Guid defaultValue = default(Guid))
+        internal static Guid ToGuid(this JToken token, string? key = null, Guid defaultValue = default(Guid))
         {
             string? val = token.ToString(key);
             Guid result;
@@ -128,7 +128,7 @@ namespace Microsoft.TemplateEngine
             return result;
         }
 
-        public static IEnumerable<JProperty> PropertiesOf(this JToken? token, string? key = null)
+        internal static IEnumerable<JProperty> PropertiesOf(this JToken? token, string? key = null)
         {
             JObject? obj = token as JObject;
 
@@ -156,7 +156,7 @@ namespace Microsoft.TemplateEngine
             return obj.Properties();
         }
 
-        public static T? Get<T>(this JToken? token, string? key)
+        internal static T? Get<T>(this JToken? token, string? key)
             where T : JToken
         {
             JObject? obj = token as JObject;
@@ -175,7 +175,7 @@ namespace Microsoft.TemplateEngine
             return res as T;
         }
 
-        public static IReadOnlyDictionary<string, string> ToStringDictionary(this JToken token, StringComparer? comparer = null, string? propertyName = null)
+        internal static IReadOnlyDictionary<string, string> ToStringDictionary(this JToken token, StringComparer? comparer = null, string? propertyName = null)
         {
             Dictionary<string, string> result = new Dictionary<string, string>(comparer ?? StringComparer.Ordinal);
 
@@ -193,7 +193,7 @@ namespace Microsoft.TemplateEngine
         }
 
         // reads a dictionary whose values can either be string literals, or arrays of strings.
-        public static IReadOnlyDictionary<string, IReadOnlyList<string>> ToStringListDictionary(this JToken token, StringComparer? comparer = null, string? propertyName = null)
+        internal static IReadOnlyDictionary<string, IReadOnlyList<string>> ToStringListDictionary(this JToken token, StringComparer? comparer = null, string? propertyName = null)
         {
             Dictionary<string, IReadOnlyList<string>> result = new Dictionary<string, IReadOnlyList<string>>(comparer ?? StringComparer.Ordinal);
 
@@ -217,7 +217,7 @@ namespace Microsoft.TemplateEngine
         }
 
         // Leaves the values as JTokens.
-        public static IReadOnlyDictionary<string, JToken> ToJTokenDictionary(this JToken token, StringComparer? comparaer = null, string? propertyName = null)
+        internal static IReadOnlyDictionary<string, JToken> ToJTokenDictionary(this JToken token, StringComparer? comparaer = null, string? propertyName = null)
         {
             Dictionary<string, JToken> result = new Dictionary<string, JToken>(comparaer ?? StringComparer.Ordinal);
 
@@ -229,7 +229,7 @@ namespace Microsoft.TemplateEngine
             return result;
         }
 
-        public static IReadOnlyList<string> ArrayAsStrings(this JToken? token, string? propertyName = null)
+        internal static IReadOnlyList<string> ArrayAsStrings(this JToken? token, string? propertyName = null)
         {
             if (propertyName != null)
             {
@@ -256,7 +256,7 @@ namespace Microsoft.TemplateEngine
             return values;
         }
 
-        public static IReadOnlyList<Guid> ArrayAsGuids(this JToken? token, string? propertyName = null)
+        internal static IReadOnlyList<Guid> ArrayAsGuids(this JToken? token, string? propertyName = null)
         {
             if (propertyName != null)
             {
@@ -287,7 +287,7 @@ namespace Microsoft.TemplateEngine
             return values;
         }
 
-        public static IEnumerable<T> Items<T>(this JToken? token, string? propertyName = null)
+        internal static IEnumerable<T> Items<T>(this JToken? token, string? propertyName = null)
             where T : JToken
         {
             if (propertyName != null)

@@ -4,7 +4,7 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
-    public class LocalizationModel : ILocalizationModel
+    internal class LocalizationModel : ILocalizationModel
     {
         public string Author { get; set; }
 

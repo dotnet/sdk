@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public static class ValueFormRegistry
+    internal static class ValueFormRegistry
     {
         private static readonly IReadOnlyDictionary<string, IValueForm> FormLookup = SetupFormLookup();
 
@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return lookup;
         }
 
-        public static IReadOnlyDictionary<string, IValueForm> AllForms
+        internal static IReadOnlyDictionary<string, IValueForm> AllForms
         {
             get
             {
@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public static IValueForm GetForm(string name, JObject obj)
+        internal static IValueForm GetForm(string name, JObject obj)
         {
             string identifier = obj.ToString("identifier");
 

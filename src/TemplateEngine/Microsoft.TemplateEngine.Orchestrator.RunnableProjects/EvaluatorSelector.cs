@@ -7,9 +7,9 @@ using Microsoft.TemplateEngine.Core.Operations;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public static class EvaluatorSelector
+    internal static class EvaluatorSelector
     {
-        public static ConditionEvaluator Select(string name, ConditionEvaluator @default = null)
+        internal static ConditionEvaluator Select(string name, ConditionEvaluator @default = null)
         {
             @default = @default ?? CppStyleEvaluatorDefinition.Evaluate;
             string evaluatorName = name ?? string.Empty;

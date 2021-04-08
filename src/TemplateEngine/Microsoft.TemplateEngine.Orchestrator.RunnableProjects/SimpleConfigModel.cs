@@ -19,7 +19,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class SimpleConfigModel : IRunnableProjectConfig
+    internal class SimpleConfigModel : IRunnableProjectConfig
     {
         private static readonly string NameSymbolName = "name";
         private static readonly string[] IncludePatternDefaults = new[] { "**/*" };
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private static readonly Dictionary<string, string> RenameDefaults = new Dictionary<string, string>(StringComparer.Ordinal);
 
-        public SimpleConfigModel()
+        internal SimpleConfigModel()
         {
             Sources = new[] { new ExtendedFileSource() };
         }
@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Author { get; set; }
 
-        public IReadOnlyList<string> Classifications { get; set; }
+        internal IReadOnlyList<string> Classifications { get; set; }
 
         public string DefaultName { get; set; }
 
@@ -61,17 +61,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public int Precedence { get; set; }
 
-        public IReadOnlyList<Guid> Guids { get; set; }
+        internal IReadOnlyList<Guid> Guids { get; set; }
 
         public string Name { get; set; }
 
         public IReadOnlyList<string> ShortNameList { get; set; }
 
-        public string SourceName { get; set; }
+        internal string SourceName { get; set; }
 
-        public IReadOnlyList<ExtendedFileSource> Sources { get; set; }
+        internal IReadOnlyList<ExtendedFileSource> Sources { get; set; }
 
-        public IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
+        internal IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
 
         public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
 
@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public bool HasScriptRunningPostActions { get; set; }
 
-        public DateTime? ConfigTimestampUtc { get; set; }
+        internal DateTime? ConfigTimestampUtc { get; set; }
 
         private IReadOnlyDictionary<string, string> _tagsDeprecated;
 
@@ -114,7 +114,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private IReadOnlyDictionary<string, ParameterSymbol> _tagDetails;
 
         // Converts "choice" datatype parameter symbols to tags
-        public IReadOnlyDictionary<string, ParameterSymbol> TagDetails
+        internal IReadOnlyDictionary<string, ParameterSymbol> TagDetails
         {
             get
             {
@@ -168,7 +168,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
 
-        public IReadOnlyDictionary<string, IValueForm> Forms { get; private set; }
+        internal IReadOnlyDictionary<string, IValueForm> Forms { get; private set; }
 
         public string Identity { get; set; }
 
@@ -179,7 +179,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private bool _isPlaceholderFileNameCustomized;
 
 
-        public string PlaceholderFilename
+        internal string PlaceholderFilename
         {
             get
             {
@@ -366,7 +366,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private class SpecialOperationConfigParams
         {
-            public SpecialOperationConfigParams(string glob, string flagPrefix, string evaluatorName, ConditionalType type)
+            internal SpecialOperationConfigParams(string glob, string flagPrefix, string evaluatorName, ConditionalType type)
             {
                 EvaluatorName = evaluatorName;
                 Glob = glob;
@@ -374,19 +374,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 ConditionalStyle = type;
             }
 
-            public string Glob { get; }
+            internal string Glob { get; }
 
-            public string EvaluatorName { get; }
+            internal string EvaluatorName { get; }
 
-            public string FlagPrefix { get; }
+            internal string FlagPrefix { get; }
 
-            public ConditionalType ConditionalStyle { get; }
+            internal ConditionalType ConditionalStyle { get; }
 
-            public string VariableFormat { get; set; }
+            internal string VariableFormat { get; set; }
 
             private static readonly SpecialOperationConfigParams _Defaults = new SpecialOperationConfigParams(string.Empty, string.Empty, "C++", ConditionalType.None);
 
-            public static SpecialOperationConfigParams Defaults
+            internal static SpecialOperationConfigParams Defaults
             {
                 get
                 {
@@ -530,7 +530,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IEngineEnvironmentSettings EnvironmentSettings { get; private set; }
+        internal IEngineEnvironmentSettings EnvironmentSettings { get; private set; }
 
         private IGlobalRunConfig ProduceOperationSetup(SpecialOperationConfigParams defaultModel, bool generateMacros, ICustomFileGlobModel customGlobModel = null)
         {
@@ -1042,7 +1042,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return formMap;
         }
 
-        public static SimpleConfigModel FromJObject(IEngineEnvironmentSettings environmentSettings, JObject source, ISimpleConfigModifiers configModifiers = null, JObject localeSource = null)
+        internal static SimpleConfigModel FromJObject(IEngineEnvironmentSettings environmentSettings, JObject source, ISimpleConfigModifiers configModifiers = null, JObject localeSource = null)
         {
             ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
 
@@ -1252,7 +1252,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return symbols;
         }
 
-        public static ILocalizationModel LocalizationFromJObject(JObject source)
+        internal static ILocalizationModel LocalizationFromJObject(JObject source)
         {
             if (source == null)
             {

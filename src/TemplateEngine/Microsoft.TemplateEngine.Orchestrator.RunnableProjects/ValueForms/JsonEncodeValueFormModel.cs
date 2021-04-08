@@ -4,17 +4,17 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class JsonEncodeValueFormModel : IValueForm
+    internal class JsonEncodeValueFormModel : IValueForm
     {
         public string Identifier => "jsonEncode";
 
         public string Name { get; }
 
-        public JsonEncodeValueFormModel()
+        internal JsonEncodeValueFormModel()
         {
         }
 
-        public JsonEncodeValueFormModel(string name)
+        internal JsonEncodeValueFormModel(string name)
         {
             Name = name;
         }

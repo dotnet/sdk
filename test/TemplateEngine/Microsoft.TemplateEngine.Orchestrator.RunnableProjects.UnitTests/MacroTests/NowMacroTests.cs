@@ -9,6 +9,7 @@ using Microsoft.TemplateEngine.TestHelper;
 using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {

@@ -3,7 +3,7 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class GlobalRunConfig : IGlobalRunConfig
+    internal class GlobalRunConfig : IGlobalRunConfig
     {
         public IReadOnlyList<IOperationProvider> Operations { get; set; }
 

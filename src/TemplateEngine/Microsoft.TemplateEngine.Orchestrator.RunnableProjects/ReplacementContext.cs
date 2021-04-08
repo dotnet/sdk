@@ -2,7 +2,7 @@
 {
     internal class ReplacementContext : IReplacementContext
     {
-        public ReplacementContext(string before, string after)
+        internal ReplacementContext(string before, string after)
         {
             OnlyIfBefore = before;
             OnlyIfAfter = after;

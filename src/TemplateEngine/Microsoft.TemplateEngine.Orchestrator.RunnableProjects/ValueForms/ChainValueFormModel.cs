@@ -3,15 +3,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    public class ChainValueFormModel : IValueForm
+    internal class ChainValueFormModel : IValueForm
     {
         private readonly IReadOnlyList<string> _steps;
 
-        public ChainValueFormModel()
+        internal ChainValueFormModel()
         {
         }
 
-        public ChainValueFormModel(string name, IReadOnlyList<string> steps)
+        internal ChainValueFormModel(string name, IReadOnlyList<string> steps)
         {
             Name = name;
             _steps = steps;
