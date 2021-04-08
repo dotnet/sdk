@@ -125,7 +125,11 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
                 if (installersThatCanInstall.Count == 0)
                 {
-                    return InstallResult.CreateFailure(installRequest, InstallerErrorCode.UnsupportedRequest, $"{installRequest.PackageIdentifier} cannot be installed");
+                    return InstallResult.CreateFailure(installRequest, InstallerErrorCode.UnsupportedRequest, $"{installRequest.PackageIdentifier} cannot be installed.");
+                }
+                if (installersThatCanInstall.Count > 1)
+                {
+                    return InstallResult.CreateFailure(installRequest, InstallerErrorCode.UnsupportedRequest, $"{installRequest.PackageIdentifier} can be installed by several installers, specify the installer name to use.");
                 }
 
                 IInstaller installer = installersThatCanInstall[0];
