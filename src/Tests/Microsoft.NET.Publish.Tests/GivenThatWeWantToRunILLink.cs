@@ -495,9 +495,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutMatching("IL2026: TransitiveProjectReference.TransitiveProjectReferenceLib.Method.*TransitiveProjectReferenceLib.RUC")
                 .And.NotHaveStdOutMatching("IL2026:.*PackageReference.PackageReferenceLib")
                 .And.HaveStdOutMatching("IL2104.*'PackageReference'")
-                .And.NotHaveStdOutMatching("IL2104.*'App")
-                .And.NotHaveStdOutMatching("IL2104.*'ProjectReference")
-                .And.NotHaveStdOutMatching("IL2104.*'TransitiveProjectReference");
+                .And.NotHaveStdOutMatching("IL2104.*'App'")
+                .And.NotHaveStdOutMatching("IL2104.*'ProjectReference'")
+                .And.NotHaveStdOutMatching("IL2104.*'TransitiveProjectReference'");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
@@ -532,19 +532,20 @@ namespace Microsoft.NET.Publish.Tests
                 .WithProjectChanges(project => {
                     SetMetadata(project, "PackageReference", "TrimmerSingleWarn", "false");
                     SetMetadata(project, "ProjectReference", "TrimmerSingleWarn", "true");
+                    SetMetadata(project, "App", "TrimmerSingleWarn", "true");
                 });
 
             var publishCommand = new PublishCommand(testAsset, "App");
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:TrimmerSingleWarn=false")
                 .Should().Pass()
-                .And.HaveStdOutMatching("IL2026: App.Program.Main.*Program.RUC")
+                .And.NotHaveStdOutMatching("IL2026: App.Program.Main.*Program.RUC")
                 .And.NotHaveStdOutMatching("IL2026: ProjectReference.ProjectReferenceLib.Method.*ProjectReferenceLib.RUC")
                 .And.HaveStdOutMatching("IL2026: TransitiveProjectReference.TransitiveProjectReferenceLib.Method.*TransitiveProjectReferenceLib.RUC")
                 .And.HaveStdOutMatching("IL2026:.*PackageReference.PackageReferenceLib")
                 .And.NotHaveStdOutMatching("IL2104.*'PackageReference'")
-                .And.NotHaveStdOutMatching("IL2104.*'App")
-                .And.HaveStdOutMatching("IL2104.*'ProjectReference")
-                .And.NotHaveStdOutMatching("IL2104.*'TransitiveProjectReference");
+                .And.HaveStdOutMatching("IL2104.*'App'")
+                .And.HaveStdOutMatching("IL2104.*'ProjectReference'")
+                .And.NotHaveStdOutMatching("IL2104.*'TransitiveProjectReference'");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]

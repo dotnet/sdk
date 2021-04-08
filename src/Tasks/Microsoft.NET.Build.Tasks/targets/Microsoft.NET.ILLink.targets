@@ -291,14 +291,19 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <ItemGroup>
-      <!-- Don't collapse to a single warning for the intermediate assembly -->
+      <!-- Don't collapse to a single warning for the intermediate assembly.
+           This just sets metadata on the items in ManagedAssemblyToLink that came from IntermediateAssembly. -->
+      <!-- Find ManagedAssemblyToLink _except_ IntermediateAssembly -->
       <__SingleWarnIntermediateAssembly Include="@(ManagedAssemblyToLink)" />
       <__SingleWarnIntermediateAssembly Remove="@(IntermediateAssembly)" />
+      <!-- Subtract these from ManagedAssemblyToLink, to get the intersection. -->
       <_SingleWarnIntermediateAssembly Include="@(ManagedAssemblyToLink)" />
       <_SingleWarnIntermediateAssembly Remove="@(__SingleWarnIntermediateAssembly)" />
+      <!-- Set metadata on the intersection. -->
       <_SingleWarnIntermediateAssembly>
-        <TrimmerSingleWarn Condition=" '%(_CollapseIntermediateAssembly.TrimmerSingleWarn)' == '' ">false</TrimmerSingleWarn>
+        <TrimmerSingleWarn Condition=" '%(_SingleWarnIntermediateAssembly.TrimmerSingleWarn)' == '' ">false</TrimmerSingleWarn>
       </_SingleWarnIntermediateAssembly>
+      <!-- Replace these items in ManagedAssemblyToLink. -->
       <ManagedAssemblyToLink Remove="@(_SingleWarnIntermediateAssembly)" />
       <ManagedAssemblyToLink Include="@(_SingleWarnIntermediateAssembly)" />
 
