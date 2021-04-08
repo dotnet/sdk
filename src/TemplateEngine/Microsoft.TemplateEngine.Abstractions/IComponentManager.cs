@@ -13,7 +13,10 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Gets specific component via <see cref="Guid"/>.
         /// E.g: to lookup implementation of "Restore NuGet packages" post action, pass in {210D431B-A78B-4D2F-B762-4ED3E3EA9025} <see cref="Guid"/>.
         /// </summary>
-        /// <typeparam name="T">type to avoid need for casting.</typeparam>
+        /// <remarks>
+        /// If <typeparamref name="T"/> and <see cref="Guid"/> mismatch, <c>false</c> is returned.
+        /// </remarks>
+        /// <typeparam name="T">type to lookup.</typeparam>
         /// <param name="id"><see cref="Guid"/> that is defined in <see cref="IIdentifiedComponent.Id"/></param>
         /// <param name="component">singleton instance of requested component.</param>
         /// <returns><c>true</c> if component was found.</returns>

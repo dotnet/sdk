@@ -48,12 +48,13 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 throw new ObjectDisposedException(nameof(GlobalSettings));
             }
             token.ThrowIfCancellationRequested();
-            while (_mutex?.IsLocked ?? false)
+            if (_mutex?.IsLocked ?? false)
             {
                 throw new InvalidOperationException("Lock is already taken.");
             }
             // We must use Mutex because we want to lock across different processes that might want to modify this settings file
-            var mutex = await AsyncMutex.WaitAsync($"Global\\812CA7F3-7CD8-44B4-B3F0-0159355C0BD5{_globalSettingsFile}".Replace("\\", "_").Replace("/", "_"), token).ConfigureAwait(false);
+            var escapedFilename = _globalSettingsFile.Replace("\\", "_").Replace("/", "_");
+            var mutex = await AsyncMutex.WaitAsync($"Global\\812CA7F3-7CD8-44B4-B3F0-0159355C0BD5{escapedFilename}", token).ConfigureAwait(false);
             _mutex = mutex;
             return mutex;
         }

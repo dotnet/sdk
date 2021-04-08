@@ -127,10 +127,14 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         {
                             return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.InvalidSource, e.Message);
                         }
+                        catch (OperationCanceledException)
+                        {
+                            return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.GenericError, "Operation canceled");
+                        }
                         catch (Exception e)
                         {
                             _environmentSettings.Host.LogDiagnosticMessage($"Retrieving latest version for package {package.DisplayName} failed.", DebugLogCategory);
-                            _environmentSettings.Host.LogDiagnosticMessage($"Details:{e.ToString()}", DebugLogCategory);
+                            _environmentSettings.Host.LogDiagnosticMessage($"Details:{e}", DebugLogCategory);
                             return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.GenericError, $"Failed to check the update for the package {package.Identifier}, reason: {e.Message}");
                         }
                     }
