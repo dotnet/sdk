@@ -310,7 +310,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             try
             {
                 _environmentSettings.Host.FileSystem.FileCopy(installRequest.PackageIdentifier, targetPackageLocation, overwrite: false);
-                packageInfo.FullPath = targetPackageLocation;
+                packageInfo = packageInfo.WithFullPath(targetPackageLocation);
             }
             catch (Exception ex)
             {
@@ -328,13 +328,11 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             NuspecReader nuspec = reader.NuspecReader;
 
-            return new NuGetPackageInfo
-            {
-                FullPath = packageLocation,
-                Author = nuspec.GetAuthors(),
-                PackageIdentifier = nuspec.GetId(),
-                PackageVersion = nuspec.GetVersion().ToNormalizedString()
-            };
+            return new NuGetPackageInfo(nuspec.GetAuthors(),
+                                        packageLocation,
+                                        null,
+                                        nuspec.GetId(),
+                                        nuspec.GetVersion().ToNormalizedString());
         }
     }
 }

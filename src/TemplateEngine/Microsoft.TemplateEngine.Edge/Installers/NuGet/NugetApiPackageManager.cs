@@ -101,14 +101,13 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     _nugetLogger,
                     cancellationToken).ConfigureAwait(false))
                 {
-                    return new NuGetPackageInfo
-                    {
-                        NuGetSource = source.Source,
-                        FullPath = filePath,
-                        PackageIdentifier = packageMetadata.Identity.Id,
-                        PackageVersion = packageMetadata.Identity.Version.ToNormalizedString(),
-                        Author = packageMetadata.Authors
-                    };
+                    return new NuGetPackageInfo(
+                        packageMetadata.Authors,
+                        filePath,
+                        source.Source,
+                        packageMetadata.Identity.Id,
+                        packageMetadata.Identity.Version.ToNormalizedString()
+                    );
                 }
                 else
                 {

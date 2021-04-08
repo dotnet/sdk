@@ -48,14 +48,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
                 targetFileName = $"{Path.GetFileNameWithoutExtension(testPackageLocation)}.{version}.nupkg";
             }
             File.Copy(testPackageLocation, Path.Combine(downloadPath, targetFileName));
-            return Task.FromResult(new NuGetPackageInfo
-            {
-                Author = "Microsoft",
-                FullPath = Path.Combine(downloadPath, targetFileName),
-                PackageIdentifier = identifier,
-                PackageVersion = version,
-                NuGetSource = DefaultFeed
-            });
+            return Task.FromResult(new NuGetPackageInfo("Microsoft", Path.Combine(downloadPath, targetFileName), DefaultFeed, identifier, version));
         }
 
         public Task<(string latestVersion, bool isLatestVersion)> GetLatestVersionAsync(string identifier, string version = null, string additionalNuGetSource = null, CancellationToken cancellationToken = default)
