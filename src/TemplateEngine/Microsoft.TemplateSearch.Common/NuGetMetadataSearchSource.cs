@@ -13,12 +13,7 @@ namespace Microsoft.TemplateSearch.Common
     {
         protected static readonly string _templateDiscoveryMetadataFile = "nugetTemplateSearchInfo.json";
 
-        private readonly ISearchInfoFileProvider _searchInfoFileProvider;
-
-        public NuGetMetadataSearchSource()
-        {
-            _searchInfoFileProvider = new BlobStoreSourceFileProvider();
-        }
+        private readonly ISearchInfoFileProvider _searchInfoFileProvider = new BlobStoreSourceFileProvider();
 
         public override string DisplayName => "NuGet.org";
 

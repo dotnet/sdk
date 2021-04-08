@@ -29,8 +29,7 @@ namespace Microsoft.TemplateSearch.Common
 
         public async Task<SearchResults> SearchAsync()
         {
-            await EnsureSearchResultsAsync();
-
+            await EnsureSearchResultsAsync().ConfigureAwait(false);
             return _searchResults;
         }
 
@@ -53,7 +52,7 @@ namespace Microsoft.TemplateSearch.Common
                 existingTemplatePackage = new List<IManagedTemplatePackage>();
             }
 
-            _searchResults = await searcher.SearchForTemplatesAsync(existingTemplatePackage, _inputTemplateName);
+            _searchResults = await searcher.SearchForTemplatesAsync(existingTemplatePackage, _inputTemplateName).ConfigureAwait(false);
 
             _isSearchPerformed = true;
         }
