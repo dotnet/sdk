@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <Target Name="GenerateVersionBadge"
+          Condition="'$(PgoInstrument)' != 'true'"
           DependsOnTargets="SetBadgeProps"
           BeforeTargets="AfterBuild">
     <Message Text="$(VersionBadge)"  />

@@ -1,6 +1,7 @@
 <Project>
 
   <Target Name="GenerateBundledVersions"
+          Condition="'$(PgoInstrument)' != 'true'"
           DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps" >
 
     <WriteLinesToFile
@@ -8,7 +9,7 @@
       Lines="$(PackageVersion)"
       Overwrite="true"
       Encoding="ASCII" />
-    
+
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt"
       Lines="$(PackageVersion)"
@@ -55,19 +56,19 @@
       <_NETCoreApp30RuntimePackVersion>3.0.3</_NETCoreApp30RuntimePackVersion>
       <_NETCoreApp30TargetingPackVersion>3.0.0</_NETCoreApp30TargetingPackVersion>
       
-      <_NETCoreApp31RuntimePackVersion>3.1.$(VersionFeature31)</_NETCoreApp31RuntimePackVersion>
+      <_NETCoreApp31RuntimePackVersion>3.1.13</_NETCoreApp31RuntimePackVersion>
       <_NETCoreApp31TargetingPackVersion>3.1.0</_NETCoreApp31TargetingPackVersion>
-      
+
       <_WindowsDesktop30RuntimePackVersion>3.0.3</_WindowsDesktop30RuntimePackVersion>
       <_WindowsDesktop30TargetingPackVersion>3.0.0</_WindowsDesktop30TargetingPackVersion>
       
-      <_WindowsDesktop31RuntimePackVersion>3.1.$(VersionFeature31)</_WindowsDesktop31RuntimePackVersion>
+      <_WindowsDesktop31RuntimePackVersion>3.1.13</_WindowsDesktop31RuntimePackVersion>
       <_WindowsDesktop31TargetingPackVersion>3.1.0</_WindowsDesktop31TargetingPackVersion>
-      
+
       <_AspNet30RuntimePackVersion>3.0.3</_AspNet30RuntimePackVersion>
       <_AspNet30TargetingPackVersion>3.0.1</_AspNet30TargetingPackVersion>
       
-      <_AspNet31RuntimePackVersion>3.1.$(VersionFeature31)</_AspNet31RuntimePackVersion>
+      <_AspNet31RuntimePackVersion>3.1.13</_AspNet31RuntimePackVersion>
       <_AspNet31TargetingPackVersion>3.1.10</_AspNet31TargetingPackVersion>
 
       <!-- Use only major and minor in target framework version -->
@@ -101,15 +102,17 @@
           @(NetCore31RuntimePackRids);
           linux-musl-arm;
           "/>
-      
+
       <Net50RuntimePackRids Include="
           @(Net50AppHostRids);
           ios-arm64;
           ios-arm;
-          ios-x64;
-          ios-x86;
+          iossimulator-arm64;
+          iossimulator-x64;
+          iossimulator-x86;
           tvos-arm64;
-          tvos-x64;
+          tvossimulator-arm64;
+          tvossimulator-x64;
           maccatalyst-x64;
           maccatalyst-arm64;
           android-arm64;
@@ -159,7 +162,7 @@
     <GenerateDefaultRuntimeFrameworkVersion RuntimePackVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)">
       <Output TaskParameter="DefaultRuntimeFrameworkVersion" PropertyName="MicrosoftAspNetCoreAppDefaultRuntimeFrameworkVersion" />
     </GenerateDefaultRuntimeFrameworkVersion>
-    
+
     <ItemGroup>
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="1.0"
@@ -176,7 +179,7 @@
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.0"
-                               LatestVersion="2.1.$(VersionFeature21)" />
+                               LatestVersion="2.1.26" />
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="2.2"
                                DefaultVersion="2.2.0"
@@ -184,11 +187,11 @@
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.$(VersionFeature21)"/>
+                               LatestVersion="2.1.26"/>
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.$(VersionFeature21)"/>
+                               LatestVersion="2.1.26"/>
 
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.2"
@@ -199,11 +202,11 @@
                                DefaultVersion="2.2.0"
                                LatestVersion="2.2.8"/>
     </ItemGroup>
-    
+
     <PropertyGroup>
       <PortableProductMonikerRid Condition="'$(PortableProductMonikerRid)' == ''">$(ProductMonikerRid)</PortableProductMonikerRid>
     </PropertyGroup>
-      
+
 
     <PropertyGroup>
       <BundledVersionsPropsContent>
@@ -223,7 +226,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <NetCoreRoot Condition="'%24(NetCoreRoot)' == ''">%24([MSBuild]::NormalizePath('%24(MSBuildThisFileDirectory)..\..\'))</NetCoreRoot>
     <NetCoreTargetingPackRoot Condition="'%24(NetCoreTargetingPackRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(NetCoreRoot)'))packs</NetCoreTargetingPackRoot>
-  
+
     <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
     <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
     <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
@@ -265,7 +268,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
                         Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         />
-    
+
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
@@ -380,7 +383,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         Crossgen2PackVersion="$(_NET50RuntimePackVersion)"
                         Crossgen2RuntimeIdentifiers="@(Net50Crossgen2SupportedRids, '%3B')"
                         />
-    
+
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
@@ -488,7 +491,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       AppHostPackVersion="$(_NETCoreApp31RuntimePackVersion)"
                       AppHostRuntimeIdentifiers="@(NetCore31RuntimePackRids, '%3B')"
                       />
-    
+
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="netcoreapp3.1"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
@@ -558,7 +561,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       AppHostPackVersion="$(_NETCoreApp30RuntimePackVersion)"
                       AppHostRuntimeIdentifiers="@(NetCore30RuntimePackRids, '%3B')"
                       />
-    
+
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="netcoreapp3.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
@@ -607,7 +610,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
                               RuntimePackRuntimeIdentifiers="@(AspNetCore30RuntimePackRids, '%3B')"
                               />
-                              
+
     <KnownFrameworkReference Include="NETStandard.Library"
                               TargetFramework="netstandard2.1"
                               TargetingPackName="NETStandard.Library.Ref"
@@ -665,13 +668,13 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="GenerateBundledVersionsProps">
 
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/runtime.json"
-          DestinationFiles="$(SdkOutputDirectory)RuntimeIdentifierGraph.json" 
+          DestinationFiles="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
           SkipUnchangedFiles="true"/>
 
     <GenerateSdkRuntimeIdentifierChain
           RuntimeIdentifier="$(PortableProductMonikerRid)"
           RuntimeIdentifierGraphPath="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
           RuntimeIdentifierChainOutputPath="$(SdkOutputDirectory)NETCoreSdkRuntimeIdentifierChain.txt"/>
-    
+
   </Target>
 </Project>
