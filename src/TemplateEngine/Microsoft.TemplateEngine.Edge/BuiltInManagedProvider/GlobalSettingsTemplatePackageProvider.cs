@@ -104,6 +104,8 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             return result;
         }
 
+        /// <inheritdoc/>
+        /// <exception cref="ArgumentException">when <paramref name="installRequests"/> has duplicate identifiers for given installer.</exception>
         public async Task<IReadOnlyList<InstallResult>> InstallAsync(IEnumerable<InstallRequest> installRequests, CancellationToken cancellationToken)
         {
             _ = installRequests ?? throw new ArgumentNullException(nameof(installRequests));
@@ -111,6 +113,18 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             {
                 return new List<InstallResult>();
             }
+
+            //validate that install requests are different - install requests should have unique identifier for given installer
+            HashSet<InstallRequest> uniqueInstallRequests = new HashSet<InstallRequest>(new InstallRequestEqualityComparer());
+            foreach (InstallRequest installRequest in installRequests)
+            {
+                if (uniqueInstallRequests.Add(installRequest))
+                {
+                    continue;
+                }
+                throw new ArgumentException($"{nameof(installRequests)} has duplicate install requests", nameof(installRequest));
+            }
+
             using var disposable = await _globalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
             var packages = new List<TemplatePackageData>(await _globalSettings.GetInstalledTemplatePackagesAsync(cancellationToken).ConfigureAwait(false));
             var results = await Task.WhenAll(installRequests.Select(async installRequest =>
@@ -267,6 +281,33 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         public void Dispose()
         {
             _globalSettings.Dispose();
+        }
+
+        private class InstallRequestEqualityComparer : IEqualityComparer<InstallRequest>
+        {
+            public bool Equals(InstallRequest x, InstallRequest y)
+            {
+                if (!x.PackageIdentifier.Equals(y.PackageIdentifier, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                if (x.InstallerName != null
+                    && y.InstallerName != null
+                    && x.InstallerName.Equals(y.InstallerName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                return false;
+            }
+            public int GetHashCode(InstallRequest obj)
+            {
+                if (obj == null)
+                {
+                    return 0;
+                }
+                return new { a = obj.InstallerName?.ToLowerInvariant(), b = obj.PackageIdentifier.ToLowerInvariant() }.GetHashCode();
+            }
         }
     }
 }
