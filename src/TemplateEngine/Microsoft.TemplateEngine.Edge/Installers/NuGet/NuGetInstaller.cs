@@ -296,7 +296,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             catch (Exception ex)
             {
                 _environmentSettings.Host.OnCriticalError(null, string.Format(LocalizableStrings.NuGetInstaller_Error_FailedToReadPackage, installRequest.PackageIdentifier), null, 0);
-                _environmentSettings.Host.LogDiagnosticMessage(DebugLogCategory, $"Details: {ex.ToString()}.");
+                _environmentSettings.Host.LogDiagnosticMessage($"Details: {ex.ToString()}.", DebugLogCategory);
                 throw new InvalidNuGetPackageException(installRequest.PackageIdentifier, ex);
             }
             string targetPackageLocation = Path.Combine(_installPath, packageInfo.PackageIdentifier + "." + packageInfo.PackageVersion + ".nupkg");
@@ -315,7 +315,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             catch (Exception ex)
             {
                 _environmentSettings.Host.OnCriticalError(null, string.Format(LocalizableStrings.NuGetInstaller_Error_CopyFailed, installRequest.PackageIdentifier, targetPackageLocation), null, 0);
-                _environmentSettings.Host.LogDiagnosticMessage(DebugLogCategory, $"Details: {ex.ToString()}.");
+                _environmentSettings.Host.LogDiagnosticMessage($"Details: {ex.ToString()}.", DebugLogCategory);
                 throw new DownloadException(packageInfo.PackageIdentifier, packageInfo.PackageVersion, installRequest.PackageIdentifier);
             }
             return packageInfo;
