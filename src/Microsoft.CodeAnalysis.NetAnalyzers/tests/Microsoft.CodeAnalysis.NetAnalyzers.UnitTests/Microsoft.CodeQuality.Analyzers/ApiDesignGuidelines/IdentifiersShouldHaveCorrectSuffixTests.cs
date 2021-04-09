@@ -216,7 +216,10 @@ public class DataTableWithWrongSuffix : DataTable
         : base(info, context) { }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
                     ExpectedDiagnostics =
                     {
                         GetCA1710CSharpResultAt(line: 16, column: 14, typeName: "EventsItemsDerived", suffix: "EventArgs"),
@@ -759,7 +762,10 @@ Public Class WronglyNamedType
 
 End Class",
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
                     ExpectedDiagnostics =
                     {
                         GetCA1710BasicResultAt(line: 13, column: 14, typeName: "AnotherDataStructure", suffix: "Queue", isSpecial: true),
@@ -1173,7 +1179,10 @@ public class C : IReadOnlyCollection<int>
     IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
                     ExpectedDiagnostics =
                     {
                         GetCA1710CSharpResultAt(6, 14, "C", "Collection"),
@@ -1227,7 +1236,11 @@ public class SomeOtherClass
 }
 
 public class SomeOtherSubClass : SomeOtherClass {}"},
-                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+")  },
                 }
             };
 
@@ -1295,7 +1308,11 @@ Public Class SomeOtherSubClass
     Inherits SomeOtherClass
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+")  },
                 }
             };
 
@@ -1350,7 +1367,11 @@ namespace MyNamespace
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+")  },
                 }
             }.RunAsync();
 
@@ -1368,7 +1389,11 @@ Namespace MyNamespace
     End Class
 End Namespace"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+")  },
                 }
             }.RunAsync();
         }
@@ -1393,7 +1418,11 @@ public class SomeClass : Dictionary<string, string>
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+")  },
                     ExpectedDiagnostics =
                     {
                         GetCA1710CSharpResultAt(4, 14, "SomeClass", "MySuffix"),
@@ -1414,7 +1443,11 @@ Public Class SomeClass
     Inherits Dictionary(Of String, String)
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+")  },
                     ExpectedDiagnostics =
                     {
                         GetCA1710BasicResultAt(4, 14, "SomeClass", "MySuffix"),
@@ -1518,7 +1551,11 @@ public class SomeClass : IDataReader
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+")  },
                 }
             }.RunAsync();
 
@@ -1709,7 +1746,11 @@ Public Class SomeClass
 
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+")  },
                 }
             }.RunAsync();
         }
@@ -1751,7 +1792,11 @@ public class SomeClass {}
 public class SomeSubClass : SomeClass {}
 public class SomeSubSubClass : SomeSubClass {}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+")  },
                     ExpectedDiagnostics = { GetCA1710CSharpResultAt(7, 14, "C", "Exception") },
                 }
             };
@@ -1822,7 +1867,11 @@ Public Class SomeSubSubClass
     Inherits SomeSubClass
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+")  },
                     ExpectedDiagnostics = { GetCA1710BasicResultAt(7, 14, "C", "Exception") },
                 }
             };

@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskFixer>;
@@ -53,7 +55,7 @@ public class C
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fixedCode(configureAwait: false) } },
                 CodeActionIndex = 0,
-                CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse,
+                CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse),
             }.RunAsync();
 
             await new VerifyCS.Test
@@ -61,7 +63,7 @@ public class C
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fixedCode(configureAwait: true) } },
                 CodeActionIndex = 1,
-                CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue,
+                CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue),
             }.RunAsync();
         }
 
@@ -93,6 +95,89 @@ public class C
 }
 ";
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4888, "https://github.com/dotnet/roslyn-analyzers/issues/4888")]
+        public async Task CSharpAsyncDisposable()
+        {
+            var code = @"
+using System;
+using System.Threading.Tasks;
+
+public class C
+{
+    private static IAsyncDisposable Create() => throw null;
+    private static Task<IAsyncDisposable> CreateAsync() => throw null;
+
+    public async Task M1()
+    {
+        await using var resource = [|Create()|];
+    }
+
+    public async Task M2()
+    {
+        await using var resource = [|await [|CreateAsync()|]|];
+    }
+
+    public async Task M3()
+    {
+        await using (var resource = [|Create()|])
+        {
+        }
+    }
+
+    public async Task M4()
+    {
+        await using (var resource = [|await [|CreateAsync()|]|])
+        {
+        }
+    }
+}
+";
+            var fixedCode = @"
+using System;
+using System.Threading.Tasks;
+
+public class C
+{
+    private static IAsyncDisposable Create() => throw null;
+    private static Task<IAsyncDisposable> CreateAsync() => throw null;
+
+    public async Task M1()
+    {
+        await using var resource = Create().ConfigureAwait(false);
+    }
+
+    public async Task M2()
+    {
+        await using var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false);
+    }
+
+    public async Task M3()
+    {
+        await using (var resource = Create().ConfigureAwait(false))
+        {
+        }
+    }
+
+    public async Task M4()
+    {
+        await using (var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false))
+        {
+        }
+    }
+}
+";
+
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Default.AddPackages(
+                    ImmutableArray.Create(new PackageIdentity("Microsoft.Bcl.AsyncInterfaces", "5.0.0"))),
+                LanguageVersion = CSharpLanguageVersion.CSharp8,
+                TestCode = code,
+                FixedCode = fixedCode,
+            }.RunAsync();
         }
 
         [Theory]
@@ -129,7 +214,7 @@ End Class
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fixedCode(configureAwait: false) } },
                 CodeActionIndex = 0,
-                CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse,
+                CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse),
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -137,7 +222,7 @@ End Class
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fixedCode(configureAwait: true) } },
                 CodeActionIndex = 1,
-                CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue,
+                CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue),
             }.RunAsync();
         }
 
@@ -323,53 +408,7 @@ public class C
 }
 ";
 
-            // 🐛 the Fix All should not be producing this invalid code
-            var fixAllCode = @"
-using System.Threading.Tasks;
-
-public class C
-{
-    public async Task M()
-    {
-        Task<Task> t = null;
-        await {|#1:(await t.ConfigureAwait(false)).ConfigureAwait(false)|}.{|#0:ConfigureAwait|}(false); // both have warnings.
-        await (await t.ConfigureAwait(false)).ConfigureAwait(false); // outer await is wrong.
-        await (await t.ConfigureAwait(false)).ConfigureAwait(false); // inner await is wrong.
-        await (await t.ConfigureAwait(false)).ConfigureAwait(false); // both correct.
-
-        ValueTask<ValueTask> vt = default;
-        await {|#3:(await vt.ConfigureAwait(false)).ConfigureAwait(false)|}.{|#2:ConfigureAwait|}(false); // both have warnings.
-        await (await vt.ConfigureAwait(false)).ConfigureAwait(false); // outer await is wrong.
-        await (await vt.ConfigureAwait(false)).ConfigureAwait(false); // inner await is wrong.
-        await (await vt.ConfigureAwait(false)).ConfigureAwait(false); // both correct.
-    }
-}
-";
-
-            await new VerifyCS.Test
-            {
-                TestState = { Sources = { code } },
-                FixedState = { Sources = { fixedCode } },
-                BatchFixedState =
-                {
-                    Sources = { fixAllCode },
-                    ExpectedDiagnostics =
-                    {
-#if !NETCOREAPP
-                        // /0/Test0.cs(9,69): error CS1061: 'ConfiguredTaskAwaitable' does not contain a definition for 'ConfigureAwait' and no accessible extension method 'ConfigureAwait' accepting a first argument of type 'ConfiguredTaskAwaitable' could be found (are you missing a using directive or an assembly reference?)
-                        DiagnosticResult.CompilerError("CS1061").WithLocation(0).WithArguments("System.Runtime.CompilerServices.ConfiguredTaskAwaitable", "ConfigureAwait"),
-                        // /0/Test0.cs(15,69): error CS1061: 'ConfiguredValueTaskAwaitable' does not contain a definition for 'ConfigureAwait' and no accessible extension method 'ConfigureAwait' accepting a first argument of type 'ConfiguredValueTaskAwaitable' could be found (are you missing a using directive or an assembly reference?)
-                        DiagnosticResult.CompilerError("CS1061").WithLocation(2).WithArguments("System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable", "ConfigureAwait"),
-#else
-                        // /0/Test0.cs(9,15): error CS1929: 'ConfiguredTaskAwaitable' does not contain a definition for 'ConfigureAwait' and the best extension method overload 'TaskAsyncEnumerableExtensions.ConfigureAwait(IAsyncDisposable, bool)' requires a receiver of type 'IAsyncDisposable'
-                        DiagnosticResult.CompilerError("CS1929").WithLocation(1).WithArguments("System.Runtime.CompilerServices.ConfiguredTaskAwaitable", "ConfigureAwait", "System.Threading.Tasks.TaskAsyncEnumerableExtensions.ConfigureAwait(System.IAsyncDisposable, bool)", "System.IAsyncDisposable"),
-                        // /0/Test0.cs(15,15): error CS1929: 'ConfiguredValueTaskAwaitable' does not contain a definition for 'ConfigureAwait' and the best extension method overload 'TaskAsyncEnumerableExtensions.ConfigureAwait(IAsyncDisposable, bool)' requires a receiver of type 'IAsyncDisposable'
-                        DiagnosticResult.CompilerError("CS1929").WithLocation(3).WithArguments("System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable", "ConfigureAwait", "System.Threading.Tasks.TaskAsyncEnumerableExtensions.ConfigureAwait(System.IAsyncDisposable, bool)", "System.IAsyncDisposable"),
-#endif
-                    },
-                },
-                NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
         [Fact]
@@ -414,34 +453,7 @@ Public Class C
 End Class
 ";
 
-            // 🐛 the Fix All should not be producing this invalid code
-            var fixAllCode = @"
-Imports System.Threading.Tasks
-
-Public Class C
-    Public Async Function M() As Task
-        Dim t As Task(Of Task)
-        Await {|BC30456:(Await t.ConfigureAwait(False)).ConfigureAwait(False).ConfigureAwait|}(False) ' both have warnings.
-        Await (Await t.ConfigureAwait(False)).ConfigureAwait(False) ' outer await is wrong.
-        Await (Await t.ConfigureAwait(False)).ConfigureAwait(False) ' inner await is wrong.
-        Await (Await t.ConfigureAwait(False)).ConfigureAwait(False) ' both correct.
-
-        Dim vt As ValueTask(Of ValueTask)
-        Await {|BC30456:(Await vt.ConfigureAwait(False)).ConfigureAwait(False).ConfigureAwait|}(False) ' both have warnings.
-        Await (Await vt.ConfigureAwait(False)).ConfigureAwait(False) ' outer await is wrong.
-        Await (Await vt.ConfigureAwait(False)).ConfigureAwait(False) ' inner await is wrong.
-        Await (Await vt.ConfigureAwait(False)).ConfigureAwait(False) ' both correct.
-    End Function
-End Class
-";
-
-            await new VerifyVB.Test
-            {
-                TestState = { Sources = { code } },
-                FixedState = { Sources = { fixedCode } },
-                BatchFixedState = { Sources = { fixAllCode } },
-                NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            await VerifyVB.VerifyCodeFixAsync(code, fixedCode);
         }
 
         [Fact]
@@ -585,7 +597,11 @@ public class C
                 TestState =
                 {
                     Sources = { code },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
         }
@@ -633,7 +649,11 @@ public class C
                 TestState =
                 {
                     Sources = { code },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
                 FixedState =
                 {
@@ -669,7 +689,11 @@ public class C
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 

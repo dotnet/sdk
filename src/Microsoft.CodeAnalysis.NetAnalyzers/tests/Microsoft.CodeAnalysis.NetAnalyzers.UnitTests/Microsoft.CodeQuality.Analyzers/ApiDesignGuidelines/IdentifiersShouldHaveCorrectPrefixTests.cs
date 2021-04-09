@@ -291,7 +291,11 @@ public class Class6<TTypeParameter>
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics =
                     {
                         GetCA1715CSharpResultAt(4, 25, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
@@ -344,7 +348,11 @@ public class Class6<TTypeParameter>
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
         }
@@ -582,7 +590,11 @@ Public Class Class6(Of TTypeParameter)
 End Class
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics =
                     {
                         GetCA1715BasicResultAt(4, 28, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
@@ -630,7 +642,11 @@ Public Class Class6(Of TTypeParameter)
 End Class
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
         }

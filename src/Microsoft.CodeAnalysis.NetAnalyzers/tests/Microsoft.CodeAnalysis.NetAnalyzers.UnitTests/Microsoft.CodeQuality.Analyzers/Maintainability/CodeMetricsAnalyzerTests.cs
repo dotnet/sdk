@@ -127,7 +127,11 @@ CA1501: 0
                 TestState =
                 {
                     Sources = { "public class MyUC : System.Windows.Forms.UserControl {}", },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 },
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
             }.RunAsync();
@@ -143,7 +147,11 @@ Public Class MyUC
     Inherits System.Windows.Forms.UserControl
 End Class",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 },
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
             }.RunAsync();
@@ -223,8 +231,15 @@ public class C2 : SomeClass2 {}"
                     },
                     AdditionalFiles =
                     {
-                        (".editorconfig", editorConfigText),
                         (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"),
                     },
                 },
             };
@@ -297,8 +312,15 @@ End Class"
                     },
                     AdditionalFiles =
                     {
-                        (".editorconfig", editorConfigText),
                         (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"),
                     },
                 },
             };
@@ -366,8 +388,15 @@ public class C1 : SomeClass {}
                     },
                     AdditionalFiles =
                     {
-                        (".editorconfig", editorConfigText),
                         (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"),
                     },
                     ExpectedDiagnostics =
                     {
@@ -418,8 +447,15 @@ End Class"
                     },
                     AdditionalFiles =
                     {
-                        (".editorconfig", editorConfigText),
                         (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"),
                     },
                     ExpectedDiagnostics =
                     {
@@ -484,8 +520,15 @@ public class C1 : SomeClass {}
                     },
                     AdditionalFiles =
                     {
-                        (".editorconfig", editorConfigText),
                         (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"),
                     },
                 },
             }.RunAsync();
@@ -535,8 +578,15 @@ End Class"
                     },
                     AdditionalFiles =
                     {
-                        (".editorconfig", editorConfigText),
                         (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"),
                     },
                 },
             }.RunAsync();

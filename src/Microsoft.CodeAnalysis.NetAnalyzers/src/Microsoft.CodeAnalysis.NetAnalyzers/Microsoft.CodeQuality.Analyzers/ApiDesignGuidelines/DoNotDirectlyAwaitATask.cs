@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -53,6 +54,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
+                var configuredAsyncDisposable = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesConfiguredAsyncDisposable);
+
                 context.RegisterOperationBlockStartAction(context =>
                 {
                     if (context.OwningSymbol is IMethodSymbol method)
@@ -71,13 +74,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             return;
                         }
 
-                        context.RegisterOperationAction(context => AnalyzeOperation(context, taskTypes), OperationKind.Await);
+                        context.RegisterOperationAction(context => AnalyzeAwaitOperation(context, taskTypes), OperationKind.Await);
+                        if (configuredAsyncDisposable is not null)
+                        {
+                            context.RegisterOperationAction(context => AnalyzeUsingOperation(context, configuredAsyncDisposable), OperationKind.Using);
+                            context.RegisterOperationAction(context => AnalyzeUsingDeclarationOperation(context, configuredAsyncDisposable), OperationKindEx.UsingDeclaration);
+                        }
                     }
                 });
             });
         }
 
-        private static void AnalyzeOperation(OperationAnalysisContext context, ImmutableArray<INamedTypeSymbol> taskTypes)
+        private static void AnalyzeAwaitOperation(OperationAnalysisContext context, ImmutableArray<INamedTypeSymbol> taskTypes)
         {
             var awaitExpression = (IAwaitOperation)context.Operation;
 
@@ -86,6 +94,51 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             if (typeOfAwaitedExpression != null && taskTypes.Contains(typeOfAwaitedExpression.OriginalDefinition))
             {
                 context.ReportDiagnostic(awaitExpression.Operation.Syntax.CreateDiagnostic(Rule));
+            }
+        }
+
+        private static void AnalyzeUsingOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncDisposable)
+        {
+            var usingExpression = (IUsingOperation)context.Operation;
+            if (!usingExpression.IsAsynchronous())
+            {
+                return;
+            }
+
+            if (usingExpression.Resources is IVariableDeclarationGroupOperation variableDeclarationGroup)
+            {
+                foreach (var declaration in variableDeclarationGroup.Declarations)
+                {
+                    foreach (var declarator in declaration.Declarators)
+                    {
+                        // Get the type of the expression being awaited and check it's a task type.
+                        if (declarator.Symbol.Type != configuredAsyncDisposable)
+                        {
+                            context.ReportDiagnostic(declarator.Initializer.Value.Syntax.CreateDiagnostic(Rule));
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void AnalyzeUsingDeclarationOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncDisposable)
+        {
+            var usingExpression = IUsingDeclarationOperationWrapper.FromOperation(context.Operation);
+            if (!usingExpression.IsAsynchronous)
+            {
+                return;
+            }
+
+            foreach (var declaration in usingExpression.DeclarationGroup.Declarations)
+            {
+                foreach (var declarator in declaration.Declarators)
+                {
+                    // Get the type of the expression being awaited and check it's a task type.
+                    if (declarator.Symbol.Type != configuredAsyncDisposable)
+                    {
+                        context.ReportDiagnostic(declarator.Initializer.Value.Syntax.CreateDiagnostic(Rule));
+                    }
+                }
             }
         }
 
