@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Microsoft.CodeAnalysis.Tools.MSBuild
+namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
     internal class MSBuildWorkspaceFinder
     {

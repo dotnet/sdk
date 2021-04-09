@@ -12,7 +12,7 @@
     <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.12.1" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.12.1" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
-    <PackageVersion Include="Microsoft.Build.Locator" Version="1.2.6" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="1.4.1" />
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.0.1-beta1.20413.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" />
@@ -38,10 +38,5 @@
     <PackageVersion Include="System.CommandLine.Rendering" Version="0.3.0-alpha.20371.2" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta1.20371.2" />
     <PackageVersion Include="System.Text.Json" Version="$(MicrosoftExtensionsVersion)" />
-    <!--
-      Workaround for the inability to load the NugetSdkResolver from the .NET 5 SDK
-      https://github.com/microsoft/MSBuildLocator/issues/88
-    -->
-    <PackageVersion Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
 </Project>
