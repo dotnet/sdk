@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
+using Microsoft.DotNet.MSBuildSdkResolver;
+
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     /// <remarks>
@@ -83,7 +85,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     {
                         if (manifests.TryGetValue(dependency.Key, out var resolvedDependency))
                         {
-                            if (dependency.Value > resolvedDependency.Version)
+                            if (FXVersion.Compare(dependency.Value, resolvedDependency.ParsedVersion) > 0)
                             {
                                 throw new Exception($"Inconsistency in workload manifest '{manifest.Id}': requires '{dependency.Key}' version at least {dependency.Value} but found {resolvedDependency.Version}");
                             }

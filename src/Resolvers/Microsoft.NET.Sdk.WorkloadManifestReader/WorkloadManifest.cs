@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 
+using Microsoft.DotNet.MSBuildSdkResolver;
+
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     /// <summary>
@@ -10,10 +12,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// </summary>
     public class WorkloadManifest
     {
-        public WorkloadManifest(string id, long version, string? description, Dictionary<WorkloadDefinitionId, WorkloadDefinition> workloads, Dictionary<WorkloadPackId, WorkloadPack> packs, Dictionary<string, long>? dependsOnManifests)
+        internal WorkloadManifest(string id, FXVersion version, string? description, Dictionary<WorkloadDefinitionId, WorkloadDefinition> workloads, Dictionary<WorkloadPackId, WorkloadPack> packs, Dictionary<string, FXVersion>? dependsOnManifests)
         {
             Id = id;
-            Version = version;
+            ParsedVersion = version;
             Description = description;
             Workloads = workloads;
             Packs = packs;
@@ -28,14 +30,19 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <summary>
         /// The version of the manifest. It is relative to the SDK band.
         /// </summary>
-        public long Version { get; }
+        public string Version => ParsedVersion.ToString()!;
 
-        public string? Description { get; }
+        /// <summary>
+        /// The version of the manifest. It is relative to the SDK band.
+        /// </summary>
+        internal FXVersion ParsedVersion { get; }
 
         /// <summary>
         /// ID and minimum version for any other manifests that this manifest depends on. Use only for validating consistancy.
         /// </summary>
-        public Dictionary<string, long>? DependsOnManifests { get; }
+        internal Dictionary<string, FXVersion>? DependsOnManifests { get; }
+
+        public string? Description { get; }
 
         public Dictionary<WorkloadDefinitionId, WorkloadDefinition> Workloads { get; }
         public Dictionary<WorkloadPackId, WorkloadPack> Packs { get; }
