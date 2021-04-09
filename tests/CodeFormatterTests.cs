@@ -120,7 +120,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             var logLines = log.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
             Assert.Contains(logLines, line => line.Contains("unformatted_project.AssemblyInfo.cs"));
-            Assert.Contains(logLines, line => line.Contains("NETCoreApp,Version=v3.0.AssemblyAttributes.cs"));
+            Assert.Contains(logLines, line => line.Contains("NETCoreApp,Version=v3.1.AssemblyAttributes.cs"));
         }
 
         [MSBuildFact]
@@ -536,7 +536,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
 
             var logger = new TestLogger();
-            var msBuildPath = MSBuildRegistrar.RegisterInstance(logger);
+            var msBuildPath = MSBuildRegistrar.RegisterInstance();
 
             logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, Program.GetRuntimeVersion());
             logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
