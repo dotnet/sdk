@@ -402,7 +402,11 @@ public struct S
                 TestState =
                 {
                     Sources = { csharpCode },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
 
@@ -415,7 +419,11 @@ End Structure";
                 TestState =
                 {
                     Sources = { vbCode },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
         }
