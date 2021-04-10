@@ -19,7 +19,6 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 {
     internal class NuGetPackageDownloader : INuGetPackageDownloader
     {
-        private readonly string _sourceUrl;
         private readonly ILogger _logger;
         private readonly string _packageInstallDir;
 
@@ -35,14 +34,14 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             DirectDownload = true
         };
 
-        public async Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion, string[] overrideSources = null)
+        public async Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion, string[] overrideNuGetSources = null)
         {
             var cancellationToken = CancellationToken.None;
             var cache = new SourceCacheContext() {DirectDownload = true, NoCache = true};
 
             IPackageSearchMetadata packageMetadata;
 
-            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(overrideSources);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(overrideNuGetSources);
             PackageSource source;
 
             if (packageVersion is null)
@@ -100,7 +99,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         public async Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, string targetFolder)
         {
-            using var packageStream = File.OpenRead(packagePath);
+            await using var packageStream = File.OpenRead(packagePath);
             var packageReader = new PackageFolderReader(targetFolder);
             var packageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv3,

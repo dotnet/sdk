@@ -1,34 +1,20 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Transactions;
-using System.Threading;
 using FluentAssertions;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.TemplateEngine.Cli;
 using NuGet.Versioning;
 using Xunit;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.NuGetPackageInstaller;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Tests;
 using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.Utilities;
 
@@ -39,28 +25,28 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         [Fact]
         public async void GivenNoFeedInstallFailsWithException()
         {
-            var tempDirectory = GetUniqueTempProjectPathEachTest();
-            var logger = new NuGetTestLogger();
-            var installer = new NuGetPackageInstaller(tempDirectory.ToString(), logger: logger);
             await Assert.ThrowsAsync<NuGetPackageInstallerException>(() =>
-                installer.InstallPackageAsync(TestPackageId, new NuGetVersion(TestPackageVersion)));
+                _installer.DownloadPackageAsync(TestPackageId, new NuGetVersion(TestPackageVersion)));
         }
 
         [Fact]
         public async void GivenASourceInstallSucceeds()
         {
-            var tempDirectory = GetUniqueTempProjectPathEachTest();
-            var logger = new NuGetTestLogger();
-            var installer = new NuGetPackageInstaller(tempDirectory.ToString(), logger: logger);
-            var packagePath = await installer.InstallPackageAsync(
-                TestPackageId, 
+            var packagePath = await _installer.DownloadPackageAsync(
+                TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new string[]{ GetTestLocalFeedPath()});
+                new string[] {GetTestLocalFeedPath()});
             File.Exists(packagePath).Should().BeTrue();
+            packagePath.Should().Contain(_tempDirectory.Value, "Package should be download to the input folder");
         }
 
         [Fact]
-        public void GivenAEmptySourceAndOfflineFeedInstallSucceeds()
+        public void GivenAFailedSourceItErrors()
+        {
+        }
+
+        [Fact]
+        public void GivenASourceAndOfflineFeedInstallSucceeds()
         {
         }
 
@@ -187,8 +173,15 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
 
+        private FilePath _tempDirectory;
+        private NuGetTestLogger _logger;
+        private NuGetPackageDownloader _installer;
+
         public NuGetPackageInstallerTests(ITestOutputHelper log) : base(log)
         {
+            _tempDirectory = GetUniqueTempProjectPathEachTest();
+            _logger = new NuGetTestLogger();
+            _installer = new NuGetPackageDownloader(_tempDirectory.ToString(), logger: _logger);
         }
     }
 }
