@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         public async Task<string> DownloadPackageAsync(
             PackageId packageId,
-            NuGetVersion packageVersion,
+            NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null)
         {
             var cancellationToken = CancellationToken.None;
@@ -59,6 +59,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     await GetPackageMetadataAsync(packageId.ToString(), packageVersion, packagesSources,
                         cancellationToken).ConfigureAwait(false);
             }
+
+            packageVersion = packageMetadata.Identity.Version;
 
             FindPackageByIdResource resource = null;
             SourceRepository repository = Repository.Factory.GetCoreV3(source);

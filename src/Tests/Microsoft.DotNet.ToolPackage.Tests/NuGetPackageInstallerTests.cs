@@ -103,8 +103,12 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         }
 
         [Fact]
-        public void GivenAllButNoPackageVersionItCanInstallThePackage()
+        public async Task GivenAllButNoPackageVersionItCanInstallThePackage()
         {
+            string packagePath = await _installer.DownloadPackageAsync(
+                TestPackageId,
+                packageSourceLocation: new PackageSourceLocation(additionalFeeds: new[] {GetTestLocalFeedPath()}));
+            File.Exists(packagePath).Should().BeTrue();
         }
 
         [Fact]
