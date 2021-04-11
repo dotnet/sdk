@@ -14,7 +14,6 @@ using Xunit;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.Tests;
 using Microsoft.NET.TestFramework;
 using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.Utilities;
