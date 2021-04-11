@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -20,9 +21,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
     internal class NuGetPackageDownloader : INuGetPackageDownloader
     {
         private readonly ILogger _logger;
-        private readonly string _packageInstallDir;
+        private readonly DirectoryPath _packageInstallDir;
 
-        public NuGetPackageDownloader(string packageInstallDir, string sourceUrl = null, ILogger logger = null)
+        public NuGetPackageDownloader(DirectoryPath packageInstallDir, ILogger logger = null)
         {
             _packageInstallDir = packageInstallDir;
             _logger = logger ?? new NullLogger();
@@ -34,14 +35,15 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             DirectDownload = true
         };
 
-        public async Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion, string[] overrideNuGetSources = null)
+        public async Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion,
+            PackageSourceLocation packageSourceLocation = null)
         {
             var cancellationToken = CancellationToken.None;
             var cache = new SourceCacheContext() {DirectDownload = true, NoCache = true};
 
             IPackageSearchMetadata packageMetadata;
 
-            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(overrideNuGetSources);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageSourceLocation.OverrideSourceFeeds);
             PackageSource source;
 
             if (packageVersion is null)
@@ -77,7 +79,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 throw new NotImplementedException();
             }
 
-            var nupkgPath = Path.Combine(_packageInstallDir, packageId.ToString(), packageVersion.ToNormalizedString(),
+            var nupkgPath = Path.Combine(_packageInstallDir.Value, packageId.ToString(), packageVersion.ToNormalizedString(),
                 $"{packageId}.{packageVersion.ToNormalizedString()}.nupkg");
             Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
             using var destinationStream = File.Create(nupkgPath);

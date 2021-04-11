@@ -32,26 +32,33 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         [Fact]
         public async void GivenASourceInstallSucceeds()
         {
-            var packagePath = await _installer.DownloadPackageAsync(
+            string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new string[] {GetTestLocalFeedPath()});
+                new PackageSourceLocation(additionalFeeds: new[] {GetTestLocalFeedPath()}));
             File.Exists(packagePath).Should().BeTrue();
-            packagePath.Should().Contain(_tempDirectory.Value, "Package should be download to the input folder");
+            packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
 
         [Fact]
-        public void GivenAFailedSourceItErrors()
+        public async void GivenAFailedSourceItShouldError()
         {
-        }
+            var nonExistFeed = new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
 
-        [Fact]
-        public void GivenASourceAndOfflineFeedInstallSucceeds()
-        {
+            await Assert.ThrowsAsync<NuGetPackageInstallerException>(() =>
+                _installer.DownloadPackageAsync(
+                    TestPackageId,
+                    new NuGetVersion(TestPackageVersion),
+                    new PackageSourceLocation(additionalFeeds: new[] {nonExistFeed.Value})));
         }
 
         [Fact]
         public void GivenNugetConfigInstallSucceeds()
+        {
+        }
+
+        [Fact]
+        public void GivenAValidNugetConfigAndFailedSourceItShouldError()
         {
         }
 
@@ -80,53 +87,12 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         {
         }
 
-        private static FilePath GetUniqueTempProjectPathEachTest()
+        private static DirectoryPath GetUniqueTempProjectPathEachTest()
         {
             var tempProjectDirectory =
                 new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.WithFile(Path.GetRandomFileName() + ".csproj");
-            return tempProjectPath;
-        }
 
-
-        private (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller, IToolPackageUninstaller,
-            BufferedReporter, IFileSystem
-            ) Setup(
-                bool useMock,
-                List<MockFeed> feeds = null,
-                FilePath? tempProject = null,
-                DirectoryPath? offlineFeed = null,
-                FilePath? writeLocalFeedToNugetConfig = null,
-                [CallerMemberName] string callingMethod = "")
-        {
-            var root = new DirectoryPath(_testAssetsManager
-                .CreateTestDirectory(callingMethod, identifier: useMock.ToString()).Path);
-            var reporter = new BufferedReporter();
-
-            IFileSystem fileSystem;
-            IToolPackageStore store;
-            IToolPackageStoreQuery storeQuery;
-            IToolPackageInstaller installer;
-            IToolPackageUninstaller uninstaller;
-
-            {
-                fileSystem = new FileSystemWrapper();
-                WriteNugetConfigFileToPointToTheFeed(fileSystem, writeLocalFeedToNugetConfig);
-                var toolPackageStore = new ToolPackageStoreAndQuery(root);
-                store = toolPackageStore;
-                storeQuery = toolPackageStore;
-                installer = new ToolPackageInstaller(
-                    store: store,
-                    projectRestorer: new Stage2ProjectRestorer(Log, reporter),
-                    tempProject: tempProject ?? GetUniqueTempProjectPathEachTest(),
-                    offlineFeed: offlineFeed ?? new DirectoryPath("does not exist"));
-                uninstaller = new ToolPackageUninstaller(store);
-            }
-
-            store.Root.Value.Should().Be(Path.GetFullPath(root.Value));
-
-            return (store, storeQuery, installer, uninstaller, reporter, fileSystem);
+            return tempProjectDirectory;
         }
 
         private static void WriteNugetConfigFileToPointToTheFeed(IFileSystem fileSystem, FilePath? filePath)
@@ -173,7 +139,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
 
-        private FilePath _tempDirectory;
+        private DirectoryPath _tempDirectory;
         private NuGetTestLogger _logger;
         private NuGetPackageDownloader _installer;
 
@@ -181,7 +147,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         {
             _tempDirectory = GetUniqueTempProjectPathEachTest();
             _logger = new NuGetTestLogger();
-            _installer = new NuGetPackageDownloader(_tempDirectory.ToString(), logger: _logger);
+            _installer = new NuGetPackageDownloader(_tempDirectory, logger: _logger);
         }
     }
 }

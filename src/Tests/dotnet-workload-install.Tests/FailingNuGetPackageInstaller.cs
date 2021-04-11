@@ -20,7 +20,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             Directory.CreateDirectory(MockPackageDir);
         }
 
-        public Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion, string[] overrideNuGetSources = null)
+        public Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion,
+            PackageSourceLocation packageSourceLocation = null)
         {
             var mockPackagePath = Path.Combine(MockPackageDir, $"{packageId}.{packageVersion}.nupkg");
             File.WriteAllText(mockPackagePath, string.Empty);

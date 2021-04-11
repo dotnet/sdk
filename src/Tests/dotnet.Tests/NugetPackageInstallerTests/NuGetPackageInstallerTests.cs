@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.TestFramework;
 using NuGet.Versioning;
 using Xunit;
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Tests
             var packageId = "Humanizer";
             var packageVersion = "2.6.2";
             var logger = new NuGetTestLogger();
-            var installer = new NuGetPackageDownloader(Directory.GetCurrentDirectory(), logger: logger);
+            var installer = new NuGetPackageDownloader(new DirectoryPath(Directory.GetCurrentDirectory()), logger: logger);
             var packagePath = await installer.DownloadPackageAsync(new PackageId(packageId), new NuGetVersion(packageVersion));
 
             logger.Errors.Should().Be(0);
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.Tests
             var packageId = "Newtonsoft.Json";
             var packageVersion = "12.0.3";
             var logger = new NuGetTestLogger();
-            var installer = new NuGetPackageDownloader(Directory.GetCurrentDirectory(), logger: logger);
+            var installer = new NuGetPackageDownloader(new DirectoryPath(Directory.GetCurrentDirectory()), logger: logger);
             var packagePath = await installer.DownloadPackageAsync(new PackageId(packageId), new NuGetVersion(packageVersion));
             var targetPath = Path.Combine(Directory.GetCurrentDirectory(), "ExtractedPackage");
             var result = await installer.ExtractPackageAsync(packagePath, targetPath);
