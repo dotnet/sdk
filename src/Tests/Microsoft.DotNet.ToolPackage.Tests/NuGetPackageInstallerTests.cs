@@ -12,6 +12,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 using Xunit;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Tests;
 using Microsoft.NET.TestFramework;
@@ -23,14 +24,14 @@ namespace Microsoft.DotNet.ToolPackage.Tests
     public class NuGetPackageInstallerTests : SdkTest
     {
         [Fact]
-        public async void GivenNoFeedInstallFailsWithException()
+        public async Task GivenNoFeedInstallFailsWithException()
         {
             await Assert.ThrowsAsync<NuGetPackageInstallerException>(() =>
                 _installer.DownloadPackageAsync(TestPackageId, new NuGetVersion(TestPackageVersion)));
         }
 
         [Fact]
-        public async void GivenASourceInstallSucceeds()
+        public async Task GivenASourceInstallSucceeds()
         {
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         }
 
         [Fact]
-        public async void GivenAFailedSourceItShouldError()
+        public async Task GivenAFailedSourceItShouldError()
         {
             var nonExistFeed = new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
 
@@ -53,18 +54,52 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         }
 
         [Fact]
-        public void GivenNugetConfigInstallSucceeds()
+        public async Task GivenNugetConfigInstallSucceeds()
         {
+            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
+            var fileSystem = new FileSystemWrapper();
+            WriteNugetConfigFileToPointToTheFeed(fileSystem, nugetConfigPath);
+
+            string packagePath = await _installer.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(nugetConfig: nugetConfigPath));
+            File.Exists(packagePath).Should().BeTrue();
         }
 
         [Fact]
-        public void GivenAValidNugetConfigAndFailedSourceItShouldError()
+        public async Task GivenAValidNugetConfigAndFailedSourceItShouldError()
         {
+            var nonExistFeed = new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
+
+            var validNugetConfigPath = GenerateRandomNugetConfigFilePath();
+            var fileSystem = new FileSystemWrapper();
+            WriteNugetConfigFileToPointToTheFeed(fileSystem, validNugetConfigPath);
+
+            // "source" option will override everything like nuget.config just like "dotner restore --source ..."
+            await Assert.ThrowsAsync<NuGetPackageInstallerException>(() =>
+                _installer.DownloadPackageAsync(
+                    TestPackageId,
+                    new NuGetVersion(TestPackageVersion),
+                    new PackageSourceLocation(nugetConfig: validNugetConfigPath,
+                        additionalFeeds: new[] {nonExistFeed.Value})));
         }
 
         [Fact]
-        public void GivenAConfigFileRootDirectoryPackageInstallSucceedsViaFindingNugetConfigInParentDir()
+        public async Task GivenAConfigFileRootDirectoryPackageInstallSucceedsViaFindingNugetConfigInParentDir()
         {
+            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
+            var directoryBelowNugetConfig = nugetConfigPath.GetDirectoryPath().WithSubDirectories("subDir");
+            Directory.CreateDirectory(directoryBelowNugetConfig.Value);
+
+            var fileSystem = new FileSystemWrapper();
+            WriteNugetConfigFileToPointToTheFeed(fileSystem, nugetConfigPath);
+
+            string packagePath = await _installer.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(rootConfigDirectory: directoryBelowNugetConfig));
+            File.Exists(packagePath).Should().BeTrue();
         }
 
         [Fact]

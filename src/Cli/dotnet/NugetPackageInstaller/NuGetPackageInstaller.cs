@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             IPackageSearchMetadata packageMetadata;
 
-            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageSourceLocation.OverrideSourceFeeds);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageSourceLocation);
             PackageSource source;
 
             if (packageVersion is null)
@@ -119,14 +119,25 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 token: cancellationToken);
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(string[] overrideSources = null)
+        private IEnumerable<PackageSource> LoadNuGetSources(PackageSourceLocation packageSourceLocation = null)
         {
             IEnumerable<PackageSource> defaultSources = new List<PackageSource>();
             string currentDirectory = string.Empty;
             try
             {
                 currentDirectory = Directory.GetCurrentDirectory();
-                ISettings settings = global::NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory);
+                ISettings settings;
+                if (packageSourceLocation.NugetConfig.HasValue)
+                {
+                    string nugetConfigParentDirectory = packageSourceLocation.NugetConfig.Value.GetDirectoryPath().Value;
+                    string nugetConfigFileName = Path.GetFileName(packageSourceLocation.NugetConfig.Value.Value);
+                    settings = global::NuGet.Configuration.Settings.LoadSpecificSettings(nugetConfigParentDirectory, nugetConfigFileName);
+                }
+                else
+                {
+                    settings = global::NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory);
+                }
+                
                 PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
                 defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             }
@@ -139,20 +150,20 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 //throw new InvalidNuGetSourceException($"Failed to load NuGet sources configured for the folder {currentDirectory}", ex);
             }
 
-            if (!overrideSources?.Any() ?? true)
+            if (!packageSourceLocation?.OverrideSourceFeeds.Any() ?? true)
             {
                 if (!defaultSources.Any())
                 {
                     // TODO error handling 
                     // _nugetLogger.LogError(LocalizableStrings.NuGetApiPackageManager_Error_NoSources);
-                    throw new NotImplementedException("No NuGet sources are defined or enabled");
+                    throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
                 }
 
                 return defaultSources;
             }
 
             List<PackageSource> customSources = new List<PackageSource>();
-            foreach (string source in overrideSources)
+            foreach (string source in packageSourceLocation?.OverrideSourceFeeds)
             {
                 if (string.IsNullOrWhiteSpace(source))
                 {
@@ -170,7 +181,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
 
             IEnumerable<PackageSource> retrievedSources;
-            if (overrideSources != null && overrideSources.Any())
+            if (packageSourceLocation != null && packageSourceLocation.OverrideSourceFeeds.Any())
             {
                 retrievedSources = customSources;
             }
