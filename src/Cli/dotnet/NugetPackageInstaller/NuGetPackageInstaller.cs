@@ -34,10 +34,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             NoCache = true, DirectDownload = true
         };
 
-        public async Task<string> DownloadPackageAsync(
-            PackageId packageId,
+        public async Task<string> DownloadPackageAsync(PackageId packageId,
             NuGetVersion packageVersion = null,
-            PackageSourceLocation packageSourceLocation = null)
+            PackageSourceLocation packageSourceLocation = null,
+            bool includePreview = false)
         {
             var cancellationToken = CancellationToken.None;
             var cache = new SourceCacheContext() {DirectDownload = true, NoCache = true};
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             if (packageVersion is null)
             {
                 (source, packageMetadata) = await GetLatestVersionInternalAsync(packageId.ToString(), packagesSources,
-                    includePreview: false, cancellationToken).ConfigureAwait(false);
+                    includePreview: includePreview, cancellationToken).ConfigureAwait(false);
             }
             else
             {

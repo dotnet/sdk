@@ -121,6 +121,21 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
 
+        [Fact]
+        public async Task WhenPassedIncludePreviewItInstallSucceeds()
+        {
+            string getTestLocalFeedPath = GetTestLocalFeedPath();
+            string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
+            Log.WriteLine(relativePath);
+            string packagePath = await _installer.DownloadPackageAsync(
+                TestPackageId,
+                packageSourceLocation: new PackageSourceLocation(overrideSourceFeeds: new[] {relativePath}),
+                includePreview: true);
+            File.Exists(packagePath).Should().BeTrue();
+            packagePath.Should().Contain(TestPackageId + "." + TestPreviewPackageVersion,
+                "Package should download higher package version");
+        }
+
         private static DirectoryPath GetUniqueTempProjectPathEachTest()
         {
             var tempProjectDirectory =
@@ -171,6 +186,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
+        private const string TestPreviewPackageVersion = "2.0.1-preview1";
         private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
 
         private readonly DirectoryPath _tempDirectory;

@@ -34,6 +34,11 @@
     <EmbeddedResource Remove="SampleGlobalTool/**" />
     <None Remove="SampleGlobalTool/**" />
 
+    <Compile Remove="SampleGlobalToolWithPreview/**" />
+    <Content Remove="SampleGlobalToolWithPreview/**" />
+    <EmbeddedResource Remove="SampleGlobalToolWithPreview/**" />
+    <None Remove="SampleGlobalToolWithPreview/**" />
+
     <Compile Remove="SampleGlobalToolWithShim/**" />
     <Content Remove="SampleGlobalToolWithShim/**" />
     <EmbeddedResource Remove="SampleGlobalToolWithShim/**" />
@@ -58,6 +63,10 @@
     </MSBuild>
     <MSBuild BuildInParallel="False" Projects="SampleGlobalTool/consoledemo.csproj" Targets="pack" Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(testAssetSourceRoot);PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false"
              RemoveProperties="TargetFramework">
+    </MSBuild>
+    <MSBuild BuildInParallel="False" Projects="SampleGlobalToolWithPreview/consoledemo.csproj" Targets="Build;Publish" Properties="Configuration=Release;BaseOutputPath=$(testAssetSourceRoot)/bin/;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false" RemoveProperties="TargetFramework">
+    </MSBuild>
+    <MSBuild BuildInParallel="False" Projects="SampleGlobalToolWithPreview/consoledemo.csproj" Targets="pack" Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(testAssetSourceRoot);PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false" RemoveProperties="TargetFramework">
     </MSBuild>
   </Target>
 
@@ -95,9 +104,9 @@
     </MSBuild>
   </Target>
 
-  <Target Name="CopyAssetToPublishFolder" BeforeTargets="Publish" DependsOnTargets="CreateNupkgWithShimFromSource;CreateNupkgFromSource;CreateNupkgWithShimFromSource">
+  <Target Name="CopyAssetToPublishFolder" BeforeTargets="Publish" DependsOnTargets="CreateNupkgWithShimFromSource;CreateNupkgFromSource;CreateNupkgWithShimFromSource;CreateNupkgFromSourceWithPreview">
     <ItemGroup>
-       <TestAssetFiles Include="$(BaseOutputPath)\TestAsset\**\*.*"/>
+       <TestAssetFiles Include="$(BaseOutputPath)\TestAsset\**\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(TestAssetFiles)" DestinationFiles="@(TestAssetFiles->'$(PublishDir)\TestAsset\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>

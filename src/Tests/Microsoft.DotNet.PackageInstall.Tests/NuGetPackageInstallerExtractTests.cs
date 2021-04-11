@@ -12,7 +12,7 @@ using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNet.Tests
+namespace Microsoft.DotNet.PackageInstall.Tests
 {
     public class NuGetPackageInstallerExtractTests : SdkTest
     {
