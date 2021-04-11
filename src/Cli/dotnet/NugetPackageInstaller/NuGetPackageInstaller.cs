@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 if (packageSource.TrySourceAsUri == null)
                 {
                     _logger.LogWarning(string.Format(
-                        "Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.",
+                        LocalizableStrings.FailedToLoadNuGetSource,
                         source));
                     continue;
                 }
@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             if (!foundPackagesBySource.Any())
             {
-                throw new NuGetPackageInstallerException(string.Format("Failed to load NuGet sources {0}",
+                throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToLoadNuGetSource,
                     string.Join(" ", packageSources.Select(s => s.Source))));
             }
 
@@ -219,7 +219,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 _logger.LogWarning(
                     string.Format(
-                        "Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.",
+                        LocalizableStrings.FailedToLoadNuGetSourceSourceIsNotValid,
                         packageIdentifier,
                         string.Join(", ", packageSources.Select(source => source.Source))));
             }
@@ -288,11 +288,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             if (!atLeastOneSourceValid)
             {
-                throw new NuGetPackageInstallerException(string.Format("Failed to load NuGet sources {0}",
+                throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToLoadNuGetSource,
                     string.Join(";", sources.Select(s => s.Source))));
             }
 
-            throw new NuGetPackageInstallerException(string.Format("{0} is not found in NuGet feeds {1}",
+            throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.IsNotFoundInNuGetFeeds,
                 $"{packageIdentifier}::{packageVersion}", string.Join(";", sources.Select(s => s.Source))));
         }
 

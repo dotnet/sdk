@@ -7,6 +7,16 @@
         <target state="new">Failed to load NuGet source {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToLoadNuGetSourceSourceIsNotValid">
+        <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
+        <target state="new">Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IsNotFoundInNuGetFeeds">
+        <source>{0} is not found in NuGet feeds {1}",</source>
+        <target state="new">{0} is not found in NuGet feeds {1}",</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
