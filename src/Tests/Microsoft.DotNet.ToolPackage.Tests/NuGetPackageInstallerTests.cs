@@ -1,22 +1,18 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Reflection;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 using Xunit;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.NET.TestFramework;
 using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Utilities;
 
 namespace Microsoft.DotNet.ToolPackage.Tests
 {
@@ -35,7 +31,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(additionalFeeds: new[] {GetTestLocalFeedPath()}));
+                new PackageSourceLocation(overrideSourceFeeds: new[] {GetTestLocalFeedPath()}));
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
@@ -49,7 +45,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 _installer.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
-                    new PackageSourceLocation(additionalFeeds: new[] {nonExistFeed.Value})));
+                    new PackageSourceLocation(overrideSourceFeeds: new[] {nonExistFeed.Value})));
         }
 
         [Fact]
@@ -81,7 +77,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
                     new PackageSourceLocation(nugetConfig: validNugetConfigPath,
-                        additionalFeeds: new[] {nonExistFeed.Value})));
+                        overrideSourceFeeds: new[] {nonExistFeed.Value})));
         }
 
         [Fact]
@@ -106,23 +102,22 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         {
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
-                packageSourceLocation: new PackageSourceLocation(additionalFeeds: new[] {GetTestLocalFeedPath()}));
+                packageSourceLocation: new PackageSourceLocation(overrideSourceFeeds: new[] {GetTestLocalFeedPath()}));
             File.Exists(packagePath).Should().BeTrue();
         }
 
         [Fact]
-        public void GivenARelativeSourcePathInstallSucceeds()
+        public async Task GivenARelativeSourcePathInstallSucceeds()
         {
-        }
-
-        [Fact]
-        public void GivenAEmptySourceAndNugetConfigInstallSucceeds()
-        {
-        }
-
-        [UnixOnlyFact]
-        public void GivenAPackageWithCasingAndenUSPOSIXInstallSucceeds()
-        {
+            string getTestLocalFeedPath = GetTestLocalFeedPath();
+            string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
+            Log.WriteLine(relativePath);
+            string packagePath = await _installer.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(overrideSourceFeeds: new[] {relativePath}));
+            File.Exists(packagePath).Should().BeTrue();
+            packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
 
         private static DirectoryPath GetUniqueTempProjectPathEachTest()
