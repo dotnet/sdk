@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public NuGetPackageDownloader(DirectoryPath packageInstallDir, ILogger logger = null)
         {
             _packageInstallDir = packageInstallDir;
-            _logger = logger ?? new NullLogger();
+            _logger = logger ?? new NuGetConsoleLogger();
         }
 
         private readonly SourceCacheContext _cacheSettings = new SourceCacheContext()
@@ -65,21 +65,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             FindPackageByIdResource resource = null;
             SourceRepository repository = Repository.Factory.GetCoreV3(source);
 
-            try
-            {
-                resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-                //_nugetLogger.LogError(string.Format(LocalizableStrings.NuGetApiPackageManager_Error_FailedToLoadSource, source.Source));
-                //_nugetLogger.LogDebug($"Details: {e.ToString()}.");
-                //throw new NotImplementedException("Failed to load NuGet source", new[] { source.Source }, e);
-            }
+            resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
+                .ConfigureAwait(false);
 
             if (resource == null)
             {
-                throw new NotImplementedException();
+                throw new NuGetPackageInstallerException(
+                    string.Format(LocalizableStrings.FailedToLoadNuGetSource, source.Source));
             }
 
             var nupkgPath = Path.Combine(_packageInstallDir.Value, packageId.ToString(),
@@ -97,7 +89,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             if (!success)
             {
-                throw new Exception($"Downloading {packageId} version {packageVersion.ToNormalizedString()} failed");
+                throw new NuGetPackageInstallerException(
+                    $"Downloading {packageId} version {packageVersion.ToNormalizedString()} failed");
             }
 
             return nupkgPath;
@@ -127,42 +120,30 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             IEnumerable<PackageSource> defaultSources = new List<PackageSource>();
             string currentDirectory = string.Empty;
-            try
-            {
-                currentDirectory = Directory.GetCurrentDirectory();
-                ISettings settings;
-                if (packageSourceLocation.NugetConfig.HasValue)
-                {
-                    string nugetConfigParentDirectory =
-                        packageSourceLocation.NugetConfig.Value.GetDirectoryPath().Value;
-                    string nugetConfigFileName = Path.GetFileName(packageSourceLocation.NugetConfig.Value.Value);
-                    settings = Settings.LoadSpecificSettings(nugetConfigParentDirectory,
-                        nugetConfigFileName);
-                }
-                else
-                {
-                    settings = Settings.LoadDefaultSettings(
-                        packageSourceLocation?.RootConfigDirectory?.Value ?? currentDirectory);
-                }
 
-                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
-                defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
-            }
-            catch (Exception ex)
+            currentDirectory = Directory.GetCurrentDirectory();
+            ISettings settings;
+            if (packageSourceLocation?.NugetConfig != null)
             {
-                _logger.LogError(string.Format("Failed to load NuGet sources configured for the folder {0}",
-                    currentDirectory));
-                _logger.LogDebug($"Details: {ex.ToString()}.");
-                // TODO error handling 
-                //throw new InvalidNuGetSourceException($"Failed to load NuGet sources configured for the folder {currentDirectory}", ex);
+                string nugetConfigParentDirectory =
+                    packageSourceLocation.NugetConfig.Value.GetDirectoryPath().Value;
+                string nugetConfigFileName = Path.GetFileName(packageSourceLocation.NugetConfig.Value.Value);
+                settings = Settings.LoadSpecificSettings(nugetConfigParentDirectory,
+                    nugetConfigFileName);
             }
+            else
+            {
+                settings = Settings.LoadDefaultSettings(
+                    packageSourceLocation?.RootConfigDirectory?.Value ?? currentDirectory);
+            }
+
+            PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+            defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
 
             if (!packageSourceLocation?.OverrideSourceFeeds.Any() ?? true)
             {
                 if (!defaultSources.Any())
                 {
-                    // TODO error handling 
-                    // _nugetLogger.LogError(LocalizableStrings.NuGetApiPackageManager_Error_NoSources);
                     throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
                 }
 
@@ -180,7 +161,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 PackageSource packageSource = new PackageSource(source);
                 if (packageSource.TrySourceAsUri == null)
                 {
-                    //_nugetLogger.LogWarning(string.Format(LocalizableStrings.NuGetApiPackageManager_Warning_FailedToLoadSource, source));
+                    _logger.LogWarning(string.Format(
+                        "Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.",
+                        source));
                     continue;
                 }
 
@@ -199,8 +182,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             if (!retrievedSources.Any())
             {
-                // _nugetLogger.LogError(LocalizableStrings.NuGetApiPackageManager_Error_NoSources);
-                throw new NotImplementedException("No NuGet sources are defined or enabled");
+                throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
             }
 
             return retrievedSources;
@@ -226,7 +208,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             if (!foundPackagesBySource.Any())
             {
-                //throw new NotImplementedException("Failed to load NuGet sources", packageSources.Select(source => source.Source));
+                throw new NuGetPackageInstallerException(string.Format("Failed to load NuGet sources {0}",
+                    string.Join(" ", packageSources.Select(s => s.Source))));
             }
 
             var accumulativeSearchResults = foundPackagesBySource
@@ -234,12 +217,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             if (!accumulativeSearchResults.Any())
             {
-                // _logger.LogWarning(
-                //     string.Format(
-                //         LocalizableStrings.NuGetApiPackageManager_Warning_PackageNotFound,
-                //         packageIdentifier,
-                //         string.Join(", ", packageSources.Select(source => source.Source))));
-                //throw new NotImplementedException(packageIdentifier, packageSources.Select(source => source.Source));
+                _logger.LogWarning(
+                    string.Format(
+                        "Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.",
+                        packageIdentifier,
+                        string.Join(", ", packageSources.Select(source => source.Source))));
             }
 
             if (!includePreview)
@@ -299,14 +281,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     result.foundPackages.FirstOrDefault(package => package.Identity.Version == packageVersion);
                 if (matchedVersion != null)
                 {
-                    _logger.LogDebug($"{packageIdentifier}::{packageVersion} was found in {result.source.Source}.");
                     linkedCts.Cancel();
                     return (result.source, matchedVersion);
-                }
-                else
-                {
-                    _logger.LogDebug(
-                        $"{packageIdentifier}::{packageVersion} is not found in NuGet feed {result.source.Source}.");
                 }
             }
 
@@ -315,13 +291,6 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 throw new NuGetPackageInstallerException(string.Format("Failed to load NuGet sources {0}",
                     string.Join(";", sources.Select(s => s.Source))));
             }
-
-            // _logger.LogWarning(
-            //     string.Format(
-            //         LocalizableStrings.NuGetApiPackageManager_Warning_PackageNotFound,
-            //         $"{packageIdentifier}::{packageVersion}",
-            //         string.Join(", ", sources.Select(source => source.Source))));
-            // throw new PackageNotFoundException(packageIdentifier, packageVersion, sources.Select(source => source.Source));
 
             throw new NuGetPackageInstallerException(string.Format("{0} is not found in NuGet feeds {1}",
                 $"{packageIdentifier}::{packageVersion}", string.Join(";", sources.Select(s => s.Source))));
@@ -339,39 +308,18 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             _ = source ?? throw new ArgumentNullException(nameof(source));
 
-            _logger.LogDebug($"Searching for {packageIdentifier} in {source.Source}.");
-            try
-            {
-                SourceRepository repository = Repository.Factory.GetCoreV3(source);
-                PackageMetadataResource resource = await repository
-                    .GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
-                IEnumerable<IPackageSearchMetadata> foundPackages = await resource.GetMetadataAsync(
-                    packageIdentifier,
-                    includePrerelease: includePrerelease,
-                    includeUnlisted: false,
-                    _cacheSettings,
-                    _logger,
-                    cancellationToken).ConfigureAwait(false);
+            SourceRepository repository = Repository.Factory.GetCoreV3(source);
+            PackageMetadataResource resource = await repository
+                .GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
+            IEnumerable<IPackageSearchMetadata> foundPackages = await resource.GetMetadataAsync(
+                packageIdentifier,
+                includePrerelease: includePrerelease,
+                includeUnlisted: false,
+                _cacheSettings,
+                _logger,
+                cancellationToken).ConfigureAwait(false);
 
-                if (foundPackages.Any())
-                {
-                    _logger.LogDebug(
-                        $"Found {foundPackages.Count()} versions for {packageIdentifier} in NuGet feed {source.Source}.");
-                }
-                else
-                {
-                    _logger.LogDebug($"{packageIdentifier} is not found in NuGet feed {source.Source}.");
-                }
-
-                return (source, foundPackages);
-            }
-            catch (Exception ex)
-            {
-                // _logger.LogError(string.Format(LocalizableStrings.NuGetApiPackageManager_Error_FailedToReadPackage, source.Source));
-                _logger.LogDebug($"Details: {ex.ToString()}.");
-            }
-
-            return (source, foundPackages: null);
+            return (source, foundPackages);
         }
     }
 }
