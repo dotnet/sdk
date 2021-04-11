@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -23,16 +24,18 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Fact]
         public async Task ItCanExtractsNugetPackage()
         {
-            var packageId = "Newtonsoft.Json";
-            var packageVersion = "12.0.3";
-            var logger = new NuGetTestLogger();
-            var installer = new NuGetPackageDownloader(new DirectoryPath(Directory.GetCurrentDirectory()), logger: logger);
-            var packagePath = await installer.DownloadPackageAsync(new PackageId(packageId), new NuGetVersion(packageVersion));
-            var targetPath = Path.Combine(Directory.GetCurrentDirectory(), "ExtractedPackage");
-            var result = await installer.ExtractPackageAsync(packagePath, targetPath);
+            string packageId = "Newtonsoft.Json";
+            string packageVersion = "12.0.3";
+            NuGetTestLogger logger = new NuGetTestLogger();
+            NuGetPackageDownloader installer =
+                new NuGetPackageDownloader(new DirectoryPath(Directory.GetCurrentDirectory()), logger);
+            string packagePath =
+                await installer.DownloadPackageAsync(new PackageId(packageId), new NuGetVersion(packageVersion));
+            string targetPath = Path.Combine(Directory.GetCurrentDirectory(), "ExtractedPackage");
+            IEnumerable<string> result = await installer.ExtractPackageAsync(packagePath, targetPath);
 
             Directory.Exists(targetPath).Should().BeTrue();
-            var extractedFiles = Directory.GetFiles(targetPath, "*", SearchOption.AllDirectories);
+            string[] extractedFiles = Directory.GetFiles(targetPath, "*", SearchOption.AllDirectories);
             extractedFiles.Should().Contain(Path.Combine(targetPath, $"{packageId}.nuspec"));
             extractedFiles.Should().BeEquivalentTo(result);
         }

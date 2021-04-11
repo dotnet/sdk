@@ -19,12 +19,27 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 {
     public class NuGetPackageInstallerTests : SdkTest
     {
-        [Fact]
-        public async Task GivenNoFeedInstallFailsWithException()
+        private const string TestPackageVersion = "1.0.4";
+        private const string TestPreviewPackageVersion = "2.0.1-preview1";
+        private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
+        private readonly NuGetPackageDownloader _installer;
+
+        private readonly DirectoryPath _tempDirectory;
+
+        private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
+        private readonly NuGetTestLogger _logger;
+
+        public NuGetPackageInstallerTests(ITestOutputHelper log) : base(log)
         {
+            _tempDirectory = GetUniqueTempProjectPathEachTest();
+            _logger = new NuGetTestLogger();
+            _installer = new NuGetPackageDownloader(_tempDirectory, _logger);
+        }
+
+        [Fact]
+        public async Task GivenNoFeedInstallFailsWithException() =>
             await Assert.ThrowsAsync<NuGetPackageInstallerException>(() =>
                 _installer.DownloadPackageAsync(TestPackageId, new NuGetVersion(TestPackageVersion)));
-        }
 
         [Fact]
         public async Task GivenASourceInstallSucceeds()
@@ -40,7 +55,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Fact]
         public async Task GivenAFailedSourceItShouldError()
         {
-            var nonExistFeed = new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
+            DirectoryPath nonExistFeed =
+                new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
 
             await Assert.ThrowsAsync<NuGetPackageInstallerException>(() =>
                 _installer.DownloadPackageAsync(
@@ -52,24 +68,25 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Fact]
         public async Task GivenNugetConfigInstallSucceeds()
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-            var fileSystem = new FileSystemWrapper();
+            FilePath nugetConfigPath = GenerateRandomNugetConfigFilePath();
+            FileSystemWrapper fileSystem = new FileSystemWrapper();
             WriteNugetConfigFileToPointToTheFeed(fileSystem, nugetConfigPath);
 
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(nugetConfig: nugetConfigPath));
+                new PackageSourceLocation(nugetConfigPath));
             File.Exists(packagePath).Should().BeTrue();
         }
 
         [Fact]
         public async Task GivenAValidNugetConfigAndFailedSourceItShouldError()
         {
-            var nonExistFeed = new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
+            DirectoryPath nonExistFeed =
+                new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
 
-            var validNugetConfigPath = GenerateRandomNugetConfigFilePath();
-            var fileSystem = new FileSystemWrapper();
+            FilePath validNugetConfigPath = GenerateRandomNugetConfigFilePath();
+            FileSystemWrapper fileSystem = new FileSystemWrapper();
             WriteNugetConfigFileToPointToTheFeed(fileSystem, validNugetConfigPath);
 
             // "source" option will override everything like nuget.config just like "dotner restore --source ..."
@@ -77,18 +94,18 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 _installer.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
-                    new PackageSourceLocation(nugetConfig: validNugetConfigPath,
+                    new PackageSourceLocation(validNugetConfigPath,
                         overrideSourceFeeds: new[] {nonExistFeed.Value})));
         }
 
         [Fact]
         public async Task GivenAConfigFileRootDirectoryPackageInstallSucceedsViaFindingNugetConfigInParentDir()
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-            var directoryBelowNugetConfig = nugetConfigPath.GetDirectoryPath().WithSubDirectories("subDir");
+            FilePath nugetConfigPath = GenerateRandomNugetConfigFilePath();
+            DirectoryPath directoryBelowNugetConfig = nugetConfigPath.GetDirectoryPath().WithSubDirectories("subDir");
             Directory.CreateDirectory(directoryBelowNugetConfig.Value);
 
-            var fileSystem = new FileSystemWrapper();
+            FileSystemWrapper fileSystem = new FileSystemWrapper();
             WriteNugetConfigFileToPointToTheFeed(fileSystem, nugetConfigPath);
 
             string packagePath = await _installer.DownloadPackageAsync(
@@ -138,7 +155,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         private static DirectoryPath GetUniqueTempProjectPathEachTest()
         {
-            var tempProjectDirectory =
+            DirectoryPath tempProjectDirectory =
                 new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
 
             return tempProjectDirectory;
@@ -151,7 +168,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             fileSystem.Directory.CreateDirectory(filePath.Value.GetDirectoryPath().Value);
 
             fileSystem.File.WriteAllText(filePath.Value.Value, FormatNuGetConfig(
-                localFeedPath: GetTestLocalFeedPath()));
+                GetTestLocalFeedPath()));
         }
 
         public static string FormatNuGetConfig(string localFeedPath)
@@ -172,7 +189,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private static FilePath GenerateRandomNugetConfigFilePath()
         {
             const string nugetConfigName = "nuget.config";
-            var tempPathForNugetConfigWithWhiteSpace =
+            string tempPathForNugetConfigWithWhiteSpace =
                 Path.Combine(Path.GetTempPath(),
                     Path.GetRandomFileName() + " " + Path.GetRandomFileName());
 
@@ -183,21 +200,5 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         private static string GetTestLocalFeedPath() =>
             Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestAssetLocalNugetFeed");
-
-        private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
-        private const string TestPackageVersion = "1.0.4";
-        private const string TestPreviewPackageVersion = "2.0.1-preview1";
-        private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
-
-        private readonly DirectoryPath _tempDirectory;
-        private NuGetTestLogger _logger;
-        private readonly NuGetPackageDownloader _installer;
-
-        public NuGetPackageInstallerTests(ITestOutputHelper log) : base(log)
-        {
-            _tempDirectory = GetUniqueTempProjectPathEachTest();
-            _logger = new NuGetTestLogger();
-            _installer = new NuGetPackageDownloader(_tempDirectory, logger: _logger);
-        }
     }
 }
