@@ -11,10 +11,11 @@ using NuGet.Versioning;
 using Xunit;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.ToolPackage;
 using Microsoft.NET.TestFramework;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNet.ToolPackage.Tests
+namespace Microsoft.DotNet.PackageInstall.Tests
 {
     public class NuGetPackageInstallerTests : SdkTest
     {
@@ -172,9 +173,9 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
 
-        private DirectoryPath _tempDirectory;
+        private readonly DirectoryPath _tempDirectory;
         private NuGetTestLogger _logger;
-        private NuGetPackageDownloader _installer;
+        private readonly NuGetPackageDownloader _installer;
 
         public NuGetPackageInstallerTests(ITestOutputHelper log) : base(log)
         {
