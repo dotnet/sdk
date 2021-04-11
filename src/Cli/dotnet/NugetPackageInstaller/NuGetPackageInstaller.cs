@@ -28,14 +28,15 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _packageInstallDir = packageInstallDir;
             _logger = logger ?? new NullLogger();
         }
-        
+
         private readonly SourceCacheContext _cacheSettings = new SourceCacheContext()
         {
-            NoCache = true,
-            DirectDownload = true
+            NoCache = true, DirectDownload = true
         };
 
-        public async Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion,
+        public async Task<string> DownloadPackageAsync(
+            PackageId packageId,
+            NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation = null)
         {
             var cancellationToken = CancellationToken.None;
@@ -79,7 +80,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 throw new NotImplementedException();
             }
 
-            var nupkgPath = Path.Combine(_packageInstallDir.Value, packageId.ToString(), packageVersion.ToNormalizedString(),
+            var nupkgPath = Path.Combine(_packageInstallDir.Value, packageId.ToString(),
+                packageVersion.ToNormalizedString(),
                 $"{packageId}.{packageVersion.ToNormalizedString()}.nupkg");
             Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
             using var destinationStream = File.Create(nupkgPath);
@@ -129,15 +131,18 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 ISettings settings;
                 if (packageSourceLocation.NugetConfig.HasValue)
                 {
-                    string nugetConfigParentDirectory = packageSourceLocation.NugetConfig.Value.GetDirectoryPath().Value;
+                    string nugetConfigParentDirectory =
+                        packageSourceLocation.NugetConfig.Value.GetDirectoryPath().Value;
                     string nugetConfigFileName = Path.GetFileName(packageSourceLocation.NugetConfig.Value.Value);
-                    settings = global::NuGet.Configuration.Settings.LoadSpecificSettings(nugetConfigParentDirectory, nugetConfigFileName);
+                    settings = Settings.LoadSpecificSettings(nugetConfigParentDirectory,
+                        nugetConfigFileName);
                 }
                 else
                 {
-                    settings = global::NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory);
+                    settings = Settings.LoadDefaultSettings(
+                        packageSourceLocation?.RootConfigDirectory?.Value ?? currentDirectory);
                 }
-                
+
                 PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
                 defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             }
