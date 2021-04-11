@@ -64,9 +64,21 @@
     <MSBuild BuildInParallel="False" Projects="SampleGlobalTool/consoledemo.csproj" Targets="pack" Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(testAssetSourceRoot);PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false"
              RemoveProperties="TargetFramework">
     </MSBuild>
-    <MSBuild BuildInParallel="False" Projects="SampleGlobalToolWithPreview/consoledemo.csproj" Targets="Build;Publish" Properties="Configuration=Release;BaseOutputPath=$(testAssetSourceRoot)/bin/;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false" RemoveProperties="TargetFramework">
+  </Target>
+
+  <Target Name="CreateNupkgWithPreviewFromSource" BeforeTargets="Build">
+    <PropertyGroup>
+      <testAssetSourceRoot>$(BaseOutputPath)/TestAsset/SampleGlobalToolWithPreview</testAssetSourceRoot>
+    </PropertyGroup>
+    <Copy SourceFiles="SampleGlobalToolWithPreview/DotnetToolSettings.xml" DestinationFolder="$(testAssetSourceRoot)" />
+    <MSBuild BuildInParallel="False" Projects="SampleGlobalToolWithPreview/consoledemo.csproj" Targets="Restore" Properties="Configuration=Release;BaseOutputPath=$(testAssetSourceRoot)/bin/;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false;ForceRestoreToEvaluateSeparately=1"
+             RemoveProperties="TargetFramework">
     </MSBuild>
-    <MSBuild BuildInParallel="False" Projects="SampleGlobalToolWithPreview/consoledemo.csproj" Targets="pack" Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(testAssetSourceRoot);PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false" RemoveProperties="TargetFramework">
+    <MSBuild BuildInParallel="False" Projects="SampleGlobalToolWithPreview/consoledemo.csproj" Targets="Build;Publish" Properties="Configuration=Release;BaseOutputPath=$(testAssetSourceRoot)/bin/;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false"
+             RemoveProperties="TargetFramework">
+    </MSBuild>
+    <MSBuild BuildInParallel="False" Projects="SampleGlobalToolWithPreview/consoledemo.csproj" Targets="pack" Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(testAssetSourceRoot);PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false"
+             RemoveProperties="TargetFramework">
     </MSBuild>
   </Target>
 
@@ -104,7 +116,7 @@
     </MSBuild>
   </Target>
 
-  <Target Name="CopyAssetToPublishFolder" BeforeTargets="Publish" DependsOnTargets="CreateNupkgWithShimFromSource;CreateNupkgFromSource;CreateNupkgWithShimFromSource;CreateNupkgFromSourceWithPreview">
+  <Target Name="CopyAssetToPublishFolder" BeforeTargets="Publish" DependsOnTargets="CreateNupkgWithShimFromSource;CreateNupkgFromSource;CreateNupkgWithShimFromSource;CreateNupkgWithPreviewFromSource">
     <ItemGroup>
        <TestAssetFiles Include="$(BaseOutputPath)\TestAsset\**\*.*" />
     </ItemGroup>
