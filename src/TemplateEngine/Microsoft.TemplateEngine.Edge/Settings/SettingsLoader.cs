@@ -151,6 +151,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             EnsureLoaded();
             forceRebuild |= _userTemplateCache.Locale != CultureInfo.CurrentUICulture.Name;
+            if (_userTemplateCache.Version != TemplateInfo.CurrentVersion)
+            {
+                _environmentSettings.Host.LogDiagnosticMessage(
+                        $"Template cache file version is {_userTemplateCache.Version}, but template engine is {TemplateInfo.CurrentVersion}, rebuilding cache.",
+                        "Debug");
+                forceRebuild = true;
+            }
 
             var placesThatNeedScanning = new HashSet<string>();
             var allTemplatePackages = await _templatePackagesManager.GetTemplatePackagesAsync(forceRebuild).ConfigureAwait(false);
