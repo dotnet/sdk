@@ -497,7 +497,7 @@
       <SampleProjectForResolveAssemblyReferenceCache Include="$(RepoRoot)\TestAssets\TestProjects\RARPreCacheProject\**\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(SampleProjectForResolveAssemblyReferenceCache)" DestinationFiles="$(RepoRoot)\artifacts\bin\redist\$(Configuration)\RARPreCacheProject\%(RecursiveDir)%(FileName)%(Extension)" />
-    <Exec Command="$(SdkInternalLayoutPath)dotnet.exe msbuild $(RepoRoot)\artifacts\bin\redist\$(Configuration)\RARPreCacheProject\RARPreCacheProject.csproj /t:ResolveAssemblyReferences /p:AssemblyInformationCacheOutputPath=$(SdkInternalLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" />
+    <Exec Command="$(RedistLayoutPath)dotnet.exe msbuild $(RepoRoot)\artifacts\bin\redist\$(Configuration)\RARPreCacheProject\RARPreCacheProject.csproj /t:ResolveAssemblyReferences /p:AssemblyInformationCacheOutputPath=$(RedistLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" />
   </Target>
 
   <Target Name="GenerateLayout"
