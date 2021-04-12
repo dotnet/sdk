@@ -29,7 +29,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             await bootstrapper.InstallTestTemplateAsync("TemplateWithSourceName").ConfigureAwait(false);
 
             string output = TestUtils.CreateTemporaryFolder();
-            var foundTemplates = await bootstrapper.ListTemplates(true, WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithSourceName")).ConfigureAwait(false);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(
+                new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithSourceName") }).ConfigureAwait(false);
             var result = await bootstrapper.GetCreationEffectsAsync(foundTemplates.First().Info, "test", output, new Dictionary<string, string>(), "").ConfigureAwait(false);
             Assert.Equal(2, result.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(0, result.CreationResult.PostActions.Count);
@@ -56,7 +57,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             await bootstrapper.InstallTestTemplateAsync("TemplateWithSourceName").ConfigureAwait(false);
 
             string output = TestUtils.CreateTemporaryFolder();
-            var foundTemplates = await bootstrapper.ListTemplates(true, WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithSourceName")).ConfigureAwait(false);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(
+                new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithSourceName") }).ConfigureAwait(false);
 
             var result = await bootstrapper.CreateAsync(foundTemplates.First().Info, "test", output, new Dictionary<string, string>(), false, "").ConfigureAwait(false);
 
@@ -75,7 +77,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            var foundTemplates = await bootstrapper.ListTemplates(true, WellKnownSearchFilters.NameFilter("console")).ConfigureAwait(false);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("console") }).ConfigureAwait(false);
             var result = await bootstrapper.GetCreationEffectsAsync(foundTemplates.First().Info, "test", output, new Dictionary<string, string>(), "").ConfigureAwait(false);
             Assert.Equal(2, result.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(2, result.CreationResult.PostActions.Count);
@@ -101,7 +103,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             await bootstrapper.InstallTemplateAsync(packageLocation).ConfigureAwait(false);
 
             string output = TestUtils.CreateTemporaryFolder();
-            var foundTemplates = await bootstrapper.ListTemplates(true, WellKnownSearchFilters.NameFilter("console")).ConfigureAwait(false);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("console") }).ConfigureAwait(false);
             var result = await bootstrapper.CreateAsync(foundTemplates.First().Info, "test", output, new Dictionary<string, string>(), false, "").ConfigureAwait(false);
             Assert.Equal(2, result.PrimaryOutputs.Count);
             Assert.Equal(2, result.PostActions.Count);

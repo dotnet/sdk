@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
+    [Obsolete("IFilteredTemplateInfo is obsolete")]
     public class FilteredTemplateEqualityComparer : IEqualityComparer<IFilteredTemplateInfo>
     {
         public static IEqualityComparer<IFilteredTemplateInfo> Default { get; } = new FilteredTemplateEqualityComparer();

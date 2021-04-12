@@ -46,13 +46,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         public Dictionary<string, DateTime> MountPointsInfo { get; set; }
 
-        // This method is getting obsolted soon. It's getting replaced by TemplateListFilter.FilterTemplates, which does the same thing,
-        // except that the template list to act on is passed in.
-        public IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
-        {
-            return TemplateListFilter.FilterTemplates(TemplateInfo, exactMatchesOnly, filters);
-        }
-
         private Scanner InstallScanner
         {
             get

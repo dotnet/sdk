@@ -59,10 +59,29 @@ namespace Microsoft.TemplateEngine.IDE
             EnvironmentSettings.SettingsLoader.Components.RegisterMany(assembly.GetTypes());
         }
 
+        [Obsolete("Use " + nameof(GetTemplatesAsync) + "instead")]
         public async Task<IReadOnlyCollection<IFilteredTemplateInfo>> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
         {
             EnsureInitialized();
             return TemplateListFilter.FilterTemplates(await EnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false), exactMatchesOnly, filters);
+        }
+
+        /// <summary>
+        /// Gets list of available templates, if <paramref name="filters"/> are provided returns only matching templates.
+        /// </summary>
+        /// <param name="filters">List of filters to apply. See <see cref="WellKnownSearchFilters"/> for predefined filters.</param>
+        /// <param name="exactMatchesOnly">
+        /// true: templates should match all filters; false: templates should match any filter.
+        /// </param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Filtered list of available templates with details on the applied filters matches.</returns>
+        public async Task<IReadOnlyCollection<ITemplateMatchInfo>> GetTemplatesAsync(IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters = null, bool exactMatchesOnly = true, CancellationToken cancellationToken = default)
+        {
+            Func<ITemplateMatchInfo, bool> criteria = exactMatchesOnly ? TemplateListFilter.ExactMatchFilter : TemplateListFilter.PartialMatchFilter;
+            Func<ITemplateInfo, MatchInfo?>[] filtersArray = filters?.ToArray() ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>();
+
+            EnsureInitialized();
+            return TemplateListFilter.GetTemplateMatchInfo(await EnvironmentSettings.SettingsLoader.GetTemplatesAsync(cancellationToken).ConfigureAwait(false), criteria, filtersArray);
         }
 
         public async Task<ICreationResult> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, bool skipUpdateCheck, string baselineName)

@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
+    [Obsolete("Use ITemplateMatchInfo instead")]
     public interface IFilteredTemplateInfo
     {
         ITemplateInfo Info { get; }

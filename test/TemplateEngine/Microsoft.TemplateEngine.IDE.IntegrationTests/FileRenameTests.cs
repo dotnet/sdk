@@ -208,7 +208,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Dictionary<string, string> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
 
-            var foundTemplates = await bootstrapper.ListTemplates(true, WellKnownSearchFilters.NameFilter(templateName)).ConfigureAwait(false);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortName == $"TestAssets.{templateName}").Info;
             ICreationEffects result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, "").ConfigureAwait(false);
 
@@ -238,7 +238,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.ListTemplates(true, WellKnownSearchFilters.NameFilter(templateName)).ConfigureAwait(false);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortName == $"TestAssets.{templateName}").Info;
             var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, false, "").ConfigureAwait(false);
 
@@ -284,7 +284,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.ListTemplates(true, WellKnownSearchFilters.NameFilter(templateName)).ConfigureAwait(false);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortName == $"TestAssets.{templateName}").Info;
             ICreationEffects result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, "").ConfigureAwait(false);
 
@@ -315,7 +315,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.ListTemplates(true, WellKnownSearchFilters.NameFilter(templateName)).ConfigureAwait(false);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortName == $"TestAssets.{templateName}").Info;
             var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, false, "").ConfigureAwait(false);
 
