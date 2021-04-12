@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
         <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'</source>
-        <target state="translated">“{0}” 是 NonInheritable 类 "{1}” 中新的受保护成员</target>
+        <target state="translated">“{0}”是 NonInheritable 类“{1}”中新的受保护成员</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
@@ -1240,6 +1240,96 @@
       <trans-unit id="ParameterNamesShouldMatchBaseDeclarationMessage">
         <source>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}</source>
         <target state="translated">在成员 {0} 中，将参数名 {1} 改为 {2}，使其与已在 {3} 中声明的标识符匹配</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsTitle">
+        <source>Use preferred terms</source>
+        <target state="translated">使用首选词条</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsDescription">
+        <source>The name of an externally visible identifier includes a term for which an alternative, preferred term exists. Alternatively, the name includes the term ""Flag"" or ""Flags"".</source>
+        <target state="translated">外部可见的标识符的名称包含一个词条，并且存在该词条的备选首选词条。或者，该名称包含词条 "Flag" 或 "Flags"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageAssembly">
+        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'</source>
+        <target state="translated">将程序集名称 {1} 中的词条“{0}”替换为首选替代项“{2}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageNamespace">
+        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'</source>
+        <target state="translated">将命名空间名称“{1}”中的词条“{0}”替换为首选替代项“{2}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMemberParameter">
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="translated">在成员 {0} 中，将参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageDelegateParameter">
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="translated">在委托 {0} 中，将参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageTypeTypeParameter">
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="translated">在类型 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMethodTypeParameter">
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="translated">在方法 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageType">
+        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'</source>
+        <target state="translated">将类型名称 {1} 中的词条“{0}”替换为首选替代项“{2}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMember">
+        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'</source>
+        <target state="translated">将成员名称 {1} 中的词条“{0}”替换为首选替代项“{2}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageAssemblyNoAlternate">
+        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">将程序集名称 {1} 中的词条“{0}”替换为相应的替代项或者完全删除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
+        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely</source>
+        <target state="translated">将命名空间名称“{1}”中的词条“{0}”替换为相应的替代项或者完全删除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">在成员 {0} 中，将参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageDelegateParameterNoAlternate">
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">在委托 {0} 中，将参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">在类型 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">在方法 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为合适的替代项或者完全删除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
+        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">将类型名称 {1} 中的词条“{0}”替换为相应的替代项或者完全删除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
+        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">将成员名称 {1} 中的词条“{0}”替换为合适的替代项或者完全删除</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
