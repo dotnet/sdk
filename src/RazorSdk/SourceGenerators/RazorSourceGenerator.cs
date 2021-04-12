@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
@@ -278,11 +279,16 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
             for (var i = 0; i < filePath.Length; i++)
             {
-                builder.Append(filePath[i] switch
+                switch (filePath[i])
                 {
-                    ':' or '\\' or '/' => '_',
-                    var @default => @default,
-                });
+                    case ':' or '\\' or '/':
+                    case char ch when !Char.IsLetterOrDigit(ch):
+                        builder.Append('_');
+                        break;
+                    default:
+                        builder.Append(filePath[i]);
+                        break;
+                }
             }
 
             return builder.ToString();
