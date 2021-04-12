@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
+
+#nullable enable
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
@@ -29,31 +30,14 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
                 bool hasShortNamePartialMatch = false;
 
-                if (template is FilterableTemplateInfo filterableTemplate)
+                int shortNameIndex = template.ShortName.IndexOf(name, StringComparison.OrdinalIgnoreCase);
+
+                if (shortNameIndex == 0 && string.Equals(template.ShortName, name, StringComparison.OrdinalIgnoreCase))
                 {
-                    foreach (string shortName in filterableTemplate.GroupShortNameList)
-                    {
-                        int shortNameIndex = shortName.IndexOf(name, StringComparison.OrdinalIgnoreCase);
-
-                        if (shortNameIndex == 0 && string.Equals(shortName, name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return new MatchInfo { Location = MatchLocation.ShortName, Kind = MatchKind.Exact };
-                        }
-
-                        hasShortNamePartialMatch |= shortNameIndex > -1;
-                    }
+                    return new MatchInfo { Location = MatchLocation.ShortName, Kind = MatchKind.Exact };
                 }
-                else
-                {
-                    int shortNameIndex = template.ShortName.IndexOf(name, StringComparison.OrdinalIgnoreCase);
 
-                    if (shortNameIndex == 0 && string.Equals(template.ShortName, name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return new MatchInfo { Location = MatchLocation.ShortName, Kind = MatchKind.Exact };
-                    }
-
-                    hasShortNamePartialMatch = shortNameIndex > -1;
-                }
+                hasShortNamePartialMatch = shortNameIndex > -1;
 
                 if (nameIndex > -1)
                 {
@@ -72,7 +56,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // This being case-insensitive depends on the dictionaries on the cache tags being declared as case-insensitive
         public static Func<ITemplateInfo, MatchInfo?> ContextFilter(string inputContext)
         {
-            string context = inputContext?.ToLowerInvariant();
+            string? context = inputContext?.ToLowerInvariant();
 
             return (template) =>
             {

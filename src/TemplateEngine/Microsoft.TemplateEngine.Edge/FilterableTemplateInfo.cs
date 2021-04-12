@@ -4,6 +4,7 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Edge
 {
+    [Obsolete("The class is deprecated.")]
     public class FilterableTemplateInfo : ITemplateInfo, IShortNameList
     {
         public static FilterableTemplateInfo FromITemplateInfo(ITemplateInfo source)
