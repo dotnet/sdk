@@ -133,6 +133,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "delete",
                 "locals",
                 "push",
+                "verify"
             };
 
             var reporter = new BufferedReporter();
