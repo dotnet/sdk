@@ -1,3 +1,8 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 
@@ -23,6 +28,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string Name { get; }
 
+        [Obsolete("Templates support multiple short names, use ShortNameList instead")]
         string ShortName { get; }
 
         IReadOnlyDictionary<string, ICacheTag> Tags { get; }
@@ -44,5 +50,10 @@ namespace Microsoft.TemplateEngine.Abstractions
         IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
 
         bool HasScriptRunningPostActions { get; set; }
+
+        /// <summary>
+        /// Gets the list of short names defined for the template.
+        /// </summary>
+        IReadOnlyList<string> ShortNameList { get; }
     }
 }

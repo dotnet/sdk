@@ -30,13 +30,9 @@ namespace Microsoft.TemplateEngine.Edge
                 HostConfigPlace = source.HostConfigPlace,
                 ThirdPartyNotices = source.ThirdPartyNotices,
                 BaselineInfo = source.BaselineInfo,
-                HasScriptRunningPostActions = source.HasScriptRunningPostActions
+                HasScriptRunningPostActions = source.HasScriptRunningPostActions,
+                ShortNameList = source.ShortNameList
             };
-
-            if (source is IShortNameList sourceWithShortNameList)
-            {
-                filterableTemplate.ShortNameList = sourceWithShortNameList.ShortNameList;
-            }
 
             return filterableTemplate;
         }

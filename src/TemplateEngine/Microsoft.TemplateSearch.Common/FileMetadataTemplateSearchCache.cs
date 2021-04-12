@@ -55,8 +55,10 @@ namespace Microsoft.TemplateSearch.Common
                 return _templateDiscoveryMetadata.TemplateCache;
             }
 
-            return _templateDiscoveryMetadata.TemplateCache.Where(template => template.Name.IndexOf(searchName, StringComparison.OrdinalIgnoreCase) >= 0
-                                                    || template.ShortName.IndexOf(searchName, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            return _templateDiscoveryMetadata.TemplateCache.Where(
+                template => template.Name.IndexOf(searchName, StringComparison.OrdinalIgnoreCase) >= 0
+                || template.ShortNameList.Any(shortName => shortName.IndexOf(searchName, StringComparison.OrdinalIgnoreCase) >= 0))
+                .ToList();
         }
 
         public IReadOnlyDictionary<string, PackInfo> GetTemplateToPackMapForTemplateIdentities(IReadOnlyList<string> identities)

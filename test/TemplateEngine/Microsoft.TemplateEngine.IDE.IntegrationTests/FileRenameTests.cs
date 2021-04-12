@@ -209,7 +209,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
-            ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortName == $"TestAssets.{templateName}").Info;
+            ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
             ICreationEffects result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, "").ConfigureAwait(false);
 
             Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs.Count);
@@ -239,7 +239,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Dictionary<string, string> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
-            ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortName == $"TestAssets.{templateName}").Info;
+            ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
             var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, false, "").ConfigureAwait(false);
 
             Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.PrimaryOutputs.Count);
@@ -285,7 +285,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Dictionary<string, string> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
-            ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortName == $"TestAssets.{templateName}").Info;
+            ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
             ICreationEffects result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, "").ConfigureAwait(false);
 
             Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs.Count);
@@ -316,7 +316,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Dictionary<string, string> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
-            ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortName == $"TestAssets.{templateName}").Info;
+            ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
             var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, false, "").ConfigureAwait(false);
 
             Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.PrimaryOutputs.Count);

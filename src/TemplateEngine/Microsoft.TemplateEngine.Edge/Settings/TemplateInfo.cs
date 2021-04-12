@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    public class TemplateInfo : ITemplateInfo, IShortNameList
+    public class TemplateInfo : ITemplateInfo
     {
         public static readonly string CurrentVersion = "1.0.0.5";
 

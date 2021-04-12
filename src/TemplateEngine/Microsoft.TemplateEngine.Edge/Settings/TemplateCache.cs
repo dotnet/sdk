@@ -219,7 +219,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 Name = localizationInfo?.Name ?? template.Name,
                 Tags = LocalizeCacheTags(template, localizationInfo),
                 CacheParameters = LocalizeCacheParameters(template, localizationInfo),
+#pragma warning disable CS0618 // Type or member is obsolete
                 ShortName = template.ShortName,
+#pragma warning restore CS0618 // Type or member is obsolete
                 Classifications = template.Classifications,
                 Author = localizationInfo?.Author ?? template.Author,
                 Description = localizationInfo?.Description ?? template.Description,
@@ -231,13 +233,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 HostConfigPlace = template.HostConfigPlace,
                 ThirdPartyNotices = template.ThirdPartyNotices,
                 BaselineInfo = template.BaselineInfo,
-                HasScriptRunningPostActions = template.HasScriptRunningPostActions
+                HasScriptRunningPostActions = template.HasScriptRunningPostActions,
+                ShortNameList = template.ShortNameList
             };
-
-            if (template is IShortNameList templateWithShortNameList)
-            {
-                localizedTemplate.ShortNameList = templateWithShortNameList.ShortNameList;
-            }
 
             return localizedTemplate;
         }

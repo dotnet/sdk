@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockTemplateInfo : ITemplateInfo, IShortNameList, IXunitSerializable
+    public class MockTemplateInfo : ITemplateInfo, IXunitSerializable
     {
         public MockTemplateInfo()
         {

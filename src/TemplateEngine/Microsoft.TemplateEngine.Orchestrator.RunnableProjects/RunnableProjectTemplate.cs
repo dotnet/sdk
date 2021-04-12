@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    internal class RunnableProjectTemplate : ITemplate, IShortNameList
+    internal class RunnableProjectTemplate : ITemplate
     {
         private readonly JObject _raw;
 

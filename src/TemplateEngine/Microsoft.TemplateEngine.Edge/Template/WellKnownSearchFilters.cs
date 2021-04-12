@@ -23,21 +23,24 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
                 int nameIndex = template.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase);
 
-                if (nameIndex == 0 && string.Equals(template.Name, name, StringComparison.OrdinalIgnoreCase))
+                if (nameIndex == 0 && template.Name.Length == name.Length)
                 {
                     return new MatchInfo { Location = MatchLocation.Name, Kind = MatchKind.Exact };
                 }
 
                 bool hasShortNamePartialMatch = false;
 
-                int shortNameIndex = template.ShortName.IndexOf(name, StringComparison.OrdinalIgnoreCase);
-
-                if (shortNameIndex == 0 && string.Equals(template.ShortName, name, StringComparison.OrdinalIgnoreCase))
+                foreach (string shortName in template.ShortNameList)
                 {
-                    return new MatchInfo { Location = MatchLocation.ShortName, Kind = MatchKind.Exact };
-                }
+                    int shortNameIndex = shortName.IndexOf(name, StringComparison.OrdinalIgnoreCase);
 
-                hasShortNamePartialMatch = shortNameIndex > -1;
+                    if (shortNameIndex == 0 && shortName.Length == name.Length)
+                    {
+                        return new MatchInfo { Location = MatchLocation.ShortName, Kind = MatchKind.Exact };
+                    }
+
+                    hasShortNamePartialMatch |= shortNameIndex > -1;
+                }
 
                 if (nameIndex > -1)
                 {

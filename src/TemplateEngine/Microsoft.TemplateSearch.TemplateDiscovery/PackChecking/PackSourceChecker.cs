@@ -73,7 +73,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                             Verbose.WriteLine("Found templates:");
                             foreach (ITemplateInfo template in packCheckResult.FoundTemplates)
                             {
-                                Verbose.WriteLine($"  - {template.Identity} ({template.ShortName}) by {template.Author}, group: {(string.IsNullOrWhiteSpace(template.GroupIdentity) ? "<not set>" : template.GroupIdentity)}, precedence: {template.Precedence}");
+                                string shortNames = string.Join(",", template.ShortNameList);
+                                Verbose.WriteLine($"  - {template.Identity} ({shortNames}) by {template.Author}, group: {(string.IsNullOrWhiteSpace(template.GroupIdentity) ? "<not set>" : template.GroupIdentity)}, precedence: {template.Precedence}");
                             }
                         }
                         else
