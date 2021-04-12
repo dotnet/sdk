@@ -39,7 +39,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.ID
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-new3", "src\dotnet-new3\dotnet-new3.csproj", "{8596D7A3-DE37-45B2-ACC1-38CA62BAE295}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-new3.UnitTests", "test\dotnet-new3.UnitTests\dotnet-new3.UnitTests.csproj", "{21B88A8F-5954-4D24-9965-A221E06A6185}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-new3.IntegrationTests", "test\dotnet-new3.UnitTests\dotnet-new3.IntegrationTests.csproj", "{21B88A8F-5954-4D24-9965-A221E06A6185}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Edge.UnitTests", "test\Microsoft.TemplateEngine.Edge.UnitTests\Microsoft.TemplateEngine.Edge.UnitTests.csproj", "{C416006F-FAE9-4263-8290-81B2AA81E024}"
 EndProject
