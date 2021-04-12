@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         internal async Task CanInstall_LocalNuGetPackage()
         {
             Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
-            string packageLocation = _packageManager.PackProjectTemplatesNuGetPackage("microsoft.dotnet.common.projecttemplates.5.0");
+            string packageLocation = _packageManager.PackProjectTemplatesNuGetPackage("Microsoft.DotNet.Common.ProjectTemplates.5.0");
 
             InstallRequest installRequest = new InstallRequest(Path.GetFullPath(packageLocation));
 
