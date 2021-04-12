@@ -77,20 +77,21 @@ namespace Microsoft.DotNet.Cli
 
         private static Command GetVerifyCommand()
         {
+            const string fingerprint = "--certificate-fingerprint";
             var verifyCommand = new Command("verify");
 
             verifyCommand.AddArgument(new Argument<IEnumerable<string>>() { Arity = ArgumentArity.OneOrMore });
 
             verifyCommand.AddOption(new Option<bool>("--all"));
-            verifyCommand.AddOption(new ForwardedOption<IEnumerable<string>>("--certificate-fingerprint", "certificatefingerprint")
-                .ForwardAsMany(o => ForwardedArguments("--certificate-fingerprint", o))
+            verifyCommand.AddOption(new ForwardedOption<IEnumerable<string>>(fingerprint, "certificatefingerprint")
+                .ForwardAsMany(o => ForwardedArguments(fingerprint, o))
                 .AllowSingleArgPerToken());
             verifyCommand.AddOption(CommonOptions.VerbosityOption());
 
             return verifyCommand;
         }
 
-        public static IEnumerable<string> ForwardedArguments(string token, IEnumerable<string> arguments)
+        private static IEnumerable<string> ForwardedArguments(string token, IEnumerable<string> arguments)
         {
             foreach (string arg in arguments)
             {

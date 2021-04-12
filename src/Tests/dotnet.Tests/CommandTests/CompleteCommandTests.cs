@@ -224,5 +224,25 @@ namespace Microsoft.DotNet.Tests.Commands
             CompleteCommand.RunWithReporter(new[] { "dotnet nuget push " }, reporter).Should().Be(0);
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
+
+        [Fact]
+        public void GivenNuGetVerifyCommandItDisplaysCompletions()
+        {
+            var expected = new[] {
+                "--all",
+                "--certificate-fingerprint",
+                "--verbosity",
+                "--help",
+                "-v",
+                "-?",
+                "-h",
+                "/?",
+                "/h",
+            };
+
+            var reporter = new BufferedReporter();
+            CompleteCommand.RunWithReporter(new[] { "dotnet nuget verify " }, reporter).Should().Be(0);
+            reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
+        }
     }
 }
