@@ -299,7 +299,7 @@
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
         <source>Use Secure Cookies In ASP.NET Core</source>
-        <target state="needs-review-translation">Sichere Cookies in ASP.NET Core verwenden</target>
+        <target state="translated">Sichere Cookies in ASP.NET Core verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCoreMessage">
@@ -419,7 +419,7 @@
       </trans-unit>
       <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPathMessage">
         <source>When creating path for '{0} in method {1}' from relative archive item path to extract file and the source is an untrusted zip archive, make sure to sanitize relative archive item path '{2} in method {3}'</source>
-        <target state="translated">Wenn Sie einen Pfad für "{0} in der Methode "{1}" vom relativen Archivelementpfad zur Extraktionsdatei erstellen und die Quelle ein nicht vertrauenswürdiges ZIP-Archiv ist, stellen Sie sicher, dass der relative Archivelementpfad "{2}" in der Methode "{3}" bereinigt wird.</target>
+        <target state="translated">Wenn Sie einen Pfad für "{0} in Methode {1}" aus dem relativen Archivelementpfad zur Extraktionsdatei erstellen und die Quelle ein nicht vertrauenswürdiges ZIP-Archiv ist, stellen Sie sicher, dass der relative Archivelementpfad "{2} in Methode {3}" bereinigt wird.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotAddSchemaByURL">
@@ -449,7 +449,7 @@
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
         <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
-        <target state="new">When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</target>
+        <target state="translated">Wenn eine Instanz der Klasse "{0}" deserialisiert wird, kann die Methode "{1}" die gefährliche Methode "{2}" aufrufen. Mögliche Methodenaufrufe: {3}</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -1389,7 +1389,7 @@
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
         <source>Ensure Use Secure Cookies In ASP.NET Core</source>
-        <target state="needs-review-translation">Stellen Sie sicher, dass sichere Cookies in ASP.NET Core verwendet werden.</target>
+        <target state="translated">Verwendung sicherer Cookies in ASP.NET Core sicherstellen</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCoreMessage">
@@ -1519,7 +1519,7 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllPlatforms">
         <source>and all other platforms</source>
-        <target state="new">and all other platforms</target>
+        <target state="translated">und alle anderen Plattformen</target>
         <note>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllVersions">

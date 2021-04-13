@@ -299,7 +299,7 @@
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
         <source>Use Secure Cookies In ASP.NET Core</source>
-        <target state="needs-review-translation">Использовать защищенные файлы cookie в ASP.NET Core</target>
+        <target state="translated">Использовать защищенные файлы cookie в ASP.NET Core</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCoreMessage">
@@ -449,7 +449,7 @@
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
         <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
-        <target state="new">When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</target>
+        <target state="translated">При десериализации экземпляра класса {0} метод {1} может вызывать опасный метод {2}. Потенциальные вызовы метода: {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -1389,7 +1389,7 @@
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
         <source>Ensure Use Secure Cookies In ASP.NET Core</source>
-        <target state="needs-review-translation">Убедитесь в использовании защищенных файлов cookie в ASP.NET Core.</target>
+        <target state="translated">Убедитесь в использовании защищенных файлов cookie в ASP.NET Core.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCoreMessage">
@@ -1519,7 +1519,7 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllPlatforms">
         <source>and all other platforms</source>
-        <target state="new">and all other platforms</target>
+        <target state="translated">и на всех остальных платформах</target>
         <note>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllVersions">

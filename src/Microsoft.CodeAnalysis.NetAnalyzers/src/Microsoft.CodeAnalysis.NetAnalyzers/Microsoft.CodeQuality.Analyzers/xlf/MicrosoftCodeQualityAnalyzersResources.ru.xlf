@@ -244,7 +244,7 @@
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesCodeFixTitle">
         <source>Add operator overload named alternate</source>
-        <target state="new">Add operator overload named alternate</target>
+        <target state="translated">Добавление перегрузки оператора с другим именем</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
