@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(overrideSourceFeeds: new[] {GetTestLocalFeedPath()}));
+                new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 _installer.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
-                    new PackageSourceLocation(overrideSourceFeeds: new[] {nonExistFeed.Value})));
+                    new PackageSourceLocation(sourceFeedOverrides: new[] {nonExistFeed.Value})));
         }
 
         [Fact]
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
                     new PackageSourceLocation(validNugetConfigPath,
-                        overrideSourceFeeds: new[] {nonExistFeed.Value})));
+                        sourceFeedOverrides: new[] {nonExistFeed.Value})));
         }
 
         [Fact]
@@ -116,11 +116,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [Fact]
-        public async Task GivenAllButNoPackageVersionItCanInstallThePackage()
+        public async Task GivenNoPackageVersionItCanInstallLatestVersionOfPackage()
         {
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
-                packageSourceLocation: new PackageSourceLocation(overrideSourceFeeds: new[] {GetTestLocalFeedPath()}));
+                packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
+            packagePath.Should().Contain("global.tool.console.demo.1.0.4.nupkg", "It can get the latest non preview version");
             File.Exists(packagePath).Should().BeTrue();
         }
 
@@ -133,7 +134,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(overrideSourceFeeds: new[] {relativePath}));
+                new PackageSourceLocation(sourceFeedOverrides: new[] {relativePath}));
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
@@ -146,7 +147,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Log.WriteLine(relativePath);
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
-                packageSourceLocation: new PackageSourceLocation(overrideSourceFeeds: new[] {relativePath}),
+                packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] {relativePath}),
                 includePreview: true);
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(TestPackageId + "." + TestPreviewPackageVersion,

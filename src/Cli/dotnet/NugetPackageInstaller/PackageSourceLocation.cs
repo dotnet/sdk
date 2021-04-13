@@ -12,42 +12,42 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
     {
         public PackageSourceLocation(
             FilePath? nugetConfig = null,
-            DirectoryPath? rootConfigDirectory = null, 
-            string[] overrideSourceFeeds = null)
+            DirectoryPath? rootConfigDirectory = null,
+            string[] sourceFeedOverrides = null)
         {
             NugetConfig = nugetConfig;
             RootConfigDirectory = rootConfigDirectory;
-            ExpandLocalFeedAndAssign(overrideSourceFeeds);
-        }
-
-        private void ExpandLocalFeedAndAssign(string[] overrideSourceFeeds)
-        {
-            if (overrideSourceFeeds != null)
-            {
-                string[] localFeedsThatIsRooted = new string[overrideSourceFeeds.Length];
-                for (int index = 0; index < overrideSourceFeeds.Length; index++)
-                {
-                    string feed = overrideSourceFeeds[index];
-                    if (!Uri.IsWellFormedUriString(feed, UriKind.Absolute) && !Path.IsPathRooted(feed))
-                    {
-                        localFeedsThatIsRooted[index] = (Path.GetFullPath(feed));
-                    }
-                    else
-                    {
-                        localFeedsThatIsRooted[index] = (feed);
-                    }
-                }
-
-                OverrideSourceFeeds = localFeedsThatIsRooted;
-            }
-            else
-            {
-                OverrideSourceFeeds = Array.Empty<string>();
-            }
+            ExpandLocalFeedAndAssign(sourceFeedOverrides);
         }
 
         public FilePath? NugetConfig { get; }
         public DirectoryPath? RootConfigDirectory { get; }
-        public string[] OverrideSourceFeeds { get; set; }
+        public string[] SourceFeedOverrides { get; private set; }
+
+        private void ExpandLocalFeedAndAssign(string[] sourceFeedOverrides)
+        {
+            if (sourceFeedOverrides != null)
+            {
+                string[] localFeedsThatIsRooted = new string[sourceFeedOverrides.Length];
+                for (int index = 0; index < sourceFeedOverrides.Length; index++)
+                {
+                    string feed = sourceFeedOverrides[index];
+                    if (!Uri.IsWellFormedUriString(feed, UriKind.Absolute) && !Path.IsPathRooted(feed))
+                    {
+                        localFeedsThatIsRooted[index] = Path.GetFullPath(feed);
+                    }
+                    else
+                    {
+                        localFeedsThatIsRooted[index] = feed;
+                    }
+                }
+
+                SourceFeedOverrides = localFeedsThatIsRooted;
+            }
+            else
+            {
+                SourceFeedOverrides = Array.Empty<string>();
+            }
+        }
     }
 }

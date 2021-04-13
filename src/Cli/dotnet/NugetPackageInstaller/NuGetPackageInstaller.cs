@@ -40,7 +40,6 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false)
         {
             CancellationToken cancellationToken = CancellationToken.None;
-            SourceCacheContext cache = new SourceCacheContext {DirectDownload = true, NoCache = true};
 
             IPackageSearchMetadata packageMetadata;
 
@@ -83,7 +82,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 packageId.ToString(),
                 packageVersion,
                 destinationStream,
-                cache,
+                _cacheSettings,
                 _logger,
                 cancellationToken);
 
@@ -119,9 +118,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private IEnumerable<PackageSource> LoadNuGetSources(PackageSourceLocation packageSourceLocation = null)
         {
             IEnumerable<PackageSource> defaultSources = new List<PackageSource>();
-            string currentDirectory = string.Empty;
-
-            currentDirectory = Directory.GetCurrentDirectory();
+            string currentDirectory = Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
             {
@@ -140,7 +137,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
             defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
 
-            if (!packageSourceLocation?.OverrideSourceFeeds.Any() ?? true)
+            if (!packageSourceLocation?.SourceFeedOverrides.Any() ?? true)
             {
                 if (!defaultSources.Any())
                 {
@@ -151,7 +148,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
 
             List<PackageSource> customSources = new List<PackageSource>();
-            foreach (string source in packageSourceLocation?.OverrideSourceFeeds)
+            foreach (string source in packageSourceLocation?.SourceFeedOverrides)
             {
                 if (string.IsNullOrWhiteSpace(source))
                 {
@@ -171,7 +168,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
 
             IEnumerable<PackageSource> retrievedSources;
-            if (packageSourceLocation != null && packageSourceLocation.OverrideSourceFeeds.Any())
+            if (packageSourceLocation != null && packageSourceLocation.SourceFeedOverrides.Any())
             {
                 retrievedSources = customSources;
             }
@@ -192,13 +189,16 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             string packageIdentifier, IEnumerable<PackageSource> packageSources, bool includePreview,
             CancellationToken cancellationToken)
         {
+            if (packageSources == null)
+            {
+                throw new ArgumentNullException(nameof(packageSources));
+            }
+
             if (string.IsNullOrWhiteSpace(packageIdentifier))
             {
                 throw new ArgumentException($"{nameof(packageIdentifier)} cannot be null or empty",
                     nameof(packageIdentifier));
             }
-
-            _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
 
             (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)[] foundPackagesBySource =
                 await Task.WhenAll(
