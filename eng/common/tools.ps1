@@ -103,10 +103,14 @@ function Exec-Process([string]$command, [string]$commandArgs) {
   }
 }
 
+<<<<<<< HEAD
 # createSdkLocationFile parameter enables a file being generated under the toolset directory
 # which writes the sdk's location into. This is only necessary for cmd --> powershell invocations
 # as dot sourcing isn't possible.
 function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
+=======
+function InitializeDotNetCli([bool]$install, [string] $runtimeSourceFeed, [string] $runtimeSourceFeedKey) {
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
   if (Test-Path variable:global:_DotNetInstallDir) {
     return $global:_DotNetInstallDir
   }
@@ -148,7 +152,7 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
 
     if (-not (Test-Path(Join-Path $dotnetRoot "sdk\$dotnetSdkVersion"))) {
       if ($install) {
-        InstallDotNetSdk $dotnetRoot $dotnetSdkVersion
+        InstallDotNetSdk -dotnetRoot $dotnetRoot -version $dotnetSdkVersion -runtimeSourceFeed $runtimeSourceFeed -runtimeSourceFeedKey $runtimeSourceFeedKey
       } else {
         Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Unable to find dotnet with SDK version '$dotnetSdkVersion'"
         ExitWithExitCode 1
@@ -220,15 +224,23 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
       else {
         throw "Unable to download file in $maxRetries attempts."
       }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
     }
   }
 
   return $installScript
 }
 
+<<<<<<< HEAD
 function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $architecture = '', [switch] $noPath) {
   InstallDotNet $dotnetRoot $version $architecture '' $false $runtimeSourceFeed $runtimeSourceFeedKey -noPath:$noPath
+=======
+function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $architecture = "", [string] $runtimeSourceFeed, [string] $runtimeSourceFeedKey ) {
+  InstallDotNet -dotnetRoot $dotnetRoot -version $version -architecture $architecture -skipNonVersionedFiles $false -runtimeSourceFeed $runtimeSourceFeed -runtimeSourceFeedKey $runtimeSourceFeedKey
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
 }
 
 function InstallDotNet([string] $dotnetRoot,
@@ -255,8 +267,14 @@ function InstallDotNet([string] $dotnetRoot,
     & $installScript @installParameters
   }
   catch {
+<<<<<<< HEAD
     if ($runtimeSourceFeed -or $runtimeSourceFeedKey) {
       Write-Host "Failed to install dotnet from public location. Trying from '$runtimeSourceFeed'"
+=======
+    # If we fail, retry from a custom (possibly private) location.
+    if ($runtimeSourceFeed -or $runtimeSourceFeedKey) {
+      Write-Host "Failed to install dotnet runtime '$runtime' version '$version' from public location; trying specified alternate feed credentials"
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
       if ($runtimeSourceFeed) { $installParameters.AzureFeed = $runtimeSourceFeed }
 
       if ($runtimeSourceFeedKey) {
@@ -273,7 +291,11 @@ function InstallDotNet([string] $dotnetRoot,
         ExitWithExitCode 1
       }
     } else {
+<<<<<<< HEAD
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet from public location."
+=======
+      Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Failed to install dotnet runtime '$runtime' version '$version' from public location."
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
       ExitWithExitCode 1
     }
   }
@@ -438,7 +460,11 @@ function LocateVisualStudio([object]$vsRequirements = $null){
 
   if (!(Test-Path $vsWhereExe)) {
     Create-Directory $vsWhereDir
+<<<<<<< HEAD
     Write-Host 'Downloading vswhere'
+=======
+    Write-Host "Downloading vswhere"
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
     $maxRetries = 5
     $retries = 1
 
@@ -487,7 +513,7 @@ function LocateVisualStudio([object]$vsRequirements = $null){
   return $vsInfo[0]
 }
 
-function InitializeBuildTool() {
+function InitializeBuildTool([string] $runtimeSourceFeed, [string] $runtimeSourceFeedKey) {
   if (Test-Path variable:global:_BuildTool) {
     return $global:_BuildTool
   }
@@ -498,8 +524,13 @@ function InitializeBuildTool() {
 
   # Initialize dotnet cli if listed in 'tools'
   $dotnetRoot = $null
+<<<<<<< HEAD
   if (Get-Member -InputObject $GlobalJson.tools -Name 'dotnet') {
     $dotnetRoot = InitializeDotNetCli -install:$restore
+=======
+  if (Get-Member -InputObject $GlobalJson.tools -Name "dotnet") {
+    $dotnetRoot = InitializeDotNetCli -install:$restore -runtimeSourceFeed $runtimeSourceFeed -runtimeSourceFeedKey $runtimeSourceFeedKey
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
   }
 
   if ($msbuildEngine -eq 'dotnet') {
@@ -508,7 +539,11 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
+<<<<<<< HEAD
     $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp3.1' }
+=======
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp2.1' }
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
@@ -574,7 +609,8 @@ function InitializeNativeTools() {
   }
 }
 
-function InitializeToolset() {
+function InitializeToolset([string] $runtimeSourceFeed, [string] $runtimeSourceFeedKey) 
+{
   if (Test-Path variable:global:_ToolsetBuildProj) {
     return $global:_ToolsetBuildProj
   }
@@ -596,7 +632,7 @@ function InitializeToolset() {
     ExitWithExitCode 1
   }
 
-  $buildTool = InitializeBuildTool
+  $buildTool = InitializeBuildTool -runtimeSourceFeed $runtimeSourceFeed -runtimeSourceFeedKey $runtimeSourceFeedKey
 
   $proj = Join-Path $ToolsetDir 'restore.proj'
   $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'ToolsetRestore.binlog') } else { '' }
@@ -759,6 +795,7 @@ function IsWindowsPlatform() {
   return [environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
 }
 
+<<<<<<< HEAD
 function Get-Darc($version) {
   $darcPath  = "$TempDir\darc\$(New-Guid)"
   if ($version -ne $null) {
@@ -769,6 +806,8 @@ function Get-Darc($version) {
   return "$darcPath\darc.exe"
 }
 
+=======
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
 . $PSScriptRoot\pipeline-logging-functions.ps1
 
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..')

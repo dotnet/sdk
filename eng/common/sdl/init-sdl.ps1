@@ -46,10 +46,18 @@ try {
     Write-PipelineTelemetryError -Force -Category 'Build' -Message "Guardian baseline failed with exit code $LASTEXITCODE."
     ExitWithExitCode $LASTEXITCODE
   }
+<<<<<<< HEAD
+=======
+  & $(Join-Path $PSScriptRoot "push-gdn.ps1") -Repository $Repository -BranchName $BranchName -GdnFolder $gdnFolder -AzureDevOpsAccessToken $AzureDevOpsAccessToken -PushReason "Initialize gdn folder"
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
   ExitWithExitCode 0
 }
 catch {
   Write-Host $_.ScriptStackTrace
   Write-PipelineTelemetryError -Force -Category 'Sdl' -Message $_
   ExitWithExitCode 1
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d

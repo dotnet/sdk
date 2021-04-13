@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using Xunit.Abstractions;
 using System.Collections.Generic;
 using Microsoft.NET.TestFramework.ProjectConstruction;
+using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -58,7 +59,11 @@ namespace Microsoft.NET.Publish.Tests
                 "HelloWorld.runtimeconfig.json"
             };
 
+<<<<<<< HEAD
             if (shouldIncludeExecutable && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+=======
+            if (shouldIncludeExecutable && RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
             {
                 expectedFiles.Add("HelloWorld" + EnvironmentInfo.ExecutableExtension);
             }
@@ -103,7 +108,11 @@ namespace Microsoft.NET.Publish.Tests
                 "HelloWorld.runtimeconfig.json"
             };
 
+<<<<<<< HEAD
             if (shouldIncludeExecutable && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+=======
+            if (shouldIncludeExecutable && RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
             {
                 expectedFiles.Add("HelloWorld" + EnvironmentInfo.ExecutableExtension);
             }
@@ -155,7 +164,11 @@ namespace Microsoft.NET.Publish.Tests
                 expectedFiles.Add("System.Runtime.Serialization.Primitives.dll");
             }
 
+<<<<<<< HEAD
             if (shouldIncludeExecutable && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+=======
+            if (shouldIncludeExecutable && RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
             {
                 expectedFiles.Add("HelloWorld" + EnvironmentInfo.ExecutableExtension);
             }

@@ -685,10 +685,20 @@ class Program
             //  Set RestoreContinueOnError=ErrorAndContinue to force failure on error
             //  See https://github.com/NuGet/Home/issues/5309
             var restore = restoreCommand.Execute("/p:RestoreContinueOnError=ErrorAndContinue");
+<<<<<<< HEAD
             // Intentionally not checking the error message on restore here as we can't put ourselves in front of
             // restore and customize the message for invalid target frameworks as that would break restoring packages
             // like MSBuild.Sdk.Extras that add support for extra TFMs.
             restore.Should().Fail();
+=======
+            if (!targetFramework.Contains(';'))
+            {
+                // Intentionally not checking the error message on restore here as we can't put ourselves in front of
+                // restore and customize the message for invalid target frameworks as that would break restoring packages
+                // like MSBuild.Sdk.Extras that add support for extra TFMs.
+                restore.Should().Fail();
+            }
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
 
             buildCommand
                 .ExecuteWithoutRestore()

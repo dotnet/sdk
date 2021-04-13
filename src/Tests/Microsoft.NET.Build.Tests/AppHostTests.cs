@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -25,7 +27,11 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
+<<<<<<< HEAD
         [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.Linux | TestPlatforms.FreeBSD)]
+=======
+        [PlatformSpecificTheory(Platform.Windows, Platform.Linux, Platform.FreeBSD)]
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
         [InlineData("netcoreapp3.0")]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
@@ -64,7 +70,11 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
+<<<<<<< HEAD
         [PlatformSpecificFact(TestPlatforms.OSX)]
+=======
+        [PlatformSpecificFact(Platform.Darwin)]
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
         public void It_builds_a_runnable_apphost_if_opt_in_on_mac()
         {
             var targetFramework = "netcoreapp3.0";
@@ -73,7 +83,11 @@ namespace Microsoft.NET.Build.Tests
                 .WithSource()
                 .WithTargetFramework(targetFramework);
 
+<<<<<<< HEAD
             var buildCommand = new BuildCommand(testAsset);
+=======
+            var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
             buildCommand
                 .Execute(new string[] {
                     "/restore", "/p:UseAppHost=true",
@@ -100,7 +114,11 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netcoreapp3.0")] // only on macOS
         public void It_does_not_build_with_an_apphost_by_default_before_netcoreapp_3_or_macOs(string targetFramework)
         {
+<<<<<<< HEAD
             if (targetFramework == "netcoreapp3.0" && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+=======
+            if (targetFramework == "netcoreapp3.0" && RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
             {
                 return;
             }

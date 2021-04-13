@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -116,11 +117,35 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
 
+<<<<<<< HEAD
             // Confirm we were able to build the output group without the publish actually happening
             var publishDir = new DirectoryInfo(Path.Combine(buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName, "win-x86", "publish"));
             publishDir
                 .Should()
                 .NotExist();
+=======
+            var testOutputDir = new DirectoryInfo(Path.Combine(testAsset.Path, testProject.Name, "TestOutput"));
+            Log.WriteLine("Contents of PublishItemsOutputGroup dumped to '{0}'.", testOutputDir.FullName);
+
+            // Since no RID was specified the output group should only contain framework dependent output
+            if (RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
+            {
+                testOutputDir.Should().HaveFile($"{testProject.Name}{Constants.ExeSuffix}");
+            }
+
+            testOutputDir.Should().HaveFile($"{testProject.Name}.deps.json");
+            testOutputDir.Should().NotHaveFiles(FrameworkAssemblies);
+
+            var testKeyOutputDir = new DirectoryInfo(Path.Combine(testAsset.Path, testProject.Name, "TestOutput_Key"));
+            Log.WriteLine("PublishItemsOutputGroup key items dumped to '{0}'.", testKeyOutputDir.FullName);
+
+            if (RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
+            {
+                // Verify the only key item is the exe
+                testKeyOutputDir.Should()
+                    .OnlyHaveFiles(new List<string>() {$"{testProject.Name}{Constants.ExeSuffix}"});
+            }
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
         }
 
         private TestProject SetupProject(bool specifyRid = true, bool singleFile = false)

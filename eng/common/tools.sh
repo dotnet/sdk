@@ -36,6 +36,10 @@ prepare_machine=${prepare_machine:-false}
 # True to restore toolsets and dependencies.
 restore=${restore:-true}
 
+# Allows restoring .NET Core Runtimes and SDKs from alternative feeds
+runtimeSourceFeed=${runtimeSourceFeed:-""}
+runtimeSourceFeedKey=${runtimeSourceFeedKey:-""}
+
 # Adjusts msbuild verbosity level.
 verbosity=${verbosity:-'minimal'}
 
@@ -107,6 +111,12 @@ function InitializeDotNetCli {
   fi
 
   local install=$1
+  local runtimeSourceFeedArg=""
+  local runtimeSourceFeedKeyArg=""
+  if [[ $# == 3 ]]; then
+    runtimeSourceFeedArg=$2
+    runtimeSourceFeedKeyArg=$3
+  fi
 
   # Don't resolve runtime, shared framework, or SDK from other locations to ensure build determinism
   export DOTNET_MULTILEVEL_LOOKUP=0
@@ -152,7 +162,7 @@ function InitializeDotNetCli {
 
     if [[ ! -d "$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version" ]]; then
       if [[ "$install" == true ]]; then
-        InstallDotNetSdk "$dotnet_root" "$dotnet_sdk_version"
+        InstallDotNetSdk "$dotnet_root" "$dotnet_sdk_version" "unset" $runtimeSourceFeedArg $runtimeSourceFeedKeyArg
       else
         Write-PipelineTelemetryError -category 'InitializeToolset' "Unable to find dotnet with SDK version '$dotnet_sdk_version'"
         ExitWithExitCode 1
@@ -175,10 +185,17 @@ function InstallDotNetSdk {
   local root=$1
   local version=$2
   local architecture="unset"
+<<<<<<< HEAD
   if [[ $# -ge 3 ]]; then
     architecture=$3
   fi
   InstallDotNet "$root" "$version" $architecture 'sdk' 'false' $runtime_source_feed $runtime_source_feed_key
+=======
+  if [[ $# == 3 ]]; then
+    architecture=$3
+  fi
+  InstallDotNet "$root" "$version" $architecture "not-a-runtime" 0 $runtimeSourceFeed $runtimeSourceFeedKey
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
 }
 
 function InstallDotNet {
@@ -189,11 +206,19 @@ function InstallDotNet {
   local install_script=$_GetDotNetInstallScript
 
   local archArg=''
+<<<<<<< HEAD
   if [[ -n "${3:-}" ]] && [ "$3" != 'unset' ]; then
     archArg="--architecture $3"
   fi
   local runtimeArg=''
   if [[ -n "${4:-}" ]] && [ "$4" != 'sdk' ]; then
+=======
+  if [[ -n "${3:-}" && "$3" != "unset"  ]]; then
+    archArg="--architecture $3"
+  fi
+  local runtimeArg=''
+  if [[ -n "${4:-}" && "$4" != "not-a-runtime" ]]; then
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
     runtimeArg="--runtime $4"
   fi
   local skipNonVersionedFilesArg=""
@@ -202,7 +227,10 @@ function InstallDotNet {
   fi
   bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg || {
     local exit_code=$?
+<<<<<<< HEAD
     echo "Failed to install dotnet SDK from public location (exit code '$exit_code')."
+=======
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
 
     local runtimeSourceFeed=''
     if [[ -n "${6:-}" ]]; then
@@ -220,6 +248,11 @@ function InstallDotNet {
       fi
       decodedFeedKey=`echo $7 | base64 $decodeArg`
       runtimeSourceFeedKey="--feed-credential $decodedFeedKey"
+<<<<<<< HEAD
+=======
+    else
+      Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from public location (exit code '$exit_code')."
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
     fi
 
     if [[ -n "$runtimeSourceFeed" || -n "$runtimeSourceFeedKey" ]]; then
@@ -229,9 +262,12 @@ function InstallDotNet {
         ExitWithExitCode $exit_code
       }
     else
+<<<<<<< HEAD
       if [[ $exit_code != 0 ]]; then
         Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from public location (exit code '$exit_code')."
       fi
+=======
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
       ExitWithExitCode $exit_code
     fi
   }
@@ -300,8 +336,13 @@ function InitializeBuildTool {
   if [[ -n "${_InitializeBuildTool:-}" ]]; then
     return
   fi
+<<<<<<< HEAD
 
   InitializeDotNetCli $restore
+=======
+  
+  InitializeDotNetCli $restore $runtimeSourceFeed $runtimeSourceFeedKey
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
 
   # return values
   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"

@@ -115,8 +115,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SelfContained Condition="'$(SelfContained)' == '' and '$(RuntimeIdentifier)' != ''">true</SelfContained>
     <SelfContained Condition="'$(SelfContained)' == ''">false</SelfContained>
     <_OnOsx>$(NETCoreSdkRuntimeIdentifier.StartsWith('osx'))</_OnOsx>
+<<<<<<< HEAD
     <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser'))">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_RuntimeIdentifierUsesAppHost)' == ''">true</_RuntimeIdentifierUsesAppHost>
+=======
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
     <UseAppHost Condition="'$(UseAppHost)' == '' and
                            '$(_RuntimeIdentifierUsesAppHost)' == 'true' and
                            ('$(SelfContained)' == 'true' or

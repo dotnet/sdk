@@ -15,6 +15,11 @@ using System.Xml.Linq;
 using System.Runtime.CompilerServices;
 using System;
 using System.Runtime.InteropServices;
+<<<<<<< HEAD
+=======
+using Microsoft.DotNet.PlatformAbstractions;
+using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
 
 namespace Microsoft.NET.ToolPack.Tests
 {
@@ -191,7 +196,11 @@ namespace Microsoft.NET.ToolPack.Tests
                "RunCommand",
                GetValuesCommand.ValueType.Property);
 
+<<<<<<< HEAD
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+=======
+            if (RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
             {
                 getValuesCommand.Execute();
                 string runCommandPath = getValuesCommand.GetValues().Single();

@@ -43,7 +43,7 @@ stages:
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           name: NetCorePublic-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
+          queue: buildpool.server.amd64.vs2019.open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
           name: NetCoreInternal-Pool
           queue:  BuildPool.Windows.10.Amd64.VS2019.Pre
@@ -65,6 +65,7 @@ stages:
       parameters:
         agentOs: Windows_NT_FullFramework
         pool:
+<<<<<<< HEAD
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCorePublic-Pool
             queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
@@ -75,6 +76,10 @@ stages:
           helixTargetQueue: Windows.Server.Amd64.VS2019.Pre.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
           helixTargetQueue: Windows.Server.Amd64.VS2019.Pre.Open
+=======
+          name: NetCorePublic-Pool
+          queue: buildpool.server.amd64.vs2019.open
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
         strategy:
           matrix:
             Build_Debug:
@@ -92,12 +97,17 @@ stages:
       parameters:
         agentOs: Windows_NT_TestAsTools
         pool:
+<<<<<<< HEAD
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCorePublic-Pool
             queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCoreInternal-Pool
             queue: BuildPool.Windows.10.Amd64.VS2019.Pre
+=======
+          name: NetCorePublic-Pool
+          queue: buildpool.server.amd64.vs2019.open
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
         strategy:
           matrix:
             Build_Debug:
@@ -131,12 +141,21 @@ stages:
         agentOs: Darwin
         pool:
           name: Hosted macOS
+<<<<<<< HEAD
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           helixTargetQueue: OSX.1014.Amd64.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
           helixTargetQueue: OSX.1014.Amd64
         strategy:
           matrix:
+=======
+        strategy:
+          matrix:
+            Build_Debug:
+              _BuildConfig: Debug
+              _PublishType: none
+              _SignType: test
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
             Build_Release:
               _BuildConfig: Release
               _PublishType: none

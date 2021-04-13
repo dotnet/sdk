@@ -10,9 +10,14 @@
   </PropertyGroup>
   <!-- Repo Version Information -->
   <PropertyGroup>
+<<<<<<< HEAD
     <VersionPrefix>6.0.100</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>4</PreReleaseVersionIteration>
+=======
+    <VersionPrefix>3.1.114</VersionPrefix>
+    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
   </PropertyGroup>
   <!-- Production Dependencies -->
   <PropertyGroup>
@@ -22,12 +27,17 @@
     <MicrosoftBuildUtilitiesCoreVersion>15.4.8</MicrosoftBuildUtilitiesCoreVersion>
     <MicrosoftCssParserVersion>1.0.0-20200708.1</MicrosoftCssParserVersion>
     <MicrosoftExtensionsDependencyModelVersion>2.1.0-preview2-26306-03</MicrosoftExtensionsDependencyModelVersion>
+<<<<<<< HEAD
     <MicrosoftApplicationInsightsPackageVersion>2.0.0</MicrosoftApplicationInsightsPackageVersion>
+=======
+    <MicrosoftNETHostModelVersion>3.1.6</MicrosoftNETHostModelVersion>
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</NETStandardLibraryNETFrameworkVersion>
     <NewtonsoftJsonPackageVersion>12.0.3</NewtonsoftJsonPackageVersion>
     <NewtonsoftJsonVersion>$(NewtonsoftJsonPackageVersion)</NewtonsoftJsonVersion>
     <SystemCommandLineVersion>2.0.0-beta1.21118.1</SystemCommandLineVersion>
     <SystemDiagnosticsFileVersionInfoVersion>4.0.0</SystemDiagnosticsFileVersionInfoVersion>
+<<<<<<< HEAD
     <SystemReflectionMetadataVersion>5.0.0</SystemReflectionMetadataVersion>
     <MicrosoftDotNetSignToolVersion>6.0.0-beta.21207.4</MicrosoftDotNetSignToolVersion>
     <MicrosoftWebXdtPackageVersion>3.1.0</MicrosoftWebXdtPackageVersion>
@@ -141,6 +151,10 @@
   <PropertyGroup Label="Manually updated">
     <!-- Dependencies from https://github.com/microsoft/MSBuildLocator -->
     <MicrosoftBuildLocatorPackageVersion>1.4.1</MicrosoftBuildLocatorPackageVersion>
+=======
+    <SystemReflectionMetadataVersion>1.5.0</SystemReflectionMetadataVersion>
+    <MicrosoftDotNetSignToolVersion>1.0.0-beta.21158.9</MicrosoftDotNetSignToolVersion>
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>

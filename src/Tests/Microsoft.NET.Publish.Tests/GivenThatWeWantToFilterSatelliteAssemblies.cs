@@ -11,6 +11,11 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
+<<<<<<< HEAD
+=======
+using Microsoft.NET.TestFramework.ProjectConstruction;
+using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -55,7 +60,11 @@ namespace Microsoft.NET.Publish.Tests
                 $"{testProject.Name}.runtimeconfig.json"
             };
 
+<<<<<<< HEAD
             if (tfm == "netcoreapp3.0" && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+=======
+            if (tfm == "netcoreapp3.0" && RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
             {
                 files.Add($"{testProject.Name}{Constants.ExeSuffix}");
             }

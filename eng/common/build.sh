@@ -30,12 +30,23 @@ usage()
   echo ""
 
   echo "Advanced settings:"
+<<<<<<< HEAD
   echo "  --projects <value>       Project or solution file(s) to build"
   echo "  --ci                     Set when running on CI server"
   echo "  --excludeCIBinarylog     Don't output binary log (short: -nobl)"
   echo "  --prepareMachine         Prepare machine for CI run, clean up processes after build"
   echo "  --nodeReuse <value>      Sets nodereuse msbuild parameter ('true' or 'false')"
   echo "  --warnAsError <value>    Sets warnaserror msbuild parameter ('true' or 'false')"
+=======
+  echo "  --projects <value>             Project or solution file(s) to build"
+  echo "  --ci                           Set when running on CI server"
+  echo "  --prepareMachine               Prepare machine for CI run, clean up processes after build"
+  echo "  --nodeReuse <value>            Sets nodereuse msbuild parameter ('true' or 'false')"
+  echo "  --warnAsError <value>          Sets warnaserror msbuild parameter ('true' or 'false')"
+  echo "  --runtimeSourceFeed <value>    Alternate (fallback) source for .NET Runtime and SDK installation"
+  echo "  --runtimeSourceFeedKey <value> Credentials (if needed) for authenticating to runtimeSourceFeed"
+
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
   echo ""
   echo "Command line arguments not listed above are passed thru to msbuild."
   echo "Arguments can also be passed in with a single hyphen."
@@ -78,6 +89,9 @@ prepare_machine=false
 verbosity='minimal'
 runtime_source_feed=''
 runtime_source_feed_key=''
+
+runtimeSourceFeed=''
+runtimeSourceFeedKey=''
 
 properties=''
 while [[ $# > 0 ]]; do
@@ -153,12 +167,21 @@ while [[ $# > 0 ]]; do
       shift
       ;;
     -runtimesourcefeed)
+<<<<<<< HEAD
       runtime_source_feed=$2
       shift
       ;;
      -runtimesourcefeedkey)
       runtime_source_feed_key=$2
       shift
+=======
+      shift
+      runtimeSourceFeed="$1"
+      ;;
+    -runtimesourcefeedkey)
+      shift
+      runtimeSourceFeedKey="$1"
+>>>>>>> 5565e6b21b7a11560fb88e73dce4c097fac6260d
       ;;
     *)
       properties="$properties $1"
@@ -187,7 +210,7 @@ function InitializeCustomToolset {
 }
 
 function Build {
-  InitializeToolset
+  InitializeToolset $runtimeSourceFeed $runtimeSourceFeedKey
   InitializeCustomToolset
 
   if [[ ! -z "$projects" ]]; then
