@@ -128,7 +128,7 @@ Copyright (c) .NET Foundation. All rights reserved.
             ReferenceAssemblyPaths="@(ReferencePath)"
             RootAssemblyNames="@(TrimmerRootAssembly)"
             TrimMode="$(TrimMode)"
-            DefaultAction="$(_TrimmerDefaultAction)"
+            DefaultAction="$(TrimmerDefaultAction)"
             RemoveSymbols="$(TrimmerRemoveSymbols)"
             FeatureSettings="@(_TrimmerFeatureSettings)"
             CustomData="@(_TrimmerCustomData)"
@@ -193,12 +193,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup Condition=" $([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '6.0')) ">
       <TrimMode Condition=" '$(TrimMode)' == '' ">copyused</TrimMode>
       <!-- Action is the same regardless of whether the assembly has an IsTrimmable attribute. (The attribute didn't exist until .NET 6.) -->
-      <_TrimmerDefaultAction>$(TrimMode)</_TrimmerDefaultAction>
+      <TrimmerDefaultAction>$(TrimMode)</TrimmerDefaultAction>
     </PropertyGroup>
     <PropertyGroup>
       <TrimMode Condition=" '$(TrimMode)' == '' ">link</TrimMode>
       <!-- For .NET 6+, assemblies without IsTrimmable attribute get the "copy" action. -->
-      <_TrimmerDefaultAction Condition=" '$(_TrimmerDefaultAction)' == '' ">copy</_TrimmerDefaultAction>
+      <TrimmerDefaultAction Condition=" '$(TrimmerDefaultAction)' == '' ">copy</TrimmerDefaultAction>
       <ILLinkTreatWarningsAsErrors Condition=" '$(ILLinkTreatWarningsAsErrors)' == '' ">$(TreatWarningsAsErrors)</ILLinkTreatWarningsAsErrors>
       <_ExtraTrimmerArgs>--skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
       <TrimmerSingleWarn Condition=" '$(TrimmerSingleWarn)' == '' ">true</TrimmerSingleWarn>
@@ -290,7 +290,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <TrimMode>$(TrimMode)</TrimMode>
       </ManagedAssemblyToLink>
       <ManagedAssemblyToLink Condition=" '%(ManagedAssemblyToLink.IsTrimmable)' == 'false' And '%(ManagedAssemblyToLink.TrimMode)' == '' ">
-        <TrimMode>$(_TrimmerDefaultAction)</TrimMode>
+        <TrimMode>$(TrimmerDefaultAction)</TrimMode>
       </ManagedAssemblyToLink>
     </ItemGroup>
 
