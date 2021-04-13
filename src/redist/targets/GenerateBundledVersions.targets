@@ -105,6 +105,17 @@
 
       <Net50RuntimePackRids Include="
           @(Net50AppHostRids);
+          browser-wasm;
+          " />
+
+      <Net60AppHostRids Include="
+          @(Net50AppHostRids);
+          osx-arm64;
+          "/>
+
+      <Net60RuntimePackRids Include="
+          @(Net50RuntimePackRids);
+          osx-arm64;
           ios-arm64;
           ios-arm;
           iossimulator-arm64;
@@ -119,11 +130,10 @@
           android-arm;
           android-x64;
           android-x86;
-          browser-wasm;
           " />
 
-      <NetCoreAppHostRids Include="@(Net50AppHostRids);osx-arm64" />
-      <NetCoreRuntimePackRids Include="@(Net50RuntimePackRids);osx-arm64" />
+      <NetCoreAppHostRids Include="@(Net60AppHostRids)" />
+      <NetCoreRuntimePackRids Include="@(Net60RuntimePackRids)" />
 
       <AspNetCore30RuntimePackRids Include="
         win-x64;
@@ -268,6 +278,16 @@ Copyright (c) .NET Foundation. All rights reserved.
                         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
                         Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         />
+
+    <KnownRuntimePack Include="Microsoft.NETCore.App"
+                      TargetFramework="net6.0"
+                      RuntimeFrameworkName="Microsoft.NETCore.App"
+                      LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                      RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.Mono.**RID**"
+                      RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
+                      RuntimePackLabels="Mono"
+                      IsTrimmable="true"
+                      />
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net6.0"
