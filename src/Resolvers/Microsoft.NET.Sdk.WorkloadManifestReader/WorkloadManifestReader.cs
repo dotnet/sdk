@@ -5,7 +5,7 @@ using System;
 
 using System.Collections.Generic;
 using Microsoft.NET.Sdk.Localization;
-using Microsoft.DotNet.MSBuildSdkResolver;
+using FXVersion = Microsoft.DotNet.MSBuildSdkResolver.FXVersion;
 
 #if USE_SYSTEM_TEXT_JSON
 using System.Text.Json;
