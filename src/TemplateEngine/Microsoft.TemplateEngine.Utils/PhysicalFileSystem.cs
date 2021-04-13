@@ -106,6 +106,7 @@ namespace Microsoft.TemplateEngine.Utils
         {
             FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(filepath), Path.GetFileName(filepath));
             watcher.Changed += fileChanged;
+            watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.EnableRaisingEvents = true;
             return watcher;
         }
