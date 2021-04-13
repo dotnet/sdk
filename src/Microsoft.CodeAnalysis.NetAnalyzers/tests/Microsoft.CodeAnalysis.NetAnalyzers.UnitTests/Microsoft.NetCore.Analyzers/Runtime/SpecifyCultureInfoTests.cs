@@ -691,7 +691,11 @@ namespace NS
     }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
@@ -725,7 +729,11 @@ Namespace NS
     End Class
 End Namespace",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             };
 

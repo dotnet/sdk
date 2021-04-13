@@ -80,7 +80,11 @@ public class OuterClass
     {accessibility} virtual event EventHandler [|ThresholdReached|];
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             }.RunAsync();
         }

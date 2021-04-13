@@ -87,16 +87,16 @@ namespace Microsoft.NetFramework.Analyzers
         }
 
 #pragma warning disable RS1026 // Enable concurrent execution
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
 #pragma warning restore RS1026 // Enable concurrent execution
         {
             // TODO: Make analyzer thread-safe
             //analysisContext.EnableConcurrentExecution();
 
             // Security analyzer - analyze and report diagnostics in generated code.
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 (context) =>
                 {
                     Compilation compilation = context.Compilation;

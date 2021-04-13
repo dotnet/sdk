@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 namespace Microsoft.CodeQuality.Analyzers.Documentation
 {
     /// <summary>
-    /// RS0010: Avoid using cref tags with a prefix
+    /// CA1200: Avoid using cref tags with a prefix
     /// </summary>
     public abstract class AvoidUsingCrefTagsWithAPrefixAnalyzer : DiagnosticAnalyzer
     {
