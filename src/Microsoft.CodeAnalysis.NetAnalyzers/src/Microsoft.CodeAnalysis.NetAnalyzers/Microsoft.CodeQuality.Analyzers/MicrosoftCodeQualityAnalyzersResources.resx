@@ -1256,6 +1256,10 @@
   <data name="MarkAttributesWithAttributeUsageCodeFix" xml:space="preserve">
     <value>Apply 'AttributeUsageAttribute'</value>
   </data>
+  <data name="UriParametersShouldNotBeStringsCodeFixTitle" xml:space="preserve">
+    <value>Add 'System.Uri' overloads</value>
+    <comment>{Locked="System.Uri"}</comment>
+  </data>
   <data name="OperatorOverloadsHaveNamedAlternatesCodeFixTitle" xml:space="preserve">
     <value>Add operator overload named alternate</value>
   </data>
