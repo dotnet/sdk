@@ -1,5 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -9,11 +11,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
+using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
-using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.Utils;
+using TemplateCreationResult = Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult;
+using TemplateCreator = Microsoft.TemplateEngine.Edge.Template.TemplateCreator;
 
 namespace Microsoft.TemplateEngine.IDE
 {
@@ -60,7 +64,7 @@ namespace Microsoft.TemplateEngine.IDE
         }
 
         [Obsolete("Use " + nameof(GetTemplatesAsync) + "instead")]
-        public async Task<IReadOnlyCollection<IFilteredTemplateInfo>> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
+        public async Task<IReadOnlyCollection<Edge.Template.IFilteredTemplateInfo>> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, Edge.Template.MatchInfo?>[] filters)
         {
             EnsureInitialized();
             return TemplateListFilter.FilterTemplates(await EnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false), exactMatchesOnly, filters);
@@ -75,13 +79,11 @@ namespace Microsoft.TemplateEngine.IDE
         /// </param>
         /// <param name="cancellationToken"></param>
         /// <returns>Filtered list of available templates with details on the applied filters matches.</returns>
-        public async Task<IReadOnlyCollection<ITemplateMatchInfo>> GetTemplatesAsync(IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters = null, bool exactMatchesOnly = true, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(IEnumerable<Func<ITemplateInfo, MatchInfo?>>? filters = null, bool exactMatchesOnly = true, CancellationToken cancellationToken = default)
         {
-            Func<ITemplateMatchInfo, bool> criteria = exactMatchesOnly ? TemplateListFilter.ExactMatchFilter : TemplateListFilter.PartialMatchFilter;
-            Func<ITemplateInfo, MatchInfo?>[] filtersArray = filters?.ToArray() ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>();
-
+            Func<ITemplateMatchInfo, bool> criteria = exactMatchesOnly ? WellKnownSearchFilters.ExactCriteria : WellKnownSearchFilters.PartialCriteria;
             EnsureInitialized();
-            return TemplateListFilter.GetTemplateMatchInfo(await EnvironmentSettings.SettingsLoader.GetTemplatesAsync(cancellationToken).ConfigureAwait(false), criteria, filtersArray);
+            return EnvironmentSettings.SettingsLoader.GetTemplatesAsync(criteria, filters ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>(), cancellationToken);
         }
 
         public async Task<ICreationResult> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, bool skipUpdateCheck, string baselineName)
