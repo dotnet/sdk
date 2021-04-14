@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
+    [Obsolete("The class is deprecated")]
     public class OrdinalIgnoreCaseMatchInfoComparer : IEqualityComparer<MatchInfo>
     {
         public bool Equals(MatchInfo x, MatchInfo y)
