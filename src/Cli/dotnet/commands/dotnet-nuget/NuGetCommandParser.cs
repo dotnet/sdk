@@ -84,20 +84,11 @@ namespace Microsoft.DotNet.Cli
 
             verifyCommand.AddOption(new Option<bool>("--all"));
             verifyCommand.AddOption(new ForwardedOption<IEnumerable<string>>(fingerprint, "certificatefingerprint")
-                .ForwardAsMany(o => ForwardedArguments(fingerprint, o))
+                .ForwardAsManyArgumentsEachPrefixedByOption(fingerprint)
                 .AllowSingleArgPerToken());
             verifyCommand.AddOption(CommonOptions.VerbosityOption());
 
             return verifyCommand;
-        }
-
-        private static IEnumerable<string> ForwardedArguments(string token, IEnumerable<string> arguments)
-        {
-            foreach (string arg in arguments)
-            {
-                yield return token;
-                yield return arg;
-            }
         }
     }
 }

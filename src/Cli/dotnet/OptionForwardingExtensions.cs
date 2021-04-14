@@ -22,7 +22,9 @@ namespace Microsoft.DotNet.Cli
 
         public static Option ForwardAsMany<T>(this ForwardedOption<T> option, Func<T, IEnumerable<string>> format) => option.SetForwardingFunction(format);
 
-        public static IEnumerable<string> OptionValuesToBeForwarded(this ParseResult parseResult, Command command) => 
+        public static Option ForwardAsManyArgumentsEachPrefixedByOption(this ForwardedOption<IEnumerable<string>> option, string alias) => option.ForwardAsMany(o => ForwardedArguments(alias, o));
+
+        public static IEnumerable<string> OptionValuesToBeForwarded(this ParseResult parseResult, Command command) =>
             command.Options
                 .OfType<IForwardedOption>()
                 .SelectMany(o => o.GetForwardingFunction()(parseResult)) ?? Array.Empty<string>();
@@ -40,6 +42,15 @@ namespace Microsoft.DotNet.Cli
         {
             option.AllowMultipleArgumentsPerToken = false;
             return option;
+        }
+
+        private static IEnumerable<string> ForwardedArguments(string alias, IEnumerable<string> arguments)
+        {
+            foreach (string arg in arguments)
+            {
+                yield return alias;
+                yield return arg;
+            }
         }
     }
 
