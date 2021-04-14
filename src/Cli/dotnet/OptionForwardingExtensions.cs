@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli
 
         public ForwardedOption(string[] aliases) : base(aliases) { }
 
-        public ForwardedOption(string alias, string description) : base(alias, description) { }
+        public ForwardedOption(string alias, string description = null) : base(alias, description) { }
 
         public ForwardedOption<T> SetForwardingFunction(Func<T, IEnumerable<string>> func)
         {

@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Cli
             verifyCommand.AddArgument(new Argument<IEnumerable<string>>() { Arity = ArgumentArity.OneOrMore });
 
             verifyCommand.AddOption(new Option<bool>("--all"));
-            verifyCommand.AddOption(new ForwardedOption<IEnumerable<string>>(fingerprint, "certificatefingerprint")
+            verifyCommand.AddOption(new ForwardedOption<IEnumerable<string>>(fingerprint)
                 .ForwardAsManyArgumentsEachPrefixedByOption(fingerprint)
                 .AllowSingleArgPerToken());
             verifyCommand.AddOption(CommonOptions.VerbosityOption());
