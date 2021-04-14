@@ -266,7 +266,7 @@
 
     <Exec Command="$(ToolRunPrefix)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
           WorkingDirectory="$(TestLocalToolFolder)"
-          EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
+          EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME);DOTNET_CLI_RUN_MSBUILD_OUTOFPROC=true"/>
   </Target>
   
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
