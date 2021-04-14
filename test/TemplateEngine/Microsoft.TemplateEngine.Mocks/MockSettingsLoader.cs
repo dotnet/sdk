@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Mocks
@@ -31,6 +32,7 @@ namespace Microsoft.TemplateEngine.Mocks
         public void AddProbingPath(string probeIn) => throw new NotImplementedException();
         public IFile FindBestHostTemplateConfigFile(IFileSystemInfo config) => throw new NotImplementedException();
         public Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token) => throw new NotImplementedException();
+        public Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo>> filters, CancellationToken token = default) => throw new NotImplementedException();
         public ITemplate LoadTemplate(ITemplateInfo info, string baselineName) => throw new NotImplementedException();
         public Task RebuildCacheAsync(CancellationToken token) => throw new NotImplementedException();
         public void Save() => throw new NotImplementedException();
