@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Edge.Template;
+using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 
 namespace Microsoft.TemplateSearch.Common
 {
