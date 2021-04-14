@@ -1,8 +1,14 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Abstractions
@@ -40,6 +46,18 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// This call is cached. And can be invalidated by <see cref="RebuildCacheAsync"/>.
         /// </remarks>
         Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token);
+
+        /// <summary>
+        /// Gets the templates filtered using <paramref name="filters"/> and <paramref name="matchCriteria"/>.
+        /// </summary>
+        /// <param name="matchCriteria">The criteria for <see cref="ITemplateMatchInfo"/> to be included to result collection.</param>
+        /// <param name="filters">The list of filters to be applied to templates.</param>
+        /// <returns>The filtered list of templates with match information.</returns>
+        /// <example>
+        /// <c>GetTemplatesAsync(WellKnownSearchFilters.ExactCriteria, new [] { WellKnownSearchFilters.NameFilter("myname") }</c> - returns the templates which name or short name contains "myname". <br/>
+        /// <c>GetTemplatesAsync(TemplateListFilter.PartialCriteria, new [] { WellKnownSearchFilters.NameFilter("myname"), WellKnownSearchFilters.NameFilter("othername") })</c> - returns the templates which name or short name contains "myname" or "othername".<br/>
+        /// </example>
+        Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchCriteria, IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters, CancellationToken token = default);
 
         /// <summary>
         /// Fully load template from <see cref="ITemplateInfo"/>.

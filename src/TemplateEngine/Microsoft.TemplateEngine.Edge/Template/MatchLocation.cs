@@ -1,6 +1,8 @@
+using System;
+
 namespace Microsoft.TemplateEngine.Edge.Template
 {
-
+    [Obsolete("use" + nameof(Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.Name) + " instead")]
     public enum MatchLocation
     {
         Unspecified,
