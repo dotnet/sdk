@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
+using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
 using Microsoft.TemplateEngine.Utils;
@@ -312,6 +313,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             await RebuildCacheFromSettingsIfNotCurrent(false).ConfigureAwait(false);
             return _userTemplateCache.TemplateInfo;
+        }
+
+        public async Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo>> filters, CancellationToken token = default)
+        {
+            IReadOnlyList<ITemplateInfo> templates = await GetTemplatesAsync(token).ConfigureAwait(false);
+            //TemplateListFilter.GetTemplateMatchInfo code should be moved to this method eventually, when no longer needed.
+#pragma warning disable CS0618 // Type or member is obsolete.
+            return TemplateListFilter.GetTemplateMatchInfo(templates, matchFilter, filters.ToArray()).ToList();
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public void AddProbingPath(string probeIn)

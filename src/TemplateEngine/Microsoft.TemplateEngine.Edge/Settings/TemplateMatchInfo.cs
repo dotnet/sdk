@@ -1,6 +1,9 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
@@ -8,6 +11,7 @@ using Microsoft.TemplateEngine.Edge.Template;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
+    [Obsolete("The implementation became internal")]
     public class TemplateMatchInfo : ITemplateMatchInfo
     {
         public TemplateMatchInfo(ITemplateInfo info, IReadOnlyList<MatchInfo> matchDispositions)
@@ -57,5 +61,40 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public bool IsMatch => MatchDisposition.Count > 0 && MatchDisposition.All(x => x.Kind != MatchKind.Mismatch);
 
         public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch);
+    }
+
+    internal class TemplateMatchInfo2 : Abstractions.TemplateFiltering.ITemplateMatchInfo
+    {
+        private List<Abstractions.TemplateFiltering.MatchInfo> _matchDisposition = new List<Abstractions.TemplateFiltering.MatchInfo>();
+
+        internal TemplateMatchInfo2(ITemplateInfo info, IReadOnlyList<Abstractions.TemplateFiltering.MatchInfo> matchDispositions)
+            : this(info)
+        {
+            if (matchDispositions != null)
+            {
+                foreach (Abstractions.TemplateFiltering.MatchInfo disposition in matchDispositions)
+                {
+                    AddMatchDisposition(disposition);
+                }
+            }
+        }
+
+        internal TemplateMatchInfo2(ITemplateInfo info)
+        {
+            Info = info ?? throw new ArgumentNullException(nameof(info));
+        }
+
+        public ITemplateInfo Info { get; }
+
+        public IReadOnlyList<Abstractions.TemplateFiltering.MatchInfo> MatchDisposition => _matchDisposition;
+
+        public bool IsMatch => MatchDisposition.Count > 0 && MatchDisposition.All(x => x.Kind != Abstractions.TemplateFiltering.MatchKind.Mismatch);
+
+        public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != Abstractions.TemplateFiltering.MatchKind.Mismatch);
+
+        public void AddMatchDisposition(Abstractions.TemplateFiltering.MatchInfo newDisposition)
+        {
+            _matchDisposition.Add(newDisposition);
+        }
     }
 }
