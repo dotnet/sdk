@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.TemplateEngine.Edge.Template;
+#nullable enable
+
+using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Mocks;
 using Xunit;
 
-namespace Microsoft.TemplateEngine.Edge.UnitTests
+namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
     public class WellKnownSearchFiltersTests
     {
@@ -25,7 +27,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                     .WithBaselineInfo("app", "standard")
                     .WithClassifications(templateTagsArray);
 
-            var filter = WellKnownSearchFilters.TagFilter(testTag);
+            var filter = WellKnownSearchFilters.ClassificationFilter(testTag);
             MatchInfo? result = filter(template);
             Assert.Equal(kind, result?.Kind);
         }
@@ -40,7 +42,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                     .WithTag("type", "project")
                     .WithBaselineInfo("app", "standard");
 
-            var filter = WellKnownSearchFilters.TagFilter(testTag);
+            var filter = WellKnownSearchFilters.ClassificationFilter(testTag);
             MatchInfo? result = filter(template);
             Assert.Equal(kind, result?.Kind);
         }

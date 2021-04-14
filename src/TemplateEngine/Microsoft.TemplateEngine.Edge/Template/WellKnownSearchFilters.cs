@@ -10,6 +10,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
+    [Obsolete("Use " + nameof(Microsoft.TemplateEngine.Utils.WellKnownSearchFilters) + " instead")]
     public static class WellKnownSearchFilters
     {
         public static Func<ITemplateInfo, MatchInfo?> NameFilter(string name)
