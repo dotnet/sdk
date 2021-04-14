@@ -5,6 +5,7 @@ using Microsoft.DotNet.Tools.Add;
 using Microsoft.DotNet.Tools.Build;
 using Microsoft.DotNet.Tools.BuildServer;
 using Microsoft.DotNet.Tools.Clean;
+using Microsoft.DotNet.Tools.Sdk;
 using Microsoft.DotNet.Tools.Fsi;
 using Microsoft.DotNet.Tools.Help;
 using Microsoft.DotNet.Tools.List;
@@ -22,6 +23,7 @@ using Microsoft.DotNet.Tools.Test;
 using Microsoft.DotNet.Tools.VSTest;
 using System.Collections.Generic;
 using Microsoft.DotNet.Tools.Tool;
+using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -113,6 +115,10 @@ namespace Microsoft.DotNet.Cli
                 // aka.ms target: https://docs.microsoft.com/dotnet/articles/core/tools/dotnet-run
                 DocLink = "https://aka.ms/dotnet-run"
             },
+            ["sdk"] = new BuiltInCommandMetadata
+            {
+                Command = SdkCommand.Run,
+            },
             ["sln"] = new BuiltInCommandMetadata
             {
                 Command = SlnCommand.Run,
@@ -158,7 +164,11 @@ namespace Microsoft.DotNet.Cli
             ["internal-reportinstallsuccess"] = new BuiltInCommandMetadata
             {
                 Command = InternalReportinstallsuccess.Run
-            }
+            },
+            ["workload"] = new BuiltInCommandMetadata
+            {
+                Command = WorkloadCommand.Run
+            },
         };
     }
 }

@@ -2,14 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.MSBuild;
-using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Restore;
 using Parser = Microsoft.DotNet.Cli.Parser;
+using System.CommandLine.Parsing;
+using System;
+using System.Linq;
 
 namespace Microsoft.DotNet.Tools.Build
 {
@@ -17,11 +15,9 @@ namespace Microsoft.DotNet.Tools.Build
     {
         public BuildCommand(
             IEnumerable<string> msbuildArgs,
-            IEnumerable<string> userDefinedArguments,
-            IEnumerable<string> trailingArguments,
             bool noRestore,
             string msbuildPath = null)
-            : base(msbuildArgs, userDefinedArguments, trailingArguments, noRestore, msbuildPath)
+            : base(msbuildArgs, noRestore, msbuildPath)
         {
         }
 
@@ -33,29 +29,26 @@ namespace Microsoft.DotNet.Tools.Build
 
             var parser = Parser.Instance;
 
-            var result = parser.ParseFrom("dotnet build", args);
+            var parseResult = parser.ParseFrom("dotnet build", args);
 
-            result.ShowHelpOrErrorIfAppropriate();
-
-            var appliedBuildOptions = result["dotnet"]["build"];
+            parseResult.ShowHelpOrErrorIfAppropriate();
 
             msbuildArgs.Add($"-consoleloggerparameters:Summary");
 
-            if (appliedBuildOptions.HasOption("--no-incremental"))
+            if (parseResult.HasOption(BuildCommandParser.NoIncrementalOption))
             {
                 msbuildArgs.Add("-target:Rebuild");
             }
+            var arguments = parseResult.ValueForArgument<IEnumerable<string>>(BuildCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>();
 
-            msbuildArgs.AddRange(appliedBuildOptions.OptionValuesToBeForwarded());
+            msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()));
 
-            msbuildArgs.AddRange(appliedBuildOptions.Arguments);
+            msbuildArgs.AddRange(arguments);
 
-            bool noRestore = appliedBuildOptions.HasOption("--no-restore");
+            bool noRestore = parseResult.HasOption(BuildCommandParser.NoRestoreOption);
 
             BuildCommand command = new BuildCommand(
                 msbuildArgs,
-                appliedBuildOptions.OptionValuesToBeForwarded(),
-                appliedBuildOptions.Arguments,
                 noRestore,
                 msbuildPath);
 

@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.IO;
+using System.Collections.Generic;
+using System.CommandLine;
 using System.Linq;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Tools;
 using LocalizableStrings = Microsoft.DotNet.Tools.Publish.LocalizableStrings;
 
@@ -11,55 +11,58 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class PublishCommandParser
     {
-        public static Command Publish() =>
-            CreateWithRestoreOptions.Command(
-                "publish",
-                LocalizableStrings.AppDescription,
-                Accept.ZeroOrMoreArguments()
-                      .With(name: CommonLocalizableStrings.SolutionOrProjectArgumentName,
-                            description: CommonLocalizableStrings.SolutionOrProjectArgumentDescription),
-                CommonOptions.HelpOption(),
-                Create.Option(
-                    "-o|--output",
-                    LocalizableStrings.OutputOptionDescription,
-                    Accept.ExactlyOneArgument()
-                        .With(name: LocalizableStrings.OutputOption)
-                        .ForwardAsSingle(o => $"-property:PublishDir={CommandDirectoryContext.GetFullPath(o.Arguments.Single())}")),
-                CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription),
-                CommonOptions.RuntimeOption(LocalizableStrings.RuntimeOptionDescription),
-                CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription),
-                CommonOptions.VersionSuffixOption(),
-                Create.Option(
-                    "--manifest",
-                    LocalizableStrings.ManifestOptionDescription,
-                    Accept.OneOrMoreArguments()
-                        .With(name: LocalizableStrings.ManifestOption)
-                        .ForwardAsSingle(o => $"-property:TargetManifestFiles={string.Join("%3B", o.Arguments.Select(CommandDirectoryContext.GetFullPath))}")),
-                Create.Option(
-                    "--no-build",
-                    LocalizableStrings.NoBuildOptionDescription,
-                    Accept.NoArguments().ForwardAs("-property:NoBuild=true")),
-                Create.Option(
-                    "--self-contained",
-                    LocalizableStrings.SelfContainedOptionDescription,
-                    Accept.ZeroOrOneArgument()
-                        .WithSuggestionsFrom("true", "false")
-                        .ForwardAsSingle(o =>
-                        {
-                            string value = o.Arguments.Any() ? o.Arguments.Single() : "true";
-                            return $"-property:SelfContained={value}";
-                        })),
-                Create.Option(
-                    "--no-self-contained",
-                    LocalizableStrings.NoSelfContainedOptionDescription,
-                    Accept.NoArguments().ForwardAs("-property:SelfContained=false")),
-                Create.Option(
-                    "--nologo",
-                    LocalizableStrings.CmdNoLogo,
-                    Accept.NoArguments()
-                          .ForwardAs("-nologo")),
-                CommonOptions.InteractiveMsBuildForwardOption(),
-                CommonOptions.NoRestoreOption(),
-                CommonOptions.VerbosityOption());
+        public static readonly Argument SlnOrProjectArgument = new Argument<IEnumerable<string>>(CommonLocalizableStrings.SolutionOrProjectArgumentName)
+        {
+            Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
+        public static readonly Option OuputOption = new ForwardedOption<string>(new string[] { "-o", "--output" }, LocalizableStrings.OutputOptionDescription)
+        {
+            ArgumentHelpName = LocalizableStrings.OutputOption
+        }.ForwardAsSingle(o => $"-property:PublishDir={CommandDirectoryContext.GetFullPath(o)}");
+
+        public static readonly Option ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest", LocalizableStrings.ManifestOptionDescription)
+        {
+            ArgumentHelpName = LocalizableStrings.ManifestOption
+        }.ForwardAsSingle(o => $"-property:TargetManifestFiles={string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))}")
+        .AllowSingleArgPerToken();
+
+        public static readonly Option NoBuildOption = new ForwardedOption<bool>("--no-build", LocalizableStrings.NoBuildOptionDescription)
+            .ForwardAs("-property:NoBuild=true");
+
+        public static readonly Option SelfContainedOption = new ForwardedOption<bool>("--self-contained", LocalizableStrings.SelfContainedOptionDescription)
+            .ForwardAsSingle(o =>  $"-property:SelfContained={o}");
+
+        public static readonly Option NoSelfContainedOption = new ForwardedOption<bool>("--no-self-contained", LocalizableStrings.NoSelfContainedOptionDescription)
+            .ForwardAs("-property:SelfContained=false");
+
+        public static readonly Option NoLogoOption = new ForwardedOption<bool>("--nologo", LocalizableStrings.CmdNoLogo)
+            .ForwardAs("-nologo");
+
+        public static readonly Option NoRestoreOption = CommonOptions.NoRestoreOption();
+
+        public static Command GetCommand()
+        {
+            var command = new Command("publish", LocalizableStrings.AppDescription);
+
+            command.AddArgument(SlnOrProjectArgument);
+            RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
+            command.AddOption(OuputOption);
+            command.AddOption(ManifestOption);
+            command.AddOption(NoBuildOption);
+            command.AddOption(SelfContainedOption);
+            command.AddOption(NoSelfContainedOption);
+            command.AddOption(NoLogoOption);
+            command.AddOption(CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription));
+            command.AddOption(CommonOptions.RuntimeOption(LocalizableStrings.RuntimeOptionDescription));
+            command.AddOption(CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription));
+            command.AddOption(CommonOptions.VersionSuffixOption());
+            command.AddOption(CommonOptions.InteractiveMsBuildForwardOption());
+            command.AddOption(NoRestoreOption);
+            command.AddOption(CommonOptions.VerbosityOption());
+
+            return command;
+        }
     }
 }

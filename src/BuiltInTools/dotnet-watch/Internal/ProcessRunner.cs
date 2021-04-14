@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Tools.Internal;
 using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
@@ -96,7 +96,6 @@ namespace Microsoft.DotNet.Watcher.Internal
                 StartInfo =
                 {
                     FileName = processSpec.Executable,
-                    Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(processSpec.Arguments),
                     UseShellExecute = false,
                     WorkingDirectory = processSpec.WorkingDirectory,
                     RedirectStandardOutput = processSpec.IsOutputCaptured || (processSpec.OnOutput != null),
@@ -104,12 +103,49 @@ namespace Microsoft.DotNet.Watcher.Internal
                 }
             };
 
+            if (processSpec.EscapedArguments is not null)
+            {
+                process.StartInfo.Arguments = processSpec.EscapedArguments;
+            }
+            else
+            {
+                for (var i = 0; i < processSpec.Arguments.Count; i++)
+                {
+                    process.StartInfo.ArgumentList.Add(processSpec.Arguments[i]);
+                }
+            }
+
             foreach (var env in processSpec.EnvironmentVariables)
             {
                 process.StartInfo.Environment.Add(env.Key, env.Value);
             }
 
+            SetEnvironmentVariable(process.StartInfo, "DOTNET_STARTUP_HOOKS", processSpec.EnvironmentVariables.DotNetStartupHooks, Path.PathSeparator);
+            SetEnvironmentVariable(process.StartInfo, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", processSpec.EnvironmentVariables.AspNetCoreHostingStartupAssemblies, ';');
+
             return process;
+        }
+
+        private void SetEnvironmentVariable(ProcessStartInfo processStartInfo, string envVarName, List<string> envVarValues, char separator)
+        {
+            if (envVarValues is { Count: 0 })
+            {
+                return;
+            }
+
+            var existing = Environment.GetEnvironmentVariable(envVarName);
+
+            string result;
+            if (!string.IsNullOrEmpty(existing))
+            {
+                result = existing + separator + string.Join(separator, envVarValues);
+            }
+            else
+            {
+                result = string.Join(separator, envVarValues);
+            }
+
+            processStartInfo.EnvironmentVariables[envVarName] = result;
         }
 
         private class ProcessState : IDisposable
@@ -161,7 +197,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                     if (_process is not null && !_process.HasExited)
                     {
                         _reporter.Verbose($"Killing process {_process.Id}");
-                        _process.KillTree();
+                        _process.Kill(entireProcessTree: true);
                     }
                 }
                 catch (Exception ex)

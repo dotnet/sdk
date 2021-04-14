@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.MSBuild;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tools.Publish
@@ -15,11 +15,9 @@ namespace Microsoft.DotNet.Tools.Publish
     {
         private PublishCommand(
             IEnumerable<string> msbuildArgs,
-            IEnumerable<string> userDefinedArguments,
-            IEnumerable<string> trailingArguments,
             bool noRestore,
             string msbuildPath = null)
-            : base(msbuildArgs, userDefinedArguments, trailingArguments, noRestore, msbuildPath)
+            : base(msbuildArgs, noRestore, msbuildPath)
         {
         }
 
@@ -31,31 +29,27 @@ namespace Microsoft.DotNet.Tools.Publish
 
             var parser = Parser.Instance;
 
-            var result = parser.ParseFrom("dotnet publish", args);
+            var parseResult = parser.ParseFrom("dotnet publish", args);
 
-            result.ShowHelpOrErrorIfAppropriate();
+            parseResult.ShowHelpOrErrorIfAppropriate();
 
             msbuildArgs.Add("-target:Publish");
 
-            var appliedPublishOption = result["dotnet"]["publish"];
-
-            if (appliedPublishOption.HasOption("--self-contained") &&
-                appliedPublishOption.HasOption("--no-self-contained"))
+            if (parseResult.HasOption(PublishCommandParser.SelfContainedOption) &&
+                parseResult.HasOption(PublishCommandParser.NoSelfContainedOption))
             {
                 throw new GracefulException(LocalizableStrings.SelfContainAndNoSelfContainedConflict);
             }
 
-            msbuildArgs.AddRange(appliedPublishOption.OptionValuesToBeForwarded());
+            msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(PublishCommandParser.GetCommand()));
 
-            msbuildArgs.AddRange(appliedPublishOption.Arguments);
+            msbuildArgs.AddRange(parseResult.ValueForArgument<IEnumerable<string>>(PublishCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
 
-            bool noRestore = appliedPublishOption.HasOption("--no-restore")
-                          || appliedPublishOption.HasOption("--no-build");
+            bool noRestore = parseResult.HasOption(PublishCommandParser.NoRestoreOption)
+                          || parseResult.HasOption(PublishCommandParser.NoBuildOption);
 
             return new PublishCommand(
                 msbuildArgs,
-                appliedPublishOption.OptionValuesToBeForwarded(),
-                appliedPublishOption.Arguments,
                 noRestore,
                 msbuildPath);
         }

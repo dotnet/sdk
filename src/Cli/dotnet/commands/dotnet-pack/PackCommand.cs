@@ -4,11 +4,10 @@
 using System.Collections.Generic;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.MSBuild;
-using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Cli;
-using System.Diagnostics;
 using Parser = Microsoft.DotNet.Cli.Parser;
+using System;
+using System.CommandLine.Parsing;
 
 namespace Microsoft.DotNet.Tools.Pack
 {
@@ -16,11 +15,9 @@ namespace Microsoft.DotNet.Tools.Pack
     {
         public PackCommand(
             IEnumerable<string> msbuildArgs,
-            IEnumerable<string> userDefinedArguments,
-            IEnumerable<string> trailingArguments,
             bool noRestore,
             string msbuildPath = null)
-            : base(msbuildArgs, userDefinedArguments, trailingArguments, noRestore, msbuildPath)
+            : base(msbuildArgs, noRestore, msbuildPath)
         {
         }
 
@@ -28,27 +25,23 @@ namespace Microsoft.DotNet.Tools.Pack
         {
             var parser = Parser.Instance;
 
-            var result = parser.ParseFrom("dotnet pack", args);
+            var parseResult = parser.ParseFrom("dotnet pack", args);
 
-            result.ShowHelpOrErrorIfAppropriate();
-
-            var parsedPack = result["dotnet"]["pack"];
+            parseResult.ShowHelpOrErrorIfAppropriate();
 
             var msbuildArgs = new List<string>()
             {
                 "-target:pack"
             };
 
-            msbuildArgs.AddRange(parsedPack.OptionValuesToBeForwarded());
+            msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(PackCommandParser.GetCommand()));
 
-            msbuildArgs.AddRange(parsedPack.Arguments);
+            msbuildArgs.AddRange(parseResult.ValueForArgument<IEnumerable<string>>(PackCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
 
-            bool noRestore = parsedPack.HasOption("--no-restore") || parsedPack.HasOption("--no-build");
+            bool noRestore = parseResult.HasOption(PackCommandParser.NoRestoreOption) || parseResult.HasOption(PackCommandParser.NoBuildOption);
 
             return new PackCommand(
                 msbuildArgs,
-                parsedPack.OptionValuesToBeForwarded(),
-                parsedPack.Arguments,
                 noRestore,
                 msbuildPath);
         }

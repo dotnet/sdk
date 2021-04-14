@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Transactions;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
@@ -42,27 +42,21 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly IEnumerable<string> _forwardRestoreArguments;
         private readonly string _packageVersion;
 
-        public ToolUpdateGlobalOrToolPathCommand(AppliedOption appliedCommand,
-            ParseResult parseResult,
+        public ToolUpdateGlobalOrToolPathCommand(ParseResult parseResult,
             CreateToolPackageStoresAndInstallerAndUninstaller createToolPackageStoreInstallerUninstaller = null,
             CreateShellShimRepository createShellShimRepository = null,
             IReporter reporter = null)
             : base(parseResult)
         {
-            if (appliedCommand == null)
-            {
-                throw new ArgumentNullException(nameof(appliedCommand));
-            }
-
-            _packageId = new PackageId(appliedCommand.Arguments.Single());
-            _configFilePath = appliedCommand.ValueOrDefault<string>("configfile");
-            _framework = appliedCommand.ValueOrDefault<string>("framework");
-            _additionalFeeds = appliedCommand.ValueOrDefault<string[]>("add-source");
-            _packageVersion = appliedCommand.SingleArgumentOrDefault("version");
-            _global = appliedCommand.ValueOrDefault<bool>(ToolAppliedOption.GlobalOption);
-            _verbosity = appliedCommand.SingleArgumentOrDefault("verbosity");
-            _toolPath = appliedCommand.SingleArgumentOrDefault(ToolAppliedOption.ToolPathOption);
-            _forwardRestoreArguments = appliedCommand.OptionValuesToBeForwarded();
+            _packageId = new PackageId(parseResult.ValueForArgument<string>(ToolUninstallCommandParser.PackageIdArgument));
+            _configFilePath = parseResult.ValueForOption<string>(ToolUpdateCommandParser.ConfigOption);
+            _framework = parseResult.ValueForOption<string>(ToolUpdateCommandParser.FrameworkOption);
+            _additionalFeeds = parseResult.ValueForOption<string[]>(ToolUpdateCommandParser.AddSourceOption);
+            _packageVersion = parseResult.ValueForOption<string>(ToolUpdateCommandParser.VersionOption);
+            _global = parseResult.ValueForOption<bool>(ToolUpdateCommandParser.GlobalOption);
+            _verbosity = Enum.GetName(parseResult.ValueForOption<VerbosityOptions>(ToolUpdateCommandParser.VerbosityOption));
+            _toolPath = parseResult.ValueForOption<string>(ToolUpdateCommandParser.ToolPathOption);
+            _forwardRestoreArguments = parseResult.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand());
 
             _createToolPackageStoreInstallerUninstaller = createToolPackageStoreInstallerUninstaller ??
                                                   ToolPackageFactory.CreateToolPackageStoresAndInstallerAndUninstaller;
@@ -79,7 +73,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             ValidateArguments();
 
             DirectoryPath? toolPath = null;
-            if (_toolPath != null)
+            if (!string.IsNullOrEmpty(_toolPath))
             {
                 toolPath = new DirectoryPath(_toolPath);
             }
@@ -161,7 +155,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
         private void ValidateArguments()
         {
-            if (_configFilePath != null && !File.Exists(_configFilePath))
+            if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
             {
                 throw new GracefulException(
                     string.Format(
@@ -220,7 +214,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private FilePath? GetConfigFile()
         {
             FilePath? configFile = null;
-            if (_configFilePath != null)
+            if (!string.IsNullOrEmpty(_configFilePath))
             {
                 configFile = new FilePath(_configFilePath);
             }

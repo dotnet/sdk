@@ -24,6 +24,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Microsoft.NET.Build.Tasks;
 using NuGet.Versioning;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -31,6 +32,15 @@ namespace Microsoft.NET.Build.Tests
     {
         public GivenThatWeWantToBuildANetCoreApp(ITestOutputHelper log) : base(log)
         {
+        }
+
+        private BuildCommand GetBuildCommand([CallerMemberName] string callingMethod = "")
+        {
+            var testAsset = _testAssetsManager
+               .CopyTestAsset("HelloWorldWithSubDirs", callingMethod)
+               .WithSource();
+
+            return new BuildCommand(testAsset);
         }
 
         [Theory]
@@ -206,9 +216,9 @@ namespace Microsoft.NET.Build.Tests
 
             string runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            testProject.AdditionalProperties["RuntimeIdentifiers"] = runtimeIdentifier;            
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = runtimeIdentifier;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: allowMismatch.ToString())
                 .Restore(Log, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -445,7 +455,7 @@ public static class Program
                 RuntimeIdentifier = runtimeIdentifier
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(project);
+            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: isSelfContained.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -777,5 +787,24 @@ class Program
             depsFileLastWriteTime.Should().NotBe(File.GetLastWriteTimeUtc(depsFilePath));
             runtimeConfigLastWriteTime.Should().NotBe(File.GetLastWriteTimeUtc(runtimeConfigPath));
         }
+
+        [Fact]
+        public void It_passes_when_building_single_file_app_without_rid()
+        {
+            GetBuildCommand()
+                .Execute("/p:PublishSingleFile=true")
+                .Should()
+                .Pass();
+        }
+
+        [Fact]
+        public void It_errors_when_publishing_single_file_without_apphost()
+        {
+            GetBuildCommand()
+                .Execute("/p:PublishSingleFile=true", "/p:SelfContained=false", "/p:UseAppHost=false")
+                .Should()
+                .Pass();
+        }
+
     }
 }

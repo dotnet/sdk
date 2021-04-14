@@ -11,9 +11,9 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -51,10 +51,10 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        private PublishCommand GetPublishCommand()
+        private PublishCommand GetPublishCommand(string identifier = null, [CallerMemberName] string callingMethod = "")
         {
             var testAsset = _testAssetsManager
-               .CopyTestAsset(TestProjectName)
+               .CopyTestAsset(TestProjectName, callingMethod, identifier)
                .WithSource();
 
             // Create the following content:
@@ -326,7 +326,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand
@@ -383,7 +383,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand
@@ -402,7 +402,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ExcludeAlways, AlwaysContent)]
         public void It_generates_a_single_file_excluding_content(string exclusion, string content)
         {
-            var publishCommand = GetPublishCommand();
+            var publishCommand = GetPublishCommand(exclusion);
             publishCommand
                 .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, PlaceStamp, exclusion)
                 .Should()
@@ -501,6 +501,90 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
+        [InlineData("net6.0")]
+        public void ILLink_analyzer_warnings_are_produced(string targetFramework)
+        {
+            var projectName = "ILLinkAnalyzerWarningsApp";
+            var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
+            testProject.AdditionalProperties["PublishSingleFile"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute(RuntimeIdentifier)
+                .Should().Pass()
+                .And.HaveStdOutContaining("(9,13): warning IL3000")
+                .And.HaveStdOutContaining("(10,13): warning IL3001");
+        }
+
+        [RequiresMSBuildVersionTheory("16.8.0")]
+        [InlineData("net6.0")]
+        public void ILLink_linker_analyzer_warnings_are_not_produced(string targetFramework)
+        {
+            var projectName = "ILLinkAnalyzerWarningsApp";
+            var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
+            // Inactive linker settings should have no effect on the linker analyzer,
+            // unless PublishTrimmed is also set.
+            testProject.AdditionalProperties["PublishSingleFile"] = "true";
+            testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute(RuntimeIdentifier)
+                .Should().Pass()
+                .And.NotHaveStdOutContaining("IL2026");
+        }
+
+        [RequiresMSBuildVersionTheory("16.8.0")]
+        [InlineData("net6.0")]
+        public void ILLink_analyzer_warnings_are_produced_using_EnableSingleFileAnalyzer(string targetFramework)
+        {
+            var projectName = "ILLinkAnalyzerWarningsApp";
+            var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
+            testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute(RuntimeIdentifier)
+                .Should().Pass()
+                .And.HaveStdOutContaining("(9,13): warning IL3000")
+                .And.HaveStdOutContaining("(10,13): warning IL3001");
+        }
+
+        private TestProject CreateTestProjectWithAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
+        {
+            var testProject = new TestProject()
+            {
+                Name = projectName,
+                TargetFrameworks = targetFramework,
+                IsExe = isExecutable
+            };
+
+            testProject.SourceFiles[$"{projectName}.cs"] = @"
+using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
+class C
+{
+    static void Main()
+    {
+        var a = Assembly.LoadFrom(""/some/path/not/in/bundle"");
+        _ = a.Location;
+        _ = a.GetFiles();
+        ProduceLinkerAnalysisWarning();
+    }
+
+    [RequiresUnreferencedCode(""Linker analysis warning"")]
+    static void ProduceLinkerAnalysisWarning()
+    {
+    }
+}";
+
+            return testProject;
+        }
+
+        [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("netcoreapp3.0", false, IncludeDefault)]
         [InlineData("netcoreapp3.0", true, IncludeDefault)]
         [InlineData("netcoreapp3.0", false, IncludePdb)]
@@ -558,7 +642,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties.Add("SelfContained", $"{selfContained}");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: selfContained.ToString());
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand.Execute(PublishSingleFile, RuntimeIdentifier, IncludePdb)

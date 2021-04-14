@@ -394,6 +394,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"
+                                    Condition="'$(EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization)' != ''"
+                                    Value="$(EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Debugger.IsSupported"
                                     Condition="'$(DebuggerSupport)' != ''"
                                     Value="$(DebuggerSupport)"
@@ -426,6 +431,16 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(HttpActivityPropagationSupport)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Net.Http.UseNativeHttpHandler"
+                                    Condition="'$(UseNativeHttpHandler)' != ''"
+                                    Value="$(UseNativeHttpHandler)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Resources.ResourceManager.AllowCustomResourceTypes"
+                                    Condition="'$(CustomResourceTypesSupport)' != ''"
+                                    Value="$(CustomResourceTypesSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Resources.UseSystemResourceKeys"
                                     Condition="'$(UseSystemResourceKeys)' != ''"
                                     Value="$(UseSystemResourceKeys)"
@@ -448,6 +463,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Condition="'$(TieredCompilationQuickJitForLoops)' != ''"
                                     Value="$(TieredCompilationQuickJitForLoops)" />
 
+    <RuntimeHostConfigurationOption Include="System.StartupHookProvider.IsSupported"
+                                    Condition="'$(StartupHookSupport)' != ''"
+                                    Value="$(StartupHookSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Text.Encoding.EnableUnsafeUTF7Encoding"
                                     Condition="'$(EnableUnsafeUTF7Encoding)' != ''"
                                     Value="$(EnableUnsafeUTF7Encoding)"
@@ -460,7 +480,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.MaxThreads"
                                     Condition="'$(ThreadPoolMaxThreads)' != ''"
                                     Value="$(ThreadPoolMaxThreads)" />
-
   </ItemGroup>
 
   <!--
@@ -1060,7 +1079,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.CSharp.targets" Condition="'$(Language)' == 'C#'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.VisualBasic.targets" Condition="'$(Language)' == 'VB'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.FSharp.targets" Condition="'$(Language)' == 'F#'" />
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ILLink.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ILLink.targets" Condition="'$(Language)' != 'C++'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Analyzers.targets" Condition="'$(Language)' == 'C#' or '$(Language)' == 'VB'" />
 
   <!-- Import WindowsDesktop targets if necessary -->

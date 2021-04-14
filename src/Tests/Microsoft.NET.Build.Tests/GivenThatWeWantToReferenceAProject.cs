@@ -177,7 +177,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = tfm,
                 Name = "ChildProject",
             };
-            var childAsset = _testAssetsManager.CreateTestProject(childProject)
+            var childAsset = _testAssetsManager.CreateTestProject(childProject, identifier: copyConflictingTransitiveContent.ToString() + explicitlySet.ToString())
                 .WithProjectChanges(project => AddProjectChanges(project));
             File.WriteAllText(Path.Combine(childAsset.Path, childProject.Name, contentName), childProject.Name);
 
@@ -190,7 +190,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 parentProject.AdditionalProperties["CopyConflictingTransitiveContent"] = copyConflictingTransitiveContent.ToString().ToLower();
             }
-            var parentAsset = _testAssetsManager.CreateTestProject(parentProject)
+            var parentAsset = _testAssetsManager.CreateTestProject(parentProject, identifier: copyConflictingTransitiveContent.ToString() + explicitlySet.ToString())
                 .WithProjectChanges(project => AddProjectChanges(project, Path.Combine(childAsset.Path, childProject.Name, childProject.Name + ".csproj")));
             File.WriteAllText(Path.Combine(parentAsset.Path, parentProject.Name, contentName), parentProject.Name);
 
@@ -296,6 +296,60 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             File.Exists(contentPath).Should().BeTrue();
+        }
+
+        [Fact]
+        public void It_conditionally_references_project_based_on_tfm()
+        {
+            var testProjectA = new TestProject()
+            {
+                Name = "ProjectA",
+                TargetFrameworks = "netstandard2.1"
+            };
+
+            var testProjectB = new TestProject()
+            {
+                Name = "ProjectB",
+                TargetFrameworks = "netstandard2.1"
+            };
+            testProjectB.ReferencedProjects.Add(testProjectA);
+
+            string source = @"using System;
+class Program
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine(ProjectA.ProjectAClass.Name);
+    }
+}";
+            var testProjectC = new TestProject()
+            {
+                Name = "ProjectC",
+                IsExe = true,
+                TargetFrameworks = "netstandard2.1;netcoreapp3.1"
+            };
+            testProjectC.ReferencedProjects.Add(testProjectB);
+            testProjectC.SourceFiles.Add("Program.cs", source);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProjectC).WithProjectChanges((path, p) =>
+            {
+                if (Path.GetFileName(path).Equals("ProjectC.csproj"))
+                {
+                    var ns = p.Root.Name.Namespace;
+                    var itemGroup = new XElement(ns + "ItemGroup",
+                        new XAttribute("Condition", @"'$(TargetFramework)' == 'netcoreapp3.1'"));
+                    var projRef = new XElement(ns + "ProjectReference",
+                        new XAttribute("Include", Path.Combine(path, "..", "..", testProjectA.Name, $"{testProjectA.Name}.csproj")));
+                    itemGroup.Add(projRef);
+                    p.Root.Add(itemGroup);
+                }
+            });
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
         }
     }
 }

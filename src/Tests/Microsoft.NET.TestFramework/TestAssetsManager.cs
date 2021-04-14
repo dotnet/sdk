@@ -36,13 +36,15 @@ namespace Microsoft.NET.TestFramework
         public TestAsset CopyTestAsset(
             string testProjectName,
             [CallerMemberName] string callingMethod = "",
+            [CallerFilePath] string callerFilePath = null,
             string identifier = "",
             string testAssetSubdirectory = "")
         {
             var testProjectDirectory = GetAndValidateTestProjectDirectory(testProjectName, testAssetSubdirectory);
 
+            var fileName = Path.GetFileNameWithoutExtension(callerFilePath);
             var testDestinationDirectory =
-                GetTestDestinationDirectoryPath(testProjectName, callingMethod, identifier);
+                GetTestDestinationDirectoryPath(testProjectName, callingMethod + "_" + fileName, identifier);
             TestDestinationDirectories.Add(testDestinationDirectory);
 
             var testAsset = new TestAsset(testProjectDirectory, testDestinationDirectory, TestContext.Current.SdkVersion, Log);
@@ -109,13 +111,13 @@ namespace Microsoft.NET.TestFramework
 
         public static string GetTestDestinationDirectoryPath(
             string testProjectName,
-            string callingMethod,
+            string callingMethodAndFileName,
             string identifier)
         {
             string baseDirectory = TestContext.Current.TestExecutionDirectory;
-            var directoryName = new StringBuilder(callingMethod).Append(identifier);
+            var directoryName = new StringBuilder(callingMethodAndFileName).Append(identifier);
 
-            if (testProjectName != callingMethod)
+            if (testProjectName != callingMethodAndFileName)
             {
                 directoryName = directoryName.Append(testProjectName);
             }
@@ -137,7 +139,15 @@ namespace Microsoft.NET.TestFramework
                 }
             }
 
-            return Path.Combine(baseDirectory, directoryName.ToString());
+            var directoryPath = Path.Combine(baseDirectory, directoryName.ToString());
+#if CI_BUILD
+            if (Directory.Exists(directoryPath))
+            {
+                throw new Exception($"Test dir {directoryPath} already exists");
+            }
+#endif
+
+            return directoryPath;
         }
     }
 }

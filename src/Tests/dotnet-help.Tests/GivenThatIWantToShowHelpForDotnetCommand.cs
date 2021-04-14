@@ -1,17 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Xunit;
 using FluentAssertions;
-using HelpActual = Microsoft.DotNet.Tools.Help;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit.Abstractions;
+using Microsoft.DotNet.Tools.Help;
 
 namespace Microsoft.DotNet.Help.Tests
 {
@@ -60,6 +56,7 @@ SDK commands:
   remove            Remove a package or reference from a .NET project.
   restore           Restore dependencies specified in a .NET project.
   run               Build and run a .NET project output.
+  sdk               Manage .NET SDK installation.
   sln               Modify Visual Studio solution files.
   store             Store the specified assemblies in the runtime package store.
   test              Run unit tests using the test runner specified in a .NET project.
@@ -104,12 +101,12 @@ Run 'dotnet [command] --help' for more information on a command.";
         [Fact]
         public void WhenInvalidCommandIsPassedToDotnetHelpItPrintsError()
         {
-          var cmd = new DotnetCommand(Log)
-                .Execute("help", "invalid");
+            var cmd = new DotnetCommand(Log)
+                  .Execute("help", "invalid");
 
-          cmd.Should().Fail();
-          cmd.StdErr.Should().Contain(string.Format(Tools.Help.LocalizableStrings.CommandDoesNotExist, "invalid"));
-          cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(HelpText);
+            cmd.Should().Fail();
+            cmd.StdErr.Should().Contain(string.Format(LocalizableStrings.CommandDoesNotExist, "invalid"));
+            cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(HelpText);
         }
 
         [Theory]
@@ -117,36 +114,36 @@ Run 'dotnet [command] --help' for more information on a command.";
         [InlineData("parse")]
         public void WhenCommandWithoutDocLinkIsPassedToDotnetHelpItPrintsError(string command)
         {
-          var cmd = new DotnetCommand(Log)
-                .Execute($"help", command);
+            var cmd = new DotnetCommand(Log)
+                  .Execute($"help", command);
 
-          cmd.Should().Fail();
-          cmd.StdErr.Should().Contain(string.Format(Tools.Help.LocalizableStrings.CommandDoesNotExist, command));
-          cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(HelpText);
+            cmd.Should().Fail();
+            cmd.StdErr.Should().Contain(string.Format(Tools.Help.LocalizableStrings.CommandDoesNotExist, command));
+            cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(HelpText);
         }
 
         [WindowsOnlyFact]
         public void WhenRunOnWindowsDotnetHelpCommandShouldContainProperProcessInformation()
         {
-          var proc = HelpActual.HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
-          Assert.Equal("cmd", proc.StartInfo.FileName);
-          Assert.Equal("/c start https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
+            var proc = HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
+            Assert.Equal("cmd", proc.StartInfo.FileName);
+            Assert.Equal("/c start https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
         }
 
         [LinuxOnlyFact]
         public void WhenRunOnLinuxDotnetHelpCommandShouldContainProperProcessInformation()
         {
-          var proc = HelpActual.HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
-          Assert.Equal("xdg-open", proc.StartInfo.FileName);
-          Assert.Equal("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
+            var proc = HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
+            Assert.Equal("xdg-open", proc.StartInfo.FileName);
+            Assert.Equal("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
 
         }
         [MacOsOnlyFact]
         public void WhenRunOnMacOsDotnetHelpCommandShouldContainProperProcessInformation()
         {
-          var proc = HelpActual.HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
-          Assert.Equal("open", proc.StartInfo.FileName);
-          Assert.Equal("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
+            var proc = HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
+            Assert.Equal("open", proc.StartInfo.FileName);
+            Assert.Equal("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
         }
     }
 }

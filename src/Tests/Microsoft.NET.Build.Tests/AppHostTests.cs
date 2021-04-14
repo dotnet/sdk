@@ -137,7 +137,7 @@ namespace Microsoft.NET.Build.Tests
             var targetFramework = "netcoreapp3.0";
 
             var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld")
+                .CopyTestAsset("HelloWorld", identifier: target)
                 .WithSource();
 
             var buildCommand = new BuildCommand(testAsset);
@@ -253,10 +253,10 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [WindowsOnlyFact] // Windows-only due to https://github.com/dotnet/corefx/issues/42455
+        [Fact]
         public void It_retries_on_failure_to_create_apphost()
         {
-            const string TFM = "netcoreapp3.0";
+            const string TFM = "net5.0";
 
             var testProject = new TestProject()
             {
@@ -293,13 +293,14 @@ namespace Microsoft.NET.Build.Tests
                 var result = buildCommand.Execute(
                     "/clp:NoSummary",
                     $"/p:CopyRetryCount={Retries}",
+                    "/warnaserror",
                     "/p:CopyRetryDelayMilliseconds=0");
 
                 result
                     .Should()
                     .Fail()
                     .And
-                    .HaveStdOutContaining("System.IO.IOException");
+                    .HaveStdOutContaining("NETSDK1113");
 
                 Regex.Matches(result.StdOut, "NETSDK1113", RegexOptions.None).Count.Should().Be(Retries);
             }

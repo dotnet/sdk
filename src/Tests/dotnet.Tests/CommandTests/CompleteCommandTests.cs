@@ -1,12 +1,9 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.IO;
 using System.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Utilities;
 using Xunit;
@@ -30,12 +27,16 @@ namespace Microsoft.DotNet.Tests.Commands
                 "--list-runtimes",
                 "--list-sdks",
                 "--version",
+                "-?",
                 "-d",
                 "-h",
+                "/?",
+                "/h",
                 "add",
                 "build",
                 "build-server",
                 "clean",
+                "sdk",
                 "fsi",
                 "help",
                 "list",
@@ -56,7 +57,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var reporter = new BufferedReporter();
             CompleteCommand.RunWithReporter(new[] { "dotnet " }, reporter).Should().Be(0);
-            reporter.Lines.Should().Equal(expected.OrderBy(c => c));
+            reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
         [Fact]
@@ -69,15 +70,52 @@ namespace Microsoft.DotNet.Tests.Commands
                 "--list-runtimes",
                 "--list-sdks",
                 "--version",
+                "-?",
                 "-d",
                 "-h",
-                "build-server" // This should be removed when completion is based on "starts with" rather than "contains".
-                               // See https://github.com/dotnet/cli/issues/8958.
+                "build-server", // These should be removed when completion is based on "starts with" rather than "contains".
+                                // See https://github.com/dotnet/cli/issues/8958.
             };
 
             var reporter = new BufferedReporter();
             CompleteCommand.RunWithReporter(new[] { "dotnet -" }, reporter).Should().Be(0);
-            reporter.Lines.Should().Equal(expected.OrderBy(c => c));
+            reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
+        }
+
+        [Fact]
+        public void GivenNewCommandItDisplaysCompletions()
+        {
+            var expected = new[] {
+                "--columns",
+                "--dry-run",
+                "--force",
+                "--help",
+                "--install",
+                "--language",
+                "--list",
+                "--interactive",
+                "--name",
+                "--nuget-source",
+                "--output",
+                "--type",
+                "--uninstall",
+                "-?",
+                "-h",
+                "-i",
+                "-l",
+                "-lang",
+                "-n",
+                "-o",
+                "-u",
+                "/?",
+                "/h",
+                "--update-check",
+                "--update-apply"
+            };
+
+            var reporter = new BufferedReporter();
+            CompleteCommand.RunWithReporter(new[] { "dotnet new " }, reporter).Should().Be(0);
+            reporter.Lines.OrderBy(c => c).Should().Contain(expected.OrderBy(c => c));
         }
 
         [Fact]
@@ -87,8 +125,11 @@ namespace Microsoft.DotNet.Tests.Commands
                 "--help",
                 "--verbosity",
                 "--version",
+                "-?",
                 "-h",
                 "-v",
+                "/?",
+                "/h",
                 "delete",
                 "locals",
                 "push",
@@ -96,7 +137,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var reporter = new BufferedReporter();
             CompleteCommand.RunWithReporter(new[] { "dotnet nuget " }, reporter).Should().Be(0);
-            reporter.Lines.Should().Equal(expected.OrderBy(c => c));
+            reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
         [Fact]
@@ -110,14 +151,17 @@ namespace Microsoft.DotNet.Tests.Commands
                 "--non-interactive",
                 "--source",
                 "--interactive",
+                "-?",
                 "-h",
                 "-k",
                 "-s",
+                "/?",
+                "/h",
             };
 
             var reporter = new BufferedReporter();
             CompleteCommand.RunWithReporter(new[] { "dotnet nuget delete " }, reporter).Should().Be(0);
-            reporter.Lines.Should().Equal(expected.OrderBy(c => c));
+            reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
         [Fact]
@@ -128,9 +172,12 @@ namespace Microsoft.DotNet.Tests.Commands
                 "--force-english-output",
                 "--help",
                 "--list",
+                "-?",
                 "-c",
                 "-h",
                 "-l",
+                "/?",
+                "/h",
                 "all",
                 "global-packages",
                 "http-cache",
@@ -140,7 +187,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var reporter = new BufferedReporter();
             CompleteCommand.RunWithReporter(new[] { "dotnet nuget locals " }, reporter).Should().Be(0);
-            reporter.Lines.Should().Equal(expected.OrderBy(c => c));
+            reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
         [Fact]
@@ -159,6 +206,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "--symbol-source",
                 "--timeout",
                 "--interactive",
+                "-?",
                 "-d",
                 "-h",
                 "-k",
@@ -166,12 +214,14 @@ namespace Microsoft.DotNet.Tests.Commands
                 "-s",
                 "-sk",
                 "-ss",
-                "-t"
+                "-t",
+                "/?",
+                "/h",
             };
 
             var reporter = new BufferedReporter();
             CompleteCommand.RunWithReporter(new[] { "dotnet nuget push " }, reporter).Should().Be(0);
-            reporter.Lines.Should().Equal(expected.OrderBy(c => c));
+            reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
     }
 }

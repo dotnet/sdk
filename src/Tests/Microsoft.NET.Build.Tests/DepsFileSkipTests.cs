@@ -122,7 +122,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Humanizer", "2.2.0"));
+            testProject.PackageReferences.Add(new TestPackageReference("Humanizer", "2.8.26"));
 
             string filenameToSkip = "de/Humanizer.resources.dll";
             string filenameNotToSkip = "es/Humanizer.resources.dll";
@@ -168,7 +168,7 @@ namespace Microsoft.NET.Build.Tests
 
         private void TestSkippingFile(TestProject testProject, string filenameToSkip, string assetType)
         {
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: filenameToSkip + assetType)
                 .WithProjectChanges(project => AddSkipTarget(project, filenameToSkip));
 
             var buildCommand = new BuildCommand(testAsset);
