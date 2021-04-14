@@ -297,7 +297,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 return;
 
-                OperationVisitor CreateOperationVisitor(GlobalFlowStateAnalysisContext context) => new OperationVisitor(guardMethods, osPlatformType, context);
+                OperationVisitor CreateOperationVisitor(GlobalFlowStateAnalysisContext context) => new(guardMethods, osPlatformType, context);
 
                 ValueContentAbstractValue GetValueContentValue(IOperation operation)
                 {

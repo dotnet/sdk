@@ -244,7 +244,7 @@
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesCodeFixTitle">
         <source>Add operator overload named alternate</source>
-        <target state="new">Add operator overload named alternate</target>
+        <target state="translated">Adicionar uma alternativa nomeada de sobrecarga do operador</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
@@ -266,6 +266,11 @@
         <source>Type '{0}' owns disposable field(s) '{1}' but is not disposable</source>
         <target state="translated">O tipo '{0}' tem campos descartáveis '{1}', mas não é descartável</target>
         <note />
+      </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
+        <source>Add 'System.Uri' overloads</source>
+        <target state="new">Add 'System.Uri' overloads</target>
+        <note>{Locked="System.Uri"}</note>
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>

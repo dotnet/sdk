@@ -284,7 +284,7 @@
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
         <source>Use Secure Cookies In ASP.NET Core</source>
-        <target state="needs-review-translation">ASP.NET Core에서 보안 쿠키 사용</target>
+        <target state="translated">ASP.NET Core에서 보안 쿠키 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCoreMessage">
@@ -434,7 +434,7 @@
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
         <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
-        <target state="new">When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</target>
+        <target state="translated">클래스 {0}의 인스턴스를 역직렬화할 때 메서드 {1}이(가) 위험한 메서드 {2}을(를) 호출할 수 있습니다. 잠재적인 메서드 호출은 {3}입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -1374,7 +1374,7 @@
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
         <source>Ensure Use Secure Cookies In ASP.NET Core</source>
-        <target state="needs-review-translation">ASP.NET Core에서 보안 쿠키 사용 확인</target>
+        <target state="translated">ASP.NET Core에서 보안 쿠키 사용 확인</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCoreMessage">
@@ -1504,7 +1504,7 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllPlatforms">
         <source>and all other platforms</source>
-        <target state="new">and all other platforms</target>
+        <target state="translated">및 다른 모든 플랫폼</target>
         <note>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllVersions">
