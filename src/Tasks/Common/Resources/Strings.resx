@@ -758,4 +758,20 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1163: Cannot emit symbols when publishing for .NET 5 with Crossgen2 using composite mode.</value>
     <comment>{StrBegin="NETSDK1163: "}</comment>
   </data>
+  <data name="DuplicateTypeLibraryIds" xml:space="preserve">
+    <value>NETSDK1164: The same resource id {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</value>
+    <comment>{StrBegin="NETSDK1164: "}</comment>
+  </data>
+  <data name="InvalidTypeLibraryId" xml:space="preserve">
+    <value>NETSDK1165: The provided type library id '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</value>
+    <comment>{StrBegin="NETSDK1165: "}</comment>
+  </data>
+  <data name="MissingTypeLibraryId" xml:space="preserve">
+    <value>NETSDK1166: An integer id less than 65536 must be provided for type library '{0}' because more than one type library is specified.</value>
+    <comment>{StrBegin="NETSDK1166: "}</comment>
+  </data>
+  <data name="TypeLibraryDoesNotExist" xml:space="preserve">
+    <value>NETSDK1167: The provided type library '{0}' does not exist.</value>
+    <comment>{StrBegin="NETSDK1167: "}</comment>
+  </data>
 </root>

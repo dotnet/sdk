@@ -624,7 +624,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CreateComHost
       ComHostSourcePath="$(ComHostSourcePath)"
       ComHostDestinationPath="$(ComHostIntermediatePath)"
-      ClsidMapPath="@(ClsidMap)" />
+      ClsidMapPath="@(ClsidMap)"
+      TypeLibraries="@(ComHostTypeLibrary)" />
   </Target>
 
   <UsingTask TaskName="GenerateRegFreeComManifest" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />

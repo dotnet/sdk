@@ -339,6 +339,11 @@
         <target state="translated">NETSDK1110: 런타임 팩에 있는 두 개 이상 자산에 동일한 대상 하위 경로인 '{0}'이(가) 있습니다. https://aka.ms/dotnet-sdk-issue에서 .NET 팀에 이 오류를 보고하세요.</target>
         <note>{StrBegin="NETSDK1110: "}</note>
       </trans-unit>
+      <trans-unit id="DuplicateTypeLibraryIds">
+        <source>NETSDK1164: The same resource id {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</source>
+        <target state="new">NETSDK1164: The same resource id {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</target>
+        <note>{StrBegin="NETSDK1164: "}</note>
+      </trans-unit>
       <trans-unit id="EncounteredConflict_Info">
         <source>Encountered conflict between '{0}' and '{1}'.</source>
         <target state="translated">'{0}'과(와) '{1}' 사이에 충돌이 발생했습니다.</target>
@@ -477,6 +482,11 @@ The following are names of parameters or literal values and should not be transl
 {2}</target>
         <note>{StrBegin="NETSDK1140: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidTypeLibraryId">
+        <source>NETSDK1165: The provided type library id '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</source>
+        <target state="new">NETSDK1165: The provided type library id '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</target>
+        <note>{StrBegin="NETSDK1165: "}</note>
+      </trans-unit>
       <trans-unit id="JitLibraryNotFound">
         <source>NETSDK1154: JIT library '{0}' not found.</source>
         <target state="new">NETSDK1154: JIT library '{0}' not found.</target>
@@ -504,6 +514,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1162: Missing output R2R image path (OutputR2RImage metadata).</source>
         <target state="new">NETSDK1162: Missing output R2R image path (OutputR2RImage metadata).</target>
         <note>{StrBegin="NETSDK1162: "}</note>
+      </trans-unit>
+      <trans-unit id="MissingTypeLibraryId">
+        <source>NETSDK1166: An integer id less than 65536 must be provided for type library '{0}' because more than one type library is specified.</source>
+        <target state="new">NETSDK1166: An integer id less than 65536 must be provided for type library '{0}' because more than one type library is specified.</target>
+        <note>{StrBegin="NETSDK1166: "}</note>
       </trans-unit>
       <trans-unit id="MultipleFilesResolved">
         <source>NETSDK1021: More than one file found for {0}</source>
@@ -709,6 +724,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1127: The targeting pack {0} is not installed. Please restore and try again.</source>
         <target state="translated">NETSDK1127: 타기팅 팩 {0}이(가) 설치되어 있지 않습니다. 복원한 후 다시 시도하세요.</target>
         <note>{StrBegin="NETSDK1127: "}</note>
+      </trans-unit>
+      <trans-unit id="TypeLibraryDoesNotExist">
+        <source>NETSDK1167: The provided type library '{0}' does not exist.</source>
+        <target state="new">NETSDK1167: The provided type library '{0}' does not exist.</target>
+        <note>{StrBegin="NETSDK1167: "}</note>
       </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
         <source>NETSDK1016: Unable to find resolved path for '{0}'.</source>
