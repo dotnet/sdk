@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             for (var i = 0; i < RazorInputItems.Length; i++)
             {
                 var input = RazorInputItems[i];
-                var targetPath = Convert.ToBase64String(Encoding.ASCII.GetBytes(input.GetMetadata("TargetPath")));
+                var targetPath = Convert.ToBase64String(Encoding.UTF8.GetBytes(input.GetMetadata("TargetPath")));
 
                 var outputItem = new TaskItem(input);
                 outputItem.SetMetadata("TargetPath", targetPath);

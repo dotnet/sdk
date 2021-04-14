@@ -74,8 +74,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <EncodeRazorInputItem RazorInputItems="@(_RazorAdditionalFile)">
-        <Output TaskParameter="EncodedRazorInputItems" ItemName="_RazorSpecialCharacterWorkaround" />
-      </EncodeRazorInputItem>
+      <Output TaskParameter="EncodedRazorInputItems" ItemName="_RazorSpecialCharacterWorkaround" />
+    </EncodeRazorInputItem>
 
     <ItemGroup>
       <_RazorAdditionalFile Remove="@(_RazorAdditionalFile)" />
