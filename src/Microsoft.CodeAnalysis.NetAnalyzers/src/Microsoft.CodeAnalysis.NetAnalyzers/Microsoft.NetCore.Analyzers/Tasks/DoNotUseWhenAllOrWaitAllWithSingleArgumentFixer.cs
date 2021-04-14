@@ -49,7 +49,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             }
             else if (!IsValueStored(operation))
             {
-                RoslynDebug.Assert(operation.TargetMethod.Name == nameof(Task.WaitAll));
+                RoslynDebug.Assert(operation.TargetMethod.Name == nameof(Task.WhenAll));
 
                 var title = MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskFix;
                 context.RegisterCodeFix(new MyCodeAction(title,

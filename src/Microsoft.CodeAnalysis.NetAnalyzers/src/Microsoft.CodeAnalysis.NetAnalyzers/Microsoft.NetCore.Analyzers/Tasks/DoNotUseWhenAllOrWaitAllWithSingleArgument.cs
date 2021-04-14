@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -51,7 +52,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                     {
                         var invocation = (IInvocationOperation)operationContext.Operation;
                         if (IsWhenOrWaitAllMethod(invocation.TargetMethod, taskType) &&
-                            IsSingleTaskArgument(invocation, taskType, task1Type))
+                            IsSingleTaskArgument(invocation, taskType, task1Type, operationContext.CancellationToken))
                         {
                             switch (invocation.TargetMethod.Name)
                             {
@@ -84,7 +85,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                 parameters[0].IsParams;
         }
 
-        private static bool IsSingleTaskArgument(IInvocationOperation invocation, INamedTypeSymbol taskType, INamedTypeSymbol task1Type)
+        private static bool IsSingleTaskArgument(IInvocationOperation invocation, INamedTypeSymbol taskType, INamedTypeSymbol task1Type, CancellationToken cancellationToken)
         {
             if (invocation.Arguments.Length != 1)
             {
@@ -92,12 +93,25 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             }
 
             var argument = invocation.Arguments.Single();
-            if (argument.Type is INamedTypeSymbol namedTypeSymbol)
+
+            // Task.WhenAll and Task.WaitAll have params arguments, which are implicit
+            // array creation for cases where params were passed in without explicitly
+            // being an array already. 
+            if (argument.Value is not IArrayCreationOperation
+                {
+                    IsImplicit: true,
+                    Initializer: { ElementValues: { Length: 1 } initializerValues }
+                })
             {
-                return namedTypeSymbol.Equals(taskType) || namedTypeSymbol.ConstructedFrom.Equals(task1Type);
+                return false;
             }
 
-            return false;
+            if (initializerValues.Single().Type is not INamedTypeSymbol namedTypeSymbol)
+            {
+                return false;
+            }
+
+            return namedTypeSymbol.Equals(taskType) || namedTypeSymbol.ConstructedFrom.Equals(task1Type);
         }
     }
 }
