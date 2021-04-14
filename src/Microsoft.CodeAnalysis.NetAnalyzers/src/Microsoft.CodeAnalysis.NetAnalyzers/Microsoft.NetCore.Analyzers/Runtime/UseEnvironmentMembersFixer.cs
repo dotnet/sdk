@@ -14,11 +14,14 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
-    /// <summary>CA1837: Use Environment.ProcessId</summary>
+    /// <summary>CA1837, CA1839, CA1840: Use Environment.ProcessId / ProcessPath / CurrentManagedThreadId</summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class UseEnvironmentProcessIdFixer : CodeFixProvider
+    public sealed class UseEnvironmentMembersFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseEnvironmentProcessId.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
+            UseEnvironmentMembers.EnvironmentProcessIdRuleId,
+            UseEnvironmentMembers.EnvironmentProcessPathRuleId,
+            UseEnvironmentMembers.EnvironmentCurrentManagedThreadIdRuleId);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -32,13 +35,32 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEnvironment, out var environmentType) &&
                 model.GetOperation(node, context.CancellationToken) is IPropertyReferenceOperation operation)
             {
-                string title = MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessIdFix;
+                string title, memberName;
+                switch (context.Diagnostics[0].Id)
+                {
+                    case UseEnvironmentMembers.EnvironmentProcessIdRuleId:
+                        title = MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessIdFix;
+                        memberName = "ProcessId";
+                        break;
+
+                    case UseEnvironmentMembers.EnvironmentProcessPathRuleId:
+                        title = MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessPathFix;
+                        memberName = "ProcessPath";
+                        break;
+
+                    default:
+                        RoslynDebug.Assert(context.Diagnostics[0].Id == UseEnvironmentMembers.EnvironmentCurrentManagedThreadIdRuleId);
+                        title = MicrosoftNetCoreAnalyzersResources.UseEnvironmentCurrentManagedThreadIdFix;
+                        memberName = "CurrentManagedThreadId";
+                        break;
+                }
+
                 context.RegisterCodeFix(
                     new MyCodeAction(title,
                     async cancellationToken =>
                     {
                         DocumentEditor editor = await DocumentEditor.CreateAsync(doc, cancellationToken).ConfigureAwait(false);
-                        var replacement = editor.Generator.MemberAccessExpression(editor.Generator.TypeExpressionForStaticMemberAccess(environmentType), "ProcessId");
+                        var replacement = editor.Generator.MemberAccessExpression(editor.Generator.TypeExpressionForStaticMemberAccess(environmentType), memberName);
                         editor.ReplaceNode(node, replacement.WithTriviaFrom(node));
                         return editor.GetChangedDocument();
                     },
