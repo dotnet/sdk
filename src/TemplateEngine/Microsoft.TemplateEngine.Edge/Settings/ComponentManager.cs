@@ -5,7 +5,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+using Microsoft.TemplateEngine.Edge.BuiltInManagedProvider;
+using Microsoft.TemplateEngine.Edge.Installers.Folder;
+using Microsoft.TemplateEngine.Edge.Installers.NuGet;
 using Microsoft.TemplateEngine.Edge.Mount.Archive;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
 
@@ -18,7 +23,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly Dictionary<Type, HashSet<Guid>> _componentIdsByType;
         private readonly SettingsStore _settings;
         private readonly ISettingsLoader _loader;
-        private readonly Dictionary<Type, Dictionary<Guid, object>> _componentCache = new Dictionary<Type, Dictionary<Guid, object>>();
+        internal readonly Dictionary<Type, Dictionary<Guid, object>> _componentCache = new Dictionary<Type, Dictionary<Guid, object>>();
 
         public ComponentManager(ISettingsLoader loader, SettingsStore userSettings)
         {
@@ -54,27 +59,39 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            if (!_componentIdsByType.TryGetValue(typeof(IMountPointFactory), out HashSet<Guid> ids))
+            if (!allowedIds.Contains(FileSystemMountPointFactory.FactoryId))
             {
-                _componentIdsByType[typeof(IMountPointFactory)] = ids = new HashSet<Guid>();
-            }
-
-            if (!ids.Contains(FileSystemMountPointFactory.FactoryId))
-            {
-                ids.Add(FileSystemMountPointFactory.FactoryId);
+                allowedIds.Add(FileSystemMountPointFactory.FactoryId);
                 AddComponent(typeof(IMountPointFactory), new FileSystemMountPointFactory());
-
             }
 
-            if (!ids.Contains(ZipFileMountPointFactory.FactoryId))
+            if (!allowedIds.Contains(ZipFileMountPointFactory.FactoryId))
             {
-                ids.Add(ZipFileMountPointFactory.FactoryId);
+                allowedIds.Add(ZipFileMountPointFactory.FactoryId);
                 AddComponent(typeof(IMountPointFactory), new ZipFileMountPointFactory());
+            }
+
+            if (!allowedIds.Contains(GlobalSettingsTemplatePackageProviderFactory.FactoryId))
+            {
+                allowedIds.Add(GlobalSettingsTemplatePackageProviderFactory.FactoryId);
+                AddComponent(typeof(ITemplatePackageProviderFactory), new GlobalSettingsTemplatePackageProviderFactory());
+            }
+
+            if (!allowedIds.Contains(NuGetInstallerFactory.FactoryId))
+            {
+                allowedIds.Add(NuGetInstallerFactory.FactoryId);
+                AddComponent(typeof(IInstallerFactory), new NuGetInstallerFactory());
+            }
+
+            if (!allowedIds.Contains(FolderInstallerFactory.FactoryId))
+            {
+                allowedIds.Add(FolderInstallerFactory.FactoryId);
+                AddComponent(typeof(IInstallerFactory), new FolderInstallerFactory());
             }
 
             foreach (KeyValuePair<Guid, Func<Type>> components in _loader.EnvironmentSettings.Host.BuiltInComponents)
             {
-                if (ids.Add(components.Key))
+                if (allowedIds.Add(components.Key))
                 {
                     RegisterType(components.Value());
                 }
@@ -240,6 +257,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 _componentCache[type] = typeCache;
             }
             typeCache[component.Id] = component;
+
+            if (!_componentIdsByType.TryGetValue(type, out HashSet<Guid> ids))
+            {
+                ids = new HashSet<Guid>();
+                _componentIdsByType[type] = ids;
+            }
+            ids.Add(component.Id);
         }
     }
 }
