@@ -115,7 +115,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     // Workaround for https://github.com/dotnet/roslyn/issues/27564
                     blockStartContext.RegisterOperationAction(operationContext =>
                     {
-                        if (!operationContext.IsOperationNoneRoot())
+                        if (!operationContext.Operation.IsOperationNoneRoot())
                         {
                             isInstanceReferenced = true;
                         }
