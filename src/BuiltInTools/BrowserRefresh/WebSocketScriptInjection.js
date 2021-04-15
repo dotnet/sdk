@@ -101,8 +101,10 @@ setTimeout(function () {
     deltas.forEach(d => window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta));
     fetch('_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: JSON.stringify(deltas) })
       .then(response => {
-        const etag = response.headers['etag'];
-        window.sessionStorage.setItem('blazor-webasssembly-cache', { etag, deltas });
+        if (response.status == 200) {
+          const etag = response.headers['etag'];
+          window.sessionStorage.setItem('blazor-webasssembly-cache', { etag, deltas });
+        }
       });
     notifyHotReloadApplied();
   }
