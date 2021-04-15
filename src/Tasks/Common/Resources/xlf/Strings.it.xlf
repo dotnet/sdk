@@ -212,6 +212,16 @@
         <note>{StrBegin="NETSDK1090: "}
 {0} - The path to the invalid assembly.</note>
       </trans-unit>
+      <trans-unit id="CompressionInSingleFileRequires60">
+        <source>NETSDK1164: Compression in a single file bundle is only supported when publishing for .NET6 or higher.</source>
+        <target state="new">NETSDK1164: Compression in a single file bundle is only supported when publishing for .NET6 or higher.</target>
+        <note>{StrBegin="NETSDK1142: "}</note>
+      </trans-unit>
+      <trans-unit id="CompressionInSingleFileRequiresSelfContained">
+        <source>NETSDK1164: Compression in a single file bundle is only supported when publishing a self-contained application.</source>
+        <target state="new">NETSDK1164: Compression in a single file bundle is only supported when publishing a self-contained application.</target>
+        <note>{StrBegin="NETSDK1142: "}</note>
+      </trans-unit>
       <trans-unit id="ConflictingRuntimePackInformation">
         <source>NETSDK1133: There was conflicting information about runtime packs available for {0}:
 {1}</source>
@@ -340,8 +350,8 @@
         <note>{StrBegin="NETSDK1110: "}</note>
       </trans-unit>
       <trans-unit id="DuplicateTypeLibraryIds">
-        <source>NETSDK1164: The same resource ID {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</source>
-        <target state="new">NETSDK1164: The same resource ID {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</target>
+        <source>NETSDK1164: The same resource ID {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library IDs are not allowed.</source>
+        <target state="new">NETSDK1164: The same resource ID {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library IDs are not allowed.</target>
         <note>{StrBegin="NETSDK1164: "}</note>
       </trans-unit>
       <trans-unit id="EncounteredConflict_Info">
@@ -488,8 +498,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1168: "}</note>
       </trans-unit>
       <trans-unit id="InvalidTypeLibraryId">
-        <source>NETSDK1165: The provided type library ID '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</source>
-        <target state="new">NETSDK1165: The provided type library ID '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</target>
+        <source>NETSDK1165: The provided type library ID '{0}' for type libary '{1}' is invalid. The ID must be a positive integer less than 65536.</source>
+        <target state="new">NETSDK1165: The provided type library ID '{0}' for type libary '{1}' is invalid. The ID must be a positive integer less than 65536.</target>
         <note>{StrBegin="NETSDK1165: "}</note>
       </trans-unit>
       <trans-unit id="JitLibraryNotFound">

@@ -778,4 +778,12 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1168: One of the provided type libraries is in an invalid format.</value>
     <comment>{StrBegin="NETSDK1168: "}</comment>
   </data>
+  <data name="CompressionInSingleFileRequires60" xml:space="preserve">
+    <value>NETSDK1164: Compression in a single file bundle is only supported when publishing for .NET6 or higher.</value>
+    <comment>{StrBegin="NETSDK1142: "}</comment>
+  </data>
+  <data name="CompressionInSingleFileRequiresSelfContained" xml:space="preserve">
+    <value>NETSDK1164: Compression in a single file bundle is only supported when publishing a self-contained application.</value>
+    <comment>{StrBegin="NETSDK1142: "}</comment>
+  </data>
 </root>
