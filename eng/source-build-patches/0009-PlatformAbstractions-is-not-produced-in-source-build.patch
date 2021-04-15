@@ -12,8 +12,8 @@ index 3f345a481..6baf86487 100644
 --- a/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
 +++ b/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
 @@ -50,7 +50,7 @@
-     <PackageReference Include="Microsoft.Build.Framework" Version="15.7.179" ExcludeAssets="Runtime" />
-     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.7.179" ExcludeAssets="Runtime" />
+     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" ExcludeAssets="Runtime" />
+     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" ExcludeAssets="Runtime" />
      <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelVersion)" />
 +    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="2.1.0" />
      <PackageReference Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
