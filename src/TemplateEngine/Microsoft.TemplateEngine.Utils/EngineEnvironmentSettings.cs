@@ -18,15 +18,10 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public EngineEnvironmentSettings(ITemplateEngineHost host, Func<IEngineEnvironmentSettings, ISettingsLoader> settingsLoaderFactory, string hiveLocation)
-            :this(host, settingsLoaderFactory, hiveLocation, null)
-        {
-        }
-
-        public EngineEnvironmentSettings(ITemplateEngineHost host, Func<IEngineEnvironmentSettings, ISettingsLoader> settingsLoaderFactory, string hiveLocation, string engineRoot)
         {
             Host = host;
             Environment = new DefaultEnvironment();
-            Paths = new DefaultPathInfo(this, hiveLocation, engineRoot);
+            Paths = new DefaultPathInfo(this, hiveLocation);
             SettingsLoader = settingsLoaderFactory(this);
         }
 
@@ -40,15 +35,15 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class DefaultPathInfo : IPathInfo
         {
-            public DefaultPathInfo(IEngineEnvironmentSettings parent, string hiveLocation, string engineRoot)
+            public DefaultPathInfo(IEngineEnvironmentSettings parent, string hiveLocation)
             {
                 bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
                 UserProfileDir = parent.Environment.GetEnvironmentVariable(isWindows
                     ? "USERPROFILE"
                     : "HOME");
-                TemplateEngineRootDir = engineRoot ?? Path.Combine(UserProfileDir, ".templateengine");
-                TemplateEngineHostDir = hiveLocation ?? Path.Combine(TemplateEngineRootDir, parent.Host.HostIdentifier);
-                TemplateEngineHostVersionDir = hiveLocation ?? Path.Combine(TemplateEngineRootDir, parent.Host.HostIdentifier, parent.Host.Version);
+                TemplateEngineRootDir = hiveLocation ?? Path.Combine(UserProfileDir, ".templateengine");
+                TemplateEngineHostDir = Path.Combine(TemplateEngineRootDir, parent.Host.HostIdentifier);
+                TemplateEngineHostVersionDir = Path.Combine(TemplateEngineRootDir, parent.Host.HostIdentifier, parent.Host.Version);
             }
 
             public string UserProfileDir { get; }
