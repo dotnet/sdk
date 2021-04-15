@@ -12,9 +12,9 @@ index 7c7c0a349..cc43f479f 100644
 --- a/eng/Versions.props
 +++ b/eng/Versions.props
 @@ -97,6 +97,7 @@
-     <MicrosoftBuildVersion>$(MicrosoftBuildPackageVersion)</MicrosoftBuildVersion>
      <MicrosoftBuildFrameworkVersion>$(MicrosoftBuildFrameworkPackageVersion)</MicrosoftBuildFrameworkVersion>
      <MicrosoftBuildUtilitiesCoreVersion>$(MicrosoftBuildUtilitiesCorePackageVersion)</MicrosoftBuildUtilitiesCoreVersion>
+     <MicrosoftBuildTasksCoreVersion>$(MicrosoftBuildTasksCorePackageVersion)</MicrosoftBuildTasksCoreVersion>
 +    <FSharpBuildVersion>$(MicrosoftBuildPackageVersion)</FSharpBuildVersion>
    </PropertyGroup>
    <PropertyGroup>

@@ -13,8 +13,8 @@ index 513b246b9..ec9bfa366 100644
 +++ b/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
 @@ -26,6 +26,7 @@
      <PackageReference Include="NuGet.ProjectModel" Version="$(NuGetProjectModelPackageVersion)" />
-     <PackageReference Include="Microsoft.Build" Version="15.7.179" />
-     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.7.179" />
+     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
+     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
 +    <PackageReference Include="Microsoft.Win32.Registry" Version="4.3.0" />
      <PackageReference Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
    </ItemGroup>
