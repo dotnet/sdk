@@ -245,7 +245,6 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ushort.MaxValue + 1)]
         [InlineData(0)]
         [InlineData(3.14)]
-        [InlineData("")]
         public void It_fails_when_typelib_with_invalid_id_specified(object id)
         {
             var testAsset = _testAssetsManager
