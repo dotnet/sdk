@@ -5,12 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Build.Framework;
+using Microsoft.NET.HostModel;
 using Microsoft.NET.HostModel.ComHost;
 
 namespace Microsoft.NET.Build.Tasks
 {
     public class CreateComHost : TaskWithAssemblyResolveHooks
     {
+        private const int E_INVALIDARG = unchecked((int)0x80070057);
+
         [Required]
         public string ComHostSourcePath { get; set; }
 
@@ -47,6 +50,10 @@ namespace Microsoft.NET.Build.Tasks
             catch (InvalidTypeLibraryIdException ex)
             {
                 Log.LogError(Strings.InvalidTypeLibraryId, ex.Id.ToString(), ex.Path);
+            }
+            catch (HResultException hr) when (hr.Win32HResult == E_INVALIDARG)
+            {
+                Log.LogError(Strings.InvalidTypeLibrary);
             }
         }
 

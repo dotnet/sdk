@@ -759,19 +759,23 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1163: "}</comment>
   </data>
   <data name="DuplicateTypeLibraryIds" xml:space="preserve">
-    <value>NETSDK1164: The same resource id {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</value>
+    <value>NETSDK1164: The same resource ID {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</value>
     <comment>{StrBegin="NETSDK1164: "}</comment>
   </data>
   <data name="InvalidTypeLibraryId" xml:space="preserve">
-    <value>NETSDK1165: The provided type library id '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</value>
+    <value>NETSDK1165: The provided type library ID '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</value>
     <comment>{StrBegin="NETSDK1165: "}</comment>
   </data>
   <data name="MissingTypeLibraryId" xml:space="preserve">
-    <value>NETSDK1166: An integer id less than 65536 must be provided for type library '{0}' because more than one type library is specified.</value>
+    <value>NETSDK1166: An integer ID less than 65536 must be provided for type library '{0}' because more than one type library is specified.</value>
     <comment>{StrBegin="NETSDK1166: "}</comment>
   </data>
   <data name="TypeLibraryDoesNotExist" xml:space="preserve">
     <value>NETSDK1167: The provided type library '{0}' does not exist.</value>
     <comment>{StrBegin="NETSDK1167: "}</comment>
+  </data>
+  <data name="InvalidTypeLibrary" xml:space="preserve">
+    <value>NETSDK1168: One of the provided type libraries is in an invalid format.</value>
+    <comment>{StrBegin="NETSDK1168: "}</comment>
   </data>
 </root>

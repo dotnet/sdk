@@ -340,8 +340,8 @@
         <note>{StrBegin="NETSDK1110: "}</note>
       </trans-unit>
       <trans-unit id="DuplicateTypeLibraryIds">
-        <source>NETSDK1164: The same resource id {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</source>
-        <target state="new">NETSDK1164: The same resource id {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</target>
+        <source>NETSDK1164: The same resource ID {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</source>
+        <target state="new">NETSDK1164: The same resource ID {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</target>
         <note>{StrBegin="NETSDK1164: "}</note>
       </trans-unit>
       <trans-unit id="EncounteredConflict_Info">
@@ -482,9 +482,14 @@ The following are names of parameters or literal values and should not be transl
 {2}</target>
         <note>{StrBegin="NETSDK1140: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidTypeLibrary">
+        <source>NETSDK1168: One of the provided type libraries is in an invalid format.</source>
+        <target state="new">NETSDK1168: One of the provided type libraries is in an invalid format.</target>
+        <note>{StrBegin="NETSDK1168: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidTypeLibraryId">
-        <source>NETSDK1165: The provided type library id '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</source>
-        <target state="new">NETSDK1165: The provided type library id '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</target>
+        <source>NETSDK1165: The provided type library ID '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</source>
+        <target state="new">NETSDK1165: The provided type library ID '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</target>
         <note>{StrBegin="NETSDK1165: "}</note>
       </trans-unit>
       <trans-unit id="JitLibraryNotFound">
@@ -516,8 +521,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1162: "}</note>
       </trans-unit>
       <trans-unit id="MissingTypeLibraryId">
-        <source>NETSDK1166: An integer id less than 65536 must be provided for type library '{0}' because more than one type library is specified.</source>
-        <target state="new">NETSDK1166: An integer id less than 65536 must be provided for type library '{0}' because more than one type library is specified.</target>
+        <source>NETSDK1166: An integer ID less than 65536 must be provided for type library '{0}' because more than one type library is specified.</source>
+        <target state="new">NETSDK1166: An integer ID less than 65536 must be provided for type library '{0}' because more than one type library is specified.</target>
         <note>{StrBegin="NETSDK1166: "}</note>
       </trans-unit>
       <trans-unit id="MultipleFilesResolved">

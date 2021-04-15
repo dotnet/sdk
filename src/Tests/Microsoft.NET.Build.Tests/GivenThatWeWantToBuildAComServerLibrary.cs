@@ -298,5 +298,22 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining("NETSDK1167: ");
         }
+
+        [WindowsOnlyFact]
+        public void It_fails_when_typelib_is_invalid()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("ComServerWithTypeLibs")
+                .WithSource()
+                .WithProjectChanges(proj => proj.Root.Add(new XElement("ItemGroup", new XElement("ComHostTypeLibrary", new XAttribute("Include", "invalid.tlb")))));
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1168: ");
+        }
     }
 }
