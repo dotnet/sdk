@@ -759,11 +759,11 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1163: "}</comment>
   </data>
   <data name="DuplicateTypeLibraryIds" xml:space="preserve">
-    <value>NETSDK1164: The same resource ID {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library ids are not allowed.</value>
+    <value>NETSDK1164: The same resource ID {0} was specified for two type libraries '{1}' and '{2}'. Duplicate type library IDs are not allowed.</value>
     <comment>{StrBegin="NETSDK1164: "}</comment>
   </data>
   <data name="InvalidTypeLibraryId" xml:space="preserve">
-    <value>NETSDK1165: The provided type library ID '{0}' for type libary '{1}' is invalid. The id must be a positive integer less than 65536.</value>
+    <value>NETSDK1165: The provided type library ID '{0}' for type libary '{1}' is invalid. The ID must be a positive integer less than 65536.</value>
     <comment>{StrBegin="NETSDK1165: "}</comment>
   </data>
   <data name="MissingTypeLibraryId" xml:space="preserve">
