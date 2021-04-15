@@ -53,7 +53,7 @@ namespace Microsoft.NET.Build.Tasks
         private bool TryCreateTypeLibraryIdDictionary(ITaskItem[] typeLibraries, out Dictionary<int, string> typeLibraryIdMap)
         {
             typeLibraryIdMap = null;
-            if (typeLibraries.Length == 0)
+            if (typeLibraries is null || typeLibraries.Length == 0)
             {
                 return true;
             }
