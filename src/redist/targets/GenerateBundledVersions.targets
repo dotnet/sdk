@@ -295,7 +295,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                       RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.Mono.**RID**"
                       RuntimePackRuntimeIdentifiers="@(MonoRuntimePackRids, '%3B')"
                       RuntimePackLabels="Mono"
-                      IsTrimmable="true"
                       />
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
