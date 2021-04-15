@@ -2,12 +2,12 @@
 <installer-gui-script minSpecVersion="1">
     <title>{CLISdkBrandName} ({arch})</title>
     <background file="dotnetbackground.png" mime-type="image/png"/>
-    <options customize="never" require-scripts="false" />
+    <options customize="never" require-scripts="false" hostArchitectures="{hostArchitectures}" />
     <welcome file="welcome.html" mime-type="text/html" />
     <conclusion file="conclusion.html" mime-type="text/html" />
     <volume-check>
         <allowed-os-versions>
-            <os-version min="10.13" />
+            <os-version min="{minOsVersion}" />
         </allowed-os-versions>
     </volume-check>
     <choices-outline>
