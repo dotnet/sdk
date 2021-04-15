@@ -52,13 +52,13 @@ internal sealed class StartupHook
 
                 bool methodFound = false;
 
-                if (handlerType.GetMethod("BeforeUpdate", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, new[] { typeof(Type[]) }) is MethodInfo beforeUpdate)
+                if (GetUpdateMethod(handlerType, "BeforeUpdate") is MethodInfo beforeUpdate)
                 {
                     beforeUpdates.Add(CreateAction(beforeUpdate));
                     methodFound = true;
                 }
 
-                if (handlerType.GetMethod("AfterUpdate", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, new[] { typeof(Type[]) }) is MethodInfo afterUpdate)
+                if (GetUpdateMethod(handlerType, "AfterUpdate") is MethodInfo afterUpdate)
                 {
                     afterUpdates.Add(CreateAction(afterUpdate));
                     methodFound = true;
@@ -83,6 +83,26 @@ internal sealed class StartupHook
                             Log($"Exception from '{action}': {ex}");
                         }
                     };
+                }
+
+                static MethodInfo? GetUpdateMethod(Type handlerType, string name)
+                {
+                    if (handlerType.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, new[] { typeof(Type[]) }) is MethodInfo updateMethod &&
+                        updateMethod.ReturnType == typeof(void))
+                    {
+                        return updateMethod;
+                    }
+
+                    foreach (MethodInfo method in handlerType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
+                    {
+                        if (method.Name == name)
+                        {
+                            Log($"Type '{handlerType}' has method '{method}' that does not match the required signature.");
+                            break;
+                        }
+                    }
+
+                    return null;
                 }
             }
         }
