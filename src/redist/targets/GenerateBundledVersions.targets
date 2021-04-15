@@ -114,6 +114,19 @@
       <Net60RuntimePackRids Include="
           @(Net50RuntimePackRids);
           osx-arm64;
+          maccatalyst-x64;
+          maccatalyst-arm64;
+          " />
+
+      <!-- In .NET 6 the browser-wasm runtime pack started using the Mono naming pattern -->
+      <Net60RuntimePackRids Remove="browser-wasm" />
+
+      <NetCoreAppHostRids Include="@(Net60AppHostRids)" />
+      <NetCoreRuntimePackRids Include="@(Net60RuntimePackRids)" />
+
+      <MonoRuntimePackRids Include="
+          @(NetCoreRuntimePackRids);
+          browser-wasm;
           ios-arm64;
           ios-arm;
           iossimulator-arm64;
@@ -122,16 +135,14 @@
           tvos-arm64;
           tvossimulator-arm64;
           tvossimulator-x64;
-          maccatalyst-x64;
-          maccatalyst-arm64;
           android-arm64;
           android-arm;
           android-x64;
           android-x86;
           " />
 
-      <NetCoreAppHostRids Include="@(Net60AppHostRids)" />
-      <NetCoreRuntimePackRids Include="@(Net60RuntimePackRids)" />
+      <!-- Mono doesn't support these RIDs -->
+      <MonoRuntimePackRids Remove="tizen.4.0.0-armel;tizen.5.0.0-armel" />
 
       <AspNetCore30RuntimePackRids Include="
         win-x64;
@@ -282,7 +293,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       RuntimeFrameworkName="Microsoft.NETCore.App"
                       LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
                       RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.Mono.**RID**"
-                      RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
+                      RuntimePackRuntimeIdentifiers="@(MonoRuntimePackRids, '%3B')"
                       RuntimePackLabels="Mono"
                       IsTrimmable="true"
                       />
