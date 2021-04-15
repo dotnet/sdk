@@ -112,6 +112,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         }
                     }, OperationKind.InstanceReference);
 
+                    // Workaround for https://github.com/dotnet/roslyn/issues/27564
+                    blockStartContext.RegisterOperationAction(operationContext =>
+                    {
+                        if (!operationContext.Operation.IsOperationNoneRoot())
+                        {
+                            isInstanceReferenced = true;
+                        }
+                    }, OperationKind.None);
+
                     blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                     {
                         if (!isInstanceReferenced)
