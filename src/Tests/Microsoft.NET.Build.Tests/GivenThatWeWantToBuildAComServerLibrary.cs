@@ -249,7 +249,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_fails_when_typelib_with_invalid_id_specified(object id)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("ComServerWithTypeLibs")
+                .CopyTestAsset("ComServerWithTypeLibs", identifier: id.ToString())
                 .WithSource()
                 .WithProjectChanges(proj =>
                     proj.Root.Add(
