@@ -216,7 +216,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1166: ");
+                .HaveStdOutContaining("NETSDK1167: ");
         }
 
         [WindowsOnlyFact]
@@ -237,7 +237,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1164: ");
+                .HaveStdOutContaining("NETSDK1165: ");
         }
 
         [WindowsOnlyTheory]
@@ -261,7 +261,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1165: ");
+                .HaveStdOutContaining("NETSDK1166: ");
         }
 
         [WindowsOnlyFact]
@@ -297,7 +297,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1167: ");
+                .HaveStdOutContaining("NETSDK1168: ");
         }
 
         [WindowsOnlyFact]
@@ -314,7 +314,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1168: ");
+                .HaveStdOutContaining("NETSDK1169: ");
         }
     }
 }
