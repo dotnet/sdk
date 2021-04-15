@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using System.Text.Json;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -50,6 +51,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 (source, packageMetadata) = await GetLatestVersionInternalAsync(packageId.ToString(), packagesSources,
                     includePreview, cancellationToken).ConfigureAwait(false);
+                _logger.LogDebug("source, packageMetadata");
+                _logger.LogDebug(JsonSerializer.Serialize(source));
+                _logger.LogDebug(JsonSerializer.Serialize(packageMetadata));
             }
             else
             {
@@ -193,19 +197,31 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 throw new ArgumentNullException(nameof(packageSources));
             }
-
+            
             if (string.IsNullOrWhiteSpace(packageIdentifier))
             {
                 throw new ArgumentException($"{nameof(packageIdentifier)} cannot be null or empty",
                     nameof(packageIdentifier));
             }
-
+            _logger.LogDebug("packageSources");
+            _logger.LogDebug(JsonSerializer.Serialize(packageSources));
             (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)[] foundPackagesBySource =
                 await Task.WhenAll(
                         packageSources.Select(source => GetPackageMetadataAsync(source, packageIdentifier,
                             true, cancellationToken)))
                     .ConfigureAwait(false);
 
+            _logger.LogDebug("foundPackagesBySource ================");
+            foreach ((PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages) tuple in foundPackagesBySource)
+            {
+                _logger.LogDebug("source");
+                _logger.LogDebug(JsonSerializer.Serialize(tuple.source));
+                _logger.LogDebug("foundPackages");
+                _logger.LogDebug(JsonSerializer.Serialize(tuple.foundPackages));
+            }
+            
+            _logger.LogDebug("end foundPackagesBySource ================");
+            
             if (!foundPackagesBySource.Any())
             {
                 throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToLoadNuGetSource,
@@ -216,6 +232,20 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 foundPackagesBySource
                     .SelectMany(result => result.foundPackages.Select(package => (result.source, package)));
 
+            _logger.LogDebug("accumulativeSearchResults");
+            _logger.LogDebug(JsonSerializer.Serialize(accumulativeSearchResults));
+            
+            _logger.LogDebug("accumulativeSearchResults ================");
+            foreach (var tuple in accumulativeSearchResults)
+            {
+                _logger.LogDebug("source");
+                _logger.LogDebug(JsonSerializer.Serialize(tuple.source));
+                _logger.LogDebug("foundPackages");
+                _logger.LogDebug(JsonSerializer.Serialize(tuple.package));
+            }
+            
+            _logger.LogDebug("end foundPackagesBySource ================");
+            
             if (!accumulativeSearchResults.Any())
             {
                 _logger.LogWarning(
@@ -234,6 +264,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         if (max == default) return current;
                         return current.package.Identity.Version > max.package.Identity.Version ? current : max;
                     });
+                
+                _logger.LogDebug("latestStableVersion");
+                _logger.LogDebug(JsonSerializer.Serialize(latestStableVersion.Item1));
+                _logger.LogDebug(JsonSerializer.Serialize(latestStableVersion.Item2));
+
                 if (latestStableVersion != default)
                 {
                     return latestStableVersion;

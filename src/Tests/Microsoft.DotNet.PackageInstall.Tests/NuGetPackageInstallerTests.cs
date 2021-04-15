@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -32,7 +33,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public NuGetPackageInstallerTests(ITestOutputHelper log) : base(log)
         {
             _tempDirectory = GetUniqueTempProjectPathEachTest();
-            _logger = new NuGetTestLogger();
+            _logger = new NuGetTestLogger(Log);
             _installer = new NuGetPackageDownloader(_tempDirectory, _logger);
         }
 
@@ -118,6 +119,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Fact]
         public async Task GivenNoPackageVersionItCanInstallLatestVersionOfPackage()
         {
+            _logger.LogDebug(JsonSerializer.Serialize(Directory.EnumerateFiles(GetTestLocalFeedPath())));
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
