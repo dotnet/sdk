@@ -33,7 +33,6 @@
 
         parallel {
             Invoke-Expression "&'$engfolderPath\runTestsCannotRunOnHelix.ps1' $runTestsCannotRunOnHelixArgs"
-            Invoke-Expression "&'$engfolderPath\common\build.ps1' $runTestsOnHelixArgs"
         }
     }
 
