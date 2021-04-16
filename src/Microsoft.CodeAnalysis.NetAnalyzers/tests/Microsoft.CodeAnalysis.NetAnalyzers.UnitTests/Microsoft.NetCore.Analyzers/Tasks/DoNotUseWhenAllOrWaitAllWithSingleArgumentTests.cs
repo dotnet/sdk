@@ -182,7 +182,13 @@ class C
 
         await {|CA1841:Task.WhenAll(t1)|};
         await {|CA1841:Task.WhenAll(CreateTask())|};
+
+        // Test initializer
         var t1WhenAll = {|CA1841:Task.WhenAll(t1)|};
+        DoSomethingWithTask(t1WhenAll);
+
+        // Test assignment
+        t1WhenAll = {|CA1841:Task.WhenAll(t1)|};
         DoSomethingWithTask(t1WhenAll);
 
         await {|CA1841:Task.WhenAll(objectTask1)|};
@@ -212,7 +218,13 @@ class C
 
         await t1;
         await CreateTask();
+        
+        // Test initializer
         var t1WhenAll = {|CA1841:Task.WhenAll(t1)|};
+        DoSomethingWithTask(t1WhenAll);
+
+        // Test assignment
+        t1WhenAll = {|CA1841:Task.WhenAll(t1)|};
         DoSomethingWithTask(t1WhenAll);
 
         await objectTask1;

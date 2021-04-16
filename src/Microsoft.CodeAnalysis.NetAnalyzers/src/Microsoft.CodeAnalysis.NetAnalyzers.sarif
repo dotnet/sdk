@@ -2488,7 +2488,7 @@
           "id": "CA1841",
           "shortDescription": "Do not use 'WhenAll' with a single task",
           "fullDescription": "Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841",
           "properties": {
             "category": "Performance",
@@ -2508,7 +2508,7 @@
           "id": "CA1842",
           "shortDescription": "Do not use 'WaitAll' with a single task",
           "fullDescription": "Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842",
           "properties": {
             "category": "Performance",

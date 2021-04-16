@@ -23,10 +23,17 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             var cancellationToken = context.CancellationToken;
             var root = await context.Document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var nodeToFix = root.FindNode(context.Span, getInnermostNodeForTie: true);
+            if (nodeToFix is null)
+            {
+                return;
+            }
 
             var semanticModel = await context.Document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            if (semanticModel.GetOperation(nodeToFix, cancellationToken) is not IInvocationOperation operation)
+            {
+                return;
+            }
 
-            var operation = (IInvocationOperation)semanticModel.GetOperation(nodeToFix, cancellationToken);
             if (operation.TargetMethod.Name == nameof(Task.WaitAll))
             {
                 var title = MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskFix;
@@ -47,10 +54,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                     equivalenceKey: title),
                 context.Diagnostics);
             }
-            else if (!IsValueStored(operation))
+            else if (!IsValueStored(operation) && operation.TargetMethod.Name == nameof(Task.WhenAll))
             {
-                RoslynDebug.Assert(operation.TargetMethod.Name == nameof(Task.WhenAll));
-
                 var title = MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskFix;
                 context.RegisterCodeFix(new MyCodeAction(title,
                     async ct =>

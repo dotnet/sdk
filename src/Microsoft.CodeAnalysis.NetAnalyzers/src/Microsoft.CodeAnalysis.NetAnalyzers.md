@@ -1340,7 +1340,7 @@ Using 'WhenAll' with a single task should be avoided in favor of directly awaiti
 |-|-|
 |Category|Performance|
 |Enabled|True|
-|Severity|Warning|
+|Severity|Info|
 |CodeFix|True|
 ---
 
@@ -1352,7 +1352,7 @@ Using 'WaitAll' with a single task should be avoided in favor of directly awaiti
 |-|-|
 |Category|Performance|
 |Enabled|True|
-|Severity|Warning|
+|Severity|Info|
 |CodeFix|True|
 ---
 

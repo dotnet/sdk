@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Performance,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeSuggestion,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -32,7 +32,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Performance,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeSuggestion,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -45,31 +45,35 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.RegisterCompilationStartAction(compilationContext =>
             {
-                if (compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask, out var taskType) &&
-                    compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1, out var task1Type))
+                _ = compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask, out var taskType);
+                _ = compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1, out var genericTaskType);
+
+                if (taskType is null || genericTaskType is null)
                 {
-                    compilationContext.RegisterOperationAction(operationContext =>
-                    {
-                        var invocation = (IInvocationOperation)operationContext.Operation;
-                        if (IsWhenOrWaitAllMethod(invocation.TargetMethod, taskType) &&
-                            IsSingleTaskArgument(invocation, taskType, task1Type))
-                        {
-                            switch (invocation.TargetMethod.Name)
-                            {
-                                case nameof(Task.WhenAll):
-                                    operationContext.ReportDiagnostic(invocation.CreateDiagnostic(WhenAllRule));
-                                    break;
-
-                                case nameof(Task.WaitAll):
-                                    operationContext.ReportDiagnostic(invocation.CreateDiagnostic(WaitAllRule));
-                                    break;
-
-                                default:
-                                    throw new InvalidOperationException($"Unexpected method name: {invocation.TargetMethod.Name}");
-                            }
-                        }
-                    }, OperationKind.Invocation);
+                    return;
                 }
+
+                compilationContext.RegisterOperationAction(operationContext =>
+                {
+                    var invocation = (IInvocationOperation)operationContext.Operation;
+                    if (IsWhenOrWaitAllMethod(invocation.TargetMethod, taskType) &&
+                        IsSingleTaskArgument(invocation, taskType, genericTaskType))
+                    {
+                        switch (invocation.TargetMethod.Name)
+                        {
+                            case nameof(Task.WhenAll):
+                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(WhenAllRule));
+                                break;
+
+                            case nameof(Task.WaitAll):
+                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(WaitAllRule));
+                                break;
+
+                            default:
+                                throw new InvalidOperationException($"Unexpected method name: {invocation.TargetMethod.Name}");
+                        }
+                    }
+                }, OperationKind.Invocation);
             });
         }
 
@@ -85,7 +89,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                 parameters[0].IsParams;
         }
 
-        private static bool IsSingleTaskArgument(IInvocationOperation invocation, INamedTypeSymbol taskType, INamedTypeSymbol task1Type)
+        private static bool IsSingleTaskArgument(IInvocationOperation invocation, INamedTypeSymbol taskType, INamedTypeSymbol genericTaskType)
         {
             if (invocation.Arguments.Length != 1)
             {
@@ -111,7 +115,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                 return false;
             }
 
-            return namedTypeSymbol.Equals(taskType) || namedTypeSymbol.ConstructedFrom.Equals(task1Type);
+            return namedTypeSymbol.Equals(taskType) || namedTypeSymbol.ConstructedFrom.Equals(genericTaskType);
         }
     }
 }
