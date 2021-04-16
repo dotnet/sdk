@@ -19,4 +19,10 @@
       Condition="'@(SourceBuildPatchFile)' != ''" />
   </Target>
 
+  <Target Name="ConfigureInnerBuildArg" BeforeTargets="GetSourceBuildCommandConfiguration">
+    <PropertyGroup>
+      <InnerBuildArgs>$(InnerBuildArgs) /p:Projects="$(InnerSourceBuildRepoRoot)\source-build.slnf"</InnerBuildArgs>
+    </PropertyGroup>
+  </Target>
+
 </Project>
