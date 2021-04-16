@@ -197,16 +197,16 @@
       <Uri>https://github.com/aspnet/xdt</Uri>
       <Sha>c01a538851a8ab1a1fbeb2e6243f391fff7587b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0-preview4.21215.8">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0-preview5.21216.2">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>157932fddc07b93fa955355f14be26cce35a73e2</Sha>
+      <Sha>1b1660d682333982e25b40a558aeb67d90d6f9bd</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.21215.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>e76fe48d5eb894e58fe7841f3a2c0bcfa654ee80</Sha>
-      <SourceBuild RepoName="arcade" ManagedOnly="true"/>
+      <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="6.0.0-beta.21215.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
