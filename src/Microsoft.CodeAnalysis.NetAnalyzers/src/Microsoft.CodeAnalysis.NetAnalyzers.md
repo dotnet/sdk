@@ -1332,6 +1332,30 @@ Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in
 |CodeFix|True|
 ---
 
+## [CA1841](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841): Do not use 'WhenAll' with a single task
+
+Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
+## [CA1842](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842): Do not use 'WaitAll' with a single task
+
+Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.

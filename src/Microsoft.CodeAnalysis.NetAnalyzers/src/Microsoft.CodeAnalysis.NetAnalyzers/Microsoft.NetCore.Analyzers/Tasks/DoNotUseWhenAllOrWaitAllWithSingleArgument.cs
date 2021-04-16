@@ -16,8 +16,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class DoNotUseWhenAllOrWaitAllWithSingleArgument : DiagnosticAnalyzer
     {
-        internal const string WhenAllRuleId = "CA1840";
-        internal const string WaitAllRuleId = "CA1839";
+        internal const string WhenAllRuleId = "CA1841";
+        internal const string WaitAllRuleId = "CA1842";
 
         internal static readonly DiagnosticDescriptor WhenAllRule = DiagnosticDescriptorHelper.Create(WhenAllRuleId,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
@@ -52,7 +52,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                     {
                         var invocation = (IInvocationOperation)operationContext.Operation;
                         if (IsWhenOrWaitAllMethod(invocation.TargetMethod, taskType) &&
-                            IsSingleTaskArgument(invocation, taskType, task1Type, operationContext.CancellationToken))
+                            IsSingleTaskArgument(invocation, taskType, task1Type))
                         {
                             switch (invocation.TargetMethod.Name)
                             {
@@ -85,7 +85,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                 parameters[0].IsParams;
         }
 
-        private static bool IsSingleTaskArgument(IInvocationOperation invocation, INamedTypeSymbol taskType, INamedTypeSymbol task1Type, CancellationToken cancellationToken)
+        private static bool IsSingleTaskArgument(IInvocationOperation invocation, INamedTypeSymbol taskType, INamedTypeSymbol task1Type)
         {
             if (invocation.Arguments.Length != 1)
             {
