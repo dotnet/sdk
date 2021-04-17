@@ -28,15 +28,18 @@ namespace Microsoft.DotNet.ApiCompatibility
             _noWarn = new HashSet<string>(noWarn?.Split(';'));
             _ignore = new Dictionary<string, HashSet<string>>();
 
-            foreach ((string diagnosticId, string referenceId) in ignoredDifferences)
+            if (ignoredDifferences != null)
             {
-                if (!_ignore.TryGetValue(diagnosticId, out HashSet<string> members))
+                foreach ((string diagnosticId, string referenceId) in ignoredDifferences)
                 {
-                    members = new HashSet<string>();
-                    _ignore.Add(diagnosticId, members);
-                }
+                    if (!_ignore.TryGetValue(diagnosticId, out HashSet<string> members))
+                    {
+                        members = new HashSet<string>();
+                        _ignore.Add(diagnosticId, members);
+                    }
 
-                members.Add(referenceId);
+                    members.Add(referenceId);
+                }
             }
         }
 
@@ -47,6 +50,12 @@ namespace Microsoft.DotNet.ApiCompatibility
         public void AddRange(IEnumerable<T> differences)
         {
             foreach (T difference in differences)
+                Add(difference);
+        }
+
+        public void Add(DiagnosticBag<T> bag)
+        {
+            foreach (T difference in bag.Differences)
                 Add(difference);
         }
 
