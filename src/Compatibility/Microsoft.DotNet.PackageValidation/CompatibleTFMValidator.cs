@@ -47,53 +47,23 @@ namespace Microsoft.DotNet.PackageValidation
             foreach (NuGetFramework framework in compatibleTargetFrameworks)
             {
                 ContentItem compileTimeAsset = package.FindBestCompileAssetForFramework(framework);
-                if (compileTimeAsset == null)
-                {
-                    errors.Add(new TargetFrameworkApplicabilityDiagnostics(DiagnosticIds.ApplicableCompileTimeAsset,
-                        framework.ToString(),
-                        string.Format(Resources.NoCompatibleCompileTimeAsset, framework.ToString())));
-                }
-
                 ContentItem runtimeAsset = package.FindBestRuntimeAssetForFramework(framework);
-                if (runtimeAsset == null)
-                {
-                    errors.Add(new TargetFrameworkApplicabilityDiagnostics(DiagnosticIds.ApplicableRidLessAsset,
-                        framework.ToString(),
-                        string.Format(Resources.NoCompatibleRuntimeAsset, framework.ToString())));
-                }
-
-                if (runtimeAsset != null && compileTimeAsset != null)
-                {
-                    if (_runApiCompat)
-                    {
-                        ApiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(package.PackagePath, compileTimeAsset.Path),
-                            Helpers.GetFileStreamFromPackage(package.PackagePath, runtimeAsset.Path),
-                            Path.GetFileName(package.PackagePath),
-                            nameof(CompatibleTFMValidator),
-                            string.Format(Resources.MissingApisForFramework, framework.ToString()));
-                    }
-                }
+                ApiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(package.PackagePath, compileTimeAsset.Path),
+                    Helpers.GetFileStreamFromPackage(package.PackagePath, runtimeAsset.Path),
+                    Path.GetFileName(package.PackagePath),
+                    nameof(CompatibleTFMValidator),
+                    string.Format(Resources.MissingApisForFramework, framework.ToString()));
+                
 
                 foreach (string rid in package.Rids)
                 {
                     runtimeAsset = package.FindBestRuntimeAssetForFrameworkAndRuntime(framework, rid);
-                    if (runtimeAsset == null)
-                    {
-                        errors.Add(new TargetFrameworkApplicabilityDiagnostics(DiagnosticIds.ApplicableRuntimeSpecificAsset,
-                            $"{framework}-" + rid,
-                            string.Format(Resources.NoCompatibleRidSpecificRuntimeAsset, framework.ToString(), rid)));
-                    }
-                    else
-                    {
-                        if (_runApiCompat)
-                        {
-                            ApiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(package.PackagePath, compileTimeAsset.Path),
-                                Helpers.GetFileStreamFromPackage(package.PackagePath, runtimeAsset.Path),
-                                Path.GetFileName(package.PackagePath),
-                                nameof(CompatibleTFMValidator),
-                                string.Format(Resources.MissingApisForFrameworkAndRid, framework.ToString(), rid));
-                        }
-                    }
+ 
+                    ApiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(package.PackagePath, compileTimeAsset.Path),
+                        Helpers.GetFileStreamFromPackage(package.PackagePath, runtimeAsset.Path),
+                        Path.GetFileName(package.PackagePath),
+                        nameof(CompatibleTFMValidator),
+                        string.Format(Resources.MissingApisForFrameworkAndRid, framework.ToString(), rid));
                 }
             }
             return errors;
