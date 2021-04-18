@@ -1554,6 +1554,7 @@
   </data>
   <data name="PreferDictionaryContainsValueMessage" xml:space="preserve">
     <value>Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</value>
+  </data>
   <data name="UseValidPlatformStringDescription" xml:space="preserve">
     <value>Platform compatibility analyzer requires a valid platform name and version.</value>
   </data>
