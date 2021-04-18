@@ -55,6 +55,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private const string IsPrefix = "Is";
         private const string OptionalSuffix = "VersionAtLeast";
         private const string Net = "net";
+        private const string macOS = nameof(macOS);
+        private const string MacSlashOSX = "macOS/OSX";
 
         internal static DiagnosticDescriptor OnlySupportedCsReachable = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                       s_localizableTitle,
@@ -125,7 +127,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
             context.RegisterCompilationStartAction(context =>
             {
@@ -295,7 +297,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 return;
 
-                OperationVisitor CreateOperationVisitor(GlobalFlowStateAnalysisContext context) => new OperationVisitor(guardMethods, osPlatformType, context);
+                OperationVisitor CreateOperationVisitor(GlobalFlowStateAnalysisContext context) => new(guardMethods, osPlatformType, context);
 
                 ValueContentAbstractValue GetValueContentValue(IOperation operation)
                 {
@@ -648,7 +650,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, pName));
                                     continue;
                                 }
-                                platformNames.Add($"'{pName}'");
+                                platformNames.Add(EncloseWithQuotes(pName));
                             }
                             else
                             {
@@ -664,7 +666,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, pName));
                                     continue;
                                 }
-                                platformNames.Add($"'{pName}'");
+                                platformNames.Add(EncloseWithQuotes(pName));
                             }
                             else
                             {
@@ -755,7 +757,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                         platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, pName));
                                         continue;
                                     }
-                                    platformNames.Add($"'{pName}'");
+                                    platformNames.Add(EncloseWithQuotes(pName));
                                 }
                                 else
                                 {
@@ -768,7 +770,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             unsupportedRule = false;
                             if (IsEmptyVersion(supportedVersion))
                             {
-                                platformNames.Add($"'{pName}'");
+                                platformNames.Add(EncloseWithQuotes(pName));
                             }
                             else
                             {
@@ -816,7 +818,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, pName));
                                     continue;
                                 }
-                                platformNames.Add($"'{pName}'");
+                                platformNames.Add(EncloseWithQuotes(pName));
                             }
                             else
                             {
@@ -846,7 +848,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                         platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, pName));
                                         continue;
                                     }
-                                    platformNames.Add($"'{pName}'");
+                                    platformNames.Add(EncloseWithQuotes(pName));
                                 }
                                 else
                                 {
@@ -870,7 +872,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return platformNames;
             }
 
-            static string GetFormattedString(string resource, params object[] args) => string.Format(CultureInfo.InvariantCulture, resource, args);
+            static string GetFormattedString(string resource, string platformName, object? arg1 = null, object? arg2 = null) =>
+                string.Format(CultureInfo.InvariantCulture, resource, AddOsxIfMacOS(platformName), arg1, arg2);
+
+            static string AddOsxIfMacOS(string platformName) =>
+                platformName.Equals(macOS, StringComparison.OrdinalIgnoreCase) ? MacSlashOSX : platformName;
+
+            static string EncloseWithQuotes(string pName) => $"'{AddOsxIfMacOS(pName)}'";
 
             static string JoinNames(List<string> platformNames) => string.Join(MicrosoftNetCoreAnalyzersResources.CommaSeparator, platformNames);
 
@@ -1413,6 +1421,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return;
                 }
 
+                CheckAttributesConsistency(childAttributes);
                 var pAttributes = parentAttributes.Platforms;
                 if (pAttributes != null && !pAttributes.IsEmpty)
                 {
@@ -1426,7 +1435,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             // if all are deny list then we can add the child attributes
                             foreach (var (name, childAttribute) in childAttributes)
                             {
-                                NormalizeAttribute(childAttribute);
                                 if (pAttributes.TryGetValue(name, out var existing))
                                 {
                                     if (childAttribute.UnsupportedFirst != null)
@@ -1467,7 +1475,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             // only attributes with same platform matter, could narrow the list
                             if (childAttributes.TryGetValue(platform, out var childAttribute))
                             {
-                                childAttribute = NormalizeAttribute(childAttribute);
                                 // only later versions could narrow, other versions ignored
                                 if (childAttribute.SupportedFirst >= attributes.SupportedFirst &&
                                     (attributes.SupportedSecond == null || attributes.SupportedSecond < childAttribute.SupportedFirst))
@@ -1529,12 +1536,39 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     pAttributes ??= new SmallDictionary<string, Versions>(StringComparer.OrdinalIgnoreCase);
                     foreach (var (platform, attributes) in childAttributes)
                     {
-                        pAttributes[platform] = NormalizeAttribute(attributes);
+                        pAttributes[platform] = attributes;
                     }
                     parentAttributes.Platforms = pAttributes;
                 }
 
                 return;
+
+                static void CheckAttributesConsistency(SmallDictionary<string, Versions> childAttributes)
+                {
+                    bool allowList = false;
+                    using var unsupportedList = PooledHashSet<string>.GetInstance();
+
+                    foreach (var (platform, attributes) in childAttributes)
+                    {
+                        NormalizeAttribute(attributes);
+                        if (AllowList(attributes))
+                        {
+                            allowList = true;
+                        }
+                        else
+                        {
+                            Debug.Assert(DenyList(attributes));
+                            unsupportedList.Add(platform);
+                        }
+                    }
+                    if (allowList && unsupportedList.Count > 0)
+                    {
+                        foreach (var name in unsupportedList)
+                        {
+                            childAttributes.Remove(name);
+                        }
+                    }
+                }
 
                 static Versions NormalizeAttribute(Versions attributes)
                 {
@@ -1566,6 +1600,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 TryParsePlatformNameAndVersion(argument.Value.ToString(), out string platformName, out Version? version))
             {
                 attributes ??= new SmallDictionary<string, Versions>(StringComparer.OrdinalIgnoreCase);
+                if (platformName.Equals("OSX", StringComparison.OrdinalIgnoreCase))
+                {
+                    platformName = macOS;
+                }
+
                 if (!attributes.TryGetValue(platformName, out var _))
                 {
                     attributes[platformName] = new Versions();

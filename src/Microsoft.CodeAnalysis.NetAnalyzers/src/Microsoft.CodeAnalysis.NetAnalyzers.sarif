@@ -107,6 +107,26 @@
             ]
           }
         },
+        "CA1802": {
+          "id": "CA1802",
+          "shortDescription": "Use literals where appropriate",
+          "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpUseLiteralsWhereAppropriate",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1805": {
           "id": "CA1805",
           "shortDescription": "Do not initialize unnecessarily",
@@ -1534,6 +1554,26 @@
             ]
           }
         },
+        "CA1418": {
+          "id": "CA1418",
+          "shortDescription": "Use valid platform string",
+          "fullDescription": "Platform compatibility analyzer requires a valid platform name and version.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1418",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "UseValidPlatformString",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1501": {
           "id": "CA1501",
           "shortDescription": "Avoid excessive inheritance",
@@ -1922,27 +1962,6 @@
             "category": "Naming",
             "isEnabledByDefault": true,
             "typeName": "ParameterNamesShouldMatchBaseDeclarationAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA1802": {
-          "id": "CA1802",
-          "shortDescription": "Use literals where appropriate",
-          "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": false,
-            "typeName": "UseLiteralsWhereAppropriateAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -2413,7 +2432,7 @@
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
-            "typeName": "UseEnvironmentProcessId",
+            "typeName": "UseEnvironmentMembers",
             "languages": [
               "C#",
               "Visual Basic"
@@ -2434,6 +2453,46 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "AvoidStringBuilderPInvokeParametersAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1839": {
+          "id": "CA1839",
+          "shortDescription": "Use 'Environment.ProcessPath'",
+          "fullDescription": "'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseEnvironmentMembers",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1840": {
+          "id": "CA1840",
+          "shortDescription": "Use 'Environment.CurrentManagedThreadId'",
+          "fullDescription": "'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseEnvironmentMembers",
             "languages": [
               "C#",
               "Visual Basic"
@@ -5120,6 +5179,26 @@
               "Visual Basic"
             ],
             "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1802": {
+          "id": "CA1802",
+          "shortDescription": "Use literals where appropriate",
+          "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "BasicUseLiteralsWhereAppropriate",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]

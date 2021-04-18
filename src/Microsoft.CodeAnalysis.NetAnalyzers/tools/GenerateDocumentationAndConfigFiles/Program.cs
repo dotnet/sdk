@@ -8,9 +8,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
 using Analyzer.Utilities.PooledObjects.Extensions;
@@ -24,7 +26,9 @@ namespace GenerateDocumentationAndConfigFiles
 {
     public static class Program
     {
-        public static int Main(string[] args)
+        private static readonly HttpClient httpClient = new();
+
+        public static async Task<int> Main(string[] args)
         {
             const int expectedArguments = 22;
             const string validateOnlyPrefix = "-validateOnly:";
@@ -187,7 +191,7 @@ namespace GenerateDocumentationAndConfigFiles
 
             if (generateAnalyzerRulesMissingDocumentationFile)
             {
-                createAnalyzerRulesMissingDocumentationFile();
+                await createAnalyzerRulesMissingDocumentationFileAsync().ConfigureAwait(false);
             }
 
             if (fileNamesWithValidationFailures.Count > 0)
@@ -236,7 +240,7 @@ namespace GenerateDocumentationAndConfigFiles
 
                 var fileContents =
 $@"<Project>
-  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsNotAsErrors()}
+  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsNotAsErrors()}{getCompilerVisibleProperties()}
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
@@ -306,6 +310,25 @@ $@"<Project>
     <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
     <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
   </PropertyGroup>";
+            }
+
+            string getCompilerVisibleProperties()
+            {
+                return analyzerPackageName switch
+                {
+                    ResxSourceGeneratorPackageName => @"
+  <ItemGroup>
+    <CompilerVisibleProperty Include=""RootNamespace"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""GenerateSource"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""RelativeDir"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""OmitGetResourceString"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""AsConstants"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""IncludeDefaultValues"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""EmitFormatMethods"" />
+  </ItemGroup>
+",
+                    _ => "",
+                };
             }
 
             void createAnalyzerDocumentationFile()
@@ -390,7 +413,7 @@ $@"<Project>
                 }
             }
 
-            // based on https://github.com/dotnet/roslyn/blob/master/src/Compilers/Core/Portable/CommandLine/ErrorLogger.cs
+            // based on https://github.com/dotnet/roslyn/blob/main/src/Compilers/Core/Portable/CommandLine/ErrorLogger.cs
             void createAnalyzerSarifFile()
             {
                 if (string.IsNullOrEmpty(analyzerSarifFileDir) || string.IsNullOrEmpty(analyzerSarifFileName) || allRulesById.Count == 0)
@@ -462,7 +485,7 @@ $@"<Project>
 
                         writer.Write("typeName", rule.Value.typeName);
 
-                        if ((rule.Value.languages?.Length ?? 0) > 0)
+                        if (rule.Value.languages?.Length > 0)
                         {
                             writer.WriteArrayStart("languages");
 
@@ -530,7 +553,7 @@ $@"<Project>
                 }
             }
 
-            void createAnalyzerRulesMissingDocumentationFile()
+            async ValueTask createAnalyzerRulesMissingDocumentationFileAsync()
             {
                 if (string.IsNullOrEmpty(analyzerDocumentationFileDir) || allRulesById.Count == 0)
                 {
@@ -547,7 +570,7 @@ $@"<Project>
 Rule ID | Missing Help Link | Title |
 --------|-------------------|-------|
 ");
-                string[]? actualContent = null;
+                var actualContent = Array.Empty<string>();
                 if (validateOnly)
                 {
                     actualContent = File.ReadAllLines(fileWithPath);
@@ -560,7 +583,7 @@ Rule ID | Missing Help Link | Title |
 
                     var helpLinkUri = descriptor.HelpLinkUri;
                     if (!string.IsNullOrWhiteSpace(helpLinkUri) &&
-                        checkHelpLink(helpLinkUri))
+                        await checkHelpLinkAsync(helpLinkUri).ConfigureAwait(false))
                     {
                         // Rule with valid documentation link
                         continue;
@@ -601,7 +624,7 @@ Rule ID | Missing Help Link | Title |
                 }
                 return;
 
-                static bool checkHelpLink(string helpLink)
+                static async Task<bool> checkHelpLinkAsync(string helpLink)
                 {
                     try
                     {
@@ -610,9 +633,8 @@ Rule ID | Missing Help Link | Title |
                             return false;
                         }
 
-                        var request = (HttpWebRequest)WebRequest.Create(uri);
-                        request.Method = "HEAD";
-                        using var response = request.GetResponse() as HttpWebResponse;
+                        var request = new HttpRequestMessage(HttpMethod.Head, uri);
+                        using var response = await httpClient.SendAsync(request).ConfigureAwait(false);
                         return response?.StatusCode == HttpStatusCode.OK;
                     }
                     catch (WebException)

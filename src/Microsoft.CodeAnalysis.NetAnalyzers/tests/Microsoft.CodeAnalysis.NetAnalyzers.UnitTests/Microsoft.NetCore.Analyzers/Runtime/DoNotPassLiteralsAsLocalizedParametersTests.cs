@@ -494,7 +494,11 @@ public class Test
 }
 ",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                     ExpectedDiagnostics =
                     {
                         // Test0.cs(17,13): warning CA1303: Method 'void Test.M1(C c)' passes a literal string as parameter 'param' of a call to 'void C.M(string param, string message)'. Retrieve the following string(s) from a resource table instead: "a".
@@ -528,7 +532,11 @@ Public Class Test
 End Class
 ",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                     ExpectedDiagnostics =
                     {
                         // Test0.vb(13,13): warning CA1303: Method 'Sub Test.M1(c As C)' passes a literal string as parameter 'param' of a call to 'Sub C.M(param As String, message As String)'. Retrieve the following string(s) from a resource table instead: "a".
@@ -1334,7 +1342,11 @@ public class Test
 }}
 ",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
@@ -1365,7 +1377,11 @@ Public Class Test
 End Class
 ",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
@@ -1425,7 +1441,11 @@ public class Test
 }}
 ",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
@@ -1455,7 +1475,11 @@ Public Class Test
 End Class
 ",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
@@ -1495,7 +1519,10 @@ internal static class Program
     }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA1303.use_naming_heuristic = true"), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA1303.use_naming_heuristic = true"), },
                     ExpectedDiagnostics =
                     {
                         // Test0.cs(6,45): warning CA1303: Method 'void Program.Main()' passes a literal string as parameter 'text' of a call to 'decimal DerivedClass.Generic<decimal>(string text)'. Retrieve the following string(s) from a resource table instead: "number".
@@ -1532,7 +1559,10 @@ internal static class Program
     }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA1303.use_naming_heuristic = true"), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA1303.use_naming_heuristic = true"), },
                     ExpectedDiagnostics =
                     {
                         // Test0.cs(6,45): warning CA1303: Method 'void Program.Main()' passes a literal string as parameter 'text' of a call to 'decimal DerivedClass.Generic<decimal>(string text)'. Retrieve the following string(s) from a resource table instead: "number".
@@ -1587,7 +1617,11 @@ public class Test
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -1651,7 +1685,11 @@ public class Test
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigTextWithNamingHeuristic) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigTextWithNamingHeuristic}
+") }
                 }
             };
 
@@ -1711,7 +1749,11 @@ public class Test
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigTextWithNamingHeuristic) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigTextWithNamingHeuristic}
+") }
                 }
             };
 
@@ -1767,7 +1809,10 @@ public class Test
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigTextWithNamingHeuristic) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigTextWithNamingHeuristic}") }
                 }
             };
 

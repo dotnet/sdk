@@ -248,7 +248,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 => obj is PlatformMethodValue otherInfo && Equals(otherInfo);
 
             public override int GetHashCode()
-                => HashUtilities.Combine(InvokedMethodName.GetHashCode(), PlatformName.GetHashCode(), Version.GetHashCode(), Negated.GetHashCode());
+            {
+                return RoslynHashCode.Combine(
+                    InvokedMethodName.GetHashCode(),
+                    PlatformName.GetHashCode(),
+                    Version.GetHashCode(),
+                    Negated.GetHashCode());
+            }
 
             bool IEquatable<IAbstractAnalysisValue>.Equals(IAbstractAnalysisValue other)
                 => other is PlatformMethodValue otherInfo && Equals(otherInfo);
