@@ -6,6 +6,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports System.Threading
 Imports Microsoft.CodeAnalysis.Editing
 Imports Microsoft.CodeAnalysis.CodeActions
+Imports Microsoft.NetCore.Analyzers
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
     <ExportCodeFixProvider(LanguageNames.VisualBasic)>
@@ -30,30 +31,32 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 Return
             End If
 
-            If keysOrValuesMember.Name.Identifier.ValueText = KeysPropertyName Then
+            If keysOrValuesMember.Name.Identifier.ValueText = PreferDictionaryContainsMethods.KeysPropertyName Then
                 Dim ReplaceWithContainsKey =
                     Async Function(ct As CancellationToken) As Task(Of Document)
                         Dim editor = Await DocumentEditor.CreateAsync(doc, ct).ConfigureAwait(False)
-                        Dim containsKeyMemberExpression = editor.Generator.MemberAccessExpression(keysOrValuesMember.Expression, ContainsKeyMethodName)
+                        Dim containsKeyMemberExpression = editor.Generator.MemberAccessExpression(keysOrValuesMember.Expression, PreferDictionaryContainsMethods.ContainsKeyMethodName)
                         Dim newInvocation = editor.Generator.InvocationExpression(containsKeyMemberExpression, invocation.ArgumentList.Arguments)
                         editor.ReplaceNode(invocation, newInvocation)
 
                         Return editor.GetChangedDocument()
                     End Function
-                Dim action = CodeAction.Create(ContainsKeyCodeFixTitle, ReplaceWithContainsKey, ContainsKeyCodeFixTitle)
+                Dim codeFixTitle = MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsKeyCodeFixTitle
+                Dim action = CodeAction.Create(codeFixTitle, ReplaceWithContainsKey, codeFixTitle)
                 context.RegisterCodeFix(action, context.Diagnostics)
 
-            ElseIf keysOrValuesMember.Name.Identifier.ValueText = ValuesPropertyName Then
+            ElseIf keysOrValuesMember.Name.Identifier.ValueText = PreferDictionaryContainsMethods.ValuesPropertyName Then
                 Dim ReplaceWithContainsValue =
                     Async Function(ct As CancellationToken) As Task(Of Document)
                         Dim editor = Await DocumentEditor.CreateAsync(doc, ct).ConfigureAwait(False)
-                        Dim containsValueMemberExpression = editor.Generator.MemberAccessExpression(keysOrValuesMember.Expression, ContainsValueMethodName)
+                        Dim containsValueMemberExpression = editor.Generator.MemberAccessExpression(keysOrValuesMember.Expression, PreferDictionaryContainsMethods.ContainsValueMethodName)
                         Dim newInvocation = editor.Generator.InvocationExpression(containsValueMemberExpression, invocation.ArgumentList.Arguments)
                         editor.ReplaceNode(invocation, newInvocation)
 
                         Return editor.GetChangedDocument()
                     End Function
-                Dim action = CodeAction.Create(ContainsValueCodeFixTitle, ReplaceWithContainsValue, ContainsValueCodeFixTitle)
+                Dim codeFixTitle = MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueCodeFixTitle
+                Dim action = CodeAction.Create(codeFixTitle, ReplaceWithContainsValue, codeFixTitle)
                 context.RegisterCodeFix(action, context.Diagnostics)
             End If
         End Function

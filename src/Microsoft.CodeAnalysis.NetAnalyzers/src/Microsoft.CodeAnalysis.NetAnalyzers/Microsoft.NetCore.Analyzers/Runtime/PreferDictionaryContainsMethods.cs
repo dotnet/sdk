@@ -12,10 +12,9 @@ using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class PreferDictionaryContainsMethods : DiagnosticAnalyzer
+    public abstract class PreferDictionaryContainsMethods : DiagnosticAnalyzer
     {
-        internal const string RuleId = "CA1839";
+        internal const string RuleId = "CA1841";
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsMethodsTitle), Resx.ResourceManager, typeof(Resx));
         private static readonly LocalizableString s_localizableContainsKeyMessage = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsKeyMessage), Resx.ResourceManager, typeof(Resx));
@@ -49,16 +48,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string KeysPropertyName = "Keys";
         internal const string ValuesPropertyName = "Values";
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ContainsKeyRule, ContainsValueRule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ContainsKeyRule, ContainsValueRule);
 
-        public override void Initialize(AnalysisContext context)
+        public sealed override void Initialize(AnalysisContext context)
         {
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
             context.RegisterCompilationStartAction(OnCompilationStart);
         }
 
-        private static void OnCompilationStart(CompilationStartAnalysisContext compilationContext)
+        private void OnCompilationStart(CompilationStartAnalysisContext compilationContext)
         {
             var compilation = compilationContext.Compilation;
 
@@ -70,6 +69,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
 
             compilationContext.RegisterOperationAction(OnOperationAction, OperationKind.Invocation);
+
+            return;
+
+            //  Local functions.
 
             void OnOperationAction(OperationAnalysisContext context)
             {
@@ -130,11 +133,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     IMethodSymbol? containsKeyMethod = property.ContainingType.GetMembers(ContainsKeyMethodName)
                         .OfType<IMethodSymbol>()
-                        .WhereAsArray(x => x.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                        .FirstOrDefault(x => x.ReturnType.SpecialType == SpecialType.System_Boolean &&
                             x.IsPublic() &&
                             x.Parameters.Length == 1 &&
-                            x.Parameters[0].Type.Equals(keyType, SymbolEqualityComparer.Default))
-                        .FirstOrDefault();
+                            x.Parameters[0].Type.Equals(keyType, SymbolEqualityComparer.Default));
 
                     if (containsKeyMethod is null)
                         return;
@@ -152,11 +154,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     IMethodSymbol? containsValueMethod = property.ContainingType.GetMembers(ContainsValueMethodName)
                         .OfType<IMethodSymbol>()
-                        .WhereAsArray(x => x.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                        .FirstOrDefault(x => x.ReturnType.SpecialType == SpecialType.System_Boolean &&
                             x.IsPublic() &&
                             x.Parameters.Length == 1 &&
-                            x.Parameters[0].Type.Equals(valueType, SymbolEqualityComparer.Default))
-                        .FirstOrDefault();
+                            x.Parameters[0].Type.Equals(valueType, SymbolEqualityComparer.Default));
 
                     if (containsValueMethod is null)
                         return;
@@ -166,43 +167,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
-            static bool TryGetPropertyReferenceOperation(IInvocationOperation containsInvocation, [NotNullWhen(true)] out IPropertySymbol? property)
-            {
-                IMethodSymbol method = containsInvocation.TargetMethod;
-                IOperation? receiver = null;
-
-                //  C# and VB handle extension methods differently. In C#, the "this" argument is included in the argument list. In VB, it's not.
-                if (method.IsExtensionMethod && method.Language == LanguageNames.CSharp && method.Parameters.Length == 2)
-                {
-                    receiver = containsInvocation.Arguments[0].Value;
-                }
-                else if (method.Parameters.Length == 1)
-                {
-                    receiver = containsInvocation.Instance;
-                }
-
-                //  The receiver may be a conversion operation if the invocation is an extension method.
-                receiver = receiver is IConversionOperation conversion ? conversion.Operand : receiver;
-
-                property = (receiver as IPropertyReferenceOperation)?.Property;
-                return property is not null;
-            }
-
             bool TryGetConstructedDictionaryType(INamedTypeSymbol derived, [NotNullWhen(true)] out INamedTypeSymbol? constructedDictionaryType)
             {
                 constructedDictionaryType = derived.GetBaseTypesAndThis()
-                    .WhereAsArray(x => x.OriginalDefinition.Equals(idictionaryType, SymbolEqualityComparer.Default))
-                    .FirstOrDefault();
+                    .FirstOrDefault(x => x.OriginalDefinition.Equals(idictionaryType, SymbolEqualityComparer.Default));
 
                 if (constructedDictionaryType is null)
                 {
                     constructedDictionaryType = derived.AllInterfaces
-                        .WhereAsArray(x => x.OriginalDefinition.Equals(idictionaryType, SymbolEqualityComparer.Default))
-                        .FirstOrDefault();
+                        .FirstOrDefault(x => x.OriginalDefinition.Equals(idictionaryType, SymbolEqualityComparer.Default));
                 }
 
                 return constructedDictionaryType is not null;
             }
         }
+
+        private protected abstract bool TryGetPropertyReferenceOperation(IInvocationOperation containsInvocation, [NotNullWhen(true)] out IPropertySymbol? propertySymbol);
     }
 }

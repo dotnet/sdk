@@ -1588,18 +1588,18 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
-        <source>Use 'ContainsKey(TKey)'</source>
-        <target state="new">Use 'ContainsKey(TKey)'</target>
+        <source>Use 'ContainsKey'</source>
+        <target state="new">Use 'ContainsKey'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyDescription">
-        <source>'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</source>
-        <target state="new">'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</target>
+        <source>'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</source>
+        <target state="new">'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyMessage">
-        <source>Prefer '{0}.ContainsKey(TKey)' over '{0}.Keys.Contains(TKey)'</source>
-        <target state="new">Prefer '{0}.ContainsKey(TKey)' over '{0}.Keys.Contains(TKey)'</target>
+        <source>Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</source>
+        <target state="new">Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsMethodsTitle">
@@ -1608,18 +1608,18 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueCodeFixTitle">
-        <source>Use 'ContainsValue(TValue)'</source>
-        <target state="new">Use 'ContainsValue(TValue)'</target>
+        <source>Use 'ContainsValue'</source>
+        <target state="new">Use 'ContainsValue'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueDescription">
-        <source>Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'.</source>
-        <target state="new">Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'.</target>
+        <source>Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</source>
+        <target state="new">Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueMessage">
-        <source>Prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'</source>
-        <target state="new">Prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'</target>
+        <source>Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</source>
+        <target state="new">Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">

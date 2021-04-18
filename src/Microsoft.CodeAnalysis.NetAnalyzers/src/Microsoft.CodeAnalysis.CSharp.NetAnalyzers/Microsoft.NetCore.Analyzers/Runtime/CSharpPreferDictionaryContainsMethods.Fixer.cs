@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.NetCore.Analyzers;
 using Analyzer.Utilities.Extensions;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
@@ -27,32 +28,28 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             if (containsMemberAccess.Expression.WalkDownParentheses() is not MemberAccessExpressionSyntax keysOrValuesMemberAccess)
                 return;
 
-            if (keysOrValuesMemberAccess.Name.Identifier.ValueText == KeysPropertyName)
+            if (keysOrValuesMemberAccess.Name.Identifier.ValueText == PreferDictionaryContainsMethods.KeysPropertyName)
             {
-                var action = CodeAction.Create(ContainsKeyCodeFixTitle, ReplaceWithContainsKeyAsync, ContainsKeyCodeFixTitle);
+                string codeFixTitle = MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsKeyCodeFixTitle;
+                var action = CodeAction.Create(codeFixTitle, ct => ReplaceMethodNameAsync(PreferDictionaryContainsMethods.ContainsKeyMethodName, ct), codeFixTitle);
                 context.RegisterCodeFix(action, context.Diagnostics);
             }
-            else if (keysOrValuesMemberAccess.Name.Identifier.ValueText == ValuesPropertyName)
+            else if (keysOrValuesMemberAccess.Name.Identifier.ValueText == PreferDictionaryContainsMethods.ValuesPropertyName)
             {
-                var action = CodeAction.Create(ContainsValueCodeFixTitle, ReplaceWithContainsValueAsync, ContainsValueCodeFixTitle);
+                string codeFixTitle = MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueCodeFixTitle;
+                var action = CodeAction.Create(codeFixTitle, ct => ReplaceMethodNameAsync(PreferDictionaryContainsMethods.ContainsValueMethodName, ct), codeFixTitle);
                 context.RegisterCodeFix(action, context.Diagnostics);
             }
 
-            async Task<Document> ReplaceWithContainsKeyAsync(CancellationToken ct)
+            return;
+
+            //  Local functions.
+
+            async Task<Document> ReplaceMethodNameAsync(string methodName, CancellationToken ct)
             {
                 var editor = await DocumentEditor.CreateAsync(doc, ct).ConfigureAwait(false);
-                var containsKeyMemberAccess = editor.Generator.MemberAccessExpression(keysOrValuesMemberAccess.Expression, ContainsKeyMethodName);
-                var newInvocation = editor.Generator.InvocationExpression(containsKeyMemberAccess, invocation.ArgumentList.Arguments);
-                editor.ReplaceNode(invocation, newInvocation);
-
-                return editor.GetChangedDocument();
-            }
-
-            async Task<Document> ReplaceWithContainsValueAsync(CancellationToken ct)
-            {
-                var editor = await DocumentEditor.CreateAsync(doc, ct).ConfigureAwait(false);
-                var containsValueMemberAccess = editor.Generator.MemberAccessExpression(keysOrValuesMemberAccess.Expression, ContainsValueMethodName);
-                var newInvocation = editor.Generator.InvocationExpression(containsValueMemberAccess, invocation.ArgumentList.Arguments);
+                var containsMemberAccess = editor.Generator.MemberAccessExpression(keysOrValuesMemberAccess.Expression, methodName);
+                var newInvocation = editor.Generator.InvocationExpression(containsMemberAccess, invocation.ArgumentList.Arguments);
                 editor.ReplaceNode(invocation, newInvocation);
 
                 return editor.GetChangedDocument();

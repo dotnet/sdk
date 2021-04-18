@@ -7,10 +7,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.PreferDictionaryContainsMethods,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpPreferDictionaryContainsMethods,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpPreferDictionaryContainsMethodsFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.PreferDictionaryContainsMethods,
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicPreferDictionaryContainsMethods,
     Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicPreferDictionaryContainsMethodsFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
