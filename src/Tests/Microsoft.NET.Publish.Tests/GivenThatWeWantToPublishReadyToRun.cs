@@ -80,13 +80,10 @@ namespace Microsoft.NET.Publish.Tests
             var mainProjectDll = Path.Combine(publishDirectory.FullName, $"{projectName}.dll");
             var classLibDll = Path.Combine(publishDirectory.FullName, $"ClassLib.dll");
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                publishDirectory.Should().NotHaveFiles(new[] {
-                    GetPDBFileName(mainProjectDll),
-                    GetPDBFileName(classLibDll),
-                });
-            }
+            publishDirectory.Should().NotHaveFiles(new[] {
+                GetPDBFileName(mainProjectDll),
+                GetPDBFileName(classLibDll),
+            });
 
             DoesImageHaveR2RInfo(mainProjectDll).Should().BeTrue();
             DoesImageHaveR2RInfo(classLibDll).Should().BeFalse();
@@ -304,7 +301,7 @@ namespace Microsoft.NET.Publish.Tests
             else
                 publishDirectory.Should().NotHaveFile("System.Private.CoreLib.dll");
 
-            if (emitNativeSymbols && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (emitNativeSymbols)
             {
                 publishDirectory.Should().HaveFiles(new[] {
                     GetPDBFileName(mainProjectDll),

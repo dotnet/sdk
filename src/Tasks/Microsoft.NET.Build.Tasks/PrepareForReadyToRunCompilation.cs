@@ -126,7 +126,7 @@ namespace Microsoft.NET.Build.Tasks
                         outputPDBImageRelativePath = Path.ChangeExtension(outputR2RImageRelativePath, "ni.pdb");
                         crossgen1CreatePDBCommand = $"/CreatePDB \"{Path.GetDirectoryName(outputPDBImage)}\"";
                     }
-                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    else
                     {
                         using (FileStream fs = new FileStream(file.ItemSpec, FileMode.Open, FileAccess.Read))
                         {
@@ -175,7 +175,7 @@ namespace Microsoft.NET.Build.Tasks
                             compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.pdb");
                             compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.pdb");
                         }
-                        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                        else
                         {
                             compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.{composite}.map");
                             compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.{composite}.map");
