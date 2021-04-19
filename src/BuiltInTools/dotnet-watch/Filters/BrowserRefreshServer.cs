@@ -100,22 +100,25 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask SendMessage(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken = default)
         {
-            for (var i = 0; i < _clientSockets.Count; i++)
+            try
             {
-                var clientSocket = _clientSockets[i];
-                if (clientSocket.CloseStatus.HasValue)
+                for (var i = 0; i < _clientSockets.Count; i++)
                 {
-                    continue;
-                }
-
-                try
-                {
+                    var clientSocket = _clientSockets[i];
+                    if (clientSocket.CloseStatus.HasValue)
+                    {
+                        continue;
+                    }
                     await clientSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
                 }
-                catch (Exception ex)
-                {
-                    _reporter.Verbose($"Refresh server error: {ex}");
-                }
+            }
+            catch (TaskCanceledException)
+            {
+                _reporter.Verbose("WebSocket connection has been terminated.");
+            }
+            catch (Exception ex)
+            {
+                _reporter.Verbose($"Refresh server error: {ex}");
             }
         }
 
@@ -134,6 +137,30 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             _taskCompletionSource.TrySetResult();
+        }
+
+        public async ValueTask<ValueWebSocketReceiveResult?> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        {
+            for (int i = 0; i < _clientSockets.Count; i++)
+            {
+                var clientSocket = _clientSockets[i];
+
+                if (clientSocket.State is not WebSocketState.Open)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    return await clientSocket.ReceiveAsync(buffer, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _reporter.Verbose($"Refresh server error: {ex}");
+                }
+            }
+
+            return default;
         }
 
         public ValueTask ReloadAsync(CancellationToken cancellationToken) => SendMessage(ReloadMessage, cancellationToken);

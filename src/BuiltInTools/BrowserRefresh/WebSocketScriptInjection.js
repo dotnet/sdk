@@ -98,7 +98,12 @@ setTimeout(function () {
   }
 
   function applyBlazorDeltas(deltas) {
-    deltas.forEach(d => window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta));
+    try {
+      deltas.forEach(d => window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta));
+    } catch (error) {
+      console.warn(error);
+    }
+    
     fetch('_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: JSON.stringify(deltas) })
       .then(response => {
         if (response.status == 200) {
@@ -106,6 +111,8 @@ setTimeout(function () {
           window.sessionStorage.setItem('blazor-webasssembly-cache', { etag, deltas });
         }
       });
+    
+    sendSuccessPayload();
     notifyHotReloadApplied();
   }
 
@@ -135,5 +142,11 @@ setTimeout(function () {
     el.textContent = 'Updated the page';
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 520);
+  }
+
+  function sendSuccessPayload() {
+    const webAssemblyHotReloadSuccessPayload = new ArrayBuffer(1);
+    webAssemblyHotReloadSuccessPayload[0] = 1;
+    connection.send(webAssemblyHotReloadSuccessPayload);
   }
 }, 500);
