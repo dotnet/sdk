@@ -37,7 +37,7 @@ We will have two types of tests:
 
 #### Micro-Benchmarks
 A set of micro-benchmarks (written in BenchmarkDotnet) testing how much time analyzers spend computing result. Each new analyzer that ships in the SDK is expected to have a micro-benchmark that tests
-- code files that cause the analyzer to execute but not issue a a diagnostic.
+- code files that cause the analyzer to execute but not issue a diagnostic.
 - code files that cause the analyzer to issue a diagnostic.
 
 These tests are expected to live in the dotnet/roslyn-analyzers repo to make local development simpler.
