@@ -115,6 +115,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ToolDepsJsonGeneratorProject>$(MSBuildThisFileDirectory)GenerateDeps\GenerateDeps.proj</ToolDepsJsonGeneratorProject>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Stop generating *.runtimeconfig.dev.json files to reduce probing paths. -->
+    <!-- https://github.com/dotnet/sdk/issues/16818 -->
+    <GenerateRuntimeConfigDevFile>false<GenerateRuntimeConfigDevFile>
+  </PropertyGroup>
+
   <!-- Default item includes (globs and implicit references) -->
   <Import Project="Microsoft.NET.Sdk.DefaultItems.props" />
 
