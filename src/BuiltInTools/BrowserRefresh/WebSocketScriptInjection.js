@@ -98,10 +98,12 @@ setTimeout(function () {
   }
 
   function applyBlazorDeltas(deltas) {
+    let applyFailed = false;
     try {
       deltas.forEach(d => window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta));
     } catch (error) {
       console.warn(error);
+      applyFailed = true;
     }
     
     fetch('_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: JSON.stringify(deltas) })
@@ -112,8 +114,12 @@ setTimeout(function () {
         }
       });
     
-    sendSuccessPayload();
-    notifyHotReloadApplied();
+    if (applyFailed) {
+      sendDeltaNotApplied();
+    } else {
+      sendDeltaApplied();
+      notifyHotReloadApplied();
+    }
   }
 
   function displayDiagnostics(diagnostics) {
@@ -144,9 +150,15 @@ setTimeout(function () {
     setTimeout(() => el.remove(), 520);
   }
 
-  function sendSuccessPayload() {
+  function sendDeltaApplied() {
     const webAssemblyHotReloadSuccessPayload = new ArrayBuffer(1);
     webAssemblyHotReloadSuccessPayload[0] = 1;
     connection.send(webAssemblyHotReloadSuccessPayload);
+  }
+
+  function sendDeltaNotApplied() {
+    const webAssemblyHotReloadFailurePayload = new ArrayBuffer(1);
+    webAssemblyHotReloadFailurePayload[0] = 0;
+    connection.send(webAssemblyHotReloadFailurePayload);
   }
 }, 500);
