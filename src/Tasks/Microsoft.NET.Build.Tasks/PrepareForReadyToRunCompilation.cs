@@ -57,7 +57,6 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            // Future: when crossgen2 supports generating PDBs, update this to check crossgen2 when we are using crossgen2.
             string diaSymReaderPath = CrossgenTool?.GetMetadata(MetadataKeys.DiaSymReader);
             bool hasValidDiaSymReaderLib = !string.IsNullOrEmpty(diaSymReaderPath) && File.Exists(diaSymReaderPath);
 

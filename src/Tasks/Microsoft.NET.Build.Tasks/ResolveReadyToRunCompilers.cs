@@ -51,6 +51,7 @@ namespace Microsoft.NET.Build.Tasks
         private CrossgenToolInfo _crossgen2Tool;
 
         private Architecture _targetArchitecture;
+        private bool _crossgen2IsVersion5;
 
         protected override void ExecuteCore()
         {
@@ -85,9 +86,8 @@ namespace Microsoft.NET.Build.Tasks
                     return;
                 }
 
-                // NOTE: Crossgen2 does not yet currently support emitting native symbols, and until this feature
-                // is implemented, we will use crossgen for it. This should go away in the future when crossgen2 supports the feature.
-                if (EmitSymbols && !ValidateCrossgenSupport())
+                // In .NET 5 Crossgen2 did not support emitting native symbols, so we use Crossgen to emit them
+                if (_crossgen2IsVersion5 && EmitSymbols && !ValidateCrossgenSupport())
                 {
                     return;
                 }
@@ -183,6 +183,7 @@ namespace Microsoft.NET.Build.Tasks
                 Crossgen2Tool.SetMetadata(MetadataKeys.DiaSymReader, _crossgen2Tool.DiaSymReaderPath);
             }
 
+            _crossgen2IsVersion5 = version5;
             return true;
         }
 
