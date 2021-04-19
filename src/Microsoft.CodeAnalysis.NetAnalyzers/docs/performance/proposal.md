@@ -4,7 +4,7 @@ Now that analyzers are part of the build we need a mechanism to track their perf
 
 ## Goals
 
-- Developers can quickly get feedback on how their change effects performance
+- Developers can quickly get feedback on how their change affects performance
 - We can track and detect performance regressions in builds before release.
 
 ## What we do today
