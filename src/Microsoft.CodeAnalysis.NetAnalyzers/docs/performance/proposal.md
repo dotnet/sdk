@@ -20,7 +20,7 @@ Now that analyzers are part of the build we need a mechanism to track their perf
 - [ASP.NET](https://github.com/aspnet/Benchmarks/blob/main/scenarios/README.md)
     - Can be run on CI: **Yes**
     - Can be run locally with a single script: **No**
-    - The ASP.NET team has written a took (crank) that allows them to run benchmarks on either their local machines or remote machines using a client/server model. This does not require the user to download the dotnet/performance repository manually to run scenarios from there. Users will need to manually setup/patch runtimes with their changes but can then run them against the real benchmarks from there.
+    - The ASP.NET team has written a tool (crank) that allows them to run benchmarks on either their local machines or remote machines using a client/server model. This does not require the user to download the dotnet/performance repository manually to run scenarios from there. Users will need to manually setup/patch runtimes with their changes but can then run them against the real benchmarks from there.
         - [Crank](https://github.com/dotnet/crank)
         - [TechEmpower Benchmarks Power BI](https://msit.powerbi.com/view?r=eyJrIjoiYTZjMTk3YjEtMzQ3Yi00NTI5LTg5ZDItNmUyMGRlOTkwMGRlIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9)
 - Runtime
