@@ -1,6 +1,6 @@
 # Measuring Analyzer Performance
 
-Now that analyzer are part of the build we need a mechanism to track their performance across releases as well as build confidence regarding their use in the SDK.
+Now that analyzers are part of the build we need a mechanism to track their performance across releases as well as build confidence regarding their use in the SDK.
 
 ## Goals
 
