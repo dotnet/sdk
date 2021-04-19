@@ -56,7 +56,7 @@ There will be a simple script that a developer can run locally on their machine 
 
 ### For Pull Requests
 
-The same script that the user ran locally will be executed on CI using the [results comparer](https://github.com/dotnet/performance/blob/main/src/tools/ResultsComparer/README.md) tool for BenchMarkDotNet to decide if the tests have passed. There are a concerns about noise here. ResultsComparer has a noise threshold that can be set which we will adjust to the correct values over time. In addition we can run these tests on a queue with "dedicated" hardware with the "Host" dnceng pool. We will need to evaluate carefully how noisy these results are but the hope is that we can strike a good balance of giving developers feedback on the performance of their PRs (as well as traceability in the case of a regression) while also not kill code flow.
+The same script that the user ran locally will be executed on CI using the [results comparer](https://github.com/dotnet/performance/blob/main/src/tools/ResultsComparer/README.md) tool for BenchMarkDotNet to decide if the tests have passed. There are concerns about noise here. ResultsComparer has a noise threshold that can be set which we will adjust to the correct values over time. In addition, we can run these tests on a queue with "dedicated" hardware with the "Host" dnceng pool. We will need to evaluate carefully how noisy these results are, but the hope is that we can strike a good balance of giving developers feedback on the performance of their PRs (as well as traceability in the case of a regression) while also not kill code flow.
 
 ### Weekly Cadence
 
