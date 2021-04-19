@@ -13,16 +13,6 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateFiltering
     public interface ITemplateMatchInfo
     {
         /// <summary>
-        /// True when the template matched all the filters applied.
-        /// </summary>
-        bool IsMatch { get; }
-
-        /// <summary>
-        /// True when the template matched at least one of the filters applied.
-        /// </summary>
-        bool IsPartialMatch { get; }
-
-        /// <summary>
         /// Gets the template the filters applied to.
         /// </summary>
         ITemplateInfo Info { get; }

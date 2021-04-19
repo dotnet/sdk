@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.IDE
         /// <returns>Filtered list of available templates with details on the applied filters matches.</returns>
         public Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(IEnumerable<Func<ITemplateInfo, MatchInfo?>>? filters = null, bool exactMatchesOnly = true, CancellationToken cancellationToken = default)
         {
-            Func<ITemplateMatchInfo, bool> criteria = exactMatchesOnly ? WellKnownSearchFilters.ExactCriteria : WellKnownSearchFilters.PartialCriteria;
+            Func<ITemplateMatchInfo, bool> criteria = exactMatchesOnly ? WellKnownSearchFilters.MatchesAllCriteria : WellKnownSearchFilters.MatchesAtLeastOneCriteria;
             EnsureInitialized();
             return EnvironmentSettings.SettingsLoader.GetTemplatesAsync(criteria, filters ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>(), cancellationToken);
         }

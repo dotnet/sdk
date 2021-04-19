@@ -88,10 +88,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public IReadOnlyList<Abstractions.TemplateFiltering.MatchInfo> MatchDisposition => _matchDisposition;
 
-        public bool IsMatch => MatchDisposition.Count > 0 && MatchDisposition.All(x => x.Kind != Abstractions.TemplateFiltering.MatchKind.Mismatch);
-
-        public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != Abstractions.TemplateFiltering.MatchKind.Mismatch);
-
         public void AddMatchDisposition(Abstractions.TemplateFiltering.MatchInfo newDisposition)
         {
             _matchDisposition.Add(newDisposition);

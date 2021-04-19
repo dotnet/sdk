@@ -16,18 +16,18 @@ namespace Microsoft.TemplateEngine.Utils
     public static class WellKnownSearchFilters
     {
         /// <summary>
-        /// Exact match criteria for <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/> - the template should match all filters.
-        /// Technically the <see cref="ITemplateMatchInfo.IsMatch"/> is true.
+        /// The template should match all filters: <see cref="ITemplateMatchInfo.MatchDisposition"/> should have all dispositions of <see cref="MatchKind.Exact"/> or <see cref="MatchKind.Partial"/>.
+        /// Used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
         /// </summary>
-        public static Func<ITemplateMatchInfo, bool> ExactCriteria => x => x.IsMatch;
+        public static Func<ITemplateMatchInfo, bool> MatchesAllCriteria =>
+            t => t.MatchDisposition.Count > 0 && t.MatchDisposition.All(x => x.Kind == MatchKind.Exact || x.Kind == MatchKind.Partial);
 
         /// <summary>
-        /// Partial match criteria for <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/> - the template should match at least one of the filters.
-        /// Technically the <see cref="ITemplateMatchInfo.IsPartialMatch"/> is true.
+        /// The template should match at least one filter: <see cref="ITemplateMatchInfo.MatchDisposition"/> should have at least one disposition of <see cref="MatchKind.Exact"/> or <see cref="MatchKind.Partial"/>.
+        /// Used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
         /// </summary>
-        public static Func<ITemplateMatchInfo, bool> PartialCriteria => x => x.IsPartialMatch;
-
-
+        public static Func<ITemplateMatchInfo, bool> MatchesAtLeastOneCriteria =>
+            t => t.MatchDisposition.Any(x => x.Kind == MatchKind.Exact || x.Kind == MatchKind.Partial);
 
         /// <summary>
         /// Filter to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
