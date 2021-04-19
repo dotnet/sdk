@@ -99,12 +99,14 @@ setTimeout(function () {
 
   function applyBlazorDeltas(deltas) {
     let applyFailed = false;
-    try {
-      deltas.forEach(d => window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta));
-    } catch (error) {
-      console.warn(error);
-      applyFailed = true;
-    }
+    deltas.forEach(d => {
+      try {
+        window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta)
+      } catch (error) {
+        console.warn(error);
+        applyFailed = true;
+      } 
+    });
     
     fetch('_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: JSON.stringify(deltas) })
       .then(response => {
