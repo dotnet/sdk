@@ -4,6 +4,7 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
+    [Obsolete("This class is deprecated.")]
     public class TemplateEqualityComparer : IEqualityComparer<ITemplateInfo>
     {
         public static IEqualityComparer<ITemplateInfo> Default { get; } = new TemplateEqualityComparer();

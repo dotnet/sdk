@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
-    [Obsolete("The struct is deprecated, use " + nameof(Abstractions.TemplateFiltering.MatchInfo) + " instead")]
+    [Obsolete("This struct is deprecated, use " + nameof(Abstractions.TemplateFiltering.MatchInfo) + " instead")]
     [StructLayout(LayoutKind.Sequential)]
     public struct MatchInfo
     {

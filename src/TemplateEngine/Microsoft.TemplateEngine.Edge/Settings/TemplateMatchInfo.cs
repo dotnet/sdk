@@ -11,10 +11,10 @@ using Microsoft.TemplateEngine.Edge.Template;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    [Obsolete("The implementation became internal")]
-    public class TemplateMatchInfo : ITemplateMatchInfo
+    [Obsolete("This implementation is deprecated, use " + nameof(TemplateMatchInfo) + " instead")]
+    internal class TemplateMatchInfoEx : ITemplateMatchInfo
     {
-        public TemplateMatchInfo(ITemplateInfo info, IReadOnlyList<MatchInfo> matchDispositions)
+        public TemplateMatchInfoEx(ITemplateInfo info, IReadOnlyList<MatchInfo> matchDispositions)
             : this(info)
         {
             if (matchDispositions != null)
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        public TemplateMatchInfo(ITemplateInfo info)
+        public TemplateMatchInfoEx(ITemplateInfo info)
         {
             Info = info;
             _matchDisposition = new List<MatchInfo>();
@@ -63,11 +63,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch);
     }
 
-    internal class TemplateMatchInfo2 : Abstractions.TemplateFiltering.ITemplateMatchInfo
+    internal class TemplateMatchInfo : Abstractions.TemplateFiltering.ITemplateMatchInfo
     {
         private List<Abstractions.TemplateFiltering.MatchInfo> _matchDisposition = new List<Abstractions.TemplateFiltering.MatchInfo>();
 
-        internal TemplateMatchInfo2(ITemplateInfo info, IReadOnlyList<Abstractions.TemplateFiltering.MatchInfo> matchDispositions)
+        internal TemplateMatchInfo(ITemplateInfo info, IReadOnlyList<Abstractions.TemplateFiltering.MatchInfo> matchDispositions)
             : this(info)
         {
             if (matchDispositions != null)
@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        internal TemplateMatchInfo2(ITemplateInfo info)
+        internal TemplateMatchInfo(ITemplateInfo info)
         {
             Info = info ?? throw new ArgumentNullException(nameof(info));
         }

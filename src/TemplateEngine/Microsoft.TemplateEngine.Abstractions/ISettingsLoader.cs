@@ -54,8 +54,8 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="filters">The list of filters to be applied to templates.</param>
         /// <returns>The filtered list of templates with match information.</returns>
         /// <example>
-        /// <c>GetTemplatesAsync(WellKnownSearchFilters.ExactCriteria, new [] { WellKnownSearchFilters.NameFilter("myname") }</c> - returns the templates which name or short name contains "myname". <br/>
-        /// <c>GetTemplatesAsync(TemplateListFilter.PartialCriteria, new [] { WellKnownSearchFilters.NameFilter("myname"), WellKnownSearchFilters.NameFilter("othername") })</c> - returns the templates which name or short name contains "myname" or "othername".<br/>
+        /// <c>GetTemplatesAsync(WellKnownSearchFilters.MatchesAllCriteria, new [] { WellKnownSearchFilters.NameFilter("myname") }</c> - returns the templates which name or short name contains "myname". <br/>
+        /// <c>GetTemplatesAsync(TemplateListFilter.MatchesAtLeastOneCriteria, new [] { WellKnownSearchFilters.NameFilter("myname"), WellKnownSearchFilters.NameFilter("othername") })</c> - returns the templates which name or short name contains "myname" or "othername".<br/>
         /// </example>
         Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchCriteria, IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters, CancellationToken token = default);
 

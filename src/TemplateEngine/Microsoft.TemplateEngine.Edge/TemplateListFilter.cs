@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine.Edge
                     }
                 }
 
-                ITemplateMatchInfo info = new TemplateMatchInfo(template, matchInformation);
+                ITemplateMatchInfo info = new TemplateMatchInfoEx(template, matchInformation);
                 if (matchFilter(info))
                 {
                     matchingTemplates.Add(info);
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Edge
                     }
                 }
 
-                Abstractions.TemplateFiltering.ITemplateMatchInfo info = new TemplateMatchInfo2(template, matchInformation);
+                Abstractions.TemplateFiltering.ITemplateMatchInfo info = new TemplateMatchInfo(template, matchInformation);
                 if (matchFilter(info))
                 {
                     matchingTemplates.Add(info);

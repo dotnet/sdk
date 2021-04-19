@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
-    [Obsolete("The class is deprecated.")]
+    [Obsolete("This class is deprecated.")]
     public class TemplateMatchInfoEqualityComparer : IEqualityComparer<ITemplateMatchInfo>
     {
         public static IEqualityComparer<ITemplateMatchInfo> Default { get; } = new TemplateMatchInfoEqualityComparer();
