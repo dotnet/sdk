@@ -60,7 +60,7 @@ The same script that the user ran locally will be executed on CI using the [resu
 
 ### Weekly Cadence
 
-Our end-to-end performance tests are run a reported on the performance dashboard automatically. Once a week someone checks in on this performance board and verifies there are no negative trends. If a regression in build times appears to be trending a high priority bug is filed and acted on.
+Our end-to-end performance tests are run and reported on the performance dashboard automatically. Once a week someone checks in on this performance board and verifies there are no negative trends. If a regression in build times appears to be trending a high priority bug is filed and acted on.
 
 ### For Releases
 
