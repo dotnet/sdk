@@ -178,10 +178,6 @@ namespace Microsoft.NET.Build.Tasks
                 Crossgen2Tool.SetMetadata(MetadataKeys.TargetOS, targetOS);
                 Crossgen2Tool.SetMetadata(MetadataKeys.TargetArch, ArchitectureToString(_targetArchitecture));
             }
-            if (!String.IsNullOrEmpty(_crossgen2Tool.DiaSymReaderPath))
-            {
-                Crossgen2Tool.SetMetadata(MetadataKeys.DiaSymReader, _crossgen2Tool.DiaSymReaderPath);
-            }
 
             _crossgen2IsVersion5 = version5;
             return true;

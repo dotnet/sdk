@@ -57,9 +57,6 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            string diaSymReaderPath = CrossgenTool?.GetMetadata(MetadataKeys.DiaSymReader);
-            bool hasValidDiaSymReaderLib = !string.IsNullOrEmpty(diaSymReaderPath) && File.Exists(diaSymReaderPath);
-
             if (ReadyToRunUseCrossgen2)
             {
                 string isVersion5 = Crossgen2Tool.GetMetadata(MetadataKeys.IsVersion5);
@@ -71,6 +68,12 @@ namespace Microsoft.NET.Build.Tasks
                     return;
                 }
             }
+
+            string diaSymReaderPath = CrossgenTool?.GetMetadata(MetadataKeys.DiaSymReader);
+
+            bool hasValidDiaSymReaderLib =
+                ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5 ||
+                !string.IsNullOrEmpty(diaSymReaderPath) && File.Exists(diaSymReaderPath);
 
             // Process input lists of files
             ProcessInputFileList(Assemblies, _compileList, _symbolsCompileList, _r2rFiles, _r2rReferences, hasValidDiaSymReaderLib);
