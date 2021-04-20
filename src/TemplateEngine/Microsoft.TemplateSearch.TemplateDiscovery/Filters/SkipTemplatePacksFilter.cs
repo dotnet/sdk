@@ -10,7 +10,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
 {
     internal sealed class SkipTemplatePacksFilter
     {
-        private static readonly List<string> packagesToBeSkipped = new List<string>
+        private static readonly List<string> PackagesToBeSkipped = new List<string>
         {
             "microsoft.dotnet.common.itemtemplates",
             "microsoft.dotnet.common.projecttemplates",
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
         {
             Func<IDownloadedPackInfo, PreFilterResult> filter = (packInfo) =>
             {
-                foreach (string package in packagesToBeSkipped)
+                foreach (string package in PackagesToBeSkipped)
                 {
                     if (packInfo.Id.StartsWith(package, StringComparison.OrdinalIgnoreCase))
                     {
