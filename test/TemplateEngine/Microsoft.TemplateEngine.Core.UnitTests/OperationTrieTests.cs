@@ -108,9 +108,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 new MockOperation("TestOp1", null, true, TokenConfig.LiteralToken(new byte[] { 5, 5, 5 })),
                 new MockOperation("TestOp2", null, true, TokenConfig.LiteralToken(new byte[] { 2, 3, 4, 5 })),
                 new MockOperation("TestOp3", null, true, TokenConfig.LiteralToken(new byte[] { 7, 7, 7 })),
-                new MockOperation("TestOp4", null, true, TokenConfig.LiteralToken(new byte[] { 9, 9, 9, 9 }),
-                                                        TokenConfig.LiteralToken(new byte[] { 2, 3, 4, 5 })
-                ),
+                new MockOperation("TestOp4", null, true, TokenConfig.LiteralToken(new byte[] { 9, 9, 9, 9 }), TokenConfig.LiteralToken(new byte[] { 2, 3, 4, 5 })),
             });
 
             byte[] buffer = { 9, 8, 9, 8, 7, 2, 3, 4, 5 };

@@ -28,29 +28,31 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         private IProcessor SetupXmlPlusMsBuildProcessorAndReplacement(IVariableCollection vc)
         {
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
-            return Processor.Create(cfg, new InlineMarkupConditional(
-                new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+            return Processor.Create(cfg,
+                new InlineMarkupConditional(
+                    new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
                 true,
                 true,
                 MSBuildStyleEvaluatorDefinition.Evaluate,
                 "$({0})",
                 null,
-                true
-            ), new Replacement("ReplaceMe".TokenConfig(), "I've been replaced", null, true));
+                true),
+                new Replacement("ReplaceMe".TokenConfig(), "I've been replaced", null, true));
         }
 
         private IProcessor SetupXmlPlusMsBuildProcessorAndReplacementWithLookaround(IVariableCollection vc)
         {
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
-            return Processor.Create(cfg, new InlineMarkupConditional(
-                new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+            return Processor.Create(cfg,
+                new InlineMarkupConditional(
+                    new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
                 true,
                 true,
                 MSBuildStyleEvaluatorDefinition.Evaluate,
                 "$({0})",
                 null,
-                true
-            ), new Replacement("ReplaceMe".TokenConfigBuilder().OnlyIfAfter("Condition=\"Exists("), "I've been replaced", null, true));
+                true),
+                new Replacement("ReplaceMe".TokenConfigBuilder().OnlyIfAfter("Condition=\"Exists("), "I've been replaced", null, true));
         }
 
         [Fact(DisplayName = nameof(VerifyInlineMarkupTrue))]

@@ -94,18 +94,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                     setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("{/*", "*/}");
                     break;
                 case ConditionalType.VB:
-                    setup = ConditionalLineCommentConfig.GenerateConditionalSetup("", new ConditionalKeywords
-                    {
-                        IfKeywords = new[] { "If" },
-                        ElseIfKeywords = new[] { "ElseIf" },
-                        ElseKeywords = new[] { "Else" },
-                        EndIfKeywords = new[] { "End If" },
-                        KeywordPrefix = "#"
-                    }, new ConditionalOperationOptions
-                    {
-                        EvaluatorType = "VB",
-                        WholeLine = true
-                    });
+                    setup = ConditionalLineCommentConfig.GenerateConditionalSetup("",
+                        new ConditionalKeywords
+                        {
+                            IfKeywords = new[] { "If" },
+                            ElseIfKeywords = new[] { "ElseIf" },
+                            ElseKeywords = new[] { "Else" },
+                            EndIfKeywords = new[] { "End If" },
+                            KeywordPrefix = "#"
+                        },
+                        new ConditionalOperationOptions
+                        {
+                            EvaluatorType = "VB",
+                            WholeLine = true
+                        });
                     break;
                 default:
                     throw new Exception($"Unrecognized conditional type {style}");
