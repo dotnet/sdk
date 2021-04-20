@@ -1,4 +1,7 @@
-﻿using Microsoft.TemplateEngine.Core.Contracts;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.TestHelper;

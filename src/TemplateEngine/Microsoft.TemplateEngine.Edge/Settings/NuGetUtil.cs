@@ -1,25 +1,5 @@
-//using System;
-//using System.Collections.Generic;
-//using System.IO;
-//using System.Linq;
-//using System.Reflection;
-//#if !NETFULL
-//using System.Runtime.Loader;
-//#endif
-//using System.Threading;
-//using System.Threading.Tasks;
-//using System.Xml.Linq;
-//using NuGet.Common;
-//using NuGet.Configuration;
-//using NuGet.DependencyResolver;
-//using NuGet.Frameworks;
-//using NuGet.LibraryModel;
-//using NuGet.Packaging;
-//using NuGet.Packaging.Core;
-//using NuGet.Protocol.Core.Types;
-//using NuGet.Protocol.Core.v3;
-//using NuGet.RuntimeModel;
-//using NuGet.Versioning;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 //namespace Microsoft.TemplateEngine.Edge.Settings
 //{
