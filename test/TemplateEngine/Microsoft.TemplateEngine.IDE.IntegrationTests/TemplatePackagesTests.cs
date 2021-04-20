@@ -34,12 +34,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
-            Assert.True(result.First().Success);
-            Assert.Equal(InstallerErrorCode.Success, result.First().Error);
-            result.First().ErrorMessage.Should().BeNullOrEmpty();
-            Assert.Equal(installRequest, result.First().InstallRequest);
+            Assert.True(result[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, result[0].Error);
+            result[0].ErrorMessage.Should().BeNullOrEmpty();
+            Assert.Equal(installRequest, result[0].InstallRequest);
 
-            IManagedTemplatePackage source = result.First().TemplatePackage;
+            IManagedTemplatePackage source = result[0].TemplatePackage;
             Assert.Equal("Microsoft.DotNet.Common.ProjectTemplates.5.0", source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.DisplayName);
             Assert.Equal("NuGet", source.Installer.Factory.Name);
@@ -49,13 +49,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
-            managedTemplatesPackages.First().Should().BeEquivalentTo(source);
+            managedTemplatesPackages[0].Should().BeEquivalentTo(source);
 
             IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, templatePackages.Count);
-            Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages.First());
-            templatePackages.First().Should().BeEquivalentTo((ITemplatePackage)source);
+            Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages[0]);
+            templatePackages[0].Should().BeEquivalentTo((ITemplatePackage)source);
         }
 
         [Fact]
@@ -73,12 +73,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
-            Assert.True(result.First().Success);
-            Assert.Equal(InstallerErrorCode.Success, result.First().Error);
-            Assert.True(string.IsNullOrEmpty(result.First().ErrorMessage));
-            Assert.Equal(installRequest, result.First().InstallRequest);
+            Assert.True(result[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, result[0].Error);
+            Assert.True(string.IsNullOrEmpty(result[0].ErrorMessage));
+            Assert.Equal(installRequest, result[0].InstallRequest);
 
-            IManagedTemplatePackage source = result.First().TemplatePackage;
+            IManagedTemplatePackage source = result[0].TemplatePackage;
             Assert.Equal("Take.Blip.Client.Templates", source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.DisplayName);
             Assert.Equal("NuGet", source.Installer.Factory.Name);
@@ -89,13 +89,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
-            managedTemplatesPackages.First().Should().BeEquivalentTo(source);
+            managedTemplatesPackages[0].Should().BeEquivalentTo(source);
 
             IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, templatePackages.Count);
-            Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages.First());
-            templatePackages.First().Should().BeEquivalentTo((ITemplatePackage)source);
+            Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages[0]);
+            templatePackages[0].Should().BeEquivalentTo((ITemplatePackage)source);
         }
 
         [Fact]
@@ -109,12 +109,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
-            Assert.True(result.First().Success);
-            Assert.Equal(InstallerErrorCode.Success, result.First().Error);
-            result.First().ErrorMessage.Should().BeNullOrEmpty();
-            Assert.Equal(installRequest, result.First().InstallRequest);
+            Assert.True(result[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, result[0].Error);
+            result[0].ErrorMessage.Should().BeNullOrEmpty();
+            Assert.Equal(installRequest, result[0].InstallRequest);
 
-            IManagedTemplatePackage source = result.First().TemplatePackage;
+            IManagedTemplatePackage source = result[0].TemplatePackage;
             Assert.Equal(Path.GetFullPath(templateLocation), source.Identifier);
             Assert.Equal("Global Settings", source.Provider.Factory.DisplayName);
             Assert.Equal("Folder", source.Installer.Factory.Name);
@@ -123,13 +123,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
-            managedTemplatesPackages.First().Should().BeEquivalentTo(source);
+            managedTemplatesPackages[0].Should().BeEquivalentTo(source);
 
             IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, templatePackages.Count);
-            Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages.First());
-            templatePackages.First().Should().BeEquivalentTo((ITemplatePackage)source);
+            Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages[0]);
+            templatePackages[0].Should().BeEquivalentTo((ITemplatePackage)source);
         }
 
         [Fact]
@@ -141,18 +141,18 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
-            Assert.True(result.First().Success);
-            IManagedTemplatePackage source = result.First().TemplatePackage;
+            Assert.True(result[0].Success);
+            IManagedTemplatePackage source = result[0].TemplatePackage;
 
             IReadOnlyList<CheckUpdateResult> checkUpdateResults = await bootstrapper.GetLatestVersionsAsync(new[] { source }, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, checkUpdateResults.Count);
-            Assert.True(checkUpdateResults.First().Success);
-            Assert.Equal(InstallerErrorCode.Success, checkUpdateResults.First().Error);
-            Assert.True(string.IsNullOrEmpty(checkUpdateResults.First().ErrorMessage));
-            Assert.Equal(source, checkUpdateResults.First().TemplatePackage);
-            Assert.False(checkUpdateResults.First().IsLatestVersion);
-            Assert.NotEqual("5.0.0", checkUpdateResults.First().LatestVersion);
+            Assert.True(checkUpdateResults[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, checkUpdateResults[0].Error);
+            Assert.True(string.IsNullOrEmpty(checkUpdateResults[0].ErrorMessage));
+            Assert.Equal(source, checkUpdateResults[0].TemplatePackage);
+            Assert.False(checkUpdateResults[0].IsLatestVersion);
+            Assert.NotEqual("5.0.0", checkUpdateResults[0].LatestVersion);
         }
 
         [Fact]
@@ -166,17 +166,17 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
-            Assert.True(result.First().Success);
-            IManagedTemplatePackage source = result.First().TemplatePackage;
+            Assert.True(result[0].Success);
+            IManagedTemplatePackage source = result[0].TemplatePackage;
 
             IReadOnlyList<CheckUpdateResult> checkUpdateResults = await bootstrapper.GetLatestVersionsAsync(new[] { source }, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, checkUpdateResults.Count);
-            Assert.True(checkUpdateResults.First().Success);
-            Assert.Equal(InstallerErrorCode.Success, checkUpdateResults.First().Error);
-            Assert.True(string.IsNullOrEmpty(checkUpdateResults.First().ErrorMessage));
-            Assert.Equal(source, checkUpdateResults.First().TemplatePackage);
-            Assert.True(checkUpdateResults.First().IsLatestVersion);
+            Assert.True(checkUpdateResults[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, checkUpdateResults[0].Error);
+            Assert.True(string.IsNullOrEmpty(checkUpdateResults[0].ErrorMessage));
+            Assert.Equal(source, checkUpdateResults[0].TemplatePackage);
+            Assert.True(checkUpdateResults[0].IsLatestVersion);
         }
 
         [Fact]
@@ -188,20 +188,20 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
-            Assert.True(result.First().Success);
-            IManagedTemplatePackage source = result.First().TemplatePackage;
+            Assert.True(result[0].Success);
+            IManagedTemplatePackage source = result[0].TemplatePackage;
 
             UpdateRequest updateRequest = new UpdateRequest(source, "5.0.1");
 
             IReadOnlyList<UpdateResult> updateResults = await bootstrapper.UpdateTemplatePackagesAsync(new[] { updateRequest }, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, updateResults.Count);
-            Assert.True(updateResults.First().Success);
-            Assert.Equal(InstallerErrorCode.Success, updateResults.First().Error);
-            Assert.True(string.IsNullOrEmpty(updateResults.First().ErrorMessage));
-            Assert.Equal(updateRequest, updateResults.First().UpdateRequest);
+            Assert.True(updateResults[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, updateResults[0].Error);
+            Assert.True(string.IsNullOrEmpty(updateResults[0].ErrorMessage));
+            Assert.Equal(updateRequest, updateResults[0].UpdateRequest);
 
-            IManagedTemplatePackage updatedSource = updateResults.First().TemplatePackage;
+            IManagedTemplatePackage updatedSource = updateResults[0].TemplatePackage;
             Assert.Equal("Global Settings", updatedSource.Provider.Factory.DisplayName);
             Assert.Equal("NuGet", updatedSource.Installer.Factory.Name);
             Assert.Equal("5.0.1", updatedSource.Version);
@@ -209,13 +209,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
-            managedTemplatesPackages.First().Should().BeEquivalentTo(updatedSource);
+            managedTemplatesPackages[0].Should().BeEquivalentTo(updatedSource);
 
             IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, templatePackages.Count);
-            Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages.First());
-            templatePackages.First().Should().BeEquivalentTo((ITemplatePackage)updatedSource);
+            Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages[0]);
+            templatePackages[0].Should().BeEquivalentTo((ITemplatePackage)updatedSource);
         }
 
         [Fact]
@@ -227,21 +227,21 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
-            Assert.True(result.First().Success);
-            IManagedTemplatePackage source = result.First().TemplatePackage;
+            Assert.True(result[0].Success);
+            IManagedTemplatePackage source = result[0].TemplatePackage;
 
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
-            managedTemplatesPackages.First().Should().BeEquivalentTo(source);
+            managedTemplatesPackages[0].Should().BeEquivalentTo(source);
 
             IReadOnlyList<UninstallResult> uninstallResults = await bootstrapper.UninstallTemplatePackagesAsync(new[] { source }, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, uninstallResults.Count);
-            Assert.True(uninstallResults.First().Success);
-            Assert.Equal(InstallerErrorCode.Success, uninstallResults.First().Error);
-            uninstallResults.First().ErrorMessage.Should().BeNullOrEmpty();
-            Assert.Equal(source, uninstallResults.First().TemplatePackage);
+            Assert.True(uninstallResults[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, uninstallResults[0].Error);
+            uninstallResults[0].ErrorMessage.Should().BeNullOrEmpty();
+            Assert.Equal(source, uninstallResults[0].TemplatePackage);
 
             IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
@@ -259,22 +259,22 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, result.Count);
-            Assert.True(result.First().Success);
-            IManagedTemplatePackage source = result.First().TemplatePackage;
+            Assert.True(result[0].Success);
+            IManagedTemplatePackage source = result[0].TemplatePackage;
             Assert.Equal(templateLocation, source.MountPointUri);
 
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
-            managedTemplatesPackages.First().Should().BeEquivalentTo(source);
+            managedTemplatesPackages[0].Should().BeEquivalentTo(source);
 
             IReadOnlyList<UninstallResult> uninstallResults = await bootstrapper.UninstallTemplatePackagesAsync(new[] { source }, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, uninstallResults.Count);
-            Assert.True(uninstallResults.First().Success);
-            Assert.Equal(InstallerErrorCode.Success, uninstallResults.First().Error);
-            uninstallResults.First().ErrorMessage.Should().BeNullOrEmpty();
-            Assert.Equal(source, uninstallResults.First().TemplatePackage);
+            Assert.True(uninstallResults[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, uninstallResults[0].Error);
+            uninstallResults[0].ErrorMessage.Should().BeNullOrEmpty();
+            Assert.Equal(source, uninstallResults[0].TemplatePackage);
 
             IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
 
