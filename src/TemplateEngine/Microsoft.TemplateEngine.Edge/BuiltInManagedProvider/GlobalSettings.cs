@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 return;
             }
             _disposed = true;
-            
+
             _watcher?.Dispose();
             _watcher = null;
         }

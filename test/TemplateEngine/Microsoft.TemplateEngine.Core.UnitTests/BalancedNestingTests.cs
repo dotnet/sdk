@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999, changeOverride: true);  // value doesn't change, but processer implies it does (thus the test check override)
         }
 
-        // This situation is also indicative of an authoring problem. 
+        // This situation is also indicative of an authoring problem.
         // The first pseudo-comment is made real because it's balanced with the leading comment.
         // But the second (pseudo) comment is unbalanced and remains unchanged.
         [Fact(DisplayName = nameof(VerifyUnbalancedTrailingHeavyPseudoCommentsAreHandledSanely))]
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        // This situation is also indicative of an authoring problem. 
+        // This situation is also indicative of an authoring problem.
         // The first pseudo-comment is made real because it's balanced with the leading comment.
         // But the second (real) end comment is unbalanced and remains unchanged.
         [Fact(DisplayName = nameof(VerifyUnbalancedTrailingHeavyRealCommentIsHandledSanely))]

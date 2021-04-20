@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public ITokenTrieEvaluator CreateEvaluator()
         {
-            return new TokenTrieEvaluator(this); 
+            return new TokenTrieEvaluator(this);
         }
 
         public bool GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, out int token)

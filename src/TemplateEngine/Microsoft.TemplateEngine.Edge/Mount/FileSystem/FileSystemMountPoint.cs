@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         /// <summary>
         /// Returns full path of the mounted directory.
         /// </summary>
-        internal string MountPointRootPath { get; } 
+        internal string MountPointRootPath { get; }
 
         public FileSystemMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, string mountPointRootPath)
         {

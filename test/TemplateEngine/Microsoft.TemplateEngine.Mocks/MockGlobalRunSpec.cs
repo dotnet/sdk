@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Mocks
         public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; set; }
 
         public IReadOnlyList<string> IgnoreFileNames { get; set; }
-        
+
         public IReadOnlyDictionary<string, string> Rename { get; set; }
 
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)

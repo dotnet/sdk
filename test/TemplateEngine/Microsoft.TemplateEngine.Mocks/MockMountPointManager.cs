@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     /// <summary>
     /// Mock for IMountPointManager interface to be used for unit testing
-    /// Can be set up to return failure on demanding certain mount points. The unavailable mountpoints to be defined in <see cref="UnavailableMountPoints"/>. 
+    /// Can be set up to return failure on demanding certain mount points. The unavailable mountpoints to be defined in <see cref="UnavailableMountPoints"/>.
     /// </summary>
     public class MockMountPointManager : IMountPointManager
     {
@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Mocks
         public IEngineEnvironmentSettings EnvironmentSettings
         {
             get;
-            private set; 
+            private set;
         }
 
         /// <summary>

@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Edge
                     return buffer;
                 }
             }
-            
+
             return null;
         }
 

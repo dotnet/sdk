@@ -82,7 +82,7 @@ color:red;";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = 
+            IOperationProvider[] operations =
             {
                 new Replacement("white".TokenConfigBuilder().OnlyIfBefore(";").OnlyIfAfter("background-color:"), "blue", null, true),
                 new Replacement("white".TokenConfigBuilder().OnlyIfBefore(";").OnlyIfAfter("color:"), "red", null, true)

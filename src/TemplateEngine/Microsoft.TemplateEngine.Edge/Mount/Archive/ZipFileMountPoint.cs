@@ -123,6 +123,6 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
         public Guid MountPointFactoryId => ZipFileMountPointFactory.FactoryId;
 
-        public string MountPointUri { get; } 
+        public string MountPointUri { get; }
     }
 }

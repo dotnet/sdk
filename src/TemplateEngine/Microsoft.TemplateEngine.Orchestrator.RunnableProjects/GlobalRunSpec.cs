@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         internal GlobalRunSpec(
             IDirectory templateRoot,
             IComponentManager componentManager,
-            IParameterSet parameters, 
+            IParameterSet parameters,
             IVariableCollection variables,
             IGlobalRunConfig globalConfig,
             IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> fileGlobConfigs,
@@ -173,7 +173,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     host.LogMessage($"Operation type = [{opModelUntyped.Type}] could not be cast as a CustomOperationModel");
                     continue;
                 }
-                    
+
                 string opType = opModel.Type;
                 string condition = opModel.Condition;
 

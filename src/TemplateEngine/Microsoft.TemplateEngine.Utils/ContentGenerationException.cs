@@ -9,12 +9,12 @@ namespace Microsoft.TemplateEngine.Utils
     {
         public ContentGenerationException(string message)
             : base(message)
-        {            
+        {
         }
 
         public ContentGenerationException(string message, Exception innerException)
             : base(message, innerException)
-        {            
+        {
         }
     }
 }

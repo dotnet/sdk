@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         // tries to parse a version into 4 int parts, zero-padding on the rght if needed.
-        // more than 4 parts, return false. 
+        // more than 4 parts, return false.
         // Unparse-able, return false.
         private static bool TryParseVersionString(string version, out int[] parsed)
         {

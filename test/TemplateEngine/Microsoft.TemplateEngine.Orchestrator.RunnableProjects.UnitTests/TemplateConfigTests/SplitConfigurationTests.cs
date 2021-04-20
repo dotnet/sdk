@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Null(template);
         }
 
-        // Uses the same template.json as the test that successfully reads a split config. 
+        // Uses the same template.json as the test that successfully reads a split config.
         // But doesn't create the additional file
         private static TestTemplateSetup SetupSplitConfigWithAMissingReferencedFile(IEngineEnvironmentSettings environment, string basePath)
         {

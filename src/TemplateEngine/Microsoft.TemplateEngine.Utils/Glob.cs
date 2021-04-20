@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Utils
         private readonly IReadOnlyList<IMatcher> _matchers;
         private readonly bool _negate;
         private readonly bool _isNameOnlyMatch;
-        
+
         private Glob(bool negate, IReadOnlyList<IMatcher> matchers, bool canBeNameOnlyMatch)
         {
             _negate = negate;

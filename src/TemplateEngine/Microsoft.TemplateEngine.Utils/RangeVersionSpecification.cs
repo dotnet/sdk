@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     isEndValid = endComparison.Value <= 0;
                 }
-                else 
+                else
                 {
                     isEndValid = endComparison.Value < 0;
                 }

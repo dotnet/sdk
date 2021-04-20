@@ -592,7 +592,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         }
                         else
                         {
-                            //Since this is a bind symbol, don't replace the literal with this symbol's value, 
+                            //Since this is a bind symbol, don't replace the literal with this symbol's value,
                             //  replace it with the value of the bound symbol
                             sourceVariable = symbol.Value.Binding;
                         }
@@ -744,7 +744,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private void GenerateFileReplacementsForSymbol(string fileRename, string sourceVariable, List<IReplacementTokens> filenameReplacements)
         {
             TokenConfig replacementConfig = fileRename.TokenConfigBuilder();
-            filenameReplacements.Add(new ReplacementTokens(sourceVariable, replacementConfig));          
+            filenameReplacements.Add(new ReplacementTokens(sourceVariable, replacementConfig));
         }
 
         private List<IMacroConfig> ProduceMacroConfig(List<IMacroConfig> computedMacroConfigs)

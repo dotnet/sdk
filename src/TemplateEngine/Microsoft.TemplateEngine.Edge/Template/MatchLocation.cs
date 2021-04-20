@@ -19,5 +19,5 @@ namespace Microsoft.TemplateEngine.Edge.Template
         Baseline,
         DefaultLanguage,
         Author
-    }    
+    }
 }

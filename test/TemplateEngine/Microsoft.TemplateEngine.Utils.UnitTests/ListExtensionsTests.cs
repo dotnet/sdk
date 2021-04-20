@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 
             var templateGroups = templatesToGroup.GroupBy(x => x.GroupIdentity, x => !string.IsNullOrEmpty(x.GroupIdentity), StringComparer.OrdinalIgnoreCase);
             Assert.Equal(7, templateGroups.Count());
-            var groupWithExpectedMultipleElements = templateGroups.Single(g => g.Key?.Equals("TemplateGroup", StringComparison.OrdinalIgnoreCase) ?? false); 
+            var groupWithExpectedMultipleElements = templateGroups.Single(g => g.Key?.Equals("TemplateGroup", StringComparison.OrdinalIgnoreCase) ?? false);
             Assert.Equal(3, groupWithExpectedMultipleElements.Count());
             Assert.Single(groupWithExpectedMultipleElements, s => s.Identity == "5");
             Assert.Single(groupWithExpectedMultipleElements, s => s.Identity == "6");

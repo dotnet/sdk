@@ -250,10 +250,10 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                                         IEvaluable oldActive = isolator.Active;
                                         isolator.Active = factory(isolator.Active);
 
-                                        if (oldActive.Parent == isolator.Active 
-                                            && (oldActive == isolator.Root 
-                                                || (isolator.Root is UnaryScope<TOperator> o 
-                                                    && Equals(o.Operator, _identity) 
+                                        if (oldActive.Parent == isolator.Active
+                                            && (oldActive == isolator.Root
+                                                || (isolator.Root is UnaryScope<TOperator> o
+                                                    && Equals(o.Operator, _identity)
                                                     && o.Operand == oldActive)))
                                         {
                                             isolator.Root = isolator.Active;

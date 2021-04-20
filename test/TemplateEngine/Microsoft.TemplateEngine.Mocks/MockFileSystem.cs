@@ -228,7 +228,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
             _files[file].Attributes = attributes;
         }
-        
+
         public DateTime GetLastWriteTimeUtc(string file)
         {
             if (!FileExists(file))

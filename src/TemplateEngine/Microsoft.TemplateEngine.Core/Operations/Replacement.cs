@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
         {
             IToken token = _match.ToToken(encoding);
             byte[] replaceWith = encoding.GetBytes(_replaceWith);
-            
+
             if(token.Value.Skip(token.Start).Take(token.Length).SequenceEqual(replaceWith))
             {
                 return null;
