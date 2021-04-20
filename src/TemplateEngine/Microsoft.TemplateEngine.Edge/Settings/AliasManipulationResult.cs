@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     public class AliasManipulationResult
     {
         public AliasManipulationResult(AliasManipulationStatus status)
-            :this(status, null, null)
+            : this(status, null, null)
         {
         }
 

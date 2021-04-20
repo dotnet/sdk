@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
     public class TemplateCreationResult
     {
         public TemplateCreationResult(string message, CreationResultStatus status, string templateFullName)
-            :this(message, status, templateFullName, null, null, null)
+            : this(message, status, templateFullName, null, null, null)
         { }
 
         public TemplateCreationResult(string message, CreationResultStatus status, string templateFullName, ICreationResult creationOutputs, string outputBaseDir, ICreationEffects creationEffects)
