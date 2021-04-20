@@ -20,7 +20,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class ProvideStreamMemoryBasedAsyncOverrides : DiagnosticAnalyzer
     {
-        internal const string RuleId = "CA1840";
+        internal const string RuleId = "CA1842";
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.ProvideStreamMemoryBasedAsyncOverridesTitle), Resx.ResourceManager, typeof(Resx));
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(Resx.ProvideStreamMemoryBasedAsyncOverridesMessage), Resx.ResourceManager, typeof(Resx));
@@ -57,6 +57,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             context.RegisterSymbolAction(AnalyzeNamedType, SymbolKind.NamedType);
 
+            return;
+
+            // Local functions.
             void AnalyzeNamedType(SymbolAnalysisContext context)
             {
                 var type = (INamedTypeSymbol)context.Symbol;

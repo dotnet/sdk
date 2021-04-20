@@ -3,7 +3,7 @@
 ### New Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-CA1840 | Performance | Info | ProvideStreamMemoryBasedAsyncOverrides, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840)
+CA1842 | Performance | Info | ProvideStreamMemoryBasedAsyncOverrides, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842)
 
 ### Removed Rules
 
