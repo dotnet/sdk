@@ -75,7 +75,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             var sources = new List<ITemplatePackage>();
             foreach (var task in cachedSources.Values)
             {
-                sources.AddRange(await task);
+                sources.AddRange(await task.ConfigureAwait(false));
             }
             return sources;
         }

@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <returns></returns>
         public static async Task<IEnumerable<ITemplateInfo>> GetTemplates(this ITemplatePackage templatePackage, IEngineEnvironmentSettings settings)
         {
-            var allTemplates = await settings.SettingsLoader.GetTemplatesAsync(default);
+            var allTemplates = await settings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
             return allTemplates.Where(t => t.MountPointUri == templatePackage.MountPointUri);
         }
     }

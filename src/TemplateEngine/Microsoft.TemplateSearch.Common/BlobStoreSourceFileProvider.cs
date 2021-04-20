@@ -54,7 +54,7 @@ namespace Microsoft.TemplateSearch.Common
                 // only download the file if it's been long enough since the last time it was downloaded.
                 if (ShouldDownloadFileFromCloud(environmentSettings, metadataFileTargetLocation))
                 {
-                    bool cloudResult = await TryAcquireFileFromCloudAsync(environmentSettings, paths, metadataFileTargetLocation);
+                    bool cloudResult = await TryAcquireFileFromCloudAsync(environmentSettings, paths, metadataFileTargetLocation).ConfigureAwait(false);
 
                     if (cloudResult)
                     {
@@ -122,7 +122,7 @@ namespace Microsoft.TemplateSearch.Common
                     {
                         if (response.IsSuccessStatusCode)
                         {
-                            string resultText = await response.Content.ReadAsStringAsync();
+                            string resultText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                             paths.WriteAllText(searchMetadataFileLocation, resultText);
 
                             IEnumerable<string> etagValues;
