@@ -3,6 +3,9 @@
 
 namespace Microsoft.DotNet.PackageValidation
 {
+    /// <summary>
+    /// Diagnostics Ids for package validation errors.
+    /// </summary>
     public static class DiagnosticIds
     {
         public const string ApplicableCompileTimeAsset = "PKV0001";

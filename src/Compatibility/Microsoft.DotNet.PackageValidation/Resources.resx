@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CompatibleFrameworkInPackageValidatorHeader" xml:space="preserve">
+    <value>Api surface area should be compatible among compatible frameworks.</value>
+  </data>
+  <data name="CompatibleTfmValidatorHeader" xml:space="preserve">
+    <value>The runtime assets should be compatible with the compile time assets for all target frameworks and rids.</value>
+  </data>
   <data name="InvalidPackagePath" xml:space="preserve">
     <value>Package Path {0} is invalid. Please Check the path .</value>
   </data>
@@ -140,6 +146,9 @@
   </data>
   <data name="NoCompatibleRuntimeAsset" xml:space="preserve">
     <value>There is no compatible runtime asset for target framework {0} in the package.</value>
+  </data>
+  <data name="PreviousVersionValidatorHeader" xml:space="preserve">
+    <value>There shouldnt be any breaking changes between the packages.</value>
   </data>
   <data name="TargetFramework" xml:space="preserve">
     <value>TargetFramework {0}</value>

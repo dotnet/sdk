@@ -1,6 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Client;
 using NuGet.Common;
 using NuGet.ContentModel;
@@ -10,12 +16,6 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System;
 
 namespace Microsoft.DotNet.PackageValidation
 {
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.PackageValidation
             PackageAssets = _packageAssets.FindItems(_conventions.Patterns.AnyTargettedFile);
             RefAssets = _packageAssets.FindItems(_conventions.Patterns.CompileRefAssemblies);
             LibAssets = _packageAssets.FindItems(_conventions.Patterns.CompileLibAssemblies);
-            CompileAssets = RefAssets.Count() != 0 ? RefAssets : LibAssets;
+            CompileAssets = RefAssets.Any() ? RefAssets : LibAssets;
 
             RuntimeSpecificAssets = _packageAssets.FindItems(_conventions.Patterns.RuntimeAssemblies).Where(t => t.Path.StartsWith("runtimes"));
             RuntimeAssets = _packageAssets.FindItems(_conventions.Patterns.RuntimeAssemblies);
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.PackageValidation
 
                 if (!File.Exists(Path.GetFullPath(value)))
                 {
-                    throw new ArgumentException($"{value} doesnt exist. Please check the package path.");
+                    throw new FileNotFoundException($"{value} doesnt exist. Please check the package path.");
                 }
                 _packagePath = value;
             }
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.PackageValidation
 
         public IEnumerable<ContentItem> RuntimeAssets { get; private set; }
 
-        public bool HasRefAssemblies => RefAssets.Count() != 0;
+        public bool HasRefAssemblies => RefAssets.Any();
 
         public IEnumerable<string> Rids { get; private set; }
 
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.PackageValidation
         public ContentItem FindBestCompileAssetForFramework(NuGetFramework framework)
         {
             SelectionCriteria managedCriteria = _conventions.Criteria.ForFramework(framework);
-            if (RefAssets.Count() != 0)
+            if (RefAssets.Any())
             {
                 return _packageAssets.FindBestItemGroup(managedCriteria,
                     _conventions.Patterns.CompileRefAssemblies)?.Items.FirstOrDefault(); ;

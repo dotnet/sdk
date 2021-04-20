@@ -55,8 +55,7 @@ namespace Microsoft.DotNet.ApiCompatibility
 
         public void Add(DiagnosticBag<T> bag)
         {
-            foreach (T difference in bag.Differences)
-                Add(difference);
+            AddRange(bag.Differences);
         }
 
         /// <summary>

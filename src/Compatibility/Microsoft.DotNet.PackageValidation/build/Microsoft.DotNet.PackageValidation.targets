@@ -6,16 +6,14 @@
   
   <Target Name="RunPackageValidation" AfterTargets="Pack">
     <PropertyGroup>
-      <PackagePath Condition="'$(PackagePath)' == ''">$(PackageOutputPath)$(PackageID).$(Version).nupkg</PackagePath>
-      <RunApiCompat Condition="'$(RunApiCompat)' == ''">false</RunApiCompat>
-      <ValidateWithPreviousVersion Condition="'$(ValidateWithPreviousVersion)' == ''">false</ValidateWithPreviousVersion>
+      <PackagePath Condition="'$(PackagePath)' == ''">$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg</PackagePath>
     </PropertyGroup>
 
     <ValidatePackage PackagePath="$(PackagePath)"
                      RuntimeGraph="$(RuntimeGraph)"
                      NoWarn="$(NoWarn)"
-                     RunApiCompat="$(RunApiCompat)"
-                     ValidateWithPreviousVersion="$(ValidateWithPreviousVersion)"/>
+                     RunApiCompat="$([MSBuild]::ValueOrDefault('$(RunApiCompat)', 'false'))"
+                     ValidateWithPreviousVersion="$([MSBuild]::ValueOrDefault('$(ValidateWithPreviousVersion)', 'false'))"/>
   </Target>
 
 </Project>

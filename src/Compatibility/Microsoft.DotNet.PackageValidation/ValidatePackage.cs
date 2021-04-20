@@ -1,14 +1,10 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
-using System.Diagnostics;
-using System.IO;
+using System.Collections.Generic;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.ApiCompatibility;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.NET.Build.Tasks;
-using System.Collections.Generic;
 
 namespace Microsoft.DotNet.PackageValidation
 {
@@ -27,30 +23,37 @@ namespace Microsoft.DotNet.PackageValidation
 
         protected override void ExecuteCore()
         {
-            if (!File.Exists(PackagePath))
-            {
-                Log.LogError(string.Format(Resources.InvalidPackagePath, PackagePath));
-                return;
-            }
-
             Package package = NupkgParser.CreatePackage(PackagePath, RuntimeGraph);
 
-            // TODO: Add support for generating the baseline differences.
-            DiagnosticBag<TargetFrameworkApplicabilityDiagnostics> packageValidationErrors = new CompileTimeValidator(NoWarn, null, RunApiCompat).Validate(package);
-            packageValidationErrors.Add(new CompatibleTFMValidator(NoWarn, null, RunApiCompat).Validate(package));
-            packageValidationErrors.Add(new CompatibleFrameworkInPackageValidator(NoWarn, null).Validate(package));
-            packageValidationErrors.Add(new PreviousVersionValidator(package, NoWarn, null, RunApiCompat).Validate(package));
+            LogErrors(new CompatibleTfmValidator(NoWarn, null, RunApiCompat).Validate(package));
+            LogErrors(new PreviousVersionValidator(package, NoWarn, null, RunApiCompat).Validate(package));
 
-            foreach (var error in packageValidationErrors.Differences)
+            foreach (var apiCompatError in new CompatibleFrameworkInPackageValidator(NoWarn, null).Validate(package))
+            {
+                Log.LogError(apiCompatError.CompatibilityReason);
+                Log.LogError(apiCompatError.Header);
+                foreach (var error in apiCompatError.Differences.Differences)
+                {
+                    Log.LogError(error.ToString());
+                }
+            }
+        }
+
+        private void LogErrors((DiagnosticBag<TargetFrameworkApplicabilityDiagnostics> packageValidationErrors, IEnumerable<ApiCompatDiagnostics> apiCompaterrors) errors)
+        {
+            foreach (var error in errors.packageValidationErrors.Differences)
             {
                 Log.LogError(error.ToString());
             }
 
-            // TODO: Finalize the format.
-            IEnumerable<CompatDifference> apiCompatErrors = ApiCompatRunner.RunApiCompat();
-            foreach (var error in apiCompatErrors)
+            foreach (var apiCompatError in errors.apiCompaterrors)
             {
-                Log.LogError(error.ToString());
+                Log.LogError(apiCompatError.CompatibilityReason);
+                Log.LogError(apiCompatError.Header);
+                foreach (var error in apiCompatError.Differences.Differences)
+                {
+                    Log.LogError(error.ToString());
+                }
             }
         }
     }

@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.PackageValidation
 {
@@ -15,6 +15,12 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class NupkgParser
     {
+        /// <summary>
+        /// Creates the package object from package path.
+        /// </summary>
+        /// <param name="packagePath">The path to the package path.</param>
+        /// <param name="runtimeGraph">The path to the the runtime graph.</param>
+        /// <returns>The package object.</returns>
         public static Package CreatePackage(string packagePath, string runtimeGraph)
         {
             PackageArchiveReader packageReader = new PackageArchiveReader(packagePath);
@@ -23,6 +29,12 @@ namespace Microsoft.DotNet.PackageValidation
             return package;
         }
 
+        /// <summary>
+        /// Creates the package object from package stream.
+        /// </summary>
+        /// <param name="packageStream">The package stream</param>
+        /// <param name="runtimeGraph">The path to the the runtime graph</param>
+        /// <returns></returns>
         public static Package CreatePackage(MemoryStream packageStream, string runtimeGraph)
         {
             PackageArchiveReader packageReader = new PackageArchiveReader(packageStream);

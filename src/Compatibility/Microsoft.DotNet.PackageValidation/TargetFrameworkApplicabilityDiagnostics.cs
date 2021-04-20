@@ -14,8 +14,6 @@ namespace Microsoft.DotNet.PackageValidation
         public string ReferenceId { get; }
         public string Message { get; }
 
-        private TargetFrameworkApplicabilityDiagnostics() { }
-
         public TargetFrameworkApplicabilityDiagnostics(string diagnosticId, string referenceId, string message)
         {
             DiagnosticId = diagnosticId;

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
     <StrongNameKeyId>Open</StrongNameKeyId>
@@ -74,7 +74,7 @@
     </Reference>
   </ItemGroup>
 
-    <Target Name="_AddBuildOutputToPackageCore" DependsOnTargets="Publish" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+  <Target Name="_AddBuildOutputToPackageCore" DependsOnTargets="Publish" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <ItemGroup>
       <!-- Publish .NET Core assets and include them in the package under tools directory. -->
       <TfmSpecificPackageFile Include="$(PublishDir)**"

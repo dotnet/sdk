@@ -10,11 +10,16 @@ namespace Microsoft.DotNet.PackageValidation
     {
         public static Stream GetFileStreamFromPackage(string packagePath, string entry)
         {
-            FileStream stream = File.OpenRead(packagePath);
-            var zipFile = new ZipArchive(stream);
             MemoryStream ms = new MemoryStream();
-            zipFile.GetEntry(entry).Open().CopyTo(ms);
-            ms.Seek(0, SeekOrigin.Begin);
+            using (FileStream stream = File.OpenRead(packagePath))     
+            {
+                var zipFile = new ZipArchive(stream);
+                using (Stream fileStream = zipFile.GetEntry(entry).Open())
+                {
+                    fileStream.CopyTo(ms);
+                    ms.Seek(0, SeekOrigin.Begin);
+                }
+            }
             return ms;
         }
 
@@ -22,8 +27,12 @@ namespace Microsoft.DotNet.PackageValidation
         {
             var zipFile = new ZipArchive(packageStream);
             MemoryStream ms = new MemoryStream();
-            zipFile.GetEntry(entry).Open().CopyTo(ms);
-            ms.Seek(0, SeekOrigin.Begin);
+
+            using (Stream fileStream = zipFile.GetEntry(entry).Open())
+            {
+                fileStream.CopyTo(ms);
+                ms.Seek(0, SeekOrigin.Begin);
+            }
             return ms;
         }
     }
