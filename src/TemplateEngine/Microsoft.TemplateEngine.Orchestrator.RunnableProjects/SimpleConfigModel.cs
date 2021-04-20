@@ -1078,7 +1078,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             config.Forms = SetupValueFormMapForTemplate(source);
 
-            List <ExtendedFileSource> sources = new List<ExtendedFileSource>();
+            List<ExtendedFileSource> sources = new List<ExtendedFileSource>();
             config.Sources = sources;
 
             foreach (JObject item in source.Items<JObject>(nameof(config.Sources)))
