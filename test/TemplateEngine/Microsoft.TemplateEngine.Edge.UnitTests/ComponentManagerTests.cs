@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var assemblyCatalog = new AssemblyComponentCatalog(new[] { typeof(ComponentManager).Assembly });
             var expectedTypeNames = assemblyCatalog.Select(pair => pair.Value().FullName).OrderBy(name => name);
 
-            var actualTypeNames = componentManager._componentCache.Values.SelectMany(t => t.Values).Select(o => o.GetType().FullName).OrderBy(name => name);
+            var actualTypeNames = componentManager.ComponentCache.Values.SelectMany(t => t.Values).Select(o => o.GetType().FullName).OrderBy(name => name);
 
             Assert.Equal(expectedTypeNames, actualTypeNames);
             Assert.Equal(2, componentManager.OfType<IInstallerFactory>().Count());

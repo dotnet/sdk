@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly Dictionary<Type, HashSet<Guid>> _componentIdsByType;
         private readonly SettingsStore _settings;
         private readonly ISettingsLoader _loader;
-        internal Dictionary<Type, Dictionary<Guid, object>> _componentCache { get; } = new Dictionary<Type, Dictionary<Guid, object>>();
+        internal Dictionary<Type, Dictionary<Guid, object>> ComponentCache { get; } = new Dictionary<Type, Dictionary<Guid, object>>();
 
         public ComponentManager(ISettingsLoader loader, SettingsStore userSettings)
         {
@@ -226,7 +226,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             where T : class, IIdentifiedComponent
         {
             component = default;
-            if (_componentCache.TryGetValue(typeof(T), out Dictionary<Guid, object> typeCache) && typeCache != null
+            if (ComponentCache.TryGetValue(typeof(T), out Dictionary<Guid, object> typeCache) && typeCache != null
                 && typeCache.TryGetValue(id, out object resolvedComponent) && resolvedComponent != null && resolvedComponent is T t)
             {
                 component = t;
@@ -254,10 +254,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 throw new ArgumentException($"{component.GetType().Name} should be assignable from {type.Name} type", nameof(type));
             }
 
-            if (!_componentCache.TryGetValue(type, out Dictionary<Guid, object> typeCache))
+            if (!ComponentCache.TryGetValue(type, out Dictionary<Guid, object> typeCache))
             {
                 typeCache = new Dictionary<Guid, object>();
-                _componentCache[type] = typeCache;
+                ComponentCache[type] = typeCache;
             }
             typeCache[component.Id] = component;
 

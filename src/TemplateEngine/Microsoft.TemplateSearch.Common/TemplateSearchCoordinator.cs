@@ -16,24 +16,24 @@ namespace Microsoft.TemplateSearch.Common
     {
         public TemplateSearchCoordinator(IEngineEnvironmentSettings environmentSettings, string inputTemplateName, string defaultLanguage, Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> matchFilter)
         {
-            _environmentSettings = environmentSettings;
-            _inputTemplateName = inputTemplateName;
-            _defaultLanguage = defaultLanguage;
-            _matchFilter = matchFilter;
+            EnvironmentSettings = environmentSettings;
+            InputTemplateName = inputTemplateName;
+            DefaultLanguage = defaultLanguage;
+            MatchFilter = matchFilter;
             _isSearchPerformed = false;
         }
 
-        protected IEngineEnvironmentSettings _environmentSettings { get; }
-        protected string _inputTemplateName { get; }
-        protected string _defaultLanguage { get; }
-        protected Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> _matchFilter { get; set; }
+        protected IEngineEnvironmentSettings EnvironmentSettings { get; }
+        protected string InputTemplateName { get; }
+        protected string DefaultLanguage { get; }
+        protected Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> MatchFilter { get; set; }
         private bool _isSearchPerformed;
-        protected SearchResults _searchResults { get; set; }
+        protected SearchResults SearchResults { get; set; }
 
         public async Task<SearchResults> SearchAsync()
         {
             await EnsureSearchResultsAsync().ConfigureAwait(false);
-            return _searchResults;
+            return SearchResults;
         }
 
         protected async Task EnsureSearchResultsAsync()
@@ -43,10 +43,10 @@ namespace Microsoft.TemplateSearch.Common
                 return;
             }
 
-            TemplateSearcher searcher = new TemplateSearcher(_environmentSettings, _defaultLanguage, _matchFilter);
+            TemplateSearcher searcher = new TemplateSearcher(EnvironmentSettings, DefaultLanguage, MatchFilter);
             IReadOnlyList<IManagedTemplatePackage> existingTemplatePackage;
 
-            if (_environmentSettings.SettingsLoader is SettingsLoader settingsLoader)
+            if (EnvironmentSettings.SettingsLoader is SettingsLoader settingsLoader)
             {
                 existingTemplatePackage = (await settingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync(false).ConfigureAwait(false)).OfType<IManagedTemplatePackage>().ToList();
             }
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateSearch.Common
                 existingTemplatePackage = new List<IManagedTemplatePackage>();
             }
 
-            _searchResults = await searcher.SearchForTemplatesAsync(existingTemplatePackage, _inputTemplateName).ConfigureAwait(false);
+            SearchResults = await searcher.SearchForTemplatesAsync(existingTemplatePackage, InputTemplateName).ConfigureAwait(false);
 
             _isSearchPerformed = true;
         }

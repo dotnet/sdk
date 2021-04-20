@@ -13,13 +13,13 @@ namespace Microsoft.TemplateSearch.Common
         {
             TemplateDiscoveryFileName = templateDiscoveryFileName;
 
-            _additionalDataReaders = new Dictionary<string, Func<JObject, object>>(StringComparer.OrdinalIgnoreCase);
+            AdditionalDataReaders = new Dictionary<string, Func<JObject, object>>(StringComparer.OrdinalIgnoreCase);
         }
 
         public string TemplateDiscoveryFileName { get; }
 
-        protected Dictionary<string, Func<JObject, object>> _additionalDataReaders { get; }
+        protected Dictionary<string, Func<JObject, object>> AdditionalDataReaders { get; }
 
-        public IReadOnlyDictionary<string, Func<JObject, object>> AdditionalDataReaders => _additionalDataReaders;
+        IReadOnlyDictionary<string, Func<JObject, object>> ISearchCacheConfig.AdditionalDataReaders => AdditionalDataReaders;
     }
 }

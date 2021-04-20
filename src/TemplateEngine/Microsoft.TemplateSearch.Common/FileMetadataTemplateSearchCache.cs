@@ -11,27 +11,27 @@ namespace Microsoft.TemplateSearch.Common
     public class FileMetadataTemplateSearchCache : IFileMetadataTemplateSearchCache
     {
         private readonly IEngineEnvironmentSettings _environment;
-        protected string _pathToMetadta { get; }
+        protected string PathToMetadta { get; }
         private ISearchCacheConfig _config;
-        protected bool _isInitialized { get; set; }
-        protected TemplateDiscoveryMetadata _templateDiscoveryMetadata { get; set; }
-        protected TemplateToPackMap _templateToPackMap { get; set; }
+        protected bool IsInitialized { get; set; }
+        protected TemplateDiscoveryMetadata TemplateDiscoveryMetadata { get; set; }
+        protected TemplateToPackMap TemplateToPackMap { get; set; }
 
         public FileMetadataTemplateSearchCache(IEngineEnvironmentSettings environmentSettings, string pathToMetadata)
         {
             _environment = environmentSettings;
-            _pathToMetadta = pathToMetadata;
-            _isInitialized = false;
+            PathToMetadta = pathToMetadata;
+            IsInitialized = false;
         }
 
         protected virtual NuGetSearchCacheConfig SetupSearchCacheConfig()
         {
-            return new NuGetSearchCacheConfig(_pathToMetadta);
+            return new NuGetSearchCacheConfig(PathToMetadta);
         }
 
         protected virtual void EnsureInitialized()
         {
-            if (_isInitialized)
+            if (IsInitialized)
             {
                 return;
             }
@@ -40,9 +40,9 @@ namespace Microsoft.TemplateSearch.Common
 
             if (FileMetadataTemplateSearchCacheReader.TryReadDiscoveryMetadata(_environment, _config, out TemplateDiscoveryMetadata metadata))
             {
-                _templateDiscoveryMetadata = metadata;
-                _templateToPackMap = TemplateToPackMap.FromPackToTemplateDictionary(_templateDiscoveryMetadata.PackToTemplateMap);
-                _isInitialized = true;
+                TemplateDiscoveryMetadata = metadata;
+                TemplateToPackMap = TemplateToPackMap.FromPackToTemplateDictionary(TemplateDiscoveryMetadata.PackToTemplateMap);
+                IsInitialized = true;
             }
             else
             {
@@ -56,10 +56,10 @@ namespace Microsoft.TemplateSearch.Common
 
             if (string.IsNullOrWhiteSpace(searchName))
             {
-                return _templateDiscoveryMetadata.TemplateCache;
+                return TemplateDiscoveryMetadata.TemplateCache;
             }
 
-            return _templateDiscoveryMetadata.TemplateCache.Where(
+            return TemplateDiscoveryMetadata.TemplateCache.Where(
                 template => template.Name.IndexOf(searchName, StringComparison.OrdinalIgnoreCase) >= 0
                 || template.ShortNameList.Any(shortName => shortName.IndexOf(searchName, StringComparison.OrdinalIgnoreCase) >= 0))
                 .ToList();
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateSearch.Common
 
             foreach (string templateIdentity in identities)
             {
-                if (_templateToPackMap.TryGetPackInfoForTemplateIdentity(templateIdentity, out PackInfo packInfo))
+                if (TemplateToPackMap.TryGetPackInfoForTemplateIdentity(templateIdentity, out PackInfo packInfo))
                 {
                     map[templateIdentity] = packInfo;
                 }
@@ -90,7 +90,7 @@ namespace Microsoft.TemplateSearch.Common
 
             foreach (string packName in packNameList)
             {
-                if (_templateDiscoveryMetadata.PackToTemplateMap.TryGetValue(packName, out PackToTemplateEntry packToTemplateEntry))
+                if (TemplateDiscoveryMetadata.PackToTemplateMap.TryGetValue(packName, out PackToTemplateEntry packToTemplateEntry))
                 {
                     packInfo[packName] = packToTemplateEntry;
                 }

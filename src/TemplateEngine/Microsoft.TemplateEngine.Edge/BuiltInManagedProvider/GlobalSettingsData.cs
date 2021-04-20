@@ -20,6 +20,6 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         /// without this field, data would be lost in process of loading and saving.
         /// </summary>
         [JsonExtensionData]
-        public IDictionary<string, Newtonsoft.Json.Linq.JToken> _additionalData { get; set; }
+        public IDictionary<string, Newtonsoft.Json.Linq.JToken> AdditionalData { get; set; }
     }
 }

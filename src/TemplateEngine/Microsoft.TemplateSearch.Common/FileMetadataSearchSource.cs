@@ -14,14 +14,14 @@ namespace Microsoft.TemplateSearch.Common
     // Making this be not abstract will cause problems with the registered components.
     public abstract class FileMetadataSearchSource : ITemplateSearchSource
     {
-        protected IFileMetadataTemplateSearchCache _searchCache { get; set; }
+        protected IFileMetadataTemplateSearchCache SearchCache { get; set; }
         private ISearchPackFilter _packFilter;
 
         public abstract Task<bool> TryConfigure(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IManagedTemplatePackage> existingTemplatePackage);
 
         protected void Configure(IFileMetadataTemplateSearchCache searchCache, ISearchPackFilter packFilter)
         {
-            _searchCache = searchCache;
+            SearchCache = searchCache;
             _packFilter = packFilter;
         }
 
@@ -31,14 +31,14 @@ namespace Microsoft.TemplateSearch.Common
 
         public Task<IReadOnlyList<ITemplateNameSearchResult>> CheckForTemplateNameMatchesAsync(string searchName)
         {
-            if (_searchCache == null)
+            if (SearchCache == null)
             {
                 throw new Exception("Search Source is not configured");
             }
 
-            IReadOnlyList<ITemplateInfo> templateMatches = _searchCache.GetNameMatchedTemplates(searchName);
+            IReadOnlyList<ITemplateInfo> templateMatches = SearchCache.GetNameMatchedTemplates(searchName);
             IReadOnlyList<string> templateIdentities = templateMatches.Select(t => t.Identity).ToList();
-            IReadOnlyDictionary<string, PackInfo> templateToPackMap = _searchCache.GetTemplateToPackMapForTemplateIdentities(templateIdentities);
+            IReadOnlyDictionary<string, PackInfo> templateToPackMap = SearchCache.GetTemplateToPackMapForTemplateIdentities(templateIdentities);
 
             List<ITemplateNameSearchResult> resultList = new List<ITemplateNameSearchResult>();
 
@@ -72,12 +72,12 @@ namespace Microsoft.TemplateSearch.Common
 
         public Task<IReadOnlyDictionary<string, PackToTemplateEntry>> CheckForTemplatePackMatchesAsync(IReadOnlyList<string> packNameList)
         {
-            if (_searchCache == null)
+            if (SearchCache == null)
             {
                 throw new Exception("Search Source is not configured");
             }
 
-            IReadOnlyDictionary<string, PackToTemplateEntry> matchedPacks = _searchCache.GetInfoForNamedPacks(packNameList)
+            IReadOnlyDictionary<string, PackToTemplateEntry> matchedPacks = SearchCache.GetInfoForNamedPacks(packNameList)
                                     .Where(packInfo => !_packFilter.ShouldPackBeFiltered(packInfo.Key, packInfo.Value.Version))
                                     .ToDictionary(packInfo => packInfo.Key, packInfo => packInfo.Value);
 
