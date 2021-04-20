@@ -72,7 +72,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         internal async Task GetCreationEffects_BasicTest_Package()
         {
             var bootstrapper = BootstrapperFactory.GetBootstrapper();
-            string packageLocation = _packageManager.GetNuGetPackage("Microsoft.DotNet.Common.ProjectTemplates.5.0");
+            string packageLocation = await _packageManager.GetNuGetPackage("Microsoft.DotNet.Common.ProjectTemplates.5.0").ConfigureAwait(false);
             await bootstrapper.InstallTemplateAsync(packageLocation).ConfigureAwait(false);
 
             string output = TestUtils.CreateTemporaryFolder();
@@ -99,7 +99,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         internal async Task Create_BasicTest_Package()
         {
             var bootstrapper = BootstrapperFactory.GetBootstrapper();
-            string packageLocation = _packageManager.GetNuGetPackage("Microsoft.DotNet.Common.ProjectTemplates.5.0");
+            string packageLocation = await _packageManager.GetNuGetPackage("Microsoft.DotNet.Common.ProjectTemplates.5.0").ConfigureAwait(false);
             await bootstrapper.InstallTemplateAsync(packageLocation).ConfigureAwait(false);
 
             string output = TestUtils.CreateTemporaryFolder();
