@@ -86,7 +86,6 @@ namespace Microsoft.TemplateEngine.Core.Util
                 _isBomNeeded = true;
             }
 
-
             bool explicitOnConfigurationRequired = false;
             Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
             List<string> turnOnByDefault = OperationsToExplicitlySetOnByDefault.GetOrAdd(operationProviders, x =>

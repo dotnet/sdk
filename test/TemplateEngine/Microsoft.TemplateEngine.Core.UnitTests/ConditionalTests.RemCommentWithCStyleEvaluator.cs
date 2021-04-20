@@ -124,7 +124,6 @@ End";
             RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
         }
 
-
         [Fact(DisplayName = nameof(VerifyBatRemCommentRemovalWithNestedClause))]
         public void VerifyBatRemCommentRemovalWithNestedClause()
         {
@@ -170,7 +169,6 @@ End";
             processor = SetupBatFileRemLineCommentsProcessor(vc);
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
-
 
         [Fact(DisplayName = nameof(VerifyBatRemCommentRemovalNestedDoesntRemove))]
         public void VerifyBatRemCommentRemovalNestedDoesntRemove()

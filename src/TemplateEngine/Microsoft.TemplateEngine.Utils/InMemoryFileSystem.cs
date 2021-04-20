@@ -815,7 +815,6 @@ namespace Microsoft.TemplateEngine.Utils
             targetFile.Attributes = attributes;
         }
 
-        
         public DateTime GetLastWriteTimeUtc(string file)
         {
             if (!IsPathInCone(file, out string processedPath))

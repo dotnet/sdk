@@ -222,7 +222,6 @@ namespace Microsoft.TemplateEngine.Core
             OnKeysChanged();
         }
 
-
         public static IVariableCollection SetupVariables(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, IVariableConfig variableConfig)
         {
             IVariableCollection variables = Root();

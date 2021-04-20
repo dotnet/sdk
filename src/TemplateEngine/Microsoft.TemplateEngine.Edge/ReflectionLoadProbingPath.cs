@@ -241,7 +241,6 @@ namespace Microsoft.TemplateEngine.Edge
 #endif
                 }
 
-
                 if (found != null)
                 {
                     foreach (AssemblyName reference in found.GetReferencedAssemblies())

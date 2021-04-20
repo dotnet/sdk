@@ -288,7 +288,6 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             throw new PackageNotFoundException(packageIdentifier, packageVersion, sources.Select(source => source.Source));
         }
 
-
         private async Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)> GetPackageMetadataAsync(PackageSource source, string packageIdentifier, bool includePrerelease = false, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(packageIdentifier))

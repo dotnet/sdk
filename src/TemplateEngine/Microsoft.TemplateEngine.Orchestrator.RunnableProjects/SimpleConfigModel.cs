@@ -181,7 +181,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private IReadOnlyList<string> _ignoreFileNames;
         private bool _isPlaceholderFileNameCustomized;
 
-
         internal string PlaceholderFilename
         {
             get
@@ -400,7 +399,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         // file -> replacements
         public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; private set; }
-
 
         private IReadOnlyList<ICustomFileGlobModel> SpecialCustomSetup = new List<ICustomFileGlobModel>();
 

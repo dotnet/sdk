@@ -33,7 +33,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-
         [Fact(DisplayName = nameof(TestCustomConditionalSetupNoStyleSpecification))]
         public void TestCustomConditionalSetupNoStyleSpecification()
         {

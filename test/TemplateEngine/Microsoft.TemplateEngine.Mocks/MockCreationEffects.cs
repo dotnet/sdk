@@ -39,7 +39,6 @@ namespace Microsoft.TemplateEngine.Mocks
         MockFileChange[] _mockFileChanges = Array.Empty<MockFileChange>();
         string[] _absentFiles = Array.Empty<string>();
 
-
         public IReadOnlyList<IFileChange> FileChanges => _mockFileChanges;
 
         public ICreationResult CreationResult

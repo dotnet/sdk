@@ -70,7 +70,6 @@ namespace Microsoft.TemplateEngine.Utils
                 return Val?.GetHashCode() ?? 0;
             }
 
-
             public T Val { get; private set; }
         }
 

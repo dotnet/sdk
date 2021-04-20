@@ -98,7 +98,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 Locale = localeToken.ToString();
             }
 
-
             var mountPointInfo = new Dictionary<string, DateTime>();
 
             if (contentJobject.TryGetValue(nameof(MountPointsInfo), StringComparison.OrdinalIgnoreCase, out JToken mountPointInfoToken))
@@ -303,7 +302,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             IReadOnlyDictionary<string, ICacheParameter> templateCacheParameters = template.CacheParameters;
             IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> localizedParameterSymbols = localizationInfo.ParameterSymbols;
-
 
             Dictionary<string, ICacheParameter> localizedCacheParams = new Dictionary<string, ICacheParameter>();
 

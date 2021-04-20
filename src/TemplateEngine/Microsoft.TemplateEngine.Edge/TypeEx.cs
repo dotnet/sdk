@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Runtime.Loader;
 #endif
 
-
 namespace Microsoft.TemplateEngine.Edge
 {
     public static class TypeEx

@@ -244,7 +244,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
             symbolBasedRenames.Add(new ReplacementTokens("test", TokenConfig.FromValue("Replace1")));
 
-
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
             Assert.Equal(1, allChanges.Count);
             Assert.Equal("Replace1Value_file.txt", allChanges["Replace1_file.txt"]);
@@ -304,7 +303,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}uc", TokenConfig.FromValue("REPLACE")));
             symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}lc", TokenConfig.FromValue("replace")));
 
-
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
             Assert.Equal(3, allChanges.Count);
             Assert.Equal("TestProject1_file.txt", allChanges["Replace1_file.txt"]);
@@ -358,7 +356,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}identity", TokenConfig.FromValue("replace")));
             symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}lc", TokenConfig.FromValue("replace")));
 
-
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
             Assert.Equal("testproject1_file.txt", allChanges["replace1_file.txt"]);
@@ -404,7 +401,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
             symbolBasedRenames.Add(new ReplacementTokens("test", TokenConfig.FromValue("Replace")));
 
-
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
             Assert.Equal("ReplaceValue1_file.txt", allChanges["Replace1_file.txt"]);
@@ -448,7 +444,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             //prepare renames configuration
             List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
             symbolBasedRenames.Add(new ReplacementTokens("test", TokenConfig.FromValue("Replace")));
-
 
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);

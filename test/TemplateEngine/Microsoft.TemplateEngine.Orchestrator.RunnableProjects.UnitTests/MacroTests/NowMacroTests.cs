@@ -57,7 +57,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             jsonParameters.Add("utc", utc);
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("NowMacro", null, variableName, jsonParameters);
 
-
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);

@@ -69,7 +69,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                         PackCheckResult packCheckResult = _packChecker.TryGetTemplatesInPack(packInfo, _additionalDataProducers, alreadySeenTemplateIdentities);
                         checkResultList.Add(packCheckResult);
 
-
                         Verbose.WriteLine($"{packCheckResult.PackInfo.Id}::{packCheckResult.PackInfo.Version} is processed");
                         if (packCheckResult.FoundTemplates.Any())
                         {
@@ -84,7 +83,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                         {
                             Verbose.WriteLine("No templates were found");
                         }
-
 
                         // Record the found identities - to skip these templates when checking additional packs.
                         // Some template identities are the same in multiple packs on nuget.
@@ -111,7 +109,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                 }
                 Console.WriteLine("Downloaded packs were removed");
             }
-
 
             return new PackSourceCheckResult(checkResultList, _additionalDataProducers);
         }

@@ -166,7 +166,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
                             return;
                         }
 
-
                         int token;
                         if (_structureTrie.GetOperation(processorState.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
                         {
@@ -233,7 +232,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
                             currentBufferPosition = 0;
                             return;
                         }
-
 
                         int token;
                         if (_closeConditionTrie.GetOperation(processorState.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))

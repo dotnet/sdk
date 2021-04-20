@@ -24,7 +24,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             return "test";
         }
 
-
         internal static string GetOutputFromParameterString(string parameters)
         {
             string[] parametersArray = parameters.Split(null);

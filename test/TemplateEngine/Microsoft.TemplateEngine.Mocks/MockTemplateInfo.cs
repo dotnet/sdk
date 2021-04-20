@@ -101,7 +101,6 @@ namespace Microsoft.TemplateEngine.Mocks
             return this;
         }
 
-
         private string[] _cacheParameters = new string[0];
         private string[] _baselineInfo = new string[0];
         private string[] _classifications = new string[0];
@@ -153,7 +152,6 @@ namespace Microsoft.TemplateEngine.Mocks
                 return _tags.ToDictionary(kvp => kvp.Key, kvp => CreateTestCacheTag(kvp.Value));
             }
         }
-
 
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
         {

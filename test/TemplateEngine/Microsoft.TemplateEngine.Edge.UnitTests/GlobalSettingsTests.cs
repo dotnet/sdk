@@ -43,7 +43,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             using var _ = await globalSettings2.LockAsync(cts2.Token).ConfigureAwait(false);
         }
 
-
         [Fact]
         public async Task TestFilwatcher()
         {
@@ -71,7 +70,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(newData.Details["a"], newData2.Details["a"]);
             Assert.Equal(newData.LastChangeTime, newData2.LastChangeTime);
         }
-
 
         [Fact]
         public async Task TestReadWhileLocked()

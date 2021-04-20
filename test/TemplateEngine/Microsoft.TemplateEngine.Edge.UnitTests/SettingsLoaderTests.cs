@@ -194,7 +194,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
         }
 
-
         [Fact]
         public async Task RemoveMountpointRemovesTemplates()
         {

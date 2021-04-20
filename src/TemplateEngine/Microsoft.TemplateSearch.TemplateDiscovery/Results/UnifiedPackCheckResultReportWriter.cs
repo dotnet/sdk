@@ -87,7 +87,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                                             return packToTemplateEntry;
                                         });
 
-
             Dictionary<string, object> additionalData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             foreach (IAdditionalDataProducer dataProducer in packSourceCheckResults.AdditionalDataProducers)

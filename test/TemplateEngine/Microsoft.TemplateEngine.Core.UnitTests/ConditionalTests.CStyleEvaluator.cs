@@ -1399,7 +1399,6 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-
         [Theory(DisplayName = nameof(VerifyIfElseEndifConditionUsesDouble))]
         [InlineData("", "Hello\r\n#if (1.2 < 2.5)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
         [InlineData("invariant", "Hello\r\n#if (1.2 < 2.5)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]

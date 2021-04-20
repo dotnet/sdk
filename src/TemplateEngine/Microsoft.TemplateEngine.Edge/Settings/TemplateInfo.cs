@@ -112,7 +112,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
         private IReadOnlyList<ITemplateParameter> _parameters;
 
-
         [JsonProperty]
         public string MountPointUri { get; set; }
 

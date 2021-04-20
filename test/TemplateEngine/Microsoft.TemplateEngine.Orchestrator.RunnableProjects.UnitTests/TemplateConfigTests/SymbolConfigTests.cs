@@ -205,8 +205,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-
-
         [Fact(DisplayName = nameof(ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly))]
         public void ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly()
         {
@@ -668,7 +666,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-
         [Fact(DisplayName = nameof(ObjectValueFormDefinitionRespectsAddIdentityTrue))]
         public void ObjectValueFormDefinitionRespectsAddIdentityTrue()
         {
@@ -736,7 +733,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal("bar", configuredValueFormNames[1]);
             Assert.Equal("baz", configuredValueFormNames[2]);
         }
-
 
         [Fact(DisplayName = nameof(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly))]
         public void ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly()

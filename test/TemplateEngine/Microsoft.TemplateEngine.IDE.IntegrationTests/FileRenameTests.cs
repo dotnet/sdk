@@ -194,7 +194,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                     .Without("foo.cs")
             };
         }
-    
 
         [Theory]
         [MemberData(nameof(Get_FileRename_TestData))]
@@ -207,7 +206,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
             ICreationEffects result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, "").ConfigureAwait(false);
@@ -217,7 +215,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
-
 
             IFileChangeComparer comparer = new IFileChangeComparer();
             Assert.Equal(expectedResult.FileChanges.Count, result.FileChanges.Count);
@@ -294,7 +291,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
 
-
             IFileChangeComparer comparer = new IFileChangeComparer();
             Assert.Equal(expectedResult.FileChanges.Count, result.FileChanges.Count);
             Assert.Equal(
@@ -349,7 +345,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             }
 
         }
-
 
     }
 }

@@ -163,7 +163,6 @@ Trailing stuff
 Trailing stuff
 {/* trailing comment */}";
 
-
         private static readonly VariableCollection JsxOuterElseifTrueVariableCollection = new VariableCollection
         {
             ["OUTER_IF_CLAUSE"] = false,
@@ -187,7 +186,6 @@ Trailing stuff
             ["INNER_IF_CLAUSE"] = false,
             ["INNER_ELSEIF_CLAUSE"] = true
         };
-
 
         private static readonly VariableCollection JsxAllFalse = new VariableCollection
         {
