@@ -69,9 +69,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                       AllowExplicitVersion="true"/>
   </ItemGroup>
 
-
-
-
   <!-- Remove package references with metadata IsImplicitlyDefined = true, if there are other PackageReference items with the same identity -->
   <Target Name="CheckForImplicitPackageReferenceOverrides" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences">
     <PropertyGroup>
@@ -172,7 +169,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-
   <UsingTask TaskName="CheckForImplicitPackageReferenceOverrides" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <!-- Remove package references with metadata IsImplicitlyDefined = true, if there are other PackageReference items with the same identity -->
@@ -205,7 +201,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
   </Target>
-
 
   <UsingTask TaskName="CheckForDuplicateItems" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
