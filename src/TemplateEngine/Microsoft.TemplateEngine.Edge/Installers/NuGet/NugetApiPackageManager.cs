@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,14 +40,14 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         /// </summary>
         /// <param name="downloadPath">path to download to.</param>
         /// <param name="identifier">NuGet package identifier.</param>
-        /// <param name="version">The version to download. If empty, the latest stable version will be downloaded. If stable version is not availalbe, the latest preview will be downloaded.</param>
+        /// <param name="version">The version to download. If empty, the latest stable version will be downloaded. If stable version is not available, the latest preview will be downloaded.</param>
         /// <param name="additionalSources">Additional NuGet feeds to use (in addition to default feeds configured for current directory).</param>
         /// <param name="cancellationToken"></param>
         /// <returns><see cref="NuGetPackageInfo"/>containing full path to downloaded package and package details.</returns>
         /// <exception cref="InvalidNuGetSourceException">when sources passed to install request are not valid NuGet sources or failed to read default NuGet configuration.</exception>
         /// <exception cref="DownloadException">when the download of the package failed.</exception>
         /// <exception cref="PackageNotFoundException">when the package cannot be find in default or passed to install request NuGet feeds.</exception>
-        public async Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string version = null, IEnumerable<string> additionalSources = null, CancellationToken cancellationToken = default)
+        public async Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {
@@ -160,14 +162,14 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         /// Gets the latest stable version for the package. If the package has preview version installed, returns the latest preview.
         /// Uses NuGet feeds configured for current directory and the source if specified from <paramref name="additionalSource"/>.
         /// </summary>
-        /// <param name="identifier">NuGet package identifier.<./param>
+        /// <param name="identifier">NuGet package identifier.</param>
         /// <param name="version">current version of NuGet package.</param>
         /// <param name="additionalSource">additional NuGet feeds to check from.</param>
         /// <param name="cancellationToken"></param>
-        /// <returns>the latest version for the <paramref name="identifier"/> and indication if installed version is latest</returns>
-        /// <exception cref="InvalidNuGetSourceException">when sources passed to install request are not valid NuGet feeds or failed to read default NuGet configuration</exception>
-        /// <exception cref="PackageNotFoundException">when the package cannot be find in default or source NuGet feeds</exception>
-        public async Task<(string latestVersion, bool isLatestVersion)> GetLatestVersionAsync(string identifier, string version = null, string additionalSource = null, CancellationToken cancellationToken = default)
+        /// <returns>the latest version for the <paramref name="identifier"/> and indication if installed version is latest.</returns>
+        /// <exception cref="InvalidNuGetSourceException">when sources passed to install request are not valid NuGet feeds or failed to read default NuGet configuration.</exception>
+        /// <exception cref="PackageNotFoundException">when the package cannot be find in default or source NuGet feeds.</exception>
+        public async Task<(string latestVersion, bool isLatestVersion)> GetLatestVersionAsync(string identifier, string? version = null, string? additionalSource = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {
@@ -181,7 +183,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 previewVersionInstalled = currentVersion.IsPrerelease;
             }
 
-            IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSource);
+            string[] additionalSources = string.IsNullOrWhiteSpace(additionalSource) ? Array.Empty<string>() : new[] { additionalSource! };
+            IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources);
             var (_, package) = await GetLatestVersionInternalAsync(identifier, packageSources, previewVersionInstalled, cancellationToken).ConfigureAwait(false);
             bool isLatestVersion = currentVersion != null ? currentVersion >= package.Identity.Version : false;
             return (package.Identity.Version.ToNormalizedString(), isLatestVersion);
@@ -195,17 +198,18 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
             _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
 
-            (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)[] foundPackagesBySource =
+            (PackageSource source, IEnumerable<IPackageSearchMetadata>? foundPackages)[] foundPackagesBySource =
                 await Task.WhenAll(
                     packageSources.Select(source => GetPackageMetadataAsync(source, packageIdentifier, includePrerelease: true, cancellationToken)))
                           .ConfigureAwait(false);
 
-            if (!foundPackagesBySource.Any())
+            if (!foundPackagesBySource.Any(result => result.foundPackages != null))
             {
                 throw new InvalidNuGetSourceException("Failed to load NuGet sources", packageSources.Select(source => source.Source));
             }
 
             var accumulativeSearchResults = foundPackagesBySource
+                .Where(result => result.foundPackages != null)
                 .SelectMany(result => result.foundPackages.Select(package => (result.source, package)));
 
             if (!accumulativeSearchResults.Any())
@@ -220,19 +224,19 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             if (!includePreview)
             {
-                (PackageSource, IPackageSearchMetadata) latestStableVersion = accumulativeSearchResults.Aggregate(
+                (PackageSource, IPackageSearchMetadata) latestStableVersion = accumulativeSearchResults
+                    .Aggregate<(PackageSource source, IPackageSearchMetadata package), (PackageSource source, IPackageSearchMetadata package)>(
+                    default,
                     (max, current) =>
                     {
                         if (current.package.Identity.Version.IsPrerelease)
                         {
                             return max;
                         }
-
                         if (max == default)
                         {
                             return current;
                         }
-
                         return current.package.Identity.Version > max.package.Identity.Version ? current : max;
                     });
                 if (latestStableVersion != default)
@@ -244,11 +248,6 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             (PackageSource, IPackageSearchMetadata) latestVersion = accumulativeSearchResults.Aggregate(
                 (max, current) =>
                 {
-                    if (max == default)
-                    {
-                        return current;
-                    }
-
                     return current.package.Identity.Version > max.package.Identity.Version ? current : max;
                 });
             return latestVersion;
@@ -266,12 +265,14 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             bool atLeastOneSourceValid = false;
             using CancellationTokenSource linkedCts =
                       CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var tasks = sources.Select(source => GetPackageMetadataAsync(source, packageIdentifier, includePrerelease: true, linkedCts.Token)).ToList();
+            List<Task<(PackageSource source, IEnumerable<IPackageSearchMetadata>? foundPackages)>> tasks =
+                sources.Select(source => GetPackageMetadataAsync(source, packageIdentifier, includePrerelease: true, linkedCts.Token)).ToList();
             while (tasks.Any())
             {
-                var finishedTask = await Task.WhenAny(tasks).ConfigureAwait(false);
+                Task<(PackageSource source, IEnumerable<IPackageSearchMetadata>? foundPackages)> finishedTask =
+                    await Task.WhenAny(tasks).ConfigureAwait(false);
                 tasks.Remove(finishedTask);
-                (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages) result = await finishedTask.ConfigureAwait(false);
+                (PackageSource source, IEnumerable<IPackageSearchMetadata>? foundPackages) result = await finishedTask.ConfigureAwait(false);
                 if (result.foundPackages == null)
                 {
                     continue;
@@ -301,7 +302,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             throw new PackageNotFoundException(packageIdentifier, packageVersion, sources.Select(source => source.Source));
         }
 
-        private async Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)> GetPackageMetadataAsync(PackageSource source, string packageIdentifier, bool includePrerelease = false, CancellationToken cancellationToken = default)
+        private async Task<(PackageSource source, IEnumerable<IPackageSearchMetadata>? foundPackages)> GetPackageMetadataAsync(PackageSource source, string packageIdentifier, bool includePrerelease = false, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(packageIdentifier))
             {
@@ -340,7 +341,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             return (source, foundPackages: null);
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(params string[] additionalSources)
+        private IEnumerable<PackageSource> LoadNuGetSources(IEnumerable<string> additionalSources)
         {
             IEnumerable<PackageSource> defaultSources;
             string currentDirectory = string.Empty;
@@ -358,7 +359,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 throw new InvalidNuGetSourceException($"Failed to load NuGet sources configured for the folder {currentDirectory}", ex);
             }
 
-            if (!additionalSources?.Any() ?? true)
+            if (!additionalSources.Any())
             {
                 if (!defaultSources.Any())
                 {
