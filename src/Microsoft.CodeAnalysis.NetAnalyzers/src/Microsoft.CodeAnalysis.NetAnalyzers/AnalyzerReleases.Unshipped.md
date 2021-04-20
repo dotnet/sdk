@@ -5,7 +5,7 @@ Rule ID | Category | Severity | Notes
 CA1418 | Interoperability | Warning | UseValidPlatformString, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1418)
 CA1839 | Performance | Info | UseEnvironmentMembers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839)
 CA1840 | Performance | Info | UseEnvironmentMembers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840)
-CA1841 | Performance | Info | PreferDictionaryContainsMethods, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839)
+CA1841 | Performance | Info | PreferDictionaryContainsMethods, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841)
 
 ### Removed Rules
 
