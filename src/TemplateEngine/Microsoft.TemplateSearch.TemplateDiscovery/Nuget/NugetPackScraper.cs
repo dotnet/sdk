@@ -14,7 +14,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
     public class NugetPackScraper
     {
-        static readonly Dictionary<string, string> SupportedProviders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, string> SupportedProviders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {  "query-package-type-template", "packageType=Template" },
             {  "query-template", "q=template" }

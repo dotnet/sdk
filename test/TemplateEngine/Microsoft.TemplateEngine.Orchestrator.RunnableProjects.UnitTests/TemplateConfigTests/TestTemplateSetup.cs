@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
         }
 
-        IEngineEnvironmentSettings _environment;
+        private IEngineEnvironmentSettings _environment;
         private IDictionary<string, string> _sourceFiles;
         private readonly string _configFile;
         private string _sourceBaseDir;

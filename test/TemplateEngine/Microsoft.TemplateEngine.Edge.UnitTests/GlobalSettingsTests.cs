@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class GlobalSettingsTests : IDisposable
     {
-        EnvironmentSettingsHelper _helper = new EnvironmentSettingsHelper();
+        private EnvironmentSettingsHelper _helper = new EnvironmentSettingsHelper();
 
         [Fact]
         public async Task TestLocking()

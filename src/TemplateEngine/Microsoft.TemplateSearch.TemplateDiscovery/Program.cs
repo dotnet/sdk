@@ -11,7 +11,7 @@ using Microsoft.TemplateSearch.TemplateDiscovery.Results;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
-    class Program
+    internal class Program
     {
         private static readonly bool _defaultRunOnlyOnePage = false;
         private static readonly int _defaultPageSize = 100;
@@ -28,7 +28,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         private static readonly string _verbose = "-v";
         private static readonly string _providers = "--providers";
 
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             // setup the config with defaults
             ScraperConfig config = new ScraperConfig()

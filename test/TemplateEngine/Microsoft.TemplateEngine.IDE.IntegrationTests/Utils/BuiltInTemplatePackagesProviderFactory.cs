@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
 {
-    class BuiltInTemplatePackagesProviderFactory : ITemplatePackageProviderFactory
+    internal class BuiltInTemplatePackagesProviderFactory : ITemplatePackageProviderFactory
     {
         public string DisplayName => "IDE.IntegrationTests BuiltIn";
 
@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             return new BuiltInTemplatePackagesProvider(this, settings);
         }
 
-        class BuiltInTemplatePackagesProvider : ITemplatePackageProvider
+        private class BuiltInTemplatePackagesProvider : ITemplatePackageProvider
         {
             private readonly IEngineEnvironmentSettings settings;
 

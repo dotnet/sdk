@@ -14,8 +14,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     internal class TemplatePackageManager : ITemplatePackageManager, IDisposable
     {
         private readonly IEngineEnvironmentSettings environmentSettings;
-
-        Dictionary<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>> cachedSources;
+        private Dictionary<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>> cachedSources;
 
         public TemplatePackageManager(IEngineEnvironmentSettings environmentSettings)
         {

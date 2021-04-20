@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 {
-    class FolderInstallerFactory : IInstallerFactory
+    internal class FolderInstallerFactory : IInstallerFactory
     {
         public static readonly Guid FactoryId = new Guid("{F01DEA33-E89C-46D1-89C2-1CA1F394C5AA}");
 

@@ -7,9 +7,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.ScraperOutputComparison
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             if (!TryParseArgs(args, out ComparisonConfig comparisonConfig))
             {

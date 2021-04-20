@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class LocalizationTests : IDisposable
     {
-        EnvironmentSettingsHelper _helper = new EnvironmentSettingsHelper();
+        private EnvironmentSettingsHelper _helper = new EnvironmentSettingsHelper();
 
         [Theory]
         [InlineData(null, "name")]
@@ -145,7 +145,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(expectedManualInstructions, effects.CreationResult.PostActions[postActionIndex].ManualInstructions);
         }
 
-        class TemplatesFactory : ITemplatePackageProviderFactory
+        private class TemplatesFactory : ITemplatePackageProviderFactory
         {
             public string DisplayName => nameof(LocalizationTests);
 

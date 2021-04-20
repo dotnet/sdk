@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class SettingsLoaderTests : IDisposable
     {
-        class FakeFactory : ITemplatePackageProviderFactory
+        private class FakeFactory : ITemplatePackageProviderFactory
         {
             public string DisplayName => nameof(FakeFactory);
 
@@ -33,8 +33,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 return defaultTemplatePackageProvider;
             }
 
-            static IEnumerable<string> Folders { get; set; }
-            static IEnumerable<string> NuPkgs { get; set; }
+            private static IEnumerable<string> Folders { get; set; }
+            private static IEnumerable<string> NuPkgs { get; set; }
 
             public static void SetNuPkgsAndFolders(IEnumerable<string> nupkgs = null, IEnumerable<string> folders = null)
             {
@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 Folders = folders;
             }
 
-            static List<WeakReference<DefaultTemplatePackageProvider>> allCreatedProviders = new List<WeakReference<DefaultTemplatePackageProvider>>();
+            private static List<WeakReference<DefaultTemplatePackageProvider>> allCreatedProviders = new List<WeakReference<DefaultTemplatePackageProvider>>();
 
             public static void TriggerChanged()
             {
@@ -56,7 +56,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             }
         }
 
-        EnvironmentSettingsHelper helper = new EnvironmentSettingsHelper();
+        private EnvironmentSettingsHelper helper = new EnvironmentSettingsHelper();
 
         private static string GetNupkgsFolder()
         {

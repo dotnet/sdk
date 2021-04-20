@@ -22,7 +22,7 @@ namespace Microsoft.TemplateSearch.Common
 
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly string _defaultLanguage;
-        Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> _matchFilter;
+        private Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> _matchFilter;
 
         // Search all of the registered sources.
         public async Task<SearchResults> SearchForTemplatesAsync(IReadOnlyList<IManagedTemplatePackage> existingTemplatePackages, string inputTemplateName)
