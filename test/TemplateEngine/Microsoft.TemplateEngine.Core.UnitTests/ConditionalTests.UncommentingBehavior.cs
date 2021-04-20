@@ -139,8 +139,8 @@ Past endif
 
             VariableCollection vc = new VariableCollection
             {
-                ["VALUE_IF"] = false,       // must be false for the else to process
-                ["VALUE_ELSEIF"] = false    // must be false for the else to process
+                ["VALUE_IF"] = false, // must be false for the else to process
+                ["VALUE_ELSEIF"] = false // must be false for the else to process
             };
             IProcessor processor = SetupMadeUpStyleProcessor(vc);
 
@@ -442,8 +442,8 @@ Past endif
             // setup for the if being true - always take the if
             VariableCollection vc = new VariableCollection
             {
-                ["VALUE_IF"] = false,           // must be false, to get the elseif to process
-                ["VALUE_ELSEIF"] = true         // must be true to get the elseif to process
+                ["VALUE_IF"] = false, // must be false, to get the elseif to process
+                ["VALUE_ELSEIF"] = true // must be true to get the elseif to process
             };
             IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
 
@@ -580,7 +580,7 @@ Past endif
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE_IF"] = false,       // must be false for the else to process
-                ["VALUE_ELSEIF"] = false    // must be false for the else to process
+                ["VALUE_ELSEIF"] = false // must be false for the else to process
             };
             IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
 

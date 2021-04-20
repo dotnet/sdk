@@ -213,7 +213,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 if (!CheckGeneratorVersionRequiredByTemplate(templateModel.GeneratorVersions))
-                {   // template isn't compatible with this generator version
+                {
+                    // template isn't compatible with this generator version
                     template = null;
                     return false;
                 }
@@ -353,7 +354,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else if (string.Equals(param.DataType, "text", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(param.DataType, "string", StringComparison.OrdinalIgnoreCase))
-            {   // "text" is a valid data type, but doesn't need any special handling.
+            {
+                // "text" is a valid data type, but doesn't need any special handling.
                 return literal;
             }
             else
@@ -474,7 +476,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                 }
                 catch
-                {   // outside the mount point root
+                {
+                    // outside the mount point root
                     // TODO: after the null ref exception in DirectoryInfo is fixed, change how this check works.
                     allSourcesValid = false;
                     host.LogDiagnosticMessage(string.Empty, "Authoring");
@@ -538,7 +541,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             foreach (string choiceValue in param.Choices.Keys)
             {
                 if (string.Equals(choiceValue, literal, StringComparison.OrdinalIgnoreCase))
-                {   // exact match is good, regardless of partial matches
+                {
+                    // exact match is good, regardless of partial matches
                     match = choiceValue;
                     return true;
                 }
@@ -549,7 +553,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         partialMatch = choiceValue;
                     }
                     else
-                    {   // multiple partial matches, can't take one.
+                    {
+                        // multiple partial matches, can't take one.
                         match = null;
                         return false;
                     }

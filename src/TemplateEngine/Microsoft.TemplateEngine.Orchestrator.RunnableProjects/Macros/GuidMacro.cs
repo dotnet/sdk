@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 {
                     IsVariable = true,
                     Name = config.VariableName + "-" + guidFormats[i],
-                    DataType =  config.DataType
+                    DataType = config.DataType
                 };
 
                 vars[p.Name] = value;

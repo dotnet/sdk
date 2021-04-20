@@ -40,7 +40,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 string value = switchInfo.Value;
 
                 if (string.IsNullOrEmpty(condition))
-                {   // no condition, this is the default.
+                {
+                    // no condition, this is the default.
                     result = value;
                     break;
                 }

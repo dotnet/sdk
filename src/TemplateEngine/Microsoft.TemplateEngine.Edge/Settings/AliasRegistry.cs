@@ -68,7 +68,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return new AliasManipulationResult(AliasManipulationStatus.InvalidInput);
             }
             else if (aliasTokens.Count == 0)
-            {   // the command was just "--alias <alias name>"
+            {
+                // the command was just "--alias <alias name>"
                 // remove the alias
                 if (_aliases.TryRemoveCommandAlias(aliasName, out IReadOnlyList<string> removedAliasTokens))
                 {

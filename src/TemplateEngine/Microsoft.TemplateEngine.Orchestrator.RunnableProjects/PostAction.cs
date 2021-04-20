@@ -51,7 +51,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 model.EvaluateCondition(environmentSettings, rootVariableCollection);
 
                 if (!model.ConditionResult)
-                {   // Condition on the post action is blank, or not true. Don't include this post action.
+                {
+                    // Condition on the post action is blank, or not true. Don't include this post action.
                     continue;
                 }
 
@@ -62,15 +63,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     foreach (KeyValuePair<string, string> modelInstruction in model.ManualInstructionInfo)
                     {
                         if (string.IsNullOrEmpty(modelInstruction.Value))
-                        {   // no condition
+                        {
+                            // no condition
                             if (string.IsNullOrEmpty(chosenInstruction))
-                            {   // No condition, and no instruction previously chosen. Take this one.
+                            {
+                                // No condition, and no instruction previously chosen. Take this one.
                                 // We don't want a default instruction to override a conditional one.
                                 chosenInstruction = modelInstruction.Key;
                             }
                         }
                         else if (Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, modelInstruction.Value, rootVariableCollection))
-                        {   // condition is not blank and true, take this one. This results in a last-in-wins behaviour for conditions that are true.
+                        {
+                            // condition is not blank and true, take this one. This results in a last-in-wins behaviour for conditions that are true.
                             chosenInstruction = modelInstruction.Key;
                         }
                     }

@@ -52,7 +52,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             string pseudoEndComment;
 
             if (endToken.Length < 2)
-            {   // end comment must be at least two characters to have a programmatically determined pseudo-comment
+            {
+                // end comment must be at least two characters to have a programmatically determined pseudo-comment
                 pseudoEndComment = null;
             }
             else

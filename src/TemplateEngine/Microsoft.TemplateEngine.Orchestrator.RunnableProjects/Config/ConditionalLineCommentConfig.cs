@@ -17,7 +17,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             string token = rawConfiguration.ToString("token");
 
             if (string.IsNullOrWhiteSpace(token))
-            {   // this is the only required data, all the rest is optional
+            {
+                // this is the only required data, all the rest is optional
                 throw new TemplateAuthoringException("Template authoring error. Token must be defined", "token");
             }
 

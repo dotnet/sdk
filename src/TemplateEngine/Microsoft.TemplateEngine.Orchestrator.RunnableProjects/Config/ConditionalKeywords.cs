@@ -64,7 +64,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             string prefixString = rawConfiguration.ToString("keywordPrefix");
             if (prefixString != null)
-            {   // Empty string is a valid value for keywordPrefix, null is not.
+            {
+                // Empty string is a valid value for keywordPrefix, null is not.
                 // If the "keywordPrefix" key isn't present in the config, the value will be null and not used.
                 keywords.KeywordPrefix = prefixString;
             }

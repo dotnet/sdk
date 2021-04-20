@@ -308,7 +308,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             foreach (KeyValuePair<string, ICacheParameter> templateParam in templateCacheParameters)
             {
                 if (localizedParameterSymbols.TryGetValue(templateParam.Key, out IParameterSymbolLocalizationModel localizationForParam))
-                {   // there is loc info for this symbol
+                {
+                    // there is loc info for this symbol
                     ICacheParameter localizedParam = new CacheParameter
                     {
                         DataType = templateParam.Value.DataType,
@@ -336,7 +337,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             foreach (TemplateInfo template in templateList)
             {
                 if (string.IsNullOrEmpty(template.LocaleConfigPlace))
-                {   // Indicates an unlocalized entry in the locale specific template cache.
+                {
+                    // Indicates an unlocalized entry in the locale specific template cache.
                     continue;
                 }
 

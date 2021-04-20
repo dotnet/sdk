@@ -201,7 +201,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
                         }
 
                         if (IsTokenIndexOfType(token, IfTokenActionableBaseIndex))
-                        {   // "Actionable" if token, so enable the flag operation(s)
+                        {
+                            // "Actionable" if token, so enable the flag operation(s)
                             _current.ToggleActionableOperations(true, processor);
                         }
 

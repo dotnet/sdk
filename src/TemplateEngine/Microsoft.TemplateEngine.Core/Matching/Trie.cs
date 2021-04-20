@@ -54,7 +54,8 @@ namespace Microsoft.TemplateEngine.Core.Matching
                     int sameMatcherIndex = next.Terminals.FindIndex(t => t.Start == terminal.Start && t.End == terminal.End);
 
                     if (sameMatcherIndex > -1)
-                    {   // this matching is identical to another terminal already added to the trie. Overwrite it.
+                    {
+                        // this matching is identical to another terminal already added to the trie. Overwrite it.
                         next.Terminals[sameMatcherIndex] = terminal;
                     }
                     else

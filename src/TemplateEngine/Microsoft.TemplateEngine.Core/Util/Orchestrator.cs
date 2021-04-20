@@ -125,7 +125,8 @@ namespace Microsoft.TemplateEngine.Core.Util
                 bool checkingDirWithPlaceholderFile = false;
 
                 if (spec.IgnoreFileNames.Contains(fileName))
-                {   // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
+                {
+                    // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
                     // The change checking / reporting is different, setting this variable tracks it.
                     checkingDirWithPlaceholderFile = true;
                 }
@@ -199,7 +200,8 @@ namespace Microsoft.TemplateEngine.Core.Util
                 bool checkingDirWithPlaceholderFile = false;
 
                 if (spec.IgnoreFileNames.Contains(fileName))
-                {   // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
+                {
+                    // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
                     // The change checking / reporting is different, setting this variable tracks it.
                     checkingDirWithPlaceholderFile = true;
                 }

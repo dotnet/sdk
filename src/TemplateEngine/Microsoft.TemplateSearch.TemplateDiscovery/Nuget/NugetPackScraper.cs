@@ -16,8 +16,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
     {
         private static readonly Dictionary<string, string> SupportedProviders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            {  "query-package-type-template", "packageType=Template" },
-            {  "query-template", "q=template" }
+            { "query-package-type-template", "packageType=Template" },
+            { "query-template", "q=template" }
         };
 
         public static IEnumerable<string> SupportedProvidersList => SupportedProviders.Keys;

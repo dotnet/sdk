@@ -495,7 +495,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     foreach (ICustomFileGlobModel customGlobModel in _specialCustomSetup)
                     {
                         if (customGlobModel.ConditionResult)
-                        {   // only add the special if the condition is true
+                        {
+                            // only add the special if the condition is true
                             SpecialOperationConfigParams defaultParams = defaultSpecials.Where(x => x.Glob == customGlobModel.Glob).FirstOrDefault();
 
                             if (defaultParams == null)
@@ -516,7 +517,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     foreach (SpecialOperationConfigParams defaultParams in defaultSpecials)
                     {
                         if (processedGlobs.Contains(defaultParams.Glob))
-                        {   // this one was already setup due to a custom config
+                        {
+                            // this one was already setup due to a custom config
                             continue;
                         }
 
@@ -544,7 +546,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             if (customGlobModel == null || string.IsNullOrEmpty(customGlobModel.FlagPrefix))
-            {   // these conditions may need to be separated - if there is custom info, but the flag prefix was not provided, we might want to raise a warning / error
+            {
+                // these conditions may need to be separated - if there is custom info, but the flag prefix was not provided, we might want to raise a warning / error
                 operations.AddRange(FlagsConfig.FlagsDefaultSetup(defaultModel.FlagPrefix));
             }
             else
@@ -1161,11 +1164,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // The symbols dictionary comparer is Ordinal, making symbol names case-sensitive.
                     if (string.Equals(prop.Name, NameSymbolName, StringComparison.Ordinal)
                             && symbols.TryGetValue(prop.Name, out ISymbolModel existingSymbol))
-                    {   // "name" symbol is explicitly defined above. If it's also defined in the template.json, it gets special handling here.
+                    {
+                        // "name" symbol is explicitly defined above. If it's also defined in the template.json, it gets special handling here.
                         symbols[prop.Name] = ParameterSymbol.ExplicitNameSymbolMergeWithDefaults(modelForSymbol, existingSymbol);
                     }
                     else
-                    {   // last in wins (in the odd case where a template.json defined a symbol multiple times)
+                    {
+                        // last in wins (in the odd case where a template.json defined a symbol multiple times)
                         symbols[prop.Name] = modelForSymbol;
                     }
                 }

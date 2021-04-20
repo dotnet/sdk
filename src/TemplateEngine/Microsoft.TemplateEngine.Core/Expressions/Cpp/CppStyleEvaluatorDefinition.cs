@@ -192,12 +192,14 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             }
 
                             if (inQuoteType == QuotedRegionKind.None)
-                            {   // starting quote found
+                            {
+                                // starting quote found
                                 currentTokenBytes.AddRange(trie.Tokens[token].Value);
                                 inQuoteType = incomingQuoteKind;
                             }
                             else if (incomingQuoteKind == inQuoteType)
-                            {   // end quote found
+                            {
+                                // end quote found
                                 currentTokenBytes.AddRange(trie.Tokens[token].Value);
                                 tokens.Add(new TokenRef
                                 {
@@ -208,7 +210,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                                 inQuoteType = QuotedRegionKind.None;
                             }
                             else
-                            {   // this is a different quote type. Treat it like a non-match, just add the token to the currentTokenBytes
+                            {
+                                // this is a different quote type. Treat it like a non-match, just add the token to the currentTokenBytes
                                 currentTokenBytes.AddRange(trie.Tokens[token].Value);
                             }
                         }
@@ -226,7 +229,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             });
                         }
                         else
-                        {   //If we have a normal token...
+                        {
+                            //If we have a normal token...
                             currentTokenFamily = (TokenFamily)token;
 
                             if (currentTokenFamily != TokenFamily.WindowsEOL && currentTokenFamily != TokenFamily.LegacyMacEOL && currentTokenFamily != TokenFamily.UnixEOL)
@@ -253,7 +257,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                         }
                     }
                     else if (inQuoteType != QuotedRegionKind.None)
-                    {   // we're in a quoted literal but did not match a token at the current position.
+                    {
+                        // we're in a quoted literal but did not match a token at the current position.
                         // so just add the current byte to the currentTokenBytes
                         currentTokenBytes.Add(processor.CurrentBuffer[currentBufferPosition++]);
                     }

@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(true, "things/")]
         [InlineData(true, "things/stuff/")]
         [InlineData(true, "./")]
-        [InlineData(false, "../")]  // outside the mount point, combining throws and is caught.
+        [InlineData(false, "../")] // outside the mount point, combining throws and is caught.
         [InlineData(false, "foo/")] // not valid because the path doesn't exist under the root.
         public void CheckTemplateSourcesRelativeToTemplateRoot(bool shouldAllPathsBeValid, string source)
         {
@@ -74,15 +74,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(true, "things/")]
         [InlineData(true, "things/stuff/")]
         [InlineData(true, "./")]
-        [InlineData(true, "../")]  // outside the template root, but in the mount point
-        [InlineData(true, "../../")]  // outside the template root, but in the mount point
-        [InlineData(true, "../../../")]  // outside the template root, but at the mount point root
-        [InlineData(false, "../../../../")]  // outside the mount point
+        [InlineData(true, "../")] // outside the template root, but in the mount point
+        [InlineData(true, "../../")] // outside the template root, but in the mount point
+        [InlineData(true, "../../../")] // outside the template root, but at the mount point root
+        [InlineData(false, "../../../../")] // outside the mount point
         [InlineData(false, "foo/")] // not valid because the path doesn't exist under the root
-        [InlineData(false, "../../../Other/")]  // doesn't exist
-        [InlineData(false, "../../../../Other/")]  // outside the mount point
+        [InlineData(false, "../../../Other/")] // doesn't exist
+        [InlineData(false, "../../../../Other/")] // outside the mount point
         [InlineData(true, "../../../MountRoot/")]
-        [InlineData(false, "../../../MountRoot/Other")]  // directory doesn't exist
+        [InlineData(false, "../../../MountRoot/Other")] // directory doesn't exist
         [InlineData(true, "../../../ExistingDir/")]
         [InlineData(true, "../../../MountRoot/Subdir")]
         public void CheckTemplateSourcesRelativeToTemplateRootMultipleDirsUnderMountPoint(bool shouldAllPathsBeValid, string source)
