@@ -373,7 +373,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public static IEnumerable<object[]> SerializationData()
         {
             //can read details
-            yield return new object[] {
+            yield return new object[]
+            {
                 new TemplatePackageData(
                     default,
                     "MountPointUri",
@@ -388,7 +389,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 "TestPackage", "4.7.0.395", "TestAuthor", "https://api.nuget.org/v3/index.json", false
             };
             //skips irrelevant details
-            yield return new object[] {
+            yield return new object[]
+            {
                 new TemplatePackageData(
                      default,
                      "MountPointUri",

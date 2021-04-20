@@ -25,7 +25,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         internal int High { get; }
 
-        private static readonly HashSet<int> UnsafePorts = new HashSet<int>() {
+        private static readonly HashSet<int> UnsafePorts = new HashSet<int>()
+        {
                     2049, // nfs
                     3659, // apple-sasl / PasswordServer
                     4045, // lockd

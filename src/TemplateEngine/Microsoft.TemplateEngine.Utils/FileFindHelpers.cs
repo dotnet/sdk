@@ -52,7 +52,8 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     directory = null;
                 }
-            } while (directory != null);
+            }
+            while (directory != null);
 
             return new List<string>();
         }

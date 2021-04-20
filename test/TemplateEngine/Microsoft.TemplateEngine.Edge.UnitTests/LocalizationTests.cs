@@ -152,9 +152,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             public Guid Id => new Guid("{3DB0E733-6411-4898-B500-65B122309A9B}");
 
             public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings) =>
-                new DefaultTemplatePackageProvider(this, settings, null, new[] {
+                new DefaultTemplatePackageProvider(this, settings, null, new[]
+                {
                     Path.Combine(Path.GetDirectoryName(typeof(LocalizationTests).Assembly.Location), "..", "..", "..", "..", "..",
-                "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates", "TemplateWithLocalization") });
+                "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates", "TemplateWithLocalization")
+                });
         }
 
         private ITemplateEngineHost LoadHostWithLocalizationTemplates(string locale, out ISettingsLoader settingsLoaderOut, out ITemplateInfo localizationTemplate)

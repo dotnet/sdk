@@ -142,7 +142,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     expansionOccurred = false;
                 }
-            } while (expansionOccurred);
+            }
+            while (expansionOccurred);
 
             return true;
         }

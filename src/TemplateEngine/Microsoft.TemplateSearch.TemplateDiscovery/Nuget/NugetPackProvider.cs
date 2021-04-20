@@ -82,7 +82,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
                         done = true;
                     }
                 }
-            } while (!done && !_runOnlyOnePage);
+            }
+            while (!done && !_runOnlyOnePage);
 
         }
 
