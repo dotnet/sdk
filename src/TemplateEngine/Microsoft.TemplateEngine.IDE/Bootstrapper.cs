@@ -155,7 +155,7 @@ namespace Microsoft.TemplateEngine.IDE
                         managedPackageProvider = EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetBuiltInManagedProvider(InstallationScope.Global);
                         break;
                     }
-            };
+            }
 
             return managedPackageProvider.InstallAsync(installRequests, cancellationToken);
         }

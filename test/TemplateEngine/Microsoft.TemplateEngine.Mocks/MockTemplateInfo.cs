@@ -208,7 +208,7 @@ namespace Microsoft.TemplateEngine.Mocks
             foreach (string choice in choiceList)
             {
                 choicesDict.Add(choice, new ParameterChoice(string.Empty, string.Empty));
-            };
+            }
             return new CacheTag(string.Empty, tagDescription, choicesDict, defaultValue, defaultIfOptionWithoutValue);
         }
 
