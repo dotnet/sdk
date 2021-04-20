@@ -152,7 +152,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     return ShortNameList[0];
                 }
 
-                return String.Empty;
+                return string.Empty;
             }
             set
             {

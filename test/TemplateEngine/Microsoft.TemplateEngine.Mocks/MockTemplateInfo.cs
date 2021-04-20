@@ -138,7 +138,7 @@ namespace Microsoft.TemplateEngine.Mocks
                 {
                     return _shortNameList[0];
                 }
-                return String.Empty;
+                return string.Empty;
             }
         }
 

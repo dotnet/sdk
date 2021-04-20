@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
 
-            string templateConfig = String.Format(TemplateConfigWithSourcePlaceholder, source);
+            string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
             templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
             templateSourceFiles.Add("things/stuff/_._", "");    // directories under the root - valid source locations.
             TestTemplateSetup setup = new TestTemplateSetup(EngineEnvironmentSettings, sourcePath, templateSourceFiles);
@@ -93,7 +93,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
 
-            string templateConfig = String.Format(TemplateConfigWithSourcePlaceholder, source);
+            string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
             templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
 
             string sampleContentDir = pathFromMountPointRootToTemplateRoot + "things/stuff/_._";

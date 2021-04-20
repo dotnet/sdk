@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// </summary>
         /// <param name="value">The value to parse.</param>
         /// <returns>Parsed double value if <paramref name="value"/> can be parsed.</returns>
-        /// <exception cref="FormatException"><paramref name="value"/> is not in an appropriate format for a <see cref="Double"/> type.</exception>
+        /// <exception cref="FormatException"><paramref name="value"/> is not in an appropriate format for a <see cref="double"/> type.</exception>
         public static double ConvertToDoubleCurrentOrInvariant(object value)
         {
             try

@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.Util
         private Stream _source;
         private readonly Stream _target;
         private byte[] _bom;
-        private Boolean _isBomNeeded;
+        private bool _isBomNeeded;
         private readonly TrieEvaluator<OperationTerminal> _trie;
         private Encoding _encoding;
         private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>> TrieLookup = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>>();
