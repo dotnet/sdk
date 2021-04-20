@@ -4,8 +4,8 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Core.Expressions.Shared;
+using Microsoft.TemplateEngine.Core.Util;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
 {

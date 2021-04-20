@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.TestHelper;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
