@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public Impl(IToken token, ITokenTrie endTokenMatcher, Include source, string id, bool initialState)
             {
-                Tokens = new[] {token };
+                Tokens = new[] { token };
                 _source = source;
                 _endTokenMatcher = endTokenMatcher;
                 _id = id;
