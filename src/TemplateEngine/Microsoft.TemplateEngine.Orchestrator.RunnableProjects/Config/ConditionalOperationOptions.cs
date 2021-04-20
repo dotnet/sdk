@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         private static readonly string DefaultEvaluatorType = "C++";
         private static readonly bool DefaultWholeLine = true;
         private static readonly bool DefaultTrimWhitespace = true;
-        private static readonly string DefaultId = null;
+        private static readonly string DefaultId;
 
         internal ConditionalOperationOptions()
         {

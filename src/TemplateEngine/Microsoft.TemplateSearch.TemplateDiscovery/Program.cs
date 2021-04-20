@@ -13,10 +13,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
     internal class Program
     {
-        private static readonly bool _defaultRunOnlyOnePage = false;
+        private static readonly bool _defaultRunOnlyOnePage;
         private static readonly int _defaultPageSize = 100;
-        private static readonly bool _defaultSaveCandidatePacks = false;
-        private static readonly bool _defaultIncludePreviewPacks = false;
+        private static readonly bool _defaultSaveCandidatePacks;
+        private static readonly bool _defaultIncludePreviewPacks;
 
         private static readonly string _basePathFlag = "--basePath";
         private static readonly string _pageSizeFlag = "--pageSize";

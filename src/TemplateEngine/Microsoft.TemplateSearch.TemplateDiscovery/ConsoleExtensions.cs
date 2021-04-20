@@ -21,7 +21,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         /// <summary>
         /// Defines if verbose output is enabled.
         /// </summary>
-        internal static bool IsEnabled { get; set; } = false;
+        internal static bool IsEnabled { get; set; }
 
         /// <summary>
         /// Writes the output conditionally if verbose mode is enabled.
