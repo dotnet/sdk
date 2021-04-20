@@ -60,7 +60,7 @@ class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
         {
             string source = @"
 Imports Microsoft.Win32.SafeHandles
-Public Class C : Inherits SafeHandleZeroOrMinusOneIsInvalid
+Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
     Public Sub New()
         MyBase.New(True)
     End Sub
@@ -107,7 +107,7 @@ class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
         {
             string source = @"
 Imports Microsoft.Win32.SafeHandles
-Public Class C : Inherits SafeHandleZeroOrMinusOneIsInvalid
+Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
     Private Sub {|CA1418:New|}()
         MyBase.New(True)
@@ -120,7 +120,7 @@ Public Class C : Inherits SafeHandleZeroOrMinusOneIsInvalid
 End Class";
             string fixedSource = @"
 Imports Microsoft.Win32.SafeHandles
-Public Class C : Inherits SafeHandleZeroOrMinusOneIsInvalid
+Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
     Public Sub New()
         MyBase.New(True)
@@ -138,7 +138,6 @@ End Class";
         [Fact]
         public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithAccessibleBaseTypeParameterlessConstructor_CodeFix_CS()
         {
-
             string source = @"
 using System;
 using Microsoft.Win32.SafeHandles;
@@ -158,8 +157,6 @@ class {|CA1418:BarHandle|} : FooHandle
     {
         SetHandle(handle);
     }
-
-    protected override bool ReleaseHandle() => true;
 }";
             string fixedSource = @"
 using System;
@@ -181,8 +178,6 @@ class BarHandle : FooHandle
         SetHandle(handle);
     }
 
-    protected override bool ReleaseHandle() => true;
-
     public BarHandle()
     {
     }
@@ -194,31 +189,175 @@ class BarHandle : FooHandle
         [Fact]
         public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithAccessibleBaseTypeParameterlessConstructor_CodeFix_VB()
         {
+            string source = @"
+Imports System
+Imports Microsoft.Win32.SafeHandles
+Public MustInherit Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
+    Protected Sub New()
+        MyBase.New(True)
+    End Sub
+    
+    Protected Overrides Function ReleaseHandle() As Boolean
+        Return True
+    End Function
+
+End Class
+Public Class {|CA1418:BarHandle|} : Inherits FooHandle
+
+    Public Sub New(handle As IntPtr)
+        SetHandle(handle)
+    End Sub
+
+End Class";
+            string fixedSource = @"
+Imports System
+Imports Microsoft.Win32.SafeHandles
+Public MustInherit Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+
+    Protected Sub New()
+        MyBase.New(True)
+    End Sub
+    
+    Protected Overrides Function ReleaseHandle() As Boolean
+        Return True
+    End Function
+
+End Class
+Public Class BarHandle : Inherits FooHandle
+
+    Public Sub New(handle As IntPtr)
+        SetHandle(handle)
+    End Sub
+
+    Public Sub New()
+    End Sub
+End Class";
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
         [Fact]
         public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoAccessibleBaseTypeParameterlessConstructor_Diagnostic_CS()
         {
+            string source = @"
+using System;
+using Microsoft.Win32.SafeHandles;
 
+abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+{
+    private FooHandle() : base(true)
+    {
+    }
+
+    public FooHandle(IntPtr handle) : base(true)
+    {
+        SetHandle(handle);
+    }
+
+    protected override bool ReleaseHandle() => true;
+}
+
+class {|CA1418:BarHandle|} : FooHandle
+{
+    public BarHandle(IntPtr handle) : base(handle)
+    {
+    }
+
+    protected override bool ReleaseHandle() => true;
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
         [Fact]
         public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoAccessibleBaseTypeParameterlessConstructor_Diagnostic_VB()
         {
+            string source = @"
+Imports System
+Imports Microsoft.Win32.SafeHandles
+Public MustInherit Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
+    Private Sub New()
+        MyBase.New(True)
+    End Sub
+
+    Public Sub New(handle As IntPtr)
+        MyBase.New(True)
+        SetHandle(handle)
+    End Sub
+    
+    Protected Overrides Function ReleaseHandle() As Boolean
+        Return True
+    End Function
+
+End Class
+Public Class {|CA1418:BarHandle|} : Inherits FooHandle
+
+    Public Sub New(handle As IntPtr)
+        MyBase.New(handle)
+    End Sub
+
+End Class";
+            await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
         [Fact]
         public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoBaseTypeParameterlessConstructor_Diagnostic_CS()
         {
 
+            string source = @"
+using System;
+using Microsoft.Win32.SafeHandles;
+
+abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+{
+    public FooHandle(IntPtr handle) : base(true)
+    {
+        SetHandle(handle);
+    }
+
+    protected override bool ReleaseHandle() => true;
+}
+
+class {|CA1418:BarHandle|} : FooHandle
+{
+    public BarHandle(IntPtr handle)
+        : base(handle)
+    {
+    }
+
+    protected override bool ReleaseHandle() => true;
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
         [Fact]
         public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoBaseTypeParameterlessConstructor_Diagnostic_VB()
         {
+            string source = @"
+Imports System
+Imports Microsoft.Win32.SafeHandles
+Public MustInherit Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+    Public Sub New(handle As IntPtr)
+        MyBase.New(True)
+        SetHandle(handle)
+    End Sub
+    
+    Protected Overrides Function ReleaseHandle() As Boolean
+        Return True
+    End Function
 
+End Class
+Public Class {|CA1418:BarHandle|} : Inherits FooHandle
+
+    Public Sub New(handle As IntPtr)
+        MyBase.New(handle)
+    End Sub
+
+End Class";
+            await VerifyVB.VerifyAnalyzerAsync(source);
         }
     }
 }
