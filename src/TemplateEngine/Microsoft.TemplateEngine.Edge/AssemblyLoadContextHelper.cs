@@ -41,7 +41,9 @@ namespace Microsoft.TemplateEngine.Edge
                     if(file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1)
                     {
                         using (Stream fileStream = paths.OpenRead(file))
+                        {
                             assembly = context.LoadFromStream(fileStream);
+                        }
                     }
 #else
                     if (file.IndexOf("net4", StringComparison.OrdinalIgnoreCase) > -1)

@@ -222,8 +222,16 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 (PackageSource, IPackageSearchMetadata) latestStableVersion = accumulativeSearchResults.Aggregate(
                     (max, current) =>
                     {
-                        if (current.package.Identity.Version.IsPrerelease) return max;
-                        if (max == default) return current;
+                        if (current.package.Identity.Version.IsPrerelease)
+                        {
+                            return max;
+                        }
+
+                        if (max == default)
+                        {
+                            return current;
+                        }
+
                         return current.package.Identity.Version > max.package.Identity.Version ? current : max;
                     });
                 if (latestStableVersion != default)
@@ -235,7 +243,11 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             (PackageSource, IPackageSearchMetadata) latestVersion = accumulativeSearchResults.Aggregate(
                 (max, current) =>
                 {
-                    if (max == default) return current;
+                    if (max == default)
+                    {
+                        return current;
+                    }
+
                     return current.package.Identity.Version > max.package.Identity.Version ? current : max;
                 });
             return latestVersion;

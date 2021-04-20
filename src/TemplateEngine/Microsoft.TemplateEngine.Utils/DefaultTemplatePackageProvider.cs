@@ -69,7 +69,10 @@ namespace Microsoft.TemplateEngine.Utils
         private DateTime GetLastWriteTimeUtc(string path)
         {
             if (_environmentSettings.Host.FileSystem is IFileLastWriteTimeSource fileSystem)
+            {
                 return fileSystem.GetLastWriteTimeUtc(path);
+            }
+
             return File.GetLastWriteTimeUtc(path);
         }
     }

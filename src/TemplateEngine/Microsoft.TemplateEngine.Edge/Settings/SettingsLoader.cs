@@ -64,6 +64,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             string userSettings = null;
             using (Timing.Over(_environmentSettings.Host, "Read settings"))
+            {
                 for (int i = 0; i < MaxLoadAttempts; ++i)
                 {
                     try
@@ -81,8 +82,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         Task.Delay(2).Wait();
                     }
                 }
+            }
+
             JObject parsed;
             using (Timing.Over(_environmentSettings.Host, "Parse settings"))
+            {
                 try
                 {
                     parsed = JObject.Parse(userSettings);
@@ -91,23 +95,35 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     throw new EngineInitializationException("Error parsing the user settings file", "Settings File", ex);
                 }
+            }
+
             using (Timing.Over(_environmentSettings.Host, "Deserialize user settings"))
+            {
                 _userSettings = new SettingsStore(parsed);
+            }
 
             using (Timing.Over(_environmentSettings.Host, "Init probing paths"))
+            {
                 if (_userSettings.ProbingPaths.Count == 0)
                 {
                     _userSettings.ProbingPaths.Add(_paths.User.Content);
                 }
+            }
 
             using (Timing.Over(_environmentSettings.Host, "Init Component manager"))
+            {
                 _componentManager = new ComponentManager(this, _userSettings);
+            }
 
             using (Timing.Over(_environmentSettings.Host, "Init MountPoint manager"))
+            {
                 _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
+            }
 
             using (Timing.Over(_environmentSettings.Host, "Demand template load"))
+            {
                 EnsureTemplatesLoaded();
+            }
 
             _isLoaded = true;
         }
@@ -125,7 +141,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             if (_paths.Exists(_paths.User.TemplateCacheFile))
             {
                 using (Timing.Over(_environmentSettings.Host, "Read template cache"))
+                {
                     userTemplateCache = _paths.ReadAllText(_paths.User.TemplateCacheFile, "{}");
+                }
             }
             else
             {
@@ -134,9 +152,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             JObject parsed;
             using (Timing.Over(_environmentSettings.Host, "Parse template cache"))
+            {
                 parsed = JObject.Parse(userTemplateCache);
+            }
+
             using (Timing.Over(_environmentSettings.Host, "Init template cache"))
+            {
                 _userTemplateCache = new TemplateCache(_environmentSettings, parsed);
+            }
 
             _templatesLoaded = true;
         }
@@ -185,7 +208,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     if (_userTemplateCache.MountPointsInfo.TryGetValue(source.MountPointUri, out var cachedLastChangeTime))
                     {
                         if (source.LastChangeTime > cachedLastChangeTime)
+                        {
                             placesThatNeedScanning.Add(source.MountPointUri);
+                        }
                     }
                     else
                     {
@@ -249,6 +274,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             ITemplate template;
             using (Timing.Over(_environmentSettings.Host, "Template from config"))
+            {
                 if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile, baselineName))
                 {
                     return template;
@@ -257,6 +283,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     //TODO: Log the failure to read the template info
                 }
+            }
 
             return null;
         }

@@ -80,7 +80,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 
         public bool Equals(IPackInfo other)
         {
-            if (other == null) return false;
+            if (other == null)
+            {
+                return false;
+            }
+
             return Id.Equals(other.Id, StringComparison.OrdinalIgnoreCase) && Version.Equals(other.Version, StringComparison.OrdinalIgnoreCase);
         }
     }
