@@ -897,8 +897,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 if (pathModel.ConditionResult)
                 {
-                    pathModel.PathResolved = FileRenameGenerator.ApplyRenameToPrimaryOutput
-(pathModel.PathOriginal, EnvironmentSettings, SourceName, resolvedNameParamValue, parameters, SymbolFilenameReplacements);
+                    pathModel.PathResolved = FileRenameGenerator.ApplyRenameToPrimaryOutput(
+                        pathModel.PathOriginal,
+                        EnvironmentSettings,
+                        SourceName,
+                        resolvedNameParamValue,
+                        parameters,
+                        SymbolFilenameReplacements);
                 }
             }
         }

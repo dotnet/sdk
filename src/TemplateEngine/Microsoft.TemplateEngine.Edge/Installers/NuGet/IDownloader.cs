@@ -36,14 +36,12 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         internal NuGetPackageInfo WithFullPath(string newFullPath)
         {
-            return new NuGetPackageInfo
-                (
+            return new NuGetPackageInfo(
                 Author,
                 newFullPath,
                 NuGetSource,
                 PackageIdentifier,
-                PackageVersion
-                );
+                PackageVersion);
         }
     }
 }
