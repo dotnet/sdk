@@ -65,7 +65,6 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
         public void Dispose()
         {
-
         }
 
         public IMountPoint Parent { get; }

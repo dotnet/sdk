@@ -5,7 +5,6 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Abstractions.Installer
 {
-
     /// <summary>
     /// Represents the result of template package installation using <see cref="IInstaller.InstallAsync"/>.
     /// </summary>

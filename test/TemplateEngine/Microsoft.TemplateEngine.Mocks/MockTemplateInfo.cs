@@ -21,7 +21,6 @@ namespace Microsoft.TemplateEngine.Mocks
         public MockTemplateInfo(string shortName, string name = null, string identity = null, string groupIdentity = null, int precedence = 0, string author = null)
             : this(new string[] { shortName }, name, identity, groupIdentity, precedence, author)
         {
-
         }
 
         public MockTemplateInfo(string[] shortNames, string name = null, string identity = null, string groupIdentity = null, int precedence = 0, string author = null) : this()

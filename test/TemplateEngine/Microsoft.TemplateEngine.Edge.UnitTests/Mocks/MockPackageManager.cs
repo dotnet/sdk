@@ -18,7 +18,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
 
         internal MockPackageManager()
         {
-
         }
 
         internal MockPackageManager(PackageManager packageManager)

@@ -16,7 +16,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class ComponentManagerTests
     {
-
         [Fact]
         public void TestAllEdgeComponentsAdded()
         {

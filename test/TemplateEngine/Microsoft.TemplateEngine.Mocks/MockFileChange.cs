@@ -13,7 +13,6 @@ namespace Microsoft.TemplateEngine.Mocks
     {
         public MockFileChange()
         {
-
         }
 
         public MockFileChange(string source, string target, ChangeKind kind)

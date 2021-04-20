@@ -14,7 +14,6 @@ namespace Microsoft.TemplateEngine.Mocks
     {
         public MockCreationEffects()
         {
-
         }
 
         public MockCreationEffects WithPrimaryOutputs(params string[] primaryOutputs)
