@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 {
                     if (source.Length < bufferSize)
                     {
-                        bufferSize = (int) source.Length;
+                        bufferSize = (int)source.Length;
                     }
                 }
                 catch
@@ -207,9 +207,9 @@ namespace Microsoft.TemplateEngine.Core.Util
                         if (terminal.Location > nextSequenceNumberThatCouldBeWritten)
                         {
                             int toWrite = terminal.Location - nextSequenceNumberThatCouldBeWritten;
-//Console.WriteLine("UnmatchedBlock");
-//string text = System.Text.Encoding.UTF8.GetString(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite).Replace("\0", "\\0");
-//Console.WriteLine(text);
+                            //Console.WriteLine("UnmatchedBlock");
+                            //string text = System.Text.Encoding.UTF8.GetString(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite).Replace("\0", "\\0");
+                            //Console.WriteLine(text);
                             if (_isBomNeeded)
                             {
                                 _target.Write(_bom, 0, _bom.Length);
@@ -268,16 +268,16 @@ namespace Microsoft.TemplateEngine.Core.Util
                 if (numberOfUncommittedBytesBeforeThePositionToAdvanceTo > 0)
                 {
                     int toWrite = numberOfUncommittedBytesBeforeThePositionToAdvanceTo;
-// Console.WriteLine("AdvancePreserve");
-// Console.WriteLine($"nextSequenceNumberThatCouldBeWritten {nextSequenceNumberThatCouldBeWritten}");
-// Console.WriteLine($"headSequenceNumber {headSequenceNumber}");
-// Console.WriteLine($"bufferPositionToAdvanceTo {bufferPositionToAdvanceTo}");
-// Console.WriteLine($"numberOfUncommittedBytesBeforeThePositionToAdvanceTo {numberOfUncommittedBytesBeforeThePositionToAdvanceTo}");
-// Console.WriteLine($"CurrentBufferPosition {CurrentBufferPosition}");
-// Console.WriteLine($"CurrentBufferLength {CurrentBufferLength}");
-// Console.WriteLine($"CurrentBuffer.Length {CurrentBuffer.Length}");
-// string text = System.Text.Encoding.UTF8.GetString(CurrentBuffer, bufferPositionToAdvanceTo - toWrite, toWrite).Replace("\0", "\\0");
-// Console.WriteLine(text);
+                    // Console.WriteLine("AdvancePreserve");
+                    // Console.WriteLine($"nextSequenceNumberThatCouldBeWritten {nextSequenceNumberThatCouldBeWritten}");
+                    // Console.WriteLine($"headSequenceNumber {headSequenceNumber}");
+                    // Console.WriteLine($"bufferPositionToAdvanceTo {bufferPositionToAdvanceTo}");
+                    // Console.WriteLine($"numberOfUncommittedBytesBeforeThePositionToAdvanceTo {numberOfUncommittedBytesBeforeThePositionToAdvanceTo}");
+                    // Console.WriteLine($"CurrentBufferPosition {CurrentBufferPosition}");
+                    // Console.WriteLine($"CurrentBufferLength {CurrentBufferLength}");
+                    // Console.WriteLine($"CurrentBuffer.Length {CurrentBuffer.Length}");
+                    // string text = System.Text.Encoding.UTF8.GetString(CurrentBuffer, bufferPositionToAdvanceTo - toWrite, toWrite).Replace("\0", "\\0");
+                    // Console.WriteLine(text);
                     _target.Write(CurrentBuffer, bufferPositionToAdvanceTo - toWrite, toWrite);
                     bytesWrittenSinceLastFlush += toWrite;
                     nextSequenceNumberThatCouldBeWritten = _trie.OldestRequiredSequenceNumber;
@@ -299,9 +299,9 @@ namespace Microsoft.TemplateEngine.Core.Util
                         if (terminal.Location > nextSequenceNumberThatCouldBeWritten)
                         {
                             int toWrite = terminal.Location - nextSequenceNumberThatCouldBeWritten;
-// Console.WriteLine("TailUnmatchedBlock");
-// string text = System.Text.Encoding.UTF8.GetString(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite).Replace("\0", "\\0");
-// Console.WriteLine(text);
+                            // Console.WriteLine("TailUnmatchedBlock");
+                            // string text = System.Text.Encoding.UTF8.GetString(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite).Replace("\0", "\\0");
+                            // Console.WriteLine(text);
                             _target.Write(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite);
                             bytesWrittenSinceLastFlush += toWrite;
                             nextSequenceNumberThatCouldBeWritten = terminal.Location;
@@ -338,9 +338,9 @@ namespace Microsoft.TemplateEngine.Core.Util
             if (endSequenceNumber > nextSequenceNumberThatCouldBeWritten)
             {
                 int toWrite = endSequenceNumber - nextSequenceNumberThatCouldBeWritten;
-// Console.WriteLine("LastBlock");
-// string text = System.Text.Encoding.UTF8.GetString(CurrentBuffer, CurrentBufferLength - toWrite, toWrite).Replace("\0", "\\0");
-// Console.WriteLine(text);
+                // Console.WriteLine("LastBlock");
+                // string text = System.Text.Encoding.UTF8.GetString(CurrentBuffer, CurrentBufferLength - toWrite, toWrite).Replace("\0", "\\0");
+                // Console.WriteLine(text);
                 _target.Write(CurrentBuffer, CurrentBufferLength - toWrite, toWrite);
             }
 

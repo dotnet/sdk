@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
 
                 if (i == path.Length - 1)
                 {
-                    if(next.Terminals == null)
+                    if (next.Terminals == null)
                     {
                         next.Terminals = new List<T>();
                     }

@@ -75,13 +75,13 @@ namespace Microsoft.TemplateSearch.Common
         private bool ShouldDownloadFileFromCloud(IEngineEnvironmentSettings environmentSettings, string metadataFileTargetLocation)
         {
             IPhysicalFileSystem fileSystem = environmentSettings.Host.FileSystem;
-            if(fileSystem is IFileLastWriteTimeSource lastWriteTimeSource)
+            if (fileSystem is IFileLastWriteTimeSource lastWriteTimeSource)
             {
                 if (fileSystem.FileExists(metadataFileTargetLocation))
                 {
                     DateTime utcNow = DateTime.UtcNow;
                     DateTime lastWriteTimeUtc = lastWriteTimeSource.GetLastWriteTimeUtc(metadataFileTargetLocation);
-                    if(lastWriteTimeUtc.AddHours(CachedFileValidityInHours) > utcNow)
+                    if (lastWriteTimeUtc.AddHours(CachedFileValidityInHours) > utcNow)
                     {
                         return false;
                     }
@@ -113,7 +113,7 @@ namespace Microsoft.TemplateSearch.Common
                 using (HttpClient client = new HttpClient())
                 {
                     string etagFileLocation = searchMetadataFileLocation + ETagFileSuffix;
-                    if(paths.FileExists(etagFileLocation))
+                    if (paths.FileExists(etagFileLocation))
                     {
                         string etagValue = paths.ReadAllText(etagFileLocation);
                         client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, $"\"{etagValue}\"");
@@ -126,9 +126,9 @@ namespace Microsoft.TemplateSearch.Common
                             paths.WriteAllText(searchMetadataFileLocation, resultText);
 
                             IEnumerable<string> etagValues;
-                            if(response.Headers.TryGetValues(ETagHeaderName, out etagValues))
+                            if (response.Headers.TryGetValues(ETagHeaderName, out etagValues))
                             {
-                                if(etagValues.Count() == 1)
+                                if (etagValues.Count() == 1)
                                 {
                                     paths.WriteAllText(etagFileLocation, etagValues.First());
                                 }
@@ -136,7 +136,7 @@ namespace Microsoft.TemplateSearch.Common
 
                             return true;
                         }
-                        else if(response.StatusCode == HttpStatusCode.NotModified)
+                        else if (response.StatusCode == HttpStatusCode.NotModified)
                         {
                             IPhysicalFileSystem fileSystem = environmentSettings.Host.FileSystem;
                             if (fileSystem is IFileLastWriteTimeSource lastWriteTimeSource)

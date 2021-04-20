@@ -772,7 +772,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (string.Equals(symbol.Value.Type, ComputedSymbol.TypeName, StringComparison.Ordinal))
                     {
-                        ComputedSymbol computed = (ComputedSymbol) symbol.Value;
+                        ComputedSymbol computed = (ComputedSymbol)symbol.Value;
                         string value = computed.Value;
                         string evaluator = computed.Evaluator;
                         string dataType = computed.DataType;

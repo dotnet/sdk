@@ -223,7 +223,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                         if (!excluded)
                         {
                             bool copy = false;
-                            foreach(IPathMatcher copyOnly in spec.CopyOnly)
+                            foreach (IPathMatcher copyOnly in spec.CopyOnly)
                             {
                                 if (copyOnly.IsMatch(sourceRel))
                                 {
@@ -322,7 +322,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new ContentGenerationException($"Error while processing file {sourceFile.FullPath}", ex);
             }

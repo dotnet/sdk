@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateFiltering
         /// </summary>
         InvalidValue,
 
-        [Obsolete("This value will be removed in next release, use + " + nameof (MatchKind.Mismatch) + " or " + nameof (MatchKind.InvalidValue) + " instead")]
+        [Obsolete("This value will be removed in next release, use + " + nameof(MatchKind.Mismatch) + " or " + nameof(MatchKind.InvalidValue) + " instead")]
         AmbiguousValue,
 
         [Obsolete("This value will be removed in next release, use + " + nameof(MatchKind.Mismatch) + " or " + nameof(MatchKind.InvalidValue) + " instead")]

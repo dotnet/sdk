@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Abstractions;
 namespace Microsoft.TemplateEngine.Edge.Template
 {
     // Replacement for IFilteredTemplateInfo
-    [Obsolete("moved to " + nameof(Abstractions.TemplateFiltering) + " namespace" )]
+    [Obsolete("moved to " + nameof(Abstractions.TemplateFiltering) + " namespace")]
     public interface ITemplateMatchInfo
     {
         ITemplateInfo Info { get; }

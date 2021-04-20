@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Core
         {
             List<ITokenConfig> configs = new List<ITokenConfig>();
 
-            foreach(string x in s)
+            foreach (string x in s)
             {
                 configs.Add(x.TokenConfig());
             }

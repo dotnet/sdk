@@ -341,7 +341,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 {
                     bool seekSucceeded = SeekToNextTokenAtSameLevel(processor, ref bufferLength, ref currentBufferPosition, out token);
 
-                    if (! seekSucceeded)
+                    if (!seekSucceeded)
                     {
                         return false;
                     }
@@ -411,7 +411,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                     if (bufferAdvanceFailed)
                     {
-                        if(evaluator.TryFinalizeMatchesInProgress(ref currentBufferPosition, out token))
+                        if (evaluator.TryFinalizeMatchesInProgress(ref currentBufferPosition, out token))
                         {
                             return true;
                         }

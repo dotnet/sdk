@@ -346,7 +346,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.True(File.Exists(oldMountPoint));
             UpdateRequest updateRequest = new UpdateRequest(source, "1.0.1");
 
-            UpdateResult updateResult = await installer.UpdateAsync( updateRequest, provider, CancellationToken.None).ConfigureAwait(false);
+            UpdateResult updateResult = await installer.UpdateAsync(updateRequest, provider, CancellationToken.None).ConfigureAwait(false);
             Assert.True(updateResult.Success);
             Assert.Equal(updateRequest, updateResult.UpdateRequest);
             Assert.Equal(InstallerErrorCode.Success, updateResult.Error);

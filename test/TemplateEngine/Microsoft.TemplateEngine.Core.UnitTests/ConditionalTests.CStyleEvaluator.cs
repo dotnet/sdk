@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueCondition))]
         public void VerifyIfEndifTrueCondition()
         {
             string value = @"Hello
@@ -469,7 +469,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyNestedIfTrueTrue))]
+        [Fact(DisplayName = nameof(VerifyNestedIfTrueTrue))]
         public void VerifyNestedIfTrueTrue()
         {
             string value = @"Hello
@@ -503,7 +503,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfElseifElseifElseEndifTrueTrueCondition))]
+        [Fact(DisplayName = nameof(VerifyIfElseifElseifElseEndifTrueTrueCondition))]
         public void VerifyIfElseifElseifElseEndifTrueTrueCondition()
         {
             string value = @"Hello
@@ -535,7 +535,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfElseifElseifElseEndifTrueFalseCondition))]
+        [Fact(DisplayName = nameof(VerifyIfElseifElseifElseEndifTrueFalseCondition))]
         public void VerifyIfElseifElseifElseEndifTrueFalseCondition()
         {
             string value = @"Hello
@@ -567,7 +567,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfElseifElseifElseEndifFalseTrueCondition))]
+        [Fact(DisplayName = nameof(VerifyIfElseifElseifElseEndifFalseTrueCondition))]
         public void VerifyIfElseifElseifElseEndifFalseTrueCondition()
         {
             string value = @"Hello
@@ -599,7 +599,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfElseifElseifElseEndifFalseFalseCondition))]
+        [Fact(DisplayName = nameof(VerifyIfElseifElseifElseEndifFalseFalseCondition))]
         public void VerifyIfElseifElseifElseEndifFalseFalseCondition()
         {
             string value = @"Hello
@@ -631,7 +631,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfElseifElseifEndifTrueFalseFalseCondition))]
+        [Fact(DisplayName = nameof(VerifyIfElseifElseifEndifTrueFalseFalseCondition))]
         public void VerifyIfElseifElseifEndifTrueFalseFalseCondition()
         {
             string value = @"Hello
@@ -664,7 +664,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfElseifElseifEndifFalseTrueFalseCondition))]
+        [Fact(DisplayName = nameof(VerifyIfElseifElseifEndifFalseTrueFalseCondition))]
         public void VerifyIfElseifElseifEndifFalseTrueFalseCondition()
         {
             string value = @"Hello
@@ -757,7 +757,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueNotEqualsCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueNotEqualsCondition))]
         public void VerifyIfEndifTrueNotEqualsCondition()
         {
             string value = @"Hello
@@ -784,7 +784,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueGreaterThanCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueGreaterThanCondition))]
         public void VerifyIfEndifTrueGreaterThanCondition()
         {
             string value = @"Hello
@@ -838,7 +838,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifOperandStealing2))]
+        [Fact(DisplayName = nameof(VerifyIfEndifOperandStealing2))]
         public void VerifyIfEndifOperandStealing2()
         {
             string value = @"Hello
@@ -865,7 +865,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueGreaterThanOrEqualToCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueGreaterThanOrEqualToCondition))]
         public void VerifyIfEndifTrueGreaterThanOrEqualToCondition()
         {
             string value = @"Hello
@@ -892,7 +892,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifFalseGreaterThanOrEqualToCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifFalseGreaterThanOrEqualToCondition))]
         public void VerifyIfEndifFalseGreaterThanOrEqualToCondition()
         {
             string value = @"Hello
@@ -918,7 +918,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueLessThanCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueLessThanCondition))]
         public void VerifyIfEndifTrueLessThanCondition()
         {
             string value = @"Hello
@@ -972,7 +972,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueNotCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueNotCondition))]
         public void VerifyIfEndifTrueNotCondition()
         {
             string value = @"Hello
@@ -999,7 +999,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueNotNotCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueNotNotCondition))]
         public void VerifyIfEndifTrueNotNotCondition()
         {
             string value = @"Hello
@@ -1053,7 +1053,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueXorCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueXorCondition))]
         public void VerifyIfEndifTrueXorCondition()
         {
             string value = @"Hello
@@ -1107,7 +1107,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueOrCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueOrCondition))]
         public void VerifyIfEndifTrueOrCondition()
         {
             string value = @"Hello
@@ -1161,7 +1161,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueOrAndCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueOrAndCondition))]
         public void VerifyIfEndifTrueOrAndCondition()
         {
             string value = @"Hello
@@ -1242,7 +1242,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueBitwiseOrEqualsCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueBitwiseOrEqualsCondition))]
         public void VerifyIfEndifTrueBitwiseOrEqualsCondition()
         {
             string value = @"Hello
@@ -1269,7 +1269,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName=nameof(VerifyIfEndifTrueShlCondition))]
+        [Fact(DisplayName = nameof(VerifyIfEndifTrueShlCondition))]
         public void VerifyIfEndifTrueShlCondition()
         {
             string value = @"Hello

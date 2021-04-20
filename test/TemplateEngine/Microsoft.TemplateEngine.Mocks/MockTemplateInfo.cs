@@ -194,7 +194,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             get
             {
-                return _baselineInfo.ToDictionary(k => k, k => (IBaselineInfo) new BaselineCacheInfo());
+                return _baselineInfo.ToDictionary(k => k, k => (IBaselineInfo)new BaselineCacheInfo());
             }
         }
 
@@ -212,7 +212,7 @@ namespace Microsoft.TemplateEngine.Mocks
             return new CacheTag(string.Empty, tagDescription, choicesDict, defaultValue, defaultIfOptionWithoutValue);
         }
 
-        private void PopulateParametersFromTags (List<ITemplateParameter> parameters)
+        private void PopulateParametersFromTags(List<ITemplateParameter> parameters)
         {
             foreach (KeyValuePair<string, ICacheTag> tagInfo in Tags)
             {
@@ -310,7 +310,7 @@ namespace Microsoft.TemplateEngine.Mocks
             }
             else
             {
-                _ = sb.Append("Group:" + GroupIdentity +";");
+                _ = sb.Append("Group:" + GroupIdentity + ";");
             }
             if (Precedence != 0)
             {
@@ -334,7 +334,7 @@ namespace Microsoft.TemplateEngine.Mocks
             }
             if (_tags.Any())
             {
-                _ = sb.Append("Tags:" + string.Join(",", _tags.Select(t => t.Key + "(" + string.Join("|",t.Value) + ")")) + ";");
+                _ = sb.Append("Tags:" + string.Join(",", _tags.Select(t => t.Key + "(" + string.Join("|", t.Value) + ")")) + ";");
             }
 
             return sb.ToString();

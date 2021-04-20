@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Utils
                 }
             }
 
-            foreach(IDirectory dir in source.EnumerateDirectories("*", SearchOption.TopDirectoryOnly))
+            foreach (IDirectory dir in source.EnumerateDirectories("*", SearchOption.TopDirectoryOnly))
             {
                 dir.CopyTo(Path.Combine(target, dir.Name));
             }

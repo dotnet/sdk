@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         private void EnsureLoaded()
         {
-            if(_lookup != null)
+            if (_lookup != null)
             {
                 return;
             }

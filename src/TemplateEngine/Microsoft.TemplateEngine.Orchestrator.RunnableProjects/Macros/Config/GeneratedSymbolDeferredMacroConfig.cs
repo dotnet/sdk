@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         // comes from GeneratedSymbol.Generator
         // note that for all generated symbols, GeneratedSymbol.Type = "generated"
-        public string Type { get; private set;  }
+        public string Type { get; private set; }
 
         internal IReadOnlyDictionary<string, JToken> Parameters { get; private set; }
 

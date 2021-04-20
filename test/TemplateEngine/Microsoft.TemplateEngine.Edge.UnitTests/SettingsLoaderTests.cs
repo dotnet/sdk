@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             {
                 foreach (var provider in allCreatedProviders)
                 {
-                    if(provider.TryGetTarget(out var actualProvider))
+                    if (provider.TryGetTarget(out var actualProvider))
                     {
                         actualProvider.UpdatePackages(NuPkgs, Folders);
                     }

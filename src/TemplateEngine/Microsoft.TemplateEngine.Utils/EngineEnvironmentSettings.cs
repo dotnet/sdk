@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Utils
                 Dictionary<string, string> variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 IDictionary env = System.Environment.GetEnvironmentVariables();
 
-                foreach(string key in env.Keys.OfType<string>())
+                foreach (string key in env.Keys.OfType<string>())
                 {
                     variables[key] = (env[key] as string) ?? string.Empty;
                 }

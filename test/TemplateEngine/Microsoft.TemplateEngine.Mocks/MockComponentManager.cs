@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Mocks
             List<Type> types = new List<Type>();
             foreach (Type t in type.GetTypeInfo().GetInterfaces())
             {
-                if(ComponentType.IsAssignableFrom(t))
+                if (ComponentType.IsAssignableFrom(t))
                 {
                     Type strongCache = typeof(Cache<>).MakeGenericType(t);
                     MethodInfo method = strongCache.GetTypeInfo().GetMethod(nameof(Cache<IIdentifiedComponent>.Get), BindingFlags.Public | BindingFlags.Static);

@@ -27,7 +27,7 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
         public bool Compare(out ScrapeComparisonResult result)
         {
             if (!TryReadScraperOutput(_config.ScraperOutputOneFile, out TemplateDiscoveryMetadata scraperOutputOne)
-                || ! TryReadScraperOutput(_config.ScraperOutputTwoFile, out TemplateDiscoveryMetadata scraperOutputTwo))
+                || !TryReadScraperOutput(_config.ScraperOutputTwoFile, out TemplateDiscoveryMetadata scraperOutputTwo))
             {
                 result = null;
                 return false;

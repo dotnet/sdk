@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// </summary>
     public sealed class InstallRequest
     {
-        public InstallRequest (string identifier, string version = null, string installerName = null, Dictionary<string, string> details = null)
+        public InstallRequest(string identifier, string version = null, string installerName = null, Dictionary<string, string> details = null)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {

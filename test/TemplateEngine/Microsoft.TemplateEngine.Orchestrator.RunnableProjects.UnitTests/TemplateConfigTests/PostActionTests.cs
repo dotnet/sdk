@@ -70,12 +70,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             List<IPostAction> postActions = PostAction.ListFromModel(EngineEnvironmentSettings, configModel.PostActionModel, vc);
             Assert.Equal(expectedActionCount, postActions.Count);
 
-            if (! string.IsNullOrEmpty(firstInstruction))
+            if (!string.IsNullOrEmpty(firstInstruction))
             {
                 Assert.Equal(firstInstruction, postActions[0].ManualInstructions);
             }
 
-            if (! string.IsNullOrEmpty(secondInstruction))
+            if (!string.IsNullOrEmpty(secondInstruction))
             {
                 Assert.Equal(secondInstruction, postActions[1].ManualInstructions);
             }

@@ -63,7 +63,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 }
             }
 
-            foreach(Tuple<IMacro, IMacroConfig> config in deferredConfigs)
+            foreach (Tuple<IMacro, IMacroConfig> config in deferredConfigs)
             {
                 config.Item1.EvaluateConfig(environmentSettings, variables, config.Item2, parameters, setter);
             }

@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
     {
         private EnvironmentSettingsHelper _environmentSettingsHelper;
 
-        public NuGetApiPackageManagerTests (EnvironmentSettingsHelper environmentSettingsHelper)
+        public NuGetApiPackageManagerTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _environmentSettingsHelper = environmentSettingsHelper;
         }
@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            var result = await packageManager.DownloadPackageAsync (installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0").ConfigureAwait(false);
+            var result = await packageManager.DownloadPackageAsync(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0").ConfigureAwait(false);
 
             result.Author.Should().Be("Microsoft");
             result.FullPath.Should().ContainAll(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0");

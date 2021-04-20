@@ -52,17 +52,17 @@ namespace Microsoft.TemplateEngine.Core
 
             byte[] buffer = new byte[pre.Length + core.Length + post.Length];
 
-            if(pre != Empty<byte>.Array.Value)
+            if (pre != Empty<byte>.Array.Value)
             {
                 Buffer.BlockCopy(pre, 0, buffer, 0, pre.Length);
             }
 
-            if(core != Empty<byte>.Array.Value)
+            if (core != Empty<byte>.Array.Value)
             {
                 Buffer.BlockCopy(core, 0, buffer, pre.Length, core.Length);
             }
 
-            if(post != Empty<byte>.Array.Value)
+            if (post != Empty<byte>.Array.Value)
             {
                 Buffer.BlockCopy(post, 0, buffer, pre.Length + core.Length, post.Length);
             }

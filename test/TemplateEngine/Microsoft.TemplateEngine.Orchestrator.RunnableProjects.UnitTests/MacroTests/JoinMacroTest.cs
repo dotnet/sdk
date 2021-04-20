@@ -28,13 +28,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string referenceSymbolValue = "referenceValue";
             string constantValue = "constantValue";
 
-            List<KeyValuePair<string,string>> definitions = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string, string>> definitions = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string,string>("const",constantValue),
                 new KeyValuePair<string,string>("ref",referenceSymbolName)
             };
 
-            JoinMacroConfig macroConfig = new JoinMacroConfig(variableName, null,definitions,separator);
+            JoinMacroConfig macroConfig = new JoinMacroConfig(variableName, null, definitions, separator);
 
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             Assert.True(parameters.TryGetParameterDefinition(variableName, out ITemplateParameter convertedParam));
 
-            string convertedValue = (string) parameters.ResolvedValues[convertedParam];
+            string convertedValue = (string)parameters.ResolvedValues[convertedParam];
             string expectedValue = string.Join(separator, constantValue, referenceSymbolValue);
             Assert.Equal(convertedValue, expectedValue);
         }
@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             Assert.True(parameters.TryGetParameterDefinition(variableName, out ITemplateParameter convertedParam));
 
-            string convertedValue = (string) parameters.ResolvedValues[convertedParam];
+            string convertedValue = (string)parameters.ResolvedValues[convertedParam];
             string expectedValue = string.Join(separator, constantValue, referenceSymbolValue);
             Assert.Equal(convertedValue, expectedValue);
         }

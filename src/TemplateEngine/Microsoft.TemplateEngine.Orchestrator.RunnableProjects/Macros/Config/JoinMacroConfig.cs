@@ -15,11 +15,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         internal string DataType { get; private set; }
 
         // type -> value
-        internal IList<KeyValuePair<string,string>> Symbols { get; private set; }
+        internal IList<KeyValuePair<string, string>> Symbols { get; private set; }
 
         internal string Separator { get; private set; }
 
-        internal JoinMacroConfig(string variableName, string dataType, IList<KeyValuePair<string,string>> symbols, string separator)
+        internal JoinMacroConfig(string variableName, string dataType, IList<KeyValuePair<string, string>> symbols, string separator)
         {
             VariableName = variableName;
             Type = "join";

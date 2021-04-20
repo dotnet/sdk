@@ -230,7 +230,7 @@ namespace Microsoft.TemplateEngine.Edge
                     found = SelectBestMatch(sender, assemblyName, files);
 #endif
                 }
-                else if(File.Exists(Path.Combine(selector._path, stringName + ".dll")))
+                else if (File.Exists(Path.Combine(selector._path, stringName + ".dll")))
                 {
                     FileInfo f = new FileInfo(Path.Combine(selector._path, stringName + ".dll"));
                     FileInfo[] files = { f };

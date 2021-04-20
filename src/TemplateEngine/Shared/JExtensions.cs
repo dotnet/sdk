@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine
             {
                 checkToken = token;
             }
-            else if (! ((JObject)token).TryGetValue(key, StringComparison.OrdinalIgnoreCase, out checkToken))
+            else if (!((JObject)token).TryGetValue(key, StringComparison.OrdinalIgnoreCase, out checkToken))
             {
                 return defaultValue;
             }

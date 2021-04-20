@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                     catch (IOException)
                     {
-                        if(i == MaxLoadAttempts - 1)
+                        if (i == MaxLoadAttempts - 1)
                         {
                             throw;
                         }

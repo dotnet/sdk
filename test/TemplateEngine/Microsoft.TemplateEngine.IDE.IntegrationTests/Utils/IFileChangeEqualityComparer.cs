@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
     {
         public int Compare(IFileChange x, IFileChange y)
         {
-            if (Equals(x,y))
+            if (Equals(x, y))
             {
                 return 0;
             }
@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             return Path.GetFullPath(x).ToLowerInvariant();
         }
 
-        private static int ComparePaths (string x, string y)
+        private static int ComparePaths(string x, string y)
         {
             if (string.IsNullOrWhiteSpace(x))
             {

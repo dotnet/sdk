@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("test1||test2", "test1", MatchKind.Exact)]
         [InlineData("test1||test2", "test", MatchKind.Mismatch)]
         [InlineData("test1||test2", null, null)]
-        public void TagFilterTests_TemplateWithTags (string templateTags, string testTag, MatchKind? kind)
+        public void TagFilterTests_TemplateWithTags(string templateTags, string testTag, MatchKind? kind)
         {
             const string separator = "||";
             string[] templateTagsArray = templateTags.Split(separator);

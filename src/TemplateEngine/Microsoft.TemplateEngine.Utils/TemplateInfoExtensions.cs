@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <summary>
         /// Helper method that returns <see cref="ITemplatePackage"/> that contains <paramref name="template"/>.
         /// </summary>
-        public static async Task<ITemplatePackage> GetTemplatePackageAsync (this ITemplateInfo template, IEngineEnvironmentSettings settings)
+        public static async Task<ITemplatePackage> GetTemplatePackageAsync(this ITemplateInfo template, IEngineEnvironmentSettings settings)
         {
             IReadOnlyList<ITemplatePackage> templatePackages = await settings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync().ConfigureAwait(false);
             return templatePackages.Single(s => s.MountPointUri == template.MountPointUri);
@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <param name="template">template definition.</param>
         /// <param name="tagName">tag name.</param>
         /// <returns>The values of tag defined in the template or null if the tag is not defined in the template.</returns>
-        public static IEnumerable<string> GetTagValues (this ITemplateInfo template, string tagName)
+        public static IEnumerable<string> GetTagValues(this ITemplateInfo template, string tagName)
         {
             if (template.Tags == null || !template.Tags.TryGetValue(tagName, out ICacheTag tag))
             {

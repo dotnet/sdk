@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
             {
                 terminal.Location -= sequenceNumberToBufferPositionRelationship;
 
-                if(originalSequenceNumber > _sequenceNumber + 1)
+                if (originalSequenceNumber > _sequenceNumber + 1)
                 {
                     int expectedShift = terminal.Terminal.Length - terminal.Terminal.End - 1;
 

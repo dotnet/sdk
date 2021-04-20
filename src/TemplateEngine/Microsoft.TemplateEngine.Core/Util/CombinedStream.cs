@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             {
                 read = _stream1.Read(buffer, offset, count);
 
-                if(read == count)
+                if (read == count)
                 {
                     return read;
                 }

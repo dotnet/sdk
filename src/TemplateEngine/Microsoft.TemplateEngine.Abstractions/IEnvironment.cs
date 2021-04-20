@@ -18,6 +18,6 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// The width of the console buffer. This is typically the value of <see cref="System.Console.BufferWidth" />.
         /// </summary>
-        int ConsoleBufferWidth { get;  }
+        int ConsoleBufferWidth { get; }
     }
 }

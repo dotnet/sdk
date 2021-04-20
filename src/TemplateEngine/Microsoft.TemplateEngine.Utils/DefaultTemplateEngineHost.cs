@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string> defaults)
-            : this (hostIdentifier, version, defaults, NoComponents, null)
+            : this(hostIdentifier, version, defaults, NoComponents, null)
         {
         }
 

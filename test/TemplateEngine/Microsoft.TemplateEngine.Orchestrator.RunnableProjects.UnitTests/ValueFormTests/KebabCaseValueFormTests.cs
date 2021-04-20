@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("My Word", "my-word")]
         [InlineData("My    Word", "my-word")]
         [InlineData(";;;;;", "")]
-        [InlineData ("       ", "")]
+        [InlineData("       ", "")]
         [InlineData("Simple TEXT_here", "simple-text-here")]
         [InlineData("НоваяПеременная", "новая-переменная")]
 

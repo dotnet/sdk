@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Edge
                     Assembly assembly = null;
 
 #if !NETFULL
-                    if(file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1)
+                    if (file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1)
                     {
                         using (Stream fileStream = paths.OpenRead(file))
                         {

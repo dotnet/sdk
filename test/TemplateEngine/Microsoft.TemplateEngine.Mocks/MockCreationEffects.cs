@@ -22,13 +22,13 @@ namespace Microsoft.TemplateEngine.Mocks
             return this;
         }
 
-        public MockCreationEffects WithFileChange (params MockFileChange[] fileChanges)
+        public MockCreationEffects WithFileChange(params MockFileChange[] fileChanges)
         {
             _mockFileChanges = _mockFileChanges.Concat(fileChanges).ToArray();
             return this;
         }
 
-        public MockCreationEffects Without (params string[] files)
+        public MockCreationEffects Without(params string[] files)
         {
             _absentFiles = _absentFiles.Concat(files).ToArray();
             return this;

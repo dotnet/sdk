@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
             : base(mountPoint, fullPath, name)
         {
             _entry = entry;
-            _mountPoint = (ZipFileMountPoint) mountPoint;
+            _mountPoint = (ZipFileMountPoint)mountPoint;
         }
 
         public override bool Exists

@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 case Operator.Not:
                     return !EvaluateSide(Right, x => Convert.ToBoolean(x ?? "False"));
                 case Operator.And:
-                    return EvaluateSides(Left, Right, x => (bool) x, (x, y) => x && y);
+                    return EvaluateSides(Left, Right, x => (bool)x, (x, y) => x && y);
                 case Operator.Or:
                     return EvaluateSides(Left, Right, x => (bool)x, (x, y) => x || y);
                 case Operator.Xor:
@@ -107,7 +107,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         private static bool LenientEquals(object x, object y)
         {
-            if(x is string sx && y is string sy)
+            if (x is string sx && y is string sy)
             {
                 return string.Equals(sx, sy, StringComparison.OrdinalIgnoreCase);
             }

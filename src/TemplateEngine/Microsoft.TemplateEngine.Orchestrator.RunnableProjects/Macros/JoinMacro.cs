@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 // If there is an existing parameter with this name, it must be reused so it can be referenced by name
                 // for other processing, for example: if the parameter had value forms defined for creating variants.
                 // When the param already exists, use its definition, but set IsVariable = true for consistency.
-                p = (Parameter) existingParam;
+                p = (Parameter)existingParam;
                 p.IsVariable = true;
                 if (string.IsNullOrEmpty(p.DataType))
                 {
@@ -113,10 +113,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             List<KeyValuePair<string, string>> symbolsList = new List<KeyValuePair<string, string>>();
             if (deferredConfig.Parameters.TryGetValue("symbols", out JToken symbolsToken))
             {
-                JArray switchJArray = (JArray) symbolsToken;
+                JArray switchJArray = (JArray)symbolsToken;
                 foreach (JToken switchInfo in switchJArray)
                 {
-                    JObject map = (JObject) switchInfo;
+                    JObject map = (JObject)switchInfo;
                     string condition = map.ToString("type");
                     string value = map.ToString("value");
                     symbolsList.Add(new KeyValuePair<string, string>(condition, value));
