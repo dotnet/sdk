@@ -116,9 +116,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Stop generating *.runtimeconfig.dev.json files to reduce probing paths. -->
+    <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+    <!-- Post-net6.0, stop generating *.runtimeconfig.dev.json files to reduce probing paths. -->
     <!-- https://github.com/dotnet/sdk/issues/16818 -->
-    <GenerateRuntimeConfigDevFile>false<GenerateRuntimeConfigDevFile>
+    <GenerateRuntimeConfigDevFile Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))">false<GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
   <!-- Default item includes (globs and implicit references) -->
