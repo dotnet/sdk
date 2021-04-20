@@ -1589,4 +1589,13 @@
   <data name="DoNotUseWhenAllWithSingleTaskFix" xml:space="preserve">
     <value>Replace 'WhenAll' call with argument</value>
   </data>
+  <data name="ProvidePublicParameterlessSafeHandleConstructorDescription" xml:space="preserve">
+    <value>Providing a public parameterless constructor for a type derived from System.Runtime.InteropServices.SafeHandle enables better performance and usage with source-generated interop solutions.</value>
+  </data>
+  <data name="ProvidePublicParameterlessSafeHandleConstructorMessage" xml:space="preserve">
+    <value>Provide a public parameterless constructor for concrete types derived from System.Runtime.InteropServices.SafeHandle</value>
+  </data>
+  <data name="ProvidePublicParameterlessSafeHandleConstructorTitle" xml:space="preserve">
+    <value>Provide a public parameterless constructor for the '{0}' type that is derived from System.Runtime.InteropServices.SafeHandle</value>
+  </data>
 </root>
