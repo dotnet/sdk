@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 Name = name;
                 FullPath = fullPath;
-                _data = new byte[0];
+                _data = Array.Empty<byte>();
             }
 
             public Stream OpenRead()

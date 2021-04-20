@@ -936,9 +936,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         if (string.IsNullOrEmpty(modifier.Condition) || Cpp2StyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, modifier.Condition, rootVariableCollection))
                         {
-                            IReadOnlyList<string> modifierIncludes = JTokenAsFilenameToReadOrArrayToCollection(modifier.Include, SourceFile, new string[0]);
-                            IReadOnlyList<string> modifierExcludes = JTokenAsFilenameToReadOrArrayToCollection(modifier.Exclude, SourceFile, new string[0]);
-                            IReadOnlyList<string> modifierCopyOnly = JTokenAsFilenameToReadOrArrayToCollection(modifier.CopyOnly, SourceFile, new string[0]);
+                            IReadOnlyList<string> modifierIncludes = JTokenAsFilenameToReadOrArrayToCollection(modifier.Include, SourceFile, Array.Empty<string>());
+                            IReadOnlyList<string> modifierExcludes = JTokenAsFilenameToReadOrArrayToCollection(modifier.Exclude, SourceFile, Array.Empty<string>());
+                            IReadOnlyList<string> modifierCopyOnly = JTokenAsFilenameToReadOrArrayToCollection(modifier.CopyOnly, SourceFile, Array.Empty<string>());
                             FileSourceEvaluable modifierPatterns = new FileSourceEvaluable(modifierIncludes, modifierExcludes, modifierCopyOnly);
                             modifierList.Add(modifierPatterns);
 
@@ -1074,7 +1074,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             };
 
             JToken shortNameToken = source.Get<JToken>("ShortName");
-            config.ShortNameList = JTokenStringOrArrayToCollection(shortNameToken, new string[0]);
+            config.ShortNameList = JTokenStringOrArrayToCollection(shortNameToken, Array.Empty<string>());
 
             config.Forms = SetupValueFormMapForTemplate(source);
 

@@ -100,10 +100,10 @@ namespace Microsoft.TemplateEngine.Mocks
             return this;
         }
 
-        private string[] _cacheParameters = new string[0];
-        private string[] _baselineInfo = new string[0];
-        private string[] _classifications = new string[0];
-        private string[] _shortNameList = new string[0];
+        private string[] _cacheParameters = Array.Empty<string>();
+        private string[] _baselineInfo = Array.Empty<string>();
+        private string[] _classifications = Array.Empty<string>();
+        private string[] _shortNameList = Array.Empty<string>();
         private Dictionary<string, string[]> _tags = new Dictionary<string, string[]>();
 
         public string Author { get; private set; }

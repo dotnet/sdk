@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Utils
         public static class Array
         {
             // ReSharper disable once StaticMemberInGenericType
-            public static readonly T[] Value = new T[0];
+            public static readonly T[] Value = System.Array.Empty<T>();
         }
     }
 }

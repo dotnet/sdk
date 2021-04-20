@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Utils
     {
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
         private readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> _hostBuiltInComponents;
-        private static readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> NoComponents = new KeyValuePair<Guid, Func<Type>>[0];
+        private static readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> NoComponents = Array.Empty<KeyValuePair<Guid, Func<Type>>>();
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version)
             : this(hostIdentifier, version, null)

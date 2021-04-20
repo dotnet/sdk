@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             host.FileSystem = new MockFileSystem();
             var environmentSettings = new EngineEnvironmentSettings(host, x => null);
             MockMountPoint mnt = new MockMountPoint(environmentSettings);
-            mnt.MockRoot.AddDirectory("subdir").AddFile("test.file", new byte[0]);
+            mnt.MockRoot.AddDirectory("subdir").AddFile("test.file", System.Array.Empty<byte>());
             Util.Orchestrator orchestrator = new Util.Orchestrator();
             orchestrator.Run(new MockGlobalRunSpec(), mnt.Root, @"c:\temp");
         }

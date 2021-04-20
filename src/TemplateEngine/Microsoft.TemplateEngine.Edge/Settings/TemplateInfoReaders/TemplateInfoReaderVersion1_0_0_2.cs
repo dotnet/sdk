@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         protected override void ReadShortNameInfo(JObject jObject, TemplateInfo info)
         {
             JToken shortNameToken = jObject.Get<JToken>(nameof(TemplateInfo.ShortNameList));
-            info.ShortNameList = JTokenStringOrArrayToCollection(shortNameToken, new string[0]);
+            info.ShortNameList = JTokenStringOrArrayToCollection(shortNameToken, System.Array.Empty<string>());
 
             if (info.ShortNameList.Count == 0)
             {

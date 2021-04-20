@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Core
 {
     public class VariableCollection : IVariableCollection
     {
-        private static readonly IEnumerable<string> NoKeys = new string[0];
+        private static readonly IEnumerable<string> NoKeys = Array.Empty<string>();
         private readonly IDictionary<string, object> _values;
         private IVariableCollection _parent;
 

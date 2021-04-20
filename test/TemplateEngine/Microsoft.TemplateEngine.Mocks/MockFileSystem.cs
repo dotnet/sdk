@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Mocks
             {
                 _files[path] = new FileSystemFile();
             }
-            _files[path].Data = new byte[0];
+            _files[path].Data = Array.Empty<byte>();
             return new MockFileStream(d => _files[path].Data = d);
         }
 

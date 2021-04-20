@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             if (currentBufferLength == 0)
             {
                 //File is zero length - pick something
-                bom = new byte[0];
+                bom = System.Array.Empty<byte>();
                 return Encoding.UTF8;
             }
 
@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             }
 
             //Fallback to UTF-8
-            bom = new byte[0];
+            bom = System.Array.Empty<byte>();
             return Encoding.UTF8;
         }
     }
