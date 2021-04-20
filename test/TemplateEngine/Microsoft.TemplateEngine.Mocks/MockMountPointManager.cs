@@ -21,7 +21,8 @@ namespace Microsoft.TemplateEngine.Mocks
         }
         public IEngineEnvironmentSettings EnvironmentSettings
         {
-            private set; get;
+            get;
+            private set; 
         }
 
         /// <summary>

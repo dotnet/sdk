@@ -22,11 +22,11 @@ namespace Microsoft.TemplateEngine.Mocks
             ChangeKind = kind;
         }
 
-        public string SourceRelativePath { private set; get; }
+        public string SourceRelativePath { get; private set; }
 
-        public string TargetRelativePath { private set; get; }
+        public string TargetRelativePath { get; private set; }
 
-        public ChangeKind ChangeKind { private set; get; }
+        public ChangeKind ChangeKind { get; private set; }
 
         public byte[] Contents => Array.Empty<byte>();
 
