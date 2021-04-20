@@ -7,11 +7,12 @@ using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
-    public abstract class UseOrdinalStringComparisonAnalyzer : DiagnosticAnalyzer
+    public abstract class UseOrdinalStringComparisonAnalyzer : AbstractGlobalizationDiagnosticAnalyzer
     {
         internal const string RuleId = "CA1309";
 
@@ -37,50 +38,43 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-
-            analysisContext.RegisterCompilationStartAction(
-                (context) =>
+            INamedTypeSymbol? stringComparisonType = context.Compilation.GetOrCreateTypeByMetadataName(StringComparisonTypeName);
+            if (stringComparisonType != null)
+            {
+                context.RegisterOperationAction(operationContext =>
                 {
-                    INamedTypeSymbol? stringComparisonType = context.Compilation.GetOrCreateTypeByMetadataName(StringComparisonTypeName);
-                    if (stringComparisonType != null)
+                    var operation = (IInvocationOperation)operationContext.Operation;
+                    IMethodSymbol methodSymbol = operation.TargetMethod;
+                    if (methodSymbol != null &&
+                        methodSymbol.ContainingType.SpecialType == SpecialType.System_String &&
+                        IsEqualsOrCompare(methodSymbol.Name))
                     {
-                        context.RegisterOperationAction(operationContext =>
+                        if (!IsAcceptableOverload(methodSymbol, stringComparisonType))
+                        {
+                            // wrong overload
+                            operationContext.ReportDiagnostic(Diagnostic.Create(Rule, GetMethodNameLocation(operation.Syntax)));
+                        }
+                        else
+                        {
+                            IArgumentOperation lastArgument = operation.Arguments.Last();
+                            if (lastArgument.Value.Kind == OperationKind.FieldReference)
                             {
-                                var operation = (IInvocationOperation)operationContext.Operation;
-                                IMethodSymbol methodSymbol = operation.TargetMethod;
-                                if (methodSymbol != null &&
-                                    methodSymbol.ContainingType.SpecialType == SpecialType.System_String &&
-                                    IsEqualsOrCompare(methodSymbol.Name))
+                                IFieldSymbol fieldSymbol = ((IFieldReferenceOperation)lastArgument.Value).Field;
+                                if (fieldSymbol != null &&
+                                    fieldSymbol.ContainingType.Equals(stringComparisonType) &&
+                                    !IsOrdinalOrOrdinalIgnoreCase(fieldSymbol.Name))
                                 {
-                                    if (!IsAcceptableOverload(methodSymbol, stringComparisonType))
-                                    {
-                                        // wrong overload
-                                        operationContext.ReportDiagnostic(Diagnostic.Create(Rule, GetMethodNameLocation(operation.Syntax)));
-                                    }
-                                    else
-                                    {
-                                        IArgumentOperation lastArgument = operation.Arguments.Last();
-                                        if (lastArgument.Value.Kind == OperationKind.FieldReference)
-                                        {
-                                            IFieldSymbol fieldSymbol = ((IFieldReferenceOperation)lastArgument.Value).Field;
-                                            if (fieldSymbol != null &&
-                                                fieldSymbol.ContainingType.Equals(stringComparisonType) &&
-                                                !IsOrdinalOrOrdinalIgnoreCase(fieldSymbol.Name))
-                                            {
-                                                // right overload, wrong value
-                                                operationContext.ReportDiagnostic(lastArgument.Syntax.CreateDiagnostic(Rule));
-                                            }
-                                        }
-                                    }
+                                    // right overload, wrong value
+                                    operationContext.ReportDiagnostic(lastArgument.Syntax.CreateDiagnostic(Rule));
                                 }
-                            },
-                            OperationKind.Invocation);
+                            }
+                        }
                     }
-                });
+                },
+                    OperationKind.Invocation);
+            }
         }
 
         private static bool IsEqualsOrCompare(string methodName)

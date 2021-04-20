@@ -228,7 +228,11 @@ class TestClass
     {
         zipArchiveEntry.ExtractToFile(zipArchiveEntry.FullName);
     }
-}", (".editorconfig", editorConfigText), expected);
+}", ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), expected);
         }
     }
 }

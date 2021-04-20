@@ -13,8 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     /// <summary>
     /// CA1802: Use literals where appropriate
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class UseLiteralsWhereAppropriateAnalyzer : DiagnosticAnalyzer
+    public abstract class UseLiteralsWhereAppropriateAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1802";
 
@@ -78,6 +77,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                     var initializerValue = fieldInitializerValue.ConstantValue.Value;
 
+                    if (fieldInitializerValue.Kind == OperationKind.InterpolatedString &&
+                        !IsConstantInterpolatedStringSupported(fieldInitializerValue.Syntax.SyntaxTree.Options))
+                    {
+                        return;
+                    }
+
                     // Though null is const we don't fire the diagnostic to be FxCop Compact
                     if (initializerValue != null &&
                         !constantIncompatibleTypes.Contains(fieldInitializerValue.Type))
@@ -95,5 +100,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 OperationKind.FieldInitializer);
             });
         }
+
+        protected abstract bool IsConstantInterpolatedStringSupported(ParseOptions compilation);
     }
 }

@@ -29,26 +29,6 @@
             ]
           }
         },
-        "CA1019": {
-          "id": "CA1019",
-          "shortDescription": "Define accessors for attribute arguments",
-          "fullDescription": "Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1019",
-          "properties": {
-            "category": "Design",
-            "isEnabledByDefault": false,
-            "typeName": "CSharpDefineAccessorsForAttributeArgumentsAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA1032": {
           "id": "CA1032",
           "shortDescription": "Implement standard exception constructors",
@@ -59,26 +39,6 @@
             "category": "Design",
             "isEnabledByDefault": false,
             "typeName": "CSharpImplementStandardExceptionConstructorsAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA1065": {
-          "id": "CA1065",
-          "shortDescription": "Do not raise exceptions in unexpected locations",
-          "fullDescription": "A method that is not expected to throw exceptions throws an exception.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1065",
-          "properties": {
-            "category": "Design",
-            "isEnabledByDefault": false,
-            "typeName": "CSharpDoNotRaiseExceptionsInUnexpectedLocationsAnalyzer",
             "languages": [
               "C#"
             ],
@@ -142,6 +102,26 @@
               "C#"
             ],
             "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1802": {
+          "id": "CA1802",
+          "shortDescription": "Use literals where appropriate",
+          "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpUseLiteralsWhereAppropriate",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
@@ -399,25 +379,6 @@
               "EnabledRuleInAggressiveMode"
             ]
           }
-        },
-        "CA3077": {
-          "id": "CA3077",
-          "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
-          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpDoNotUseInsecureDtdProcessingInApiDesignAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
         }
       }
     },
@@ -650,6 +611,27 @@
             "category": "Design",
             "isEnabledByDefault": true,
             "typeName": "MarkAttributesWithAttributeUsageAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1019": {
+          "id": "CA1019",
+          "shortDescription": "Define accessors for attribute arguments",
+          "fullDescription": "Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1019",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": false,
+            "typeName": "DefineAccessorsForAttributeArgumentsAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -1246,6 +1228,27 @@
             ]
           }
         },
+        "CA1065": {
+          "id": "CA1065",
+          "shortDescription": "Do not raise exceptions in unexpected locations",
+          "fullDescription": "A method that is not expected to throw exceptions throws an exception.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1065",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": false,
+            "typeName": "DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1066": {
           "id": "CA1066",
           "shortDescription": "Implement IEquatable when overriding Object.Equals",
@@ -1522,6 +1525,26 @@
             "category": "Interoperability",
             "isEnabledByDefault": true,
             "typeName": "DoNotUseOutAttributeStringPInvokeParametersAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1418": {
+          "id": "CA1418",
+          "shortDescription": "Use valid platform string",
+          "fullDescription": "Platform compatibility analyzer requires a valid platform name and version.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1418",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "UseValidPlatformString",
             "languages": [
               "C#",
               "Visual Basic"
@@ -1920,27 +1943,6 @@
             "category": "Naming",
             "isEnabledByDefault": true,
             "typeName": "ParameterNamesShouldMatchBaseDeclarationAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA1802": {
-          "id": "CA1802",
-          "shortDescription": "Use literals where appropriate",
-          "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": false,
-            "typeName": "UseLiteralsWhereAppropriateAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -2411,7 +2413,7 @@
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
-            "typeName": "UseEnvironmentProcessId",
+            "typeName": "UseEnvironmentMembers",
             "languages": [
               "C#",
               "Visual Basic"
@@ -2452,6 +2454,46 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "ProvideStreamMemoryBasedAsyncOverrides",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1839": {
+          "id": "CA1839",
+          "shortDescription": "Use 'Environment.ProcessPath'",
+          "fullDescription": "'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseEnvironmentMembers",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1840": {
+          "id": "CA1840",
+          "shortDescription": "Use 'Environment.CurrentManagedThreadId'",
+          "fullDescription": "'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseEnvironmentMembers",
             "languages": [
               "C#",
               "Visual Basic"
@@ -4002,6 +4044,26 @@
             ]
           }
         },
+        "CA3077": {
+          "id": "CA3077",
+          "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
+          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseInsecureDtdProcessingInApiDesignAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA3147": {
           "id": "CA3147",
           "shortDescription": "Mark Verb Handlers With Validate Antiforgery Token",
@@ -5045,26 +5107,6 @@
             ]
           }
         },
-        "CA1019": {
-          "id": "CA1019",
-          "shortDescription": "Define accessors for attribute arguments",
-          "fullDescription": "Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1019",
-          "properties": {
-            "category": "Design",
-            "isEnabledByDefault": false,
-            "typeName": "BasicDefineAccessorsForAttributeArgumentsAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA1032": {
           "id": "CA1032",
           "shortDescription": "Implement standard exception constructors",
@@ -5075,26 +5117,6 @@
             "category": "Design",
             "isEnabledByDefault": false,
             "typeName": "BasicImplementStandardExceptionConstructorsAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA1065": {
-          "id": "CA1065",
-          "shortDescription": "Do not raise exceptions in unexpected locations",
-          "fullDescription": "A method that is not expected to throw exceptions throws an exception.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1065",
-          "properties": {
-            "category": "Design",
-            "isEnabledByDefault": false,
-            "typeName": "BasicDoNotRaiseExceptionsInUnexpectedLocationsAnalyzer",
             "languages": [
               "Visual Basic"
             ],
@@ -5158,6 +5180,26 @@
               "Visual Basic"
             ],
             "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1802": {
+          "id": "CA1802",
+          "shortDescription": "Use literals where appropriate",
+          "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "BasicUseLiteralsWhereAppropriate",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
@@ -5428,25 +5470,6 @@
             "category": "Security",
             "isEnabledByDefault": false,
             "typeName": "BasicDataSetDataTableInSerializableTypeAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA3077": {
-          "id": "CA3077",
-          "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
-          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": true,
-            "typeName": "BasicDoNotUseInsecureDtdProcessingInApiDesignAnalyzer",
             "languages": [
               "Visual Basic"
             ],
