@@ -59,7 +59,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 _includeRegion = include;
                 _startAndEndAreSame = toggle;
 
-                Tokens = toggle ? new[] {startToken} : new[] {startToken, endToken};
+                Tokens = toggle ? new[] {startToken } : new[] {startToken, endToken };
                 _id = id;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }

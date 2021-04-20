@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 _replacement = replaceWith;
                 _token = token;
                 _id = id;
-                Tokens = new[] {token};
+                Tokens = new[] {token };
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 

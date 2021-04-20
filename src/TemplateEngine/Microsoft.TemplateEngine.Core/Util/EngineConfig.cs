@@ -9,9 +9,9 @@ namespace Microsoft.TemplateEngine.Core.Util
 {
     public class EngineConfig : IEngineConfig
     {
-        public static IReadOnlyList<string> DefaultLineEndings = new[] {"\r", "\n", "\r\n"};
+        public static IReadOnlyList<string> DefaultLineEndings = new[] {"\r", "\n", "\r\n" };
 
-        public static IReadOnlyList<string> DefaultWhitespaces = new[] {" ", "\t"};
+        public static IReadOnlyList<string> DefaultWhitespaces = new[] {" ", "\t" };
 
         public EngineConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, string variableFormatString = "{0}")
             : this(environmentSettings, DefaultWhitespaces, DefaultLineEndings, variables, variableFormatString)

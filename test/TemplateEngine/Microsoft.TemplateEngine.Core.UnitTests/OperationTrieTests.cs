@@ -43,8 +43,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
             {
-                new MockOperation("Test1", null, true, TokenConfig.LiteralToken(new byte[]{1, 2, 3, 4})),
-                new MockOperation("Test2", null, true, TokenConfig.LiteralToken(new byte[] {2, 3}))
+                new MockOperation("Test1", null, true, TokenConfig.LiteralToken(new byte[]{1, 2, 3, 4 })),
+                new MockOperation("Test2", null, true, TokenConfig.LiteralToken(new byte[] {2, 3 }))
             });
 
             byte[] buffer = { 1, 2, 3, 4, 5 };
@@ -62,8 +62,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
             {
-                new MockOperation("Test1", null, true, TokenConfig.LiteralToken(new byte[] {5, 2, 3, 4})),
-                new MockOperation("Test2", null, true, TokenConfig.LiteralToken(new byte[] {4, 6}), TokenConfig.LiteralToken(new byte[] {2, 3}))
+                new MockOperation("Test1", null, true, TokenConfig.LiteralToken(new byte[] {5, 2, 3, 4 })),
+                new MockOperation("Test2", null, true, TokenConfig.LiteralToken(new byte[] {4, 6 }), TokenConfig.LiteralToken(new byte[] {2, 3 }))
             });
 
             byte[] buffer = { 1, 2, 3, 4, 5 };
@@ -86,8 +86,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
             {
-                new MockOperation("Test1", null, true, TokenConfig.LiteralToken(new byte[] {5, 2, 3, 4})),
-                new MockOperation("Test2", null, true, TokenConfig.LiteralToken(new byte[] {4, 5}), TokenConfig.LiteralToken(new byte[] {2, 3}))
+                new MockOperation("Test1", null, true, TokenConfig.LiteralToken(new byte[] {5, 2, 3, 4 })),
+                new MockOperation("Test2", null, true, TokenConfig.LiteralToken(new byte[] {4, 5 }), TokenConfig.LiteralToken(new byte[] {2, 3 }))
             });
 
             byte[] buffer = { 1, 2, 3, 4, 5 };
