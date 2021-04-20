@@ -634,7 +634,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
             private static class TypeConverterLookup<T>
             {
-                public static TypeConverterDelegate<T> TryConvert;
+                public static TypeConverterDelegate<T> TryConvert { get; set; }
             }
         }
     }

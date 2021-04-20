@@ -8,11 +8,11 @@ namespace Microsoft.TemplateEngine.Core.Matching
     internal class TriePath<T>
         where T : TerminalBase
     {
-        public readonly List<T> EncounteredTerminals;
+        public List<T> EncounteredTerminals { get; }
 
-        public readonly int StartSequenceNumber;
+        public int StartSequenceNumber { get; }
 
-        public TrieNode<T> CurrentNode;
+        public TrieNode<T> CurrentNode { get; set; }
 
         public TriePath(int startSequenceNumber)
         {

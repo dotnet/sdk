@@ -23,12 +23,12 @@ namespace Microsoft.TemplateSearch.Common
             _isSearchPerformed = false;
         }
 
-        protected readonly IEngineEnvironmentSettings _environmentSettings;
-        protected readonly string _inputTemplateName;
-        protected readonly string _defaultLanguage;
-        protected Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> _matchFilter;
+        protected IEngineEnvironmentSettings _environmentSettings { get; }
+        protected string _inputTemplateName { get; }
+        protected string _defaultLanguage { get; }
+        protected Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> _matchFilter { get; set; }
         private bool _isSearchPerformed;
-        protected SearchResults _searchResults;
+        protected SearchResults _searchResults { get; set; }
 
         public async Task<SearchResults> SearchAsync()
         {

@@ -14,7 +14,7 @@ namespace Microsoft.TemplateSearch.Common
     // Making this be not abstract will cause problems with the registered components.
     public abstract class FileMetadataSearchSource : ITemplateSearchSource
     {
-        protected IFileMetadataTemplateSearchCache _searchCache;
+        protected IFileMetadataTemplateSearchCache _searchCache { get; set; }
         private ISearchPackFilter _packFilter;
 
         public abstract Task<bool> TryConfigure(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IManagedTemplatePackage> existingTemplatePackage);

@@ -18,7 +18,7 @@ namespace Microsoft.TemplateSearch.Common
 
         public string TemplateDiscoveryFileName { get; }
 
-        protected readonly Dictionary<string, Func<JObject, object>> _additionalDataReaders;
+        protected Dictionary<string, Func<JObject, object>> _additionalDataReaders { get; }
 
         public IReadOnlyDictionary<string, Func<JObject, object>> AdditionalDataReaders => _additionalDataReaders;
     }

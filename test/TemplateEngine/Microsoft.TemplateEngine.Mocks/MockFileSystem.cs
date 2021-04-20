@@ -26,10 +26,9 @@ namespace Microsoft.TemplateEngine.Mocks
                 LastWriteTimeUtc = file.LastWriteTimeUtc;
             }
 
-            public byte[] Data;
-            public FileAttributes Attributes;
-
-            public DateTime LastWriteTimeUtc;
+            public byte[] Data { get; set; }
+            public FileAttributes Attributes { get; set; }
+            public DateTime LastWriteTimeUtc { get; set; }
         }
 
         public class DirectoryScanParameters

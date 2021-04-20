@@ -6,7 +6,7 @@ namespace Microsoft.TemplateSearch.Common
 {
     public class PackInfo
     {
-        public static PackInfo Empty = new PackInfo(string.Empty, string.Empty);
+        public static PackInfo Empty { get; set; } = new PackInfo(string.Empty, string.Empty);
 
         public PackInfo(string name, string version)
         {

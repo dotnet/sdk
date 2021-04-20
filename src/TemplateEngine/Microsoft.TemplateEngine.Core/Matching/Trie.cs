@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
     public class Trie<T>
         where T : TerminalBase
     {
-        public readonly Dictionary<byte, TrieNode<T>> NextNodes;
+        public Dictionary<byte, TrieNode<T>> NextNodes { get; }
 
         public Trie()
         {

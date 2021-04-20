@@ -8,9 +8,9 @@ namespace Microsoft.TemplateEngine.Core.Matching
     public class TrieNode<T> : Trie<T>
         where T : TerminalBase
     {
-        public readonly byte Match;
+        public byte Match { get; }
 
-        public List<T> Terminals;
+        public List<T> Terminals { get; set; }
 
         public TrieNode(byte match)
         {

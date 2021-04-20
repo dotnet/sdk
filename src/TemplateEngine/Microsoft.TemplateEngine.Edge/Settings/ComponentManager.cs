@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly Dictionary<Type, HashSet<Guid>> _componentIdsByType;
         private readonly SettingsStore _settings;
         private readonly ISettingsLoader _loader;
-        internal readonly Dictionary<Type, Dictionary<Guid, object>> _componentCache = new Dictionary<Type, Dictionary<Guid, object>>();
+        internal Dictionary<Type, Dictionary<Guid, object>> _componentCache { get; } = new Dictionary<Type, Dictionary<Guid, object>>();
 
         public ComponentManager(ISettingsLoader loader, SettingsStore userSettings)
         {

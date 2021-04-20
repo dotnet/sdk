@@ -11,11 +11,11 @@ namespace Microsoft.TemplateSearch.Common
     public class FileMetadataTemplateSearchCache : IFileMetadataTemplateSearchCache
     {
         private readonly IEngineEnvironmentSettings _environment;
-        protected readonly string _pathToMetadta;
+        protected string _pathToMetadta { get; }
         private ISearchCacheConfig _config;
-        protected bool _isInitialized;
-        protected TemplateDiscoveryMetadata _templateDiscoveryMetadata;
-        protected TemplateToPackMap _templateToPackMap;
+        protected bool _isInitialized { get; set; }
+        protected TemplateDiscoveryMetadata _templateDiscoveryMetadata { get; set; }
+        protected TemplateToPackMap _templateToPackMap { get; set; }
 
         public FileMetadataTemplateSearchCache(IEngineEnvironmentSettings environmentSettings, string pathToMetadata)
         {
@@ -38,8 +38,9 @@ namespace Microsoft.TemplateSearch.Common
 
             _config = SetupSearchCacheConfig();
 
-            if (FileMetadataTemplateSearchCacheReader.TryReadDiscoveryMetadata(_environment, _config, out _templateDiscoveryMetadata))
+            if (FileMetadataTemplateSearchCacheReader.TryReadDiscoveryMetadata(_environment, _config, out TemplateDiscoveryMetadata metadata))
             {
+                _templateDiscoveryMetadata = metadata;
                 _templateToPackMap = TemplateToPackMap.FromPackToTemplateDictionary(_templateDiscoveryMetadata.PackToTemplateMap);
                 _isInitialized = true;
             }

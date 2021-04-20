@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Mocks
                 return InstanceLookup.GetOrAdd(self, x => new Cache<T>());
             }
 
-            public readonly Dictionary<Guid, T> Lookup = new Dictionary<Guid, T>();
+            public Dictionary<Guid, T> Lookup { get; } = new Dictionary<Guid, T>();
 
             public void Register(Guid id, IIdentifiedComponent o)
             {
