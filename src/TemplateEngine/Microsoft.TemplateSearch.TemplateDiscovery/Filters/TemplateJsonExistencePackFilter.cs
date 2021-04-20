@@ -18,14 +18,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
     {
         private static readonly string _FilterId = "Template.json existence";
 
-        private static ITemplateEngineHost _host;
-        private static EngineEnvironmentSettings _environemntSettings;
-
-        static TemplateJsonExistencePackFilter()
-        {
-            _host = TemplateEngineHostHelper.CreateHost("filterHost");
-            _environemntSettings = new EngineEnvironmentSettings(_host, x => new SettingsLoader(x));
-        }
+        private static ITemplateEngineHost _host = TemplateEngineHostHelper.CreateHost("filterHost");
+        private static EngineEnvironmentSettings _environemntSettings = new EngineEnvironmentSettings(_host, x => new SettingsLoader(x));
 
         public static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter()
         {

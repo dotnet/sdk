@@ -20,23 +20,18 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             ShortNameList = new List<string>();
         }
 
-        private static readonly Func<JObject, TemplateInfo> _defaultReader;
-        private static readonly IReadOnlyDictionary<string, Func<JObject, TemplateInfo>> _infoVersionReaders;
+        private static readonly Func<JObject, TemplateInfo> _defaultReader = TemplateInfoReaderInitialVersion.FromJObject;
 
         // Note: Be sure to keep the versioning consistent with SettingsStore
-        static TemplateInfo()
+        private static readonly IReadOnlyDictionary<string, Func<JObject, TemplateInfo>> _infoVersionReaders = new Dictionary<string, Func<JObject, TemplateInfo>>()
         {
-            Dictionary<string, Func<JObject, TemplateInfo>> versionReaders = new Dictionary<string, Func<JObject, TemplateInfo>>();
-            versionReaders.Add("1.0.0.0", TemplateInfoReaderVersion1_0_0_0.FromJObject);
-            versionReaders.Add("1.0.0.1", TemplateInfoReaderVersion1_0_0_1.FromJObject);
-            versionReaders.Add("1.0.0.2", TemplateInfoReaderVersion1_0_0_2.FromJObject);
-            versionReaders.Add("1.0.0.3", TemplateInfoReaderVersion1_0_0_3.FromJObject);
-            versionReaders.Add("1.0.0.4", TemplateInfoReaderVersion1_0_0_4.FromJObject);
-            versionReaders.Add("1.0.0.5", TemplateInfoReaderVersion1_0_0_4.FromJObject);
-            _infoVersionReaders = versionReaders;
-
-            _defaultReader = TemplateInfoReaderInitialVersion.FromJObject;
-        }
+            { "1.0.0.0", TemplateInfoReaderVersion1_0_0_0.FromJObject },
+            { "1.0.0.1", TemplateInfoReaderVersion1_0_0_1.FromJObject },
+            { "1.0.0.2", TemplateInfoReaderVersion1_0_0_2.FromJObject },
+            { "1.0.0.3", TemplateInfoReaderVersion1_0_0_3.FromJObject },
+            { "1.0.0.4", TemplateInfoReaderVersion1_0_0_4.FromJObject },
+            { "1.0.0.5", TemplateInfoReaderVersion1_0_0_4.FromJObject }
+        };
 
         public static TemplateInfo FromJObject(JObject entry, string cacheVersion)
         {
