@@ -354,8 +354,7 @@ public class Program
             {
                 return Path.GetFileName(Path.ChangeExtension(assemblyFile, "ni.pdb"));
             }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else
             {
                 using (FileStream fs = new FileStream(assemblyFile, FileMode.Open, FileAccess.Read))
                 {
@@ -366,8 +365,6 @@ public class Program
                     return Path.GetFileName(Path.ChangeExtension(assemblyFile, "ni.{" + mvid + "}.map"));
                 }
             }
-
-            return null;
         }
 
         public static bool DoesImageHaveR2RInfo(string path)
