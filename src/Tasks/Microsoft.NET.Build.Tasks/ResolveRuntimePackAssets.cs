@@ -91,6 +91,13 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     throw new BuildErrorException(string.Format(Strings.RuntimeListNotFound, runtimeListPath));
                 }
+
+                foreach (var mibcFile in Directory.GetFiles(Path.Combine(runtimePackRoot, "tools"), "*.mibc")
+                {
+                    var assetItem = CreateAssetItem(mibcFile.FullPath, "pgodatafile", runtimePack, null);
+                    assetItem.SetMetadata("DropFromSingleFile", true);
+                    runtimePackAssets.Add(assetItem);
+                }
             }
 
             RuntimePackAssets = runtimePackAssets.ToArray();
