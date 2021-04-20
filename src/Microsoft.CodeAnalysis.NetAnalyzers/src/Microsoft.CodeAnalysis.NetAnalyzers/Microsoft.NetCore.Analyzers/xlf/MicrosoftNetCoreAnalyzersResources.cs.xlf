@@ -47,21 +47,6 @@
         <target state="translated">Literály řetězců atributů by se měly správně parsovat</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
-        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="translated">Pro sestavení vložená do aplikace s jedním souborem {0} vyvolá výjimku.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
-        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="translated">Pro sestavení vložená do aplikace s jedním souborem {0} vždy vrátí prázdný řetězec. Pokud se cesta k adresáři aplikace vyžaduje, zvažte možnost zavolat System.AppContext.BaseDirectory.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
-        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="translated">Při publikování jednoho souboru nepoužívat přístup k cestě souboru sestavení</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">Zařazením parametru StringBuilder se vždy vytvoří kopie nativní vyrovnávací paměti, která bude mít za následek vícenásobné přidělení pro jednu operaci zařazování.</target>
@@ -2142,6 +2127,26 @@
         <target state="translated">Metoda {0} nepoužila při voláních nespravovaného kódu atribut DefaultDllImportSearchPaths.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">
+        <source>'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</source>
+        <target state="new">'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentCurrentManagedThreadIdFix">
+        <source>Use 'Environment.CurrentManagedThreadId'</source>
+        <target state="new">Use 'Environment.CurrentManagedThreadId'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentCurrentManagedThreadIdMessage">
+        <source>Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</source>
+        <target state="new">Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentCurrentManagedThreadIdTitle">
+        <source>Use 'Environment.CurrentManagedThreadId'</source>
+        <target state="new">Use 'Environment.CurrentManagedThreadId'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdDescription">
         <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</source>
         <target state="translated">Environment.ProcessId je jednodušší a rychlejší než Process.GetCurrentProcess().Id.</target>
@@ -2160,6 +2165,26 @@
       <trans-unit id="UseEnvironmentProcessIdTitle">
         <source>Use 'Environment.ProcessId'</source>
         <target state="translated">Použít Environment.ProcessId</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessPathDescription">
+        <source>'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</source>
+        <target state="new">'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessPathFix">
+        <source>Use 'Environment.ProcessPath'</source>
+        <target state="new">Use 'Environment.ProcessPath'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessPathMessage">
+        <source>Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</source>
+        <target state="new">Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessPathTitle">
+        <source>Use 'Environment.ProcessPath'</source>
+        <target state="new">Use 'Environment.ProcessPath'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -2250,6 +2275,31 @@
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly.</source>
         <target state="translated">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, zadejte SharedAccessProtocol.HttpsOnly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValidPlatformStringDescription">
+        <source>Platform compatibility analyzer requires a valid platform name and version.</source>
+        <target state="new">Platform compatibility analyzer requires a valid platform name and version.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValidPlatformStringInvalidVersion">
+        <source>Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</source>
+        <target state="new">Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</target>
+        <note>Version '7' is not valid for platform 'windows'. Use a version with 2-4 parts for this platform.</note>
+      </trans-unit>
+      <trans-unit id="UseValidPlatformStringNoVersion">
+        <source>Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</source>
+        <target state="new">Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValidPlatformStringTitle">
+        <source>Use valid platform string</source>
+        <target state="new">Use valid platform string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValidPlatformStringUnknownPlatform">
+        <source>The platform '{0}' is not a known platform name</source>
+        <target state="new">The platform '{0}' is not a known platform name</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">

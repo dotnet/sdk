@@ -1425,6 +1425,30 @@
   <data name="UseEnvironmentProcessIdFix" xml:space="preserve">
     <value>Use 'Environment.ProcessId'</value>
   </data>
+  <data name="UseEnvironmentProcessPathDescription" xml:space="preserve">
+    <value>'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</value>
+  </data>
+  <data name="UseEnvironmentProcessPathMessage" xml:space="preserve">
+    <value>Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</value>
+  </data>
+  <data name="UseEnvironmentProcessPathTitle" xml:space="preserve">
+    <value>Use 'Environment.ProcessPath'</value>
+  </data>
+  <data name="UseEnvironmentProcessPathFix" xml:space="preserve">
+    <value>Use 'Environment.ProcessPath'</value>
+  </data>
+  <data name="UseEnvironmentCurrentManagedThreadIdDescription" xml:space="preserve">
+    <value>'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</value>
+  </data>
+  <data name="UseEnvironmentCurrentManagedThreadIdMessage" xml:space="preserve">
+    <value>Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</value>
+  </data>
+  <data name="UseEnvironmentCurrentManagedThreadIdTitle" xml:space="preserve">
+    <value>Use 'Environment.CurrentManagedThreadId'</value>
+  </data>
+  <data name="UseEnvironmentCurrentManagedThreadIdFix" xml:space="preserve">
+    <value>Use 'Environment.CurrentManagedThreadId'</value>
+  </data>
   <data name="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle" xml:space="preserve">
     <value>Use `{0}` instead of Range-based indexers on a string</value>
   </data>
@@ -1462,15 +1486,6 @@
   </data>
   <data name="AvoidStringBuilderPInvokeParametersTitle" xml:space="preserve">
     <value>Avoid 'StringBuilder' parameters for P/Invokes</value>
-  </data>
-  <data name="AvoidAssemblyLocationInSingleFileTitle" xml:space="preserve">
-    <value>Avoid using accessing Assembly file path when publishing as a single-file</value>
-  </data>
-  <data name="AvoidAssemblyLocationInSingleFileMessage" xml:space="preserve">
-    <value>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</value>
-  </data>
-  <data name="AvoidAssemblyGetFilesInSingleFileMessage" xml:space="preserve">
-    <value>'{0}' will throw for assemblies embedded in a single-file app</value>
   </data>
   <data name="PlatformCompatibilityOnlySupportedCsReachableMessage" xml:space="preserve">
     <value>This call site is reachable on: {2}. '{0}' is only supported on: {1}.</value>
@@ -1518,5 +1533,21 @@
   <data name="PlatformCompatibilityAllPlatforms" xml:space="preserve">
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
+  </data>
+  <data name="UseValidPlatformStringDescription" xml:space="preserve">
+    <value>Platform compatibility analyzer requires a valid platform name and version.</value>
+  </data>
+  <data name="UseValidPlatformStringTitle" xml:space="preserve">
+    <value>Use valid platform string</value>
+  </data>
+  <data name="UseValidPlatformStringUnknownPlatform" xml:space="preserve">
+    <value>The platform '{0}' is not a known platform name</value>
+  </data>
+  <data name="UseValidPlatformStringInvalidVersion" xml:space="preserve">
+    <value>Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</value>
+    <comment>Version '7' is not valid for platform 'windows'. Use a version with 2-4 parts for this platform.</comment>
+  </data>
+  <data name="UseValidPlatformStringNoVersion" xml:space="preserve">
+    <value>Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</value>
   </data>
 </root>
