@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
                 if (validPackageId && hasValidVersion)
                 {
-                    _environmentSettings.Host.LogDiagnosticMessage($"{installationRequest.Version} is identified as the downloadable NuGet package.", DebugLogCategory);
+                    _environmentSettings.Host.LogDiagnosticMessage($"{installationRequest.DisplayName} is identified as the downloadable NuGet package.", DebugLogCategory);
                 }
 
                 //not a local package file
