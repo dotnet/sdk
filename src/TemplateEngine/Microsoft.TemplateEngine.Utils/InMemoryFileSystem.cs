@@ -895,7 +895,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// </summary>
         public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged)
         {
-            return new MemoryStream();//Just some disposable dummy
+            return new MemoryStream(); //Just some disposable dummy
         }
     }
 }
