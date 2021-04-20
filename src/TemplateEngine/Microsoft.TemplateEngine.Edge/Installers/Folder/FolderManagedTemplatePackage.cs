@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         public IManagedTemplatePackageProvider ManagedProvider { get; }
         public string Version => null;
 
-        private readonly static Dictionary<string, string> _emptyDictionary = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> _emptyDictionary = new Dictionary<string, string>();
         public IReadOnlyDictionary<string, string> GetDetails() => _emptyDictionary;
     }
 }

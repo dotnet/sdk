@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <summary>
         /// Helper method that returns <see cref="ITemplatePackage"/> that contains <paramref name="template"/>.
         /// </summary>
-        public async static Task<ITemplatePackage> GetTemplatePackageAsync (this ITemplateInfo template, IEngineEnvironmentSettings settings)
+        public static async Task<ITemplatePackage> GetTemplatePackageAsync (this ITemplateInfo template, IEngineEnvironmentSettings settings)
         {
             IReadOnlyList<ITemplatePackage> templatePackages = await settings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync().ConfigureAwait(false);
             return templatePackages.Single(s => s.MountPointUri == template.MountPointUri);
