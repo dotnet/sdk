@@ -38,12 +38,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             yield return new SetFlag(flag, on.TokenConfig(), off.TokenConfig(), onNoEmit.TokenConfig(), offNoEmit.TokenConfig(), id, onByDefault, @default);
         }
 
-        private static readonly string NoEmitSuffix = ":noEmit";
-        private static readonly string FlagConditionalSuffix = ":cnd";
-        private static readonly string FlagReplacementSuffix = ":replacements";
-        private static readonly string FlagExpandVariablesSuffix = ":vars";
-        private static readonly string FlagIncludeSuffix = ":include";
-        private static readonly string FlagFlagsSuffix = ":flags";
+        private const string NoEmitSuffix = ":noEmit";
+        private const string FlagConditionalSuffix = ":cnd";
+        private const string FlagReplacementSuffix = ":replacements";
+        private const string FlagExpandVariablesSuffix = ":vars";
+        private const string FlagIncludeSuffix = ":include";
+        private const string FlagFlagsSuffix = ":flags";
 
         // Returns a default flags operations setup for the given switchPrefix
         internal static IReadOnlyList<IOperationProvider> FlagsDefaultSetup(string switchPrefix)

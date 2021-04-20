@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     internal class ConditionalKeywords
     {
-        private static readonly string DefaultPrefix = "#";
+        private const string DefaultPrefix = "#";
         private static readonly IReadOnlyList<string> DefaultIfKeywords = new[] { "if" };
         private static readonly IReadOnlyList<string> DefaultElseIfKeywords = new[] { "elseif", "elif" };
         private static readonly IReadOnlyList<string> DefaultElseKeywords = new[] { "else" };

@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         internal string Format { get; private set; }
 
-        internal static readonly string DefaultFormats = "ndbpxNDPBX";
+        internal const string DefaultFormats = "ndbpxNDPBX";
 
         internal GuidMacroConfig(string variableName, string dataType, string format, string defaultFormat)
         {

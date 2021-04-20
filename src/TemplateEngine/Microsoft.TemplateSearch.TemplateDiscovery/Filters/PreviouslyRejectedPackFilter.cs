@@ -16,7 +16,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
 {
     internal sealed class PreviouslyRejectedPackFilter
     {
-        private static readonly string FilterId = "Previously Seen";
+        private const string FilterId = "Previously Seen";
 
         internal static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter(HashSet<string> nonTemplatePacks)
         {

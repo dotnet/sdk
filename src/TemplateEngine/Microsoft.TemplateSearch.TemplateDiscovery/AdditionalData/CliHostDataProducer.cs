@@ -11,7 +11,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 {
     public class CliHostDataProducer : IAdditionalDataProducer
     {
-        private static readonly string CliHostDataName = "cliHostData";
+        private const string CliHostDataName = "cliHostData";
 
         private Dictionary<string, HostSpecificTemplateData> _hostDataForPackByTemplate = new Dictionary<string, HostSpecificTemplateData>();
 

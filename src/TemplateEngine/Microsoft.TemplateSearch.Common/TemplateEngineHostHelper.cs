@@ -11,7 +11,7 @@ namespace Microsoft.TemplateSearch.Common
 {
     public static class TemplateEngineHostHelper
     {
-        private static readonly string DefaultHostVersion = "1.0.0";
+        private const string DefaultHostVersion = "1.0.0";
 
         private static readonly Dictionary<string, string> DefaultPreferences = new Dictionary<string, string>
         {

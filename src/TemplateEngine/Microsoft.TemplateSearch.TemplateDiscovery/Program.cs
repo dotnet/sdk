@@ -14,19 +14,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
     internal class Program
     {
         private static readonly bool _defaultRunOnlyOnePage;
-        private static readonly int _defaultPageSize = 100;
+        private const int _defaultPageSize = 100;
         private static readonly bool _defaultSaveCandidatePacks;
         private static readonly bool _defaultIncludePreviewPacks;
 
-        private static readonly string _basePathFlag = "--basePath";
-        private static readonly string _pageSizeFlag = "--pageSize";
-        private static readonly string _includePreviewPacksFlag = "--allowPreviewPacks";
-        private static readonly string _saveDownloadedPacksFlag = "--savePacks";
-        private static readonly string _runOnlyOnePageFlag = "--onePage";
-        private static readonly string _previousOutputBasePathFlag = "--previousOutput";
-        private static readonly string _noTemplateJsonFilterFlag = "--noTemplateJsonFilter";
-        private static readonly string _verbose = "-v";
-        private static readonly string _providers = "--providers";
+        private const string _basePathFlag = "--basePath";
+        private const string _pageSizeFlag = "--pageSize";
+        private const string _includePreviewPacksFlag = "--allowPreviewPacks";
+        private const string _saveDownloadedPacksFlag = "--savePacks";
+        private const string _runOnlyOnePageFlag = "--onePage";
+        private const string _previousOutputBasePathFlag = "--previousOutput";
+        private const string _noTemplateJsonFilterFlag = "--noTemplateJsonFilter";
+        private const string _verbose = "-v";
+        private const string _providers = "--providers";
 
         private static async Task Main(string[] args)
         {

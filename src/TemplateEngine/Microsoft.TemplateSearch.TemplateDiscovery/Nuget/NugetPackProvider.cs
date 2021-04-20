@@ -15,14 +15,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
     {
         private string _searchUriFormat;
         // {PackageId}.{Version}.nupkg
-        private static readonly string DownloadUrlFormat = "https://api.nuget.org/v3-flatcontainer/{0}/{1}/{0}.{1}.nupkg";
-        private static readonly string DownloadPackageFileNameFormat = "{0}.{1}.nupkg";
+        private const string DownloadUrlFormat = "https://api.nuget.org/v3-flatcontainer/{0}/{1}/{0}.{1}.nupkg";
+        private const string DownloadPackageFileNameFormat = "{0}.{1}.nupkg";
 
         private readonly string _packageTempPath;
         private readonly int _pageSize;
         private readonly bool _runOnlyOnePage;
 
-        private static readonly string DownloadedPacksDir = "DownloadedPacks";
+        private const string DownloadedPacksDir = "DownloadedPacks";
 
         public string Name { get; private set; }
 

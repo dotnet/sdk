@@ -17,7 +17,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
     public class PackChecker
     {
-        private static readonly string HostIdentifierBase = "dotnetcli-discovery-";
+        private const string HostIdentifierBase = "dotnetcli-discovery-";
 
         public PackChecker()
         {

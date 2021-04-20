@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class SimpleConfigModel : IRunnableProjectConfig
     {
-        private static readonly string NameSymbolName = "name";
+        private const string NameSymbolName = "name";
         private static readonly string[] IncludePatternDefaults = new[] { "**/*" };
         private static readonly string[] ExcludePatternDefaults = new[]
         {
@@ -175,7 +175,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Identity { get; set; }
 
-        private static readonly string DefaultPlaceholderFilename = "-.-";
+        private const string DefaultPlaceholderFilename = "-.-";
 
         private string _placeholderValue;
         private IReadOnlyList<string> _ignoreFileNames;

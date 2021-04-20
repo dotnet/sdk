@@ -7,9 +7,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     internal class ConditionalOperationOptions
     {
-        private static readonly string DefaultEvaluatorType = "C++";
-        private static readonly bool DefaultWholeLine = true;
-        private static readonly bool DefaultTrimWhitespace = true;
+        private const string DefaultEvaluatorType = "C++";
+        private const bool DefaultWholeLine = true;
+        private const bool DefaultTrimWhitespace = true;
         private static readonly string DefaultId;
 
         internal ConditionalOperationOptions()

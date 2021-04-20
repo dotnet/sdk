@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class IdentityValueForm : IValueForm
     {
-        internal static readonly string FormName = "identity";
+        internal const string FormName = "identity";
 
         public string Identifier => FormName;
 

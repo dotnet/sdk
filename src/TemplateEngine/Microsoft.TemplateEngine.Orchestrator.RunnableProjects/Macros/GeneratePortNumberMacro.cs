@@ -16,8 +16,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "port";
 
-        private static readonly int LowPortDefault = 1024;
-        private static readonly int HighPortDefault = 65535;
+        private const int LowPortDefault = 1024;
+        private const int HighPortDefault = 65535;
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {

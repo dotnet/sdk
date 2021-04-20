@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class DefaultLowerSafeNamespaceValueFormModel : DefaultSafeNamespaceValueFormModel
     {
-        internal static new readonly string FormName = "lower_safe_namespace";
+        internal new const string FormName = "lower_safe_namespace";
         private readonly string _name;
 
         internal DefaultLowerSafeNamespaceValueFormModel()

@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
             _name = name;
         }
 
-        internal static readonly string FormName = "safe_name";
+        internal const string FormName = "safe_name";
 
         public virtual string Identifier => FormName;
 

@@ -16,7 +16,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
 {
     internal static class TemplateJsonExistencePackFilter
     {
-        private static readonly string _FilterId = "Template.json existence";
+        private const string _FilterId = "Template.json existence";
 
         private static ITemplateEngineHost _host = TemplateEngineHostHelper.CreateHost("filterHost");
         private static EngineEnvironmentSettings _environemntSettings = new EngineEnvironmentSettings(_host, x => new SettingsLoader(x));

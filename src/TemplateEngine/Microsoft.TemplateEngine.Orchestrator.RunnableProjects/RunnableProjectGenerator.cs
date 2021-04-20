@@ -22,11 +22,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class RunnableProjectGenerator : IGenerator
     {
-        internal static readonly string TemplateConfigDirectoryName = ".template.config";
-        internal static readonly string TemplateConfigFileName = "template.json";
-        private static readonly string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
+        internal const string TemplateConfigDirectoryName = ".template.config";
+        internal const string TemplateConfigFileName = "template.json";
+        private const string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
         private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
-        private static readonly string GeneratorVersion = "1.0.0.0";
+        private const string GeneratorVersion = "1.0.0.0";
         public Guid Id => GeneratorId;
         //
         // Converts the raw, string version of a parameter to a strongly typed value.

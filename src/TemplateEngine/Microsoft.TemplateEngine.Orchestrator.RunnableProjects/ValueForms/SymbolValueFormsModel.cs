@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class SymbolValueFormsModel
     {
-        private static readonly string IdentityValueFormName = IdentityValueForm.FormName;
+        private const string IdentityValueFormName = IdentityValueForm.FormName;
 
         internal static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel(Empty<string>.List.Value);
 
