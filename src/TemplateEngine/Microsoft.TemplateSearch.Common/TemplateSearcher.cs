@@ -67,8 +67,9 @@ namespace Microsoft.TemplateSearch.Common
             // Map the identities of the templateMatches to the corresponding pack info
             HashSet<string> matchedTemplateIdentities = new HashSet<string>(templateMatches.Select(t => t.Info.Identity));
             IReadOnlyDictionary<string, PackInfo> templateIdentityToPackInfoMap = nameMatches.Where(m => matchedTemplateIdentities.Contains(m.Template.Identity))
-                                                                                                    .ToDictionary(x => x.Template.Identity,
-                                                                                                                  x => x.PackInfo);
+                .ToDictionary(
+                    x => x.Template.Identity,
+                    x => x.PackInfo);
 
             foreach (ITemplateMatchInfo match in templateMatches)
             {

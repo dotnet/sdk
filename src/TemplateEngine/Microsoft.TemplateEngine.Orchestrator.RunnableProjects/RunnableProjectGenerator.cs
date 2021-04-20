@@ -119,7 +119,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             IDirectory folder = source.Root;
 
-            Regex localeFileRegex = new Regex(@"
+            Regex localeFileRegex = new Regex(
+                @"
                 ^
                 (?<locale>
                     [a-z]{2}

@@ -29,7 +29,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
                     using (JsonTextReader jsonReader = new JsonTextReader(jsonFileStream))
                     {
                         JObject templateConfig = (JObject)JToken.ReadFrom(jsonReader);
-                        Assert.True(templateConfig.IsValid(schema, out IList<string> errors),
+                        Assert.True(
+                            templateConfig.IsValid(schema, out IList<string> errors),
                             "The JSON file is not valid against the schema" +
                             Environment.NewLine +
                             string.Join(Environment.NewLine, errors));

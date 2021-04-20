@@ -200,7 +200,8 @@ Past endif
         /// because the if token is special and the clause is true in each case.
         /// </summary>
         [Theory(DisplayName = nameof(VerifySpecialIfTrueUncomments))]
-        [InlineData(@"Hello
+        [InlineData(
+            @"Hello
 ////#if (VALUE_IF)
     //if value
     //...if commented in original
@@ -208,7 +209,8 @@ Past endif
 Past endif
     ...uncommented in original
 // dont uncomment", "special #if (true)")]
-        [InlineData(@"Hello
+        [InlineData(
+            @"Hello
 ////#if (VALUE_IF)
     //if value
     //...if commented in original
@@ -219,7 +221,8 @@ Past endif
 Past endif
     ...uncommented in original
 // dont uncomment", "special #if (true), regular #else")]
-        [InlineData(@"Hello
+        [InlineData(
+            @"Hello
 ////#if (VALUE_IF)
     //if value
     //...if commented in original
@@ -230,7 +233,8 @@ Past endif
 Past endif
     ...uncommented in original
 // dont uncomment", "special #if (true), special #else ignored")]
-        [InlineData(@"Hello
+        [InlineData(
+            @"Hello
 ////#if (VALUE_IF)
     //if value
     //...if commented in original
@@ -244,7 +248,8 @@ Past endif
 Past endif
     ...uncommented in original
 // dont uncomment", "special #if (true), regular #elseif, regular #else")]
-        [InlineData(@"Hello
+        [InlineData(
+            @"Hello
 ////#if (VALUE_IF)
     //if value
     //...if commented in original
@@ -258,7 +263,8 @@ Past endif
 Past endif
     ...uncommented in original
 // dont uncomment", "special #if (true), special #elseif, regular #else")]
-        [InlineData(@"Hello
+        [InlineData(
+            @"Hello
 ////#if (VALUE_IF)
     //if value
     //...if commented in original
@@ -272,7 +278,8 @@ Past endif
 Past endif
     ...uncommented in original
 // dont uncomment", "special #if (true), regular #elseif, special #else")]
-        [InlineData(@"Hello
+        [InlineData(
+            @"Hello
 ////#if (VALUE_IF)
     //if value
     //...if commented in original

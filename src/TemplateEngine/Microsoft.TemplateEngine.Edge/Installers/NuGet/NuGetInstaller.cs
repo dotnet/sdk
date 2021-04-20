@@ -328,11 +328,12 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             NuspecReader nuspec = reader.NuspecReader;
 
-            return new NuGetPackageInfo(nuspec.GetAuthors(),
-                                        packageLocation,
-                                        null,
-                                        nuspec.GetId(),
-                                        nuspec.GetVersion().ToNormalizedString());
+            return new NuGetPackageInfo(
+                nuspec.GetAuthors(),
+                packageLocation,
+                null,
+                nuspec.GetId(),
+                nuspec.GetVersion().ToNormalizedString());
         }
     }
 }

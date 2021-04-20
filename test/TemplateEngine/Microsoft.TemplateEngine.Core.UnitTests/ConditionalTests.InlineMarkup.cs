@@ -28,7 +28,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         private IProcessor SetupXmlPlusMsBuildProcessorAndReplacement(IVariableCollection vc)
         {
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
-            return Processor.Create(cfg,
+            return Processor.Create(
+                cfg,
                 new InlineMarkupConditional(
                     new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
                 true,
@@ -43,7 +44,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         private IProcessor SetupXmlPlusMsBuildProcessorAndReplacementWithLookaround(IVariableCollection vc)
         {
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
-            return Processor.Create(cfg,
+            return Processor.Create(
+                cfg,
                 new InlineMarkupConditional(
                     new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
                 true,

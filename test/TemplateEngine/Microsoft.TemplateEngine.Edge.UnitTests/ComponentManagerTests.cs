@@ -19,10 +19,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [Fact]
         public void TestAllEdgeComponentsAdded()
         {
-            var componentManager = new ComponentManager(new MockSettingsLoader(new MockEngineEnvironmentSettings()
-            {
-                Host = new TestHelper.TestHost()
-            }), new SettingsStore());
+            var componentManager = new ComponentManager(
+                new MockSettingsLoader(new MockEngineEnvironmentSettings()
+                {
+                    Host = new TestHelper.TestHost()
+                }), new SettingsStore());
 
             var assemblyCatalog = new AssemblyComponentCatalog(new[] { typeof(ComponentManager).Assembly });
             var expectedTypeNames = assemblyCatalog.Select(pair => pair.Value().FullName).OrderBy(name => name);

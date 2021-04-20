@@ -94,7 +94,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                     setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("{/*", "*/}");
                     break;
                 case ConditionalType.VB:
-                    setup = ConditionalLineCommentConfig.GenerateConditionalSetup("",
+                    setup = ConditionalLineCommentConfig.GenerateConditionalSetup(
+                        "",
                         new ConditionalKeywords
                         {
                             IfKeywords = new[] { "If" },

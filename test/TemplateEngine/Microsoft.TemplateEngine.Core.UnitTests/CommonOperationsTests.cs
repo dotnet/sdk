@@ -16,7 +16,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyTrimWhitespaceForward))]
         public void VerifyTrimWhitespaceForward()
         {
-            MockOperation o = new MockOperation(null,
+            MockOperation o = new MockOperation(
+                null,
                 (IProcessorState state, int length, ref int position, int token, Stream target) =>
                 {
                     state.TrimWhitespace(true, false, ref length, ref position);
@@ -43,7 +44,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyTrimWhitespaceBackward))]
         public void VerifyTrimWhitespaceBackward()
         {
-            MockOperation o = new MockOperation(null,
+            MockOperation o = new MockOperation(
+                null,
                 (IProcessorState state, int length, ref int position, int token, Stream target) =>
                 {
                     state.TrimWhitespace(false, true, ref length, ref position);
@@ -70,7 +72,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyTrimWhitespaceBothDirections))]
         public void VerifyTrimWhitespaceBothDirections()
         {
-            MockOperation o = new MockOperation(null,
+            MockOperation o = new MockOperation(
+                null,
                 (IProcessorState state, int length, ref int position, int token, Stream target) =>
                 {
                     state.TrimWhitespace(true, true, ref length, ref position);
@@ -97,7 +100,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyTrimWhitespaceNeitherDirection))]
         public void VerifyTrimWhitespaceNeitherDirection()
         {
-            MockOperation o = new MockOperation(null,
+            MockOperation o = new MockOperation(
+                null,
                 (IProcessorState state, int length, ref int position, int token, Stream target) =>
                 {
                     state.TrimWhitespace(false, false, ref length, ref position);
@@ -124,7 +128,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyConsumeWholeLine))]
         public void VerifyConsumeWholeLine()
         {
-            MockOperation o = new MockOperation(null,
+            MockOperation o = new MockOperation(
+                null,
                 (IProcessorState state, int length, ref int position, int token, Stream target) =>
                 {
                     state.ConsumeWholeLine(ref length, ref position);
@@ -159,7 +164,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [InlineData(true, true, true)]
         public void VerifyWhitespaceHandlerConsumeWholeLine(bool trim, bool trimForward, bool trimBackward)
         {
-            MockOperation o = new MockOperation(null,
+            MockOperation o = new MockOperation(
+                null,
                 (IProcessorState state, int length, ref int position, int token, Stream target) =>
                 {
                     state.WhitespaceHandler(ref length, ref position, true, trim, trimForward, trimBackward);
@@ -190,7 +196,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [InlineData(true, true)]
         public void VerifyWhitespaceHandlerTrim(bool trimForward, bool trimBackward)
         {
-            MockOperation o = new MockOperation(null,
+            MockOperation o = new MockOperation(
+                null,
                 (IProcessorState state, int length, ref int position, int token, Stream target) =>
                 {
                     state.WhitespaceHandler(ref length, ref position, false, true, trimForward, trimBackward);
@@ -217,7 +224,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyWhitespaceHandlerTrimForwardButNotBack))]
         public void VerifyWhitespaceHandlerTrimForwardButNotBack()
         {
-            MockOperation o = new MockOperation(null,
+            MockOperation o = new MockOperation(
+                null,
                 (IProcessorState state, int length, ref int position, int token, Stream target) =>
                 {
                     state.WhitespaceHandler(ref length, ref position, false, false, true, false);
@@ -244,7 +252,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyWhitespaceHandlerTrimBackButNotForward))]
         public void VerifyWhitespaceHandlerTrimBackButNotForward()
         {
-            MockOperation o = new MockOperation(null,
+            MockOperation o = new MockOperation(
+                null,
                 (IProcessorState state, int length, ref int position, int token, Stream target) =>
                 {
                     state.WhitespaceHandler(ref length, ref position, false, false, false, true);
@@ -271,7 +280,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyWhitespaceHandlerTrimBackAndForward))]
         public void VerifyWhitespaceHandlerTrimBackAndForward()
         {
-            MockOperation o = new MockOperation(null,
+            MockOperation o = new MockOperation(
+                null,
                 (IProcessorState state, int length, ref int position, int token, Stream target) =>
                 {
                     state.WhitespaceHandler(ref length, ref position, false, false, true, true);

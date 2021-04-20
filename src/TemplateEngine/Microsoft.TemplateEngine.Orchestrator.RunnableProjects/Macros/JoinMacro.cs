@@ -18,11 +18,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "join";
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings,
-                                   IVariableCollection vars,
-                                   IMacroConfig rawConfig,
-                                   IParameterSet parameters,
-                                   ParameterSetter setter)
+        public void EvaluateConfig(
+            IEngineEnvironmentSettings environmentSettings,
+            IVariableCollection vars,
+            IMacroConfig rawConfig,
+            IParameterSet parameters,
+            ParameterSetter setter)
         {
             JoinMacroConfig config = rawConfig as JoinMacroConfig;
             if (config == null)
@@ -39,10 +40,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                         string value;
                         if (!vars.TryGetValue(symbol.Value, out object working))
                         {
-                            if (parameters.TryGetRuntimeValue(environmentSettings,
-                                                              symbol.Value,
-                                                              out object resolvedValue,
-                                                              true))
+                            if (parameters.TryGetRuntimeValue(
+                                environmentSettings,
+                                symbol.Value,
+                                out object resolvedValue,
+                                true))
                             {
                                 value = resolvedValue.ToString();
                             }

@@ -154,16 +154,17 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings) =>
                 new DefaultTemplatePackageProvider(this, settings, null, new[]
                 {
-                    Path.Combine(Path.GetDirectoryName(typeof(LocalizationTests).Assembly.Location),
-                                 "..",
-                                 "..",
-                                 "..",
-                                 "..",
-                                 "..",
-                                 "test",
-                                 "Microsoft.TemplateEngine.TestTemplates",
-                                 "test_templates",
-                                 "TemplateWithLocalization")
+                    Path.Combine(
+                        Path.GetDirectoryName(typeof(LocalizationTests).Assembly.Location),
+                        "..",
+                        "..",
+                        "..",
+                        "..",
+                        "..",
+                        "test",
+                        "Microsoft.TemplateEngine.TestTemplates",
+                        "test_templates",
+                        "TemplateWithLocalization")
                 });
         }
 

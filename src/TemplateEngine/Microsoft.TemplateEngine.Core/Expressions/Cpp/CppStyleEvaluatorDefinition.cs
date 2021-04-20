@@ -275,7 +275,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             }
 
 #if DEBUG
-            Debug.Assert(inQuoteType == QuotedRegionKind.None,
+            Debug.Assert(
+                inQuoteType == QuotedRegionKind.None,
                 $"Malformed predicate due to unmatched quotes. InitialBuffer = {processor.Encoding.GetString(processor.CurrentBuffer)} currentTokenFamily = {currentTokenFamily} | TokenFamily.QuotedLiteral = {TokenFamily.QuotedLiteral} | TokenFamily.SingleQuotedLiteral = {TokenFamily.SingleQuotedLiteral}");
 #endif
 
