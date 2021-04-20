@@ -128,8 +128,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 )
                 \."
                 + Regex.Escape(TemplateConfigFileName)
-                + "$"
-                , RegexOptions.IgnorePatternWhitespace);
+                + "$",
+                RegexOptions.IgnorePatternWhitespace);
 
             IList<ITemplate> templateList = new List<ITemplate>();
             localizations = new List<ILocalizationLocator>();

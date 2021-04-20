@@ -27,8 +27,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new MockOperationProvider(
                         new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, true, new byte[] { 1, 2, 3 })
                     )
-                }
-                , VariableCollection.Root());
+                },
+                VariableCollection.Root());
 
             byte[] data = new byte[] { 1, 2, 3, 4, 5 };
             MemoryStream source = new MemoryStream(data);
@@ -47,8 +47,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new MockOperationProvider(
                         new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, true, new byte[] { 1, 2, 3 })
                     )
-                }
-                , VariableCollection.Root());
+                },
+                VariableCollection.Root());
 
             byte[] data = new byte[] { 4, 5, 1, 2, 3 };
             p.Run(new MemoryStream(data), new MemoryStream());
@@ -65,8 +65,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new MockOperationProvider(
                         new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, true, new byte[] { 1, 2, 3 })
                     )
-                }
-                , VariableCollection.Root());
+                },
+                VariableCollection.Root());
 
             byte[] data = new byte[] { 4, 5, 1, 2, 3, 6, 7 };
             p.Run(new MemoryStream(data), new MemoryStream());
@@ -83,8 +83,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new MockOperationProvider(
                         new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, true, new byte[] { 1, 2, 3 })
                     )
-                }
-                , VariableCollection.Root());
+                },
+                VariableCollection.Root());
 
             byte[] data = new byte[] { 1, 2, 3 };
             p.Run(new MemoryStream(data), new MemoryStream());
