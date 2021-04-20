@@ -72,9 +72,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             return SetupTestProcessor(operations, vc);
         }
 
-        ///
+        /// <summary>
         /// Sets up a processor with the input params.
-        ///
+        /// </summary>
         private IProcessor SetupTestProcessor(IOperationProvider[] operations, VariableCollection vc)
         {
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc);
