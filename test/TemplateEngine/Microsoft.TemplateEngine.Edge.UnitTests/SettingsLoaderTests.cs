@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             var engineEnvironmentSettings = helper.CreateEnvironment();
             string nupkgFolder = GetNupkgsFolder();
-            var validAndInvalidNuPkg = new[] { Directory.GetFiles(nupkgFolder, "*.nupkg")[0], Path.Combine(nupkgFolder, $"{new Guid()}.nupkg") };
+            var validAndInvalidNuPkg = new[] { Directory.GetFiles(nupkgFolder, "*.nupkg")[0], Path.Combine(nupkgFolder, $"{default(Guid)}.nupkg") };
 
             FakeFactory.SetNuPkgsAndFolders(validAndInvalidNuPkg);
             engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
