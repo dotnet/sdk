@@ -159,7 +159,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         /// Gets the latest stable version for the package. If the package has preview version installed, returns the latest preview.
         /// Uses NuGet feeds configured for current directory and the source if specified from <paramref name="additionalSource"/>.
         /// </summary>
-        /// <param name="identifier">NuGet package identifier<./param>
+        /// <param name="identifier">NuGet package identifier.<./param>
         /// <param name="version">current version of NuGet package.</param>
         /// <param name="additionalSource">additional NuGet feeds to check from.</param>
         /// <param name="cancellationToken"></param>

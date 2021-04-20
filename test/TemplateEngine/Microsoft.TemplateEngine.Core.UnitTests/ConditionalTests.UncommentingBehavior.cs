@@ -615,7 +615,7 @@ Past endif
 
         /// <summary>
         /// The #if condition is false, so don't emit its value in any way.
-        /// But emit the else value without modification (because its not the special #else)
+        /// But emit the else value without modification (because its not the special #else).
         /// </summary>
         [Fact(DisplayName = nameof(VerifyFalseIfDoesNotUncommentButElseIsEmitted))]
         public void VerifyFalseIfDoesNotUncommentButElseIsEmitted()
@@ -708,7 +708,7 @@ Past endif
 
         /// <summary>
         /// Tests that the first elseif block is uncommented
-        /// It's the one with the true condition
+        /// It's the one with the true condition.
         /// </summary>
         [Fact(DisplayName = nameof(VerifyFirstElseifUncomments))]
         public void VerifyFirstElseifUncomments()
@@ -753,7 +753,7 @@ Past endif
 
         /// <summary>
         /// Tests the multiple special elseif's are respected. In this test, the 2nd elseif is special and should have its content uncommented.
-        /// TODO: make more test with multiple elseif's
+        /// TODO: make more test with multiple elseif's.
         /// </summary>
         [Fact(DisplayName = nameof(VerifySecondElseifUncomments))]
         public void VerifySecondElseifUncomments()

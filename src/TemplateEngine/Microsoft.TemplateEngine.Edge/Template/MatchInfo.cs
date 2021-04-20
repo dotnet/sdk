@@ -15,12 +15,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
         public MatchKind Kind;
 
         /// <summary>
-        /// stores canonical parameter name
+        /// stores canonical parameter name.
         /// </summary>
         public string InputParameterName;
 
         /// <summary>
-        /// stores parameter value
+        /// stores parameter value.
         /// </summary>
         public string ParameterValue;
 

@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 {
     public class EncodingUtil
     {
-        /// <remarks>http://www.unicode.org/faq/utf_bom.html</remarks>
+        /// <remarks>http://www.unicode.org/faq/utf_bom.html.</remarks>
         public static Encoding Detect(byte[] buffer, int currentBufferLength, out byte[] bom)
         {
             if (currentBufferLength == 0)

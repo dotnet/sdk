@@ -112,7 +112,7 @@ End";
         }
 
         /// <summary>
-        /// Temporary test, experimenting with block comments
+        /// Temporary test, experimenting with block comments.
         /// </summary>
         [Fact(DisplayName = nameof(VerifyMultipleConsecutiveTrailingCommentsWithinContent))]
         public void VerifyMultipleConsecutiveTrailingCommentsWithinContent()
@@ -824,7 +824,7 @@ Trailing stuff
         }
 
         /// <summary>
-        /// Tests basic conditional embedding for block XML comments
+        /// Tests basic conditional embedding for block XML comments.
         /// </summary>
         [Fact(DisplayName = nameof(VerifyXmlBlockCommentEmbeddedInIfTest))]
         public void VerifyXmlBlockCommentEmbeddedInIfTest()
@@ -1064,7 +1064,7 @@ Trailing stuff
         }
 
         /// <summary>
-        /// Temporary test for isolating bugs
+        /// Temporary test for isolating bugs.
         /// </summary>
         [Fact(DisplayName = nameof(MinimalXmlElseifEmbeddingTest))]
         public void MinimalXmlElseifEmbeddingTest()
@@ -1104,7 +1104,7 @@ Trailing stuff
         }
 
         /// <summary>
-        /// Tests block comment embedding of conditionals in the elseif
+        /// Tests block comment embedding of conditionals in the elseif.
         /// </summary>
         [Fact(DisplayName = nameof(VerifyXmlBlockCommentEmbeddedInElseifTest))]
         public void VerifyXmlBlockCommentEmbeddedInElseifTest()

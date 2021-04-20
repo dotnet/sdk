@@ -14,19 +14,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
     }
 
     /// <summary>
-    /// Use this class to do verbose output
+    /// Use this class to do verbose output.
     /// </summary>
     internal static class Verbose
     {
         /// <summary>
-        /// Defines if verbose output is enabled
+        /// Defines if verbose output is enabled.
         /// </summary>
         internal static bool IsEnabled { get; set; } = false;
 
         /// <summary>
-        /// Writes the output conditionally if verbose mode is enabled
+        /// Writes the output conditionally if verbose mode is enabled.
         /// </summary>
-        /// <param name="text">text to write</param>
+        /// <param name="text">text to write.</param>
         internal static void WriteLine(string text)
         {
             if (IsEnabled)

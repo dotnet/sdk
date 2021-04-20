@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         /// <summary>
         /// Setup a template at the given mount point defined by the file names and contents in the sourceFiles.
         /// </summary>
-        /// <param name="environment">The environment</param>
+        /// <param name="environment">The environment.</param>
         /// <param name="sourceBaseDir">
         ///     The directory the files will be created relative to.
         ///     It is strongly recommended that this directory is virtualized.

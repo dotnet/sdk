@@ -99,7 +99,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
         }
 
         /// <summary>
-        /// Puts the tokensOfType into the tokenMasterList at indexes which are congruent to typeRemainder mod TokenTypeModulus
+        /// Puts the tokensOfType into the tokenMasterList at indexes which are congruent to typeRemainder mod TokenTypeModulus.
         /// </summary>
         /// <param name="trie"></param>
         /// <param name="tokenMasterList"></param>

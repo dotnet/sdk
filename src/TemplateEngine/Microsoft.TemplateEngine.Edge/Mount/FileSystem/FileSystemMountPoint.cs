@@ -9,14 +9,14 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 {
     /// <summary>
-    /// Mount point implementation for file system directory
+    /// Mount point implementation for file system directory.
     /// </summary>
     public class FileSystemMountPoint : IMountPoint
     {
         private Paths _paths;
 
         /// <summary>
-        /// Returns full path of the mounted directory
+        /// Returns full path of the mounted directory.
         /// </summary>
         internal string MountPointRootPath { get; } 
 

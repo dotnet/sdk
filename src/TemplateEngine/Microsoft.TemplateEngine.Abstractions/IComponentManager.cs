@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// If <typeparamref name="T"/> and <see cref="Guid"/> mismatch, <c>false</c> is returned.
         /// </remarks>
         /// <typeparam name="T">type to lookup.</typeparam>
-        /// <param name="id"><see cref="Guid"/> that is defined in <see cref="IIdentifiedComponent.Id"/></param>
+        /// <param name="id"><see cref="Guid"/> that is defined in <see cref="IIdentifiedComponent.Id"/>.</param>
         /// <param name="component">singleton instance of requested component.</param>
         /// <returns><c>true</c> if component was found.</returns>
         bool TryGetComponent<T>(Guid id, out T component)
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Returns all components of specified type.
         /// </summary>
-        /// <typeparam name="T">type of component</typeparam>
+        /// <typeparam name="T">type of component.</typeparam>
         /// <returns>singleton component instances of requested type.</returns>
         IEnumerable<T> OfType<T>()
             where T : class, IIdentifiedComponent;

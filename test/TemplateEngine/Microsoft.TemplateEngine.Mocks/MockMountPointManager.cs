@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Mocks
         }
 
         /// <summary>
-        /// Contains the list of mount points that are considered to be unavailable when demanding
+        /// Contains the list of mount points that are considered to be unavailable when demanding.
         /// </summary>
         public List<string> UnavailableMountPoints { get; } = new List<string>();
 
