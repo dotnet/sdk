@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             // setup the custom operations
             List<ICustomOperationModel> customOpsForGlob = new List<ICustomOperationModel>();
-            if (globData.TryGetValue("Operations", StringComparison.OrdinalIgnoreCase, out JToken operationData))
+            if (globData.TryGetValue(nameof(Operations), StringComparison.OrdinalIgnoreCase, out JToken operationData))
             {
                 foreach (JObject operationConfig in (JArray)operationData)
                 {
