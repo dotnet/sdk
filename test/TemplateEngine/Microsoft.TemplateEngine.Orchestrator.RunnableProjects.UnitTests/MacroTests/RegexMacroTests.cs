@@ -15,8 +15,13 @@ using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProj
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class RegexMacroTests : TestBase
+    public class RegexMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public RegexMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
         [Fact(DisplayName = nameof(TestRegexMacro))]
         public void TestRegexMacro()
         {
@@ -30,7 +35,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             string sourceValue = "QQQ121222112";
             string expectedValue = "QQQZZ1Z";
@@ -45,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             setter(sourceParam, sourceValue);
 
             RegexMacro macro = new RegexMacro();
-            macro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
 
             ITemplateParameter newParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out newParam));
@@ -74,7 +79,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             string sourceValue = "ABCAABBCC";
             string expectedValue = "ZBCZZBBCC";
@@ -88,8 +93,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             setter(sourceParam, sourceValue);
 
             RegexMacro macro = new RegexMacro();
-            IMacroConfig realConfig = macro.CreateConfig(EngineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(EngineEnvironmentSettings, variables, realConfig, parameters, setter);
+            IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
             ITemplateParameter newParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out newParam));
             string newValue = (string)parameters.ResolvedValues[newParam];

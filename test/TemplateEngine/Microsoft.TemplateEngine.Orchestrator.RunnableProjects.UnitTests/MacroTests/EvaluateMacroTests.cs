@@ -13,8 +13,14 @@ using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProj
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class EvaluateMacroTests : TestBase
+    public class EvaluateMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public EvaluateMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
+
         [Theory(DisplayName = nameof(TestEvaluateConfig))]
         [InlineData("(7 > 3)", true)]
         [InlineData("(2 == 1)", false)]
@@ -27,10 +33,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             EvaluateMacro macro = new EvaluateMacro();
-            macro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
             ITemplateParameter resultParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
             bool resultValue = (bool)parameters.ResolvedValues[resultParam];

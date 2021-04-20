@@ -13,8 +13,13 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
-    public class DefaultTemplatePackageProviderTests : TestBase
+    public class DefaultTemplatePackageProviderTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public DefaultTemplatePackageProviderTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
         [Fact]
         public async Task ReturnsFoldersAndNuPkgs()
         {
@@ -24,7 +29,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             //And one *.nupkg, but that folder contains 2 .nupkg files
             var nupkgs = new[] { Path.Combine(thisDir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates", "*.nupkg") };
 
-            var provider = new DefaultTemplatePackageProvider(null, EngineEnvironmentSettings, nupkgs, folders);
+            var provider = new DefaultTemplatePackageProvider(null, _engineEnvironmentSettings, nupkgs, folders);
             var sources = await provider.GetAllTemplatePackagesAsync(default).ConfigureAwait(false);
 
             //Total should be 7

@@ -21,18 +21,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public static readonly Guid FileSystemMountPointFactoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
         public static readonly string DefaultConfigRelativePath = ".template.config/template.json";
 
-        public static IEngineEnvironmentSettings GetTestEnvironment()
-        {
-            TestHost host = new TestHost
-            {
-                HostIdentifier = "TestRunner",
-                Version = "1.0.0.0",
-            };
-
-            host.FileSystem = new PhysicalFileSystem();
-            return new EngineEnvironmentSettings(host, x => null);
-        }
-
         public static IFileSystemInfo ConfigFileSystemInfo(IMountPoint mountPoint, string configFile = null)
         {
             if (string.IsNullOrEmpty(configFile))

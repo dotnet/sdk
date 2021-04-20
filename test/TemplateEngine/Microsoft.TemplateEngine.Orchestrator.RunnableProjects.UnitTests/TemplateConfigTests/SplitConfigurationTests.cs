@@ -10,8 +10,14 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class SplitConfigurationTests : TestBase
+    public class SplitConfigurationTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public SplitConfigurationTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
+
         private static string TemplateJsonWithProperAdditionalConfigFilesString
         {
             get
@@ -127,8 +133,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(SplitConfigCantReferenceFileOutsideBasePath))]
         public void SplitConfigCantReferenceFileOutsideBasePath()
         {
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
-            TestTemplateSetup setup = SetupSplitConfigWithAFileOutsideMountPoint(EngineEnvironmentSettings, sourcePath);
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
+            TestTemplateSetup setup = SetupSplitConfigWithAFileOutsideMountPoint(_engineEnvironmentSettings, sourcePath);
 
             IGenerator generator = new RunnableProjectGenerator();
             IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TemplateConfigTestHelpers.DefaultConfigRelativePath);
@@ -140,8 +146,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(SplitConfigReadFailsIfAReferencedFileIsMissing))]
         public void SplitConfigReadFailsIfAReferencedFileIsMissing()
         {
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
-            TestTemplateSetup setup = SetupSplitConfigWithAMissingReferencedFile(EngineEnvironmentSettings, sourcePath);
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
+            TestTemplateSetup setup = SetupSplitConfigWithAMissingReferencedFile(_engineEnvironmentSettings, sourcePath);
             IGenerator generator = new RunnableProjectGenerator();
 
             IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TemplateConfigTestHelpers.DefaultConfigRelativePath);
@@ -153,8 +159,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(SplitConfigTest))]
         public void SplitConfigTest()
         {
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
-            TestTemplateSetup setup = SetupSplitConfigTestTemplate(EngineEnvironmentSettings, sourcePath);
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
+            TestTemplateSetup setup = SetupSplitConfigTestTemplate(_engineEnvironmentSettings, sourcePath);
 
             IGenerator generator = new RunnableProjectGenerator();
             IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile("templateSource/.template.config/template.json");

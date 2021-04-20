@@ -1,15 +1,22 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
+using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class PhasedOperationTests : TestBase
+    public class PhasedOperationTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public PhasedOperationTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
         [Fact(DisplayName = nameof(VerifyPhasedOperationStateProgression))]
         public void VerifyPhasedOperationStateProgression()
         {
@@ -55,7 +62,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         private IProcessor SetupConfig(IVariableCollection vc, params Phase[] phases)
         {
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, vc, "$({0})");
             return Processor.Create(cfg, new PhasedOperation(null, phases, true));
         }
     }

@@ -15,8 +15,14 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class JoinMacroTest : TestBase
+    public class JoinMacroTest : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public JoinMacroTest(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
+
         [Theory(DisplayName = nameof(TestJoinConstantAndReferenceSymbolConfig))]
         [InlineData(",")]
         [InlineData("")]
@@ -39,7 +45,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new RunnableProjectGenerator.ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             Parameter referenceParam = new Parameter
             {
@@ -51,7 +57,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             setter(referenceParam, referenceSymbolValue);
 
             JoinMacro macro = new JoinMacro();
-            macro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
 
             Assert.True(parameters.TryGetParameterDefinition(variableName, out ITemplateParameter convertedParam));
 
@@ -85,7 +91,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new RunnableProjectGenerator.ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             Parameter referenceParam = new Parameter
             {
@@ -97,8 +103,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             setter(referenceParam, referenceSymbolValue);
 
             JoinMacro macro = new JoinMacro();
-            IMacroConfig realConfig = macro.CreateConfig(EngineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(EngineEnvironmentSettings, variables, realConfig, parameters, setter);
+            IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
 
             Assert.True(parameters.TryGetParameterDefinition(variableName, out ITemplateParameter convertedParam));
 

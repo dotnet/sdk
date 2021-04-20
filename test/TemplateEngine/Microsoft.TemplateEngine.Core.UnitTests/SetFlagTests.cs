@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
@@ -10,8 +11,14 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class SetFlagTests : TestBase
+    public class SetFlagTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
+        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        public SetFlagTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _environmentSettingsHelper = environmentSettingsHelper;
+        }
+
         // Demonstrate that conditional operations processing is correctly enabled & disabled with Emit flags.
         [Fact(DisplayName = nameof(TurnOffConditionalTest))]
         public void TurnOffConditionalTest()
@@ -57,7 +64,7 @@ After Conditional processing = off
 Final stuff";
 
             VariableCollection vc = new VariableCollection();
-            IProcessor partialProcessor = new ConditionalTests().SetupCStyleWithCommentsProcessor(vc);
+            IProcessor partialProcessor = new ConditionalTests(_environmentSettingsHelper).SetupCStyleWithCommentsProcessor(vc);
 
             string on = "//+:cnd";
             string off = "//-:cnd";
@@ -111,7 +118,7 @@ After Conditional processing = off
 Final stuff";
 
             VariableCollection vc = new VariableCollection();
-            IProcessor partialProcessor = new ConditionalTests().SetupCStyleWithCommentsProcessor(vc);
+            IProcessor partialProcessor = new ConditionalTests(_environmentSettingsHelper).SetupCStyleWithCommentsProcessor(vc);
 
             string on = "//+:cnd";
             string onNoEmit = on + ":noEmit";
@@ -137,7 +144,8 @@ End";
 End";
 
             VariableCollection vc = new VariableCollection();
-            EngineConfig engineConfig = new EngineConfig(EnvironmentSettings, vc);
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            EngineConfig engineConfig = new EngineConfig(environmentSettings, vc);
 
             string on = "//+:cnd";
             string onNoEmit = on + ":noEmit";

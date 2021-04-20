@@ -15,12 +15,18 @@ using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProj
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class FileRenameTests
+    public class FileRenameTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        public FileRenameTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _environmentSettingsHelper = environmentSettingsHelper;
+        }
+
         [Fact(DisplayName = nameof(SourceRenameIsCaseSensitive))]
         public void SourceRenameIsCaseSensitive()
         {
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             TestTemplateSetup setup = SetupSourceRenameIsCaseSensitveTestTemplate(environment, sourceBasePath);
@@ -39,7 +45,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(SourceModifierRenameIsCaseSensitive))]
         public void SourceModifierRenameIsCaseSensitive()
         {
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             TestTemplateSetup setup = SetupSourceModifierRenameIsCaseSensitiveTestTemplate(environment, sourceBasePath);
@@ -87,7 +93,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   }
 }
 ";
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             JObject configJson = JObject.Parse(configContent);
             SimpleConfigModel config = SimpleConfigModel.FromJObject(environment, configJson);
             Assert.Equal(2, config.SymbolFilenameReplacements.Count);
@@ -137,7 +143,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     }
   }
 }";
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             JObject configJson = JObject.Parse(configContent);
             SimpleConfigModel config = SimpleConfigModel.FromJObject(environment, configJson);
             Assert.Equal(4, config.SymbolFilenameReplacements.Count);
@@ -152,7 +158,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CanGenerateFileRenamesForSymbolBasedRenames()
         {
             //environment
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
@@ -196,7 +202,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CanGenerateFileRenamesForSymbolBasedRenames_Forms()
         {
             //environment
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
@@ -257,7 +263,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CanGenerateFileRenamesForSymbolBasedRenames_WhenFormsResultInSameValue()
         {
             //environment
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
@@ -309,7 +315,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CanGenerateFileRenamesForSymbolBasedRenames_Multiple()
         {
             //environment
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
@@ -354,7 +360,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CanGenerateFileRenamesForSymbolBasedRenames_DirectoryRename()
         {
             //environment
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);

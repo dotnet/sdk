@@ -14,27 +14,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public abstract class TestBase
     {
-        protected TestBase()
-        {
-            ITemplateEngineHost host = new TestHost
-            {
-                HostIdentifier = "TestRunner",
-                Version = "1.0.0.0",
-            };
-
-            EnvironmentSettings = new EngineEnvironmentSettings(host, s => null);
-            string home = "%USERPROFILE%";
-
-            if (Path.DirectorySeparatorChar == '/')
-            {
-                home = "%HOME%";
-            }
-
-            host.VirtualizeDirectory(Environment.ExpandEnvironmentVariables($"{home}/.templateengine"));
-        }
-
-        protected IEngineEnvironmentSettings EnvironmentSettings { get; }
-
         protected static void RunAndVerify(string originalValue, string expectedValue, IProcessor processor, int bufferSize, bool? changeOverride = null)
         {
             byte[] valueBytes = Encoding.UTF8.GetBytes(originalValue);

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
@@ -9,8 +10,14 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class BalancedNestingTests : TestBase
+    public class BalancedNestingTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public BalancedNestingTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
+
         // The initial construction of the BalancedNesting operation is supposed to have comment fixing off by default.
         // (Usually, it gets toggled by conditional processing).
         // This test ensures that it's off by default.
@@ -119,7 +126,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 new BalancedNesting("<!--".TokenConfig(), "-->".TokenConfig(), "-- >".TokenConfig(), commentFixOperationId, resetId, isCommentFixingInitiallyOn ?? false),
             };
             VariableCollection variables = new VariableCollection();
-            EngineConfig engineConfig = new EngineConfig(EnvironmentSettings, variables);
+            EngineConfig engineConfig = new EngineConfig(_engineEnvironmentSettings, variables);
             IProcessor processor = Processor.Create(engineConfig, operations);
 
             if (isCommentFixingInitiallyOn.HasValue)

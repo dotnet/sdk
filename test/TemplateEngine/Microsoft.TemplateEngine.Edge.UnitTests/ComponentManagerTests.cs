@@ -10,20 +10,26 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Mocks;
+using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class ComponentManagerTests
+    public class ComponentManagerTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        public ComponentManagerTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _environmentSettingsHelper = environmentSettingsHelper;
+        }
+
         [Fact]
         public void TestAllEdgeComponentsAdded()
         {
+            var environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, loadDefaultGenerator: false);
             var componentManager = new ComponentManager(
-                new MockSettingsLoader(new MockEngineEnvironmentSettings()
-                {
-                    Host = new TestHelper.TestHost()
-                }), new SettingsStore());
+                new MockSettingsLoader(environmentSettings),
+                new SettingsStore());
 
             var assemblyCatalog = new AssemblyComponentCatalog(new[] { typeof(ComponentManager).Assembly });
             var expectedTypeNames = assemblyCatalog.Select(pair => pair.Value().FullName).OrderBy(name => name);

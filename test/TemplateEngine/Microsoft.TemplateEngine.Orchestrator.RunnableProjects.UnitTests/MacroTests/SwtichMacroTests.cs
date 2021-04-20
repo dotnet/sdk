@@ -15,8 +15,13 @@ using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProj
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class SwtichMacroTests : TestBase
+    public class SwtichMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public SwtichMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
         [Fact(DisplayName = nameof(TestSwitchConfig))]
         public void TestSwitchConfig()
         {
@@ -34,10 +39,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             SwitchMacro macro = new SwitchMacro();
-            macro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
             ITemplateParameter resultParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
             string resultValue = (string)parameters.ResolvedValues[resultParam];
@@ -80,11 +85,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             SwitchMacro macro = new SwitchMacro();
-            IMacroConfig realConfig = macro.CreateConfig(EngineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(EngineEnvironmentSettings, variables, realConfig, parameters, setter);
+            IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
             ITemplateParameter resultParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
             string resultValue = (string)parameters.ResolvedValues[resultParam];

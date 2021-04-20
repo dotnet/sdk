@@ -14,8 +14,14 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class TemplateRootTests : TestBase
+    public class TemplateRootTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public TemplateRootTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
+
         private static string TemplateConfigWithSourcePlaceholder
         {
             get
@@ -68,10 +74,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData("src/content/.template.config/template.json", true)]
         public void CheckTemplateRootRelativeToInstallPath(string pathToTemplateJson, bool shouldAllPathsBeValid)
         {
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             templateSourceFiles.Add(pathToTemplateJson, BasicTemplateConfig);
-            TestTemplateSetup setup = new TestTemplateSetup(EngineEnvironmentSettings, sourcePath, templateSourceFiles);
+            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
 
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
@@ -95,13 +101,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CheckTemplateSourcesRelativeToTemplateRoot(bool shouldAllPathsBeValid, string source)
         {
             const string pathToTemplateConfig = ".template.config/template.json";
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
 
             string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
             templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
             templateSourceFiles.Add("things/stuff/_._", "");    // directories under the root - valid source locations.
-            TestTemplateSetup setup = new TestTemplateSetup(EngineEnvironmentSettings, sourcePath, templateSourceFiles);
+            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
 
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
@@ -135,7 +141,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             const string pathFromMountPointRootToTemplateRoot = "MountRoot/Stuff/TemplateRoot/";
             string pathToTemplateConfig = pathFromMountPointRootToTemplateRoot + ".template.config/template.json";
 
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
 
             string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
@@ -145,7 +151,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             templateSourceFiles.Add(sampleContentDir, "");    // directories under the template root - valid source locations.
             templateSourceFiles.Add("ExistingDir/_._", "");
             templateSourceFiles.Add("MountRoot/Subdir/_._", "");
-            TestTemplateSetup setup = new TestTemplateSetup(EngineEnvironmentSettings, sourcePath, templateSourceFiles);
+            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
 
             RunnableProjectGenerator generator = new RunnableProjectGenerator();

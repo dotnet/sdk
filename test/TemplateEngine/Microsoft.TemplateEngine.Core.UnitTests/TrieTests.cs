@@ -2,15 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Mocks;
+using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class TrieTests : TestBase
+    public class TrieTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public TrieTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
+
         [Fact]
         public void VerifyThatTrieMatchesAtTheBeginning()
         {
@@ -119,7 +127,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         private IProcessor SetupTestProcessor(IOperationProvider[] operations, VariableCollection vc)
         {
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc);
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, vc);
             return Processor.Create(cfg, operations);
         }
     }

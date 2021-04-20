@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class CustomConditionalTests : TestBase
+    public class CustomConditionalTests
     {
         // defines a template configuration with a custom conditional configuration.
         // The style is omitted, which implies custon

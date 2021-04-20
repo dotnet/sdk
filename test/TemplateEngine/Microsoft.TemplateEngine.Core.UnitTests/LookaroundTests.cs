@@ -3,16 +3,24 @@
 
 using System.IO;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Mocks;
+using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class LookaroundTests : TestBase
+    public class LookaroundTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public LookaroundTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
+
         [Fact(DisplayName = nameof(TestLookBehindMatches))]
         public void TestLookBehindMatches()
         {
@@ -24,7 +32,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("b".TokenConfigBuilder().OnlyIfAfter("ca"), "!", null, true) };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -43,7 +51,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("b".TokenConfigBuilder().OnlyIfBefore("cab"), "!", null, true) };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -62,7 +70,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("b".TokenConfigBuilder().OnlyIfBefore("cab").OnlyIfAfter("ba"), "!", null, true) };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -87,7 +95,7 @@ color:red;";
                 new Replacement("white".TokenConfigBuilder().OnlyIfBefore(";").OnlyIfAfter("background-color:"), "blue", null, true),
                 new Replacement("white".TokenConfigBuilder().OnlyIfBefore(";").OnlyIfAfter("color:"), "red", null, true)
             };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -111,7 +119,7 @@ color:red;";
                 new Replacement("bar".TokenConfigBuilder().OnlyIfBefore("baz").OnlyIfAfter("foo"), "b", null, true),
                 new Replacement("baz".TokenConfigBuilder().OnlyIfAfter("bar"), "c", null, true)
             };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -135,7 +143,7 @@ color:red;";
                 new Replacement("bar".TokenConfigBuilder().OnlyIfAfter("foo"), "b", null, true),
                 new Replacement("xaz".TokenConfigBuilder().OnlyIfAfter("bar"), "c", null, true)
             };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -159,7 +167,7 @@ color:red;";
                 new Replacement("bar".TokenConfigBuilder().OnlyIfBefore("baz"), "b", null, true),
                 new Replacement("baz".TokenConfigBuilder().OnlyIfAfter("bar"), "c", null, true)
             };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -182,7 +190,7 @@ color:red;";
                 new MockOperationProvider(new MockOperation(null, ReadaheadOneByte, true, Encoding.UTF8.GetBytes("foo"))),
                 new Replacement("bar".TokenConfigBuilder().OnlyIfAfter("foot"), "b", null, true)
             };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -206,7 +214,7 @@ color:red;";
                 new Replacement("bar".TokenConfigBuilder().OnlyIfAfter("foo"), "b", null, true),
                 new Replacement("baz".TokenConfigBuilder().OnlyIfAfter("bar"), "c", null, true)
             };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -229,7 +237,7 @@ color:red;";
                 new Replacement("baz".TokenConfigBuilder().OnlyIfAfter("foobar"), "a", null, true),
                 new Replacement("bar".TokenConfigBuilder().OnlyIfAfter("foo"), "b", null, true)
             };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -251,7 +259,7 @@ color:red;";
             {
                 new Replacement("".TokenConfigBuilder().OnlyIfAfter("foo").OnlyIfBefore("baz"), "bar", null, true)
             };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -274,7 +282,7 @@ color:red;";
                 new Replacement("foob".TokenConfigBuilder().OnlyIfBefore("arbaz"), "test", null, true),
                 new Replacement("foo".TokenConfigBuilder().OnlyIfBefore("barbaz"), "test2", null, true)
             };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made

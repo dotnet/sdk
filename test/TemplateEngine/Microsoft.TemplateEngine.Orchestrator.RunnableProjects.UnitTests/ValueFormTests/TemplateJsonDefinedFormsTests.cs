@@ -1,21 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
-using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
-    public class TemplateJsonDefinedFormsTests : TestBase
+    public class TemplateJsonDefinedFormsTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public TemplateJsonDefinedFormsTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
+
         [Fact(DisplayName = nameof(UnknownFormNameOnParameterSymbolDoesNotThrow))]
         public void UnknownFormNameOnParameterSymbolDoesNotThrow()
         {
@@ -35,7 +38,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 }
 ";
             JObject configObj = JObject.Parse(templateJson);
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, configObj);
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(_engineEnvironmentSettings, configObj);
             IGlobalRunConfig runConfig = null;
 
             try
@@ -78,7 +81,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 }
 ";
             JObject configObj = JObject.Parse(templateJson);
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, configObj);
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(_engineEnvironmentSettings, configObj);
             IGlobalRunConfig runConfig = null;
 
             try

@@ -3,28 +3,36 @@
 
 using System.IO;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
+using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class VariablesTests : TestBase
+    public class VariablesTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public VariablesTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
+
         [Fact(DisplayName = nameof(VerifyVariables))]
         public void VerifyVariables()
         {
             string value = @"test %PATH% test";
-            string expected = @"test " + EnvironmentSettings.Environment.GetEnvironmentVariable("PATH") + " test";
+            string expected = @"test " + _engineEnvironmentSettings.Environment.GetEnvironmentVariable("PATH") + " test";
 
             byte[] valueBytes = Encoding.UTF8.GetBytes(value);
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new ExpandVariables(null, true) };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "%{0}%");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "%{0}%");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -47,7 +55,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["NULL"] = null
             };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "%{0}%");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, vc, "%{0}%");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made

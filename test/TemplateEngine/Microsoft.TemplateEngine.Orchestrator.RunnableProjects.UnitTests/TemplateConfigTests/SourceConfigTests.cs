@@ -10,8 +10,13 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class SourceConfigTests
+    public class SourceConfigTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public SourceConfigTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: false);
+        }
         private static string ExcludesWithIncludeModifierConfigText
         {
             get
@@ -151,25 +156,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(SourceConfigExcludesAreOverriddenByIncludes))]
         public void SourceConfigExcludesAreOverriddenByIncludes()
         {
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
-            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            TestTemplateSetup setup = SetupTwoFilesWithConfigExtensionTemplate(environment, sourceBasePath);
-            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            TestTemplateSetup setup = SetupTwoFilesWithConfigExtensionTemplate(_engineEnvironmentSettings, sourceBasePath);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             setup.InstantiateTemplate(targetDir);
 
-            Assert.True(environment.Host.FileSystem.FileExists(Path.Combine(targetDir, "core.config")));
-            Assert.False(environment.Host.FileSystem.FileExists(Path.Combine(targetDir, "full.config")));
+            Assert.True(_engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetDir, "core.config")));
+            Assert.False(_engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetDir, "full.config")));
         }
 
         [Fact(DisplayName = nameof(CopyOnlyWithoutIncludeDoesntActuallyCopyFile))]
         public void CopyOnlyWithoutIncludeDoesntActuallyCopyFile()
         {
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
-            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            TestTemplateSetup setup = SetupCopyOnlyWithoutCorrespondingIncludeTemplate(environment, sourceBasePath);
-            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            TestTemplateSetup setup = SetupCopyOnlyWithoutCorrespondingIncludeTemplate(_engineEnvironmentSettings, sourceBasePath);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             // one source, should cause one set of changes
@@ -188,11 +191,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(CopyOnlyWithParentIncludeActuallyCopiesFile))]
         public void CopyOnlyWithParentIncludeActuallyCopiesFile()
         {
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
-            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            TestTemplateSetup setup = SetupCopyOnlyWithParentInclude(environment, sourceBasePath);
-            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            TestTemplateSetup setup = SetupCopyOnlyWithParentInclude(_engineEnvironmentSettings, sourceBasePath);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);
@@ -210,11 +212,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(CopyOnlyWithWildcardAndParentIncludeActuallyCopiesFile))]
         public void CopyOnlyWithWildcardAndParentIncludeActuallyCopiesFile()
         {
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
-            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            TestTemplateSetup setup = SetupCopyOnlyWithWildcardAndParentInclude(environment, sourceBasePath);
-            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            TestTemplateSetup setup = SetupCopyOnlyWithWildcardAndParentInclude(_engineEnvironmentSettings, sourceBasePath);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);
@@ -232,11 +233,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(IncludeModifierOverridesPreviousExcludeModifierTemplateTest))]
         public void IncludeModifierOverridesPreviousExcludeModifierTemplateTest()
         {
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
-            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            TestTemplateSetup setup = SetupXYZFilesForModifierOverrideTestsTemplate(environment, sourceBasePath, IncludeModifierOverridesPreviousExcludeModifierConfigText);
-            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            TestTemplateSetup setup = SetupXYZFilesForModifierOverrideTestsTemplate(_engineEnvironmentSettings, sourceBasePath, IncludeModifierOverridesPreviousExcludeModifierConfigText);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);
@@ -254,11 +254,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ExcludeModifierOverridesPreviousIncludeModifierTemplateTest))]
         public void ExcludeModifierOverridesPreviousIncludeModifierTemplateTest()
         {
-            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
-            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            TestTemplateSetup setup = SetupXYZFilesForModifierOverrideTestsTemplate(environment, sourceBasePath, ExcludeModifierOverridesPreviousIncludeModifierConfigText);
-            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            TestTemplateSetup setup = SetupXYZFilesForModifierOverrideTestsTemplate(_engineEnvironmentSettings, sourceBasePath, ExcludeModifierOverridesPreviousIncludeModifierConfigText);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);

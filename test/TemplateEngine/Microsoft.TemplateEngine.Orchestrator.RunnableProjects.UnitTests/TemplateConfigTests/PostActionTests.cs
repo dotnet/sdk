@@ -13,8 +13,14 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class PostActionTests : TestBase
+    public class PostActionTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public PostActionTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
+
         private static JObject TestTemplateJson
         {
             get
@@ -96,13 +102,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(false, false, 0, null, null)]
         public void TestPostActionConditioning(bool condition1, bool condition2, int expectedActionCount, string[] firstResult, string[] secondResult)
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, TestTemplateJson);
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(_engineEnvironmentSettings, TestTemplateJson);
             IVariableCollection vc = new VariableCollection
             {
                 ["ActionOneCondition"] = condition1,
                 ["ActionTwoCondition"] = condition2
             };
-            List<IPostAction> postActions = PostAction.ListFromModel(EngineEnvironmentSettings, configModel.PostActionModel, vc);
+            List<IPostAction> postActions = PostAction.ListFromModel(_engineEnvironmentSettings, configModel.PostActionModel, vc);
 
             Assert.Equal(expectedActionCount, postActions.Count);
             if (firstResult != null && firstResult.Length > 0)
@@ -133,7 +139,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(false, true, 1, "BeOS", "Default instructions (action 2)", null)]
         public void TestPostActionInstructionsConditioning(bool condition1, bool condition2, int expectedActionCount, string operatingSystemValue, string firstInstruction, string secondInstruction)
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, TestTemplateJson);
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(_engineEnvironmentSettings, TestTemplateJson);
             IVariableCollection vc = new VariableCollection
             {
                 ["ActionOneCondition"] = condition1,
@@ -141,7 +147,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 ["OperatingSystemKind"] = operatingSystemValue
             };
 
-            List<IPostAction> postActions = PostAction.ListFromModel(EngineEnvironmentSettings, configModel.PostActionModel, vc);
+            List<IPostAction> postActions = PostAction.ListFromModel(_engineEnvironmentSettings, configModel.PostActionModel, vc);
             Assert.Equal(expectedActionCount, postActions.Count);
 
             if (!string.IsNullOrEmpty(firstInstruction))

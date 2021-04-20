@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
@@ -11,8 +12,13 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class ReplacementTests : TestBase
+    public class ReplacementTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public ReplacementTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
         [Fact(DisplayName = nameof(VerifyReplacement))]
         public void VerifyReplacement()
         {
@@ -24,7 +30,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("value".TokenConfig(), "foo", null, true) };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -43,7 +49,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("value2".TokenConfig(), "foo", null, true) };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -62,7 +68,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("value".TokenConfig(), "foo", null, true) };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -81,7 +87,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("value".TokenConfig(), "foo", null, true) };
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made

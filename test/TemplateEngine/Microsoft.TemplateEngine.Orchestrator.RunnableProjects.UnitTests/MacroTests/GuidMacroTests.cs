@@ -16,8 +16,13 @@ using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProj
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class GuidMacroTests : TestBase
+    public class GuidMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        public GuidMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+        }
         [Fact(DisplayName = nameof(TestGuidConfig))]
         public void TestGuidConfig()
         {
@@ -27,10 +32,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             GuidMacro guidMacro = new GuidMacro();
-            guidMacro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
             ValidateGuidMacroCreatedParametersWithResolvedValues(paramName, parameters);
         }
 
@@ -46,10 +51,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
-            IMacroConfig realConfig = guidMacro.CreateConfig(EngineEnvironmentSettings, deferredConfig);
-            guidMacro.EvaluateConfig(EngineEnvironmentSettings, variables, realConfig, parameters, setter);
+            IMacroConfig realConfig = guidMacro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
+            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
             ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, parameters);
         }
 
