@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Watcher
                         }
                     }
 
-                    // Regardless of the which task finished first, make sure everything is cancelled
+                    // Regardless of the which task finished firsft, make sure everything is cancelled
                     // and wait for dotnet to exit. We don't want orphan processes
                     currentRunCancellationSource.Cancel();
 
@@ -170,8 +170,9 @@ namespace Microsoft.DotNet.Watcher
                         context.ChangedFile = changedFile;
                     }
                 }
-                catch
+                catch (Exception e)
                 {
+                    _reporter.Verbose($"{e}");
                     if (!currentRunCancellationSource.IsCancellationRequested)
                     {
                         currentRunCancellationSource.Cancel();
