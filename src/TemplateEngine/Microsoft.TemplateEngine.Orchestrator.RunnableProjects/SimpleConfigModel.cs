@@ -337,7 +337,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
         // operation info read from the config
-        private ICustomFileGlobModel CustomOperations = new CustomFileGlobModel();
+        private ICustomFileGlobModel _customOperations = new CustomFileGlobModel();
 
         IGlobalRunConfig IRunnableProjectConfig.OperationConfig
         {
@@ -346,7 +346,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 if (_operationConfig == null)
                 {
                     SpecialOperationConfigParams defaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", "C++", ConditionalType.CLineComments);
-                    _operationConfig = ProduceOperationSetup(defaultOperationParams, true, CustomOperations);
+                    _operationConfig = ProduceOperationSetup(defaultOperationParams, true, _customOperations);
                 }
 
                 return _operationConfig;
@@ -400,7 +400,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // file -> replacements
         public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; private set; }
 
-        private IReadOnlyList<ICustomFileGlobModel> SpecialCustomSetup = new List<ICustomFileGlobModel>();
+        private IReadOnlyList<ICustomFileGlobModel> _specialCustomSetup = new List<ICustomFileGlobModel>();
 
         IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> IRunnableProjectConfig.SpecialOperationConfig
         {
@@ -492,7 +492,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // put the custom configs first in the list
                     HashSet<string> processedGlobs = new HashSet<string>();
 
-                    foreach (ICustomFileGlobModel customGlobModel in SpecialCustomSetup)
+                    foreach (ICustomFileGlobModel customGlobModel in _specialCustomSetup)
                     {
                         if (customGlobModel.ConditionResult)
                         {   // only add the special if the condition is true
@@ -881,7 +881,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             // evaluate the file glob (specials) conditions
             // the result is needed for SpecialOperationConfig
-            foreach (ICustomFileGlobModel fileGlobModel in SpecialCustomSetup)
+            foreach (ICustomFileGlobModel fileGlobModel in _specialCustomSetup)
             {
                 fileGlobModel.EvaluateCondition(EnvironmentSettings, rootVariableCollection);
             }
@@ -1171,14 +1171,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             config.PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
 
             // Custom operations at the global level
-            JToken globalCustomConfigData = source[nameof(config.CustomOperations)];
+            JToken globalCustomConfigData = source[nameof(config._customOperations)];
             if (globalCustomConfigData != null)
             {
-                config.CustomOperations = CustomFileGlobModel.FromJObject((JObject)globalCustomConfigData, string.Empty);
+                config._customOperations = CustomFileGlobModel.FromJObject((JObject)globalCustomConfigData, string.Empty);
             }
             else
             {
-                config.CustomOperations = null;
+                config._customOperations = null;
             }
 
             // Custom operations for specials
@@ -1194,7 +1194,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 specialCustomSetup.Add(globModel);
             }
 
-            config.SpecialCustomSetup = specialCustomSetup;
+            config._specialCustomSetup = specialCustomSetup;
 
             // localization operations for individual files
             Dictionary<string, IReadOnlyList<IOperationProvider>> localizations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
