@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             disposable.Dispose();
             //Check that we don't time out
             using var cts2 = new CancellationTokenSource(1000);
-            using var _ = await globalSettings2.LockAsync(cts2.Token).ConfigureAwait(false);
+            using var settingsLock = await globalSettings2.LockAsync(cts2.Token).ConfigureAwait(false);
         }
 
         [Fact]
