@@ -61,7 +61,10 @@ namespace Microsoft.DotNet.PackageValidation
             RuntimeAssets = _packageAssets.FindItems(_conventions.Patterns.RuntimeAssemblies);
 
             Rids = RuntimeSpecificAssets?.Select(t => (string)t.Properties["rid"]);
-            FrameworksInPackage = _packageAssets.FindItems(_conventions.Patterns.AnyTargettedFile)?.Select(t => (NuGetFramework)t.Properties["tfm"]);
+
+            List<NuGetFramework> FrameworksInPackageList = CompileAssets?.Select(t => (NuGetFramework)t.Properties["tfm"]).ToList();
+            FrameworksInPackageList.AddRange(RuntimeAssets?.Select(t => (NuGetFramework)t.Properties["tfm"]).ToList());
+            FrameworksInPackage = FrameworksInPackageList.Distinct();
         }
 
         public string PackageId { get; private set; }

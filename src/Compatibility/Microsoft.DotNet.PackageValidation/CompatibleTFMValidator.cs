@@ -42,10 +42,10 @@ namespace Microsoft.DotNet.PackageValidation
             HashSet<NuGetFramework> compatibleTargetFrameworks = new();
             foreach (NuGetFramework item in package.FrameworksInPackage)
             {
+                compatibleTargetFrameworks.Add(item);
                 if (s_packageTfmMapping.ContainsKey(item))
                 {
                     compatibleTargetFrameworks.UnionWith(s_packageTfmMapping[item]);
-                    compatibleTargetFrameworks.Add(item);
                 }
             }
 
@@ -55,7 +55,6 @@ namespace Microsoft.DotNet.PackageValidation
 
                 if (compileTimeAsset == null)
                 {
-                    // modify the message here
                     errors.Add(new TargetFrameworkApplicabilityDiagnostics(DiagnosticIds.CompatibleRuntimeRidLessAsset,
                     framework.ToString(),
                     string.Format(Resources.NoCompatibleRuntimeAsset, framework.ToString())));

@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.PackageValidation
             Queue<ContentItem> compileAssetsQueue = new Queue<ContentItem>(compileAssets);
 
 
-            while (compileAssetsQueue.Count != 0)
+            while (compileAssetsQueue.Count > 0)
             {
                 ContentItem compileTimeAsset = compileAssetsQueue.Dequeue();
                 ContentItemCollection contentItemCollection = new();
@@ -46,12 +46,22 @@ namespace Microsoft.DotNet.PackageValidation
 
                 NuGetFramework framework = (NuGetFramework)compileTimeAsset.Properties["tfm"];
                 SelectionCriteria managedCriteria = conventions.Criteria.ForFramework(framework);
-                ContentItem compatibleFrameworkAsset = contentItemCollection.FindBestItemGroup(managedCriteria, conventions.Patterns.CompileRefAssemblies)?.Items.FirstOrDefault();
+
+                ContentItem compatibleFrameworkAsset = null;
+                if (package.HasRefAssemblies)
+                {
+                    compatibleFrameworkAsset = contentItemCollection.FindBestItemGroup(managedCriteria, conventions.Patterns.CompileRefAssemblies)?.Items.FirstOrDefault();
+                }
+                else
+                {
+                    compatibleFrameworkAsset = contentItemCollection.FindBestItemGroup(managedCriteria, conventions.Patterns.CompileLibAssemblies)?.Items.FirstOrDefault();
+
+                }
 
                 if (compatibleFrameworkAsset != null)
                 {
-                    apiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(package.PackagePath, compileTimeAsset.Path),
-                        Helpers.GetFileStreamFromPackage(package.PackagePath, compatibleFrameworkAsset.Path),
+                    apiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(package.PackagePath, compatibleFrameworkAsset.Path),
+                        Helpers.GetFileStreamFromPackage(package.PackagePath, compileTimeAsset.Path),
                         Path.GetFileName(package.PackagePath),
                         Resources.CompatibleFrameworkInPackageValidatorHeader,
                         string.Format(Resources.MissingApisForFramework, framework.ToString()));

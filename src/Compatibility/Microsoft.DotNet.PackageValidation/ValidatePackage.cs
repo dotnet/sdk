@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.NET.Build.Tasks;
@@ -23,6 +24,7 @@ namespace Microsoft.DotNet.PackageValidation
 
         protected override void ExecuteCore()
         {
+            if (!Debugger.IsAttached) { Debugger.Launch(); } else { Debugger.Break(); }
             Package package = NupkgParser.CreatePackage(PackagePath, RuntimeGraph);
 
             LogErrors(new CompatibleTfmValidator(NoWarn, null, RunApiCompat).Validate(package));
@@ -30,8 +32,12 @@ namespace Microsoft.DotNet.PackageValidation
 
             foreach (var apiCompatError in new CompatibleFrameworkInPackageValidator(NoWarn, null).Validate(package))
             {
-                Log.LogError(apiCompatError.CompatibilityReason);
-                Log.LogError(apiCompatError.Header);
+                if (apiCompatError.Differences.Differences.Count != 0)
+                {
+                    Log.LogError(apiCompatError.CompatibilityReason);
+                    Log.LogError(apiCompatError.Header);
+                }
+
                 foreach (var error in apiCompatError.Differences.Differences)
                 {
                     Log.LogError(error.ToString());
@@ -48,8 +54,12 @@ namespace Microsoft.DotNet.PackageValidation
 
             foreach (var apiCompatError in errors.apiCompaterrors)
             {
-                Log.LogError(apiCompatError.CompatibilityReason);
-                Log.LogError(apiCompatError.Header);
+                if (apiCompatError.Differences.Differences.Count != 0)
+                {
+                    Log.LogError(apiCompatError.CompatibilityReason);
+                    Log.LogError(apiCompatError.Header);
+                }
+
                 foreach (var error in apiCompatError.Differences.Differences)
                 {
                     Log.LogError(error.ToString());
