@@ -5,10 +5,6 @@ Rule ID | Category | Severity | Notes
 CA1418 | Interoperability | Warning | UseValidPlatformString, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1418)
 CA1839 | Performance | Info | UseEnvironmentMembers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839)
 CA1840 | Performance | Info | UseEnvironmentMembers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840)
-
-### New Rules
-Rule ID | Category | Severity | Notes
---------|----------|----------|-------
 CA1842 | Performance | Info | ProvideStreamMemoryBasedAsyncOverrides, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842)
 
 ### Removed Rules
