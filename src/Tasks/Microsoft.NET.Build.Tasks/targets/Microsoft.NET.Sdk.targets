@@ -58,7 +58,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IncludeMainProjectInDepsFile Condition=" '$(IncludeMainProjectInDepsFile)' == '' ">true</IncludeMainProjectInDepsFile>
   </PropertyGroup>
 
-
   <PropertyGroup>
     <_DefaultUserProfileRuntimeStorePath>$(HOME)</_DefaultUserProfileRuntimeStorePath>
     <_DefaultUserProfileRuntimeStorePath Condition="$([MSBuild]::IsOSPlatform(`Windows`))">$(USERPROFILE)</_DefaultUserProfileRuntimeStorePath>
@@ -112,7 +111,6 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(NoBuild)' == 'true' and '$(GeneratePackageOnBuild)' != 'true'">
     <NETSdkError ResourceName="NoBuildRequested" />
   </Target>
-
 
   <!--
     ============================================================
@@ -322,9 +320,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 TargetPath="$([System.IO.Path]::GetFileName($(ProjectRuntimeConfigFilePath)))"
                                 CopyToPublishDirectory="PreserveNewest" />
 
-
     </ItemGroup>
-
 
   </Target>
 
@@ -666,7 +662,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </None>
     </ItemGroup>
-
 
     <ItemGroup Condition="'$(AppHostIntermediatePath)' != '' or '$(_CopyAndRenameDotnetHost)' == 'true'">
       <!--

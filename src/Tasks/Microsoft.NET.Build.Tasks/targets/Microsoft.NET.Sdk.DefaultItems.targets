@@ -57,8 +57,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETStandardImplicitPackageVersion Condition="'$(NETStandardImplicitPackageVersion)' ==''">2.0.3</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 
-
-
   <!-- This target runs before build but not before restore, to avoid duplicating these warnings
        if building with an implicit restore. -->
   <Target Name="WarnForExplicitVersions" BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
@@ -130,7 +128,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NetSdkError ResourceName="GlobalJsonSDKResolutionFailed"
                  FormatArguments="$(SdkResolverGlobalJsonPath)" />
   </Target>
-
 
   <Target Name="_CheckForInvalidWindowsDesktopTargetingConfiguration"
         BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
