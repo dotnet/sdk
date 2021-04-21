@@ -10,12 +10,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
+
   <Import Project="..\targets\Microsoft.NET.Sdk.Shared.UsingNetSdkDefaults.props" />
   <Import Project="..\targets\Microsoft.NET.Sdk.Shared.UseCurrentRuntime.props" />
   
-  <ImportGroup>
-    <Import Project="..\targets\Microsoft.PackageDependencyResolution.targets" Condition="Exists('..\targets\Microsoft.PackageDependencyResolution.targets') and ('$(Language)' != 'C++' or '$(_EnablePackageReferencesInVCProjects)' == 'true')" />
-  </ImportGroup>
+  <Import Project="..\targets\Microsoft.PackageDependencyResolution.targets" />
 
   <Import Project="..\targets\Microsoft.NET.Sdk.DefaultItems.props" />
   <Import Project="..\targets\Microsoft.NET.Sdk.DefaultItems.Shared.props" />
