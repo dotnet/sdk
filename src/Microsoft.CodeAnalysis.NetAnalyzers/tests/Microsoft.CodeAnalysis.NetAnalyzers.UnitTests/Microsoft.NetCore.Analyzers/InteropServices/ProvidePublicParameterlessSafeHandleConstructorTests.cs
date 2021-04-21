@@ -267,7 +267,7 @@ class [|BarHandle|] : FooHandle
     protected override bool ReleaseHandle() => true;
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -339,7 +339,7 @@ Public Class [|BarHandle|] : Inherits FooHandle
     End Sub
 
 End Class";
-            await VerifyVB.VerifyAnalyzerAsync(source);
+            await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -370,7 +370,7 @@ class [|BarHandle|] : FooHandle
     protected override bool ReleaseHandle() => true;
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -397,7 +397,7 @@ Public Class [|BarHandle|] : Inherits FooHandle
     End Sub
 
 End Class";
-            await VerifyVB.VerifyAnalyzerAsync(source);
+            await VerifyVB.VerifyCodeFixAsync(source, source);
         }
     }
 }

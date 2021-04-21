@@ -39,7 +39,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
             ISymbol symbol = model.GetDeclaredSymbol(declaration, context.CancellationToken);
-            if (symbol is IMethodSymbol method)
+            if (symbol.Kind == SymbolKind.Method)
             {
                 Diagnostic diagnostic = context.Diagnostics.First();
                 string title = MicrosoftNetCoreAnalyzersResources.ProvidePublicParameterlessSafeHandleConstructorTitle;
