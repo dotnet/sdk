@@ -1068,7 +1068,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateAssemblyInfo.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'"/>
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateSupportedRuntime.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ComposeStore.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.CrossGen.targets" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk.Crossgen" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ObsoleteReferences.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Publish.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackStubs.targets" Condition="('$(Language)' == 'C++' and '$(_EnablePackageReferencesInVCProjects)' != 'true')"/>

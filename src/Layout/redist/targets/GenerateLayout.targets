@@ -84,6 +84,7 @@
       <NETSdkWorkerSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.Worker</NETSdkWorkerSourceRoot>
       <NETSdkBlazorWasmSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.BlazorWebAssembly</NETSdkBlazorWasmSourceRoot>
       <NETSdkRazorSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.Razor</NETSdkRazorSourceRoot>
+      <NETSdkCrossgenSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.Crossgen</NETSdkCrossgenSourceRoot>
     </PropertyGroup>
     <ItemGroup>
       <NETSdksContent Include="$(NETSdkSourceRoot)\**\*.*"
@@ -100,6 +101,8 @@
                      DeploymentSubPath="Sdks\Microsoft.NET.Sdk.BlazorWebAssembly"/>
       <NETSdksContent Include="$(NETSdkRazorSourceRoot)\**\*.*"
                      DeploymentSubPath="Sdks\Microsoft.NET.Sdk.Razor"/>
+      <NETSdksContent Include="$(NETSdkCrossgenSourceRoot)\**\*.*"
+                     DeploymentSubPath="Sdks\Microsoft.NET.Sdk.Crossgen"/>
     </ItemGroup>
     <Copy SourceFiles="@(NETSdksContent)"
       DestinationFiles="@(NETSdksContent->'$(OutputPath)\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')" />
