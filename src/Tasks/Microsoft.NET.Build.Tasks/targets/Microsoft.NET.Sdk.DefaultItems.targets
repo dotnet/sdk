@@ -11,9 +11,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- Import the properties and targets that were pulled from Microsoft.NET.Sdk.DefaultItems.targets to be used by the WAP project system -->
-  <Import Project="Microsoft.NET.Sdk.DefaultItems.Wap.targets" />
-
   <!-- Don't get the default item globs by default when the flag is not set. -->
   <PropertyGroup Condition="'$(UsingNETSdkDefaults)' == 'true'">
     <EnableDefaultItems Condition=" '$(EnableDefaultItems)' == '' ">true</EnableDefaultItems>
