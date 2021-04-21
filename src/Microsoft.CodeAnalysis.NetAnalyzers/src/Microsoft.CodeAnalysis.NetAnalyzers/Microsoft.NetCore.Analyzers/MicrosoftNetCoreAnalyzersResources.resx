@@ -1534,6 +1534,27 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="PreferDictionaryContainsKeyCodeFixTitle" xml:space="preserve">
+    <value>Use 'ContainsKey'</value>
+  </data>
+  <data name="PreferDictionaryContainsKeyDescription" xml:space="preserve">
+    <value>'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</value>
+  </data>
+  <data name="PreferDictionaryContainsKeyMessage" xml:space="preserve">
+    <value>Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</value>
+  </data>
+  <data name="PreferDictionaryContainsMethodsTitle" xml:space="preserve">
+    <value>Prefer Dictionary.Contains methods</value>
+  </data>
+  <data name="PreferDictionaryContainsValueCodeFixTitle" xml:space="preserve">
+    <value>Use 'ContainsValue'</value>
+  </data>
+  <data name="PreferDictionaryContainsValueDescription" xml:space="preserve">
+    <value>Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</value>
+  </data>
+  <data name="PreferDictionaryContainsValueMessage" xml:space="preserve">
+    <value>Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</value>
+  </data>
   <data name="UseValidPlatformStringDescription" xml:space="preserve">
     <value>Platform compatibility analyzer requires a valid platform name and version.</value>
   </data>
