@@ -81,7 +81,7 @@ using Microsoft.Win32.SafeHandles;
 
 class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
 {
-    private {|CA1418:FooHandle|}() : base(true)
+    private [|FooHandle|]() : base(true)
     {
     }
 
@@ -109,7 +109,7 @@ class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
 Imports Microsoft.Win32.SafeHandles
 Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
-    Private Sub {|CA1418:New|}()
+    Private Sub [|New|]()
         MyBase.New(True)
     End Sub
     
@@ -151,7 +151,7 @@ abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
     protected override bool ReleaseHandle() => true;
 }
 
-class {|CA1418:BarHandle|} : FooHandle
+class [|BarHandle|] : FooHandle
 {
     public BarHandle(IntPtr handle)
     {
@@ -203,7 +203,7 @@ Public MustInherit Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
     End Function
 
 End Class
-Public Class {|CA1418:BarHandle|} : Inherits FooHandle
+Public Class [|BarHandle|] : Inherits FooHandle
 
     Public Sub New(handle As IntPtr)
         SetHandle(handle)
@@ -258,7 +258,7 @@ abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
     protected override bool ReleaseHandle() => true;
 }
 
-class {|CA1418:BarHandle|} : FooHandle
+class [|BarHandle|] : FooHandle
 {
     public BarHandle(IntPtr handle) : base(handle)
     {
@@ -332,7 +332,7 @@ Public MustInherit Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
     End Function
 
 End Class
-Public Class {|CA1418:BarHandle|} : Inherits FooHandle
+Public Class [|BarHandle|] : Inherits FooHandle
 
     Public Sub New(handle As IntPtr)
         MyBase.New(handle)
@@ -360,7 +360,7 @@ abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
     protected override bool ReleaseHandle() => true;
 }
 
-class {|CA1418:BarHandle|} : FooHandle
+class [|BarHandle|] : FooHandle
 {
     public BarHandle(IntPtr handle)
         : base(handle)
@@ -390,7 +390,7 @@ Public MustInherit Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
     End Function
 
 End Class
-Public Class {|CA1418:BarHandle|} : Inherits FooHandle
+Public Class [|BarHandle|] : Inherits FooHandle
 
     Public Sub New(handle As IntPtr)
         MyBase.New(handle)
