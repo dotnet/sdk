@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Watcher
                         }
                     }
 
-                    // Regardless of the which task finished firsft, make sure everything is cancelled
+                    // Regardless of the which task finished first, make sure everything is cancelled
                     // and wait for dotnet to exit. We don't want orphan processes
                     currentRunCancellationSource.Cancel();
 
@@ -172,7 +172,7 @@ namespace Microsoft.DotNet.Watcher
                 }
                 catch (Exception e)
                 {
-                    _reporter.Verbose($"{e}");
+                    _reporter.Verbose($"Caught top-level exception from hot reload: {e}");
                     if (!currentRunCancellationSource.IsCancellationRequested)
                     {
                         currentRunCancellationSource.Cancel();
