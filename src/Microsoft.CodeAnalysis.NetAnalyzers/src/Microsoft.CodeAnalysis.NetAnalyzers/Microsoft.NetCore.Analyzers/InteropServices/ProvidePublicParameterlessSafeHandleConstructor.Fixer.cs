@@ -73,10 +73,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         diagnostic);
                 }
             }
-            else
-            {
-                return;
-            }
         }
 
         private static async Task<Document> AddParameterlessConstructor(SyntaxNode declaration, INamedTypeSymbol type, Document document, CancellationToken ct)

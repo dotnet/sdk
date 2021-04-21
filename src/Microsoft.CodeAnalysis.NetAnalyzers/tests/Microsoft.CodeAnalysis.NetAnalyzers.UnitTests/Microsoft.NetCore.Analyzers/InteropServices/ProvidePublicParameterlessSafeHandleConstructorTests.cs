@@ -271,6 +271,46 @@ class {|CA1418:BarHandle|} : FooHandle
         }
 
         [Fact]
+        public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_CS()
+        {
+            string source = @"
+using System;
+using Microsoft.Win32.SafeHandles;
+
+abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+{
+    protected FooHandle() : base(true)
+    {
+    }
+
+    protected override bool ReleaseHandle() => true;
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_VB()
+        {
+            string source = @"
+Imports System
+Imports Microsoft.Win32.SafeHandles
+Public MustInherit Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+
+    Protected Sub New()
+        MyBase.New(True)
+    End Sub
+    
+    Protected Overrides Function ReleaseHandle() As Boolean
+        Return True
+    End Function
+
+End Class";
+
+            await VerifyVB.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact]
         public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoAccessibleBaseTypeParameterlessConstructor_Diagnostic_VB()
         {
             string source = @"
