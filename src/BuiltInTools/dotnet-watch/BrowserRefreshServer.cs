@@ -34,15 +34,30 @@ namespace Microsoft.DotNet.Watcher.Tools
             _taskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
+        internal static string GetAutoReloadUrl(string configuredEnv)
+        {
+            var url = "http://127.0.0.1:0";
+            var uri = new Uri(url);
+            
+            if (configuredEnv is not null && Uri.TryCreate(configuredEnv.Replace("ws://","http://") , UriKind.Absolute, out uri))
+            {
+                return $"{uri.Scheme}://{uri.Host}:{uri.Port}";
+            }
+            
+            return url;
+        }
+
         public async ValueTask<string> StartAsync(CancellationToken cancellationToken)
         {
-            var hostName = Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME") ?? "127.0.0.1";
+            var configuredEnv = Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
+
+            var url = GetAutoReloadUrl(configuredEnv);
 
             _refreshServer = new HostBuilder()
                 .ConfigureWebHost(builder =>
                 {
                     builder.UseKestrel();
-                    builder.UseUrls($"http://{hostName}:0");
+                    builder.UseUrls(url);
 
                     builder.Configure(app =>
                     {
