@@ -55,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 foreach (var constructor in type.BaseType.InstanceConstructors)
                 {
                     if (constructor.Parameters.Length == 0 &&
-                        model.Compilation.IsSymbolAccessibleWithin(constructor, type, type))
+                        model.Compilation.IsSymbolAccessibleWithin(constructor, type))
                     {
                         baseTypeHasAccessibleParameterlessConstructor = true;
                         break;
