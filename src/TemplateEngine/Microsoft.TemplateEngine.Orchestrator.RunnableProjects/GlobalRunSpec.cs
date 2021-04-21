@@ -23,45 +23,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private static IReadOnlyDictionary<string, IOperationConfig> _operationConfigLookup;
 
-        private static void EnsureOperationConfigs(IComponentManager componentManager)
-        {
-            if (_operationConfigLookup == null)
-            {
-                List<IOperationConfig> operationConfigReaders = new List<IOperationConfig>(componentManager.OfType<IOperationConfig>());
-                Dictionary<string, IOperationConfig> operationConfigLookup = new Dictionary<string, IOperationConfig>();
-
-                foreach (IOperationConfig opConfig in operationConfigReaders)
-                {
-                    operationConfigLookup[opConfig.Key] = opConfig;
-                }
-
-                _operationConfigLookup = operationConfigLookup;
-            }
-        }
-
-        public IReadOnlyList<IPathMatcher> Include { get; private set; }
-
-        public IReadOnlyList<IPathMatcher> Exclude { get; private set; }
-
-        public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; }
-
-        internal IReadOnlyDictionary<string, string> Rename { get; private set; }
-
-        public IReadOnlyList<IOperationProvider> Operations { get; }
-
-        public IVariableCollection RootVariableCollection { get; }
-
-        public IReadOnlyList<KeyValuePair<IPathMatcher, IRunSpec>> Special { get; }
-
-        public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; }
-
-        public IReadOnlyList<string> IgnoreFileNames { get; }
-
-        public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
-        {
-            return Rename.TryGetValue(sourceRelPath, out targetRelPath);
-        }
-
         internal GlobalRunSpec(
             IDirectory templateRoot,
             IComponentManager componentManager,
@@ -101,6 +62,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Special = specials;
         }
 
+        public IReadOnlyList<IPathMatcher> Include { get; private set; }
+
+        public IReadOnlyList<IPathMatcher> Exclude { get; private set; }
+
+        public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; }
+
+        public IReadOnlyList<IOperationProvider> Operations { get; }
+
+        public IVariableCollection RootVariableCollection { get; }
+
+        public IReadOnlyList<KeyValuePair<IPathMatcher, IRunSpec>> Special { get; }
+
+        public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; }
+
+        public IReadOnlyList<string> IgnoreFileNames { get; }
+
+        internal IReadOnlyDictionary<string, string> Rename { get; private set; }
+
+        public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
+        {
+            return Rename.TryGetValue(sourceRelPath, out targetRelPath);
+        }
+
         internal void SetupFileSource(FileSourceMatchInfo source)
         {
             FileSourceHierarchicalPathMatcher matcher = new FileSourceHierarchicalPathMatcher(source);
@@ -108,6 +92,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Exclude = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Exclude, matcher) };
             CopyOnly = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.CopyOnly, matcher) };
             Rename = source.Renames ?? new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        private static void EnsureOperationConfigs(IComponentManager componentManager)
+        {
+            if (_operationConfigLookup == null)
+            {
+                List<IOperationConfig> operationConfigReaders = new List<IOperationConfig>(componentManager.OfType<IOperationConfig>());
+                Dictionary<string, IOperationConfig> operationConfigLookup = new Dictionary<string, IOperationConfig>();
+
+                foreach (IOperationConfig opConfig in operationConfigReaders)
+                {
+                    operationConfigLookup[opConfig.Key] = opConfig;
+                }
+
+                _operationConfigLookup = operationConfigLookup;
+            }
         }
 
         // Returns a list of operations which contains the custom operations and the default operations.

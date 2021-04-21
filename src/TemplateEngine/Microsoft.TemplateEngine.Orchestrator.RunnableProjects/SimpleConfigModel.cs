@@ -25,7 +25,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     internal class SimpleConfigModel : IRunnableProjectConfig
     {
         private const string NameSymbolName = "name";
+        private const string DefaultPlaceholderFilename = "-.-";
         private static readonly string[] IncludePatternDefaults = new[] { "**/*" };
+
         private static readonly string[] ExcludePatternDefaults = new[]
         {
             "**/[Bb]in/**",
@@ -35,26 +37,37 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             "**/*.user",
             "**/*.lock.json"
         };
-        private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**" };
 
+        private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**" };
         private static readonly Dictionary<string, string> RenameDefaults = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
+        private IReadOnlyDictionary<string, Parameter> _parameters;
+        private IReadOnlyList<FileSourceMatchInfo> _sources;
+        private IGlobalRunConfig _operationConfig;
+        private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> _specialOperationConfig;
+        private Parameter _nameParameter;
+        private IReadOnlyDictionary<string, string> _tagsDeprecated;
+        private IReadOnlyDictionary<string, ParameterSymbol> _tagDetails;
+        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
+        private string _placeholderValue;
+        private IReadOnlyList<string> _ignoreFileNames;
+        private bool _isPlaceholderFileNameCustomized;
+
+        // operation info read from the config
+        private ICustomFileGlobModel _customOperations = new CustomFileGlobModel();
+
+        private IReadOnlyList<IReplacementTokens> _symbolFilenameReplacements;
+        private IReadOnlyList<ICustomFileGlobModel> _specialCustomSetup = new List<ICustomFileGlobModel>();
 
         internal SimpleConfigModel()
         {
             Sources = new[] { new ExtendedFileSource() };
         }
 
-        private IReadOnlyDictionary<string, Parameter> _parameters;
-        private IReadOnlyList<FileSourceMatchInfo> _sources;
-        private IGlobalRunConfig _operationConfig;
-        private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> _specialOperationConfig;
-        private Parameter _nameParameter;
-
         public IFile SourceFile { get; set; }
 
         public string Author { get; set; }
-
-        internal IReadOnlyList<string> Classifications { get; set; }
 
         public string DefaultName { get; set; }
 
@@ -64,30 +77,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public int Precedence { get; set; }
 
-        internal IReadOnlyList<Guid> Guids { get; set; }
-
         public string Name { get; set; }
 
         public IReadOnlyList<string> ShortNameList { get; set; }
 
-        internal string SourceName { get; set; }
-
-        internal IReadOnlyList<ExtendedFileSource> Sources { get; set; }
-
-        internal IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
-
         public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
 
         public IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; set; }
+
         public string GeneratorVersions { get; set; }
 
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
 
         public bool HasScriptRunningPostActions { get; set; }
-
-        internal DateTime? ConfigTimestampUtc { get; set; }
-
-        private IReadOnlyDictionary<string, string> _tagsDeprecated;
 
         public IReadOnlyDictionary<string, ICacheTag> Tags
         {
@@ -114,36 +116,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private IReadOnlyDictionary<string, ParameterSymbol> _tagDetails;
-
-        // Converts "choice" datatype parameter symbols to tags
-        internal IReadOnlyDictionary<string, ParameterSymbol> TagDetails
-        {
-            get
-            {
-                if (_tagDetails == null)
-                {
-                    Dictionary<string, ParameterSymbol> tempTagDetails = new Dictionary<string, ParameterSymbol>();
-
-                    foreach (KeyValuePair<string, ISymbolModel> symbolInfo in Symbols)
-                    {
-                        ParameterSymbol tagSymbol = symbolInfo.Value as ParameterSymbol;
-
-                        if (tagSymbol != null && tagSymbol.DataType == "choice")
-                        {
-                            tempTagDetails.Add(symbolInfo.Key, tagSymbol);
-                        }
-                    }
-
-                    _tagDetails = tempTagDetails;
-                }
-
-                return _tagDetails;
-            }
-        }
-
-        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
-
         // Converts non-choice parameter symbols to cache parameters
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
         {
@@ -169,34 +141,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
-
-        internal IReadOnlyDictionary<string, IValueForm> Forms { get; private set; }
-
         public string Identity { get; set; }
-
-        private const string DefaultPlaceholderFilename = "-.-";
-
-        private string _placeholderValue;
-        private IReadOnlyList<string> _ignoreFileNames;
-        private bool _isPlaceholderFileNameCustomized;
-
-        internal string PlaceholderFilename
-        {
-            get
-            {
-                return _placeholderValue;
-            }
-            set
-            {
-                _placeholderValue = value ?? DefaultPlaceholderFilename;
-
-                if (value != null)
-                {
-                    _isPlaceholderFileNameCustomized = true;
-                }
-            }
-        }
 
         public IReadOnlyList<string> IgnoreFileNames
         {
@@ -204,6 +149,55 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             set
             {
                 _ignoreFileNames = value;
+            }
+        }
+
+        IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
+
+        IReadOnlyList<FileSourceMatchInfo> IRunnableProjectConfig.Sources
+        {
+            get
+            {
+                if (_sources == null)
+                {
+                    List<FileSourceMatchInfo> sources = new List<FileSourceMatchInfo>();
+
+                    foreach (ExtendedFileSource source in Sources)
+                    {
+                        IReadOnlyList<string> includePattern = JTokenAsFilenameToReadOrArrayToCollection(source.Include, SourceFile, IncludePatternDefaults);
+                        IReadOnlyList<string> excludePattern = JTokenAsFilenameToReadOrArrayToCollection(source.Exclude, SourceFile, ExcludePatternDefaults);
+                        IReadOnlyList<string> copyOnlyPattern = JTokenAsFilenameToReadOrArrayToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults);
+                        FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
+                        IReadOnlyDictionary<string, string> renamePatterns = new Dictionary<string, string>(source.Rename ?? RenameDefaults, StringComparer.Ordinal);
+                        FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
+                            source.Source ?? "./",
+                            source.Target ?? "./",
+                            topLevelEvaluable,
+                            renamePatterns,
+                            new List<FileSourceEvaluable>());
+                        sources.Add(matchInfo);
+                    }
+
+                    if (sources.Count == 0)
+                    {
+                        IReadOnlyList<string> includePattern = IncludePatternDefaults;
+                        IReadOnlyList<string> excludePattern = ExcludePatternDefaults;
+                        IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
+                        FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
+
+                        FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
+                            "./",
+                            "./",
+                            topLevelEvaluable,
+                            new Dictionary<string, string>(StringComparer.Ordinal),
+                            new List<FileSourceEvaluable>());
+                        sources.Add(matchInfo);
+                    }
+
+                    _sources = sources;
+                }
+
+                return _sources;
             }
         }
 
@@ -266,79 +260,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private Parameter NameParameter
-        {
-            get
-            {
-                if (_nameParameter == null)
-                {
-                    IRunnableProjectConfig cfg = this;
-                    foreach (Parameter p in cfg.Parameters.Values)
-                    {
-                        if (p.IsName)
-                        {
-                            _nameParameter = p;
-                            break;
-                        }
-                    }
-                }
-
-                return _nameParameter;
-            }
-        }
-
-        IReadOnlyList<FileSourceMatchInfo> IRunnableProjectConfig.Sources
-        {
-            get
-            {
-                if (_sources == null)
-                {
-                    List<FileSourceMatchInfo> sources = new List<FileSourceMatchInfo>();
-
-                    foreach (ExtendedFileSource source in Sources)
-                    {
-                        IReadOnlyList<string> includePattern = JTokenAsFilenameToReadOrArrayToCollection(source.Include, SourceFile, IncludePatternDefaults);
-                        IReadOnlyList<string> excludePattern = JTokenAsFilenameToReadOrArrayToCollection(source.Exclude, SourceFile, ExcludePatternDefaults);
-                        IReadOnlyList<string> copyOnlyPattern = JTokenAsFilenameToReadOrArrayToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults);
-                        FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
-                        IReadOnlyDictionary<string, string> renamePatterns = new Dictionary<string, string>(source.Rename ?? RenameDefaults, StringComparer.Ordinal);
-                        FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
-                            source.Source ?? "./",
-                            source.Target ?? "./",
-                            topLevelEvaluable,
-                            renamePatterns,
-                            new List<FileSourceEvaluable>());
-                        sources.Add(matchInfo);
-                    }
-
-                    if (sources.Count == 0)
-                    {
-                        IReadOnlyList<string> includePattern = IncludePatternDefaults;
-                        IReadOnlyList<string> excludePattern = ExcludePatternDefaults;
-                        IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
-                        FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
-
-                        FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
-                            "./",
-                            "./",
-                            topLevelEvaluable,
-                            new Dictionary<string, string>(StringComparer.Ordinal),
-                            new List<FileSourceEvaluable>());
-                        sources.Add(matchInfo);
-                    }
-
-                    _sources = sources;
-                }
-
-                return _sources;
-            }
-        }
-
-        private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
-
-        // operation info read from the config
-        private ICustomFileGlobModel _customOperations = new CustomFileGlobModel();
-
         IGlobalRunConfig IRunnableProjectConfig.OperationConfig
         {
             get
@@ -352,55 +273,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return _operationConfig;
             }
         }
-
-        private IReadOnlyList<IReplacementTokens> _symbolFilenameReplacements;
-        internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
-        {
-            get
-            {
-                if (_symbolFilenameReplacements == null)
-                {
-                    _symbolFilenameReplacements = ProduceSymbolFilenameReplacements();
-                }
-                return _symbolFilenameReplacements;
-            }
-        }
-
-        private class SpecialOperationConfigParams
-        {
-            internal SpecialOperationConfigParams(string glob, string flagPrefix, string evaluatorName, ConditionalType type)
-            {
-                EvaluatorName = evaluatorName;
-                Glob = glob;
-                FlagPrefix = flagPrefix;
-                ConditionalStyle = type;
-            }
-
-            internal string Glob { get; }
-
-            internal string EvaluatorName { get; }
-
-            internal string FlagPrefix { get; }
-
-            internal ConditionalType ConditionalStyle { get; }
-
-            internal string VariableFormat { get; set; }
-
-            private static readonly SpecialOperationConfigParams _Defaults = new SpecialOperationConfigParams(string.Empty, string.Empty, "C++", ConditionalType.None);
-
-            internal static SpecialOperationConfigParams Defaults
-            {
-                get
-                {
-                    return _Defaults;
-                }
-            }
-        }
-
-        // file -> replacements
-        public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; private set; }
-
-        private IReadOnlyList<ICustomFileGlobModel> _specialCustomSetup = new List<ICustomFileGlobModel>();
 
         IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> IRunnableProjectConfig.SpecialOperationConfig
         {
@@ -533,7 +405,552 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
+        // file -> replacements
+        public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; private set; }
+
+        internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
+        {
+            get
+            {
+                if (_symbolFilenameReplacements == null)
+                {
+                    _symbolFilenameReplacements = ProduceSymbolFilenameReplacements();
+                }
+                return _symbolFilenameReplacements;
+            }
+        }
+
+        internal IReadOnlyList<string> Classifications { get; set; }
+
+        internal IReadOnlyList<Guid> Guids { get; set; }
+
+        internal string SourceName { get; set; }
+
+        internal IReadOnlyList<ExtendedFileSource> Sources { get; set; }
+
+        internal IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
+
+        internal DateTime? ConfigTimestampUtc { get; set; }
+
+        // Converts "choice" datatype parameter symbols to tags
+        internal IReadOnlyDictionary<string, ParameterSymbol> TagDetails
+        {
+            get
+            {
+                if (_tagDetails == null)
+                {
+                    Dictionary<string, ParameterSymbol> tempTagDetails = new Dictionary<string, ParameterSymbol>();
+
+                    foreach (KeyValuePair<string, ISymbolModel> symbolInfo in Symbols)
+                    {
+                        ParameterSymbol tagSymbol = symbolInfo.Value as ParameterSymbol;
+
+                        if (tagSymbol != null && tagSymbol.DataType == "choice")
+                        {
+                            tempTagDetails.Add(symbolInfo.Key, tagSymbol);
+                        }
+                    }
+
+                    _tagDetails = tempTagDetails;
+                }
+
+                return _tagDetails;
+            }
+        }
+
+        internal IReadOnlyDictionary<string, IValueForm> Forms { get; private set; }
+
+        internal string PlaceholderFilename
+        {
+            get
+            {
+                return _placeholderValue;
+            }
+            set
+            {
+                _placeholderValue = value ?? DefaultPlaceholderFilename;
+
+                if (value != null)
+                {
+                    _isPlaceholderFileNameCustomized = true;
+                }
+            }
+        }
+
         internal IEngineEnvironmentSettings EnvironmentSettings { get; private set; }
+
+        private Parameter NameParameter
+        {
+            get
+            {
+                if (_nameParameter == null)
+                {
+                    IRunnableProjectConfig cfg = this;
+                    foreach (Parameter p in cfg.Parameters.Values)
+                    {
+                        if (p.IsName)
+                        {
+                            _nameParameter = p;
+                            break;
+                        }
+                    }
+                }
+
+                return _nameParameter;
+            }
+        }
+
+        public void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile)
+        {
+            bool stable = Symbols == null;
+            Dictionary<string, bool> computed = new Dictionary<string, bool>();
+
+            while (!stable)
+            {
+                stable = true;
+                foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
+                {
+                    if (string.Equals(symbol.Value.Type, ComputedSymbol.TypeName, StringComparison.Ordinal))
+                    {
+                        ComputedSymbol sym = (ComputedSymbol)symbol.Value;
+                        bool value = Cpp2StyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, sym.Value, rootVariableCollection);
+                        stable &= computed.TryGetValue(symbol.Key, out bool currentValue) && currentValue == value;
+                        rootVariableCollection[symbol.Key] = value;
+                        computed[symbol.Key] = value;
+                    }
+                    else if (string.Equals(symbol.Value.Type, SymbolModelConverter.BindSymbolTypeName, StringComparison.Ordinal))
+                    {
+                        if (parameters.TryGetRuntimeValue(EnvironmentSettings, symbol.Value.Binding, out object bindValue) && bindValue != null)
+                        {
+                            rootVariableCollection[symbol.Key] = RunnableProjectGenerator.InferTypeAndConvertLiteral(bindValue.ToString());
+                        }
+                    }
+                }
+            }
+
+            // evaluate the file glob (specials) conditions
+            // the result is needed for SpecialOperationConfig
+            foreach (ICustomFileGlobModel fileGlobModel in _specialCustomSetup)
+            {
+                fileGlobModel.EvaluateCondition(EnvironmentSettings, rootVariableCollection);
+            }
+
+            parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedNameParamValue);
+
+            _sources = EvaluateSources(parameters, rootVariableCollection, configFile, resolvedNameParamValue);
+
+            // evaluate the conditions and resolve the paths for the PrimaryOutputs
+            foreach (ICreationPathModel pathModel in PrimaryOutputs)
+            {
+                pathModel.EvaluateCondition(EnvironmentSettings, rootVariableCollection);
+
+                if (pathModel.ConditionResult)
+                {
+                    pathModel.PathResolved = FileRenameGenerator.ApplyRenameToPrimaryOutput(
+                        pathModel.PathOriginal,
+                        EnvironmentSettings,
+                        SourceName,
+                        resolvedNameParamValue,
+                        parameters,
+                        SymbolFilenameReplacements);
+                }
+            }
+        }
+
+        internal static SimpleConfigModel FromJObject(IEngineEnvironmentSettings environmentSettings, JObject source, ISimpleConfigModifiers configModifiers = null, JObject localeSource = null)
+        {
+            ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
+
+            SimpleConfigModel config = new SimpleConfigModel()
+            {
+                Author = localizationModel?.Author ?? source.ToString(nameof(config.Author)),
+                Classifications = source.ArrayAsStrings(nameof(config.Classifications)),
+                DefaultName = source.ToString(nameof(DefaultName)),
+                Description = localizationModel?.Description ?? source.ToString(nameof(Description)) ?? string.Empty,
+                GroupIdentity = source.ToString(nameof(GroupIdentity)),
+                Precedence = source.ToInt32(nameof(Precedence)),
+                Guids = source.ArrayAsGuids(nameof(config.Guids)),
+                Identity = source.ToString(nameof(config.Identity)),
+                Name = localizationModel?.Name ?? source.ToString(nameof(config.Name)),
+
+                SourceName = source.ToString(nameof(config.SourceName)),
+                PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename)),
+                EnvironmentSettings = environmentSettings,
+                GeneratorVersions = source.ToString(nameof(config.GeneratorVersions))
+            };
+
+            JToken shortNameToken = source.Get<JToken>("ShortName");
+            config.ShortNameList = JTokenStringOrArrayToCollection(shortNameToken, Array.Empty<string>());
+
+            config.Forms = SetupValueFormMapForTemplate(source);
+
+            List<ExtendedFileSource> sources = new List<ExtendedFileSource>();
+            config.Sources = sources;
+
+            foreach (JObject item in source.Items<JObject>(nameof(config.Sources)))
+            {
+                ExtendedFileSource src = new ExtendedFileSource();
+                sources.Add(src);
+                src.CopyOnly = item.Get<JToken>(nameof(src.CopyOnly));
+                src.Exclude = item.Get<JToken>(nameof(src.Exclude));
+                src.Include = item.Get<JToken>(nameof(src.Include));
+                src.Condition = item.ToString(nameof(src.Condition));
+                src.Rename = item.Get<JObject>(nameof(src.Rename)).ToStringDictionary().ToDictionary(x => x.Key, x => x.Value);
+
+                List<SourceModifier> modifiers = new List<SourceModifier>();
+                src.Modifiers = modifiers;
+                foreach (JObject entry in item.Items<JObject>(nameof(src.Modifiers)))
+                {
+                    SourceModifier modifier = new SourceModifier
+                    {
+                        Condition = entry.ToString(nameof(modifier.Condition)),
+                        CopyOnly = entry.Get<JToken>(nameof(modifier.CopyOnly)),
+                        Exclude = entry.Get<JToken>(nameof(modifier.Exclude)),
+                        Include = entry.Get<JToken>(nameof(modifier.Include)),
+                        Rename = entry.Get<JObject>(nameof(modifier.Rename))
+                    };
+                    modifiers.Add(modifier);
+                }
+
+                src.Source = item.ToString(nameof(src.Source));
+                src.Target = item.ToString(nameof(src.Target));
+            }
+
+            IBaselineInfo baseline = null;
+            config.BaselineInfo = BaselineInfoFromJObject(source.PropertiesOf("baselines"));
+
+            if (configModifiers != null && !string.IsNullOrEmpty(configModifiers.BaselineName))
+            {
+                config.BaselineInfo.TryGetValue(configModifiers.BaselineName, out baseline);
+            }
+
+            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
+            // create a name symbol. If one is explicitly defined in the template, it'll override this.
+            symbols.Add(NameSymbolName, SetupDefaultNameSymbol(config.SourceName));
+
+            // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
+            // They're turned into symbols here, which eventually become tags.
+            config._tagsDeprecated = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
+            IReadOnlyDictionary<string, ISymbolModel> symbolsFromTags = ConvertDeprecatedTagsToParameterSymbols(config._tagsDeprecated);
+
+            foreach (KeyValuePair<string, ISymbolModel> tagSymbol in symbolsFromTags)
+            {
+                if (!symbols.ContainsKey(tagSymbol.Key))
+                {
+                    symbols.Add(tagSymbol.Key, tagSymbol.Value);
+                }
+            }
+
+            config.Symbols = symbols;
+            foreach (JProperty prop in source.PropertiesOf(nameof(config.Symbols)))
+            {
+                JObject obj = prop.Value as JObject;
+
+                if (obj == null)
+                {
+                    continue;
+                }
+
+                IParameterSymbolLocalizationModel symbolLocalization = null;
+                if (localizationModel != null)
+                {
+                    localizationModel.ParameterSymbols.TryGetValue(prop.Name, out symbolLocalization);
+                }
+
+                string defaultOverride = null;
+                if (baseline != null && baseline.DefaultOverrides != null)
+                {
+                    baseline.DefaultOverrides.TryGetValue(prop.Name, out defaultOverride);
+                }
+
+                ISymbolModel modelForSymbol = SymbolModelConverter.GetModelForObject(obj, symbolLocalization, defaultOverride);
+
+                if (modelForSymbol != null)
+                {
+                    // The symbols dictionary comparer is Ordinal, making symbol names case-sensitive.
+                    if (string.Equals(prop.Name, NameSymbolName, StringComparison.Ordinal)
+                            && symbols.TryGetValue(prop.Name, out ISymbolModel existingSymbol))
+                    {
+                        // "name" symbol is explicitly defined above. If it's also defined in the template.json, it gets special handling here.
+                        symbols[prop.Name] = ParameterSymbol.ExplicitNameSymbolMergeWithDefaults(modelForSymbol, existingSymbol);
+                    }
+                    else
+                    {
+                        // last in wins (in the odd case where a template.json defined a symbol multiple times)
+                        symbols[prop.Name] = modelForSymbol;
+                    }
+                }
+            }
+
+            config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray(source.Get<JArray>("PostActions"), localizationModel?.PostActions);
+            config.HasScriptRunningPostActions = config.PostActionModel.Any(x => x.ActionId == PostActionInfo.ProcessStartPostActionProcessorId);
+            config.PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
+
+            // Custom operations at the global level
+            JToken globalCustomConfigData = source[nameof(config._customOperations)];
+            if (globalCustomConfigData != null)
+            {
+                config._customOperations = CustomFileGlobModel.FromJObject((JObject)globalCustomConfigData, string.Empty);
+            }
+            else
+            {
+                config._customOperations = null;
+            }
+
+            // Custom operations for specials
+            IReadOnlyDictionary<string, JToken> allSpecialOpsConfig = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "SpecialCustomOperations");
+            List<ICustomFileGlobModel> specialCustomSetup = new List<ICustomFileGlobModel>();
+
+            foreach (KeyValuePair<string, JToken> globConfigKeyValue in allSpecialOpsConfig)
+            {
+                string globName = globConfigKeyValue.Key;
+                JToken globData = globConfigKeyValue.Value;
+
+                CustomFileGlobModel globModel = CustomFileGlobModel.FromJObject((JObject)globData, globName);
+                specialCustomSetup.Add(globModel);
+            }
+
+            config._specialCustomSetup = specialCustomSetup;
+
+            // localization operations for individual files
+            Dictionary<string, IReadOnlyList<IOperationProvider>> localizations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
+            if (localizationModel != null && localizationModel.FileLocalizations != null)
+            {
+                foreach (FileLocalizationModel fileLocalization in localizationModel.FileLocalizations)
+                {
+                    List<IOperationProvider> localizationsForFile = new List<IOperationProvider>();
+                    foreach (KeyValuePair<string, string> localizationInfo in fileLocalization.Localizations)
+                    {
+                        localizationsForFile.Add(new Replacement(localizationInfo.Key.TokenConfig(), localizationInfo.Value, null, true));
+                    }
+
+                    localizations.Add(fileLocalization.File, localizationsForFile);
+                }
+            }
+            config.LocalizationOperations = localizations;
+
+            return config;
+        }
+
+        internal static ILocalizationModel LocalizationFromJObject(JObject source)
+        {
+            if (source == null)
+            {
+                return null;
+            }
+
+            LocalizationModel locModel = new LocalizationModel()
+            {
+                Author = source.ToString(nameof(locModel.Author)),
+                Name = source.ToString(nameof(locModel.Name)),
+                Description = source.ToString(nameof(locModel.Description)),
+                Identity = source.ToString(nameof(locModel.Identity)),
+            };
+
+            // symbol description & choice localizations
+            Dictionary<string, IParameterSymbolLocalizationModel> parameterLocalizations = new Dictionary<string, IParameterSymbolLocalizationModel>();
+            IReadOnlyDictionary<string, JToken> symbolInfoList = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "symbols");
+
+            foreach (KeyValuePair<string, JToken> symbolDetail in symbolInfoList)
+            {
+                string symbol = symbolDetail.Key;
+                string displayName = symbolDetail.Value.ToString("displayName");
+                string description = symbolDetail.Value.ToString("description");
+                var choiceLocalizations = new Dictionary<string, ParameterChoiceLocalizationModel>();
+
+                foreach (JObject choiceObject in symbolDetail.Value.Items<JObject>("choices"))
+                {
+                    string choiceName = choiceObject.ToString("choice");
+                    if (string.IsNullOrEmpty(choiceName))
+                    {
+                        continue;
+                    }
+
+                    choiceLocalizations.Add(choiceName, new ParameterChoiceLocalizationModel(
+                        choiceObject.ToString("displayName"),
+                        choiceObject.ToString("description")));
+                }
+
+                var symbolLocalization = new ParameterSymbolLocalizationModel(
+                    symbol,
+                    displayName,
+                    description,
+                    choiceLocalizations);
+                parameterLocalizations.Add(symbol, symbolLocalization);
+            }
+
+            locModel.ParameterSymbols = parameterLocalizations;
+
+            // post action localizations
+            Dictionary<Guid, IPostActionLocalizationModel> postActions = new Dictionary<Guid, IPostActionLocalizationModel>();
+            foreach (JObject item in source.Items<JObject>(nameof(locModel.PostActions)))
+            {
+                IPostActionLocalizationModel postActionModel = PostActionLocalizationModel.FromJObject(item);
+                postActions.Add(postActionModel.ActionId, postActionModel);
+            }
+            locModel.PostActions = postActions;
+
+            // regular file localizations
+            IReadOnlyDictionary<string, JToken> fileLocalizationJson = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "localizations");
+            List<FileLocalizationModel> fileLocalizations = new List<FileLocalizationModel>();
+
+            if (fileLocalizationJson != null)
+            {
+                foreach (KeyValuePair<string, JToken> fileLocInfo in fileLocalizationJson)
+                {
+                    string fileName = fileLocInfo.Key;
+                    JToken localizationJson = fileLocInfo.Value;
+                    FileLocalizationModel fileModel = FileLocalizationModel.FromJObject(fileName, (JObject)localizationJson);
+                    fileLocalizations.Add(fileModel);
+                }
+            }
+            locModel.FileLocalizations = fileLocalizations;
+
+            return locModel;
+        }
+
+        // If the token is a string:
+        //      check if its a valid file in the same directory as the sourceFile.
+        //          If so, read that files content as the exclude list.
+        //          Otherwise returns an array containing the string value as its only entry.
+        // Otherwise, interpret the token as an array and return the content.
+        private static IReadOnlyList<string> JTokenAsFilenameToReadOrArrayToCollection(JToken token, IFile sourceFile, string[] defaultSet)
+        {
+            if (token == null)
+            {
+                return defaultSet;
+            }
+
+            if (token.Type == JTokenType.String)
+            {
+                string tokenValue = token.ToString();
+                if ((tokenValue.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+                    || !sourceFile.Parent.FileInfo(tokenValue).Exists)
+                {
+                    return new List<string>(new[] { tokenValue });
+                }
+                else
+                {
+                    using (Stream excludeList = sourceFile.Parent.FileInfo(token.ToString()).OpenRead())
+                    using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
+                    {
+                        return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    }
+                }
+            }
+
+            return token.ArrayAsStrings();
+        }
+
+        private static IReadOnlyList<string> JTokenStringOrArrayToCollection(JToken token, string[] defaultSet)
+        {
+            if (token == null)
+            {
+                return defaultSet;
+            }
+
+            if (token.Type == JTokenType.String)
+            {
+                string tokenValue = token.ToString();
+                return new List<string>() { tokenValue };
+            }
+
+            return token.ArrayAsStrings();
+        }
+
+        private static ISymbolModel SetupDefaultNameSymbol(string sourceName)
+        {
+            StringBuilder nameSymbolConfigBuilder = new StringBuilder(512);
+
+            nameSymbolConfigBuilder.AppendLine(@"
+{
+  ""binding"": """ + NameSymbolName + @""",
+  ""type"": """ + ParameterSymbol.TypeName + @""",
+  ""description"": ""The default name symbol"",
+  ""datatype"": ""string"",
+  ""forms"": {
+    ""global"": [ """ + IdentityValueForm.FormName
+                    + @""", """ + DefaultSafeNameValueFormModel.FormName
+                    + @""", """ + DefaultLowerSafeNameValueFormModel.FormName
+                    + @""", """ + DefaultSafeNamespaceValueFormModel.FormName
+                    + @""", """ + DefaultLowerSafeNamespaceValueFormModel.FormName
+                    + @"""]
+  }
+");
+
+            if (!string.IsNullOrEmpty(sourceName))
+            {
+                nameSymbolConfigBuilder.AppendLine(",");
+                nameSymbolConfigBuilder.AppendLine($"\"replaces\": \"{sourceName}\"");
+            }
+
+            nameSymbolConfigBuilder.AppendLine("}");
+
+            JObject config = JObject.Parse(nameSymbolConfigBuilder.ToString());
+            return ParameterSymbol.FromJObject(config, null, null);
+        }
+
+        private static IReadOnlyDictionary<string, IValueForm> SetupValueFormMapForTemplate(JObject source)
+        {
+            Dictionary<string, IValueForm> formMap = new Dictionary<string, IValueForm>(StringComparer.Ordinal);
+
+            // setup all the built-in default forms.
+            foreach (KeyValuePair<string, IValueForm> builtInForm in ValueFormRegistry.AllForms)
+            {
+                formMap[builtInForm.Key] = builtInForm.Value;
+            }
+
+            // setup the forms defined by the template configuration.
+            // if any have the same name as a default, the default is overridden.
+            IReadOnlyDictionary<string, JToken> templateDefinedforms = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
+
+            foreach (KeyValuePair<string, JToken> form in templateDefinedforms)
+            {
+                if (form.Value is JObject o)
+                {
+                    formMap[form.Key] = ValueFormRegistry.GetForm(form.Key, o);
+                }
+            }
+
+            return formMap;
+        }
+
+        private static IReadOnlyDictionary<string, IBaselineInfo> BaselineInfoFromJObject(IEnumerable<JProperty> baselineJProperties)
+        {
+            Dictionary<string, IBaselineInfo> allBaselines = new Dictionary<string, IBaselineInfo>();
+
+            foreach (JProperty property in baselineJProperties)
+            {
+                JObject obj = property.Value as JObject;
+
+                if (obj == null)
+                {
+                    continue;
+                }
+
+                BaselineInfo baseline = new BaselineInfo
+                {
+                    Description = obj.ToString(nameof(baseline.Description)),
+                    DefaultOverrides = obj.Get<JObject>(nameof(baseline.DefaultOverrides)).ToStringDictionary()
+                };
+
+                allBaselines[property.Name] = baseline;
+            }
+
+            return allBaselines;
+        }
+
+        private static IReadOnlyDictionary<string, ISymbolModel> ConvertDeprecatedTagsToParameterSymbols(IReadOnlyDictionary<string, string> tagsDeprecated)
+        {
+            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>();
+
+            foreach (KeyValuePair<string, string> tagInfo in tagsDeprecated)
+            {
+                symbols[tagInfo.Key] = ParameterSymbol.FromDeprecatedConfigTag(tagInfo.Value);
+            }
+
+            return symbols;
+        }
 
         private IGlobalRunConfig ProduceOperationSetup(SpecialOperationConfigParams defaultModel, bool generateMacros, ICustomFileGlobModel customGlobModel = null)
         {
@@ -805,112 +1222,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return generatedMacroConfigs;
         }
 
-        // If the token is a string:
-        //      check if its a valid file in the same directory as the sourceFile.
-        //          If so, read that files content as the exclude list.
-        //          Otherwise returns an array containing the string value as its only entry.
-        // Otherwise, interpret the token as an array and return the content.
-        private static IReadOnlyList<string> JTokenAsFilenameToReadOrArrayToCollection(JToken token, IFile sourceFile, string[] defaultSet)
-        {
-            if (token == null)
-            {
-                return defaultSet;
-            }
-
-            if (token.Type == JTokenType.String)
-            {
-                string tokenValue = token.ToString();
-                if ((tokenValue.IndexOfAny(Path.GetInvalidPathChars()) != -1)
-                    || !sourceFile.Parent.FileInfo(tokenValue).Exists)
-                {
-                    return new List<string>(new[] { tokenValue });
-                }
-                else
-                {
-                    using (Stream excludeList = sourceFile.Parent.FileInfo(token.ToString()).OpenRead())
-                    using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
-                    {
-                        return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                    }
-                }
-            }
-
-            return token.ArrayAsStrings();
-        }
-
-        private static IReadOnlyList<string> JTokenStringOrArrayToCollection(JToken token, string[] defaultSet)
-        {
-            if (token == null)
-            {
-                return defaultSet;
-            }
-
-            if (token.Type == JTokenType.String)
-            {
-                string tokenValue = token.ToString();
-                return new List<string>() { tokenValue };
-            }
-
-            return token.ArrayAsStrings();
-        }
-
-        public void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile)
-        {
-            bool stable = Symbols == null;
-            Dictionary<string, bool> computed = new Dictionary<string, bool>();
-
-            while (!stable)
-            {
-                stable = true;
-                foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
-                {
-                    if (string.Equals(symbol.Value.Type, ComputedSymbol.TypeName, StringComparison.Ordinal))
-                    {
-                        ComputedSymbol sym = (ComputedSymbol)symbol.Value;
-                        bool value = Cpp2StyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, sym.Value, rootVariableCollection);
-                        stable &= computed.TryGetValue(symbol.Key, out bool currentValue) && currentValue == value;
-                        rootVariableCollection[symbol.Key] = value;
-                        computed[symbol.Key] = value;
-                    }
-                    else if (string.Equals(symbol.Value.Type, SymbolModelConverter.BindSymbolTypeName, StringComparison.Ordinal))
-                    {
-                        if (parameters.TryGetRuntimeValue(EnvironmentSettings, symbol.Value.Binding, out object bindValue) && bindValue != null)
-                        {
-                            rootVariableCollection[symbol.Key] = RunnableProjectGenerator.InferTypeAndConvertLiteral(bindValue.ToString());
-                        }
-                    }
-                }
-            }
-
-            // evaluate the file glob (specials) conditions
-            // the result is needed for SpecialOperationConfig
-            foreach (ICustomFileGlobModel fileGlobModel in _specialCustomSetup)
-            {
-                fileGlobModel.EvaluateCondition(EnvironmentSettings, rootVariableCollection);
-            }
-
-            parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedNameParamValue);
-
-            _sources = EvaluateSources(parameters, rootVariableCollection, configFile, resolvedNameParamValue);
-
-            // evaluate the conditions and resolve the paths for the PrimaryOutputs
-            foreach (ICreationPathModel pathModel in PrimaryOutputs)
-            {
-                pathModel.EvaluateCondition(EnvironmentSettings, rootVariableCollection);
-
-                if (pathModel.ConditionResult)
-                {
-                    pathModel.PathResolved = FileRenameGenerator.ApplyRenameToPrimaryOutput(
-                        pathModel.PathOriginal,
-                        EnvironmentSettings,
-                        SourceName,
-                        resolvedNameParamValue,
-                        parameters,
-                        SymbolFilenameReplacements);
-                }
-            }
-        }
-
         private List<FileSourceMatchInfo> EvaluateSources(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile, object resolvedNameParamValue)
         {
             List<FileSourceMatchInfo> sources = new List<FileSourceMatchInfo>();
@@ -994,350 +1305,35 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return FileRenameGenerator.AugmentFileRenames(EnvironmentSettings, SourceName, configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenames, SymbolFilenameReplacements);
         }
 
-        private static ISymbolModel SetupDefaultNameSymbol(string sourceName)
+        private class SpecialOperationConfigParams
         {
-            StringBuilder nameSymbolConfigBuilder = new StringBuilder(512);
+            private static readonly SpecialOperationConfigParams _Defaults = new SpecialOperationConfigParams(string.Empty, string.Empty, "C++", ConditionalType.None);
 
-            nameSymbolConfigBuilder.AppendLine(@"
-{
-  ""binding"": """ + NameSymbolName + @""",
-  ""type"": """ + ParameterSymbol.TypeName + @""",
-  ""description"": ""The default name symbol"",
-  ""datatype"": ""string"",
-  ""forms"": {
-    ""global"": [ """ + IdentityValueForm.FormName
-                    + @""", """ + DefaultSafeNameValueFormModel.FormName
-                    + @""", """ + DefaultLowerSafeNameValueFormModel.FormName
-                    + @""", """ + DefaultSafeNamespaceValueFormModel.FormName
-                    + @""", """ + DefaultLowerSafeNamespaceValueFormModel.FormName
-                    + @"""]
-  }
-");
-
-            if (!string.IsNullOrEmpty(sourceName))
+            internal SpecialOperationConfigParams(string glob, string flagPrefix, string evaluatorName, ConditionalType type)
             {
-                nameSymbolConfigBuilder.AppendLine(",");
-                nameSymbolConfigBuilder.AppendLine($"\"replaces\": \"{sourceName}\"");
+                EvaluatorName = evaluatorName;
+                Glob = glob;
+                FlagPrefix = flagPrefix;
+                ConditionalStyle = type;
             }
 
-            nameSymbolConfigBuilder.AppendLine("}");
-
-            JObject config = JObject.Parse(nameSymbolConfigBuilder.ToString());
-            return ParameterSymbol.FromJObject(config, null, null);
-        }
-
-        private static IReadOnlyDictionary<string, IValueForm> SetupValueFormMapForTemplate(JObject source)
-        {
-            Dictionary<string, IValueForm> formMap = new Dictionary<string, IValueForm>(StringComparer.Ordinal);
-
-            // setup all the built-in default forms.
-            foreach (KeyValuePair<string, IValueForm> builtInForm in ValueFormRegistry.AllForms)
+            internal static SpecialOperationConfigParams Defaults
             {
-                formMap[builtInForm.Key] = builtInForm.Value;
-            }
-
-            // setup the forms defined by the template configuration.
-            // if any have the same name as a default, the default is overridden.
-            IReadOnlyDictionary<string, JToken> templateDefinedforms = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
-
-            foreach (KeyValuePair<string, JToken> form in templateDefinedforms)
-            {
-                if (form.Value is JObject o)
+                get
                 {
-                    formMap[form.Key] = ValueFormRegistry.GetForm(form.Key, o);
+                    return _Defaults;
                 }
             }
 
-            return formMap;
-        }
+            internal string Glob { get; }
 
-        internal static SimpleConfigModel FromJObject(IEngineEnvironmentSettings environmentSettings, JObject source, ISimpleConfigModifiers configModifiers = null, JObject localeSource = null)
-        {
-            ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
+            internal string EvaluatorName { get; }
 
-            SimpleConfigModel config = new SimpleConfigModel()
-            {
-                Author = localizationModel?.Author ?? source.ToString(nameof(config.Author)),
-                Classifications = source.ArrayAsStrings(nameof(config.Classifications)),
-                DefaultName = source.ToString(nameof(DefaultName)),
-                Description = localizationModel?.Description ?? source.ToString(nameof(Description)) ?? string.Empty,
-                GroupIdentity = source.ToString(nameof(GroupIdentity)),
-                Precedence = source.ToInt32(nameof(Precedence)),
-                Guids = source.ArrayAsGuids(nameof(config.Guids)),
-                Identity = source.ToString(nameof(config.Identity)),
-                Name = localizationModel?.Name ?? source.ToString(nameof(config.Name)),
+            internal string FlagPrefix { get; }
 
-                SourceName = source.ToString(nameof(config.SourceName)),
-                PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename)),
-                EnvironmentSettings = environmentSettings,
-                GeneratorVersions = source.ToString(nameof(config.GeneratorVersions))
-            };
+            internal ConditionalType ConditionalStyle { get; }
 
-            JToken shortNameToken = source.Get<JToken>("ShortName");
-            config.ShortNameList = JTokenStringOrArrayToCollection(shortNameToken, Array.Empty<string>());
-
-            config.Forms = SetupValueFormMapForTemplate(source);
-
-            List<ExtendedFileSource> sources = new List<ExtendedFileSource>();
-            config.Sources = sources;
-
-            foreach (JObject item in source.Items<JObject>(nameof(config.Sources)))
-            {
-                ExtendedFileSource src = new ExtendedFileSource();
-                sources.Add(src);
-                src.CopyOnly = item.Get<JToken>(nameof(src.CopyOnly));
-                src.Exclude = item.Get<JToken>(nameof(src.Exclude));
-                src.Include = item.Get<JToken>(nameof(src.Include));
-                src.Condition = item.ToString(nameof(src.Condition));
-                src.Rename = item.Get<JObject>(nameof(src.Rename)).ToStringDictionary().ToDictionary(x => x.Key, x => x.Value);
-
-                List<SourceModifier> modifiers = new List<SourceModifier>();
-                src.Modifiers = modifiers;
-                foreach (JObject entry in item.Items<JObject>(nameof(src.Modifiers)))
-                {
-                    SourceModifier modifier = new SourceModifier
-                    {
-                        Condition = entry.ToString(nameof(modifier.Condition)),
-                        CopyOnly = entry.Get<JToken>(nameof(modifier.CopyOnly)),
-                        Exclude = entry.Get<JToken>(nameof(modifier.Exclude)),
-                        Include = entry.Get<JToken>(nameof(modifier.Include)),
-                        Rename = entry.Get<JObject>(nameof(modifier.Rename))
-                    };
-                    modifiers.Add(modifier);
-                }
-
-                src.Source = item.ToString(nameof(src.Source));
-                src.Target = item.ToString(nameof(src.Target));
-            }
-
-            IBaselineInfo baseline = null;
-            config.BaselineInfo = BaselineInfoFromJObject(source.PropertiesOf("baselines"));
-
-            if (configModifiers != null && !string.IsNullOrEmpty(configModifiers.BaselineName))
-            {
-                config.BaselineInfo.TryGetValue(configModifiers.BaselineName, out baseline);
-            }
-
-            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
-            // create a name symbol. If one is explicitly defined in the template, it'll override this.
-            symbols.Add(NameSymbolName, SetupDefaultNameSymbol(config.SourceName));
-
-            // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
-            // They're turned into symbols here, which eventually become tags.
-            config._tagsDeprecated = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
-            IReadOnlyDictionary<string, ISymbolModel> symbolsFromTags = ConvertDeprecatedTagsToParameterSymbols(config._tagsDeprecated);
-
-            foreach (KeyValuePair<string, ISymbolModel> tagSymbol in symbolsFromTags)
-            {
-                if (!symbols.ContainsKey(tagSymbol.Key))
-                {
-                    symbols.Add(tagSymbol.Key, tagSymbol.Value);
-                }
-            }
-
-            config.Symbols = symbols;
-            foreach (JProperty prop in source.PropertiesOf(nameof(config.Symbols)))
-            {
-                JObject obj = prop.Value as JObject;
-
-                if (obj == null)
-                {
-                    continue;
-                }
-
-                IParameterSymbolLocalizationModel symbolLocalization = null;
-                if (localizationModel != null)
-                {
-                    localizationModel.ParameterSymbols.TryGetValue(prop.Name, out symbolLocalization);
-                }
-
-                string defaultOverride = null;
-                if (baseline != null && baseline.DefaultOverrides != null)
-                {
-                    baseline.DefaultOverrides.TryGetValue(prop.Name, out defaultOverride);
-                }
-
-                ISymbolModel modelForSymbol = SymbolModelConverter.GetModelForObject(obj, symbolLocalization, defaultOverride);
-
-                if (modelForSymbol != null)
-                {
-                    // The symbols dictionary comparer is Ordinal, making symbol names case-sensitive.
-                    if (string.Equals(prop.Name, NameSymbolName, StringComparison.Ordinal)
-                            && symbols.TryGetValue(prop.Name, out ISymbolModel existingSymbol))
-                    {
-                        // "name" symbol is explicitly defined above. If it's also defined in the template.json, it gets special handling here.
-                        symbols[prop.Name] = ParameterSymbol.ExplicitNameSymbolMergeWithDefaults(modelForSymbol, existingSymbol);
-                    }
-                    else
-                    {
-                        // last in wins (in the odd case where a template.json defined a symbol multiple times)
-                        symbols[prop.Name] = modelForSymbol;
-                    }
-                }
-            }
-
-            config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray(source.Get<JArray>("PostActions"), localizationModel?.PostActions);
-            config.HasScriptRunningPostActions = config.PostActionModel.Any(x => x.ActionId == PostActionInfo.ProcessStartPostActionProcessorId);
-            config.PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
-
-            // Custom operations at the global level
-            JToken globalCustomConfigData = source[nameof(config._customOperations)];
-            if (globalCustomConfigData != null)
-            {
-                config._customOperations = CustomFileGlobModel.FromJObject((JObject)globalCustomConfigData, string.Empty);
-            }
-            else
-            {
-                config._customOperations = null;
-            }
-
-            // Custom operations for specials
-            IReadOnlyDictionary<string, JToken> allSpecialOpsConfig = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "SpecialCustomOperations");
-            List<ICustomFileGlobModel> specialCustomSetup = new List<ICustomFileGlobModel>();
-
-            foreach (KeyValuePair<string, JToken> globConfigKeyValue in allSpecialOpsConfig)
-            {
-                string globName = globConfigKeyValue.Key;
-                JToken globData = globConfigKeyValue.Value;
-
-                CustomFileGlobModel globModel = CustomFileGlobModel.FromJObject((JObject)globData, globName);
-                specialCustomSetup.Add(globModel);
-            }
-
-            config._specialCustomSetup = specialCustomSetup;
-
-            // localization operations for individual files
-            Dictionary<string, IReadOnlyList<IOperationProvider>> localizations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
-            if (localizationModel != null && localizationModel.FileLocalizations != null)
-            {
-                foreach (FileLocalizationModel fileLocalization in localizationModel.FileLocalizations)
-                {
-                    List<IOperationProvider> localizationsForFile = new List<IOperationProvider>();
-                    foreach (KeyValuePair<string, string> localizationInfo in fileLocalization.Localizations)
-                    {
-                        localizationsForFile.Add(new Replacement(localizationInfo.Key.TokenConfig(), localizationInfo.Value, null, true));
-                    }
-
-                    localizations.Add(fileLocalization.File, localizationsForFile);
-                }
-            }
-            config.LocalizationOperations = localizations;
-
-            return config;
-        }
-
-        private static IReadOnlyDictionary<string, IBaselineInfo> BaselineInfoFromJObject(IEnumerable<JProperty> baselineJProperties)
-        {
-            Dictionary<string, IBaselineInfo> allBaselines = new Dictionary<string, IBaselineInfo>();
-
-            foreach (JProperty property in baselineJProperties)
-            {
-                JObject obj = property.Value as JObject;
-
-                if (obj == null)
-                {
-                    continue;
-                }
-
-                BaselineInfo baseline = new BaselineInfo
-                {
-                    Description = obj.ToString(nameof(baseline.Description)),
-                    DefaultOverrides = obj.Get<JObject>(nameof(baseline.DefaultOverrides)).ToStringDictionary()
-                };
-
-                allBaselines[property.Name] = baseline;
-            }
-
-            return allBaselines;
-        }
-
-        private static IReadOnlyDictionary<string, ISymbolModel> ConvertDeprecatedTagsToParameterSymbols(IReadOnlyDictionary<string, string> tagsDeprecated)
-        {
-            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>();
-
-            foreach (KeyValuePair<string, string> tagInfo in tagsDeprecated)
-            {
-                symbols[tagInfo.Key] = ParameterSymbol.FromDeprecatedConfigTag(tagInfo.Value);
-            }
-
-            return symbols;
-        }
-
-        internal static ILocalizationModel LocalizationFromJObject(JObject source)
-        {
-            if (source == null)
-            {
-                return null;
-            }
-
-            LocalizationModel locModel = new LocalizationModel()
-            {
-                Author = source.ToString(nameof(locModel.Author)),
-                Name = source.ToString(nameof(locModel.Name)),
-                Description = source.ToString(nameof(locModel.Description)),
-                Identity = source.ToString(nameof(locModel.Identity)),
-            };
-
-            // symbol description & choice localizations
-            Dictionary<string, IParameterSymbolLocalizationModel> parameterLocalizations = new Dictionary<string, IParameterSymbolLocalizationModel>();
-            IReadOnlyDictionary<string, JToken> symbolInfoList = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "symbols");
-
-            foreach (KeyValuePair<string, JToken> symbolDetail in symbolInfoList)
-            {
-                string symbol = symbolDetail.Key;
-                string displayName = symbolDetail.Value.ToString("displayName");
-                string description = symbolDetail.Value.ToString("description");
-                var choiceLocalizations = new Dictionary<string, ParameterChoiceLocalizationModel>();
-
-                foreach (JObject choiceObject in symbolDetail.Value.Items<JObject>("choices"))
-                {
-                    string choiceName = choiceObject.ToString("choice");
-                    if (string.IsNullOrEmpty(choiceName))
-                    {
-                        continue;
-                    }
-
-                    choiceLocalizations.Add(choiceName, new ParameterChoiceLocalizationModel(
-                        choiceObject.ToString("displayName"),
-                        choiceObject.ToString("description")));
-                }
-
-                var symbolLocalization = new ParameterSymbolLocalizationModel(
-                    symbol,
-                    displayName,
-                    description,
-                    choiceLocalizations);
-                parameterLocalizations.Add(symbol, symbolLocalization);
-            }
-
-            locModel.ParameterSymbols = parameterLocalizations;
-
-            // post action localizations
-            Dictionary<Guid, IPostActionLocalizationModel> postActions = new Dictionary<Guid, IPostActionLocalizationModel>();
-            foreach (JObject item in source.Items<JObject>(nameof(locModel.PostActions)))
-            {
-                IPostActionLocalizationModel postActionModel = PostActionLocalizationModel.FromJObject(item);
-                postActions.Add(postActionModel.ActionId, postActionModel);
-            }
-            locModel.PostActions = postActions;
-
-            // regular file localizations
-            IReadOnlyDictionary<string, JToken> fileLocalizationJson = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "localizations");
-            List<FileLocalizationModel> fileLocalizations = new List<FileLocalizationModel>();
-
-            if (fileLocalizationJson != null)
-            {
-                foreach (KeyValuePair<string, JToken> fileLocInfo in fileLocalizationJson)
-                {
-                    string fileName = fileLocInfo.Key;
-                    JToken localizationJson = fileLocInfo.Value;
-                    FileLocalizationModel fileModel = FileLocalizationModel.FromJObject(fileName, (JObject)localizationJson);
-                    fileLocalizations.Add(fileModel);
-                }
-            }
-            locModel.FileLocalizations = fileLocalizations;
-
-            return locModel;
+            internal string VariableFormat { get; set; }
         }
     }
 }

@@ -12,10 +12,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
     {
         private static readonly XmlWriterSettings Settings = new XmlWriterSettings { ConformanceLevel = ConformanceLevel.Fragment };
 
-        public string Identifier => "xmlEncode";
-
-        public string Name { get; }
-
         internal XmlEncodeValueFormModel()
         {
         }
@@ -24,6 +20,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         {
             Name = name;
         }
+
+        public string Identifier => "xmlEncode";
+
+        public string Name { get; }
 
         public IValueForm FromJObject(string name, JObject configuration)
         {

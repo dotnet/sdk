@@ -29,6 +29,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
     internal class FileSourceHierarchicalPathMatcher
     {
+        private IReadOnlyList<FileSourceEvaluablePathMatcher> _evaluators;
+
+        // Caching the most recent result.
+        private string _cachedEvaluatedPath;
+
+        private FileDispositionStates _cachedStatesForFile;
+
         internal FileSourceHierarchicalPathMatcher(FileSourceMatchInfo matchInfo)
         {
             List<FileSourceEvaluablePathMatcher> evaluators = new List<FileSourceEvaluablePathMatcher>();
@@ -44,12 +51,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _cachedEvaluatedPath = string.Empty;
             _cachedStatesForFile = FileDispositionStates.None;
         }
-
-        private IReadOnlyList<FileSourceEvaluablePathMatcher> _evaluators;
-
-        // Caching the most recent result.
-        private string _cachedEvaluatedPath;
-        private FileDispositionStates _cachedStatesForFile;
 
         internal FileDispositionStates Evaluate(string path)
         {
@@ -99,18 +100,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private class FileSourceEvaluablePathMatcher
         {
+            private IReadOnlyList<IPathMatcher> _include;
+
+            private IReadOnlyList<IPathMatcher> _exclude;
+
+            private IReadOnlyList<IPathMatcher> _copyOnly;
+
             internal FileSourceEvaluablePathMatcher(FileSourceEvaluable evaluable)
             {
                 _include = SetupMatcherList(evaluable.Include);
                 _exclude = SetupMatcherList(evaluable.Exclude);
                 _copyOnly = SetupMatcherList(evaluable.CopyOnly);
             }
-
-            private IReadOnlyList<IPathMatcher> _include;
-
-            private IReadOnlyList<IPathMatcher> _exclude;
-
-            private IReadOnlyList<IPathMatcher> _copyOnly;
 
             internal FileDispositionStates Evaluate(string path)
             {

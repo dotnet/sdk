@@ -13,21 +13,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
     {
         public string Binding { get; set; }
 
+        public string Type { get; protected set; }
+        public string Replaces { get; set; }
+        public string FileRename { get; set; }
+        public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
         internal string DefaultValue { get; set; }
 
         internal SymbolValueFormsModel Forms { get; set; }
 
         internal bool IsRequired { get; set; }
-
-        public string Type { get; protected set; }
-
-        public string Replaces { get; set; }
-
         internal string DataType { get; set; }
-
-        public string FileRename { get; set; }
-
-        public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
 
         protected static T FromJObject<T>(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
             where T : BaseValueSymbol, new()

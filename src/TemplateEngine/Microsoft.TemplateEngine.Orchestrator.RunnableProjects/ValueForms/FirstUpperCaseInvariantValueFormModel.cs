@@ -10,10 +10,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class FirstUpperCaseInvariantValueFormModel : IValueForm
     {
-        public string Identifier => "firstUpperCaseInvariant";
-
-        public string Name { get; }
-
         internal FirstUpperCaseInvariantValueFormModel()
         {
         }
@@ -22,6 +18,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         {
             Name = name;
         }
+
+        public string Identifier => "firstUpperCaseInvariant";
+
+        public string Name { get; }
 
         public IValueForm FromJObject(string name, JObject configuration)
         {

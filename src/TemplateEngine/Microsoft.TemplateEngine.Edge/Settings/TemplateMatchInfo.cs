@@ -14,8 +14,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     [Obsolete("This implementation is deprecated, use " + nameof(TemplateMatchInfo) + " instead")]
     internal class TemplateMatchInfoEx : ITemplateMatchInfo
     {
+        private IList<MatchInfo> _matchDisposition;
+
+        private IList<MatchInfo> _dispositionOfDefaults;
+
         public TemplateMatchInfoEx(ITemplateInfo info, IReadOnlyList<MatchInfo> matchDispositions)
-            : this(info)
+                            : this(info)
         {
             if (matchDispositions != null)
             {
@@ -36,7 +40,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public ITemplateInfo Info { get; }
 
         public IReadOnlyList<MatchInfo> MatchDisposition => _matchDisposition.ToList();
-        private IList<MatchInfo> _matchDisposition;
 
         // Stores match info relative to default settings.
         // These don't have to match for the template to be a match, but they can be used to filter matches
@@ -44,7 +47,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         // For example, matching or non-matching on the default language should only be used as a final disambiguator.
         // It shouldn't unconditionally disqualify a match.
         public IReadOnlyList<MatchInfo> DispositionOfDefaults => _dispositionOfDefaults.ToList();
-        private IList<MatchInfo> _dispositionOfDefaults;
+
+        public bool IsMatch => MatchDisposition.Count > 0 && MatchDisposition.All(x => x.Kind != MatchKind.Mismatch);
+
+        public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch);
 
         public void AddDisposition(MatchInfo newDisposition)
         {
@@ -57,10 +63,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 _matchDisposition.Add(newDisposition);
             }
         }
-
-        public bool IsMatch => MatchDisposition.Count > 0 && MatchDisposition.All(x => x.Kind != MatchKind.Mismatch);
-
-        public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch);
     }
 
     internal class TemplateMatchInfo : Abstractions.TemplateFiltering.ITemplateMatchInfo

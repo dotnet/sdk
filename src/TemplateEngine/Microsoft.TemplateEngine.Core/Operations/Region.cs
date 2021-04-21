@@ -48,9 +48,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly IToken _endToken;
             private readonly bool _includeRegion;
             private readonly bool _startAndEndAreSame;
-            private bool _waitingForEnd;
             private readonly Region _definition;
             private readonly string _id;
+            private bool _waitingForEnd;
 
             public Impl(Region owner, IToken startToken, IToken endToken, bool include, bool toggle, string id, bool initialState)
             {

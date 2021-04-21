@@ -34,6 +34,5 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         public string PackageLocation { get; private set; }
         public string PackageVersion { get; private set; }
         public IEnumerable<string> SourcesList { get; private set; }
-
     }
 }

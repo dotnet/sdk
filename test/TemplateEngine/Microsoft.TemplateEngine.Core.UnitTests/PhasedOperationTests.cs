@@ -10,12 +10,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class PhasedOperationTests : TestBase
     {
-        private IProcessor SetupConfig(IVariableCollection vc, params Phase[] phases)
-        {
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
-            return Processor.Create(cfg, new PhasedOperation(null, phases, true));
-        }
-
         [Fact(DisplayName = nameof(VerifyPhasedOperationStateProgression))]
         public void VerifyPhasedOperationStateProgression()
         {
@@ -57,6 +51,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             IProcessor processor = SetupConfig(vc, root);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
+        private IProcessor SetupConfig(IVariableCollection vc, params Phase[] phases)
+        {
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
+            return Processor.Create(cfg, new PhasedOperation(null, phases, true));
         }
     }
 }

@@ -22,6 +22,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         public string DataUniqueName => CliHostDataName;
 
+        public string Serialized => JsonConvert.SerializeObject(_hostDataForPackByTemplate, Formatting.Indented);
+
+        public object Data => _hostDataForPackByTemplate;
+
         public void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templateList, IEngineEnvironmentSettings environment)
         {
             IHostSpecificDataLoader hostDataLoader = new HostSpecificDataLoader(environment.SettingsLoader);
@@ -37,9 +41,5 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                 }
             }
         }
-
-        public string Serialized => JsonConvert.SerializeObject(_hostDataForPackByTemplate, Formatting.Indented);
-
-        public object Data => _hostDataForPackByTemplate;
     }
 }

@@ -19,8 +19,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
     public static class PackCheckResultReportWriter
     {
         public static readonly string CacheContentDirectory = "SearchCache";
+
         // All the metadata needed for searching from dotnet new.
         public static readonly string SearchMetadataFilename = "templateSearchInfo.json";
+
         // Metadata for the scraper to skip packs known to not contain templates.
         public static readonly string NonTemplatePacksFileName = "nonTemplatePacks.json";
 
@@ -98,19 +100,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             return new TemplateDiscoveryMetadata(TemplateInfo.CurrentVersion, templateCache, packToTemplateMap, additionalData);
         }
 
-        private class TemplateIdentityEqualityComparer : IEqualityComparer<ITemplateInfo>
-        {
-            public bool Equals(ITemplateInfo x, ITemplateInfo y)
-            {
-                return string.Equals(x.Identity, y.Identity, System.StringComparison.Ordinal);
-            }
-
-            public int GetHashCode(ITemplateInfo obj)
-            {
-                return obj.Identity.GetHashCode();
-            }
-        }
-
         private static bool TryWriteNonTemplatePackList(string reportPath, IReadOnlyList<PackCheckResult> packCheckResults)
         {
             try
@@ -130,6 +119,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             }
 
             return true;
+        }
+
+        private class TemplateIdentityEqualityComparer : IEqualityComparer<ITemplateInfo>
+        {
+            public bool Equals(ITemplateInfo x, ITemplateInfo y)
+            {
+                return string.Equals(x.Identity, y.Identity, System.StringComparison.Ordinal);
+            }
+
+            public int GetHashCode(ITemplateInfo obj)
+            {
+                return obj.Identity.GetHashCode();
+            }
         }
     }
 }

@@ -14,20 +14,12 @@ namespace Microsoft.TemplateSearch.Common
     // Making this be not abstract will cause problems with the registered components.
     public abstract class FileMetadataSearchSource : ITemplateSearchSource
     {
-        protected IFileMetadataTemplateSearchCache SearchCache { get; set; }
         private ISearchPackFilter _packFilter;
+        public abstract string DisplayName { get; }
+        public abstract Guid Id { get; }
+        protected IFileMetadataTemplateSearchCache SearchCache { get; set; }
 
         public abstract Task<bool> TryConfigure(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IManagedTemplatePackage> existingTemplatePackage);
-
-        protected void Configure(IFileMetadataTemplateSearchCache searchCache, ISearchPackFilter packFilter)
-        {
-            SearchCache = searchCache;
-            _packFilter = packFilter;
-        }
-
-        public abstract string DisplayName { get; }
-
-        public abstract Guid Id { get; }
 
         public Task<IReadOnlyList<ITemplateNameSearchResult>> CheckForTemplateNameMatchesAsync(string searchName)
         {
@@ -65,11 +57,6 @@ namespace Microsoft.TemplateSearch.Common
             return Task.FromResult((IReadOnlyList<ITemplateNameSearchResult>)resultList);
         }
 
-        protected virtual TemplateNameSearchResult CreateNameSearchResult(ITemplateInfo candidateTemplateInfo, PackInfo candidatePackInfo)
-        {
-            return new TemplateNameSearchResult(candidateTemplateInfo, candidatePackInfo);
-        }
-
         public Task<IReadOnlyDictionary<string, PackToTemplateEntry>> CheckForTemplatePackMatchesAsync(IReadOnlyList<string> packNameList)
         {
             if (SearchCache == null)
@@ -82,6 +69,17 @@ namespace Microsoft.TemplateSearch.Common
                                     .ToDictionary(packInfo => packInfo.Key, packInfo => packInfo.Value);
 
             return Task.FromResult(matchedPacks);
+        }
+
+        protected void Configure(IFileMetadataTemplateSearchCache searchCache, ISearchPackFilter packFilter)
+        {
+            SearchCache = searchCache;
+            _packFilter = packFilter;
+        }
+
+        protected virtual TemplateNameSearchResult CreateNameSearchResult(ITemplateInfo candidateTemplateInfo, PackInfo candidatePackInfo)
+        {
+            return new TemplateNameSearchResult(candidateTemplateInfo, candidatePackInfo);
         }
     }
 }

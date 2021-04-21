@@ -14,6 +14,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     internal class FlagsConfig : IOperationConfig
     {
+        private const string NoEmitSuffix = ":noEmit";
+        private const string FlagConditionalSuffix = ":cnd";
+        private const string FlagReplacementSuffix = ":replacements";
+        private const string FlagExpandVariablesSuffix = ":vars";
+        private const string FlagIncludeSuffix = ":include";
+        private const string FlagFlagsSuffix = ":flags";
         public string Key => SetFlag.OperationName;
 
         public Guid Id => new Guid("A1E27A4B-9608-47F1-B3B8-F70DF62DC521");
@@ -37,13 +43,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             yield return new SetFlag(flag, on.TokenConfig(), off.TokenConfig(), onNoEmit.TokenConfig(), offNoEmit.TokenConfig(), id, onByDefault, @default);
         }
-
-        private const string NoEmitSuffix = ":noEmit";
-        private const string FlagConditionalSuffix = ":cnd";
-        private const string FlagReplacementSuffix = ":replacements";
-        private const string FlagExpandVariablesSuffix = ":vars";
-        private const string FlagIncludeSuffix = ":include";
-        private const string FlagFlagsSuffix = ":flags";
 
         // Returns a default flags operations setup for the given switchPrefix
         internal static IReadOnlyList<IOperationProvider> FlagsDefaultSetup(string switchPrefix)

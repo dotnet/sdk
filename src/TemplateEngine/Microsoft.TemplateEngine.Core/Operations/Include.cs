@@ -14,6 +14,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "include";
 
+        private readonly string _id;
+
+        private readonly bool _initialState;
+
         public Include(ITokenConfig startToken, ITokenConfig endToken, Func<string, Stream> sourceStreamOpener, string id, bool initialState)
         {
             SourceStreamOpener = sourceStreamOpener;
@@ -28,10 +32,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
         public ITokenConfig StartToken { get; }
 
         public Func<string, Stream> SourceStreamOpener { get; }
-
-        private readonly string _id;
-        private readonly bool _initialState;
-
         public string Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)

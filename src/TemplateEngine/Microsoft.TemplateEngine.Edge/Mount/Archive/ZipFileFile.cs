@@ -9,8 +9,8 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 {
     internal class ZipFileFile : FileBase
     {
-        private ZipArchiveEntry _entry;
         private readonly ZipFileMountPoint _mountPoint;
+        private ZipArchiveEntry _entry;
 
         public ZipFileFile(IMountPoint mountPoint, string fullPath, string name, ZipArchiveEntry entry)
             : base(mountPoint, fullPath, name)

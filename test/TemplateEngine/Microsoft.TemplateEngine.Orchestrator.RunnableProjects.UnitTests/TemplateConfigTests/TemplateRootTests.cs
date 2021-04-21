@@ -16,6 +16,51 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class TemplateRootTests : TestBase
     {
+        private static string TemplateConfigWithSourcePlaceholder
+        {
+            get
+            {
+                string templateJsonString = @"
+{{
+  ""author"": ""Microsoft"",
+  ""classifications"": [""Test""],
+  ""name"": ""Test Template"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""Testing.TemplateRoot"",
+  ""identity"": ""Testing.Template.Root.CSharp"",
+  ""shortName"": ""templateRootTest"",
+  ""sourceName"": ""Company.ConsoleApplication1"",
+  ""preferNameDirectory"": true,
+  ""sources"": [
+      {{
+        ""source"": ""{0}""
+      }}
+  ]
+}}";
+                return templateJsonString;
+            }
+        }
+
+        private static string BasicTemplateConfig
+        {
+            get
+            {
+                string templateJsonString = @"
+{
+  ""author"": ""Microsoft"",
+  ""classifications"": [""Test""],
+  ""name"": ""Test Template"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""Testing.TemplateRoot"",
+  ""identity"": ""Testing.Template.Root.CSharp"",
+  ""shortName"": ""templateRootTest"",
+  ""sourceName"": ""Company.ConsoleApplication1"",
+  ""preferNameDirectory"": true,
+}";
+                return templateJsonString;
+            }
+        }
+
         [Theory(DisplayName = nameof(CheckTemplateRootRelativeToInstallPath))]
         [InlineData("template.json", false)]
         [InlineData(".template.config/template.json", true)]
@@ -112,51 +157,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             bool allPathsAreValid = generator.AreAllTemplatePathsValid(templateModel, runnableProjectTemplate);
             Assert.Equal(shouldAllPathsBeValid, allPathsAreValid);
-        }
-
-        private static string TemplateConfigWithSourcePlaceholder
-        {
-            get
-            {
-                string templateJsonString = @"
-{{
-  ""author"": ""Microsoft"",
-  ""classifications"": [""Test""],
-  ""name"": ""Test Template"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""Testing.TemplateRoot"",
-  ""identity"": ""Testing.Template.Root.CSharp"",
-  ""shortName"": ""templateRootTest"",
-  ""sourceName"": ""Company.ConsoleApplication1"",
-  ""preferNameDirectory"": true,
-  ""sources"": [
-      {{
-        ""source"": ""{0}""
-      }}
-  ]
-}}";
-                return templateJsonString;
-            }
-        }
-
-        private static string BasicTemplateConfig
-        {
-            get
-            {
-                string templateJsonString = @"
-{
-  ""author"": ""Microsoft"",
-  ""classifications"": [""Test""],
-  ""name"": ""Test Template"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""Testing.TemplateRoot"",
-  ""identity"": ""Testing.Template.Root.CSharp"",
-  ""shortName"": ""templateRootTest"",
-  ""sourceName"": ""Company.ConsoleApplication1"",
-  ""preferNameDirectory"": true,
-}";
-                return templateJsonString;
-            }
         }
     }
 }

@@ -22,17 +22,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public sealed class SettingsLoader : ISettingsLoader, IDisposable
     {
-        private const int MaxLoadAttempts = 20;
         public static readonly string HostTemplateFileConfigBaseName = ".host.json";
-
+        private const int MaxLoadAttempts = 20;
+        private readonly Paths _paths;
+        private readonly IEngineEnvironmentSettings _environmentSettings;
         private SettingsStore _userSettings;
         private TemplateCache _userTemplateCache;
         private IMountPointManager _mountPointManager;
         private IComponentManager _componentManager;
         private bool _isLoaded;
         private bool _templatesLoaded;
-        private readonly Paths _paths;
-        private readonly IEngineEnvironmentSettings _environmentSettings;
         private TemplatePackageManager _templatePackagesManager;
         private volatile bool _disposed;
 
@@ -44,6 +43,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _templatePackagesManager = new TemplatePackageManager(environmentSettings);
         }
 
+        public IComponentManager Components
+        {
+            get
+            {
+                EnsureLoaded();
+                return _componentManager;
+            }
+        }
+
+        public IEngineEnvironmentSettings EnvironmentSettings => _environmentSettings;
+
+        public ITemplatePackageManager TemplatePackagesManager => _templatePackagesManager;
+
         public void Save()
         {
             if (_disposed)
@@ -53,6 +65,166 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             JObject serialized = JObject.FromObject(_userSettings);
             _paths.WriteAllText(_paths.User.SettingsFile, serialized.ToString());
+        }
+
+        public Task RebuildCacheAsync(CancellationToken token)
+        {
+            return RebuildCacheFromSettingsIfNotCurrent(true);
+        }
+
+        public ITemplate LoadTemplate(ITemplateInfo info, string baselineName)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(SettingsLoader));
+            }
+
+            IGenerator generator;
+            if (!Components.TryGetComponent(info.GeneratorId, out generator))
+            {
+                return null;
+            }
+
+            IMountPoint mountPoint;
+            if (!_mountPointManager.TryDemandMountPoint(info.MountPointUri, out mountPoint))
+            {
+                return null;
+            }
+            IFileSystemInfo config = mountPoint.FileSystemInfo(info.ConfigPlace);
+
+            IFileSystemInfo localeConfig = null;
+            if (!string.IsNullOrEmpty(info.LocaleConfigPlace)
+                    && !string.IsNullOrEmpty(info.MountPointUri))
+            {
+                IMountPoint localeMountPoint;
+                if (!_mountPointManager.TryDemandMountPoint(info.MountPointUri, out localeMountPoint))
+                {
+                    // TODO: decide if we should proceed without loc info, instead of bailing.
+                    return null;
+                }
+
+                localeConfig = localeMountPoint.FileSystemInfo(info.LocaleConfigPlace);
+            }
+
+            IFile hostTemplateConfigFile = FindBestHostTemplateConfigFile(config);
+
+            ITemplate template;
+            using (Timing.Over(_environmentSettings.Host, "Template from config"))
+            {
+                if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile, baselineName))
+                {
+                    return template;
+                }
+                else
+                {
+                    //TODO: Log the failure to read the template info
+                }
+            }
+
+            return null;
+        }
+
+        public IFile FindBestHostTemplateConfigFile(IFileSystemInfo config)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(SettingsLoader));
+            }
+
+            IDictionary<string, IFile> allHostFilesForTemplate = new Dictionary<string, IFile>();
+
+            foreach (IFile hostFile in config.Parent.EnumerateFiles($"*{HostTemplateFileConfigBaseName}", SearchOption.TopDirectoryOnly))
+            {
+                allHostFilesForTemplate.Add(hostFile.Name, hostFile);
+            }
+
+            string preferredHostFileName = string.Concat(_environmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
+            if (allHostFilesForTemplate.TryGetValue(preferredHostFileName, out IFile preferredHostFile))
+            {
+                return preferredHostFile;
+            }
+
+            foreach (string fallbackHostName in _environmentSettings.Host.FallbackHostTemplateConfigNames)
+            {
+                string fallbackHostFileName = string.Concat(fallbackHostName, HostTemplateFileConfigBaseName);
+
+                if (allHostFilesForTemplate.TryGetValue(fallbackHostFileName, out IFile fallbackHostFile))
+                {
+                    return fallbackHostFile;
+                }
+            }
+
+            return null;
+        }
+
+        public async Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(SettingsLoader));
+            }
+
+            await RebuildCacheFromSettingsIfNotCurrent(false).ConfigureAwait(false);
+            return _userTemplateCache.TemplateInfo;
+        }
+
+        public async Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo>> filters, CancellationToken token = default)
+        {
+            IReadOnlyList<ITemplateInfo> templates = await GetTemplatesAsync(token).ConfigureAwait(false);
+            //TemplateListFilter.GetTemplateMatchInfo code should be moved to this method eventually, when no longer needed.
+#pragma warning disable CS0618 // Type or member is obsolete.
+            return TemplateListFilter.GetTemplateMatchInfo(templates, matchFilter, filters.ToArray()).ToList();
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        public void AddProbingPath(string probeIn)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(SettingsLoader));
+            }
+
+            const int maxAttempts = 10;
+            int attemptCount = 0;
+            bool successfulWrite = false;
+
+            EnsureLoaded();
+            while (!successfulWrite && attemptCount++ < maxAttempts)
+            {
+                if (!_userSettings.ProbingPaths.Add(probeIn))
+                {
+                    return;
+                }
+
+                try
+                {
+                    Save();
+                    successfulWrite = true;
+                }
+                catch
+                {
+                    Task.Delay(10).Wait();
+                }
+            }
+        }
+
+        public bool TryGetMountPoint(string mountPointUri, out IMountPoint mountPoint)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(SettingsLoader));
+            }
+            return _mountPointManager.TryDemandMountPoint(mountPointUri, out mountPoint);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
+            _templatePackagesManager.Dispose();
         }
 
         private void EnsureLoaded()
@@ -164,11 +336,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _templatesLoaded = true;
         }
 
-        public Task RebuildCacheAsync(CancellationToken token)
-        {
-            return RebuildCacheFromSettingsIfNotCurrent(true);
-        }
-
         private async Task RebuildCacheFromSettingsIfNotCurrent(bool forceRebuild)
         {
             if (_disposed)
@@ -234,174 +401,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             // When writing the template caches, we need the existing cache version to read the existing caches for before updating.
             // so don't update it until after the template caches are written.
             _userTemplateCache.WriteTemplateCaches(mountPoints);
-        }
-
-        public ITemplate LoadTemplate(ITemplateInfo info, string baselineName)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(SettingsLoader));
-            }
-
-            IGenerator generator;
-            if (!Components.TryGetComponent(info.GeneratorId, out generator))
-            {
-                return null;
-            }
-
-            IMountPoint mountPoint;
-            if (!_mountPointManager.TryDemandMountPoint(info.MountPointUri, out mountPoint))
-            {
-                return null;
-            }
-            IFileSystemInfo config = mountPoint.FileSystemInfo(info.ConfigPlace);
-
-            IFileSystemInfo localeConfig = null;
-            if (!string.IsNullOrEmpty(info.LocaleConfigPlace)
-                    && !string.IsNullOrEmpty(info.MountPointUri))
-            {
-                IMountPoint localeMountPoint;
-                if (!_mountPointManager.TryDemandMountPoint(info.MountPointUri, out localeMountPoint))
-                {
-                    // TODO: decide if we should proceed without loc info, instead of bailing.
-                    return null;
-                }
-
-                localeConfig = localeMountPoint.FileSystemInfo(info.LocaleConfigPlace);
-            }
-
-            IFile hostTemplateConfigFile = FindBestHostTemplateConfigFile(config);
-
-            ITemplate template;
-            using (Timing.Over(_environmentSettings.Host, "Template from config"))
-            {
-                if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile, baselineName))
-                {
-                    return template;
-                }
-                else
-                {
-                    //TODO: Log the failure to read the template info
-                }
-            }
-
-            return null;
-        }
-
-        public IFile FindBestHostTemplateConfigFile(IFileSystemInfo config)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(SettingsLoader));
-            }
-
-            IDictionary<string, IFile> allHostFilesForTemplate = new Dictionary<string, IFile>();
-
-            foreach (IFile hostFile in config.Parent.EnumerateFiles($"*{HostTemplateFileConfigBaseName}", SearchOption.TopDirectoryOnly))
-            {
-                allHostFilesForTemplate.Add(hostFile.Name, hostFile);
-            }
-
-            string preferredHostFileName = string.Concat(_environmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
-            if (allHostFilesForTemplate.TryGetValue(preferredHostFileName, out IFile preferredHostFile))
-            {
-                return preferredHostFile;
-            }
-
-            foreach (string fallbackHostName in _environmentSettings.Host.FallbackHostTemplateConfigNames)
-            {
-                string fallbackHostFileName = string.Concat(fallbackHostName, HostTemplateFileConfigBaseName);
-
-                if (allHostFilesForTemplate.TryGetValue(fallbackHostFileName, out IFile fallbackHostFile))
-                {
-                    return fallbackHostFile;
-                }
-            }
-
-            return null;
-        }
-
-        public IComponentManager Components
-        {
-            get
-            {
-                EnsureLoaded();
-                return _componentManager;
-            }
-        }
-
-        public IEngineEnvironmentSettings EnvironmentSettings => _environmentSettings;
-
-        public ITemplatePackageManager TemplatePackagesManager => _templatePackagesManager;
-
-        public async Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(SettingsLoader));
-            }
-
-            await RebuildCacheFromSettingsIfNotCurrent(false).ConfigureAwait(false);
-            return _userTemplateCache.TemplateInfo;
-        }
-
-        public async Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo>> filters, CancellationToken token = default)
-        {
-            IReadOnlyList<ITemplateInfo> templates = await GetTemplatesAsync(token).ConfigureAwait(false);
-            //TemplateListFilter.GetTemplateMatchInfo code should be moved to this method eventually, when no longer needed.
-#pragma warning disable CS0618 // Type or member is obsolete.
-            return TemplateListFilter.GetTemplateMatchInfo(templates, matchFilter, filters.ToArray()).ToList();
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        public void AddProbingPath(string probeIn)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(SettingsLoader));
-            }
-
-            const int maxAttempts = 10;
-            int attemptCount = 0;
-            bool successfulWrite = false;
-
-            EnsureLoaded();
-            while (!successfulWrite && attemptCount++ < maxAttempts)
-            {
-                if (!_userSettings.ProbingPaths.Add(probeIn))
-                {
-                    return;
-                }
-
-                try
-                {
-                    Save();
-                    successfulWrite = true;
-                }
-                catch
-                {
-                    Task.Delay(10).Wait();
-                }
-            }
-        }
-
-        public bool TryGetMountPoint(string mountPointUri, out IMountPoint mountPoint)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(SettingsLoader));
-            }
-            return _mountPointManager.TryDemandMountPoint(mountPointUri, out mountPoint);
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-            _disposed = true;
-            _templatePackagesManager.Dispose();
         }
     }
 }

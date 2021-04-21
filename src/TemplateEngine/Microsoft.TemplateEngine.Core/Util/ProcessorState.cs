@@ -15,37 +15,15 @@ namespace Microsoft.TemplateEngine.Core.Util
 {
     public class ProcessorState : IProcessorState
     {
-        private Stream _source;
-        private readonly Stream _target;
-        private byte[] _bom;
-        private bool _isBomNeeded;
-        private readonly TrieEvaluator<OperationTerminal> _trie;
-        private Encoding _encoding;
         private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>> TrieLookup = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>>();
         private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, List<string>> OperationsToExplicitlySetOnByDefault = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, List<string>>();
+        private readonly Stream _target;
+        private readonly TrieEvaluator<OperationTerminal> _trie;
         private readonly int _flushThreshold;
-
-        public IEngineConfig Config { get; }
-
-        public byte[] CurrentBuffer { get; }
-
-        public int CurrentBufferLength { get; private set; }
-
-        public int CurrentBufferPosition { get; private set; }
-
-        public int CurrentSequenceNumber { get; private set; }
-
-        public IEncodingConfig EncodingConfig { get; private set; }
-
-        public Encoding Encoding
-        {
-            get { return _encoding; }
-            set
-            {
-                _encoding = value;
-                EncodingConfig = new EncodingConfig(Config, _encoding);
-            }
-        }
+        private Stream _source;
+        private byte[] _bom;
+        private bool _isBomNeeded;
+        private Encoding _encoding;
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, IEngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
@@ -138,6 +116,28 @@ namespace Microsoft.TemplateEngine.Core.Util
                 CurrentBufferLength += nRead - _bom.Length;
                 CurrentBufferPosition = 0;
                 CurrentSequenceNumber = 0;
+            }
+        }
+
+        public IEngineConfig Config { get; }
+
+        public byte[] CurrentBuffer { get; }
+
+        public int CurrentBufferLength { get; private set; }
+
+        public int CurrentBufferPosition { get; private set; }
+
+        public int CurrentSequenceNumber { get; private set; }
+
+        public IEncodingConfig EncodingConfig { get; private set; }
+
+        public Encoding Encoding
+        {
+            get { return _encoding; }
+            set
+            {
+                _encoding = value;
+                EncodingConfig = new EncodingConfig(Config, _encoding);
             }
         }
 
@@ -492,6 +492,13 @@ namespace Microsoft.TemplateEngine.Core.Util
             }
         }
 
+        public void Inject(Stream staged)
+        {
+            _source = new CombinedStream(staged, _source, inner => _source = inner);
+            CurrentBufferLength = _source.Read(CurrentBuffer, 0, CurrentBufferLength);
+            CurrentBufferPosition = 0;
+        }
+
         private void BaseSeekForward(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition, bool consumeToken)
         {
             while (bufferLength >= match.MinLength)
@@ -528,13 +535,6 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             //Ran out of places to check and haven't reached the actual match, consume all the way to the end
             currentBufferPosition = bufferLength;
-        }
-
-        public void Inject(Stream staged)
-        {
-            _source = new CombinedStream(staged, _source, inner => _source = inner);
-            CurrentBufferLength = _source.Read(CurrentBuffer, 0, CurrentBufferLength);
-            CurrentBufferPosition = 0;
         }
     }
 }

@@ -10,6 +10,8 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockDirectory : IDirectory
     {
+        private readonly List<IFileSystemInfo> _children;
+
         public MockDirectory(string fullPath, IMountPoint mountPoint)
         {
             if (fullPath[fullPath.Length - 1] != '/')
@@ -37,8 +39,6 @@ namespace Microsoft.TemplateEngine.Mocks
             Parent = parent;
             MountPoint = mountPoint;
         }
-
-        private readonly List<IFileSystemInfo> _children;
 
         public bool Exists { get; }
 

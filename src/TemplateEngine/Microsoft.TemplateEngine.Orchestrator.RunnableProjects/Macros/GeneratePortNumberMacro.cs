@@ -12,12 +12,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     internal class GeneratePortNumberMacro : IDeferredMacro
     {
+        private const int LowPortDefault = 1024;
+        private const int HighPortDefault = 65535;
         public Guid Id => new Guid("D49B3690-B1E5-410F-A260-E1D7E873D8B2");
 
         public string Type => "port";
-
-        private const int LowPortDefault = 1024;
-        private const int HighPortDefault = 65535;
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {

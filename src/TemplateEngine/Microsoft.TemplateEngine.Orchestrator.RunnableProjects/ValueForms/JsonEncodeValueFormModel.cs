@@ -9,10 +9,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class JsonEncodeValueFormModel : IValueForm
     {
-        public string Identifier => "jsonEncode";
-
-        public string Name { get; }
-
         internal JsonEncodeValueFormModel()
         {
         }
@@ -21,6 +17,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         {
             Name = name;
         }
+
+        public string Identifier => "jsonEncode";
+
+        public string Name { get; }
 
         public IValueForm FromJObject(string name, JObject configuration)
         {

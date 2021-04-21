@@ -14,6 +14,36 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
     {
         internal const string TypeName = "parameter";
 
+        private IReadOnlyDictionary<string, ParameterChoice> _choices;
+
+        /// <summary>
+        /// Gets or sets the friendly name of the symbol to be displayed to the user.
+        /// </summary>
+        internal string DisplayName { get; set; }
+
+        internal string Description { get; set; }
+
+        // only relevant for choice datatype
+        internal bool IsTag { get; set; }
+
+        // only relevant for choice datatype
+        internal string TagName { get; set; }
+
+        // If this is set, the option can be provided without a value. It will be given this value.
+        internal string DefaultIfOptionWithoutValue { get; set; }
+
+        internal IReadOnlyDictionary<string, ParameterChoice> Choices
+        {
+            get
+            {
+                return _choices;
+            }
+            set
+            {
+                _choices = value.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
         // Used when the template explicitly defines the symbol "name".
         // The template definition is used exclusively, except for the case where it doesn't define any value forms.
         // When that is the case, the default value forms are used.
@@ -66,36 +96,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             }
 
             return mergedSymbol;
-        }
-
-        /// <summary>
-        /// Gets or sets the friendly name of the symbol to be displayed to the user.
-        /// </summary>
-        internal string DisplayName { get; set; }
-
-        internal string Description { get; set; }
-
-        // only relevant for choice datatype
-        internal bool IsTag { get; set; }
-
-        // only relevant for choice datatype
-        internal string TagName { get; set; }
-
-        // If this is set, the option can be provided without a value. It will be given this value.
-        internal string DefaultIfOptionWithoutValue { get; set; }
-
-        private IReadOnlyDictionary<string, ParameterChoice> _choices;
-
-        internal IReadOnlyDictionary<string, ParameterChoice> Choices
-        {
-            get
-            {
-                return _choices;
-            }
-            set
-            {
-                _choices = value.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
-            }
         }
 
         internal static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)

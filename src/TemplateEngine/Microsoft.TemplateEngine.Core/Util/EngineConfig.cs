@@ -9,10 +9,6 @@ namespace Microsoft.TemplateEngine.Core.Util
 {
     public class EngineConfig : IEngineConfig
     {
-        public static IReadOnlyList<string> DefaultLineEndings { get; set; } = new[] { "\r", "\n", "\r\n" };
-
-        public static IReadOnlyList<string> DefaultWhitespaces { get; set; } = new[] { " ", "\t" };
-
         public EngineConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, string variableFormatString = "{0}")
             : this(environmentSettings, DefaultWhitespaces, DefaultLineEndings, variables, variableFormatString)
         {
@@ -28,6 +24,9 @@ namespace Microsoft.TemplateEngine.Core.Util
             Flags = new Dictionary<string, bool>();
         }
 
+        public static IReadOnlyList<string> DefaultLineEndings { get; set; } = new[] { "\r", "\n", "\r\n" };
+
+        public static IReadOnlyList<string> DefaultWhitespaces { get; set; } = new[] { " ", "\t" };
         public IReadOnlyList<string> LineEndings { get; }
 
         public string VariableFormatString { get; }

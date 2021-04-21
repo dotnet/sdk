@@ -13,34 +13,15 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockFileSystem : IPhysicalFileSystem, IFileLastWriteTimeSource
     {
-        private class FileSystemFile
-        {
-            public FileSystemFile()
-            {
-            }
-
-            public FileSystemFile(FileSystemFile file)
-            {
-                Data = file.Data;
-                Attributes = file.Attributes;
-                LastWriteTimeUtc = file.LastWriteTimeUtc;
-            }
-
-            public byte[] Data { get; set; }
-            public FileAttributes Attributes { get; set; }
-            public DateTime LastWriteTimeUtc { get; set; }
-        }
-
-        public class DirectoryScanParameters
-        {
-            public string DirectoryName { get; set; }
-            public string Pattern { get; set; }
-            public SearchOption SearchOption { get; set; }
-        }
-
         private HashSet<string> _directories = new HashSet<string>(StringComparer.Ordinal);
+
         private Dictionary<string, FileSystemFile> _files = new Dictionary<string, FileSystemFile>(StringComparer.Ordinal);
+
         private List<DirectoryScanParameters> _directoriesScanned = new List<DirectoryScanParameters>();
+
+        public string CurrentDirectory { get; set; }
+
+        public IReadOnlyList<DirectoryScanParameters> DirectoriesScanned => _directoriesScanned;
 
         public MockFileSystem Add(string filePath, string contents, Encoding encoding = null, DateTime? lastWriteTime = null)
         {
@@ -106,8 +87,6 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             _directories.Add(path);
         }
-
-        public string CurrentDirectory { get; set; }
 
         public string GetCurrentDirectory()
         {
@@ -196,18 +175,6 @@ namespace Microsoft.TemplateEngine.Mocks
             }
         }
 
-        public IReadOnlyList<DirectoryScanParameters> DirectoriesScanned => _directoriesScanned;
-
-        private void RecordDirectoryScan(string directoryName, string pattern, SearchOption searchOption)
-        {
-            _directoriesScanned.Add(new DirectoryScanParameters
-            {
-                DirectoryName = directoryName,
-                Pattern = pattern,
-                SearchOption = searchOption
-            });
-        }
-
         public FileAttributes GetFileAttributes(string file)
         {
             if (!FileExists(file))
@@ -249,5 +216,40 @@ namespace Microsoft.TemplateEngine.Mocks
         }
 
         public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged) => throw new NotImplementedException();
+
+        private void RecordDirectoryScan(string directoryName, string pattern, SearchOption searchOption)
+        {
+            _directoriesScanned.Add(new DirectoryScanParameters
+            {
+                DirectoryName = directoryName,
+                Pattern = pattern,
+                SearchOption = searchOption
+            });
+        }
+
+        public class DirectoryScanParameters
+        {
+            public string DirectoryName { get; set; }
+            public string Pattern { get; set; }
+            public SearchOption SearchOption { get; set; }
+        }
+
+        private class FileSystemFile
+        {
+            public FileSystemFile()
+            {
+            }
+
+            public FileSystemFile(FileSystemFile file)
+            {
+                Data = file.Data;
+                Attributes = file.Attributes;
+                LastWriteTimeUtc = file.LastWriteTimeUtc;
+            }
+
+            public byte[] Data { get; set; }
+            public FileAttributes Attributes { get; set; }
+            public DateTime LastWriteTimeUtc { get; set; }
+        }
     }
 }

@@ -9,10 +9,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class TitleCaseValueFormModel : IValueForm
     {
-        public string Identifier => "titleCase";
-
-        public string Name { get; }
-
         internal TitleCaseValueFormModel()
         {
         }
@@ -21,6 +17,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         {
             Name = name;
         }
+
+        public string Identifier => "titleCase";
+
+        public string Name { get; }
 
         public IValueForm FromJObject(string name, JObject configuration)
         {

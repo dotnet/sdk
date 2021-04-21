@@ -10,18 +10,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     internal class CoalesceMacroConfig : IMacroConfig
     {
-        internal string DataType { get; }
-
-        public string VariableName { get; }
-
-        internal string SourceVariableName { get; }
-
-        internal string DefaultValue { get; }
-
-        internal string FallbackVariableName { get; }
-
-        public string Type => "coalesce";
-
         internal CoalesceMacroConfig(string variableName, string dataType, string sourceVariableName, string defaultValue, string fallbackVariableName)
         {
             DataType = dataType;
@@ -30,5 +18,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             DefaultValue = defaultValue;
             FallbackVariableName = fallbackVariableName;
         }
+
+        public string VariableName { get; }
+        public string Type => "coalesce";
+        internal string DataType { get; }
+        internal string SourceVariableName { get; }
+
+        internal string DefaultValue { get; }
+
+        internal string FallbackVariableName { get; }
     }
 }

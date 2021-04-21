@@ -10,12 +10,6 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
     public class ListExtensionsTests
     {
-        internal struct GroupByTestStruct
-        {
-            internal string Identity;
-            internal string GroupIdentity;
-        }
-
         [Fact(DisplayName = nameof(GroupByExtensionTest))]
         public void GroupByExtensionTest()
         {
@@ -73,6 +67,12 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             Assert.Single(groupWithExpectedMultipleElements, s => s.Identity == "5");
             Assert.Single(groupWithExpectedMultipleElements, s => s.Identity == "6");
             Assert.Single(groupWithExpectedMultipleElements, s => s.Identity == "9");
+        }
+
+        internal struct GroupByTestStruct
+        {
+            internal string Identity;
+            internal string GroupIdentity;
         }
     }
 }

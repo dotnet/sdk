@@ -19,6 +19,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     /// </summary>
     public class TestTemplateSetup
     {
+        private readonly string _configFile;
+
+        private IEngineEnvironmentSettings _environment;
+
+        private IDictionary<string, string> _sourceFiles;
+
+        private string _sourceBaseDir;
+
+        private IMountPoint _sourceMountPoint;
+
         /// <summary>
         /// Setup a template at the given mount point defined by the file names and contents in the sourceFiles.
         /// </summary>
@@ -43,12 +53,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             : this(environment, sourceBaseDir, new Dictionary<string, string>())
         {
         }
-
-        private IEngineEnvironmentSettings _environment;
-        private IDictionary<string, string> _sourceFiles;
-        private readonly string _configFile;
-        private string _sourceBaseDir;
-        private IMountPoint _sourceMountPoint;
 
         private IMountPoint SourceMountPoint
         {

@@ -11,25 +11,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.MSBuild
 {
     public class MSBuildStyleEvaluatorDefinition : SharedEvaluatorDefinition<MSBuildStyleEvaluatorDefinition, MSBuildStyleEvaluatorDefinition.Tokens>
     {
-        protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(XmlStyleConverters.XmlEncode, XmlStyleConverters.XmlDecode)
-            .And(Tokens.And)
-            .Or(Tokens.Or)
-            .Not(Tokens.Not)
-            .GreaterThan(Tokens.GreaterThan, evaluate: (x, y) => Compare(x, y) > 0)
-            .GreaterThanOrEqualTo(Tokens.GreaterThanOrEqualTo, evaluate: (x, y) => Compare(x, y) >= 0)
-            .LessThan(Tokens.LessThan, evaluate: (x, y) => Compare(x, y) < 0)
-            .LessThanOrEqualTo(Tokens.LessThanOrEqualTo, evaluate: (x, y) => Compare(x, y) <= 0)
-            .EqualTo(Tokens.EqualTo, evaluate: (x, y) => Compare(x, y) == 0)
-            .NotEqualTo(Tokens.NotEqualTo, evaluate: (x, y) => Compare(x, y) != 0)
-            .BadSyntax(Tokens.VariableStart)
-            .Ignore(Tokens.Space, Tokens.Tab)
-            .LiteralBoundsMarkers(Tokens.Quote)
-            .OpenGroup(Tokens.OpenBrace)
-            .CloseGroup(Tokens.CloseBrace)
-            .TerminateWith(Tokens.WindowsEOL, Tokens.UnixEOL, Tokens.LegacyMacEOL)
-            .Literal(Tokens.Literal)
-            .TypeConverter<MSBuildStyleEvaluatorDefinition>(CppStyleConverters.ConfigureConverters);
-
         private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
 
         public enum Tokens
@@ -58,6 +39,25 @@ namespace Microsoft.TemplateEngine.Core.Expressions.MSBuild
         protected override bool DereferenceInLiterals => true;
 
         protected override string NullTokenValue => "null";
+
+        protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(XmlStyleConverters.XmlEncode, XmlStyleConverters.XmlDecode)
+                                            .And(Tokens.And)
+            .Or(Tokens.Or)
+            .Not(Tokens.Not)
+            .GreaterThan(Tokens.GreaterThan, evaluate: (x, y) => Compare(x, y) > 0)
+            .GreaterThanOrEqualTo(Tokens.GreaterThanOrEqualTo, evaluate: (x, y) => Compare(x, y) >= 0)
+            .LessThan(Tokens.LessThan, evaluate: (x, y) => Compare(x, y) < 0)
+            .LessThanOrEqualTo(Tokens.LessThanOrEqualTo, evaluate: (x, y) => Compare(x, y) <= 0)
+            .EqualTo(Tokens.EqualTo, evaluate: (x, y) => Compare(x, y) == 0)
+            .NotEqualTo(Tokens.NotEqualTo, evaluate: (x, y) => Compare(x, y) != 0)
+            .BadSyntax(Tokens.VariableStart)
+            .Ignore(Tokens.Space, Tokens.Tab)
+            .LiteralBoundsMarkers(Tokens.Quote)
+            .OpenGroup(Tokens.OpenBrace)
+            .CloseGroup(Tokens.CloseBrace)
+            .TerminateWith(Tokens.WindowsEOL, Tokens.UnixEOL, Tokens.LegacyMacEOL)
+            .Literal(Tokens.Literal)
+            .TypeConverter<MSBuildStyleEvaluatorDefinition>(CppStyleConverters.ConfigureConverters);
 
         protected override ITokenTrie GetSymbols(IProcessorState processor)
         {

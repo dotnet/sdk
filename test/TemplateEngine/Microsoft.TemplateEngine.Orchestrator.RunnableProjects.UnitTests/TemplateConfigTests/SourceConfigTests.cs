@@ -12,6 +12,142 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class SourceConfigTests
     {
+        private static string ExcludesWithIncludeModifierConfigText
+        {
+            get
+            {
+                string configString = @"
+{
+  ""sources"": [
+    {
+      ""exclude"": [ ""**/*.config"" ],
+      ""modifiers"": [
+        {
+          ""include"": [""core.config""]
+        }
+      ]
+    }
+  ]
+}";
+                return configString;
+            }
+        }
+
+        private static string CopyOnlyWithoutCorrespondingIncludeConfigText
+        {
+            get
+            {
+                string configString = @"
+{
+  ""sources"": [
+    {
+      ""include"": [ ""**/*.txt"" ],
+      ""modifiers"": [
+        {
+          ""copyOnly"": [""copy.me""]
+        },
+      ]
+    }
+  ]
+}";
+                return configString;
+            }
+        }
+
+        private static string CopyOnlyWithIncludeInParentConfigText
+        {
+            get
+            {
+                string configString = @"
+{
+  ""sources"": [
+    {
+      ""include"": [""**/*.me""],
+      ""modifiers"": [
+        {
+          ""copyOnly"": [""copy.me""]
+        }
+      ]
+    }
+  ]
+}
+";
+                return configString;
+            }
+        }
+
+        private static string CopyOnlyWithWildcardAndParentIncludeConfigText
+        {
+            get
+            {
+                string configString = @"
+{
+  ""sources"": [
+    {
+      ""include"": [""*copy.me""],
+      ""modifiers"": [
+        {
+          ""copyOnly"": [""**/*.me""]
+        }
+      ]
+    }
+  ]
+}
+";
+                return configString;
+            }
+        }
+
+        private static string IncludeModifierOverridesPreviousExcludeModifierConfigText
+        {
+            get
+            {
+                string configString = @"
+{
+  ""sources"": [
+    {
+      // use the default ICE
+      ""modifiers"": [
+        {
+          ""exclude"": [""*.xyz""]
+        },
+        {
+          ""include"": [""include.xyz""]
+        }
+      ]
+    }
+  ]
+}
+";
+                return configString;
+            }
+        }
+
+        private static string ExcludeModifierOverridesPreviousIncludeModifierConfigText
+        {
+            get
+            {
+                string configString = @"
+{
+  ""sources"": [
+    {
+      // use the default ICE
+      ""modifiers"": [
+        {
+          ""include"": [""*.xyz""]
+        },
+        {
+          ""exclude"": [""exclude.xyz""]
+        }
+      ]
+    }
+  ]
+}
+";
+                return configString;
+            }
+        }
+
         [Fact(DisplayName = nameof(SourceConfigExcludesAreOverriddenByIncludes))]
         public void SourceConfigExcludesAreOverriddenByIncludes()
         {
@@ -156,27 +292,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             return setup;
         }
 
-        private static string ExcludesWithIncludeModifierConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      ""exclude"": [ ""**/*.config"" ],
-      ""modifiers"": [
-        {
-          ""include"": [""core.config""]
-        }
-      ]
-    }
-  ]
-}";
-                return configString;
-            }
-        }
-
         private static TestTemplateSetup SetupCopyOnlyWithoutCorrespondingIncludeTemplate(IEngineEnvironmentSettings environment, string basePath)
         {
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
@@ -186,27 +301,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
-        }
-
-        private static string CopyOnlyWithoutCorrespondingIncludeConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      ""include"": [ ""**/*.txt"" ],
-      ""modifiers"": [
-        {
-          ""copyOnly"": [""copy.me""]
-        },
-      ]
-    }
-  ]
-}";
-                return configString;
-            }
         }
 
         private static TestTemplateSetup SetupCopyOnlyWithParentInclude(IEngineEnvironmentSettings environment, string basePath)
@@ -219,28 +313,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             return setup;
         }
 
-        private static string CopyOnlyWithIncludeInParentConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      ""include"": [""**/*.me""],
-      ""modifiers"": [
-        {
-          ""copyOnly"": [""copy.me""]
-        }
-      ]
-    }
-  ]
-}
-";
-                return configString;
-            }
-        }
-
         private static TestTemplateSetup SetupCopyOnlyWithWildcardAndParentInclude(IEngineEnvironmentSettings environment, string basePath)
         {
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
@@ -249,28 +321,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
-        }
-
-        private static string CopyOnlyWithWildcardAndParentIncludeConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      ""include"": [""*copy.me""],
-      ""modifiers"": [
-        {
-          ""copyOnly"": [""**/*.me""]
-        }
-      ]
-    }
-  ]
-}
-";
-                return configString;
-            }
         }
 
         private static TestTemplateSetup SetupXYZFilesForModifierOverrideTestsTemplate(IEngineEnvironmentSettings environment, string basePath, string templateConfig)
@@ -283,56 +333,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
-        }
-
-        private static string IncludeModifierOverridesPreviousExcludeModifierConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      // use the default ICE
-      ""modifiers"": [
-        {
-          ""exclude"": [""*.xyz""]
-        },
-        {
-          ""include"": [""include.xyz""]
-        }
-      ]
-    }
-  ]
-}
-";
-                return configString;
-            }
-        }
-
-        private static string ExcludeModifierOverridesPreviousIncludeModifierConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      // use the default ICE
-      ""modifiers"": [
-        {
-          ""include"": [""*.xyz""]
-        },
-        {
-          ""exclude"": [""exclude.xyz""]
-        }
-      ]
-    }
-  ]
-}
-";
-                return configString;
-            }
         }
     }
 }

@@ -67,15 +67,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             return (GetHashValue(obj.TargetRelativePath), obj.ChangeKind, obj is IFileChange2 obj2 ? GetHashValue(obj2.SourceRelativePath) : null).GetHashCode();
         }
 
-        private string GetHashValue(string x)
-        {
-            if (string.IsNullOrWhiteSpace(x))
-            {
-                return string.Empty;
-            }
-            return Path.GetFullPath(x).ToLowerInvariant();
-        }
-
         private static int ComparePaths(string x, string y)
         {
             if (string.IsNullOrWhiteSpace(x))
@@ -87,6 +78,15 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
                 return 1;
             }
             return string.Compare(Path.GetFullPath(x), Path.GetFullPath(y), StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string GetHashValue(string x)
+        {
+            if (string.IsNullOrWhiteSpace(x))
+            {
+                return string.Empty;
+            }
+            return Path.GetFullPath(x).ToLowerInvariant();
         }
     }
 }

@@ -10,6 +10,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
 {
     internal sealed class SkipTemplatePacksFilter
     {
+        private const string _FilterId = "Permanently skipped packages";
+
         private static readonly List<string> PackagesToBeSkipped = new List<string>
         {
             "microsoft.dotnet.common.itemtemplates",
@@ -24,7 +26,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
             //"nunit3.dotnetnew.template",
             "microsoft.aspnetcore.components.webassembly.template"
         };
-        private const string _FilterId = "Permanently skipped packages";
 
         public static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter()
         {

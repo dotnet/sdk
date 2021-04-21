@@ -20,6 +20,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly ILogger _nugetLogger;
+
         private readonly SourceCacheContext _cacheSettings = new SourceCacheContext()
         {
             NoCache = true,

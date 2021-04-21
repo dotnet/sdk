@@ -20,11 +20,6 @@ namespace Microsoft.TemplateEngine.Core.Util
             _operations = operations;
         }
 
-        public IProcessor CloneAndAppendOperations(IReadOnlyList<IOperationProvider> tempOperations)
-        {
-            return new Processor(Config, new CombinedList<IOperationProvider>(_operations, tempOperations));
-        }
-
         public EngineConfig Config { get; }
 
         public static IProcessor Create(EngineConfig config, params IOperationProvider[] operations)
@@ -35,6 +30,11 @@ namespace Microsoft.TemplateEngine.Core.Util
         public static IProcessor Create(EngineConfig config, IReadOnlyList<IOperationProvider> operations)
         {
             return new Processor(config, operations);
+        }
+
+        public IProcessor CloneAndAppendOperations(IReadOnlyList<IOperationProvider> tempOperations)
+        {
+            return new Processor(Config, new CombinedList<IOperationProvider>(_operations, tempOperations));
         }
 
         public bool Run(Stream source, Stream target) => Run(source, target, DefaultBufferSize);

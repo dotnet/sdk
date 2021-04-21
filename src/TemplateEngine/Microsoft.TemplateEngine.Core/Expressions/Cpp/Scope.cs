@@ -41,16 +41,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         public NextPlacement TargetPlacement { get; set; }
 
-        private static T EvaluateSide<T>(object side, Func<object, T> convert)
-        {
-            if (side is Scope scope)
-            {
-                return convert(scope.Evaluate());
-            }
-
-            return convert(side);
-        }
-
         public static TResult EvaluateSides<TLeft, TRight, TResult>(object left, object right, Func<object, TLeft> convertLeft, Func<object, TRight> convertRight, Func<TLeft, TRight, TResult> combine)
         {
             TLeft l = EvaluateSide(left, convertLeft);
@@ -103,6 +93,16 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                     return false;
             }
+        }
+
+        private static T EvaluateSide<T>(object side, Func<object, T> convert)
+        {
+            if (side is Scope scope)
+            {
+                return convert(scope.Evaluate());
+            }
+
+            return convert(side);
         }
 
         private static bool LenientEquals(object x, object y)

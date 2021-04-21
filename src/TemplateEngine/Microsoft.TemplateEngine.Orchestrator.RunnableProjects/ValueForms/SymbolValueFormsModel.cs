@@ -13,17 +13,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
     {
         private const string IdentityValueFormName = IdentityValueForm.FormName;
 
+        private SymbolValueFormsModel(IReadOnlyList<string> globalForms)
+        {
+            GlobalForms = globalForms;
+        }
+
         internal static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel(Empty<string>.List.Value);
 
         // by default, symbols get the "identity" value form, for a direct replacement
         internal static SymbolValueFormsModel Default { get; } = new SymbolValueFormsModel(new List<string>() { IdentityValueFormName });
 
         internal IReadOnlyList<string> GlobalForms { get; }
-
-        private SymbolValueFormsModel(IReadOnlyList<string> globalForms)
-        {
-            GlobalForms = globalForms;
-        }
 
         // Sets up the value forms for a symbol, based on configuration from template.json
         // There are two acceptable configuration formats for each forms specification.

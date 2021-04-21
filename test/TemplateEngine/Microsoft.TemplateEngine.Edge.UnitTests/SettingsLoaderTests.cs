@@ -20,49 +20,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class SettingsLoaderTests : IDisposable
     {
-        private class FakeFactory : ITemplatePackageProviderFactory
-        {
-            public string DisplayName => nameof(FakeFactory);
-
-            public Guid Id { get; } = new Guid("{61CFA828-97B6-44EB-A44D-0AE673D6DF52}");
-
-            public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
-            {
-                var defaultTemplatePackageProvider = new DefaultTemplatePackageProvider(this, settings, NuPkgs, Folders);
-                allCreatedProviders.Add(new WeakReference<DefaultTemplatePackageProvider>(defaultTemplatePackageProvider));
-                return defaultTemplatePackageProvider;
-            }
-
-            private static IEnumerable<string> Folders { get; set; }
-            private static IEnumerable<string> NuPkgs { get; set; }
-
-            public static void SetNuPkgsAndFolders(IEnumerable<string> nupkgs = null, IEnumerable<string> folders = null)
-            {
-                NuPkgs = nupkgs;
-                Folders = folders;
-            }
-
-            private static List<WeakReference<DefaultTemplatePackageProvider>> allCreatedProviders = new List<WeakReference<DefaultTemplatePackageProvider>>();
-
-            public static void TriggerChanged()
-            {
-                foreach (var provider in allCreatedProviders)
-                {
-                    if (provider.TryGetTarget(out var actualProvider))
-                    {
-                        actualProvider.UpdatePackages(NuPkgs, Folders);
-                    }
-                }
-            }
-        }
-
         private EnvironmentSettingsHelper helper = new EnvironmentSettingsHelper();
-
-        private static string GetNupkgsFolder()
-        {
-            var thisDir = Path.GetDirectoryName(typeof(SettingsLoaderTests).Assembly.Location);
-            return Path.Combine(thisDir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates");
-        }
 
         [Fact]
         public async Task RebuildCacheIfNotCurrentScansAll()
@@ -228,6 +186,14 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(allNupkgs, templatesOnly1.Select(t => t.MountPointUri).Distinct().OrderBy(m => m));
         }
 
+        public void Dispose() => helper.Dispose();
+
+        private static string GetNupkgsFolder()
+        {
+            var thisDir = Path.GetDirectoryName(typeof(SettingsLoaderTests).Assembly.Location);
+            return Path.Combine(thisDir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates");
+        }
+
         private void AssertMountPointsWereScanned(IEnumerable<string> mountPoints, IEngineEnvironmentSettings environmentSettings)
         {
             string[] expectedScannedDirectories = mountPoints
@@ -263,6 +229,40 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Empty(actualScannedDirectories.Intersect(expectedScannedDirectories));
         }
 
-        public void Dispose() => helper.Dispose();
+        private class FakeFactory : ITemplatePackageProviderFactory
+        {
+            private static List<WeakReference<DefaultTemplatePackageProvider>> allCreatedProviders = new List<WeakReference<DefaultTemplatePackageProvider>>();
+            public string DisplayName => nameof(FakeFactory);
+
+            public Guid Id { get; } = new Guid("{61CFA828-97B6-44EB-A44D-0AE673D6DF52}");
+
+            private static IEnumerable<string> Folders { get; set; }
+
+            private static IEnumerable<string> NuPkgs { get; set; }
+
+            public static void SetNuPkgsAndFolders(IEnumerable<string> nupkgs = null, IEnumerable<string> folders = null)
+            {
+                NuPkgs = nupkgs;
+                Folders = folders;
+            }
+
+            public static void TriggerChanged()
+            {
+                foreach (var provider in allCreatedProviders)
+                {
+                    if (provider.TryGetTarget(out var actualProvider))
+                    {
+                        actualProvider.UpdatePackages(NuPkgs, Folders);
+                    }
+                }
+            }
+
+            public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
+            {
+                var defaultTemplatePackageProvider = new DefaultTemplatePackageProvider(this, settings, NuPkgs, Folders);
+                allCreatedProviders.Add(new WeakReference<DefaultTemplatePackageProvider>(defaultTemplatePackageProvider));
+                return defaultTemplatePackageProvider;
+            }
+        }
     }
 }

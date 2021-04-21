@@ -20,18 +20,6 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
             _paths = new Paths(mountPoint.EnvironmentSettings);
         }
 
-        private static string EnsureTrailingSlash(string path)
-        {
-            if (path.Last() == '/')
-            {
-                return path;
-            }
-            else
-            {
-                return path + "/";
-            }
-        }
-
         public override bool Exists => _paths.DirectoryExists(_physicalPath);
 
         public override IEnumerable<IFileSystemInfo> EnumerateFileSystemInfos(string pattern, SearchOption searchOption)
@@ -102,6 +90,18 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
                 return new FileSystemFile(MountPoint, baseName, _paths.Name(x), x);
             });
+        }
+
+        private static string EnsureTrailingSlash(string path)
+        {
+            if (path.Last() == '/')
+            {
+                return path;
+            }
+            else
+            {
+                return path + "/";
+            }
         }
     }
 }

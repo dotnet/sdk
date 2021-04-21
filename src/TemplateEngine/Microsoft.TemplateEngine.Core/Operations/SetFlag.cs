@@ -16,6 +16,18 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly string _id;
         private readonly bool _initialState;
 
+        public SetFlag(string name, ITokenConfig on, ITokenConfig off, ITokenConfig onNoEmit, ITokenConfig offNoEmit, string id, bool initialState, bool? @default = null)
+        {
+            Name = name;
+            On = on;
+            Off = off;
+            OnNoEmit = onNoEmit;
+            OffNoEmit = offNoEmit;
+            Default = @default;
+            _id = id;
+            _initialState = initialState;
+        }
+
         public string Id => _id;
 
         public string Name { get; }
@@ -29,18 +41,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
         public ITokenConfig OnNoEmit { get; }
 
         public ITokenConfig OffNoEmit { get; }
-
-        public SetFlag(string name, ITokenConfig on, ITokenConfig off, ITokenConfig onNoEmit, ITokenConfig offNoEmit, string id, bool initialState, bool? @default = null)
-        {
-            Name = name;
-            On = on;
-            Off = off;
-            OnNoEmit = onNoEmit;
-            OffNoEmit = offNoEmit;
-            Default = @default;
-            _id = id;
-            _initialState = initialState;
-        }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {

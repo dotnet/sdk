@@ -22,6 +22,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
         protected abstract string NullTokenValue { get; }
 
+        protected abstract bool DereferenceInLiterals { get; }
+
         public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
         {
             ITokenTrie tokens = Instance.GetSymbols(processor);
@@ -62,7 +64,25 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             }
         }
 
-        protected abstract bool DereferenceInLiterals { get; }
+        protected static int Compare(object left, object right)
+        {
+            if (Equals(right, NullToken))
+            {
+                right = null;
+            }
+
+            if (Equals(left, NullToken))
+            {
+                left = null;
+            }
+
+            return AttemptNumericComparison(left, right)
+                   ?? AttemptBooleanComparison(left, right)
+                   ?? AttemptVersionComparison(left, right)
+                   ?? AttemptLexographicComparison(left, right)
+                   ?? AttemptComparableComparison(left, right)
+                   ?? 0;
+        }
 
         protected abstract IOperatorMap<Operators, TTokens> GenerateMap();
 
@@ -160,26 +180,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             }
 
             return lv.CompareTo(rv);
-        }
-
-        protected static int Compare(object left, object right)
-        {
-            if (Equals(right, NullToken))
-            {
-                right = null;
-            }
-
-            if (Equals(left, NullToken))
-            {
-                left = null;
-            }
-
-            return AttemptNumericComparison(left, right)
-                   ?? AttemptBooleanComparison(left, right)
-                   ?? AttemptVersionComparison(left, right)
-                   ?? AttemptLexographicComparison(left, right)
-                   ?? AttemptComparableComparison(left, right)
-                   ?? 0;
         }
     }
 }

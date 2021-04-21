@@ -12,31 +12,15 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockCreationEffects : ICreationEffects, ICreationEffects2, IXunitSerializable
     {
+        private string[] _primaryOutputs = Array.Empty<string>();
+
+        private MockFileChange[] _mockFileChanges = Array.Empty<MockFileChange>();
+
+        private string[] _absentFiles = Array.Empty<string>();
+
         public MockCreationEffects()
         {
         }
-
-        public MockCreationEffects WithPrimaryOutputs(params string[] primaryOutputs)
-        {
-            _primaryOutputs = _primaryOutputs.Concat(primaryOutputs).ToArray();
-            return this;
-        }
-
-        public MockCreationEffects WithFileChange(params MockFileChange[] fileChanges)
-        {
-            _mockFileChanges = _mockFileChanges.Concat(fileChanges).ToArray();
-            return this;
-        }
-
-        public MockCreationEffects Without(params string[] files)
-        {
-            _absentFiles = _absentFiles.Concat(files).ToArray();
-            return this;
-        }
-
-        private string[] _primaryOutputs = Array.Empty<string>();
-        private MockFileChange[] _mockFileChanges = Array.Empty<MockFileChange>();
-        private string[] _absentFiles = Array.Empty<string>();
 
         public IReadOnlyList<IFileChange> FileChanges => _mockFileChanges;
 
@@ -57,6 +41,24 @@ namespace Microsoft.TemplateEngine.Mocks
         public IEnumerable<string> AbsentFiles => _absentFiles.Where(path => !path.EndsWith("/") && !path.EndsWith("\\"));
 
         public IEnumerable<string> AbsentDirectories => _absentFiles.Where(path => path.EndsWith("/") || path.EndsWith("\\"));
+
+        public MockCreationEffects WithPrimaryOutputs(params string[] primaryOutputs)
+        {
+            _primaryOutputs = _primaryOutputs.Concat(primaryOutputs).ToArray();
+            return this;
+        }
+
+        public MockCreationEffects WithFileChange(params MockFileChange[] fileChanges)
+        {
+            _mockFileChanges = _mockFileChanges.Concat(fileChanges).ToArray();
+            return this;
+        }
+
+        public MockCreationEffects Without(params string[] files)
+        {
+            _absentFiles = _absentFiles.Concat(files).ToArray();
+            return this;
+        }
 
         public void Deserialize(IXunitSerializationInfo info)
         {

@@ -18,6 +18,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
     public class FileRenameTests : IClassFixture<PackageManager>
     {
         private PackageManager _packageManager;
+
         public FileRenameTests(PackageManager packageManager)
         {
             _packageManager = packageManager;
@@ -343,8 +344,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 string expectedPath = Path.Combine(output, dir);
                 Assert.False(Directory.Exists(expectedPath));
             }
-
         }
-
     }
 }

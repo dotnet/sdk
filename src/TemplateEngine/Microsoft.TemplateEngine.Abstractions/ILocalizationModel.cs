@@ -23,6 +23,5 @@ namespace Microsoft.TemplateEngine.Abstractions
         IReadOnlyDictionary<Guid, IPostActionLocalizationModel> PostActions { get; }
 
         IReadOnlyList<IFileLocalizationModel> FileLocalizations { get; }
-
     }
 }

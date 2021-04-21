@@ -8,10 +8,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class LowerCaseValueFormModel : IValueForm
     {
-        public string Identifier => "lowerCase";
-
-        public string Name { get; }
-
         internal LowerCaseValueFormModel()
         {
         }
@@ -20,6 +16,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         {
             Name = name;
         }
+
+        public string Identifier => "lowerCase";
+
+        public string Name { get; }
 
         public IValueForm FromJObject(string name, JObject configuration)
         {

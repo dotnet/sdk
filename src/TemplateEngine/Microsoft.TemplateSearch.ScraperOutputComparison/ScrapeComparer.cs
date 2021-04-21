@@ -12,15 +12,16 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
 {
     internal class ScrapeComparer
     {
+        private readonly ComparisonConfig _config;
+
+        private readonly EngineEnvironmentSettings _environmentSettings;
+
         public ScrapeComparer(ComparisonConfig config)
         {
             _config = config;
             ITemplateEngineHost host = TemplateEngineHostHelper.CreateHost("Comparison");
             _environmentSettings = new EngineEnvironmentSettings(host, x => new SettingsLoader(x));
         }
-
-        private readonly ComparisonConfig _config;
-        private readonly EngineEnvironmentSettings _environmentSettings;
 
         // For now, it's just going to check the packs between the two runs
         // As desired, add more comparisons, and expand the definition of ScrapeComparisonResult

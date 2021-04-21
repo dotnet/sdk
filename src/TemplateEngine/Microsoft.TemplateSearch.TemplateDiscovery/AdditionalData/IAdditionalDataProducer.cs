@@ -11,10 +11,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
     {
         string DataUniqueName { get; }
 
-        void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templates, IEngineEnvironmentSettings environment);
-
         string Serialized { get; }
 
         object Data { get; }
+
+        void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templates, IEngineEnvironmentSettings environment);
     }
 }

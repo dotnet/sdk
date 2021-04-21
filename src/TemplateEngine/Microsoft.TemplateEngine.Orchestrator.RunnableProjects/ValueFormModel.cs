@@ -12,6 +12,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private static readonly IReadOnlyDictionary<string, IValueForm> FormLookup = SetupFormLookup();
 
+        internal static IReadOnlyDictionary<string, IValueForm> AllForms
+        {
+            get
+            {
+                return FormLookup;
+            }
+        }
+
+        internal static IValueForm GetForm(string name, JObject obj)
+        {
+            string identifier = obj.ToString("identifier");
+
+            if (!FormLookup.TryGetValue(identifier, out IValueForm value))
+            {
+                return FormLookup[IdentityValueForm.FormName].FromJObject(name, obj);
+            }
+
+            return value.FromJObject(name, obj);
+        }
+
         private static IReadOnlyDictionary<string, IValueForm> SetupFormLookup()
         {
             Dictionary<string, IValueForm> lookup = new Dictionary<string, IValueForm>(StringComparer.OrdinalIgnoreCase);
@@ -58,26 +78,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             lookup[x.Identifier] = x;
 
             return lookup;
-        }
-
-        internal static IReadOnlyDictionary<string, IValueForm> AllForms
-        {
-            get
-            {
-                return FormLookup;
-            }
-        }
-
-        internal static IValueForm GetForm(string name, JObject obj)
-        {
-            string identifier = obj.ToString("identifier");
-
-            if (!FormLookup.TryGetValue(identifier, out IValueForm value))
-            {
-                return FormLookup[IdentityValueForm.FormName].FromJObject(name, obj);
-            }
-
-            return value.FromJObject(name, obj);
         }
     }
 }

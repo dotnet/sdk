@@ -9,6 +9,8 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockFile : IFile
     {
+        private readonly byte[] _contents;
+
         public MockFile(string fullpath, IMountPoint mountPoint)
         {
             FullPath = fullpath;
@@ -16,8 +18,6 @@ namespace Microsoft.TemplateEngine.Mocks
             MountPoint = mountPoint;
             Exists = false;
         }
-
-        private readonly byte[] _contents;
 
         public MockFile(IDirectory parent, string name, IMountPoint mountPoint, byte[] contents)
         {

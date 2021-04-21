@@ -33,22 +33,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             return new EngineEnvironmentSettings(host, x => null);
         }
 
-        // Note: this does not deal with configs split into multiple files.
-        internal static IRunnableProjectConfig ConfigFromSource(IEngineEnvironmentSettings environment, IMountPoint mountPoint, string configFile = null)
-        {
-            if (string.IsNullOrEmpty(configFile))
-            {
-                configFile = DefaultConfigRelativePath;
-            }
-
-            using Stream stream = mountPoint.FileInfo(configFile).OpenRead();
-            using StreamReader streamReader = new StreamReader(stream);
-            string configContent = streamReader.ReadToEnd();
-
-            JObject configJson = JObject.Parse(configContent);
-            return SimpleConfigModel.FromJObject(environment, configJson);
-        }
-
         public static IFileSystemInfo ConfigFileSystemInfo(IMountPoint mountPoint, string configFile = null)
         {
             if (string.IsNullOrEmpty(configFile))
@@ -57,15 +41,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
 
             return mountPoint.FileInfo(configFile);
-        }
-
-        internal static void SetupFileSourceMatchersOnGlobalRunSpec(MockGlobalRunSpec runSpec, FileSourceMatchInfo source)
-        {
-            FileSourceHierarchicalPathMatcher matcher = new FileSourceHierarchicalPathMatcher(source);
-            runSpec.Include = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Include, matcher) };
-            runSpec.Exclude = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Exclude, matcher) };
-            runSpec.CopyOnly = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.CopyOnly, matcher) };
-            runSpec.Rename = source.Renames ?? new Dictionary<string, string>(StringComparer.Ordinal);
         }
 
         public static IComponentManager SetupMockComponentManager()
@@ -92,6 +67,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             //components.Register(typeof(InstructionDisplayPostActionProcessor));
 
             return components;
+        }
+
+        // Note: this does not deal with configs split into multiple files.
+        internal static IRunnableProjectConfig ConfigFromSource(IEngineEnvironmentSettings environment, IMountPoint mountPoint, string configFile = null)
+        {
+            if (string.IsNullOrEmpty(configFile))
+            {
+                configFile = DefaultConfigRelativePath;
+            }
+
+            using Stream stream = mountPoint.FileInfo(configFile).OpenRead();
+            using StreamReader streamReader = new StreamReader(stream);
+            string configContent = streamReader.ReadToEnd();
+
+            JObject configJson = JObject.Parse(configContent);
+            return SimpleConfigModel.FromJObject(environment, configJson);
+        }
+
+        internal static void SetupFileSourceMatchersOnGlobalRunSpec(MockGlobalRunSpec runSpec, FileSourceMatchInfo source)
+        {
+            FileSourceHierarchicalPathMatcher matcher = new FileSourceHierarchicalPathMatcher(source);
+            runSpec.Include = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Include, matcher) };
+            runSpec.Exclude = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Exclude, matcher) };
+            runSpec.CopyOnly = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.CopyOnly, matcher) };
+            runSpec.Rename = source.Renames ?? new Dictionary<string, string>(StringComparer.Ordinal);
         }
     }
 }

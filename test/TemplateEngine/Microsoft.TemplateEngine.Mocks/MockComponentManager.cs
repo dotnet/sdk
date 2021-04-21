@@ -13,6 +13,11 @@ namespace Microsoft.TemplateEngine.Mocks
     {
         private static readonly TypeInfo ComponentType = typeof(IIdentifiedComponent).GetTypeInfo();
 
+        private interface ICache
+        {
+            void Register(Guid id, IIdentifiedComponent o);
+        }
+
         public void Register(Type type)
         {
             if (!ComponentType.IsAssignableFrom(type))
@@ -52,22 +57,17 @@ namespace Microsoft.TemplateEngine.Mocks
             return Cache<T>.Get(this).Lookup.TryGetValue(id, out component);
         }
 
-        private interface ICache
-        {
-            void Register(Guid id, IIdentifiedComponent o);
-        }
-
         private class Cache<T> : ICache
             where T : IIdentifiedComponent
         {
             private static readonly ConcurrentDictionary<IComponentManager, Cache<T>> InstanceLookup = new ConcurrentDictionary<IComponentManager, Cache<T>>();
 
+            public Dictionary<Guid, T> Lookup { get; } = new Dictionary<Guid, T>();
+
             public static Cache<T> Get(IComponentManager self)
             {
                 return InstanceLookup.GetOrAdd(self, x => new Cache<T>());
             }
-
-            public Dictionary<Guid, T> Lookup { get; } = new Dictionary<Guid, T>();
 
             public void Register(Guid id, IIdentifiedComponent o)
             {

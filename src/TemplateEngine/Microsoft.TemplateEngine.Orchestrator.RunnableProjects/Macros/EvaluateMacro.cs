@@ -15,11 +15,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
     // Symbol.type = "computed" is the only thing that becomes an evaluate macro.
     internal class EvaluateMacro : IMacro
     {
+        internal const string DefaultEvaluator = "C++";
         public Guid Id => new Guid("BB625F71-6404-4550-98AF-B2E546F46C5F");
 
         public string Type => "evaluate";
-
-        internal const string DefaultEvaluator = "C++";
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {

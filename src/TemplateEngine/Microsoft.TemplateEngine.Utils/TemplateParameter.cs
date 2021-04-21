@@ -9,6 +9,7 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public class TemplateParameter : ITemplateParameter, IAllowDefaultIfOptionWithoutValue
     {
+        private IReadOnlyDictionary<string, ParameterChoice> _choices;
         public string Documentation { get; set; }
 
         public string Name { get; set; }
@@ -24,8 +25,6 @@ namespace Microsoft.TemplateEngine.Utils
         public string DataType { get; set; }
 
         public string DefaultIfOptionWithoutValue { get; set; }
-
-        private IReadOnlyDictionary<string, ParameterChoice> _choices;
 
         public IReadOnlyDictionary<string, ParameterChoice> Choices
         {

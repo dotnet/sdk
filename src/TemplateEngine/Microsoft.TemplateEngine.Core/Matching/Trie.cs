@@ -8,13 +8,12 @@ namespace Microsoft.TemplateEngine.Core.Matching
     public class Trie<T>
         where T : TerminalBase
     {
-        public Dictionary<byte, TrieNode<T>> NextNodes { get; }
-
         public Trie()
         {
             NextNodes = new Dictionary<byte, TrieNode<T>>();
         }
 
+        public Dictionary<byte, TrieNode<T>> NextNodes { get; }
         public int MaxRemainingLength { get; private set; }
 
         public void AddPath(byte[] path, T terminal)

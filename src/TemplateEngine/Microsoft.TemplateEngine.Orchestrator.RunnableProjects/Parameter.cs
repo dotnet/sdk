@@ -11,38 +11,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     internal class Parameter : ITemplateParameter, IExtendedTemplateParameter, IAllowDefaultIfOptionWithoutValue
     {
         [JsonProperty]
-        internal string Description { get; set; }
-
-        [JsonProperty]
-        internal string DefaultValue { get; set; }
-
-        [JsonIgnore]
-        internal string Name { get; set; }
-
-        [JsonProperty]
-        internal bool IsName { get; set; }
-
-        [JsonProperty]
-        internal TemplateParameterPriority Requirement { get; set; }
-
-        [JsonProperty]
-        internal string Type { get; set; }
-
-        [JsonProperty]
-        internal bool IsVariable { get; set; }
-
-        [JsonProperty]
-        internal string DataType { get; set; }
-
-        [JsonProperty]
-        internal string DefaultIfOptionWithoutValue { get; set; }
-
-        internal bool ShouldSerializeDefaultIfOptionWithoutValue()
-        {
-            return !string.IsNullOrEmpty(DefaultIfOptionWithoutValue);
-        }
-
-        [JsonProperty]
         [Obsolete("This property is no longer used. It is populated only when creating parameters from parameter and derived symbols for compatibility reason.")]
         public string FileRename { get; set; }
 
@@ -83,9 +51,41 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
+        [JsonProperty]
+        internal string Description { get; set; }
+
+        [JsonProperty]
+        internal string DefaultValue { get; set; }
+
+        [JsonIgnore]
+        internal string Name { get; set; }
+
+        [JsonProperty]
+        internal bool IsName { get; set; }
+
+        [JsonProperty]
+        internal TemplateParameterPriority Requirement { get; set; }
+
+        [JsonProperty]
+        internal string Type { get; set; }
+
+        [JsonProperty]
+        internal bool IsVariable { get; set; }
+
+        [JsonProperty]
+        internal string DataType { get; set; }
+
+        [JsonProperty]
+        internal string DefaultIfOptionWithoutValue { get; set; }
+
         public override string ToString()
         {
             return $"{Name} ({Type})";
+        }
+
+        internal bool ShouldSerializeDefaultIfOptionWithoutValue()
+        {
+            return !string.IsNullOrEmpty(DefaultIfOptionWithoutValue);
         }
     }
 }

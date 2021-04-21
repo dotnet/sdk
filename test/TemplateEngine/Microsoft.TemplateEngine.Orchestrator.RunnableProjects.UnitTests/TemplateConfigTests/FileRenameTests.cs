@@ -36,31 +36,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal(0, changes.Count(x => string.Equals(x.TargetRelativePath, "NoNewName.txt", StringComparison.Ordinal)));
         }
 
-        private static TestTemplateSetup SetupSourceRenameIsCaseSensitveTestTemplate(IEngineEnvironmentSettings environment, string basePath)
-        {
-            string sourceConfig = @"
-{
-  ""sources"": [
-    {
-      ""rename"": {
-        ""RenameMe.txt"": ""YesNewName.txt"",
-        ""DontRenameMe.txt"": ""NoNewName.txt""
-      },
-    }
-  ]
-}";
-
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            // template.json
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, sourceConfig);
-            // content
-            templateSourceFiles.Add("RenameMe.txt", null);
-            templateSourceFiles.Add("dontrenameme.txt", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
-            setup.WriteSource();
-            return setup;
-        }
-
         [Fact(DisplayName = nameof(SourceModifierRenameIsCaseSensitive))]
         public void SourceModifierRenameIsCaseSensitive()
         {
@@ -78,36 +53,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal(1, changes.Count(x => string.Equals(x.TargetRelativePath, "YesNewName.txt", StringComparison.Ordinal)));
             Assert.Equal(1, changes.Count(x => string.Equals(x.TargetRelativePath, "dontrenameme.txt", StringComparison.Ordinal)));
             Assert.Equal(0, changes.Count(x => string.Equals(x.TargetRelativePath, "NoNewName.txt", StringComparison.Ordinal)));
-        }
-
-        private static TestTemplateSetup SetupSourceModifierRenameIsCaseSensitiveTestTemplate(IEngineEnvironmentSettings environment, string basePath)
-        {
-            string sourceConfig = @"
-{
-  ""sources"": [
-    {
-      ""modifiers"": [
-        {
-          ""rename"": {
-            ""RenameMe.txt"": ""YesNewName.txt"",
-            ""DontRenameMe.txt"": ""NoNewName.txt"",
-          }
-        }
-      ]
-    }
-  ]
-}
-";
-
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            // template.json
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, sourceConfig);
-            // content
-            templateSourceFiles.Add("RenameMe.txt", null);
-            templateSourceFiles.Add("dontrenameme.txt", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
-            setup.WriteSource();
-            return setup;
         }
 
         [Fact(DisplayName = nameof(CanReadFilenameReplacementConfig))]
@@ -139,7 +84,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
       },
 	  ""replace"": ""testgeneratedreplacement""
     },
-
   }
 }
 ";
@@ -183,7 +127,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
       },
 	  ""replace"": ""testgeneratedreplacement""
     },
-
   },
   ""forms"": {
     ""lc"": {
@@ -449,6 +392,61 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal(2, allChanges.Count);
             Assert.Equal(@"ReplaceValue_dir", allChanges[@"Replace_dir"]);
             Assert.Equal(@"ReplaceValue_dir/ReplaceValue_file.txt", allChanges[@"Replace_dir/Replace_file.txt"]);
+        }
+
+        private static TestTemplateSetup SetupSourceRenameIsCaseSensitveTestTemplate(IEngineEnvironmentSettings environment, string basePath)
+        {
+            string sourceConfig = @"
+{
+  ""sources"": [
+    {
+      ""rename"": {
+        ""RenameMe.txt"": ""YesNewName.txt"",
+        ""DontRenameMe.txt"": ""NoNewName.txt""
+      },
+    }
+  ]
+}";
+
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            // template.json
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, sourceConfig);
+            // content
+            templateSourceFiles.Add("RenameMe.txt", null);
+            templateSourceFiles.Add("dontrenameme.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
+            setup.WriteSource();
+            return setup;
+        }
+
+        private static TestTemplateSetup SetupSourceModifierRenameIsCaseSensitiveTestTemplate(IEngineEnvironmentSettings environment, string basePath)
+        {
+            string sourceConfig = @"
+{
+  ""sources"": [
+    {
+      ""modifiers"": [
+        {
+          ""rename"": {
+            ""RenameMe.txt"": ""YesNewName.txt"",
+            ""DontRenameMe.txt"": ""NoNewName.txt"",
+          }
+        }
+      ]
+    }
+  ]
+}
+";
+
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            // template.json
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, sourceConfig);
+            // content
+            templateSourceFiles.Add("RenameMe.txt", null);
+            templateSourceFiles.Add("dontrenameme.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
+            setup.WriteSource();
+            return setup;
         }
     }
 }

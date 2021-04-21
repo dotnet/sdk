@@ -13,6 +13,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private readonly JObject _raw;
 
+        private IReadOnlyDictionary<string, ICacheTag> _tags;
+
+        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
+
+        private IReadOnlyList<ITemplateParameter> _parameters;
+
         internal RunnableProjectTemplate(JObject raw, IGenerator generator, IFile configFile, IRunnableProjectConfig config, IFile localeConfigFile, IFile hostConfigFile)
         {
             config.SourceFile = configFile;
@@ -60,16 +66,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<string> Classifications { get; }
 
-        internal IRunnableProjectConfig Config { get; private set; }
-
         public string DefaultName { get; }
-
         public IGenerator Generator { get; }
-
         public string GroupIdentity { get; }
-
         public int Precedence { get; set; }
-
         public string Name { get; }
 
         public string ShortName
@@ -96,8 +96,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<string> ShortNameList { get; private set; }
 
-        internal IMountPoint Source { get; }
-
         public IReadOnlyDictionary<string, ICacheTag> Tags
         {
             get
@@ -110,7 +108,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 _parameters = null;
             }
         }
-        private IReadOnlyDictionary<string, ICacheTag> _tags;
 
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
         {
@@ -124,7 +121,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 _parameters = null;
             }
         }
-        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
 
         public IReadOnlyList<ITemplateParameter> Parameters
         {
@@ -185,30 +181,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return _parameters;
             }
         }
-        private IReadOnlyList<ITemplateParameter> _parameters;
-
-        internal IFile ConfigFile { get; }
 
         public IFileSystemInfo Configuration => ConfigFile;
-
         public string MountPointUri => Configuration.MountPoint.MountPointUri;
-
         public string ConfigPlace => Configuration.FullPath;
-
-        internal IFile LocaleConfigFile { get; }
-
         public IFileSystemInfo LocaleConfiguration => LocaleConfigFile;
-
         public string LocaleConfigPlace => LocaleConfiguration.FullPath;
-
         public bool IsNameAgreementWithFolderPreferred { get; }
-
         public string HostConfigPlace { get; }
-
         public string ThirdPartyNotices { get; }
-
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
-
         public bool HasScriptRunningPostActions { get; set; }
+        internal IRunnableProjectConfig Config { get; private set; }
+        internal IMountPoint Source { get; }
+        internal IFile ConfigFile { get; }
+        internal IFile LocaleConfigFile { get; }
     }
 }

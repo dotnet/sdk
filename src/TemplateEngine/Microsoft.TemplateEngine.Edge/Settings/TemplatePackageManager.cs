@@ -21,26 +21,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             this.environmentSettings = environmentSettings;
         }
 
-        private void EnsureLoaded()
-        {
-            if (cachedSources != null)
-            {
-                return;
-            }
-
-            cachedSources = new Dictionary<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>>();
-            var providers = environmentSettings.SettingsLoader.Components.OfType<ITemplatePackageProviderFactory>().Select(f => f.CreateProvider(environmentSettings));
-            foreach (var provider in providers)
-            {
-                provider.TemplatePackagesChanged += () =>
-                {
-                    cachedSources[provider] = provider.GetAllTemplatePackagesAsync(default);
-                    TemplatePackagesChanged?.Invoke();
-                };
-                cachedSources[provider] = Task.Run(() => provider.GetAllTemplatePackagesAsync(default));
-            }
-        }
-
         public event Action TemplatePackagesChanged;
 
         public IManagedTemplatePackageProvider GetManagedProvider(string name)
@@ -100,6 +80,26 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.FactoryId);
             }
             return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.FactoryId);
+        }
+
+        private void EnsureLoaded()
+        {
+            if (cachedSources != null)
+            {
+                return;
+            }
+
+            cachedSources = new Dictionary<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>>();
+            var providers = environmentSettings.SettingsLoader.Components.OfType<ITemplatePackageProviderFactory>().Select(f => f.CreateProvider(environmentSettings));
+            foreach (var provider in providers)
+            {
+                provider.TemplatePackagesChanged += () =>
+                {
+                    cachedSources[provider] = provider.GetAllTemplatePackagesAsync(default);
+                    TemplatePackagesChanged?.Invoke();
+                };
+                cachedSources[provider] = Task.Run(() => provider.GetAllTemplatePackagesAsync(default));
+            }
         }
     }
 }

@@ -67,5 +67,4 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             return parsedParameters;
         }
     }
-
 }

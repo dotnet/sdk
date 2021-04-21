@@ -16,11 +16,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     internal class SwitchMacro : IMacro, IDeferredMacro
     {
+        internal const string DefaultEvaluator = "C++";
         public Guid Id => new Guid("B57D64E0-9B4F-4ABE-9366-711170FD5294");
 
         public string Type => "switch";
-
-        internal const string DefaultEvaluator = "C++";
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {

@@ -11,52 +11,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class InlineMarkupConditionalTests : TestBase
     {
-        private IProcessor SetupXmlPlusMsBuildProcessor(IVariableCollection vc)
-        {
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
-            return Processor.Create(cfg, new InlineMarkupConditional(
-                new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
-                true,
-                true,
-                MSBuildStyleEvaluatorDefinition.Evaluate,
-                "$({0})",
-                null,
-                true
-            ));
-        }
-
-        private IProcessor SetupXmlPlusMsBuildProcessorAndReplacement(IVariableCollection vc)
-        {
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
-            return Processor.Create(
-                cfg,
-                new InlineMarkupConditional(
-                    new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
-                true,
-                true,
-                MSBuildStyleEvaluatorDefinition.Evaluate,
-                "$({0})",
-                null,
-                true),
-                new Replacement("ReplaceMe".TokenConfig(), "I've been replaced", null, true));
-        }
-
-        private IProcessor SetupXmlPlusMsBuildProcessorAndReplacementWithLookaround(IVariableCollection vc)
-        {
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
-            return Processor.Create(
-                cfg,
-                new InlineMarkupConditional(
-                    new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
-                true,
-                true,
-                MSBuildStyleEvaluatorDefinition.Evaluate,
-                "$({0})",
-                null,
-                true),
-                new Replacement("ReplaceMe".TokenConfigBuilder().OnlyIfAfter("Condition=\"Exists("), "I've been replaced", null, true));
-        }
-
         [Fact(DisplayName = nameof(VerifyInlineMarkupTrue))]
         public void VerifyInlineMarkupTrue()
         {
@@ -347,6 +301,52 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             VariableCollection vc = new VariableCollection { };
             IProcessor processor = SetupXmlPlusMsBuildProcessorAndReplacementWithLookaround(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
+        private IProcessor SetupXmlPlusMsBuildProcessor(IVariableCollection vc)
+        {
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
+            return Processor.Create(cfg, new InlineMarkupConditional(
+                new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+                true,
+                true,
+                MSBuildStyleEvaluatorDefinition.Evaluate,
+                "$({0})",
+                null,
+                true
+            ));
+        }
+
+        private IProcessor SetupXmlPlusMsBuildProcessorAndReplacement(IVariableCollection vc)
+        {
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
+            return Processor.Create(
+                cfg,
+                new InlineMarkupConditional(
+                    new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+                true,
+                true,
+                MSBuildStyleEvaluatorDefinition.Evaluate,
+                "$({0})",
+                null,
+                true),
+                new Replacement("ReplaceMe".TokenConfig(), "I've been replaced", null, true));
+        }
+
+        private IProcessor SetupXmlPlusMsBuildProcessorAndReplacementWithLookaround(IVariableCollection vc)
+        {
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
+            return Processor.Create(
+                cfg,
+                new InlineMarkupConditional(
+                    new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+                true,
+                true,
+                MSBuildStyleEvaluatorDefinition.Evaluate,
+                "$({0})",
+                null,
+                true),
+                new Replacement("ReplaceMe".TokenConfigBuilder().OnlyIfAfter("Condition=\"Exists("), "I've been replaced", null, true));
         }
     }
 }

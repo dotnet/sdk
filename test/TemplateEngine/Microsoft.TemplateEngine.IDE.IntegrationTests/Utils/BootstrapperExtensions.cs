@@ -29,7 +29,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             {
                 throw new Exception($"Failed to install templates: {string.Join(";", installationResults.Select(result => $"path: {result.InstallRequest.PackageIdentifier}, details:{result.ErrorMessage}"))}");
             }
-
         }
 
         internal static async Task InstallTemplateAsync(this Bootstrapper bootstrapper, params string[] templates)

@@ -10,10 +10,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class FirstLowerCaseInvariantValueFormModel : IValueForm
     {
-        public string Identifier => "firstLowerCaseInvariant";
-
-        public string Name { get; }
-
         internal FirstLowerCaseInvariantValueFormModel()
         {
         }
@@ -22,6 +18,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         {
             Name = name;
         }
+
+        public string Identifier => "firstLowerCaseInvariant";
+
+        public string Name { get; }
 
         public IValueForm FromJObject(string name, JObject configuration)
         {

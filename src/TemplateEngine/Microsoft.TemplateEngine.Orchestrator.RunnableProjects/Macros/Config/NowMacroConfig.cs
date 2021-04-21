@@ -7,16 +7,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     internal class NowMacroConfig : IMacroConfig
     {
-        internal string DataType { get; }
-
-        public string VariableName { get; private set; }
-
-        public string Type { get; private set; }
-
-        internal string Format { get; private set; }
-
-        internal bool Utc { get; private set; }
-
         internal NowMacroConfig(string variableName, string dataType, string format, bool utc)
         {
             DataType = dataType;
@@ -25,5 +15,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             Format = format;
             Utc = utc;
         }
+
+        public string VariableName { get; private set; }
+        public string Type { get; private set; }
+        internal string DataType { get; }
+        internal string Format { get; private set; }
+
+        internal bool Utc { get; private set; }
     }
 }

@@ -30,6 +30,42 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             _environmentSettingsHelper = environmentSettingsHelper;
         }
 
+        public static IEnumerable<object[]> SerializationData()
+        {
+            //can read details
+            yield return new object[]
+            {
+                new TemplatePackageData(
+                    default,
+                    "MountPointUri",
+                    default,
+                    new Dictionary<string, string>
+                     {
+                         { "Author", "TestAuthor" },
+                         { "NuGetSource", "https://api.nuget.org/v3/index.json" },
+                         { "PackageId", "TestPackage" },
+                         { "Version", "4.7.0.395" }
+                     }),
+                "TestPackage", "4.7.0.395", "TestAuthor", "https://api.nuget.org/v3/index.json", false
+            };
+            //skips irrelevant details
+            yield return new object[]
+            {
+                new TemplatePackageData(
+                     default,
+                     "MountPointUri",
+                     default,
+                     new Dictionary<string, string>
+                     {
+                         { "Irrelevant", "not needed" },
+                         { "NuGetSource", "https://api.nuget.org/v3/index.json" },
+                         { "PackageId", "TestPackage" },
+                         { "Version", "4.7.0.395" }
+                     }),
+                "TestPackage", "4.7.0.395", null, "https://api.nuget.org/v3/index.json", false
+            };
+        }
+
         [Fact]
         public async Task CanInstall_LocalPackage()
         {
@@ -365,42 +401,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             updatedSource.NuGetSource.Should().Be(MockPackageManager.DefaultFeed);
             Assert.False(File.Exists(oldMountPoint));
             Assert.True(File.Exists(updatedSource.MountPointUri));
-        }
-
-        public static IEnumerable<object[]> SerializationData()
-        {
-            //can read details
-            yield return new object[]
-            {
-                new TemplatePackageData(
-                    default,
-                    "MountPointUri",
-                    default,
-                    new Dictionary<string, string>
-                     {
-                         { "Author", "TestAuthor" },
-                         { "NuGetSource", "https://api.nuget.org/v3/index.json" },
-                         { "PackageId", "TestPackage" },
-                         { "Version", "4.7.0.395" }
-                     }),
-                "TestPackage", "4.7.0.395", "TestAuthor", "https://api.nuget.org/v3/index.json", false
-            };
-            //skips irrelevant details
-            yield return new object[]
-            {
-                new TemplatePackageData(
-                     default,
-                     "MountPointUri",
-                     default,
-                     new Dictionary<string, string>
-                     {
-                         { "Irrelevant", "not needed" },
-                         { "NuGetSource", "https://api.nuget.org/v3/index.json" },
-                         { "PackageId", "TestPackage" },
-                         { "Version", "4.7.0.395" }
-                     }),
-                "TestPackage", "4.7.0.395", null, "https://api.nuget.org/v3/index.json", false
-            };
         }
 
         [Theory]

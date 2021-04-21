@@ -60,6 +60,8 @@ namespace Microsoft.TemplateEngine.Utils
                 Val = val;
             }
 
+            public T Val { get; private set; }
+
             public override bool Equals(object obj)
             {
                 return obj is ValueWrapper<T> v && Equals(Val, v.Val);
@@ -69,13 +71,12 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 return Val?.GetHashCode() ?? 0;
             }
-
-            public T Val { get; private set; }
         }
 
         private class ValueWrapperComparer<T> : IEqualityComparer<ValueWrapper<T>>
         {
             private IEqualityComparer<T> _comparer;
+
             public ValueWrapperComparer(IEqualityComparer<T> comparer)
             {
                 _comparer = comparer;
@@ -106,13 +107,13 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class Grouping<TKey, TElement> : IGrouping<TKey, TElement>
         {
+            private IEnumerable<TElement> _element;
+
             public Grouping(TKey key, IEnumerable<TElement> element)
             {
                 Key = key;
                 _element = element;
             }
-
-            private IEnumerable<TElement> _element;
 
             public TKey Key { get; }
 

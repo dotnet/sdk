@@ -25,9 +25,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         internal const string TemplateConfigDirectoryName = ".template.config";
         internal const string TemplateConfigFileName = "template.json";
         private const string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
-        private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
         private const string GeneratorVersion = "1.0.0.0";
+        private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
         public Guid Id => GeneratorId;
+
         //
         // Converts the raw, string version of a parameter to a strongly typed value.
         // If the param has a datatype specified, use that. Otherwise attempt to infer the type.
@@ -299,7 +300,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 valueResolutionError = val == null;
                 return val;
             }
-
             else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
             {
                 if (ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double convertedFloat))
@@ -528,6 +528,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 macroProcessor.ProcessMacros(environmentSettings, componentManager, runConfig.ComputedMacros, varsForMacros, parameters);
             }
         }
+
         private static bool TryResolveChoiceValue(string literal, ITemplateParameter param, out string match)
         {
             if (literal == null)
@@ -719,6 +720,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             locModel = null;
             return false;
         }
+
         internal class ParameterSet : IParameterSet
         {
             private readonly IDictionary<string, ITemplateParameter> _parameters = new Dictionary<string, ITemplateParameter>(StringComparer.OrdinalIgnoreCase);
@@ -735,11 +737,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             public IEnumerable<ITemplateParameter> ParameterDefinitions => _parameters.Values;
 
             public IEnumerable<string> RequiredBrokerCapabilities => Enumerable.Empty<string>();
+
             public IDictionary<ITemplateParameter, object> ResolvedValues { get; } = new Dictionary<ITemplateParameter, object>();
-            internal void AddParameter(ITemplateParameter param)
-            {
-                _parameters[param.Name] = param;
-            }
 
             public bool TryGetParameterDefinition(string name, out ITemplateParameter parameter)
             {
@@ -757,6 +756,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 };
 
                 return true;
+            }
+
+            internal void AddParameter(ITemplateParameter param)
+            {
+                _parameters[param.Name] = param;
             }
         }
     }

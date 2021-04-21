@@ -8,10 +8,6 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public class TemplateParamException : Exception
     {
-        public string ParamName { get; private set; }
-        public string InputValue { get; private set; }
-        public string DataType { get; private set; }
-
         public TemplateParamException()
         {
         }
@@ -49,6 +45,10 @@ namespace Microsoft.TemplateEngine.Utils
             InputValue = inputValue;
             DataType = dataType;
         }
+
+        public string ParamName { get; private set; }
+        public string InputValue { get; private set; }
+        public string DataType { get; private set; }
 
         // Helper to create a standard, generic message including the detailed parm info.
         public static string StandardizedMessage(string paramName, string inputValue = null, string dataType = null, string baseMessage = null)

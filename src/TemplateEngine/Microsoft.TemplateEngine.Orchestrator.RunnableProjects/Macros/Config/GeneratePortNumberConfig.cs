@@ -11,20 +11,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     internal class GeneratePortNumberConfig : IMacroConfig
     {
-        internal string DataType { get; }
-
-        public string VariableName { get; }
-
-        public string Type => "port";
-
-        internal Socket Socket { get; }
-
-        internal int Port { get; }
-
-        internal int Low { get; }
-
-        internal int High { get; }
-
         private static readonly HashSet<int> UnsafePorts = new HashSet<int>()
         {
                     2049, // nfs
@@ -67,6 +53,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
             Port = fallback;
         }
+
+        public string VariableName { get; }
+        public string Type => "port";
+        internal string DataType { get; }
+        internal Socket Socket { get; }
+
+        internal int Port { get; }
+
+        internal int Low { get; }
+
+        internal int High { get; }
 
         private bool TryAllocatePort(int testPort, out Socket testSocket)
         {

@@ -13,16 +13,18 @@ namespace Microsoft.TemplateSearch.Common
 {
     public class TemplateSearcher
     {
+        private readonly IEngineEnvironmentSettings _environmentSettings;
+
+        private readonly string _defaultLanguage;
+
+        private Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> _matchFilter;
+
         public TemplateSearcher(IEngineEnvironmentSettings environmentSettings, string defaultLanguage, Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> matchFilter)
         {
             _environmentSettings = environmentSettings;
             _defaultLanguage = defaultLanguage;
             _matchFilter = matchFilter;
         }
-
-        private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly string _defaultLanguage;
-        private Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> _matchFilter;
 
         // Search all of the registered sources.
         public async Task<SearchResults> SearchForTemplatesAsync(IReadOnlyList<IManagedTemplatePackage> existingTemplatePackages, string inputTemplateName)

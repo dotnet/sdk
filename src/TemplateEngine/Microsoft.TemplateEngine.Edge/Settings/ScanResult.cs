@@ -10,14 +10,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class ScanResult
     {
+        private List<ILocalizationLocator> _localizations;
+
+        private List<ITemplate> _templates;
+
         public ScanResult()
         {
             _localizations = new List<ILocalizationLocator>();
             _templates = new List<ITemplate>();
         }
 
-        private List<ILocalizationLocator> _localizations;
-        private List<ITemplate> _templates;
+        public IReadOnlyList<ILocalizationLocator> Localizations => _localizations;
+
+        public IReadOnlyList<ITemplate> Templates => _templates;
 
         public void AddLocalization(ILocalizationLocator locater)
         {
@@ -28,9 +33,5 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             _templates.Add(template);
         }
-
-        public IReadOnlyList<ILocalizationLocator> Localizations => _localizations;
-
-        public IReadOnlyList<ITemplate> Templates => _templates;
     }
 }

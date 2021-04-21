@@ -12,75 +12,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests : TestBase
     {
-        protected IProcessor SetupRazorStyleProcessor(VariableCollection vc)
-        {
-            IOperationProvider[] operations = RazorStyleCommentConditionalsOperations;
-            return SetupTestProcessor(operations, vc);
-        }
-
-        protected IProcessor SetupMadeUpStyleProcessor(VariableCollection vc)
-        {
-            IOperationProvider[] operations = MadeUpConditionalsOperations;
-            return SetupTestProcessor(operations, vc);
-        }
-
-        protected IProcessor SetupXmlStyleProcessor(VariableCollection vc)
-        {
-            IOperationProvider[] operations = XmlStyleCommentConditionalsOperations;
-            return SetupTestProcessor(operations, vc);
-        }
-
-        internal IProcessor SetupCStyleWithCommentsProcessor(VariableCollection vc)
-        {
-            IOperationProvider[] operations = CStyleWithCommentsConditionalOperations;
-            return SetupTestProcessor(operations, vc);
-        }
-
-        protected IProcessor SetupCStyleNoCommentsProcessor(VariableCollection vc)
-        {
-            IOperationProvider[] operations = CStyleNoCommentsConditionalOperations;
-            return SetupTestProcessor(operations, vc);
-        }
-
-        protected IProcessor SetupVBStyleNoCommentsProcessor(VariableCollection vc)
-        {
-            IOperationProvider[] operations = VBStyleNoCommentsConditionalOperations;
-            return SetupTestProcessor(operations, vc);
-        }
-
-        protected IProcessor SetupHashSignLineCommentsProcessor(VariableCollection vc)
-        {
-            IOperationProvider[] operations = HashSignLineCommentConditionalOperations;
-            return SetupTestProcessor(operations, vc);
-        }
-
-        protected IProcessor SetupBatFileRemLineCommentsProcessor(VariableCollection vc)
-        {
-            IOperationProvider[] operations = BatFileRemLineCommentConditionalOperations;
-            return SetupTestProcessor(operations, vc);
-        }
-
-        protected IProcessor SetupHamlLineCommentsProcessor(VariableCollection vc)
-        {
-            IOperationProvider[] operations = HamlLineCommentConditionalOperations;
-            return SetupTestProcessor(operations, vc);
-        }
-
-        protected IProcessor SetupJsxBlockCommentsProcessor(VariableCollection vc)
-        {
-            IOperationProvider[] operations = JsxBlockCommentConditionalsOperations;
-            return SetupTestProcessor(operations, vc);
-        }
-
-        /// <summary>
-        /// Sets up a processor with the input params.
-        /// </summary>
-        private IProcessor SetupTestProcessor(IOperationProvider[] operations, VariableCollection vc)
-        {
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc);
-            return Processor.Create(cfg, operations);
-        }
-
         /// <summary>
         /// Second attempt at xml comment processing.
         /// </summary>
@@ -380,6 +311,75 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 return operations;
             }
+        }
+
+        internal IProcessor SetupCStyleWithCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = CStyleWithCommentsConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupRazorStyleProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = RazorStyleCommentConditionalsOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupMadeUpStyleProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = MadeUpConditionalsOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupXmlStyleProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = XmlStyleCommentConditionalsOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupCStyleNoCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = CStyleNoCommentsConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupVBStyleNoCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = VBStyleNoCommentsConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupHashSignLineCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = HashSignLineCommentConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupBatFileRemLineCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = BatFileRemLineCommentConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupHamlLineCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = HamlLineCommentConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupJsxBlockCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = JsxBlockCommentConditionalsOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        /// <summary>
+        /// Sets up a processor with the input params.
+        /// </summary>
+        private IProcessor SetupTestProcessor(IOperationProvider[] operations, VariableCollection vc)
+        {
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc);
+            return Processor.Create(cfg, operations);
         }
     }
 }

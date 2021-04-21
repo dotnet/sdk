@@ -14,7 +14,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
     internal class FolderManagedTemplatePackage : IManagedTemplatePackage
     {
         private const string DebugLogCategory = "Installer";
+        private static readonly Dictionary<string, string> _emptyDictionary = new Dictionary<string, string>();
         private IEngineEnvironmentSettings _settings;
+
         public FolderManagedTemplatePackage(IEngineEnvironmentSettings settings, IInstaller installer, IManagedTemplatePackageProvider provider, string mountPointUri)
         {
             if (string.IsNullOrWhiteSpace(mountPointUri))
@@ -30,6 +32,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         public string DisplayName => Identifier;
         public string Identifier => MountPointUri;
         public IInstaller Installer { get; }
+
         public DateTime LastChangeTime
         {
             get
@@ -45,12 +48,12 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
                 }
             }
         }
+
         public string MountPointUri { get; }
         public ITemplatePackageProvider Provider => ManagedProvider;
         public IManagedTemplatePackageProvider ManagedProvider { get; }
         public string Version => null;
 
-        private static readonly Dictionary<string, string> _emptyDictionary = new Dictionary<string, string>();
         public IReadOnlyDictionary<string, string> GetDetails() => _emptyDictionary;
     }
 }

@@ -18,6 +18,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
     public class TemplatePackagesTests : IClassFixture<PackageManager>
     {
         private PackageManager _packageManager;
+
         public TemplatePackagesTests(PackageManager packageManager)
         {
             _packageManager = packageManager;

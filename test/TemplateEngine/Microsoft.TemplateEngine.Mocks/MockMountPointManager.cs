@@ -19,6 +19,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             EnvironmentSettings = environmentSettings;
         }
+
         public IEngineEnvironmentSettings EnvironmentSettings
         {
             get;

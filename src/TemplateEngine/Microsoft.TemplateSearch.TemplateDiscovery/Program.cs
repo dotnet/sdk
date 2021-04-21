@@ -13,11 +13,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
     internal class Program
     {
-        private static readonly bool _defaultRunOnlyOnePage;
         private const int _defaultPageSize = 100;
-        private static readonly bool _defaultSaveCandidatePacks;
-        private static readonly bool _defaultIncludePreviewPacks;
-
         private const string _basePathFlag = "--basePath";
         private const string _pageSizeFlag = "--pageSize";
         private const string _includePreviewPacksFlag = "--allowPreviewPacks";
@@ -27,6 +23,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         private const string _noTemplateJsonFilterFlag = "--noTemplateJsonFilter";
         private const string _verbose = "-v";
         private const string _providers = "--providers";
+        private static readonly bool _defaultRunOnlyOnePage;
+        private static readonly bool _defaultSaveCandidatePacks;
+        private static readonly bool _defaultIncludePreviewPacks;
 
         private static async Task Main(string[] args)
         {
@@ -169,7 +168,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                         return false;
                     }
                 }
-
                 else
                 {
                     return false;

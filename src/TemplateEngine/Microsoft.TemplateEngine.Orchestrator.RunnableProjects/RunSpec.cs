@@ -19,6 +19,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             VariableFormatString = variableFormatString ?? "{0}";
         }
 
+        public string VariableFormatString { get; }
+
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
             targetRelPath = null;
@@ -34,7 +36,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             return _vars;
         }
-
-        public string VariableFormatString { get; }
     }
 }

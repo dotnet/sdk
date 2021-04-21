@@ -15,72 +15,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class PostActionTests : TestBase
     {
-        [Theory(DisplayName = nameof(TestPostActionConditioning))]
-        [InlineData(true, true, 2, new[] { "Action1", "Default instructions (action 1)" }, new[] { "Action2", "Default instructions (action 2)" })]
-        [InlineData(true, false, 1, new[] { "Action1", "Default instructions (action 1)" }, null)]
-        [InlineData(false, true, 1, new[] { "Action2", "Default instructions (action 2)" }, null)]
-        [InlineData(false, false, 0, null, null)]
-        public void TestPostActionConditioning(bool condition1, bool condition2, int expectedActionCount, string[] firstResult, string[] secondResult)
-        {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, TestTemplateJson);
-            IVariableCollection vc = new VariableCollection
-            {
-                ["ActionOneCondition"] = condition1,
-                ["ActionTwoCondition"] = condition2
-            };
-            List<IPostAction> postActions = PostAction.ListFromModel(EngineEnvironmentSettings, configModel.PostActionModel, vc);
-
-            Assert.Equal(expectedActionCount, postActions.Count);
-            if (firstResult != null && firstResult.Length > 0)
-            {
-                Assert.True(string.Equals(postActions[0].Description, firstResult[0]), $"expected '{firstResult[0]}', but got {postActions[0].Description}");
-                Assert.Equal(firstResult[1], postActions[0].ManualInstructions);
-            }
-
-            if (secondResult != null && secondResult.Length > 0)
-            {
-                Assert.True(string.Equals(postActions[1].Description, secondResult[0]), $"expected '{secondResult[0]}', but got {postActions[1].Description}");
-                Assert.Equal(secondResult[1], postActions[1].ManualInstructions);
-            }
-        }
-
-        [Theory(DisplayName = nameof(TestPostActionInstructionsConditioning))]
-        [InlineData(true, true, 2, "Windows", "Windows instructions (action 1)", "Windows instructions (action 2)")]
-        [InlineData(true, true, 2, "Linux", "Linux instructions (action 1)", "Linux instructions (action 2)")]
-        [InlineData(true, true, 2, "Mac", "Mac instructions (action 1)", "Mac instructions (action 2)")]
-        [InlineData(true, true, 2, "BeOS", "Default instructions (action 1)", "Default instructions (action 2)")]
-        [InlineData(true, false, 1, "Windows", "Windows instructions (action 1)", null)]
-        [InlineData(true, false, 1, "Linux", "Linux instructions (action 1)", null)]
-        [InlineData(true, false, 1, "Mac", "Mac instructions (action 1)", null)]
-        [InlineData(true, false, 1, "BeOS", "Default instructions (action 1)", null)]
-        [InlineData(false, true, 1, "Windows", "Windows instructions (action 2)", null)]
-        [InlineData(false, true, 1, "Linux", "Linux instructions (action 2)", null)]
-        [InlineData(false, true, 1, "Mac", "Mac instructions (action 2)", null)]
-        [InlineData(false, true, 1, "BeOS", "Default instructions (action 2)", null)]
-        public void TestPostActionInstructionsConditioning(bool condition1, bool condition2, int expectedActionCount, string operatingSystemValue, string firstInstruction, string secondInstruction)
-        {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, TestTemplateJson);
-            IVariableCollection vc = new VariableCollection
-            {
-                ["ActionOneCondition"] = condition1,
-                ["ActionTwoCondition"] = condition2,
-                ["OperatingSystemKind"] = operatingSystemValue
-            };
-
-            List<IPostAction> postActions = PostAction.ListFromModel(EngineEnvironmentSettings, configModel.PostActionModel, vc);
-            Assert.Equal(expectedActionCount, postActions.Count);
-
-            if (!string.IsNullOrEmpty(firstInstruction))
-            {
-                Assert.Equal(firstInstruction, postActions[0].ManualInstructions);
-            }
-
-            if (!string.IsNullOrEmpty(secondInstruction))
-            {
-                Assert.Equal(secondInstruction, postActions[1].ManualInstructions);
-            }
-        }
-
         private static JObject TestTemplateJson
         {
             get
@@ -152,6 +86,72 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   ]
 }";
                 return JObject.Parse(configString);
+            }
+        }
+
+        [Theory(DisplayName = nameof(TestPostActionConditioning))]
+        [InlineData(true, true, 2, new[] { "Action1", "Default instructions (action 1)" }, new[] { "Action2", "Default instructions (action 2)" })]
+        [InlineData(true, false, 1, new[] { "Action1", "Default instructions (action 1)" }, null)]
+        [InlineData(false, true, 1, new[] { "Action2", "Default instructions (action 2)" }, null)]
+        [InlineData(false, false, 0, null, null)]
+        public void TestPostActionConditioning(bool condition1, bool condition2, int expectedActionCount, string[] firstResult, string[] secondResult)
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, TestTemplateJson);
+            IVariableCollection vc = new VariableCollection
+            {
+                ["ActionOneCondition"] = condition1,
+                ["ActionTwoCondition"] = condition2
+            };
+            List<IPostAction> postActions = PostAction.ListFromModel(EngineEnvironmentSettings, configModel.PostActionModel, vc);
+
+            Assert.Equal(expectedActionCount, postActions.Count);
+            if (firstResult != null && firstResult.Length > 0)
+            {
+                Assert.True(string.Equals(postActions[0].Description, firstResult[0]), $"expected '{firstResult[0]}', but got {postActions[0].Description}");
+                Assert.Equal(firstResult[1], postActions[0].ManualInstructions);
+            }
+
+            if (secondResult != null && secondResult.Length > 0)
+            {
+                Assert.True(string.Equals(postActions[1].Description, secondResult[0]), $"expected '{secondResult[0]}', but got {postActions[1].Description}");
+                Assert.Equal(secondResult[1], postActions[1].ManualInstructions);
+            }
+        }
+
+        [Theory(DisplayName = nameof(TestPostActionInstructionsConditioning))]
+        [InlineData(true, true, 2, "Windows", "Windows instructions (action 1)", "Windows instructions (action 2)")]
+        [InlineData(true, true, 2, "Linux", "Linux instructions (action 1)", "Linux instructions (action 2)")]
+        [InlineData(true, true, 2, "Mac", "Mac instructions (action 1)", "Mac instructions (action 2)")]
+        [InlineData(true, true, 2, "BeOS", "Default instructions (action 1)", "Default instructions (action 2)")]
+        [InlineData(true, false, 1, "Windows", "Windows instructions (action 1)", null)]
+        [InlineData(true, false, 1, "Linux", "Linux instructions (action 1)", null)]
+        [InlineData(true, false, 1, "Mac", "Mac instructions (action 1)", null)]
+        [InlineData(true, false, 1, "BeOS", "Default instructions (action 1)", null)]
+        [InlineData(false, true, 1, "Windows", "Windows instructions (action 2)", null)]
+        [InlineData(false, true, 1, "Linux", "Linux instructions (action 2)", null)]
+        [InlineData(false, true, 1, "Mac", "Mac instructions (action 2)", null)]
+        [InlineData(false, true, 1, "BeOS", "Default instructions (action 2)", null)]
+        public void TestPostActionInstructionsConditioning(bool condition1, bool condition2, int expectedActionCount, string operatingSystemValue, string firstInstruction, string secondInstruction)
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, TestTemplateJson);
+            IVariableCollection vc = new VariableCollection
+            {
+                ["ActionOneCondition"] = condition1,
+                ["ActionTwoCondition"] = condition2,
+                ["OperatingSystemKind"] = operatingSystemValue
+            };
+
+            List<IPostAction> postActions = PostAction.ListFromModel(EngineEnvironmentSettings, configModel.PostActionModel, vc);
+            Assert.Equal(expectedActionCount, postActions.Count);
+
+            if (!string.IsNullOrEmpty(firstInstruction))
+            {
+                Assert.Equal(firstInstruction, postActions[0].ManualInstructions);
+            }
+
+            if (!string.IsNullOrEmpty(secondInstruction))
+            {
+                Assert.Equal(secondInstruction, postActions[1].ManualInstructions);
             }
         }
     }

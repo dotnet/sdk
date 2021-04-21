@@ -193,6 +193,11 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             return results;
         }
 
+        public void Dispose()
+        {
+            _globalSettings.Dispose();
+        }
+
         private async Task<UpdateResult> UpdateAsync(List<TemplatePackageData> packages, UpdateRequest updateRequest, CancellationToken cancellationToken)
         {
             (InstallerErrorCode result, string message) = await EnsureInstallPrerequisites(packages, updateRequest.TemplatePackage.Identifier, updateRequest.Version, updateRequest.TemplatePackage.Installer, cancellationToken, update: true).ConfigureAwait(false);
@@ -278,11 +283,6 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             return installResult;
         }
 
-        public void Dispose()
-        {
-            _globalSettings.Dispose();
-        }
-
         private class InstallRequestEqualityComparer : IEqualityComparer<InstallRequest>
         {
             public bool Equals(InstallRequest x, InstallRequest y)
@@ -300,6 +300,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
                 return false;
             }
+
             public int GetHashCode(InstallRequest obj)
             {
                 if (obj == null)

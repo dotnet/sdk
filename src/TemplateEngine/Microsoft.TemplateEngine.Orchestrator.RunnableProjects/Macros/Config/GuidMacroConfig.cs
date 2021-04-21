@@ -7,16 +7,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     internal class GuidMacroConfig : IMacroConfig
     {
-        internal string DataType { get; }
-
-        public string VariableName { get; private set; }
-
-        public string Type { get; private set; }
-
-        internal string DefaultFormat { get; private set; }
-
-        internal string Format { get; private set; }
-
         internal const string DefaultFormats = "ndbpxNDPBX";
 
         internal GuidMacroConfig(string variableName, string dataType, string format, string defaultFormat)
@@ -27,5 +17,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             Format = format;
             DefaultFormat = string.IsNullOrWhiteSpace(defaultFormat) ? "D" : defaultFormat;
         }
+
+        public string VariableName { get; private set; }
+        public string Type { get; private set; }
+        internal string DataType { get; }
+        internal string DefaultFormat { get; private set; }
+
+        internal string Format { get; private set; }
     }
 }

@@ -36,7 +36,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
                             string.Join(Environment.NewLine, errors));
                     }
                 }
-
             }
         }
     }

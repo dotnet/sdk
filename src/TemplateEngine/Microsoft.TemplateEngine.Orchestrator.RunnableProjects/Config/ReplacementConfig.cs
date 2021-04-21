@@ -20,20 +20,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public Guid Id => new Guid("62DB7F1F-A10E-46F0-953F-A28A03A81CD1");
 
-        internal static IOperationProvider Setup(IEngineEnvironmentSettings environmentSettings, IReplacementTokens tokens, IParameterSet parameters)
-        {
-            if (parameters.TryGetRuntimeValue(environmentSettings, tokens.VariableName, out object newValueObject))
-            {
-                string newValue = newValueObject.ToString();
-                return new Replacement(tokens.OriginalValue, newValue, null, true);
-            }
-            else
-            {
-                environmentSettings.Host.LogDiagnosticMessage($"Couldn't find a parameter called {tokens.VariableName}", "Initialization", "ReplacementConfig.Setup");
-                return null;
-            }
-        }
-
         public IEnumerable<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration, IDirectory templateRoot)
         {
             string original = rawConfiguration.ToString("original");
@@ -73,6 +59,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             else
             {
                 yield return new Replacement(coreConfig, replacement, id, onByDefault);
+            }
+        }
+
+        internal static IOperationProvider Setup(IEngineEnvironmentSettings environmentSettings, IReplacementTokens tokens, IParameterSet parameters)
+        {
+            if (parameters.TryGetRuntimeValue(environmentSettings, tokens.VariableName, out object newValueObject))
+            {
+                string newValue = newValueObject.ToString();
+                return new Replacement(tokens.OriginalValue, newValue, null, true);
+            }
+            else
+            {
+                environmentSettings.Host.LogDiagnosticMessage($"Couldn't find a parameter called {tokens.VariableName}", "Initialization", "ReplacementConfig.Setup");
+                return null;
             }
         }
     }

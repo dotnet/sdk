@@ -14,30 +14,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     {
         private delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
 
-        private class MockOperation : IOperation
-        {
-            private readonly MatchHandler _onMatch;
-
-            public MockOperation(string id, MatchHandler onMatch, bool initialState, params IToken[] tokens)
-            {
-                Tokens = tokens;
-                Id = id;
-                _onMatch = onMatch;
-                IsInitialStateOn = initialState;
-            }
-
-            public IReadOnlyList<IToken> Tokens { get; }
-
-            public string Id { get; }
-
-            public bool IsInitialStateOn { get; }
-
-            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
-            {
-                return _onMatch?.Invoke(processor, bufferLength, ref currentBufferPosition, token, target) ?? 0;
-            }
-        }
-
         [Fact(DisplayName = nameof(VerifyOperationTrieFindsTokenAtStart))]
         public void VerifyOperationTrieFindsTokenAtStart()
         {
@@ -119,6 +95,30 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.Equal("TestOp4", match.Id);
             Assert.Equal(1, token);
             Assert.Equal(buffer.Length, currentBufferPosition);
+        }
+
+        private class MockOperation : IOperation
+        {
+            private readonly MatchHandler _onMatch;
+
+            public MockOperation(string id, MatchHandler onMatch, bool initialState, params IToken[] tokens)
+            {
+                Tokens = tokens;
+                Id = id;
+                _onMatch = onMatch;
+                IsInitialStateOn = initialState;
+            }
+
+            public IReadOnlyList<IToken> Tokens { get; }
+
+            public string Id { get; }
+
+            public bool IsInitialStateOn { get; }
+
+            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
+            {
+                return _onMatch?.Invoke(processor, bufferLength, ref currentBufferPosition, token, target) ?? 0;
+            }
         }
 
         private class OperationTrie : Trie<OperationTerminal>

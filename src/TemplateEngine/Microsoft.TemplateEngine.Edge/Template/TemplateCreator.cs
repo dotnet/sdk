@@ -22,34 +22,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
             _paths = new Paths(environmentSettings);
         }
 
-        private bool TryCreateParameterSet(ITemplate template, string realName, IReadOnlyDictionary<string, string> inputParameters, out IParameterSet templateParams, out TemplateCreationResult failureResult)
-        {
-            // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
-            templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IReadOnlyList<string> defaultParamsWithInvalidValues);
-            ResolveUserParameters(template, templateParams, inputParameters, out IReadOnlyList<string> userParamsWithInvalidValues);
-
-            if (AnyParametersWithInvalidDefaultsUnresolved(defaultParamsWithInvalidValues, userParamsWithInvalidValues, inputParameters, out IReadOnlyList<string> defaultsWithUnresolvedInvalidValues)
-                    || userParamsWithInvalidValues.Count > 0)
-            {
-                string message = string.Join(", ", new CombinedList<string>(userParamsWithInvalidValues, defaultsWithUnresolvedInvalidValues));
-                failureResult = new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
-                templateParams = null;
-                return false;
-            }
-
-            bool missingParams = CheckForMissingRequiredParameters(templateParams, out IList<string> missingParamNames);
-
-            if (missingParams)
-            {
-                failureResult = new TemplateCreationResult(string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
-                templateParams = null;
-                return false;
-            }
-
-            failureResult = null;
-            return true;
-        }
-
         public Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation, string baselineName)
         {
             return InstantiateAsync(templateInfo, name, fallbackName, outputPath, inputParameters, skipUpdateCheck, forceCreation, baselineName, false);
@@ -297,6 +269,34 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
 
             return anyMissingParams;
+        }
+
+        private bool TryCreateParameterSet(ITemplate template, string realName, IReadOnlyDictionary<string, string> inputParameters, out IParameterSet templateParams, out TemplateCreationResult failureResult)
+        {
+            // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
+            templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IReadOnlyList<string> defaultParamsWithInvalidValues);
+            ResolveUserParameters(template, templateParams, inputParameters, out IReadOnlyList<string> userParamsWithInvalidValues);
+
+            if (AnyParametersWithInvalidDefaultsUnresolved(defaultParamsWithInvalidValues, userParamsWithInvalidValues, inputParameters, out IReadOnlyList<string> defaultsWithUnresolvedInvalidValues)
+                    || userParamsWithInvalidValues.Count > 0)
+            {
+                string message = string.Join(", ", new CombinedList<string>(userParamsWithInvalidValues, defaultsWithUnresolvedInvalidValues));
+                failureResult = new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
+                templateParams = null;
+                return false;
+            }
+
+            bool missingParams = CheckForMissingRequiredParameters(templateParams, out IList<string> missingParamNames);
+
+            if (missingParams)
+            {
+                failureResult = new TemplateCreationResult(string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
+                templateParams = null;
+                return false;
+            }
+
+            failureResult = null;
+            return true;
         }
     }
 }

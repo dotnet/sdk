@@ -8,10 +8,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class UpperCaseValueFormModel : IValueForm
     {
-        public string Identifier => "upperCase";
-
-        public string Name { get; }
-
         internal UpperCaseValueFormModel()
         {
         }
@@ -20,6 +16,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         {
             Name = name;
         }
+
+        public string Identifier => "upperCase";
+
+        public string Name { get; }
 
         public IValueForm FromJObject(string name, JObject configuration)
         {

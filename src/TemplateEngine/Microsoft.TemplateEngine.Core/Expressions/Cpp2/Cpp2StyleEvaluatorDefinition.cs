@@ -11,38 +11,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
 {
     public class Cpp2StyleEvaluatorDefinition : SharedEvaluatorDefinition<Cpp2StyleEvaluatorDefinition, Cpp2StyleEvaluatorDefinition.Tokens>
     {
-        protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(CppStyleConverters.Encode, CppStyleConverters.Decode)
-            .And(Tokens.And)
-            .Or(Tokens.Or)
-            .Not(Tokens.Not)
-            .GreaterThan(Tokens.GreaterThan, evaluate: (x, y) => Compare(x, y) > 0)
-            .GreaterThanOrEqualTo(Tokens.GreaterThanOrEqualTo, evaluate: (x, y) => Compare(x, y) >= 0)
-            .LessThan(Tokens.LessThan, evaluate: (x, y) => Compare(x, y) < 0)
-            .LessThanOrEqualTo(Tokens.LessThanOrEqualTo, evaluate: (x, y) => Compare(x, y) <= 0)
-            .EqualTo(Tokens.EqualTo, evaluate: (x, y) => Compare(x, y) == 0)
-            .NotEqualTo(Tokens.NotEqualTo, evaluate: (x, y) => Compare(x, y) != 0)
-            .Ignore(Tokens.Space, Tokens.Tab)
-            .LiteralBoundsMarkers(Tokens.Quote)
-            .OpenGroup(Tokens.OpenBrace)
-            .CloseGroup(Tokens.CloseBrace)
-            .TerminateWith(Tokens.WindowsEOL, Tokens.UnixEOL, Tokens.LegacyMacEOL)
-            .LeftShift(Tokens.LeftShift)
-            .RightShift(Tokens.RightShift)
-            .Add(Tokens.Add)
-            .Subtract(Tokens.Subtract)
-            .Multiply(Tokens.Multiply)
-            .Divide(Tokens.Divide)
-            .BitwiseAnd(Tokens.BitwiseAnd)
-            .BitwiseOr(Tokens.BitwiseOr)
-            .Literal(Tokens.Literal)
-            .LiteralBoundsMarkers(Tokens.SingleQuote, Tokens.DoubleQuote)
-            .TypeConverter<Cpp2StyleEvaluatorDefinition>(CppStyleConverters.ConfigureConverters);
-
         private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
-
-        protected override bool DereferenceInLiterals => false;
-
-        protected override string NullTokenValue => "null";
 
         public enum Tokens
         {
@@ -75,6 +44,37 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
             DoubleQuote = 26,
             Literal = 27
         }
+
+        protected override bool DereferenceInLiterals => false;
+
+        protected override string NullTokenValue => "null";
+
+        protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(CppStyleConverters.Encode, CppStyleConverters.Decode)
+                                            .And(Tokens.And)
+            .Or(Tokens.Or)
+            .Not(Tokens.Not)
+            .GreaterThan(Tokens.GreaterThan, evaluate: (x, y) => Compare(x, y) > 0)
+            .GreaterThanOrEqualTo(Tokens.GreaterThanOrEqualTo, evaluate: (x, y) => Compare(x, y) >= 0)
+            .LessThan(Tokens.LessThan, evaluate: (x, y) => Compare(x, y) < 0)
+            .LessThanOrEqualTo(Tokens.LessThanOrEqualTo, evaluate: (x, y) => Compare(x, y) <= 0)
+            .EqualTo(Tokens.EqualTo, evaluate: (x, y) => Compare(x, y) == 0)
+            .NotEqualTo(Tokens.NotEqualTo, evaluate: (x, y) => Compare(x, y) != 0)
+            .Ignore(Tokens.Space, Tokens.Tab)
+            .LiteralBoundsMarkers(Tokens.Quote)
+            .OpenGroup(Tokens.OpenBrace)
+            .CloseGroup(Tokens.CloseBrace)
+            .TerminateWith(Tokens.WindowsEOL, Tokens.UnixEOL, Tokens.LegacyMacEOL)
+            .LeftShift(Tokens.LeftShift)
+            .RightShift(Tokens.RightShift)
+            .Add(Tokens.Add)
+            .Subtract(Tokens.Subtract)
+            .Multiply(Tokens.Multiply)
+            .Divide(Tokens.Divide)
+            .BitwiseAnd(Tokens.BitwiseAnd)
+            .BitwiseOr(Tokens.BitwiseOr)
+            .Literal(Tokens.Literal)
+            .LiteralBoundsMarkers(Tokens.SingleQuote, Tokens.DoubleQuote)
+            .TypeConverter<Cpp2StyleEvaluatorDefinition>(CppStyleConverters.ConfigureConverters);
 
         protected override ITokenTrie GetSymbols(IProcessorState processor)
         {

@@ -343,6 +343,7 @@ There";
             bool changed = processor.Run(input, output, 28);
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
+
         [Fact(DisplayName = nameof(VerifyIfElseifEndifFalseTrueCondition))]
         public void VerifyIfElseifEndifFalseTrueCondition()
         {

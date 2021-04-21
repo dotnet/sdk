@@ -13,6 +13,13 @@ namespace Microsoft.TemplateEngine.Utils
         private readonly Action<TimeSpan, int> _result;
         private readonly Stopwatch _stopwatch;
 
+        public Timing(Action<TimeSpan, int> result)
+        {
+            ++_depth;
+            _result = result;
+            _stopwatch = Stopwatch.StartNew();
+        }
+
         public static Timing Over(ITemplateEngineHost host, string label)
         {
             return new Timing((x, d) =>
@@ -21,13 +28,6 @@ namespace Microsoft.TemplateEngine.Utils
                 //string indent = string.Join("", Enumerable.Repeat("  ", d));
                 //Console.WriteLine($"{indent} {label} {x.TotalMilliseconds}");
             });
-        }
-
-        public Timing(Action<TimeSpan, int> result)
-        {
-            ++_depth;
-            _result = result;
-            _stopwatch = Stopwatch.StartNew();
         }
 
         public void Dispose()

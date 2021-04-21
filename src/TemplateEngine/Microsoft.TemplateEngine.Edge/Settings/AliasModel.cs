@@ -20,6 +20,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             CommandAliases = new Dictionary<string, IReadOnlyList<string>>(commandAliases.ToDictionary(x => x.Key, x => x.Value), StringComparer.OrdinalIgnoreCase);
         }
 
+        [JsonProperty]
+        public Dictionary<string, IReadOnlyList<string>> CommandAliases { get; set; }
+
         public void AddCommandAlias(string aliasName, IReadOnlyList<string> aliasTokens)
         {
             CommandAliases.Add(aliasName, aliasTokens);
@@ -35,8 +38,5 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             return false;
         }
-
-        [JsonProperty]
-        public Dictionary<string, IReadOnlyList<string>> CommandAliases { get; set; }
     }
 }

@@ -36,6 +36,16 @@ namespace Microsoft.TemplateEngine.Utils
 
         public IPathInfo Paths { get; set; }
 
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
+            (SettingsLoader as IDisposable)?.Dispose();
+        }
+
         private class DefaultPathInfo : IPathInfo
         {
             public DefaultPathInfo(IEngineEnvironmentSettings parent, string hiveLocation)
@@ -59,6 +69,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class DefaultEnvironment : IEnvironment
         {
+            private const int DefaultBufferWidth = 160;
             private readonly IReadOnlyDictionary<string, string> _environmentVariables;
 
             public DefaultEnvironment()
@@ -76,8 +87,6 @@ namespace Microsoft.TemplateEngine.Utils
             }
 
             public string NewLine { get; }
-
-            private const int DefaultBufferWidth = 160;
 
             // Console.BufferWidth can throw if there's no console, such as when output is redirected, so
             // first check if it is redirected, and fall back to a default value if needed.
@@ -98,16 +107,6 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 return _environmentVariables;
             }
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-            _disposed = true;
-            (SettingsLoader as IDisposable)?.Dispose();
         }
     }
 }

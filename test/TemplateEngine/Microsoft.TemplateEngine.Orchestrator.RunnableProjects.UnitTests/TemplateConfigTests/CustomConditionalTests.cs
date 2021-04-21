@@ -33,6 +33,53 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
+        private static JObject CustomConditionalSetupExplicitStyleSpecification
+        {
+            get
+            {
+                string configString = @"
+{
+             ""style"": ""custom"",
+             ""actionableIf"": [ ""<!--#if"" ],
+             ""actionableElse"": [ ""#else"", ""<!--#else"" ],
+             ""actionableElseif"": [ ""#elseif"", ""<!--#elseif"" ],
+             ""endif"": [ ""#endif"", ""<!--#endif"" ],
+             ""trim"" : ""true"",
+             ""wholeLine"": ""true"",
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        private static JObject LineConditionalSetup
+        {
+            get
+            {
+                string configString = @"
+{
+        ""style"": ""line"",
+        ""token"": ""//""
+}
+";
+                return JObject.Parse(configString);
+            }
+        }
+
+        private static JObject BlockConditionalSetup
+        {
+            get
+            {
+                string configString = @"
+{
+        ""style"": ""block"",
+        ""startToken"": ""/*"",
+        ""endToken"": ""*/"",
+        ""pseudoEndToken"": ""* /""
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
         [Fact(DisplayName = nameof(TestCustomConditionalSetupNoStyleSpecification))]
         public void TestCustomConditionalSetupNoStyleSpecification()
         {
@@ -62,24 +109,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.True(conditionalOp.TrimWhitespace);
         }
 
-        private static JObject CustomConditionalSetupExplicitStyleSpecification
-        {
-            get
-            {
-                string configString = @"
-{
-             ""style"": ""custom"",
-             ""actionableIf"": [ ""<!--#if"" ],
-             ""actionableElse"": [ ""#else"", ""<!--#else"" ],
-             ""actionableElseif"": [ ""#elseif"", ""<!--#elseif"" ],
-             ""endif"": [ ""#endif"", ""<!--#endif"" ],
-             ""trim"" : ""true"",
-             ""wholeLine"": ""true"",
-}";
-                return JObject.Parse(configString);
-            }
-        }
-
         [Fact(DisplayName = nameof(TestCustomConditionalSetupExplicitStyleSpecification))]
         public void TestCustomConditionalSetupExplicitStyleSpecification()
         {
@@ -107,20 +136,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             Assert.True(conditionalOp.WholeLine);
             Assert.True(conditionalOp.TrimWhitespace);
-        }
-
-        private static JObject LineConditionalSetup
-        {
-            get
-            {
-                string configString = @"
-{
-        ""style"": ""line"",
-        ""token"": ""//""
-}
-";
-                return JObject.Parse(configString);
-            }
         }
 
         [Fact(DisplayName = nameof(TestLineCommentConditionalSetup))]
@@ -160,21 +175,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             Assert.True(conditionalOp.WholeLine);
             Assert.True(conditionalOp.TrimWhitespace);
-        }
-
-        private static JObject BlockConditionalSetup
-        {
-            get
-            {
-                string configString = @"
-{
-        ""style"": ""block"",
-        ""startToken"": ""/*"",
-        ""endToken"": ""*/"",
-        ""pseudoEndToken"": ""* /""
-}";
-                return JObject.Parse(configString);
-            }
         }
 
         [Fact(DisplayName = nameof(TestBlockCommentConditionalSetup))]

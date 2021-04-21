@@ -12,152 +12,8 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public class InMemoryFileSystem : IPhysicalFileSystem, IFileLastWriteTimeSource
     {
-        private class FileSystemDirectory
-        {
-            public string Name { get; }
-
-            public string FullPath { get; }
-
-            public Dictionary<string, FileSystemDirectory> Directories { get; }
-
-            public Dictionary<string, FileSystemFile> Files { get; }
-
-            public FileSystemDirectory(string name, string fullPath)
-            {
-                Name = name;
-                FullPath = fullPath;
-                Directories = new Dictionary<string, FileSystemDirectory>();
-                Files = new Dictionary<string, FileSystemFile>();
-            }
-        }
-
         private readonly FileSystemDirectory _root;
         private readonly IPhysicalFileSystem _basis;
-
-        private class FileSystemFile
-        {
-            private byte[] _data;
-            private int _currentReaders;
-            private int _currentWriters;
-            private readonly object _sync = new object();
-
-            public string Name { get; }
-
-            public string FullPath { get; }
-
-            public FileSystemFile(string name, string fullPath)
-            {
-                Name = name;
-                FullPath = fullPath;
-                _data = Array.Empty<byte>();
-            }
-
-            public Stream OpenRead()
-            {
-                if (_currentWriters > 0)
-                {
-                    throw new IOException("File is currently locked for writing");
-                }
-
-                lock (_sync)
-                {
-                    if (_currentWriters > 0)
-                    {
-                        throw new IOException("File is currently locked for writing");
-                    }
-
-                    ++_currentReaders;
-                    return new DisposingStream(new MemoryStream(_data, false), () => { lock (_sync) { --_currentReaders; } });
-                }
-            }
-
-            public Stream OpenWrite()
-            {
-                if (_currentReaders > 0)
-                {
-                    throw new IOException("File is currently locked for reading");
-                }
-
-                if (_currentWriters > 0)
-                {
-                    throw new IOException("File is currently locked for writing");
-                }
-
-                lock (_sync)
-                {
-                    if (_currentReaders > 0)
-                    {
-                        throw new IOException("File is currently locked for reading");
-                    }
-
-                    if (_currentWriters > 0)
-                    {
-                        throw new IOException("File is currently locked for writing");
-                    }
-
-                    ++_currentWriters;
-                    MemoryStream target = new MemoryStream();
-                    return new DisposingStream(target, () =>
-                    {
-                        lock (_sync)
-                        {
-                            --_currentWriters;
-                            _data = new byte[target.Length];
-                            target.Position = 0;
-                            target.Read(_data, 0, _data.Length);
-                            LastWriteTimeUtc = DateTime.UtcNow;
-                        }
-                    });
-                }
-            }
-
-            public FileAttributes Attributes { get; set; }
-            public DateTime LastWriteTimeUtc { get; set; }
-        }
-
-        private class DisposingStream : Stream
-        {
-            private bool _isDisposed;
-            private readonly Stream _basis;
-            private readonly Action _onDispose;
-
-            public DisposingStream(Stream basis, Action onDispose)
-            {
-                _onDispose = onDispose;
-                _basis = basis;
-            }
-
-            public override bool CanRead => _basis.CanRead;
-
-            public override bool CanSeek => _basis.CanSeek;
-
-            public override bool CanWrite => _basis.CanWrite;
-
-            public override long Length => _basis.Length;
-
-            public override long Position { get => _basis.Position; set => _basis.Position = value; }
-
-            public override void Flush() => _basis.Flush();
-
-            public override int Read(byte[] buffer, int offset, int count) => _basis.Read(buffer, offset, count);
-
-            public override long Seek(long offset, SeekOrigin origin) => _basis.Seek(offset, origin);
-
-            public override void SetLength(long value) => _basis.SetLength(value);
-
-            public override void Write(byte[] buffer, int offset, int count) => _basis.Write(buffer, offset, count);
-
-            protected override void Dispose(bool disposing)
-            {
-                if (!_isDisposed)
-                {
-                    _isDisposed = true;
-                    _onDispose();
-                }
-
-                base.Dispose(disposing);
-            }
-        }
 
         public InMemoryFileSystem(string root, IPhysicalFileSystem basis)
         {
@@ -692,62 +548,6 @@ namespace Microsoft.TemplateEngine.Utils
             }
         }
 
-        private bool IsPathInCone(string path, out string processedPath)
-        {
-            if (!Path.IsPathRooted(path))
-            {
-                path = Path.Combine(GetCurrentDirectory(), path);
-            }
-
-            path = path.Replace('\\', '/');
-
-            bool leadSlash = path[0] == '/';
-
-            if (leadSlash)
-            {
-                path = path.Substring(1);
-            }
-
-            string[] parts = path.Split('/');
-
-            List<string> realParts = new List<string>();
-
-            for (int i = 0; i < parts.Length; ++i)
-            {
-                if (string.IsNullOrEmpty(parts[i]))
-                {
-                    continue;
-                }
-
-                switch (parts[i])
-                {
-                    case ".":
-                        continue;
-                    case "..":
-                        realParts.RemoveAt(realParts.Count - 1);
-                        break;
-                    default:
-                        realParts.Add(parts[i]);
-                        break;
-                }
-            }
-
-            if (leadSlash)
-            {
-                realParts.Insert(0, "");
-            }
-
-            processedPath = string.Join(Path.DirectorySeparatorChar + "", realParts);
-            if (processedPath.Equals(_root.FullPath) || processedPath.StartsWith(_root.FullPath.TrimEnd('/', '\\') + Path.DirectorySeparatorChar))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         public FileAttributes GetFileAttributes(string file)
         {
             if (!IsPathInCone(file, out string processedPath))
@@ -896,6 +696,207 @@ namespace Microsoft.TemplateEngine.Utils
         public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged)
         {
             return new MemoryStream(); //Just some disposable dummy
+        }
+
+        private bool IsPathInCone(string path, out string processedPath)
+        {
+            if (!Path.IsPathRooted(path))
+            {
+                path = Path.Combine(GetCurrentDirectory(), path);
+            }
+
+            path = path.Replace('\\', '/');
+
+            bool leadSlash = path[0] == '/';
+
+            if (leadSlash)
+            {
+                path = path.Substring(1);
+            }
+
+            string[] parts = path.Split('/');
+
+            List<string> realParts = new List<string>();
+
+            for (int i = 0; i < parts.Length; ++i)
+            {
+                if (string.IsNullOrEmpty(parts[i]))
+                {
+                    continue;
+                }
+
+                switch (parts[i])
+                {
+                    case ".":
+                        continue;
+                    case "..":
+                        realParts.RemoveAt(realParts.Count - 1);
+                        break;
+                    default:
+                        realParts.Add(parts[i]);
+                        break;
+                }
+            }
+
+            if (leadSlash)
+            {
+                realParts.Insert(0, "");
+            }
+
+            processedPath = string.Join(Path.DirectorySeparatorChar + "", realParts);
+            if (processedPath.Equals(_root.FullPath) || processedPath.StartsWith(_root.FullPath.TrimEnd('/', '\\') + Path.DirectorySeparatorChar))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private class FileSystemDirectory
+        {
+            public FileSystemDirectory(string name, string fullPath)
+            {
+                Name = name;
+                FullPath = fullPath;
+                Directories = new Dictionary<string, FileSystemDirectory>();
+                Files = new Dictionary<string, FileSystemFile>();
+            }
+
+            public string Name { get; }
+
+            public string FullPath { get; }
+
+            public Dictionary<string, FileSystemDirectory> Directories { get; }
+
+            public Dictionary<string, FileSystemFile> Files { get; }
+        }
+
+        private class FileSystemFile
+        {
+            private readonly object _sync = new object();
+            private byte[] _data;
+            private int _currentReaders;
+            private int _currentWriters;
+
+            public FileSystemFile(string name, string fullPath)
+            {
+                Name = name;
+                FullPath = fullPath;
+                _data = Array.Empty<byte>();
+            }
+
+            public string Name { get; }
+
+            public string FullPath { get; }
+
+            public FileAttributes Attributes { get; set; }
+
+            public DateTime LastWriteTimeUtc { get; set; }
+
+            public Stream OpenRead()
+            {
+                if (_currentWriters > 0)
+                {
+                    throw new IOException("File is currently locked for writing");
+                }
+
+                lock (_sync)
+                {
+                    if (_currentWriters > 0)
+                    {
+                        throw new IOException("File is currently locked for writing");
+                    }
+
+                    ++_currentReaders;
+                    return new DisposingStream(new MemoryStream(_data, false), () => { lock (_sync) { --_currentReaders; } });
+                }
+            }
+
+            public Stream OpenWrite()
+            {
+                if (_currentReaders > 0)
+                {
+                    throw new IOException("File is currently locked for reading");
+                }
+
+                if (_currentWriters > 0)
+                {
+                    throw new IOException("File is currently locked for writing");
+                }
+
+                lock (_sync)
+                {
+                    if (_currentReaders > 0)
+                    {
+                        throw new IOException("File is currently locked for reading");
+                    }
+
+                    if (_currentWriters > 0)
+                    {
+                        throw new IOException("File is currently locked for writing");
+                    }
+
+                    ++_currentWriters;
+                    MemoryStream target = new MemoryStream();
+                    return new DisposingStream(target, () =>
+                    {
+                        lock (_sync)
+                        {
+                            --_currentWriters;
+                            _data = new byte[target.Length];
+                            target.Position = 0;
+                            target.Read(_data, 0, _data.Length);
+                            LastWriteTimeUtc = DateTime.UtcNow;
+                        }
+                    });
+                }
+            }
+        }
+
+        private class DisposingStream : Stream
+        {
+            private readonly Stream _basis;
+            private readonly Action _onDispose;
+            private bool _isDisposed;
+
+            public DisposingStream(Stream basis, Action onDispose)
+            {
+                _onDispose = onDispose;
+                _basis = basis;
+            }
+
+            public override bool CanRead => _basis.CanRead;
+
+            public override bool CanSeek => _basis.CanSeek;
+
+            public override bool CanWrite => _basis.CanWrite;
+
+            public override long Length => _basis.Length;
+
+            public override long Position { get => _basis.Position; set => _basis.Position = value; }
+
+            public override void Flush() => _basis.Flush();
+
+            public override int Read(byte[] buffer, int offset, int count) => _basis.Read(buffer, offset, count);
+
+            public override long Seek(long offset, SeekOrigin origin) => _basis.Seek(offset, origin);
+
+            public override void SetLength(long value) => _basis.SetLength(value);
+
+            public override void Write(byte[] buffer, int offset, int count) => _basis.Write(buffer, offset, count);
+
+            protected override void Dispose(bool disposing)
+            {
+                if (!_isDisposed)
+                {
+                    _isDisposed = true;
+                    _onDispose();
+                }
+
+                base.Dispose(disposing);
+            }
         }
     }
 }

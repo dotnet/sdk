@@ -11,12 +11,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class TrieTests : TestBase
     {
-        private IProcessor SetupTestProcessor(IOperationProvider[] operations, VariableCollection vc)
-        {
-            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc);
-            return Processor.Create(cfg, operations);
-        }
-
         [Fact]
         public void VerifyThatTrieMatchesAtTheBeginning()
         {
@@ -121,6 +115,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] data = new byte[] { 1, 2, 3 };
             p.Run(new MemoryStream(data), new MemoryStream());
             Assert.True(testActivated);
+        }
+
+        private IProcessor SetupTestProcessor(IOperationProvider[] operations, VariableCollection vc)
+        {
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc);
+            return Processor.Create(cfg, operations);
         }
     }
 }

@@ -5,8 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+
 #if !NETFULL
+
 using System.Runtime.Loader;
+
 #endif
 
 namespace Microsoft.TemplateEngine.Edge
@@ -14,6 +17,7 @@ namespace Microsoft.TemplateEngine.Edge
     public static class AssemblyLoadContextHelper
     {
 #if !NETFULL
+
         public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromCodebase(this AssemblyLoadContext context, Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
 #else
         public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromCodebase(this AppDomain context, Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
@@ -23,6 +27,7 @@ namespace Microsoft.TemplateEngine.Edge
         }
 
 #if !NETFULL
+
         public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromPath(this AssemblyLoadContext context, Paths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
 #else
         public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromPath(this AppDomain context, Paths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)

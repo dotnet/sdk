@@ -11,11 +11,7 @@ namespace Microsoft.TemplateSearch.Common
     public class FileMetadataTemplateSearchCache : IFileMetadataTemplateSearchCache
     {
         private readonly IEngineEnvironmentSettings _environment;
-        protected string PathToMetadta { get; }
         private ISearchCacheConfig _config;
-        protected bool IsInitialized { get; set; }
-        protected TemplateDiscoveryMetadata TemplateDiscoveryMetadata { get; set; }
-        protected TemplateToPackMap TemplateToPackMap { get; set; }
 
         public FileMetadataTemplateSearchCache(IEngineEnvironmentSettings environmentSettings, string pathToMetadata)
         {
@@ -24,31 +20,10 @@ namespace Microsoft.TemplateSearch.Common
             IsInitialized = false;
         }
 
-        protected virtual NuGetSearchCacheConfig SetupSearchCacheConfig()
-        {
-            return new NuGetSearchCacheConfig(PathToMetadta);
-        }
-
-        protected virtual void EnsureInitialized()
-        {
-            if (IsInitialized)
-            {
-                return;
-            }
-
-            _config = SetupSearchCacheConfig();
-
-            if (FileMetadataTemplateSearchCacheReader.TryReadDiscoveryMetadata(_environment, _config, out TemplateDiscoveryMetadata metadata))
-            {
-                TemplateDiscoveryMetadata = metadata;
-                TemplateToPackMap = TemplateToPackMap.FromPackToTemplateDictionary(TemplateDiscoveryMetadata.PackToTemplateMap);
-                IsInitialized = true;
-            }
-            else
-            {
-                throw new Exception("Error reading template search metadata");
-            }
-        }
+        protected string PathToMetadta { get; }
+        protected bool IsInitialized { get; set; }
+        protected TemplateDiscoveryMetadata TemplateDiscoveryMetadata { get; set; }
+        protected TemplateToPackMap TemplateToPackMap { get; set; }
 
         public IReadOnlyList<ITemplateInfo> GetNameMatchedTemplates(string searchName)
         {
@@ -97,6 +72,32 @@ namespace Microsoft.TemplateSearch.Common
             }
 
             return packInfo;
+        }
+
+        protected virtual NuGetSearchCacheConfig SetupSearchCacheConfig()
+        {
+            return new NuGetSearchCacheConfig(PathToMetadta);
+        }
+
+        protected virtual void EnsureInitialized()
+        {
+            if (IsInitialized)
+            {
+                return;
+            }
+
+            _config = SetupSearchCacheConfig();
+
+            if (FileMetadataTemplateSearchCacheReader.TryReadDiscoveryMetadata(_environment, _config, out TemplateDiscoveryMetadata metadata))
+            {
+                TemplateDiscoveryMetadata = metadata;
+                TemplateToPackMap = TemplateToPackMap.FromPackToTemplateDictionary(TemplateDiscoveryMetadata.PackToTemplateMap);
+                IsInitialized = true;
+            }
+            else
+            {
+                throw new Exception("Error reading template search metadata");
+            }
         }
     }
 }

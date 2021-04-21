@@ -26,7 +26,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly Dictionary<Type, HashSet<Guid>> _componentIdsByType;
         private readonly SettingsStore _settings;
         private readonly ISettingsLoader _loader;
-        internal Dictionary<Type, Dictionary<Guid, object>> ComponentCache { get; } = new Dictionary<Type, Dictionary<Guid, object>>();
 
         public ComponentManager(ISettingsLoader loader, SettingsStore userSettings)
         {
@@ -101,6 +100,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
+        internal Dictionary<Type, Dictionary<Guid, object>> ComponentCache { get; } = new Dictionary<Type, Dictionary<Guid, object>>();
+
         public IEnumerable<T> OfType<T>()
             where T : class, IIdentifiedComponent
         {
@@ -149,6 +150,31 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 Save();
             }
+        }
+
+        public bool TryGetComponent<T>(Guid id, out T component)
+                    where T : class, IIdentifiedComponent
+        {
+            component = default;
+            if (ComponentCache.TryGetValue(typeof(T), out Dictionary<Guid, object> typeCache) && typeCache != null
+                && typeCache.TryGetValue(id, out object resolvedComponent) && resolvedComponent != null && resolvedComponent is T t)
+            {
+                component = t;
+                return true;
+            }
+
+            if (_componentIdToAssemblyQualifiedTypeName.TryGetValue(id, out string assemblyQualifiedName))
+            {
+                Type type = TypeEx.GetType(assemblyQualifiedName);
+                component = Activator.CreateInstance(type) as T;
+
+                if (component != null)
+                {
+                    AddComponent(typeof(T), component);
+                    return true;
+                }
+            }
+            return false;
         }
 
         // This method does not save the settings, it just registers into the memory cache.
@@ -220,31 +246,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     Task.Delay(10).Wait();
                 }
             }
-        }
-
-        public bool TryGetComponent<T>(Guid id, out T component)
-            where T : class, IIdentifiedComponent
-        {
-            component = default;
-            if (ComponentCache.TryGetValue(typeof(T), out Dictionary<Guid, object> typeCache) && typeCache != null
-                && typeCache.TryGetValue(id, out object resolvedComponent) && resolvedComponent != null && resolvedComponent is T t)
-            {
-                component = t;
-                return true;
-            }
-
-            if (_componentIdToAssemblyQualifiedTypeName.TryGetValue(id, out string assemblyQualifiedName))
-            {
-                Type type = TypeEx.GetType(assemblyQualifiedName);
-                component = Activator.CreateInstance(type) as T;
-
-                if (component != null)
-                {
-                    AddComponent(typeof(T), component);
-                    return true;
-                }
-            }
-            return false;
         }
 
         private void AddComponent(Type type, IIdentifiedComponent component)

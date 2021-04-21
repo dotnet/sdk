@@ -12,10 +12,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class AliasRegistry
     {
-        private AliasModel _aliases;
-
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Paths _paths;
+        private AliasModel _aliases;
 
         public AliasRegistry(IEngineEnvironmentSettings environmentSettings)
         {
@@ -30,32 +29,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 EnsureLoaded();
                 return new Dictionary<string, IReadOnlyList<string>>(_aliases.CommandAliases, StringComparer.OrdinalIgnoreCase);
             }
-        }
-
-        private void EnsureLoaded()
-        {
-            if (_aliases != null)
-            {
-                return;
-            }
-
-            if (!_paths.Exists(_paths.User.AliasesFile))
-            {
-                _aliases = new AliasModel();
-                return;
-            }
-
-            string sourcesText = _paths.ReadAllText(_paths.User.AliasesFile, "{}");
-            JObject parsed = JObject.Parse(sourcesText);
-            IReadOnlyDictionary<string, IReadOnlyList<string>> commandAliases = parsed.ToStringListDictionary(StringComparer.OrdinalIgnoreCase, "CommandAliases");
-
-            _aliases = new AliasModel(commandAliases);
-        }
-
-        private void Save()
-        {
-            JObject serialized = JObject.FromObject(_aliases);
-            _environmentSettings.Host.FileSystem.WriteAllText(_paths.User.AliasesFile, serialized.ToString());
         }
 
         public AliasManipulationResult TryCreateOrRemoveAlias(string aliasName, IReadOnlyList<string> aliasTokens)
@@ -147,6 +120,32 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             while (expansionOccurred);
 
             return true;
+        }
+
+        private void EnsureLoaded()
+        {
+            if (_aliases != null)
+            {
+                return;
+            }
+
+            if (!_paths.Exists(_paths.User.AliasesFile))
+            {
+                _aliases = new AliasModel();
+                return;
+            }
+
+            string sourcesText = _paths.ReadAllText(_paths.User.AliasesFile, "{}");
+            JObject parsed = JObject.Parse(sourcesText);
+            IReadOnlyDictionary<string, IReadOnlyList<string>> commandAliases = parsed.ToStringListDictionary(StringComparer.OrdinalIgnoreCase, "CommandAliases");
+
+            _aliases = new AliasModel(commandAliases);
+        }
+
+        private void Save()
+        {
+            JObject serialized = JObject.FromObject(_aliases);
+            _environmentSettings.Host.FileSystem.WriteAllText(_paths.User.AliasesFile, serialized.ToString());
         }
     }
 }

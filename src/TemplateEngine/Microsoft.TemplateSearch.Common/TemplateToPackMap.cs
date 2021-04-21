@@ -8,6 +8,16 @@ namespace Microsoft.TemplateSearch.Common
 {
     public class TemplateToPackMap
     {
+        private readonly IReadOnlyDictionary<string, PackInfo> _identityToPackMap;
+
+        private readonly IReadOnlyDictionary<string, PackInfo> _groupIdentityToPackMap;
+
+        protected TemplateToPackMap(Dictionary<string, PackInfo> identityToPackMap, Dictionary<string, PackInfo> groupIdentityToPackMap)
+        {
+            _identityToPackMap = identityToPackMap;
+            _groupIdentityToPackMap = groupIdentityToPackMap;
+        }
+
         public static TemplateToPackMap FromPackToTemplateDictionary(IReadOnlyDictionary<string, PackToTemplateEntry> templateDictionary)
         {
             Dictionary<string, PackInfo> identityToPackMap = new Dictionary<string, PackInfo>(StringComparer.OrdinalIgnoreCase);
@@ -36,15 +46,6 @@ namespace Microsoft.TemplateSearch.Common
 
             return new TemplateToPackMap(identityToPackMap, groupIdentityToPackMap);
         }
-
-        protected TemplateToPackMap(Dictionary<string, PackInfo> identityToPackMap, Dictionary<string, PackInfo> groupIdentityToPackMap)
-        {
-            _identityToPackMap = identityToPackMap;
-            _groupIdentityToPackMap = groupIdentityToPackMap;
-        }
-
-        private readonly IReadOnlyDictionary<string, PackInfo> _identityToPackMap;
-        private readonly IReadOnlyDictionary<string, PackInfo> _groupIdentityToPackMap;
 
         public bool TryGetPackInfoForTemplateIdentity(string templateName, out PackInfo packAndVersion)
         {

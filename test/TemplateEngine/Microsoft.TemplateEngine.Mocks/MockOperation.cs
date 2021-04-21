@@ -12,7 +12,6 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockOperation : IOperation
     {
-        public delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
         private readonly MatchHandler _onMatch;
 
         public MockOperation(string id, MatchHandler onMatch, bool initialState, params byte[][] tokens)
@@ -28,17 +27,19 @@ namespace Microsoft.TemplateEngine.Mocks
             IsInitialStateOn = initialState;
         }
 
+        public delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
+
         public IReadOnlyList<IToken> Tokens { get; }
 
         public string Id { get; }
+
+        public IOperationProvider Provider => new MockOperationProvider(this);
+
+        public bool IsInitialStateOn { get; }
 
         public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
         {
             return _onMatch?.Invoke(processor, bufferLength, ref currentBufferPosition, token, target) ?? 0;
         }
-
-        public IOperationProvider Provider => new MockOperationProvider(this);
-
-        public bool IsInitialStateOn { get; }
     }
 }

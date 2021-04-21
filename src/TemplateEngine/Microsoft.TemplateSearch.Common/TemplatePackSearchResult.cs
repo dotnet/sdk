@@ -8,6 +8,8 @@ namespace Microsoft.TemplateSearch.Common
 {
     public class TemplatePackSearchResult
     {
+        private readonly List<ITemplateMatchInfo> _templateMatches;
+
         public TemplatePackSearchResult(PackInfo packInfo)
         {
             PackInfo = packInfo;
@@ -16,13 +18,11 @@ namespace Microsoft.TemplateSearch.Common
 
         public PackInfo PackInfo { get; }
 
+        public IReadOnlyList<ITemplateMatchInfo> TemplateMatches => _templateMatches;
+
         public void AddMatch(ITemplateMatchInfo match)
         {
             _templateMatches.Add(match);
         }
-
-        private readonly List<ITemplateMatchInfo> _templateMatches;
-
-        public IReadOnlyList<ITemplateMatchInfo> TemplateMatches => _templateMatches;
     }
 }

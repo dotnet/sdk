@@ -7,16 +7,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     internal class EvaluateMacroConfig : IMacroConfig
     {
-        internal string DataType { get; }
-
-        public string VariableName { get; private set; }
-
-        public string Type { get; private set; }
-
-        internal string Value { get; private set; }
-
-        internal string Evaluator { get; set; }
-
         internal EvaluateMacroConfig(string variableName, string dataType, string value, string evaluator)
         {
             DataType = dataType;
@@ -25,5 +15,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             Value = value;
             Evaluator = evaluator;
         }
+
+        public string VariableName { get; private set; }
+        public string Type { get; private set; }
+        internal string DataType { get; }
+        internal string Value { get; private set; }
+
+        internal string Evaluator { get; set; }
     }
 }

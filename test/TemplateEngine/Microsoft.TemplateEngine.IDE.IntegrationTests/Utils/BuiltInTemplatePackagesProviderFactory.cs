@@ -33,13 +33,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
                 this.Factory = factory;
             }
 
-            public ITemplatePackageProviderFactory Factory { get; }
-
             event Action ITemplatePackageProvider.TemplatePackagesChanged
             {
                 add { }
                 remove { }
             }
+
+            public ITemplatePackageProviderFactory Factory { get; }
 
             public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken)
             {

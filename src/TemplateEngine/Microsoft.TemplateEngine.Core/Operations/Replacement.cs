@@ -19,8 +19,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly string _id;
         private readonly bool _initialState;
 
-        public string Id => _id;
-
         public Replacement(ITokenConfig match, string replaceWith, string id, bool initialState)
         {
             _match = match;
@@ -28,6 +26,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _id = id;
             _initialState = initialState;
         }
+
+        public string Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {

@@ -10,12 +10,6 @@ namespace Microsoft.TemplateEngine.Core
 {
     public class TokenConfig : ITokenConfig
     {
-        public string After { get; }
-
-        public string Before { get; }
-
-        public string Value { get; }
-
         private TokenConfig(string after, string value, string before)
         {
             After = after;
@@ -23,9 +17,21 @@ namespace Microsoft.TemplateEngine.Core
             Before = before;
         }
 
+        public string After { get; }
+
+        public string Before { get; }
+
+        public string Value { get; }
+
         public static TokenConfig FromValue(string value)
         {
             return new TokenConfig(null, value, null);
+        }
+
+        public static IToken LiteralToken(byte[] data, int start = 0, int end = -1)
+        {
+            int realEnd = end != -1 ? end : (data.Length - start - 1);
+            return new Token(data, start, realEnd);
         }
 
         public TokenConfig OnlyIfAfter(string prefix)
@@ -36,12 +42,6 @@ namespace Microsoft.TemplateEngine.Core
         public TokenConfig OnlyIfBefore(string suffix)
         {
             return new TokenConfig(After, Value, suffix);
-        }
-
-        public static IToken LiteralToken(byte[] data, int start = 0, int end = -1)
-        {
-            int realEnd = end != -1 ? end : (data.Length - start - 1);
-            return new Token(data, start, realEnd);
         }
 
         public IToken ToToken(Encoding encoding)
@@ -87,14 +87,6 @@ namespace Microsoft.TemplateEngine.Core
 
         private class Token : IToken
         {
-            public byte[] Value { get; }
-
-            public int Start { get; }
-
-            public int End { get; }
-
-            public int Length { get; }
-
             public Token(byte[] value, int start, int end)
             {
                 Value = value;
@@ -102,6 +94,14 @@ namespace Microsoft.TemplateEngine.Core
                 End = end;
                 Length = End - Start + 1;
             }
+
+            public byte[] Value { get; }
+
+            public int Start { get; }
+
+            public int End { get; }
+
+            public int Length { get; }
         }
     }
 }

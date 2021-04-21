@@ -8,15 +8,14 @@ namespace Microsoft.TemplateEngine.Core.Matching
     public class TrieNode<T> : Trie<T>
         where T : TerminalBase
     {
-        public byte Match { get; }
-
-        public List<T> Terminals { get; set; }
-
         public TrieNode(byte match)
         {
             Match = match;
         }
 
+        public byte Match { get; }
+
+        public List<T> Terminals { get; set; }
         public bool IsTerminal => Terminals != null;
     }
 }

@@ -96,6 +96,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
             }
         }
+
         public string DisplayName => string.IsNullOrWhiteSpace(Version) ? Identifier : $"{Identifier}::{Version}";
         public string Identifier => Details.TryGetValue(PackageIdKey, out string identifier) ? identifier : null;
         public IInstaller Installer { get; }
@@ -115,6 +116,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
             }
         }
+
         public bool LocalPackage
         {
             get
@@ -137,7 +139,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
             }
         }
+
         public string MountPointUri { get; }
+
         public string NuGetSource
         {
             get
@@ -156,8 +160,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
             }
         }
+
         public ITemplatePackageProvider Provider => ManagedProvider;
         public IManagedTemplatePackageProvider ManagedProvider { get; }
+
         public string Version
         {
             get
@@ -176,6 +182,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
             }
         }
+
         internal Dictionary<string, string> Details { get; }
 
         public static NuGetManagedTemplatePackage Deserialize(

@@ -221,6 +221,5 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return new MatchInfo { Location = MatchLocation.Author, Kind = MatchKind.Mismatch };
             };
         }
-
     }
 }

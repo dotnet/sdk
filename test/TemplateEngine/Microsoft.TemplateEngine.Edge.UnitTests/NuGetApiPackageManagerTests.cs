@@ -133,6 +133,5 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             exception.PackageIdentifier.Should().Be("Microsoft.DotNet.NotCommon.ProjectTemplates.5.0");
             exception.Message.Should().NotBeNullOrEmpty();
         }
-
     }
 }

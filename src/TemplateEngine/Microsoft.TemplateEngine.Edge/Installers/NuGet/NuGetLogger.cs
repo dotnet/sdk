@@ -14,6 +14,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
     {
         private const string DebugLogCategory = "Installer";
         private ITemplateEngineHost _host;
+
         internal NuGetLogger(IEngineEnvironmentSettings settings)
         {
             _host = settings.Host;

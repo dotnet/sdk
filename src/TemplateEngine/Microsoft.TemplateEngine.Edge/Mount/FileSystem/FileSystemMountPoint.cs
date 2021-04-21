@@ -15,11 +15,6 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
     {
         private Paths _paths;
 
-        /// <summary>
-        /// Returns full path of the mounted directory.
-        /// </summary>
-        internal string MountPointRootPath { get; }
-
         public FileSystemMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, string mountPointRootPath)
         {
             MountPointUri = mountPointUri;
@@ -32,6 +27,17 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         public IDirectory Root { get; }
 
         public IEngineEnvironmentSettings EnvironmentSettings { get; }
+
+        public IMountPoint Parent { get; }
+
+        public Guid MountPointFactoryId => FileSystemMountPointFactory.FactoryId;
+
+        public string MountPointUri { get; }
+
+        /// <summary>
+        /// Returns full path of the mounted directory.
+        /// </summary>
+        internal string MountPointRootPath { get; }
 
         public IFile FileInfo(string path)
         {
@@ -66,11 +72,5 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         public void Dispose()
         {
         }
-
-        public IMountPoint Parent { get; }
-
-        public Guid MountPointFactoryId => FileSystemMountPointFactory.FactoryId;
-
-        public string MountPointUri { get; }
     }
 }

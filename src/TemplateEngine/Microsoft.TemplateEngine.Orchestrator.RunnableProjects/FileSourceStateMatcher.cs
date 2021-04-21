@@ -8,15 +8,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class FileSourceStateMatcher : IPathMatcher
     {
+        private FileDispositionStates _checkState;
+
+        private FileSourceHierarchicalPathMatcher _stateMatcher;
+
         internal FileSourceStateMatcher(FileDispositionStates checkState, FileSourceHierarchicalPathMatcher stateMatcher)
         {
             _checkState = checkState;
             _stateMatcher = stateMatcher;
-        }
-
-        public bool IsMatch(string path)
-        {
-            return _stateMatcher.Evaluate(path).Has(_checkState);
         }
 
         public string Pattern
@@ -27,7 +26,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private FileDispositionStates _checkState;
-        private FileSourceHierarchicalPathMatcher _stateMatcher;
+        public bool IsMatch(string path)
+        {
+            return _stateMatcher.Evaluate(path).Has(_checkState);
+        }
     }
 }

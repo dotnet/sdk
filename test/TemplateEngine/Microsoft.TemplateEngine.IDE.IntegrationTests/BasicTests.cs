@@ -17,6 +17,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
     public class BasicTests : IClassFixture<PackageManager>
     {
         private PackageManager _packageManager;
+
         public BasicTests(PackageManager packageManager)
         {
             _packageManager = packageManager;
@@ -40,14 +41,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             {
                 new FileChange ("bar.cs", "test.cs", ChangeKind.Create),
                 new FileChange ("bar/bar.cs", "test/test.cs", ChangeKind.Create),
-
             };
             IFileChangeComparer comparer = new IFileChangeComparer();
             Assert.Equal(
                 expectedFileChanges.OrderBy(s => s, comparer),
                 result.FileChanges.OrderBy(s => s, comparer),
                 comparer);
-
         }
 
         [Fact]

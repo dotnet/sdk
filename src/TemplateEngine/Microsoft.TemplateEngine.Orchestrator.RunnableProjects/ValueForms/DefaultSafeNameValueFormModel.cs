@@ -10,6 +10,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class DefaultSafeNameValueFormModel : IValueForm
     {
+        internal const string FormName = "safe_name";
         private readonly string _name;
 
         internal DefaultSafeNameValueFormModel()
@@ -21,8 +22,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         {
             _name = name;
         }
-
-        internal const string FormName = "safe_name";
 
         public virtual string Identifier => FormName;
 

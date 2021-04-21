@@ -29,23 +29,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
                 // but the cache will store it in ShortNameList
                 base.ReadShortNameInfo(jObject, info);
             }
-
-        }
-
-        private static IReadOnlyList<string> JTokenStringOrArrayToCollection(JToken token, string[] defaultSet)
-        {
-            if (token == null)
-            {
-                return defaultSet;
-            }
-
-            if (token.Type == JTokenType.String)
-            {
-                string tokenValue = token.ToString();
-                return new List<string>() { tokenValue };
-            }
-
-            return token.ArrayAsStrings();
         }
 
         protected override ICacheTag ReadOneTag(JProperty item)
@@ -72,6 +55,22 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             }
 
             return param;
+        }
+
+        private static IReadOnlyList<string> JTokenStringOrArrayToCollection(JToken token, string[] defaultSet)
+        {
+            if (token == null)
+            {
+                return defaultSet;
+            }
+
+            if (token.Type == JTokenType.String)
+            {
+                string tokenValue = token.ToString();
+                return new List<string>() { tokenValue };
+            }
+
+            return token.ArrayAsStrings();
         }
     }
 }

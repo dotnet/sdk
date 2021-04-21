@@ -23,8 +23,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private volatile bool _disposed;
         private volatile bool _isLocked = true;
 
-        public bool IsLocked { get { return _isLocked; } }
-
         private AsyncMutex(string mutexName, CancellationToken token)
         {
             _mutexName = mutexName;
@@ -33,10 +31,24 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             ThreadPool.QueueUserWorkItem(WaitLoop);
         }
 
+        public bool IsLocked { get { return _isLocked; } }
+
         public static Task<AsyncMutex> WaitAsync(string mutexName, CancellationToken token)
         {
             var mutex = new AsyncMutex(mutexName, token);
             return mutex._taskCompletionSource.Task;
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
+            _isLocked = false;
+
+            _blockReleasingMutex.Set();
         }
 
         private void WaitLoop(object state)
@@ -70,18 +82,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 mutex.Dispose();
                 _blockReleasingMutex.Dispose();
             }
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-            _disposed = true;
-            _isLocked = false;
-
-            _blockReleasingMutex.Set();
         }
     }
 }

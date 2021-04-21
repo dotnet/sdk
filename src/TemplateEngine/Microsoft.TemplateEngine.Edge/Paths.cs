@@ -15,16 +15,16 @@ namespace Microsoft.TemplateEngine.Edge
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
 
-        public GlobalPaths Global { get; }
-
-        public UserPaths User { get; }
-
         public Paths(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
             Global = new GlobalPaths(this);
             User = new UserPaths(this);
         }
+
+        public GlobalPaths Global { get; }
+
+        public UserPaths User { get; }
 
         public string ProcessPath(string path)
         {
@@ -245,11 +245,11 @@ namespace Microsoft.TemplateEngine.Edge
 
         public class GlobalPaths
         {
+            private readonly Paths _parent;
             private string _baseDir;
             private string _builtInsFeed;
             private string _defaultInstallPackageList;
             private string _defaultInstallTemplateList;
-            private readonly Paths _parent;
 
             public GlobalPaths(Paths parent)
             {
@@ -281,6 +281,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public class UserPaths
         {
+            private readonly Paths _parent;
             private string _aliasesFile;
             private string _firstRunCookie;
             private string _nuGetConfig;
@@ -290,8 +291,6 @@ namespace Microsoft.TemplateEngine.Edge
             private string _contentDir;
             private string _packagesDir;
             private string _templatesCacheFile;
-
-            private readonly Paths _parent;
 
             public UserPaths(Paths parent)
             {

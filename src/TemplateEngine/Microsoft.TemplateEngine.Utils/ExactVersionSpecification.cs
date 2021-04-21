@@ -10,6 +10,13 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public class ExactVersionSpecification : IVersionSpecification
     {
+        public ExactVersionSpecification(string version)
+        {
+            RequiredVersion = version;
+        }
+
+        public string RequiredVersion { get; }
+
         public static bool TryParse(string version, out IVersionSpecification specification)
         {
             if (!VersionStringHelpers.IsVersionWellFormed(version))
@@ -21,13 +28,6 @@ namespace Microsoft.TemplateEngine.Utils
             specification = new ExactVersionSpecification(version);
             return true;
         }
-
-        public ExactVersionSpecification(string version)
-        {
-            RequiredVersion = version;
-        }
-
-        public string RequiredVersion { get; }
 
         public bool CheckIfVersionIsValid(string versionToCheck)
         {

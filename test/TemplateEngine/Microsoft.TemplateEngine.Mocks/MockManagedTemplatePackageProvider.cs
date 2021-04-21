@@ -22,9 +22,13 @@ namespace Microsoft.TemplateEngine.Mocks
         public ITemplatePackageProviderFactory Factory => throw new NotImplementedException();
 
         public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+
         public Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionsAsync(IEnumerable<IManagedTemplatePackage> managedSources, CancellationToken cancellationToken) => throw new NotImplementedException();
+
         public Task<IReadOnlyList<InstallResult>> InstallAsync(IEnumerable<InstallRequest> installRequests, CancellationToken cancellationToken) => throw new NotImplementedException();
+
         public Task<IReadOnlyList<UninstallResult>> UninstallAsync(IEnumerable<IManagedTemplatePackage> managedSources, CancellationToken cancellationToken) => throw new NotImplementedException();
+
         public Task<IReadOnlyList<UpdateResult>> UpdateAsync(IEnumerable<UpdateRequest> updateRequests, CancellationToken cancellationToken) => throw new NotImplementedException();
     }
 }

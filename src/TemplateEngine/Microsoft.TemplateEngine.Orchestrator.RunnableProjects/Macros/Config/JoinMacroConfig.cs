@@ -8,6 +8,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     internal class JoinMacroConfig : IMacroConfig
     {
+        internal JoinMacroConfig(string variableName, string dataType, IList<KeyValuePair<string, string>> symbols, string separator)
+        {
+            VariableName = variableName;
+            Type = "join";
+            DataType = dataType;
+            Symbols = symbols;
+            Separator = separator;
+        }
+
         public string VariableName { get; private set; }
 
         public string Type { get; private set; }
@@ -18,14 +27,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         internal IList<KeyValuePair<string, string>> Symbols { get; private set; }
 
         internal string Separator { get; private set; }
-
-        internal JoinMacroConfig(string variableName, string dataType, IList<KeyValuePair<string, string>> symbols, string separator)
-        {
-            VariableName = variableName;
-            Type = "join";
-            DataType = dataType;
-            Symbols = symbols;
-            Separator = separator;
-        }
     }
 }

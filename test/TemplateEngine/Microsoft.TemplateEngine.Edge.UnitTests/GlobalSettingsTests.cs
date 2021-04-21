@@ -79,6 +79,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             using var globalSettings1 = new GlobalSettings(envSettings, settingsFile);
 
             #region Open1AndPopulateAndSave
+
             using (await globalSettings1.LockAsync(default).ConfigureAwait(false))
             {
                 var newData = new TemplatePackageData(
@@ -88,18 +89,23 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                     new Dictionary<string, string>() { { "a", "b" } });
                 await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, default).ConfigureAwait(false);
             }
-            #endregion
+
+            #endregion Open1AndPopulateAndSave
 
             #region Open2LoadAndLock
+
             using var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
             Assert.Equal((await globalSettings1.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false))[0].InstallerId, (await globalSettings2.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false))[0].InstallerId);
             var mutex2 = await globalSettings2.LockAsync(default).ConfigureAwait(false);
-            #endregion
+
+            #endregion Open2LoadAndLock
 
             #region Open3Load
+
             using var globalSettings3 = new GlobalSettings(envSettings, settingsFile);
             Assert.Equal((await globalSettings1.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false))[0].InstallerId, (await globalSettings3.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false))[0].InstallerId);
-            #endregion
+
+            #endregion Open3Load
 
             mutex2.Dispose();
         }

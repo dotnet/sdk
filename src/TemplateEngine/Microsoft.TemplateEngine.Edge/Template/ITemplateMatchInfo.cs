@@ -17,10 +17,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         IReadOnlyList<MatchInfo> DispositionOfDefaults { get; }
 
-        void AddDisposition(MatchInfo newDisposition);
-
         bool IsMatch { get; }
 
         bool IsPartialMatch { get; }
+
+        void AddDisposition(MatchInfo newDisposition);
     }
 }

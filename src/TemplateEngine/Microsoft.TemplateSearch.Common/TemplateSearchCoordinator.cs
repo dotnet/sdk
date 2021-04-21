@@ -14,6 +14,8 @@ namespace Microsoft.TemplateSearch.Common
 {
     public class TemplateSearchCoordinator
     {
+        private bool _isSearchPerformed;
+
         public TemplateSearchCoordinator(IEngineEnvironmentSettings environmentSettings, string inputTemplateName, string defaultLanguage, Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> matchFilter)
         {
             EnvironmentSettings = environmentSettings;
@@ -27,7 +29,6 @@ namespace Microsoft.TemplateSearch.Common
         protected string InputTemplateName { get; }
         protected string DefaultLanguage { get; }
         protected Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> MatchFilter { get; set; }
-        private bool _isSearchPerformed;
         protected SearchResults SearchResults { get; set; }
 
         public async Task<SearchResults> SearchAsync()

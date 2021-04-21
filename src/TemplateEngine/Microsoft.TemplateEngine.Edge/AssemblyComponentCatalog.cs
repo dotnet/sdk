@@ -20,15 +20,6 @@ namespace Microsoft.TemplateEngine.Edge
             _assemblies = assemblies;
         }
 
-        public KeyValuePair<Guid, Func<Type>> this[int index]
-        {
-            get
-            {
-                EnsureLoaded();
-                return _lookup[index];
-            }
-        }
-
         public int Count
         {
             get
@@ -38,11 +29,22 @@ namespace Microsoft.TemplateEngine.Edge
             }
         }
 
+        public KeyValuePair<Guid, Func<Type>> this[int index]
+        {
+            get
+            {
+                EnsureLoaded();
+                return _lookup[index];
+            }
+        }
+
         public IEnumerator<KeyValuePair<Guid, Func<Type>>> GetEnumerator()
         {
             EnsureLoaded();
             return _lookup.GetEnumerator();
         }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         private void EnsureLoaded()
         {
@@ -75,7 +77,5 @@ namespace Microsoft.TemplateEngine.Edge
 
             _lookup = builder.ToList();
         }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

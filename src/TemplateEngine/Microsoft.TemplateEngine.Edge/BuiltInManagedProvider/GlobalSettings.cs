@@ -34,11 +34,6 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             _watcher = environmentSettings.Host.FileSystem.WatchFileChanges(_globalSettingsFile, FileChanged);
         }
 
-        private void FileChanged(object sender, FileSystemEventArgs e)
-        {
-            SettingsChanged?.Invoke();
-        }
-
         public event Action? SettingsChanged;
 
         public async Task<IDisposable> LockAsync(CancellationToken token)
@@ -142,6 +137,11 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 await Task.Delay(20, cancellationToken).ConfigureAwait(false);
             }
             throw new InvalidOperationException();
+        }
+
+        private void FileChanged(object sender, FileSystemEventArgs e)
+        {
+            SettingsChanged?.Invoke();
         }
     }
 }

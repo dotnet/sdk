@@ -110,6 +110,20 @@ namespace Microsoft.TemplateEngine.Core.Util
             return processorList;
         }
 
+        private static string CreateTargetDir(IEngineEnvironmentSettings environmentSettings, string sourceRel, string targetDir, IGlobalRunSpec spec)
+        {
+            if (!spec.TryGetTargetRelPath(sourceRel, out string targetRel))
+            {
+                targetRel = sourceRel;
+            }
+
+            string targetPath = Path.Combine(targetDir, targetRel);
+            string fullTargetDir = Path.GetDirectoryName(targetPath);
+            environmentSettings.Host.FileSystem.CreateDirectory(fullTargetDir);
+
+            return targetPath;
+        }
+
         private IReadOnlyList<IFileChange2> GetFileChangesInternal(IEngineEnvironmentSettings environmentSettings, IDirectory sourceDir, string targetDir, IGlobalRunSpec spec)
         {
             EngineConfig cfg = new EngineConfig(environmentSettings, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
@@ -258,20 +272,6 @@ namespace Microsoft.TemplateEngine.Core.Util
                     }
                 }
             }
-        }
-
-        private static string CreateTargetDir(IEngineEnvironmentSettings environmentSettings, string sourceRel, string targetDir, IGlobalRunSpec spec)
-        {
-            if (!spec.TryGetTargetRelPath(sourceRel, out string targetRel))
-            {
-                targetRel = sourceRel;
-            }
-
-            string targetPath = Path.Combine(targetDir, targetRel);
-            string fullTargetDir = Path.GetDirectoryName(targetPath);
-            environmentSettings.Host.FileSystem.CreateDirectory(fullTargetDir);
-
-            return targetPath;
         }
 
         private void ProcessFile(IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IEnumerable<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors, IReadOnlyList<IOperationProvider> locOperations)

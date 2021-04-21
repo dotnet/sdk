@@ -25,8 +25,6 @@ namespace Microsoft.TemplateEngine.Utils
         private IEnumerable<string> _nupkgs;
         private IEnumerable<string> _folders;
 
-        public ITemplatePackageProviderFactory Factory { get; }
-
         public DefaultTemplatePackageProvider(ITemplatePackageProviderFactory factory, IEngineEnvironmentSettings environmentSettings, IEnumerable<string>? nupkgs = null, IEnumerable<string>? folders = null)
         {
             Factory = factory;
@@ -36,6 +34,8 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public event Action? TemplatePackagesChanged;
+
+        public ITemplatePackageProviderFactory Factory { get; }
 
         /// <summary>
         /// Updates list of packages and triggers <see cref="TemplatePackagesChanged"/> event.

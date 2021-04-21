@@ -13,40 +13,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
 {
     public class VisualBasicStyleEvaluatorDefintion : SharedEvaluatorDefinition<VisualBasicStyleEvaluatorDefintion, VisualBasicStyleEvaluatorDefintion.Tokens>
     {
-        protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(CppStyleConverters.Encode, CppStyleConverters.Decode)
-            .And(Tokens.And)
-            .And(Tokens.AndAlso)
-            .Or(Tokens.Or)
-            .Or(Tokens.OrElse)
-            .Not(Tokens.Not)
-            .Xor(Tokens.Xor)
-            .GreaterThan(Tokens.GreaterThan, evaluate: (x, y) => Compare(x, y) > 0)
-            .GreaterThanOrEqualTo(Tokens.GreaterThanOrEqualTo, evaluate: (x, y) => Compare(x, y) >= 0)
-            .LessThan(Tokens.LessThan, evaluate: (x, y) => Compare(x, y) < 0)
-            .LessThanOrEqualTo(Tokens.LessThanOrEqualTo, evaluate: (x, y) => Compare(x, y) <= 0)
-            .EqualTo(Tokens.EqualTo, evaluate: (x, y) => Compare(x, y) == 0)
-            .NotEqualTo(Tokens.NotEqualTo, evaluate: (x, y) => Compare(x, y) != 0)
-            .Ignore(Tokens.Space, Tokens.Tab)
-            .LiteralBoundsMarkers(Tokens.Quote)
-            .OpenGroup(Tokens.OpenBrace)
-            .CloseGroup(Tokens.CloseBrace)
-            .TerminateWith(Tokens.WindowsEOL, Tokens.UnixEOL, Tokens.LegacyMacEOL)
-            .LeftShift(Tokens.LeftShift)
-            .RightShift(Tokens.RightShift)
-            .Add(Tokens.Add)
-            .Subtract(Tokens.Subtract)
-            .Multiply(Tokens.Multiply)
-            .Divide(Tokens.Divide)
-            .Exponentiate(Tokens.Exponentiate)
-            .Literal(Tokens.Literal)
-            .LiteralBoundsMarkers(Tokens.DoubleQuote)
-            .TypeConverter<VisualBasicStyleEvaluatorDefintion>(VisualBasicStyleConverters.ConfigureConverters);
-
         private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
-
-        protected override bool DereferenceInLiterals => false;
-
-        protected override string NullTokenValue => "Nothing";
 
         public enum Tokens
         {
@@ -80,6 +47,39 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
             DoubleQuote = 27,
             Literal = 28,
         }
+
+        protected override bool DereferenceInLiterals => false;
+
+        protected override string NullTokenValue => "Nothing";
+
+        protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(CppStyleConverters.Encode, CppStyleConverters.Decode)
+                                            .And(Tokens.And)
+            .And(Tokens.AndAlso)
+            .Or(Tokens.Or)
+            .Or(Tokens.OrElse)
+            .Not(Tokens.Not)
+            .Xor(Tokens.Xor)
+            .GreaterThan(Tokens.GreaterThan, evaluate: (x, y) => Compare(x, y) > 0)
+            .GreaterThanOrEqualTo(Tokens.GreaterThanOrEqualTo, evaluate: (x, y) => Compare(x, y) >= 0)
+            .LessThan(Tokens.LessThan, evaluate: (x, y) => Compare(x, y) < 0)
+            .LessThanOrEqualTo(Tokens.LessThanOrEqualTo, evaluate: (x, y) => Compare(x, y) <= 0)
+            .EqualTo(Tokens.EqualTo, evaluate: (x, y) => Compare(x, y) == 0)
+            .NotEqualTo(Tokens.NotEqualTo, evaluate: (x, y) => Compare(x, y) != 0)
+            .Ignore(Tokens.Space, Tokens.Tab)
+            .LiteralBoundsMarkers(Tokens.Quote)
+            .OpenGroup(Tokens.OpenBrace)
+            .CloseGroup(Tokens.CloseBrace)
+            .TerminateWith(Tokens.WindowsEOL, Tokens.UnixEOL, Tokens.LegacyMacEOL)
+            .LeftShift(Tokens.LeftShift)
+            .RightShift(Tokens.RightShift)
+            .Add(Tokens.Add)
+            .Subtract(Tokens.Subtract)
+            .Multiply(Tokens.Multiply)
+            .Divide(Tokens.Divide)
+            .Exponentiate(Tokens.Exponentiate)
+            .Literal(Tokens.Literal)
+            .LiteralBoundsMarkers(Tokens.DoubleQuote)
+            .TypeConverter<VisualBasicStyleEvaluatorDefintion>(VisualBasicStyleConverters.ConfigureConverters);
 
         protected override ITokenTrie GetSymbols(IProcessorState processor)
         {

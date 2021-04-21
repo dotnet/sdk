@@ -36,7 +36,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("       ", "")]
         [InlineData("Simple TEXT_here", "simple-text-here")]
         [InlineData("НоваяПеременная", "новая-переменная")]
-
         public void KebabCaseWorksAsExpected(string input, string expected)
         {
             var model = new KebabCaseValueFormModel();

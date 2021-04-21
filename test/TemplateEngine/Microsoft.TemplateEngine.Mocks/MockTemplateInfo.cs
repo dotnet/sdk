@@ -14,6 +14,18 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockTemplateInfo : ITemplateInfo, IXunitSerializable
     {
+        private string[] _cacheParameters = Array.Empty<string>();
+
+        private string[] _baselineInfo = Array.Empty<string>();
+
+        private string[] _classifications = Array.Empty<string>();
+
+        private string[] _shortNameList = Array.Empty<string>();
+
+        private Dictionary<string, string[]> _tags = new Dictionary<string, string[]>();
+
+        private IReadOnlyList<ITemplateParameter> _parameters;
+
         public MockTemplateInfo()
         {
         }
@@ -49,62 +61,6 @@ namespace Microsoft.TemplateEngine.Mocks
             Identity = identity;
             Author = author;
         }
-
-        public MockTemplateInfo WithParameters(params string[] parameters)
-        {
-            if (_cacheParameters.Length == 0)
-            {
-                _cacheParameters = parameters;
-            }
-            else
-            {
-                _cacheParameters = _cacheParameters.Concat(parameters).ToArray();
-            }
-            return this;
-        }
-        public MockTemplateInfo WithTag(string tagName, params string[] values)
-        {
-            _tags.Add(tagName, values);
-            return this;
-        }
-
-        public MockTemplateInfo WithDescription(string description)
-        {
-            Description = description;
-            return this;
-        }
-
-        public MockTemplateInfo WithBaselineInfo(params string[] baseline)
-        {
-            if (_baselineInfo.Length == 0)
-            {
-                _baselineInfo = baseline;
-            }
-            else
-            {
-                _baselineInfo = _baselineInfo.Concat(baseline).ToArray();
-            }
-            return this;
-        }
-
-        public MockTemplateInfo WithClassifications(params string[] classifications)
-        {
-            if (_classifications.Length == 0)
-            {
-                _classifications = classifications;
-            }
-            else
-            {
-                _classifications = _classifications.Concat(classifications).ToArray();
-            }
-            return this;
-        }
-
-        private string[] _cacheParameters = Array.Empty<string>();
-        private string[] _baselineInfo = Array.Empty<string>();
-        private string[] _classifications = Array.Empty<string>();
-        private string[] _shortNameList = Array.Empty<string>();
-        private Dictionary<string, string[]> _tags = new Dictionary<string, string[]>();
 
         public string Author { get; private set; }
 
@@ -160,7 +116,6 @@ namespace Microsoft.TemplateEngine.Mocks
             }
         }
 
-        private IReadOnlyList<ITemplateParameter> _parameters;
         public IReadOnlyList<ITemplateParameter> Parameters
         {
             get
@@ -201,6 +156,57 @@ namespace Microsoft.TemplateEngine.Mocks
         public bool HasScriptRunningPostActions { get; set; }
 
         public DateTime? ConfigTimestampUtc { get; }
+
+        public MockTemplateInfo WithParameters(params string[] parameters)
+        {
+            if (_cacheParameters.Length == 0)
+            {
+                _cacheParameters = parameters;
+            }
+            else
+            {
+                _cacheParameters = _cacheParameters.Concat(parameters).ToArray();
+            }
+            return this;
+        }
+
+        public MockTemplateInfo WithTag(string tagName, params string[] values)
+        {
+            _tags.Add(tagName, values);
+            return this;
+        }
+
+        public MockTemplateInfo WithDescription(string description)
+        {
+            Description = description;
+            return this;
+        }
+
+        public MockTemplateInfo WithBaselineInfo(params string[] baseline)
+        {
+            if (_baselineInfo.Length == 0)
+            {
+                _baselineInfo = baseline;
+            }
+            else
+            {
+                _baselineInfo = _baselineInfo.Concat(baseline).ToArray();
+            }
+            return this;
+        }
+
+        public MockTemplateInfo WithClassifications(params string[] classifications)
+        {
+            if (_classifications.Length == 0)
+            {
+                _classifications = classifications;
+            }
+            else
+            {
+                _classifications = _classifications.Concat(classifications).ToArray();
+            }
+            return this;
+        }
 
         private static ICacheTag CreateTestCacheTag(IReadOnlyList<string> choiceList, string tagDescription = null, string defaultValue = null, string defaultIfOptionWithoutValue = null)
         {
@@ -264,6 +270,7 @@ namespace Microsoft.TemplateEngine.Mocks
         }
 
         #region XUnitSerializable implementation
+
         public void Deserialize(IXunitSerializationInfo info)
         {
             Name = info.GetValue<string>("template_name");
@@ -338,8 +345,8 @@ namespace Microsoft.TemplateEngine.Mocks
             }
 
             return sb.ToString();
-
         }
-        #endregion
+
+        #endregion XUnitSerializable implementation
     }
 }

@@ -12,83 +12,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class SplitConfigurationTests : TestBase
     {
-        [Fact(DisplayName = nameof(SplitConfigCantReferenceFileOutsideBasePath))]
-        public void SplitConfigCantReferenceFileOutsideBasePath()
-        {
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
-            TestTemplateSetup setup = SetupSplitConfigWithAFileOutsideMountPoint(EngineEnvironmentSettings, sourcePath);
-
-            IGenerator generator = new RunnableProjectGenerator();
-            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TemplateConfigTestHelpers.DefaultConfigRelativePath);
-            bool result = generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
-            Assert.False(result, "Template config should not be readable - additional file is outside the base path.");
-            Assert.Null(template);
-        }
-
-        // The file outside the proper location is not created - it can't be by this mechanism.
-        // It doesn't need to exist, the reader will fail in trying to read it.
-        private static TestTemplateSetup SetupSplitConfigWithAFileOutsideMountPoint(IEngineEnvironmentSettings environment, string basePath)
-        {
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(".template.config/template.json", TemplateJsonWithAdditionalFileOutsideBasePath);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
-            setup.WriteSource();
-            return setup;
-        }
-
-        [Fact(DisplayName = nameof(SplitConfigReadFailsIfAReferencedFileIsMissing))]
-        public void SplitConfigReadFailsIfAReferencedFileIsMissing()
-        {
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
-            TestTemplateSetup setup = SetupSplitConfigWithAMissingReferencedFile(EngineEnvironmentSettings, sourcePath);
-            IGenerator generator = new RunnableProjectGenerator();
-
-            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TemplateConfigTestHelpers.DefaultConfigRelativePath);
-            bool result = generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
-            Assert.False(result, "Template config should not be readable - missing additional file.");
-            Assert.Null(template);
-        }
-
-        // Uses the same template.json as the test that successfully reads a split config.
-        // But doesn't create the additional file
-        private static TestTemplateSetup SetupSplitConfigWithAMissingReferencedFile(IEngineEnvironmentSettings environment, string basePath)
-        {
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(".template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
-            setup.WriteSource();
-            return setup;
-        }
-
-        [Fact(DisplayName = nameof(SplitConfigTest))]
-        public void SplitConfigTest()
-        {
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
-            TestTemplateSetup setup = SetupSplitConfigTestTemplate(EngineEnvironmentSettings, sourcePath);
-
-            IGenerator generator = new RunnableProjectGenerator();
-            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile("templateSource/.template.config/template.json");
-            generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
-
-            IDictionary<string, ITemplateParameter> parameters = template.Parameters.ToDictionary(p => p.Name, p => p);
-            Assert.Equal(6, parameters.Count);  // 5 in the configs + 1 for 'name' (implicit)
-            Assert.True(parameters.ContainsKey("type"));
-            Assert.True(parameters.ContainsKey("language"));
-            Assert.True(parameters.ContainsKey("RuntimeFrameworkVersion"));
-            Assert.True(parameters.ContainsKey("Framework"));
-            Assert.True(parameters.ContainsKey("MyThing"));
-        }
-
-        private static TestTemplateSetup SetupSplitConfigTestTemplate(IEngineEnvironmentSettings environment, string basePath)
-        {
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add("templateSource/.template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
-            templateSourceFiles.Add("templateSource/.template.config/symbols.template.json", SymbolsTemplateJsonString);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
-            setup.WriteSource();
-            return setup;
-        }
-
         private static string TemplateJsonWithProperAdditionalConfigFilesString
         {
             get
@@ -199,6 +122,83 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 ";
                 return templateJsonString;
             }
+        }
+
+        [Fact(DisplayName = nameof(SplitConfigCantReferenceFileOutsideBasePath))]
+        public void SplitConfigCantReferenceFileOutsideBasePath()
+        {
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
+            TestTemplateSetup setup = SetupSplitConfigWithAFileOutsideMountPoint(EngineEnvironmentSettings, sourcePath);
+
+            IGenerator generator = new RunnableProjectGenerator();
+            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TemplateConfigTestHelpers.DefaultConfigRelativePath);
+            bool result = generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
+            Assert.False(result, "Template config should not be readable - additional file is outside the base path.");
+            Assert.Null(template);
+        }
+
+        [Fact(DisplayName = nameof(SplitConfigReadFailsIfAReferencedFileIsMissing))]
+        public void SplitConfigReadFailsIfAReferencedFileIsMissing()
+        {
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
+            TestTemplateSetup setup = SetupSplitConfigWithAMissingReferencedFile(EngineEnvironmentSettings, sourcePath);
+            IGenerator generator = new RunnableProjectGenerator();
+
+            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TemplateConfigTestHelpers.DefaultConfigRelativePath);
+            bool result = generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
+            Assert.False(result, "Template config should not be readable - missing additional file.");
+            Assert.Null(template);
+        }
+
+        [Fact(DisplayName = nameof(SplitConfigTest))]
+        public void SplitConfigTest()
+        {
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
+            TestTemplateSetup setup = SetupSplitConfigTestTemplate(EngineEnvironmentSettings, sourcePath);
+
+            IGenerator generator = new RunnableProjectGenerator();
+            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile("templateSource/.template.config/template.json");
+            generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
+
+            IDictionary<string, ITemplateParameter> parameters = template.Parameters.ToDictionary(p => p.Name, p => p);
+            Assert.Equal(6, parameters.Count);  // 5 in the configs + 1 for 'name' (implicit)
+            Assert.True(parameters.ContainsKey("type"));
+            Assert.True(parameters.ContainsKey("language"));
+            Assert.True(parameters.ContainsKey("RuntimeFrameworkVersion"));
+            Assert.True(parameters.ContainsKey("Framework"));
+            Assert.True(parameters.ContainsKey("MyThing"));
+        }
+
+        // The file outside the proper location is not created - it can't be by this mechanism.
+        // It doesn't need to exist, the reader will fail in trying to read it.
+        private static TestTemplateSetup SetupSplitConfigWithAFileOutsideMountPoint(IEngineEnvironmentSettings environment, string basePath)
+        {
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(".template.config/template.json", TemplateJsonWithAdditionalFileOutsideBasePath);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
+            setup.WriteSource();
+            return setup;
+        }
+
+        // Uses the same template.json as the test that successfully reads a split config.
+        // But doesn't create the additional file
+        private static TestTemplateSetup SetupSplitConfigWithAMissingReferencedFile(IEngineEnvironmentSettings environment, string basePath)
+        {
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(".template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
+            setup.WriteSource();
+            return setup;
+        }
+
+        private static TestTemplateSetup SetupSplitConfigTestTemplate(IEngineEnvironmentSettings environment, string basePath)
+        {
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add("templateSource/.template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
+            templateSourceFiles.Add("templateSource/.template.config/symbols.template.json", SymbolsTemplateJsonString);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
+            setup.WriteSource();
+            return setup;
         }
     }
 }

@@ -11,27 +11,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class BalancedNestingTests : TestBase
     {
-        private IProcessor SetupXmlBalancedNestingProcessor(bool? isCommentFixingInitiallyOn = null)
-        {
-            string commentFixOperationId = "Fix Comments";
-            string resetId = "Reset";
-
-            IOperationProvider[] operations =
-            {
-                new BalancedNesting("<!--".TokenConfig(), "-->".TokenConfig(), "-- >".TokenConfig(), commentFixOperationId, resetId, isCommentFixingInitiallyOn ?? false),
-            };
-            VariableCollection variables = new VariableCollection();
-            EngineConfig engineConfig = new EngineConfig(EnvironmentSettings, variables);
-            IProcessor processor = Processor.Create(engineConfig, operations);
-
-            if (isCommentFixingInitiallyOn.HasValue)
-            {
-                engineConfig.Flags[commentFixOperationId] = isCommentFixingInitiallyOn.Value;
-            }
-
-            return processor;
-        }
-
         // The initial construction of the BalancedNesting operation is supposed to have comment fixing off by default.
         // (Usually, it gets toggled by conditional processing).
         // This test ensures that it's off by default.
@@ -128,6 +107,27 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             IProcessor processor = SetupXmlBalancedNestingProcessor(true);  // comment fixing on
             RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
+        private IProcessor SetupXmlBalancedNestingProcessor(bool? isCommentFixingInitiallyOn = null)
+        {
+            string commentFixOperationId = "Fix Comments";
+            string resetId = "Reset";
+
+            IOperationProvider[] operations =
+            {
+                new BalancedNesting("<!--".TokenConfig(), "-->".TokenConfig(), "-- >".TokenConfig(), commentFixOperationId, resetId, isCommentFixingInitiallyOn ?? false),
+            };
+            VariableCollection variables = new VariableCollection();
+            EngineConfig engineConfig = new EngineConfig(EnvironmentSettings, variables);
+            IProcessor processor = Processor.Create(engineConfig, operations);
+
+            if (isCommentFixingInitiallyOn.HasValue)
+            {
+                engineConfig.Flags[commentFixOperationId] = isCommentFixingInitiallyOn.Value;
+            }
+
+            return processor;
         }
     }
 }

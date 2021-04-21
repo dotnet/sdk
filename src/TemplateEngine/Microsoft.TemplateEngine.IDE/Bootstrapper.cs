@@ -28,8 +28,6 @@ namespace Microsoft.TemplateEngine.IDE
         private readonly Paths _paths;
         private readonly TemplateCreator _templateCreator;
 
-        private EngineEnvironmentSettings EnvironmentSettings { get; }
-
         public Bootstrapper(ITemplateEngineHost host, Action<IEngineEnvironmentSettings> onFirstRun, bool virtualizeConfiguration)
         {
             _host = host;
@@ -44,14 +42,7 @@ namespace Microsoft.TemplateEngine.IDE
             }
         }
 
-        private void EnsureInitialized()
-        {
-            if (!_paths.Exists(_paths.User.BaseDir) || !_paths.Exists(_paths.User.FirstRunCookie))
-            {
-                _onFirstRun?.Invoke(EnvironmentSettings);
-                _paths.WriteAllText(_paths.User.FirstRunCookie, "");
-            }
-        }
+        private EngineEnvironmentSettings EnvironmentSettings { get; }
 
         public void Register(Type type)
         {
@@ -229,9 +220,10 @@ namespace Microsoft.TemplateEngine.IDE
             return uninstallResults.SelectMany(result => result).ToList();
         }
 
-        #endregion
+        #endregion Template Package Management
 
         #region Obsolete
+
         [Obsolete("use Task<IReadOnlyList<InstallResult>> InstallTemplatePackagesAsync(IEnumerable<InstallRequest> installRequests, InstallationScope scope = InstallationScope.Global, CancellationToken cancellationToken = default) instead")]
         public void Install(string path)
         {
@@ -297,6 +289,16 @@ namespace Microsoft.TemplateEngine.IDE
             uninstallTask.Wait();
             return uninstallTask.Result.Select(result => result.TemplatePackage.Identifier);
         }
-        #endregion
+
+        #endregion Obsolete
+
+        private void EnsureInitialized()
+        {
+            if (!_paths.Exists(_paths.User.BaseDir) || !_paths.Exists(_paths.User.FirstRunCookie))
+            {
+                _onFirstRun?.Invoke(EnvironmentSettings);
+                _paths.WriteAllText(_paths.User.FirstRunCookie, "");
+            }
+        }
     }
 }

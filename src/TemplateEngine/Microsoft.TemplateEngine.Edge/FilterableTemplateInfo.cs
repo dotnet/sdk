@@ -10,36 +10,6 @@ namespace Microsoft.TemplateEngine.Edge
     [Obsolete("This class is deprecated.")]
     public class FilterableTemplateInfo : ITemplateInfo, IShortNameList
     {
-        public static FilterableTemplateInfo FromITemplateInfo(ITemplateInfo source)
-        {
-            FilterableTemplateInfo filterableTemplate = new FilterableTemplateInfo()
-            {
-                Author = source.Author,
-                Description = source.Description,
-                Classifications = source.Classifications,
-                DefaultName = source.DefaultName,
-                Identity = source.Identity,
-                GeneratorId = source.GeneratorId,
-                GroupIdentity = source.GroupIdentity,
-                Precedence = source.Precedence,
-                Name = source.Name,
-                ShortName = source.ShortName,
-                Tags = source.Tags,
-                CacheParameters = source.CacheParameters,
-                Parameters = source.Parameters,
-                MountPointUri = source.MountPointUri,
-                ConfigPlace = source.ConfigPlace,
-                LocaleConfigPlace = source.LocaleConfigPlace,
-                HostConfigPlace = source.HostConfigPlace,
-                ThirdPartyNotices = source.ThirdPartyNotices,
-                BaselineInfo = source.BaselineInfo,
-                HasScriptRunningPostActions = source.HasScriptRunningPostActions,
-                ShortNameList = source.ShortNameList
-            };
-
-            return filterableTemplate;
-        }
-
         public string Author { get; private set; }
 
         public string Description { get; private set; }
@@ -85,5 +55,35 @@ namespace Microsoft.TemplateEngine.Edge
         public bool HasScriptRunningPostActions { get; set; }
 
         public DateTime? ConfigTimestampUtc { get; set; }
+
+        public static FilterableTemplateInfo FromITemplateInfo(ITemplateInfo source)
+        {
+            FilterableTemplateInfo filterableTemplate = new FilterableTemplateInfo()
+            {
+                Author = source.Author,
+                Description = source.Description,
+                Classifications = source.Classifications,
+                DefaultName = source.DefaultName,
+                Identity = source.Identity,
+                GeneratorId = source.GeneratorId,
+                GroupIdentity = source.GroupIdentity,
+                Precedence = source.Precedence,
+                Name = source.Name,
+                ShortName = source.ShortName,
+                Tags = source.Tags,
+                CacheParameters = source.CacheParameters,
+                Parameters = source.Parameters,
+                MountPointUri = source.MountPointUri,
+                ConfigPlace = source.ConfigPlace,
+                LocaleConfigPlace = source.LocaleConfigPlace,
+                HostConfigPlace = source.HostConfigPlace,
+                ThirdPartyNotices = source.ThirdPartyNotices,
+                BaselineInfo = source.BaselineInfo,
+                HasScriptRunningPostActions = source.HasScriptRunningPostActions,
+                ShortNameList = source.ShortNameList
+            };
+
+            return filterableTemplate;
+        }
     }
 }

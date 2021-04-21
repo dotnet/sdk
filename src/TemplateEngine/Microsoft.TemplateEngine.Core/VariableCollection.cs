@@ -118,6 +118,97 @@ namespace Microsoft.TemplateEngine.Core
 
         public static VariableCollection Root(IDictionary<string, object> values) => new VariableCollection(null, values);
 
+        public static IVariableCollection SetupVariables(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, IVariableConfig variableConfig)
+        {
+            IVariableCollection variables = Root();
+
+            Dictionary<string, VariableCollection> collections = new Dictionary<string, VariableCollection>();
+
+            foreach (KeyValuePair<string, string> source in variableConfig.Sources)
+            {
+                VariableCollection variablesForSource = null;
+                string format = source.Value;
+
+                switch (source.Key)
+                {
+                    case "environment":
+                        variablesForSource = Environment(environmentSettings, format);
+
+                        if (variableConfig.FallbackFormat != null)
+                        {
+                            variablesForSource = Environment(environmentSettings, variablesForSource, variableConfig.FallbackFormat);
+                        }
+                        break;
+                    case "user":
+                        variablesForSource = VariableCollectionFromParameters(environmentSettings, parameters, format);
+
+                        if (variableConfig.FallbackFormat != null)
+                        {
+                            VariableCollection variablesFallback = VariableCollectionFromParameters(environmentSettings, parameters, variableConfig.FallbackFormat);
+                            variablesFallback.Parent = variablesForSource;
+                            variablesForSource = variablesFallback;
+                        }
+                        break;
+                }
+
+                collections[source.Key] = variablesForSource;
+            }
+
+            foreach (string order in variableConfig.Order)
+            {
+                IVariableCollection current = collections[order.ToString()];
+
+                IVariableCollection tmp = current;
+                while (tmp.Parent != null)
+                {
+                    tmp = tmp.Parent;
+                }
+
+                tmp.Parent = variables;
+                variables = current;
+            }
+
+            return variables;
+        }
+
+        public static VariableCollection VariableCollectionFromParameters(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, string format)
+        {
+            VariableCollection vc = new VariableCollection();
+            foreach (ITemplateParameter param in parameters.ParameterDefinitions)
+            {
+                string key = string.Format(format ?? "{0}", param.Name);
+
+                if (!parameters.ResolvedValues.TryGetValue(param, out object value))
+                {
+                    if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
+                    {
+                        while (environmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out string val))
+                        {
+                        }
+
+                        parameters.ResolvedValues[param] = value;
+                    }
+                }
+                else if (value == null)
+                {
+                    if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
+                    {
+                        while (environmentSettings.Host.OnParameterError(param, null, "ParameterValueNull", out string val))
+                        {
+                        }
+
+                        parameters.ResolvedValues[param] = value;
+                    }
+                }
+                else
+                {
+                    vc[key] = value;
+                }
+            }
+
+            return vc;
+        }
+
         public void Add(KeyValuePair<string, object> item)
         {
             if (_parent?.ContainsKey(item.Key) ?? false)
@@ -220,97 +311,6 @@ namespace Microsoft.TemplateEngine.Core
         private void RelayKeysChanged(object sender, IKeysChangedEventArgs args)
         {
             OnKeysChanged();
-        }
-
-        public static IVariableCollection SetupVariables(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, IVariableConfig variableConfig)
-        {
-            IVariableCollection variables = Root();
-
-            Dictionary<string, VariableCollection> collections = new Dictionary<string, VariableCollection>();
-
-            foreach (KeyValuePair<string, string> source in variableConfig.Sources)
-            {
-                VariableCollection variablesForSource = null;
-                string format = source.Value;
-
-                switch (source.Key)
-                {
-                    case "environment":
-                        variablesForSource = Environment(environmentSettings, format);
-
-                        if (variableConfig.FallbackFormat != null)
-                        {
-                            variablesForSource = Environment(environmentSettings, variablesForSource, variableConfig.FallbackFormat);
-                        }
-                        break;
-                    case "user":
-                        variablesForSource = VariableCollectionFromParameters(environmentSettings, parameters, format);
-
-                        if (variableConfig.FallbackFormat != null)
-                        {
-                            VariableCollection variablesFallback = VariableCollectionFromParameters(environmentSettings, parameters, variableConfig.FallbackFormat);
-                            variablesFallback.Parent = variablesForSource;
-                            variablesForSource = variablesFallback;
-                        }
-                        break;
-                }
-
-                collections[source.Key] = variablesForSource;
-            }
-
-            foreach (string order in variableConfig.Order)
-            {
-                IVariableCollection current = collections[order.ToString()];
-
-                IVariableCollection tmp = current;
-                while (tmp.Parent != null)
-                {
-                    tmp = tmp.Parent;
-                }
-
-                tmp.Parent = variables;
-                variables = current;
-            }
-
-            return variables;
-        }
-
-        public static VariableCollection VariableCollectionFromParameters(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, string format)
-        {
-            VariableCollection vc = new VariableCollection();
-            foreach (ITemplateParameter param in parameters.ParameterDefinitions)
-            {
-                string key = string.Format(format ?? "{0}", param.Name);
-
-                if (!parameters.ResolvedValues.TryGetValue(param, out object value))
-                {
-                    if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
-                    {
-                        while (environmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out string val))
-                        {
-                        }
-
-                        parameters.ResolvedValues[param] = value;
-                    }
-                }
-                else if (value == null)
-                {
-                    if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
-                    {
-                        while (environmentSettings.Host.OnParameterError(param, null, "ParameterValueNull", out string val))
-                        {
-                        }
-
-                        parameters.ResolvedValues[param] = value;
-                    }
-                }
-                else
-                {
-                    vc[key] = value;
-                }
-            }
-
-            return vc;
         }
     }
 }

@@ -19,25 +19,25 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             Register(new StringConverter());
         }
 
-        private static void Register<T>(ConverterItem<T> item)
-        {
-            ConverterItem<T>.IsHandledBy(item);
-        }
-
         public static bool TryConvert<T>(object source, out T result)
         {
             return ConverterItem<T>.TryExecute(source, out result);
         }
 
+        private static void Register<T>(ConverterItem<T> item)
+        {
+            ConverterItem<T>.IsHandledBy(item);
+        }
+
         private abstract class ConverterItem<T>
         {
+            public static ConverterItem<T> Instance { get; private set; }
+
             public static void IsHandledBy<TInstance>(TInstance instance)
                 where TInstance : ConverterItem<T>
             {
                 Instance = instance;
             }
-
-            public static ConverterItem<T> Instance { get; private set; }
 
             public static bool TryExecute(object source, out T result)
             {

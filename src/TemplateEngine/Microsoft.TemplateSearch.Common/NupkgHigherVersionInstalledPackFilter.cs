@@ -20,6 +20,19 @@ namespace Microsoft.TemplateSearch.Common
             _isInitialized = false;
         }
 
+        public bool ShouldPackBeFiltered(string candidatePackName, string candidatePackVersion)
+        {
+            EnsureInitialized();
+
+            if (!_existingTemplatePackageFilterData.TryGetValue(candidatePackName, out string existingPackVersion))
+            {
+                // no existing install of this pack - don't filter it
+                return false;
+            }
+
+            return existingPackVersion != candidatePackVersion;
+        }
+
         private void EnsureInitialized()
         {
             if (_isInitialized)
@@ -37,19 +50,6 @@ namespace Microsoft.TemplateSearch.Common
             _existingTemplatePackageFilterData = filterData;
 
             _isInitialized = true;
-        }
-
-        public bool ShouldPackBeFiltered(string candidatePackName, string candidatePackVersion)
-        {
-            EnsureInitialized();
-
-            if (!_existingTemplatePackageFilterData.TryGetValue(candidatePackName, out string existingPackVersion))
-            {
-                // no existing install of this pack - don't filter it
-                return false;
-            }
-
-            return existingPackVersion != candidatePackVersion;
         }
     }
 }

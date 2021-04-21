@@ -10,13 +10,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private readonly Glob _pattern;
 
-        public string Pattern { get; }
-
         internal GlobbingPatternMatcher(string pattern, bool canBeNameOnlyMatch = true)
         {
             Pattern = pattern;
             _pattern = Glob.Parse(pattern, canBeNameOnlyMatch);
         }
+
+        public string Pattern { get; }
 
         public bool IsMatch(string path)
         {

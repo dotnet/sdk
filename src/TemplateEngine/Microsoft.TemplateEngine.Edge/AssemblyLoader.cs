@@ -4,12 +4,16 @@
 #if NETFULL
 using System;
 #endif
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+
 #if !NETFULL
+
 using System.Runtime.Loader;
+
 #endif
 
 namespace Microsoft.TemplateEngine.Edge

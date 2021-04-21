@@ -7,8 +7,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+
 #if !NETFULL
+
 using System.Runtime.Loader;
+
 #endif
 
 namespace Microsoft.TemplateEngine.Edge
@@ -47,6 +50,7 @@ namespace Microsoft.TemplateEngine.Edge
         }
 
 #if !NETFULL
+
         private static Assembly SelectBestMatch(AssemblyLoadContext loadContext, AssemblyName match, IEnumerable<FileInfo> candidates)
 #else
         private static Assembly SelectBestMatch(object sender, AssemblyName match, IEnumerable<FileInfo> candidates)
@@ -134,7 +138,6 @@ namespace Microsoft.TemplateEngine.Edge
                                     majorVersionMatch = true;
                                     minorVersionMatch = true;
                                     buildMatch = true;
-
                                 }
                                 else
                                 {
@@ -200,6 +203,7 @@ namespace Microsoft.TemplateEngine.Edge
         }
 
 #if !NETFULL
+
         private static Assembly Resolving(AssemblyLoadContext assemblyLoadContext, AssemblyName assemblyName)
 #else
         private static Assembly Resolving(object sender, ResolveEventArgs resolveEventArgs)

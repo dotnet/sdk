@@ -15,34 +15,6 @@ namespace Microsoft.TemplateEngine.Utils
     /// </summary>
     public static class InstallRequestPathResolution
     {
-        private static IReadOnlyList<string> DetermineDirectoriesToScan(string baseDir, IEngineEnvironmentSettings environmentSettings)
-        {
-            List<string> directoriesToScan = new List<string>();
-
-            if (baseDir[baseDir.Length - 1] == '/' || baseDir[baseDir.Length - 1] == '\\')
-            {
-                baseDir = baseDir.Substring(0, baseDir.Length - 1);
-            }
-
-            string searchTarget = Path.Combine(environmentSettings.Host.FileSystem.GetCurrentDirectory(), baseDir.Trim());
-            List<string> matches = environmentSettings.Host.FileSystem.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
-
-            if (matches.Count == 1)
-            {
-                directoriesToScan.Add(matches[0]);
-            }
-            else
-            {
-                foreach (string match in matches)
-                {
-                    IReadOnlyList<string> subDirMatches = DetermineDirectoriesToScan(match, environmentSettings);
-                    directoriesToScan.AddRange(subDirMatches);
-                }
-            }
-
-            return directoriesToScan;
-        }
-
         /// <summary>
         /// Returns absolute path to files or folders resolved from <paramref name="maskedPath"/>.
         /// </summary>
@@ -72,6 +44,34 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 yield return Path.GetFullPath(path);
             }
+        }
+
+        private static IReadOnlyList<string> DetermineDirectoriesToScan(string baseDir, IEngineEnvironmentSettings environmentSettings)
+        {
+            List<string> directoriesToScan = new List<string>();
+
+            if (baseDir[baseDir.Length - 1] == '/' || baseDir[baseDir.Length - 1] == '\\')
+            {
+                baseDir = baseDir.Substring(0, baseDir.Length - 1);
+            }
+
+            string searchTarget = Path.Combine(environmentSettings.Host.FileSystem.GetCurrentDirectory(), baseDir.Trim());
+            List<string> matches = environmentSettings.Host.FileSystem.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
+
+            if (matches.Count == 1)
+            {
+                directoriesToScan.Add(matches[0]);
+            }
+            else
+            {
+                foreach (string match in matches)
+                {
+                    IReadOnlyList<string> subDirMatches = DetermineDirectoriesToScan(match, environmentSettings);
+                    directoriesToScan.AddRange(subDirMatches);
+                }
+            }
+
+            return directoriesToScan;
         }
     }
 }

@@ -46,6 +46,5 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             MatchInfo? result = filter(template);
             Assert.Equal(kind, result?.Kind);
         }
-
     }
 }

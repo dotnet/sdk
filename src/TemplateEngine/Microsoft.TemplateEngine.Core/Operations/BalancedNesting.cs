@@ -51,17 +51,17 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         private class Impl : IOperation
         {
+            // the order they're added to this.Tokens in the constructor must be the same as this!
+            private const int StartTokenIndex = 0;
+
+            private const int RealEndTokenIndex = 1;
+            private const int PseudoEndTokenIndex = 2;
             private readonly IToken _startToken;
             private readonly IToken _realEndToken;
             private readonly IToken _psuedoEndToken;
             private readonly string _id;
             private readonly string _resetFlag;
             private int _depth;
-
-            // the order they're added to this.Tokens in the constructor must be the same as this!
-            private const int StartTokenIndex = 0;
-            private const int RealEndTokenIndex = 1;
-            private const int PseudoEndTokenIndex = 2;
 
             public Impl(IToken start, IToken realEnd, IToken pseudoEnd, string id, string resetFlag, bool initialState)
             {

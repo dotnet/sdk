@@ -7,16 +7,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     internal class CaseChangeMacroConfig : IMacroConfig
     {
-        internal string DataType { get; }
-
-        public string Type => "casing";
-
-        public string VariableName { get; }
-
-        internal string SourceVariable { get; }
-
-        internal bool ToLower { get; }
-
         internal CaseChangeMacroConfig(string variableName, string dataType, string sourceVariable, bool toLower)
         {
             DataType = dataType;
@@ -24,5 +14,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             SourceVariable = sourceVariable;
             ToLower = toLower;
         }
+
+        public string Type => "casing";
+        public string VariableName { get; }
+        internal string DataType { get; }
+        internal string SourceVariable { get; }
+
+        internal bool ToLower { get; }
     }
 }

@@ -10,12 +10,12 @@ namespace Microsoft.TemplateSearch.Common
 {
     public interface ITemplateSearchSource : IIdentifiedComponent
     {
+        string DisplayName { get; }
+
         Task<bool> TryConfigure(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IManagedTemplatePackage> existingTemplatePackage);
 
         Task<IReadOnlyList<ITemplateNameSearchResult>> CheckForTemplateNameMatchesAsync(string templateName);
 
         Task<IReadOnlyDictionary<string, PackToTemplateEntry>> CheckForTemplatePackMatchesAsync(IReadOnlyList<string> packNameList);
-
-        string DisplayName { get; }
     }
 }

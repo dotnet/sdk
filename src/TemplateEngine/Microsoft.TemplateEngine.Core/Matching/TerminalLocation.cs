@@ -6,14 +6,14 @@ namespace Microsoft.TemplateEngine.Core.Matching
     public class TerminalLocation<T>
         where T : TerminalBase
     {
-        public int Location { get; set; }
-
-        public T Terminal { get; }
-
         public TerminalLocation(T terminal, int location)
         {
             Terminal = terminal;
             Location = location;
         }
+
+        public int Location { get; set; }
+
+        public T Terminal { get; }
     }
 }

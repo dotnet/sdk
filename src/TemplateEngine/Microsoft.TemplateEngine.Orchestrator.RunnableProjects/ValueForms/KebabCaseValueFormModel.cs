@@ -11,10 +11,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class KebabCaseValueFormModel : IValueForm
     {
-        public string Identifier => "kebabCase";
-
-        public string Name { get; }
-
         internal KebabCaseValueFormModel()
         {
         }
@@ -23,6 +19,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         {
             Name = name;
         }
+
+        public string Identifier => "kebabCase";
+
+        public string Name { get; }
 
         public IValueForm FromJObject(string name, JObject configuration)
         {

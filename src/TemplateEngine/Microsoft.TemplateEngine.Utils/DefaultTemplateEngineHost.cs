@@ -10,12 +10,13 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
+        private static readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> NoComponents = Array.Empty<KeyValuePair<Guid, Func<Type>>>();
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
         private readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> _hostBuiltInComponents;
-        private static readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> NoComponents = Array.Empty<KeyValuePair<Guid, Func<Type>>>();
+        private Dictionary<string, Action<string, string[]>> _diagnosticLoggers;
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version)
-            : this(hostIdentifier, version, null)
+                    : this(hostIdentifier, version, null)
         {
         }
 
@@ -109,8 +110,6 @@ namespace Microsoft.TemplateEngine.Utils
         {
             return true;
         }
-
-        private Dictionary<string, Action<string, string[]>> _diagnosticLoggers;
 
         public void RegisterDiagnosticLogger(string category, Action<string, string[]> messageHandler)
         {

@@ -15,14 +15,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class Scanner
     {
+        private readonly IEngineEnvironmentSettings _environmentSettings;
+
+        private readonly Paths _paths;
+
         public Scanner(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
             _paths = new Paths(environmentSettings);
         }
-
-        private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly Paths _paths;
 
         public ScanResult Scan(string sourceLocation)
         {
@@ -186,6 +187,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             public bool ShouldStayInOriginalLocation { get; set; }
             public bool FoundComponents { get; set; }
             public bool FoundTemplates { get; set; }
+
             public bool AnythingFound
             {
                 get

@@ -15,11 +15,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     {
         public static readonly string CurrentVersion = "1.0.0.5";
 
-        public TemplateInfo()
-        {
-            ShortNameList = new List<string>();
-        }
-
         private static readonly Func<JObject, TemplateInfo> _defaultReader = TemplateInfoReaderInitialVersion.FromJObject;
 
         // Note: Be sure to keep the versioning consistent with SettingsStore
@@ -33,16 +28,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             { "1.0.0.5", TemplateInfoReaderVersion1_0_0_4.FromJObject }
         };
 
-        public static TemplateInfo FromJObject(JObject entry, string cacheVersion)
+        private IReadOnlyList<ITemplateParameter> _parameters;
+
+        private IReadOnlyDictionary<string, ICacheTag> _tags;
+
+        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
+
+        public TemplateInfo()
         {
-            Func<JObject, TemplateInfo> infoReader;
-
-            if (string.IsNullOrEmpty(cacheVersion) || !_infoVersionReaders.TryGetValue(cacheVersion, out infoReader))
-            {
-                infoReader = _defaultReader;
-            }
-
-            return infoReader(entry);
+            ShortNameList = new List<string>();
         }
 
         [JsonIgnore]
@@ -105,7 +99,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return _parameters;
             }
         }
-        private IReadOnlyList<ITemplateParameter> _parameters;
 
         [JsonProperty]
         public string MountPointUri { get; set; }
@@ -160,14 +153,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        // ShortName should get deserialized when it exists, for backwards compat.
-        // But moving forward, ShortNameList should be the definitive source.
-        // It can still be ShortName in the template.json, but in the caches it'll be ShortNameList
-        public bool ShouldSerializeShortName()
-        {
-            return false;
-        }
-
         public IReadOnlyList<string> ShortNameList { get; set; }
 
         [JsonProperty]
@@ -183,7 +168,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 _parameters = null;
             }
         }
-        private IReadOnlyDictionary<string, ICacheTag> _tags;
 
         [JsonProperty]
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
@@ -198,7 +182,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 _parameters = null;
             }
         }
-        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
 
         [JsonProperty]
         public string ConfigPlace { get; set; }
@@ -217,5 +200,25 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public bool HasScriptRunningPostActions { get; set; }
+
+        public static TemplateInfo FromJObject(JObject entry, string cacheVersion)
+        {
+            Func<JObject, TemplateInfo> infoReader;
+
+            if (string.IsNullOrEmpty(cacheVersion) || !_infoVersionReaders.TryGetValue(cacheVersion, out infoReader))
+            {
+                infoReader = _defaultReader;
+            }
+
+            return infoReader(entry);
+        }
+
+        // ShortName should get deserialized when it exists, for backwards compat.
+        // But moving forward, ShortNameList should be the definitive source.
+        // It can still be ShortName in the template.json, but in the caches it'll be ShortNameList
+        public bool ShouldSerializeShortName()
+        {
+            return false;
+        }
     }
 }

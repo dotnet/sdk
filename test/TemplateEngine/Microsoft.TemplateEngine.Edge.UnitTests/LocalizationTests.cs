@@ -145,6 +145,23 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(expectedManualInstructions, effects.CreationResult.PostActions[postActionIndex].ManualInstructions);
         }
 
+        public void Dispose() => _helper.Dispose();
+
+        private ITemplateEngineHost LoadHostWithLocalizationTemplates(string locale, out ISettingsLoader settingsLoaderOut, out ITemplateInfo localizationTemplate)
+        {
+            var env = _helper.CreateEnvironment(locale);
+            env.SettingsLoader.Components.Register(typeof(TemplatesFactory));
+            settingsLoaderOut = env.SettingsLoader;
+
+            IReadOnlyList<ITemplateInfo> localizedTemplates = settingsLoaderOut.GetTemplatesAsync(default).Result;
+
+            Assert.True(localizedTemplates.Count != 0, "Test template couldn't be loaded.");
+            localizationTemplate = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
+            Assert.NotNull(localizationTemplate);
+
+            return env.Host;
+        }
+
         private class TemplatesFactory : ITemplatePackageProviderFactory
         {
             public string DisplayName => nameof(LocalizationTests);
@@ -167,22 +184,5 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                         "TemplateWithLocalization")
                 });
         }
-
-        private ITemplateEngineHost LoadHostWithLocalizationTemplates(string locale, out ISettingsLoader settingsLoaderOut, out ITemplateInfo localizationTemplate)
-        {
-            var env = _helper.CreateEnvironment(locale);
-            env.SettingsLoader.Components.Register(typeof(TemplatesFactory));
-            settingsLoaderOut = env.SettingsLoader;
-
-            IReadOnlyList<ITemplateInfo> localizedTemplates = settingsLoaderOut.GetTemplatesAsync(default).Result;
-
-            Assert.True(localizedTemplates.Count != 0, "Test template couldn't be loaded.");
-            localizationTemplate = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
-            Assert.NotNull(localizationTemplate);
-
-            return env.Host;
-        }
-
-        public void Dispose() => _helper.Dispose();
     }
 }

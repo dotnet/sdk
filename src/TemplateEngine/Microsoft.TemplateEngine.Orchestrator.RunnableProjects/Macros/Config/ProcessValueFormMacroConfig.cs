@@ -18,12 +18,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             Forms = forms;
         }
 
-        internal string DataType { get; }
-
         public string VariableName { get; }
-
         public string Type => "processValueForm";
-
+        internal string DataType { get; }
         internal string SourceVariable { get; }
 
         internal string FormName { get; }

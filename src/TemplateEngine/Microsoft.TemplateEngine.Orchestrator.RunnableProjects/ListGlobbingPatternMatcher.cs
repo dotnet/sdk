@@ -10,6 +10,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class ListGlobbingPatternMatcher : IPathMatcher
     {
+        private readonly IReadOnlyList<IPathMatcher> _pathMatchers;
+
+        private string _displayPattern;
+
         internal ListGlobbingPatternMatcher(IList<string> patternList)
         {
             List<IPathMatcher> pathMatchers = new List<IPathMatcher>();
@@ -21,8 +25,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             _pathMatchers = pathMatchers;
         }
-
-        private readonly IReadOnlyList<IPathMatcher> _pathMatchers;
 
         public string Pattern
         {
@@ -44,7 +46,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return _displayPattern;
             }
         }
-        private string _displayPattern;
 
         public bool IsMatch(string path)
         {

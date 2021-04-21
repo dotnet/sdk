@@ -16,38 +16,28 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "conditional";
 
-        private readonly ConditionEvaluator _evaluator;
-        private readonly bool _wholeLine;
-        private readonly bool _trimWhitespace;
-        private readonly ConditionalTokens _tokens;
-        private readonly string _id;
-
         // the unusual order of these is historical, no special meaning
         // if actual_token_index % 10 == baseTokenIndex
         // then actual_token_index is of the baseTokenIndex type
         // these are now "Base indexes"
         private const int IfTokenBaseIndex = 0;
+
         private const int EndTokenBaseIndex = 1;
         private const int ElseIfTokenBaseIndex = 2;
         private const int ElseTokenBaseIndex = 3;
-
         private const int IfTokenActionableBaseIndex = 4;
         private const int ElseIfTokenActionableBaseIndex = 5;
         private const int ElseTokenActionableBaseIndex = 6;
 
         // must be > the highest token type index
         private const int TokenTypeModulus = 10;
+
+        private readonly ConditionEvaluator _evaluator;
+        private readonly bool _wholeLine;
+        private readonly bool _trimWhitespace;
+        private readonly ConditionalTokens _tokens;
+        private readonly string _id;
         private bool _initialState;
-
-        public string Id => _id;
-
-        public bool WholeLine => _wholeLine;
-
-        public bool TrimWhitespace => _trimWhitespace;
-
-        public ConditionEvaluator Evaluator => _evaluator;
-
-        public ConditionalTokens Tokens => _tokens;
 
         public Conditional(ConditionalTokens tokenVariants, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string id, bool initialState)
         {
@@ -58,6 +48,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _id = id;
             _initialState = initialState;
         }
+
+        public string Id => _id;
+
+        public bool WholeLine => _wholeLine;
+
+        public bool TrimWhitespace => _trimWhitespace;
+
+        public ConditionEvaluator Evaluator => _evaluator;
+
+        public ConditionalTokens Tokens => _tokens;
 
         /// <summary>
         /// Returns the numner of elements in the longest of the token variant lists.
@@ -99,6 +99,19 @@ namespace Microsoft.TemplateEngine.Core.Operations
         }
 
         /// <summary>
+        /// Returns true if the tokenIndex indicates the token is a variant of its base type,
+        /// false otherwise.
+        /// </summary>
+        /// <param name="tokenIndex"></param>
+        /// <param name="baseTypeIndex"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsTokenIndexOfType(int tokenIndex, int baseTypeIndex)
+        {
+            return (tokenIndex % TokenTypeModulus) == baseTypeIndex;
+        }
+
+        /// <summary>
         /// Puts the tokensOfType into the tokenMasterList at indexes which are congruent to typeRemainder mod TokenTypeModulus.
         /// </summary>
         /// <param name="trie"></param>
@@ -118,26 +131,13 @@ namespace Microsoft.TemplateEngine.Core.Operations
             }
         }
 
-        /// <summary>
-        /// Returns true if the tokenIndex indicates the token is a variant of its base type,
-        /// false otherwise.
-        /// </summary>
-        /// <param name="tokenIndex"></param>
-        /// <param name="baseTypeIndex"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsTokenIndexOfType(int tokenIndex, int baseTypeIndex)
-        {
-            return (tokenIndex % TokenTypeModulus) == baseTypeIndex;
-        }
-
         private class Impl : IOperation
         {
             private readonly Conditional _definition;
-            private EvaluationState _current;
             private readonly Stack<EvaluationState> _pendingCompletion = new Stack<EvaluationState>();
             private readonly ITokenTrie _trie;
             private readonly string _id;
+            private EvaluationState _current;
 
             public Impl(Conditional definition, IReadOnlyList<IToken> tokens, ITokenTrie trie, string id, bool initialState)
             {
@@ -432,20 +432,13 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             private class EvaluationState
             {
-                private bool _branchTaken;
                 private readonly Impl _impl;
+                private bool _branchTaken;
 
                 public EvaluationState(Impl impl)
                 {
                     _impl = impl;
                     ActionableOperationsEnabled = false;
-                }
-
-                internal bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
-                {
-                    bool faulted;
-                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition, out faulted);
-                    return BranchTaken;
                 }
 
                 public bool BranchTaken
@@ -464,6 +457,13 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     {
                         processor.Config.Flags[otherOptionDisableFlag] = enabled;
                     }
+                }
+
+                internal bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
+                {
+                    bool faulted;
+                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition, out faulted);
+                    return BranchTaken;
                 }
             }
         }

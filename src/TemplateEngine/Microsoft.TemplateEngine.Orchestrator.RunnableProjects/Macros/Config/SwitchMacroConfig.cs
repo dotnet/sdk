@@ -8,6 +8,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     internal class SwitchMacroConfig : IMacroConfig
     {
+        internal SwitchMacroConfig(string variableName, string evaluator, string dataType, IList<KeyValuePair<string, string>> switches)
+        {
+            VariableName = variableName;
+            Type = "switch";
+            Evaluator = evaluator;
+            DataType = dataType;
+            Switches = switches;
+        }
+
         public string VariableName { get; private set; }
 
         public string Type { get; private set; }
@@ -18,14 +27,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         // condition -> value
         internal IList<KeyValuePair<string, string>> Switches { get; private set; }
-
-        internal SwitchMacroConfig(string variableName, string evaluator, string dataType, IList<KeyValuePair<string, string>> switches)
-        {
-            VariableName = variableName;
-            Type = "switch";
-            Evaluator = evaluator;
-            DataType = dataType;
-            Switches = switches;
-        }
     }
 }

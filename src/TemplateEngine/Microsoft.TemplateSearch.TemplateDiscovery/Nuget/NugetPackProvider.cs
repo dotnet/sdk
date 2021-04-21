@@ -13,18 +13,15 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
     public class NugetPackProvider : IPackProvider
     {
-        private string _searchUriFormat;
         // {PackageId}.{Version}.nupkg
         private const string DownloadUrlFormat = "https://api.nuget.org/v3-flatcontainer/{0}/{1}/{0}.{1}.nupkg";
-        private const string DownloadPackageFileNameFormat = "{0}.{1}.nupkg";
 
+        private const string DownloadPackageFileNameFormat = "{0}.{1}.nupkg";
+        private const string DownloadedPacksDir = "DownloadedPacks";
         private readonly string _packageTempPath;
         private readonly int _pageSize;
         private readonly bool _runOnlyOnePage;
-
-        private const string DownloadedPacksDir = "DownloadedPacks";
-
-        public string Name { get; private set; }
+        private string _searchUriFormat;
 
         public NugetPackProvider(string name, string query, string packageTempBasePath, int pageSize, bool runOnlyOnePage, bool includePreviewPacks)
         {
@@ -43,6 +40,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
                 Directory.CreateDirectory(_packageTempPath);
             }
         }
+
+        public string Name { get; private set; }
 
         public async IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync()
         {
@@ -84,7 +83,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
                 }
             }
             while (!done && !_runOnlyOnePage);
-
         }
 
         public async Task<IDownloadedPackInfo> DownloadPackageAsync(IPackInfo packinfo)
@@ -105,7 +103,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
                         Version = packinfo.Version,
                         Path = outputPackageFileNameFullPath,
                         TotalDownloads = packinfo.TotalDownloads
-
                     };
                 }
             }

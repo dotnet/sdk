@@ -57,6 +57,15 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             return checkResult;
         }
 
+        private static ITemplateEngineHost CreateHost(IDownloadedPackInfo packInfo)
+        {
+            string hostIdentifier = HostIdentifierBase + packInfo.Id;
+
+            ITemplateEngineHost host = TemplateEngineHostHelper.CreateHost(hostIdentifier);
+
+            return host;
+        }
+
         private void ProduceAdditionalDataForPack(IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, PackCheckResult packCheckResult, EngineEnvironmentSettings environment)
         {
             if (!packCheckResult.AnyTemplates)
@@ -85,15 +94,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             }
 
             return installedTemplates.Count > 0;
-        }
-
-        private static ITemplateEngineHost CreateHost(IDownloadedPackInfo packInfo)
-        {
-            string hostIdentifier = HostIdentifierBase + packInfo.Id;
-
-            ITemplateEngineHost host = TemplateEngineHostHelper.CreateHost(hostIdentifier);
-
-            return host;
         }
 
         private void TryCleanup(EngineEnvironmentSettings environment)

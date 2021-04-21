@@ -2,12 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+
 namespace Microsoft.TemplateSearch.Common
 {
     public class PackInfo
     {
-        public static PackInfo Empty { get; set; } = new PackInfo(string.Empty, string.Empty);
-
         public PackInfo(string name, string version)
         {
             Name = name;
@@ -21,12 +20,12 @@ namespace Microsoft.TemplateSearch.Common
             TotalDownloads = totalDownloads;
         }
 
+        public static PackInfo Empty { get; set; } = new PackInfo(string.Empty, string.Empty);
         public string Name { get; }
 
         public string Version { get; }
 
         public long TotalDownloads { get; }
-
     }
 
     public class PackInfoEqualityComparer : IEqualityComparer<PackInfo>

@@ -30,12 +30,19 @@ namespace Microsoft.TemplateEngine.Mocks
         public ITemplatePackageManager TemplatePackagesManager => throw new NotImplementedException();
 
         public void AddProbingPath(string probeIn) => throw new NotImplementedException();
+
         public IFile FindBestHostTemplateConfigFile(IFileSystemInfo config) => throw new NotImplementedException();
+
         public Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token) => throw new NotImplementedException();
+
         public Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo>> filters, CancellationToken token = default) => throw new NotImplementedException();
+
         public ITemplate LoadTemplate(ITemplateInfo info, string baselineName) => throw new NotImplementedException();
+
         public Task RebuildCacheAsync(CancellationToken token) => throw new NotImplementedException();
+
         public void Save() => throw new NotImplementedException();
+
         public bool TryGetMountPoint(string mountPointUri, out IMountPoint mountPoint) => throw new NotImplementedException();
     }
 }

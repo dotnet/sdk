@@ -10,6 +10,22 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public class RangeVersionSpecification : IVersionSpecification
     {
+        public RangeVersionSpecification(string min, string max, bool isStartInclusive, bool isEndInclusive)
+        {
+            MinVersion = min;
+            MaxVersion = max;
+            IsStartInclusive = isStartInclusive;
+            IsEndInclusive = isEndInclusive;
+        }
+
+        public string MinVersion { get; }
+
+        public string MaxVersion { get; }
+
+        public bool IsStartInclusive { get; }
+
+        public bool IsEndInclusive { get; }
+
         public static bool TryParse(string range, out IVersionSpecification specification)
         {
             bool startInclusive = false;
@@ -65,27 +81,6 @@ namespace Microsoft.TemplateEngine.Utils
             return true;
         }
 
-        public RangeVersionSpecification(string min, string max, bool isStartInclusive, bool isEndInclusive)
-        {
-            MinVersion = min;
-            MaxVersion = max;
-            IsStartInclusive = isStartInclusive;
-            IsEndInclusive = isEndInclusive;
-        }
-
-        public string MinVersion { get; }
-
-        public string MaxVersion { get; }
-
-        public bool IsStartInclusive { get; }
-
-        public bool IsEndInclusive { get; }
-
-        private static bool IsWildcardVersion(string version)
-        {
-            return string.Equals(version, "*");
-        }
-
         public bool CheckIfVersionIsValid(string versionToCheck)
         {
             bool isStartValid;
@@ -138,6 +133,11 @@ namespace Microsoft.TemplateEngine.Utils
             }
 
             return isStartValid && isEndValid;
+        }
+
+        private static bool IsWildcardVersion(string version)
+        {
+            return string.Equals(version, "*");
         }
     }
 }

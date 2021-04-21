@@ -8,6 +8,8 @@ namespace Microsoft.TemplateSearch.Common
 {
     public class TemplateSourceSearchResult
     {
+        private Dictionary<PackInfo, TemplatePackSearchResult> _packsWithMatches;
+
         public TemplateSourceSearchResult(string sourceDisplayName)
         {
             SourceDisplayName = sourceDisplayName;
@@ -15,6 +17,8 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         public string SourceDisplayName { get; }
+
+        public IReadOnlyDictionary<PackInfo, TemplatePackSearchResult> PacksWithMatches => _packsWithMatches;
 
         public void AddMatchForPack(PackInfo packInfo, ITemplateMatchInfo matchInfo)
         {
@@ -26,9 +30,5 @@ namespace Microsoft.TemplateSearch.Common
 
             matchesForPack.AddMatch(matchInfo);
         }
-
-        private Dictionary<PackInfo, TemplatePackSearchResult> _packsWithMatches;
-
-        public IReadOnlyDictionary<PackInfo, TemplatePackSearchResult> PacksWithMatches => _packsWithMatches;
     }
 }

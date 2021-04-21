@@ -5,9 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+
 #if NETFULL
 using System.Linq;
 #endif
+
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Edge.Template;

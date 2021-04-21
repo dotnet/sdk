@@ -49,42 +49,6 @@ namespace Microsoft.TemplateEngine.Utils
             return "/" + string.Join("/", partStack.Reverse());
         }
 
-        private static void ProcessPath(string path, Stack<string> partStack)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return;
-            }
-
-            string[] parts = path.Split('/');
-
-            for (int i = 0; i < parts.Length; ++i)
-            {
-                switch (parts[i])
-                {
-                    case "":
-                        if (i == 0)
-                        {
-                            partStack.Clear();
-                        }
-                        break;
-                    case ".":
-                        break;
-                    case "..":
-                        if (partStack.Count == 0)
-                        {
-                            throw new IOException($"Failed to combine paths, stack underflow at {string.Join("/", parts.Skip(i))}");
-                        }
-
-                        partStack.Pop();
-                        break;
-                    default:
-                        partStack.Push(parts[i]);
-                        break;
-                }
-            }
-        }
-
         public static IFile FileInfo(this IFileSystemInfo info, string path)
         {
             string fullPath = info.FullPath.CombinePaths(path);
@@ -143,6 +107,42 @@ namespace Microsoft.TemplateEngine.Utils
             //  the number of levels up we need to go is the value of revIndex
             segments.InsertRange(0, Enumerable.Repeat("..", revIndex));
             return string.Join("/", segments);
+        }
+
+        private static void ProcessPath(string path, Stack<string> partStack)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            string[] parts = path.Split('/');
+
+            for (int i = 0; i < parts.Length; ++i)
+            {
+                switch (parts[i])
+                {
+                    case "":
+                        if (i == 0)
+                        {
+                            partStack.Clear();
+                        }
+                        break;
+                    case ".":
+                        break;
+                    case "..":
+                        if (partStack.Count == 0)
+                        {
+                            throw new IOException($"Failed to combine paths, stack underflow at {string.Join("/", parts.Skip(i))}");
+                        }
+
+                        partStack.Pop();
+                        break;
+                    default:
+                        partStack.Push(parts[i]);
+                        break;
+                }
+            }
         }
     }
 }
