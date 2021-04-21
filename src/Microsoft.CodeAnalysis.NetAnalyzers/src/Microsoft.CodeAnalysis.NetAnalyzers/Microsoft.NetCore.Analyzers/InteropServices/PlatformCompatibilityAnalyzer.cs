@@ -408,7 +408,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             if (info.Negated)
                             {
                                 if (attribute.UnsupportedFirst != null &&
-                                    attribute.UnsupportedFirst >= info.Version)
+                                    attribute.UnsupportedFirst.IsGreaterThanOrEqualTo(info.Version))
                                 {
                                     if (DenyList(attribute))
                                     {
@@ -420,7 +420,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 }
 
                                 if (attribute.UnsupportedSecond != null &&
-                                    attribute.UnsupportedSecond <= info.Version)
+                                    info.Version.IsGreaterThanOrEqualTo(attribute.UnsupportedSecond))
                                 {
                                     attribute.UnsupportedSecond = null;
                                 }
@@ -436,21 +436,21 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 {
                                     if (attribute.UnsupportedFirst != null &&
                                         capturedVersions.TryGetValue(info.PlatformName, out var version) &&
-                                        attribute.UnsupportedFirst >= version)
+                                        attribute.UnsupportedFirst.IsGreaterThanOrEqualTo(version))
                                     {
                                         attribute.UnsupportedFirst = null;
                                     }
 
                                     if (attribute.UnsupportedSecond != null &&
                                         capturedVersions.TryGetValue(info.PlatformName, out version) &&
-                                        attribute.UnsupportedSecond <= version)
+                                        version.IsGreaterThanOrEqualTo(attribute.UnsupportedSecond))
                                     {
                                         attribute.UnsupportedSecond = null;
                                     }
                                 }
 
                                 if (attribute.SupportedFirst != null &&
-                                    attribute.SupportedFirst <= info.Version)
+                                    info.Version.IsGreaterThanOrEqualTo(attribute.SupportedFirst))
                                 {
                                     attribute.SupportedFirst = null;
                                     RemoveUnsupportedWithLessVersion(info.Version, attribute);
@@ -458,7 +458,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 }
 
                                 if (attribute.SupportedSecond != null &&
-                                    attribute.SupportedSecond <= info.Version)
+                                    info.Version.IsGreaterThanOrEqualTo(attribute.SupportedSecond))
                                 {
                                     attribute.SupportedSecond = null;
                                     RemoveUnsupportedWithLessVersion(info.Version, attribute);
@@ -551,8 +551,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             static void RemoveUnsupportedWithLessVersion(Version supportedVersion, Versions attribute)
             {
-                if (attribute.UnsupportedFirst != null &&
-                    attribute.UnsupportedFirst <= supportedVersion)
+                if (supportedVersion.IsGreaterThanOrEqualTo(attribute.UnsupportedFirst))
                 {
                     attribute.UnsupportedFirst = null;
                 }
@@ -895,14 +894,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         var supportedVersion = attribute.SupportedSecond ?? attribute.SupportedFirst;
                         if (supportedVersion != null)
                         {
-                            version = version == null || supportedVersion >= version ? supportedVersion : version;
+                            version = supportedVersion.IsGreaterThanOrEqualTo(version) ? supportedVersion : version;
                         }
                         else
                         {
                             var unsupportedVersion = attribute.UnsupportedSecond ?? attribute.UnsupportedFirst;
                             if (unsupportedVersion != null)
                             {
-                                version = version == null || unsupportedVersion >= version ? unsupportedVersion : version;
+                                version = unsupportedVersion.IsGreaterThanOrEqualTo(version) ? unsupportedVersion : version;
                             }
                             else
                             {
@@ -1332,25 +1331,25 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             static bool SuppressedByCallSiteUnsupported(Versions callSiteAttribute, Version unsupporteAttribute) =>
                 DenyList(callSiteAttribute) && callSiteAttribute.SupportedFirst != null ?
-                callSiteAttribute.UnsupportedSecond != null && unsupporteAttribute >= callSiteAttribute.UnsupportedSecond :
-                callSiteAttribute.UnsupportedFirst != null && unsupporteAttribute >= callSiteAttribute.UnsupportedFirst;
+                callSiteAttribute.UnsupportedSecond != null && unsupporteAttribute.IsGreaterThanOrEqualTo(callSiteAttribute.UnsupportedSecond) :
+                callSiteAttribute.UnsupportedFirst != null && unsupporteAttribute.IsGreaterThanOrEqualTo(callSiteAttribute.UnsupportedFirst);
 
             static bool SuppressedByCallSiteSupported(Versions attribute, Version? callSiteSupportedFirst) =>
-                callSiteSupportedFirst != null && callSiteSupportedFirst >= attribute.SupportedFirst! &&
-                attribute.SupportedSecond != null && callSiteSupportedFirst >= attribute.SupportedSecond;
+                callSiteSupportedFirst != null && callSiteSupportedFirst.IsGreaterThanOrEqualTo(attribute.SupportedFirst) &&
+                attribute.SupportedSecond != null && callSiteSupportedFirst.IsGreaterThanOrEqualTo(attribute.SupportedSecond);
 
             static bool UnsupportedFirstSuppressed(Versions attribute, Versions callSiteAttribute) =>
-                callSiteAttribute.SupportedFirst != null && callSiteAttribute.SupportedFirst >= attribute.SupportedFirst ||
+                callSiteAttribute.SupportedFirst != null && callSiteAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attribute.SupportedFirst) ||
                 SuppressedByCallSiteUnsupported(callSiteAttribute, attribute.UnsupportedFirst!);
 
             // As optional if call site supports that platform, their versions should match
             static bool OptionalOsSupportSuppressed(Versions callSiteAttribute, Versions attribute) =>
-                (callSiteAttribute.SupportedFirst == null || attribute.SupportedFirst <= callSiteAttribute.SupportedFirst) &&
-                (callSiteAttribute.SupportedSecond == null || attribute.SupportedFirst <= callSiteAttribute.SupportedSecond);
+                (callSiteAttribute.SupportedFirst == null || callSiteAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attribute.SupportedFirst)) &&
+                (callSiteAttribute.SupportedSecond == null || callSiteAttribute.SupportedSecond.IsGreaterThanOrEqualTo(attribute.SupportedFirst));
 
             static bool MandatoryOsVersionsSuppressed(Versions callSitePlatforms, Version checkingVersion) =>
-                callSitePlatforms.SupportedFirst != null && checkingVersion <= callSitePlatforms.SupportedFirst ||
-                callSitePlatforms.SupportedSecond != null && checkingVersion <= callSitePlatforms.SupportedSecond;
+                callSitePlatforms.SupportedFirst != null && callSitePlatforms.SupportedFirst.IsGreaterThanOrEqualTo(checkingVersion) ||
+                callSitePlatforms.SupportedSecond != null && callSitePlatforms.SupportedSecond.IsGreaterThanOrEqualTo(checkingVersion);
         }
 
         private static Versions CopyAllAttributes(Versions copyTo, Versions copyFrom)
@@ -1476,7 +1475,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             if (childAttributes.TryGetValue(platform, out var childAttribute))
                             {
                                 // only later versions could narrow, other versions ignored
-                                if (childAttribute.SupportedFirst >= attributes.SupportedFirst &&
+                                if (childAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attributes.SupportedFirst) &&
                                     (attributes.SupportedSecond == null || attributes.SupportedSecond < childAttribute.SupportedFirst))
                                 {
                                     attributes.SupportedSecond = childAttribute.SupportedFirst;
@@ -1485,7 +1484,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                                 if (childAttribute.UnsupportedFirst != null)
                                 {
-                                    if (childAttribute.UnsupportedFirst <= attributes.SupportedFirst)
+                                    if (attributes.SupportedFirst.IsGreaterThanOrEqualTo(childAttribute.UnsupportedFirst))
                                     {
                                         parentAttributes.Callsite = Callsite.Empty;
                                         attributes.SupportedFirst = childAttribute.SupportedFirst > attributes.SupportedFirst ? childAttribute.SupportedFirst : null;
@@ -1496,7 +1495,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                         attributes.UnsupportedFirst = childAttribute.UnsupportedFirst;
                                     }
 
-                                    if (childAttribute.UnsupportedFirst <= attributes.SupportedSecond)
+                                    if (attributes.SupportedSecond.IsGreaterThanOrEqualTo(childAttribute.UnsupportedFirst))
                                     {
                                         attributes.SupportedSecond = null;
                                     }
@@ -1698,7 +1697,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         /// <returns>true if it is allow list</returns>
         private static bool AllowList(Versions attributes) =>
             attributes.SupportedFirst != null &&
-            (attributes.UnsupportedFirst == null || attributes.SupportedFirst <= attributes.UnsupportedFirst);
+            (attributes.UnsupportedFirst == null || attributes.UnsupportedFirst.IsGreaterThanOrEqualTo(attributes.SupportedFirst));
 
         /// <summary>
         /// Determines if the attributes unsupported only for the platform (deny list)
