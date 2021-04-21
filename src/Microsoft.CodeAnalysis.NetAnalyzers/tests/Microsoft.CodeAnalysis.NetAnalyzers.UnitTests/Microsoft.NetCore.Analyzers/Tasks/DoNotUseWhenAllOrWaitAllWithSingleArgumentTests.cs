@@ -218,7 +218,7 @@ class C
 
         await t1;
         await CreateTask();
-        
+
         // Test initializer
         var t1WhenAll = {|CA1842:Task.WhenAll(t1)|};
         DoSomethingWithTask(t1WhenAll);
