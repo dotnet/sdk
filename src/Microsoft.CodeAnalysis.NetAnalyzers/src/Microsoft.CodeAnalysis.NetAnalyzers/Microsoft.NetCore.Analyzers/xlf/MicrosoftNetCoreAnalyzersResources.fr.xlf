@@ -1617,6 +1617,41 @@
         <target state="translated">Cycle de référence potentiel dans un graphe d'objet désérialisé</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
+        <source>Use 'ContainsKey'</source>
+        <target state="new">Use 'ContainsKey'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsKeyDescription">
+        <source>'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</source>
+        <target state="new">'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsKeyMessage">
+        <source>Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</source>
+        <target state="new">Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsMethodsTitle">
+        <source>Prefer Dictionary.Contains methods</source>
+        <target state="new">Prefer Dictionary.Contains methods</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsValueCodeFixTitle">
+        <source>Use 'ContainsValue'</source>
+        <target state="new">Use 'ContainsValue'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsValueDescription">
+        <source>Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</source>
+        <target state="new">Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsValueMessage">
+        <source>Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</source>
+        <target state="new">Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">'Stream’ a une surcharge ’ReadAsync’ qui prend un ’Memory&lt;Byte&gt;' comme premier argument et une surcharge ’WriteAsync’ qui prend un ’ReadOnlyMemory&lt;Byte&gt;' comme premier argument. Préférez l'appel des surcharges basées sur la mémoire, car elles sont plus efficaces.</target>

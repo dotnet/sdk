@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -16,8 +15,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class DoNotUseWhenAllOrWaitAllWithSingleArgument : DiagnosticAnalyzer
     {
-        internal const string WhenAllRuleId = "CA1841";
-        internal const string WaitAllRuleId = "CA1842";
+        internal const string WhenAllRuleId = "CA1842";
+        internal const string WaitAllRuleId = "CA1843";
 
         internal static readonly DiagnosticDescriptor WhenAllRule = DiagnosticDescriptorHelper.Create(WhenAllRuleId,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),

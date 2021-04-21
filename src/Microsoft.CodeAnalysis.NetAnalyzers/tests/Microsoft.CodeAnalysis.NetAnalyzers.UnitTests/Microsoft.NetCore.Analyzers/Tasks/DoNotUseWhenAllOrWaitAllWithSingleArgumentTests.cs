@@ -180,20 +180,20 @@ class C
         var t1 = CreateTask();
         var objectTask1 = CreateObjectTask();
 
-        await {|CA1841:Task.WhenAll(t1)|};
-        await {|CA1841:Task.WhenAll(CreateTask())|};
+        await {|CA1842:Task.WhenAll(t1)|};
+        await {|CA1842:Task.WhenAll(CreateTask())|};
 
         // Test initializer
-        var t1WhenAll = {|CA1841:Task.WhenAll(t1)|};
+        var t1WhenAll = {|CA1842:Task.WhenAll(t1)|};
         DoSomethingWithTask(t1WhenAll);
 
         // Test assignment
-        t1WhenAll = {|CA1841:Task.WhenAll(t1)|};
+        t1WhenAll = {|CA1842:Task.WhenAll(t1)|};
         DoSomethingWithTask(t1WhenAll);
 
-        await {|CA1841:Task.WhenAll(objectTask1)|};
-        await {|CA1841:Task.WhenAll(CreateObjectTask())|};
-        var ot1WhenAll = {|CA1841:Task.WhenAll(objectTask1)|};
+        await {|CA1842:Task.WhenAll(objectTask1)|};
+        await {|CA1842:Task.WhenAll(CreateObjectTask())|};
+        var ot1WhenAll = {|CA1842:Task.WhenAll(objectTask1)|};
         DoSomethingWithTask(ot1WhenAll);
     }
 
@@ -220,16 +220,16 @@ class C
         await CreateTask();
         
         // Test initializer
-        var t1WhenAll = {|CA1841:Task.WhenAll(t1)|};
+        var t1WhenAll = {|CA1842:Task.WhenAll(t1)|};
         DoSomethingWithTask(t1WhenAll);
 
         // Test assignment
-        t1WhenAll = {|CA1841:Task.WhenAll(t1)|};
+        t1WhenAll = {|CA1842:Task.WhenAll(t1)|};
         DoSomethingWithTask(t1WhenAll);
 
         await objectTask1;
         await CreateObjectTask();
-        var ot1WhenAll = {|CA1841:Task.WhenAll(objectTask1)|};
+        var ot1WhenAll = {|CA1842:Task.WhenAll(objectTask1)|};
         DoSomethingWithTask(ot1WhenAll);
     }
 
@@ -265,14 +265,14 @@ Class C
         Dim t1 = CreateTask()
         Dim objectTask1 = CreateObjectTask()
 
-        Await {|CA1841:Task.WhenAll(t1)|}
-        Await {|CA1841:Task.WhenAll(CreateTask())|}
-        Dim t1WhenAll = {|CA1841:Task.WhenAll(t1)|}
+        Await {|CA1842:Task.WhenAll(t1)|}
+        Await {|CA1842:Task.WhenAll(CreateTask())|}
+        Dim t1WhenAll = {|CA1842:Task.WhenAll(t1)|}
         DoSomethingWithTask(t1WhenAll)
 
-        Await {|CA1841:Task.WhenAll(objectTask1)|}
-        Await {|CA1841:Task.WhenAll(CreateObjectTask())|}
-        Dim o1WhenAll = {|CA1841:Task.WhenAll(objectTask1)|}
+        Await {|CA1842:Task.WhenAll(objectTask1)|}
+        Await {|CA1842:Task.WhenAll(CreateObjectTask())|}
+        Dim o1WhenAll = {|CA1842:Task.WhenAll(objectTask1)|}
         DoSomethingWithTask(o1WhenAll)
     End Function
 
@@ -299,12 +299,12 @@ Class C
 
         Await t1
         Await CreateTask()
-        Dim t1WhenAll = {|CA1841:Task.WhenAll(t1)|}
+        Dim t1WhenAll = {|CA1842:Task.WhenAll(t1)|}
         DoSomethingWithTask(t1WhenAll)
 
         Await objectTask1
         Await CreateObjectTask()
-        Dim o1WhenAll = {|CA1841:Task.WhenAll(objectTask1)|}
+        Dim o1WhenAll = {|CA1842:Task.WhenAll(objectTask1)|}
         DoSomethingWithTask(o1WhenAll)
     End Function
 
@@ -347,10 +347,10 @@ class C
         var t1 = CreateTask();
         var objectTask1 = CreateObjectTask();
 
-        {|CA1842:Task.WaitAll(t1)|};
-        {|CA1842:Task.WaitAll(CreateTask())|};
-        {|CA1842:Task.WaitAll(objectTask1)|};
-        {|CA1842:Task.WaitAll(CreateObjectTask())|};
+        {|CA1843:Task.WaitAll(t1)|};
+        {|CA1843:Task.WaitAll(CreateTask())|};
+        {|CA1843:Task.WaitAll(objectTask1)|};
+        {|CA1843:Task.WaitAll(CreateObjectTask())|};
     }
 
     Task CreateTask() => Task.CompletedTask;
@@ -390,10 +390,10 @@ Class C
         Dim t1 = CreateTask()
         Dim objectTask1 = CreateObjectTask()
 
-        {|CA1842:Task.WaitAll(t1)|}
-        {|CA1842:Task.WaitAll(CreateTask())|}
-        {|CA1842:Task.WaitAll(objectTask1)|}
-        {|CA1842:Task.WaitAll(CreateObjectTask())|}
+        {|CA1843:Task.WaitAll(t1)|}
+        {|CA1843:Task.WaitAll(CreateTask())|}
+        {|CA1843:Task.WaitAll(objectTask1)|}
+        {|CA1843:Task.WaitAll(CreateObjectTask())|}
     End Sub
 
     Function CreateTask() As Task

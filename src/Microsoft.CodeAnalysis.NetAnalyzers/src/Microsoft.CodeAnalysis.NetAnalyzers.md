@@ -1332,7 +1332,19 @@ Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in
 |CodeFix|True|
 ---
 
-## [CA1841](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841): Do not use 'WhenAll' with a single task
+## [CA1841](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841): Prefer Dictionary.Contains methods
+
+Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1842](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842): Do not use 'WhenAll' with a single task
 
 Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.
 
@@ -1344,7 +1356,7 @@ Using 'WhenAll' with a single task should be avoided in favor of directly awaiti
 |CodeFix|True|
 ---
 
-## [CA1842](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842): Do not use 'WaitAll' with a single task
+## [CA1843](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843): Do not use 'WaitAll' with a single task
 
 Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.
 

@@ -208,6 +208,25 @@
             ]
           }
         },
+        "CA1841": {
+          "id": "CA1841",
+          "shortDescription": "Prefer Dictionary.Contains methods",
+          "fullDescription": "Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpPreferDictionaryContainsMethods",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2014": {
           "id": "CA2014",
           "shortDescription": "Do not use stackalloc in loops",
@@ -2484,12 +2503,12 @@
             ]
           }
         },
-        "CA1841": {
-          "id": "CA1841",
+        "CA1842": {
+          "id": "CA1842",
           "shortDescription": "Do not use 'WhenAll' with a single task",
           "fullDescription": "Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2504,12 +2523,12 @@
             ]
           }
         },
-        "CA1842": {
-          "id": "CA1842",
+        "CA1843": {
+          "id": "CA1843",
           "shortDescription": "Do not use 'WaitAll' with a single task",
           "fullDescription": "Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -5297,6 +5316,25 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "BasicAvoidZeroLengthArrayAllocationsAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1841": {
+          "id": "CA1841",
+          "shortDescription": "Prefer Dictionary.Contains methods",
+          "fullDescription": "Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "BasicPreferDictionaryContainsMethods",
             "languages": [
               "Visual Basic"
             ],
