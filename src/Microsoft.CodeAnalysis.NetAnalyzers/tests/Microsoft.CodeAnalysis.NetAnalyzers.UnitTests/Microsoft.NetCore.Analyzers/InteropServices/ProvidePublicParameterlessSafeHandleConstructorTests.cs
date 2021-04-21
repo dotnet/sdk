@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.ProvidePublicParameterlessSafeHandleConstructorAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.InteropServices.CSharpProvidePublicParameterlessSafeHandleConstructorFixer>;
+    Microsoft.NetCore.Analyzers.InteropServices.ProvidePublicParameterlessSafeHandleConstructorFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.ProvidePublicParameterlessSafeHandleConstructorAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.InteropServices.BasicProvidePublicParameterlessSafeHandleConstructorFixer>;
+    Microsoft.NetCore.Analyzers.InteropServices.ProvidePublicParameterlessSafeHandleConstructorFixer>;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {

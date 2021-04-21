@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,8 @@ using Microsoft.CodeAnalysis.Editing;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
-    public abstract class ProvidePublicParameterlessSafeHandleConstructorFixer : CodeFixProvider
+    [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
+    public sealed class ProvidePublicParameterlessSafeHandleConstructorFixer : CodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(ProvidePublicParameterlessSafeHandleConstructorAnalyzer.RuleId);
 
