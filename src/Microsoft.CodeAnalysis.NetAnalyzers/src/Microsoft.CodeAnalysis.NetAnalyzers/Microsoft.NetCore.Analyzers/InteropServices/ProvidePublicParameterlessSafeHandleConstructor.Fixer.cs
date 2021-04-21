@@ -42,12 +42,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             if (symbol.Kind == SymbolKind.Method)
             {
                 Diagnostic diagnostic = context.Diagnostics.First();
-                string title = MicrosoftNetCoreAnalyzersResources.ProvidePublicParameterlessSafeHandleConstructorTitle;
                 context.RegisterCodeFix(
                     new MyCodeAction(
-                        title,
+                        MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic,
                         async ct => await MakeParameterlessConstructorPublic(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
-                        equivalenceKey: title),
+                        equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic)),
                     diagnostic);
             }
             else if (symbol is INamedTypeSymbol type)
@@ -66,12 +65,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if (baseTypeHasAccessibleParameterlessConstructor)
                 {
                     Diagnostic diagnostic = context.Diagnostics.First();
-                    string title = MicrosoftNetCoreAnalyzersResources.ProvidePublicParameterlessSafeHandleConstructorTitle;
                     context.RegisterCodeFix(
                         new MyCodeAction(
-                            title,
+                            MicrosoftNetCoreAnalyzersResources.AddPublicParameterlessConstructor,
                             async ct => await AddParameterlessConstructor(declaration, type, context.Document, context.CancellationToken).ConfigureAwait(false),
-                            equivalenceKey: title),
+                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.AddPublicParameterlessConstructor)),
                         diagnostic);
                 }
             }
