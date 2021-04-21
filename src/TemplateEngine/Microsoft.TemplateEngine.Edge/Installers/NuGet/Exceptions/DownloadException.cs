@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using NuGet.Versioning;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {

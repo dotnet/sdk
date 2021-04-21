@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Abstractions.Mount;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

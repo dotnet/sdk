@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateSearch.Common
 {

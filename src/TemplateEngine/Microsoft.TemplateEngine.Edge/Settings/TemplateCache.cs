@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
