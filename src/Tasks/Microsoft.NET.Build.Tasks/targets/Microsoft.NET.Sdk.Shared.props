@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Microsoft.NET.Sdk.Wap.targets
+Microsoft.NET.Sdk.Shared.props
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -10,18 +10,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
-  <PropertyGroup Condition="'$(UsingNETSdkDefaults)' != 'true'">
-    <!-- Skip import of Microsoft.NuGet.props and Microsoft.NuGet.targets -->
-    <SkipImportNuGetProps>true</SkipImportNuGetProps>
-    <SkipImportNuGetBuildTargets>true</SkipImportNuGetBuildTargets>
-  </PropertyGroup>
-
-    <!-- Workaround: https://github.com/Microsoft/msbuild/issues/1293 -->
-  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Core' Or '$(TargetFrameworkIdentifier)' != '.NETFramework'">
-    <GenerateResourceMSBuildArchitecture Condition=" '$(GenerateResourceMSBuildArchitecture)' == '' ">CurrentArchitecture</GenerateResourceMSBuildArchitecture>
-    <GenerateResourceMSBuildRuntime Condition=" '$(GenerateResourceMSBuildRuntime)' == '' ">CurrentRuntime</GenerateResourceMSBuildRuntime>
-  </PropertyGroup>
 
   <PropertyGroup>
     <_NativeLibraryPrefix Condition="'$(_NativeLibraryPrefix)' == '' and !$(RuntimeIdentifier.StartsWith('win'))">lib</_NativeLibraryPrefix>
@@ -46,36 +34,5 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_DotNetHostPolicyLibraryName>$(_NativeLibraryPrefix)hostpolicy$(_NativeLibraryExtension)</_DotNetHostPolicyLibraryName>
     <_DotNetHostFxrLibraryName>$(_NativeLibraryPrefix)hostfxr$(_NativeLibraryExtension)</_DotNetHostFxrLibraryName>
   </PropertyGroup>
-
-   <Target Name="_ComputePackageReferencePublish">
-    <ItemGroup>
-
-      <!-- PrivateAssets="All" means exclude from publish, unless Publish metadata is specified separately -->
-      <PackageReference Publish="false"
-                        Condition="('%(PackageReference.PrivateAssets)' == 'All') And ('%(PackageReference.Publish)' == '')"/>
-
-      <_ExcludeFromPublishPackageReference Include="@(PackageReference)"
-                                           Condition="('%(PackageReference.Publish)' == 'false')" />
-    </ItemGroup>
-  </Target>
-
-  <!--
-  ============================================================
-                           _DefaultMicrosoftNETPlatformLibrary
-
-  .NET Core apps can have shared frameworks that are pre-installed on the target machine, thus the app is "portable"
-  to any machine that already has the shared framework installed. For .NET Core 1.x and 2.x, a "platform" library
-  is declared. The platform library and its dependencies will be excluded from the publish output.
-
-  For .NET Core 3 and up, targeting packs and runtime packs are used for shared framework assets instead of PackageReference
-  ============================================================
-  -->
-  <Target Name="_DefaultMicrosoftNETPlatformLibrary">
-
-    <PropertyGroup Condition="'$(MicrosoftNETPlatformLibrary)' == ''">
-      <MicrosoftNETPlatformLibrary Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'">Microsoft.NETCore.App</MicrosoftNETPlatformLibrary>
-    </PropertyGroup>
-
-  </Target>
 
 </Project>

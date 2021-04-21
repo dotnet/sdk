@@ -11,9 +11,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- Import the properties and targets that were pulled from Microsoft.NET.Sdk.targets to be used by the WAP project system -->
-  <Import Project="Microsoft.NET.Sdk.Wap.targets" />
-  <Import Project="Microsoft.NET.Sdk.Common.targets" />
+  <!-- Import the properties pulled from Microsoft.NET.Sdk.targets to be shared by the WAP project system -->
+  <Import Project="Microsoft.NET.Sdk.Shared.UsingNetSdkDefaults.props" />
+  
+  <!-- Import the properties pulled from Microsoft.NET.Sdk.targets to be shared by the WAP project system -->
+  <Import Project="Microsoft.NET.Sdk.Shared.UseCurrentRuntime.props" />
 
   <ImportGroup>
     <Import Project="$(MSBuildThisFileDirectory)Microsoft.PackageDependencyResolution.targets" Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.PackageDependencyResolution.targets') and ('$(Language)' != 'C++' or '$(_EnablePackageReferencesInVCProjects)' == 'true')" />
@@ -57,6 +59,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectRuntimeConfigDevFilePath Condition="'$(ProjectRuntimeConfigDevFilePath)' == ''">$(TargetDir)$(AssemblyName).runtimeconfig.dev.json</ProjectRuntimeConfigDevFilePath>
     <IncludeMainProjectInDepsFile Condition=" '$(IncludeMainProjectInDepsFile)' == '' ">true</IncludeMainProjectInDepsFile>
   </PropertyGroup>
+
+<!-- Import the properties pulled from Microsoft.NET.Sdk.targets to be shared by the WAP project system -->
+  <Import Project="Microsoft.NET.Sdk.Shared.props" />
 
   <PropertyGroup>
     <_DefaultUserProfileRuntimeStorePath>$(HOME)</_DefaultUserProfileRuntimeStorePath>

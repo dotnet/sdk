@@ -1,0 +1,71 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.DefaultItems.Shared.props
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+    Determine the version (including patch) of .NET Core to target.
+
+    When targeting .NET Core, the TargetFramework is used to specify the major and minor version of the runtime to use.  By default,
+    the patch version is inferred.  The general logic is that self-contained apps will target the latest patch that the SDK
+    knows about, while framework-dependent apps will target the ".0" patch (and roll forward to the latest patch installed at
+    runtime).
+
+    When targeting .NET Core 1.0 and 1.1, framework-dependent apps use 1.0.5 and 1.1.2, respectively.  This is done for compatibility
+    with previous releases that bumped the self-contained and framework-dependent versions together.
+
+    The TargetLatestRuntimePatch property can be set to true or false to explicitly opt in or out of the logic to roll forward
+    to the latest patch, regardless of whether the app is self-contained or framework-dependent.
+
+    The RuntimeFrameworkVersion is where the actual version of the .NET Core runtime to target can be set.  If set, it will be
+    used in the implicit PackageReference to Microsoft.NETCore.App.
+
+    The framework version that is written to the runtimeconfig.json file is based on the actual resolved package version
+    of Microsoft.NETCore.App.  This is to allow floating the verion number (ie the RuntimeFrameworkVersion could be set to
+    "2.0-*".
+
+  -->
+
+  <PropertyGroup Condition="'$(TargetLatestRuntimePatch)' == ''">
+    <TargetLatestRuntimePatch Condition="'$(SelfContained)' == 'true' ">true</TargetLatestRuntimePatch>
+    <TargetLatestRuntimePatch Condition="'$(SelfContained)' != 'true' ">false</TargetLatestRuntimePatch>
+    <_TargetLatestRuntimePatchIsDefault>true</_TargetLatestRuntimePatchIsDefault>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(DisableImplicitFrameworkReferences)' != 'true'">
+    <VerifyMatchingImplicitPackageVersion Condition="'$(VerifyMatchingImplicitPackageVersion)' == ''">true</VerifyMatchingImplicitPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Set implicit metadata on ASP.NET package references -->
+    <PackageReference Update="Microsoft.AspNetCore.App">
+      <PrivateAssets Condition="'%(PackageReference.Version)' == ''">all</PrivateAssets>
+      <Publish Condition="'%(PackageReference.Version)' == ''">true</Publish>
+    </PackageReference>
+
+    <PackageReference Update="Microsoft.AspNetCore.All">
+      <PrivateAssets Condition="'%(PackageReference.Version)' == ''">all</PrivateAssets>
+      <Publish Condition="'%(PackageReference.Version)' == ''">true</Publish>
+    </PackageReference>
+
+    <!-- Allow RuntimeFrameworkVersion to be used to explicitly specify the version of Microsoft.NETCore.App -->
+    <PackageReference Update="Microsoft.NETCore.App"
+                      Version="$(RuntimeFrameworkVersion)"
+                      Condition="'$(RuntimeFrameworkVersion)' != ''"
+                      AllowExplicitVersion="true"/>
+
+    <!-- If implicit PackageReferences are disabled, then don't warn about explicit versions at all -->
+    <PackageReference Update="@(PackageReference)"
+                      Condition="'$(DisableImplicitFrameworkReferences)' == 'true'"
+                      AllowExplicitVersion="true"/>
+  </ItemGroup>
+
+</Project>

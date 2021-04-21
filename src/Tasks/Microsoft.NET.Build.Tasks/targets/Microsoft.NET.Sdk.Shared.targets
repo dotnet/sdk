@@ -1,0 +1,45 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Shared.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+   <Target Name="_ComputePackageReferencePublish">
+    <ItemGroup>
+
+      <!-- PrivateAssets="All" means exclude from publish, unless Publish metadata is specified separately -->
+      <PackageReference Publish="false"
+                        Condition="('%(PackageReference.PrivateAssets)' == 'All') And ('%(PackageReference.Publish)' == '')"/>
+
+      <_ExcludeFromPublishPackageReference Include="@(PackageReference)"
+                                           Condition="('%(PackageReference.Publish)' == 'false')" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+  ============================================================
+                           _DefaultMicrosoftNETPlatformLibrary
+
+  .NET Core apps can have shared frameworks that are pre-installed on the target machine, thus the app is "portable"
+  to any machine that already has the shared framework installed. For .NET Core 1.x and 2.x, a "platform" library
+  is declared. The platform library and its dependencies will be excluded from the publish output.
+
+  For .NET Core 3 and up, targeting packs and runtime packs are used for shared framework assets instead of PackageReference
+  ============================================================
+  -->
+  <Target Name="_DefaultMicrosoftNETPlatformLibrary">
+
+    <PropertyGroup Condition="'$(MicrosoftNETPlatformLibrary)' == ''">
+      <MicrosoftNETPlatformLibrary Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'">Microsoft.NETCore.App</MicrosoftNETPlatformLibrary>
+    </PropertyGroup>
+
+  </Target>
+
+</Project>
