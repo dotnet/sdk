@@ -1344,6 +1344,30 @@ Many dictionary implementations lazily initialize the Values collection. To avoi
 |CodeFix|True|
 ---
 
+## [CA1842](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842): Do not use 'WhenAll' with a single task
+
+Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1843](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843): Do not use 'WaitAll' with a single task
+
+Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.

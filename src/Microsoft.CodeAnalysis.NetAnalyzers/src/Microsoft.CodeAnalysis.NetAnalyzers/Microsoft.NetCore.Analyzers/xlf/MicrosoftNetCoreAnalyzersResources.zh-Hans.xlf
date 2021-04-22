@@ -942,6 +942,21 @@
         <target state="translated">使用了不安全的 DllImportSearchPath 值 {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseWaitAllWithSingleTaskDescription">
+        <source>Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</source>
+        <target state="new">Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWaitAllWithSingleTaskFix">
+        <source>Replace 'WaitAll' with single 'Wait'</source>
+        <target state="new">Replace 'WaitAll' with single 'Wait'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWaitAllWithSingleTaskTitle">
+        <source>Do not use 'WaitAll' with a single task</source>
+        <target state="new">Do not use 'WaitAll' with a single task</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseWeakCryptographicAlgorithms">
         <source>Do Not Use Weak Cryptographic Algorithms</source>
         <target state="translated">不要使用弱加密算法</target>
@@ -975,6 +990,21 @@
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
         <source>When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).</source>
         <target state="translated">基于用户提供的输入(如密码)派生加密密钥时，请使用足够大的迭代计数(至少 100,000 次)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWhenAllWithSingleTaskDescription">
+        <source>Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</source>
+        <target state="new">Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWhenAllWithSingleTaskFix">
+        <source>Replace 'WhenAll' call with argument</source>
+        <target state="new">Replace 'WhenAll' call with argument</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWhenAllWithSingleTaskTitle">
+        <source>Do not use 'WhenAll' with a single task</source>
+        <target state="new">Do not use 'WhenAll' with a single task</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseXslTransform">
