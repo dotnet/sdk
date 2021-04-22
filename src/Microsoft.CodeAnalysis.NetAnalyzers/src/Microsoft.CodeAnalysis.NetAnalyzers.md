@@ -1346,7 +1346,7 @@ Many dictionary implementations lazily initialize the Values collection. To avoi
 
 ## [CA1842](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842): Do not use 'WhenAll' with a single task
 
-Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.
+Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.
 
 |Item|Value|
 |-|-|
@@ -1358,7 +1358,7 @@ Using 'WhenAll' with a single task should be avoided in favor of directly awaiti
 
 ## [CA1843](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843): Do not use 'WaitAll' with a single task
 
-Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.
+Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.
 
 |Item|Value|
 |-|-|
