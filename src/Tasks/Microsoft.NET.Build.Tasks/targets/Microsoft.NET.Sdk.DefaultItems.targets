@@ -54,10 +54,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETStandardImplicitPackageVersion Condition="'$(NETStandardImplicitPackageVersion)' ==''">2.0.3</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 
-  <!-- Import the properties and item groups pulled from Microsoft.NET.Sdk.DefaultItems.targets to be shared by the WAP project system -->
-  <Import Project="Microsoft.NET.Sdk.DefaultItems.Shared.props" />
-
-  <!-- Import the targets pulled from Microsoft.NET.Sdk.DefaultItems.targets to be shared by the WAP project system -->
   <Import Project="Microsoft.NET.Sdk.DefaultItems.Shared.targets" />
 
   <!-- This target runs before build but not before restore, to avoid duplicating these warnings

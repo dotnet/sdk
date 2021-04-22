@@ -14,13 +14,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="..\targets\Microsoft.PackageDependencyResolution.targets" />
 
   <Import Project="..\targets\Microsoft.NET.Sdk.DefaultItems.props" />
-  <Import Project="..\targets\Microsoft.NET.Sdk.DefaultItems.Shared.props" />
   <Import Project="..\targets\Microsoft.NET.Sdk.DefaultItems.Shared.targets" />
 
   <Import Project="..\targets\Microsoft.NET.Sdk.FrameworkReferenceResolution.targets" />
-  
   <Import Project="..\targets\Microsoft.NET.Sdk.Shared.targets" />
-
   <Import Project="..\targets\Microsoft.NET.Sdk.Common.targets" />
   
   <Import Project="..\targets\Microsoft.NET.GenerateSupportedRuntime.targets" />
