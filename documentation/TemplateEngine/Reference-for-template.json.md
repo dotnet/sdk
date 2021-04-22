@@ -336,10 +336,13 @@ Values of `OrganizationalAuth`, `WindowsAuth`, `MultiOrgAuth`, `SingleOrgAuth`, 
 |sourceName| The name in the source tree to replace with the name the user specifies. The value to be replaced with can be given using the `-n` `--name` options while running a template. The template engine will look for any occurrence of the name present in the config file and replace it in file names and file contents. If no name is specified by the host, the current directory is used. The value of the `sourceName` is available in built-in `name` symbol and can be used as the source for creating other symbols and condition expressions. || 
 |preferNameDirectory| Boolean value, indicates whether to create a directory for the template if name is specified but an output directory is not set (instead of creating the content directly in the current directory).|If not specified, `false` is used.| 
 |placeholderFilename|A filename that will be completely ignored expect to indicate that its containing directory should be copied. This allows creation of empty directory in the created template, by having a corresponding source directory containing just the placeholder file. Completely empty directories are ignored.|If not specified, a default value of `"-.-"` is used.|
-|primaryOutputs|A list of template files that are used in post actions. The path should contain the relative path to the file prior to the renaming that may happen during template generation. It's defined as an array of [Primary Output](#primary-output-definition)||
+|primaryOutputs|A list of template files for further processing by the host (including post-actions). The path should contain the relative path to the file prior to the symbol based renaming that may happen during template generation. It is defined as an array of [Primary Outputs](#primary-output-definition)||
 
 #### Primary Output Definition
+Primary outputs define the list of template files for further processing. 
 |Name|Description|
 |---|---|
-|path|Contains the relative path to the file in the template definition.|
-|condition|If the condition evaluates to true, the corresponding path will be included in the output list. If false, the path is ignored. If no condition is provided for a path, the condition is defaulted to true.|
+|path|should contain the relative path to the file after the template is instantiated.|
+|condition|if the condition evaluates to `true`, the corresponding path will be added to primary outputs, if `false`, the path is ignored. If no condition is provided for a path, the condition defaults to `true`.|
+
+For more information on primary outputs, refer to [the article](https://github.com/dotnet/templating/wiki/Using-Primary-Outputs-for-Post-Actions).
