@@ -943,8 +943,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskDescription">
-        <source>Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</source>
-        <target state="new">Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</target>
+        <source>Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</source>
+        <target state="new">Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskFix">
@@ -993,8 +993,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskDescription">
-        <source>Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</source>
-        <target state="new">Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</target>
+        <source>Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</source>
+        <target state="new">Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskFix">
