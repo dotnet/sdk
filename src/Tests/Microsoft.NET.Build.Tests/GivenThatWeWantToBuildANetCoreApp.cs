@@ -377,6 +377,37 @@ public static class Program
         }
 
         [Theory]
+        [InlineData("netcoreapp2.0", true)]
+        [InlineData("netcoreapp3.0", true)]
+        [InlineData("net5.0", true)]
+        [InlineData("net6.0", false)]
+        public void It_stops_generating_runtimeconfig_dev_json_after_net6(string targetFramework, bool generateRuntimeConfigDevJson)
+        {
+            TestProject proj = new TestProject()
+            {
+                Name = "NetCoreApp",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                IsExe = true,
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true
+            };
+
+            var buildCommand = new BuildCommand(_testAssetsManager.CreateTestProject(proj, identifier: targetFramework));
+
+            buildCommand.Execute("/bl");
+
+            var runtimeconfigFile = Path.Combine(
+                buildCommand.GetOutputDirectory(targetFramework).FullName,
+                $"{proj.Name}.runtimeconfig.dev.json");
+
+            buildCommand.GetOutputDirectory(targetFramework)
+                .GetFiles()
+                .Any(x => x.Name.Contains("runtimeconfig.dev.json"))
+                .Should()
+                .Be(generateRuntimeConfigDevJson);
+        }
+
+        [Theory]
         [InlineData("netcoreapp2.0")]
         [InlineData("netcoreapp3.0")]
         public void It_trims_conflicts_from_the_deps_file(string targetFramework)
