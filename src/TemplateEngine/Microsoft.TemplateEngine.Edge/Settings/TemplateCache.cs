@@ -232,7 +232,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 HostConfigPlace = template.HostConfigPlace,
                 ThirdPartyNotices = template.ThirdPartyNotices,
                 BaselineInfo = template.BaselineInfo,
-                HasScriptRunningPostActions = template.HasScriptRunningPostActions,
                 ShortNameList = template.ShortNameList
             };
 

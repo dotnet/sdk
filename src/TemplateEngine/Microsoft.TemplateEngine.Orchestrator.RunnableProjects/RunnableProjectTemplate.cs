@@ -45,7 +45,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ThirdPartyNotices = raw.ToString("thirdPartyNotices");
             _raw = raw;
             BaselineInfo = config.BaselineInfo;
-            HasScriptRunningPostActions = config.HasScriptRunningPostActions;
         }
 
         public IDirectory TemplateSourceRoot
@@ -191,7 +190,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string HostConfigPlace { get; }
         public string ThirdPartyNotices { get; }
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
-        public bool HasScriptRunningPostActions { get; set; }
+
+        bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
         internal IRunnableProjectConfig Config { get; private set; }
         internal IMountPoint Source { get; }
         internal IFile ConfigFile { get; }

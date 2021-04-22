@@ -153,7 +153,7 @@ namespace Microsoft.TemplateEngine.Mocks
             }
         }
 
-        public bool HasScriptRunningPostActions { get; set; }
+        bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
         public DateTime? ConfigTimestampUtc { get; }
 
@@ -279,7 +279,6 @@ namespace Microsoft.TemplateEngine.Mocks
             GroupIdentity = info.GetValue<string>("template_group");
             Description = info.GetValue<string>("template_description");
             Author = info.GetValue<string>("template_author");
-            HasScriptRunningPostActions = info.GetValue<bool>("template_hasPostActions");
 
             _tags = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(info.GetValue<string>("template_tags"));
             _cacheParameters = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_params"));
@@ -297,7 +296,6 @@ namespace Microsoft.TemplateEngine.Mocks
             info.AddValue("template_group", GroupIdentity, typeof(string));
             info.AddValue("template_description", Description, typeof(string));
             info.AddValue("template_author", Author, typeof(string));
-            info.AddValue("template_hasPostActions", HasScriptRunningPostActions, typeof(bool));
 
             info.AddValue("template_tags", JsonConvert.SerializeObject(_tags), typeof(string));
             info.AddValue("template_params", JsonConvert.SerializeObject(_cacheParameters), typeof(string));

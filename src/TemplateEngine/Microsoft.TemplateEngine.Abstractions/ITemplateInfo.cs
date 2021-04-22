@@ -49,6 +49,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
 
+        [Obsolete("This property is obsolete.")]
         bool HasScriptRunningPostActions { get; set; }
 
         /// <summary>

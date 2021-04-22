@@ -198,8 +198,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
 
-        [JsonProperty]
-        public bool HasScriptRunningPostActions { get; set; }
+        [JsonIgnore]
+        bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
         public static TemplateInfo FromJObject(JObject entry, string cacheVersion)
         {

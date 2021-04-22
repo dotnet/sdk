@@ -54,8 +54,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
 
-        bool HasScriptRunningPostActions { get; set; }
-
         void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile);
     }
 }

@@ -12,13 +12,5 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             TemplateInfoReaderVersion1_0_0_1 reader = new TemplateInfoReaderVersion1_0_0_1();
             return reader.Read(jObject);
         }
-
-        public override TemplateInfo Read(JObject jObject)
-        {
-            TemplateInfo info = base.Read(jObject);
-            info.HasScriptRunningPostActions = jObject.ToBool(nameof(TemplateInfo.HasScriptRunningPostActions));
-
-            return info;
-        }
     }
 }
