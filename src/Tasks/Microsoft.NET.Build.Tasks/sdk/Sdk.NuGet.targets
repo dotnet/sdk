@@ -22,7 +22,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="..\targets\Microsoft.NET.Sdk.FrameworkReferenceResolution.targets" />
   
-  <Import Project="..\targets\Microsoft.NET.Sdk.Shared.props" />
   <Import Project="..\targets\Microsoft.NET.Sdk.Shared.targets" />
 
   <Import Project="..\targets\Microsoft.NET.Sdk.Common.targets" />
