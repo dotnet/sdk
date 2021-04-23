@@ -22,8 +22,8 @@
                      PreviousPackagePath="$(PreviousPackagePath)"
                      RuntimeGraph="$(RuntimeGraph)"
                      NoWarn="$(NoWarn)"
-                     RunApiCompat="$([MSBuild]::ValueOrDefault('$(RunApiCompat)', 'false'))"
-                     ValidateWithPreviousVersion="$([MSBuild]::ValueOrDefault('$(ValidateWithPreviousVersion)', 'false'))"/>
+                     RunApiCompat="$([MSBuild]::ValueOrDefault('$(RunApiCompat)', 'true'))"
+                     ValidateWithPreviousVersion="$(ValidateWithPreviousVersion)"/>
   </Target>
 
   <Target Name="AddPackageDownload" BeforeTargets="CollectPackageDownloads">

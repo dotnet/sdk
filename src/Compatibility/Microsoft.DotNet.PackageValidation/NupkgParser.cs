@@ -6,6 +6,7 @@ using System.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.RuntimeModel;
 
 namespace Microsoft.DotNet.PackageValidation
 {
@@ -20,7 +21,7 @@ namespace Microsoft.DotNet.PackageValidation
         /// <param name="packagePath">The path to the package path.</param>
         /// <param name="runtimeGraph">The path to the the runtime graph.</param>
         /// <returns>The package object.</returns>
-        public static Package CreatePackage(string packagePath, string runtimeGraph)
+        public static Package CreatePackage(string packagePath, RuntimeGraph runtimeGraph)
         {
             PackageArchiveReader packageReader = new PackageArchiveReader(packagePath);
             Package package = CreatePackage(packageReader, runtimeGraph);
@@ -28,7 +29,7 @@ namespace Microsoft.DotNet.PackageValidation
             return package;
         }
 
-        private static Package CreatePackage(PackageArchiveReader packageReader, string runtimeGraph)
+        private static Package CreatePackage(PackageArchiveReader packageReader, RuntimeGraph runtimeGraph)
         {
             NuspecReader nuspecReader = packageReader.NuspecReader;
             string packageId = nuspecReader.GetId();

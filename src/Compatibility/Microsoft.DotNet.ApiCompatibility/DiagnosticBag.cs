@@ -81,6 +81,6 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <summary>
         /// A list of differences contained in the diagnostic bag.
         /// </summary>
-        public IList<T> Differences => _differences;
+        public IEnumerable<T> Differences => _differences;
     }
 }

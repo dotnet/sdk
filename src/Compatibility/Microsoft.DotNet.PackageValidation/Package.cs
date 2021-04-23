@@ -19,18 +19,12 @@ namespace Microsoft.DotNet.PackageValidation
         private ContentItemCollection _packageAssets = new();
         private string _packagePath;
 
-        public Package(string packageId, string version, IEnumerable<string> packageAssets, Dictionary<NuGetFramework, IEnumerable<PackageDependency>> packageDependencies, string runtimeGraphPath)
+        public Package(string packageId, string version, IEnumerable<string> packageAssets, Dictionary<NuGetFramework, IEnumerable<PackageDependency>> packageDependencies, RuntimeGraph runtimeGraph)
         {
             PackageId = packageId;
             Version = version;
             PackageDependencies = packageDependencies;
             _packageAssets.Load(packageAssets);
-
-            RuntimeGraph runtimeGraph = null;
-            if (!string.IsNullOrEmpty(runtimeGraphPath))
-            {
-                runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(runtimeGraphPath);
-            }
             _conventions = new ManagedCodeConventions(runtimeGraph);
 
             PackageAssets = _packageAssets.FindItems(_conventions.Patterns.AnyTargettedFile);

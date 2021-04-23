@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Tasks;
+using NuGet.RuntimeModel;
 
 namespace Microsoft.DotNet.PackageValidation
 {
@@ -26,8 +27,13 @@ namespace Microsoft.DotNet.PackageValidation
         protected override void ExecuteCore()
         {
             if (!Debugger.IsAttached) { Debugger.Launch(); } else { Debugger.Break(); }
-            Package package = NupkgParser.CreatePackage(PackagePath, RuntimeGraph);
-            Package previousPackage = NupkgParser.CreatePackage(PreviousPackagePath, RuntimeGraph);
+            RuntimeGraph runtimeGraph = null;
+            if (!string.IsNullOrEmpty(RuntimeGraph))
+            {
+                runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(RuntimeGraph);
+            }
+            Package package = NupkgParser.CreatePackage(PackagePath, runtimeGraph);
+            Package previousPackage = NupkgParser.CreatePackage(PreviousPackagePath, runtimeGraph);
             PackageValidationLogger log = new PackageValidationLogger();
 
             new CompatibleTfmValidator(NoWarn, null, RunApiCompat, log).Validate(package);
