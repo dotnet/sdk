@@ -377,11 +377,21 @@ public static class Program
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0", true)]
-        [InlineData("netcoreapp3.0", true)]
-        [InlineData("net5.0", true)]
-        [InlineData("net6.0", false)]
-        public void It_stops_generating_runtimeconfig_dev_json_after_net6(string targetFramework, bool generateRuntimeConfigDevJson)
+        // Default behavior
+        [InlineData("netcoreapp2.0", "", true)]
+        [InlineData("netcoreapp3.0", "", true)]
+        [InlineData("net5.0", "", true)]
+        [InlineData("net6.0", "", false)]
+        // Allow property override
+        [InlineData("netcoreapp2.0", "true", true)]
+        [InlineData("netcoreapp2.0", "false", false)]
+        [InlineData("netcoreapp3.0", "true", true)]
+        [InlineData("netcoreapp3.0", "false", false)]
+        [InlineData("net5.0", "true", true)]
+        [InlineData("net5.0", "false", false)]
+        [InlineData("net6.0", "true", true)]
+        [InlineData("net6.0", "false", false)]
+        public void It_stops_generating_runtimeconfig_dev_json_after_net6(string targetFramework, string propertyOverride, bool generateRuntimeConfigDevJson)
         {
             TestProject proj = new TestProject()
             {
@@ -392,9 +402,12 @@ public static class Program
                 IsSdkProject = true
             };
 
+            // User-set property GenerateRuntimeConfigDevFile takes priority.
+            proj.AdditionalProperties.Add("GenerateRuntimeConfigDevFile", propertyOverride);
+
             var buildCommand = new BuildCommand(_testAssetsManager.CreateTestProject(proj, identifier: targetFramework));
 
-            buildCommand.Execute("/bl");
+            buildCommand.Execute();
 
             var runtimeconfigFile = Path.Combine(
                 buildCommand.GetOutputDirectory(targetFramework).FullName,
