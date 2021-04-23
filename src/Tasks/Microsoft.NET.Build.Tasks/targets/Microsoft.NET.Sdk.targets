@@ -59,7 +59,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GenerateRuntimeConfigurationFilesInputs Include="$(UserRuntimeConfig)" Condition=" Exists($(UserRuntimeConfig)) " />
   </ItemGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(GenerateRuntimeConfigDevFile)' == ''">
     <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
     <!-- Post-net6.0, stop generating *.runtimeconfig.dev.json files to reduce probing paths. -->
     <!-- https://github.com/dotnet/sdk/issues/16818 -->
