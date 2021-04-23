@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class CompatibleTfmValidator
     {
-        private static string[] s_diagList =  { DiagnosticIds.CompatibleRuntimeRidLessAsset, DiagnosticIds.ApplicableCompileTimeAsset };
+        private static string[] s_diagList = { DiagnosticIds.CompatibleRuntimeRidLessAsset, DiagnosticIds.ApplicableCompileTimeAsset };
         private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> s_packageTfmMapping = InitializeTfmMappings();
 
         private bool _runApiCompat;

@@ -11,9 +11,14 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.PackageValidation.Tests
 {
-    public class CompatibleTfmValidatorTests : SdkTest
+    public class PackageValidationTests : SdkTest
     {
-        public CompatibleTfmValidatorTests(ITestOutputHelper log) : base(log) { }
+        public PackageValidationLogger _logger;
+
+        public PackageValidationTests(ITestOutputHelper log) : base(log) 
+        {
+            _logger = new();
+        }
 
         [Fact]
         public void MissingRidLessAssetForFramework()
@@ -25,11 +30,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new("TestPackage", "1.0.0", filePaths, null, null);
-            var errors = new CompatibleTfmValidator(string.Empty, null, false).Validate(package);
-            foreach (var packageValidationError in errors.Item1.Differences)
-            {
-                Assert.Equal(DiagnosticIds.CompatibleRuntimeRidLessAsset, packageValidationError.DiagnosticId);
-            }
+            new CompatibleTfmValidator(string.Empty, null, false, _logger).Validate(package);
         }
 
         [Fact]
@@ -42,17 +43,13 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new("TestPackage", "1.0.0", filePaths, null, null);
-            var errors = new CompatibleTfmValidator(string.Empty, null, false).Validate(package);
-            foreach (var packageValidationError in errors.Item1.Differences)
-            {
-                Assert.Equal(DiagnosticIds.CompatibleRuntimeRidLessAsset, packageValidationError.DiagnosticId);
-            }
+            new CompatibleTfmValidator(string.Empty, null, false, _logger).Validate(package);
         }
 
         [Fact]
         public void CompatibleFrameworksInPackage()
         {
-            TestProject tp = new()
+            TestProject testProject = new()
             {
                 Name = "TestPackage",
                 TargetFrameworks = "netstandard2.0;net5.0",
@@ -70,20 +67,13 @@ namespace PackageValidationTests
     }
 }";
 
-            tp.SourceFiles.Add("Hello.cs", sourceCode);
-            TestAsset asset = _testAssetsManager.CreateTestProject(tp, tp.Name);
-            var result = new PackCommand(Log, Path.Combine(asset.TestRoot, tp.Name)).Execute();
+            testProject.SourceFiles.Add("Hello.cs", sourceCode);
+            TestAsset asset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var result = new PackCommand(Log, Path.Combine(asset.TestRoot, testProject.Name)).Execute();
             Assert.Equal(string.Empty, result.StdErr);
-            string testPackagePath = Path.Combine(asset.TestRoot, tp.Name, "bin", "debug", tp.Name + ".1.0.0.nupkg");
+            string testPackagePath = Path.Combine(asset.TestRoot, testProject.Name, "bin", "debug", testProject.Name + ".1.0.0.nupkg");
             Package package = NupkgParser.CreatePackage(testPackagePath, null);
-            var errors = new CompatibleFrameworkInPackageValidator(string.Empty, null).Validate(package);
-            foreach (var error in errors)
-            {
-                foreach (var difference in error.Differences.Differences)
-                {
-                    Assert.Equal(ApiCompatibility.DiagnosticIds.MemberMustExist, difference.DiagnosticId);
-                }
-            }
+            new CompatibleFrameworkInPackageValidator(string.Empty, null, _logger).Validate(package);
         }
     }
 }
