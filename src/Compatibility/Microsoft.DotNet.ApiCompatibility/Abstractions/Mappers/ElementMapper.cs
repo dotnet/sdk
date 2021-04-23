@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
     /// </summary>
     public class ElementMapper<T>
     {
-        private IEnumerable<CompatDifference> _differences;
+        private IReadOnlyList<IEnumerable<CompatDifference>> _differences;
 
         /// <summary>
         /// Property representing the Left hand side of the mapping.
@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <summary>
         /// Property representing the Right hand side of the mapping.
         /// </summary>
-        public T Right { get; private set; }
+        public T[] Right { get; private set; }
 
         /// <summary>
         /// The <see cref="ComparingSettings"/> used to diff <see cref="Left"/> and <see cref="Right"/>.
@@ -32,28 +32,37 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// Instantiates an object with the provided <see cref="ComparingSettings"/>.
         /// </summary>
         /// <param name="settings">The settings used to diff the elements in the mapper.</param>
-        public ElementMapper(ComparingSettings settings)
+        /// <param name="leftSetSize">The number of elements in the left set to compare.</param>
+        /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
+        public ElementMapper(ComparingSettings settings, int rightSetSize)
         {
+            if (rightSetSize <= 0)
+                throw new ArgumentOutOfRangeException(nameof(rightSetSize), "Should be greater than 0");
+
             Settings = settings;
+            Right = new T[rightSetSize];
         }
+
+        public virtual void AddElement(T element, ElementSide side) => AddElement(element, side, 0);
 
         /// <summary>
         /// Adds an element to the mapping given the index, 0 (Left) or 1 (Right).
         /// </summary>
         /// <param name="element">The element to add to the mapping.</param>
-        /// <param name="index">Index representing the side of the mapping, 0 (Left) or 1 (Right).</param>
-        public virtual void AddElement(T element, int index)
+        /// <param name="side">Value representing the side of the mapping.</param>
+        /// <param name="setIndex">Value representing the index on the set of elements corresponding to the compared side.</param>
+        public virtual void AddElement(T element, ElementSide side, int setIndex)
         {
-            if ((uint)index > 1)
-                throw new ArgumentOutOfRangeException(nameof(index), "index should either be 0 or 1");
-
-            if (index == 0)
+            if (side == ElementSide.Left)
             {
                 Left = element;
             }
             else
             {
-                Right = element;
+                if ((uint)setIndex >= Right.Length)
+                    throw new ArgumentOutOfRangeException(nameof(setIndex), "the index should be within the right set size");
+
+                Right[setIndex] = element;
             }
         }
 
@@ -61,7 +70,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// Runs the rules found by the rule driver on the element mapper and returns a list of differences.
         /// </summary>
         /// <returns>The list of <see cref="CompatDifference"/>.</returns>
-        public IEnumerable<CompatDifference> GetDifferences()
+        public IReadOnlyList<IEnumerable<CompatDifference>> GetDifferences()
         {
             return _differences ??= Settings.RuleRunnerFactory.GetRuleRunner().Run(this);
         }

@@ -16,6 +16,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <typeparam name="T">The underlying type on the mapper.</typeparam>
         /// <param name="mapper">The mapper to run the rules on.</param>
         /// <returns></returns>
-        IEnumerable<CompatDifference> Run<T>(ElementMapper<T> mapper);
+        IReadOnlyList<IEnumerable<CompatDifference>> Run<T>(ElementMapper<T> mapper);
     }
 }

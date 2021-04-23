@@ -14,15 +14,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     /// </summary>
     public class MembersMustExist : Rule
     {
+        public override void Initialize(RuleRunnerContext context)
+        {
+            context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
+            context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
+        }
+
         /// <summary>
         /// Evaluates whether a type exists on both sides of the <see cref="TypeMapper"/>.
         /// </summary>
         /// <param name="mapper">The <see cref="TypeMapper"/> to evaluate.</param>
         /// <param name="differences">The list of <see cref="CompatDifference"/> to add differences to.</param>
-        public override void Run(TypeMapper mapper, IList<CompatDifference> differences)
+        private void RunOnTypeSymbol(ITypeSymbol left, ITypeSymbol right, IList<CompatDifference> differences)
         {
-            ITypeSymbol left = mapper.Left;
-            if (left != null && mapper.Right == null)
+            if (left != null && right == null)
                 differences.Add(new CompatDifference(DiagnosticIds.TypeMustExist, $"Type '{left.ToDisplayString()}' exists on the left but not on the right", DifferenceType.Removed, left));
         }
 
@@ -31,10 +36,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         /// </summary>
         /// <param name="mapper">The <see cref="MemberMapper"/> to evaluate.</param>
         /// <param name="differences">The list of <see cref="CompatDifference"/> to add differences to.</param>
-        public override void Run(MemberMapper mapper, IList<CompatDifference> differences)
+        private void RunOnMemberSymbol(ISymbol left, ISymbol right, IList<CompatDifference> differences)
         {
-            ISymbol left = mapper.Left;
-            if (left != null && mapper.Right == null)
+            if (left != null && right == null)
             {
                 // Events and properties are handled via their accessors.
                 if (left.Kind == SymbolKind.Property || left.Kind == SymbolKind.Event)
