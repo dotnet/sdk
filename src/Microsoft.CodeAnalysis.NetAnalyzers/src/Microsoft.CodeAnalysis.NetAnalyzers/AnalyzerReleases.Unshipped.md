@@ -6,7 +6,7 @@ CA1418 | Interoperability | Warning | UseValidPlatformString, [Documentation](ht
 CA1839 | Performance | Info | UseEnvironmentMembers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839)
 CA1840 | Performance | Info | UseEnvironmentMembers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840)
 CA1841 | Performance | Info | PreferDictionaryContainsMethods, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841)
-CA1842 | Performance | Info | ProvideStreamMemoryBasedAsyncOverrides, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842)
+CA1844 | Performance | Info | ProvideStreamMemoryBasedAsyncOverrides, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844)
 
 ### Removed Rules
 
