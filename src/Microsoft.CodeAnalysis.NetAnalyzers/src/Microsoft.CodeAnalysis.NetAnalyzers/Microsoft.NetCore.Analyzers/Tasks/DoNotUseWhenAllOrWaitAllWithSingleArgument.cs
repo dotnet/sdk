@@ -42,28 +42,28 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-            context.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(context =>
             {
-                if (!compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask, out var taskType) ||
-                !compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1, out var genericTaskType))
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask, out var taskType) ||
+                    !context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1, out var genericTaskType))
                 {
                     return;
                 }
 
-                compilationContext.RegisterOperationAction(operationContext =>
+                context.RegisterOperationAction(context =>
                 {
-                    var invocation = (IInvocationOperation)operationContext.Operation;
+                    var invocation = (IInvocationOperation)context.Operation;
                     if (IsWhenOrWaitAllMethod(invocation.TargetMethod, taskType) &&
                         IsSingleTaskArgument(invocation, taskType, genericTaskType))
                     {
                         switch (invocation.TargetMethod.Name)
                         {
                             case nameof(Task.WhenAll):
-                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(WhenAllRule));
+                                context.ReportDiagnostic(invocation.CreateDiagnostic(WhenAllRule));
                                 break;
 
                             case nameof(Task.WaitAll):
-                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(WaitAllRule));
+                                context.ReportDiagnostic(invocation.CreateDiagnostic(WaitAllRule));
                                 break;
 
                             default:
@@ -112,7 +112,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                 return false;
             }
 
-            return namedTypeSymbol.Equals(taskType) || namedTypeSymbol.ConstructedFrom.Equals(genericTaskType);
+            return namedTypeSymbol.Equals(taskType, SymbolEqualityComparer.Default) ||
+                namedTypeSymbol.ConstructedFrom.Equals(genericTaskType, SymbolEqualityComparer.Default);
         }
     }
 }

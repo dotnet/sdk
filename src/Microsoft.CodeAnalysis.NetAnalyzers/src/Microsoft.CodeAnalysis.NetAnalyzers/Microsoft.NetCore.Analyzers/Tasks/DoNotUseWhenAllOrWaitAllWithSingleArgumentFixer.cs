@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
@@ -12,7 +13,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Tasks
 {
-    public abstract class DoNotUseWhenAllOrWaitAllWithSingleArgumentFixer : CodeFixProvider
+    [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
+    public sealed class DoNotUseWhenAllOrWaitAllWithSingleArgumentFixer : CodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
             DoNotUseWhenAllOrWaitAllWithSingleArgument.WaitAllRule.Id,
@@ -51,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 
                         return editor.GetChangedDocument();
                     },
-                    equivalenceKey: title),
+                    equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskFix)),
                 context.Diagnostics);
             }
             else if (!IsValueStored(operation) && operation.TargetMethod.Name == nameof(Task.WhenAll))
@@ -69,7 +71,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 
                         return editor.GetChangedDocument();
                     },
-                    equivalenceKey: title),
+                    equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskFix)),
                 context.Diagnostics);
             }
         }
@@ -94,7 +96,9 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             return false;
         }
 
-        protected abstract SyntaxNode GetSingleArgumentSyntax(IInvocationOperation operation);
+        private static SyntaxNode GetSingleArgumentSyntax(IInvocationOperation operation)
+            => operation.Arguments[0].Value.Syntax;
+
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
         // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
