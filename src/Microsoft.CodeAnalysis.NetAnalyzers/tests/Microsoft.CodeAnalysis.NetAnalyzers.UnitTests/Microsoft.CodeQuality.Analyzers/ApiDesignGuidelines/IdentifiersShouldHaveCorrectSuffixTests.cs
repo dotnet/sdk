@@ -1755,6 +1755,61 @@ End Class"
             }.RunAsync();
         }
 
+        [Fact, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
+        public async Task CA1710_AllowEmptySuffix2()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
+public class C : IReadOnlyDictionary<string, object>
+{
+    public object this[string key] => throw new System.NotImplementedException();
+
+    public IEnumerable<string> Keys => throw new System.NotImplementedException();
+
+    public IEnumerable<object> Values => throw new System.NotImplementedException();
+
+    public int Count => throw new System.NotImplementedException();
+
+    public bool ContainsKey(string key)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IReadOnlyDictionary`2->{}
+")  },
+                }
+            }.RunAsync();
+        }
+
         [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         [InlineData("")]
         [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = false")]
