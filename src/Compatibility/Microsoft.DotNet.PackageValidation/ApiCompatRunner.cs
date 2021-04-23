@@ -3,8 +3,12 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility;
+using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using NuGet.Common;
 
 namespace Microsoft.DotNet.PackageValidation
 {
@@ -13,50 +17,78 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class ApiCompatRunner
     {
-        private List<(Stream leftAssemblyStream, Stream rightAssemblyStream, string assemblyName, string compatibilityReason, string header)> queue = new();
-        private string _noWarn;
-        private (string, string)[] _ignoredDifferences;
+        private List<(string leftAssemblyPackagePath, string leftAssemblyRelativePath, string rightAssemblyPackagePath, string rightAssemblyRelativePath, string assemblyName, string compatibilityReason, string header)> _queue = new();
+        private ILogger _log;
+        private Checker _checker;
 
-        public ApiCompatRunner(string noWarn, (string, string)[] ignoredDifferences)
+        public ApiCompatRunner(string noWarn, (string, string)[] ignoredDifferences, ILogger log)
         {
-            _noWarn = noWarn;
-            _ignoredDifferences = ignoredDifferences;
+            _log = log;
+            _checker = new Checker(noWarn, ignoredDifferences, null);
         }
 
         /// <summary>
         /// Runs the api compat for the tuples in the queue.
         /// </summary>
-        /// <returns>The list api compat diagnostics.</returns>
-        public IEnumerable<ApiCompatDiagnostics> RunApiCompat()
+        public void RunApiCompat()
         {
-            List<ApiCompatDiagnostics> apiDifferences = new();
-            foreach (var apicompatTuples in queue)
+            foreach (var apicompatTuples in _queue.Distinct())
             {
-                // TODO: Add version check and proper way to display api compat error messages for each tuple.
+                // TODO: Add Assembly version check.
                 // TODO: Add optimisations tuples.
                 // TODO: Run it Asynchronously.
-                IAssemblySymbol leftSymbols =  new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName, apicompatTuples.leftAssemblyStream);
-                IAssemblySymbol rightSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName,  apicompatTuples.rightAssemblyStream);
-                ApiComparer differ = new();
-                apiDifferences.Add(new ApiCompatDiagnostics(apicompatTuples.compatibilityReason, apicompatTuples.header, _noWarn, _ignoredDifferences, differ.GetDifferences(leftSymbols, rightSymbols)));
-                apicompatTuples.leftAssemblyStream.Dispose();
-                apicompatTuples.rightAssemblyStream.Dispose();
+                using (Stream leftAssemblyStream = GetFileStreamFromPackage(apicompatTuples.leftAssemblyPackagePath, apicompatTuples.leftAssemblyRelativePath))
+                using (Stream rightAssemblyStream = GetFileStreamFromPackage(apicompatTuples.rightAssemblyPackagePath, apicompatTuples.rightAssemblyRelativePath))
+                {
+                    IAssemblySymbol leftSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName, leftAssemblyStream);
+                    IAssemblySymbol rightSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName, rightAssemblyStream);
+                    ApiComparer differ = new();
+
+                    IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbols, rightSymbols).Where(t => _checker.Contain(t.DiagnosticId, t.ReferenceId));
+
+                    if (differences.Any())
+                    {
+                        _log.LogError(apicompatTuples.compatibilityReason);
+                        _log.LogError(apicompatTuples.header);
+                    }
+
+                    foreach (CompatDifference difference in differences)
+                    {
+                        _log.LogError(difference.ToString());
+                    }
+                }
             }
-            queue.Clear();
-            return apiDifferences;
+            _queue.Clear();
         }
 
         /// <summary>
         /// Queues the api compat for 2 assemblies.
         /// </summary>
-        /// <param name="leftAssemblyStream">The left assembly stream.</param>
-        /// <param name="rightAssemblyStream">The right assembly stream.</param>
+        /// <param name="leftPackagePath">Path to package containing left assembly.</param>
+        /// <param name="leftRelativePath">Relative left assembly path in package.</param>
+        /// <param name="rightPackagePath">Path to package containing right assembly.</param>
+        /// <param name="rightRelativePath">Relative right assembly path in package.</param>
         /// <param name="assemblyName">The name of the assembly.</param>
         /// <param name="compatibiltyReason">The reason for assembly compatibilty.</param>
         /// <param name="header">The header for the api compat diagnostics.</param>
-        public void QueueApiCompat(Stream leftAssemblyStream, Stream rightAssemblyStream, string assemblyName, string compatibiltyReason, string header)
+        public void QueueApiCompat(string leftPackagePath, string leftRelativePath, string rightPackagePath, string rightRelativePath, string assemblyName, string compatibiltyReason, string header)
         {
-            queue.Add((leftAssemblyStream, rightAssemblyStream, assemblyName, compatibiltyReason, header));
+            _queue.Add((leftPackagePath, leftRelativePath, rightPackagePath, rightRelativePath, assemblyName, compatibiltyReason, header));
         }
-    }   
+
+        private static Stream GetFileStreamFromPackage(string packagePath, string entry)
+        {
+            MemoryStream ms = new MemoryStream();
+            using (FileStream stream = File.OpenRead(packagePath))
+            {
+                var zipFile = new ZipArchive(stream);
+                using (Stream fileStream = zipFile.GetEntry(entry).Open())
+                {
+                    fileStream.CopyTo(ms);
+                    ms.Seek(0, SeekOrigin.Begin);
+                }
+            }
+            return ms;
+        }
+    }
 }

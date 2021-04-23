@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.IO;
-using Microsoft.DotNet.ApiCompatibility;
+using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 
@@ -15,47 +14,49 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class PreviousVersionValidator
     {
-        private Package _previousPackage;
-        private string _noWarn;
-        private (string, string)[] _ignoredDifferences;
-        private bool _runApiCompat;
-        private ApiCompatRunner apiCompatRunner;
+        private static string[] s_diagList = { DiagnosticIds.TargetFrameworkDropped, DiagnosticIds.TargetFrameworkAndRidPairDropped };
 
-        public PreviousVersionValidator(Package package, string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat)
+        private Package _previousPackage;
+        private bool _runApiCompat;
+        private ApiCompatRunner _apiCompatRunner;
+        private ILogger _log;
+        private Checker _checker;
+
+        public PreviousVersionValidator(Package previousPackage, string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, ILogger log)
         {
-            MemoryStream packageStream =  package.DownloadLatestStableVersionAsync().Result;
-            _previousPackage = NupkgParser.CreatePackage(packageStream, null);
-            _noWarn = noWarn;
-            _ignoredDifferences = ignoredDifferences;
+            _previousPackage = previousPackage;
             _runApiCompat = runApiCompat;
-            apiCompatRunner = new(_noWarn, _ignoredDifferences);
+            _log = log;
+            _apiCompatRunner = new(noWarn, ignoredDifferences, _log);
+            _checker = new(noWarn, ignoredDifferences, s_diagList);
         }
 
         /// <summary>
         /// Validates the latest nuget package doesnot drop any target framework/rid and does not introduce any breaking changes.
         /// </summary>
         /// <param name="package">Nuget Package that needs to be validated.</param>
-        /// <returns>The List of Package Validation Diagnostics.</returns>
-        public (DiagnosticBag<TargetFrameworkApplicabilityDiagnostics>, IEnumerable<ApiCompatDiagnostics>) Validate(Package package)
+        public void Validate(Package package)
         {
-            DiagnosticBag<TargetFrameworkApplicabilityDiagnostics> errors = new DiagnosticBag<TargetFrameworkApplicabilityDiagnostics>(_noWarn, _ignoredDifferences);
-
             foreach (ContentItem previousCompileTimeAsset in _previousPackage.CompileAssets)
             {
                 NuGetFramework previousTargetFramework = (NuGetFramework)previousCompileTimeAsset.Properties["tfm"];
                 ContentItem latestCompileTimeAsset = package.FindBestCompileAssetForFramework(previousTargetFramework);
                 if (latestCompileTimeAsset == null)
                 {
-                    errors.Add(new TargetFrameworkApplicabilityDiagnostics(DiagnosticIds.TargetFrameworkDropped,
-                        previousTargetFramework.ToString(),
-                        string.Format(Resources.MissingTargetFramework, previousTargetFramework.ToString())));
+                    if (!_checker.Contain(DiagnosticIds.TargetFrameworkDropped, previousTargetFramework.ToString()))
+                    {
+                        string message = string.Format(Resources.MissingTargetFramework, previousTargetFramework.ToString());
+                        _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
+                    }
                 }
                 else
                 {
                     if (_runApiCompat)
                     {
-                        apiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(_previousPackage.PackageStream, previousCompileTimeAsset.Path),
-                            Helpers.GetFileStreamFromPackage(package.PackagePath, latestCompileTimeAsset.Path),
+                        _apiCompatRunner.QueueApiCompat(_previousPackage.PackagePath,
+                            previousCompileTimeAsset.Path,
+                            package.PackagePath, 
+                            latestCompileTimeAsset.Path,
                             Path.GetFileName(package.PackagePath),
                             Resources.PreviousVersionValidatorHeader,
                             string.Format(Resources.MissingApisForFramework, previousTargetFramework.ToString()));
@@ -69,16 +70,20 @@ namespace Microsoft.DotNet.PackageValidation
                 ContentItem latestRuntimeAsset = package.FindBestRuntimeAssetForFramework(previousTargetFramework);
                 if (latestRuntimeAsset == null)
                 {
-                    errors.Add(new TargetFrameworkApplicabilityDiagnostics(DiagnosticIds.TargetFrameworkDropped,
-                        previousTargetFramework.ToString(),
-                        string.Format(Resources.MissingTargetFramework, previousTargetFramework.ToString())));
+                    if (!_checker.Contain(DiagnosticIds.TargetFrameworkDropped, previousTargetFramework.ToString()))
+                    {
+                        string message = string.Format(Resources.MissingTargetFramework, previousTargetFramework.ToString());
+                        _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
+                    }
                 }
                 else
                 {
                     if (_runApiCompat)
                     {
-                        apiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(_previousPackage.PackageStream, previousRuntimeAsset.Path),
-                            Helpers.GetFileStreamFromPackage(package.PackagePath, latestRuntimeAsset.Path),
+                        _apiCompatRunner.QueueApiCompat(_previousPackage.PackagePath, 
+                            previousRuntimeAsset.Path,
+                            package.PackagePath, 
+                            latestRuntimeAsset.Path,
                             Path.GetFileName(package.PackagePath),
                             Resources.PreviousVersionValidatorHeader,
                             string.Format(Resources.MissingApisForFramework, previousTargetFramework.ToString()));
@@ -93,23 +98,28 @@ namespace Microsoft.DotNet.PackageValidation
                 ContentItem latestRuntimeSpecificAsset = package.FindBestRuntimeAssetForFrameworkAndRuntime(previousTargetFramework, previousRid);
                 if (latestRuntimeSpecificAsset == null)
                 {
-                    errors.Add(new TargetFrameworkApplicabilityDiagnostics(DiagnosticIds.TargetFrameworkAndRidPairDropped,
-                        $"{previousTargetFramework}-" + previousRid, 
-                        string.Format(Resources.MissingTargetFrameworkAndRid , previousTargetFramework.ToString(), previousRid)));
+                    if (!_checker.Contain(DiagnosticIds.TargetFrameworkDropped, previousTargetFramework.ToString() + "-" + previousRid))
+                    {
+                        string message = string.Format(Resources.MissingTargetFrameworkAndRid, previousTargetFramework.ToString(), previousRid);
+                        _log.LogError(DiagnosticIds.TargetFrameworkAndRidPairDropped + " " + message);
+                    }
                 }
                 else
                 {
                     if (_runApiCompat)
                     {
-                        apiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(_previousPackage.PackageStream, previousRuntimeSpecificAsset.Path),
-                            Helpers.GetFileStreamFromPackage(package.PackagePath, latestRuntimeSpecificAsset.Path),
+                        _apiCompatRunner.QueueApiCompat(_previousPackage.PackagePath, 
+                            previousRuntimeSpecificAsset.Path,
+                            package.PackagePath, 
+                            latestRuntimeSpecificAsset.Path,
                             Path.GetFileName(package.PackagePath),
                             Resources.PreviousVersionValidatorHeader,
                             string.Format(Resources.MissingTargetFrameworkAndRid, previousTargetFramework.ToString(), previousRid));
                     }
                 }
             }
-            return (errors, apiCompatRunner.RunApiCompat());
+            
+            _apiCompatRunner.RunApiCompat();
         }
     }
 }

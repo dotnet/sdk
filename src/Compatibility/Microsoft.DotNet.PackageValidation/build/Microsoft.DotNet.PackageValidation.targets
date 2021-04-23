@@ -2,18 +2,48 @@
 
 <Project>
  
-  <UsingTask TaskName="ValidatePackage" AssemblyFile="$(DotNetPackageValidationAssembly)"/>
-  
+  <UsingTask TaskName="ValidatePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
+  <UsingTask TaskName="GetLastStablePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
+
   <Target Name="RunPackageValidation" AfterTargets="Pack">
+    
+    <GetLastStablePackage PackageId="$(PackageId)"
+      LocalPackagesPath="$(NuGetPackageRoot)$(PreviousPackageName)"
+      UseLocalPackagesPath="true" >
+      <Output TaskParameter="LastStableVersion" PropertyName="PreviousPackageVersion" />
+    </GetLastStablePackage>
+    
     <PropertyGroup>
       <PackagePath Condition="'$(PackagePath)' == ''">$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg</PackagePath>
+      <PreviousPackagePath>$(NuGetPackageRoot)$(PreviousPackageName)\$(PreviousPackageVersion)\$(PreviousPackageName).$(PreviousPackageVersion).nupkg</PreviousPackagePath>
     </PropertyGroup>
 
     <ValidatePackage PackagePath="$(PackagePath)"
+                     PreviousPackagePath="$(PreviousPackagePath)"
                      RuntimeGraph="$(RuntimeGraph)"
                      NoWarn="$(NoWarn)"
                      RunApiCompat="$([MSBuild]::ValueOrDefault('$(RunApiCompat)', 'false'))"
                      ValidateWithPreviousVersion="$([MSBuild]::ValueOrDefault('$(ValidateWithPreviousVersion)', 'false'))"/>
   </Target>
 
+  <Target Name="AddPackageDownload" BeforeTargets="CollectPackageDownloads">
+
+    <ItemGroup>
+      <Feeds Include="$(_OutputSources)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <PreviousPackageName>$([MSBuild]::ValueOrDefault('$(PreviousPackageName)', '$(MSbuildProjectName)'))</PreviousPackageName>
+    </PropertyGroup>
+
+    <GetLastStablePackage Condition="'$(PreviousPackageVersion)' == ''"
+      PackageId="$(PreviousPackageName)"
+      NugetFeeds="@(Feeds)">
+      <Output TaskParameter="LastStableVersion" PropertyName="PreviousPackageVersion" />
+    </GetLastStablePackage>
+
+    <ItemGroup Condition="'$(PreviousPackageVersion)' != ''">
+      <PackageDownload Include="$(PreviousPackageName)" Version="[$(PreviousPackageVersion)]" />
+    </ItemGroup>
+  </Target>
 </Project>

@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.DotNet.ApiCompatibility;
+using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 
@@ -15,18 +15,20 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class CompatibleTfmValidator
     {
-        private string _noWarn;
-        private (string, string)[] _ignoredDifferences;
-        private bool _runApiCompat;
-        private ApiCompatRunner apiCompatRunner;
+        private static string[] s_diagList =  { DiagnosticIds.CompatibleRuntimeRidLessAsset, DiagnosticIds.ApplicableCompileTimeAsset };
         private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> s_packageTfmMapping = InitializeTfmMappings();
 
-        public CompatibleTfmValidator(string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat)
+        private bool _runApiCompat;
+        private ApiCompatRunner _apiCompatRunner;
+        private Checker _checker;
+        private ILogger _log;
+
+        public CompatibleTfmValidator(string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, ILogger log)
         {
-            _noWarn = noWarn;
-            _ignoredDifferences = ignoredDifferences;
+            _checker = new(noWarn, ignoredDifferences, s_diagList);
             _runApiCompat = runApiCompat;
-            apiCompatRunner = new(_noWarn, _ignoredDifferences);
+            _log = log;
+            _apiCompatRunner = new(noWarn, ignoredDifferences, _log);
         }
 
         /// <summary>
@@ -34,11 +36,8 @@ namespace Microsoft.DotNet.PackageValidation
         /// Validates that the surface between compile time and runtime assets is compatible.
         /// </summary>
         /// <param name="package">Nuget Package that needs to be validated.</param>
-        /// <returns>The List of Package Validation Diagnostics.</returns>
-        public (DiagnosticBag<TargetFrameworkApplicabilityDiagnostics>, IEnumerable<ApiCompatDiagnostics>) Validate(Package package)
+        public void Validate(Package package)
         {
-            DiagnosticBag<TargetFrameworkApplicabilityDiagnostics> errors = new DiagnosticBag<TargetFrameworkApplicabilityDiagnostics>(_noWarn, _ignoredDifferences);
-
             HashSet<NuGetFramework> compatibleTargetFrameworks = new();
             foreach (NuGetFramework item in package.FrameworksInPackage)
             {
@@ -55,29 +54,34 @@ namespace Microsoft.DotNet.PackageValidation
 
                 if (compileTimeAsset == null)
                 {
-                    errors.Add(new TargetFrameworkApplicabilityDiagnostics(DiagnosticIds.CompatibleRuntimeRidLessAsset,
-                    framework.ToString(),
-                    string.Format(Resources.NoCompatibleRuntimeAsset, framework.ToString())));
+                    if (!_checker.Contain(DiagnosticIds.ApplicableCompileTimeAsset, framework.ToString()))
+                    {
+                        string message = string.Format(Resources.NoCompatibleCompileTimeAsset, framework.ToString());
+                        _log.LogError(DiagnosticIds.ApplicableCompileTimeAsset + " " + message);
+                    }
                     break;
                 }
 
                 ContentItem runtimeAsset = package.FindBestRuntimeAssetForFramework(framework);
-
                 if (runtimeAsset == null)
                 {
-                    errors.Add(new TargetFrameworkApplicabilityDiagnostics(DiagnosticIds.CompatibleRuntimeRidLessAsset,
-                        framework.ToString(),
-                        string.Format(Resources.NoCompatibleRuntimeAsset, framework.ToString())));
+                    if (!_checker.Contain(DiagnosticIds.CompatibleRuntimeRidLessAsset, framework.ToString()))
+                    {
+                        string message = string.Format(Resources.NoCompatibleRuntimeAsset, framework.ToString());
+                        _log.LogError(DiagnosticIds.CompatibleRuntimeRidLessAsset + " " + message);
+                    }
                 }
                 else
                 {
                     if (_runApiCompat)
                     {
-                        apiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(package.PackagePath, compileTimeAsset.Path),
-                            Helpers.GetFileStreamFromPackage(package.PackagePath, runtimeAsset.Path),
+                        _apiCompatRunner.QueueApiCompat(package.PackagePath, 
+                            compileTimeAsset.Path,
+                            package.PackagePath,
+                            runtimeAsset.Path,
                             Path.GetFileName(package.PackagePath),
-                             Resources.CompatibleTfmValidatorHeader,
-                             string.Format(Resources.MissingApisForFramework, framework.ToString()));
+                            Resources.CompatibleTfmValidatorHeader,
+                            string.Format(Resources.MissingApisForFramework, framework.ToString()));
                     }
                 }
  
@@ -86,16 +90,20 @@ namespace Microsoft.DotNet.PackageValidation
                     runtimeAsset = package.FindBestRuntimeAssetForFrameworkAndRuntime(framework, rid);
                     if (runtimeAsset == null)
                     {
-                        errors.Add(new TargetFrameworkApplicabilityDiagnostics(DiagnosticIds.CompatibleRuntimeRidSpecificAsset,
-                            $"{framework}-" + rid,
-                            string.Format(Resources.NoCompatibleRidSpecificRuntimeAsset, framework.ToString(), rid)));
+                        if (!_checker.Contain(DiagnosticIds.CompatibleRuntimeRidSpecificAsset, framework.ToString() + "-" + rid))
+                        {
+                            string message = string.Format(Resources.NoCompatibleRidSpecificRuntimeAsset, framework.ToString(), rid);
+                            _log.LogError(DiagnosticIds.CompatibleRuntimeRidSpecificAsset + " " + message);
+                        }
                     }
                     else
                     {
                         if (_runApiCompat)
                         {
-                            apiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(package.PackagePath, compileTimeAsset.Path),
-                                Helpers.GetFileStreamFromPackage(package.PackagePath, runtimeAsset.Path),
+                            _apiCompatRunner.QueueApiCompat(package.PackagePath, 
+                                compileTimeAsset.Path,
+                                package.PackagePath, 
+                                runtimeAsset.Path,
                                 Path.GetFileName(package.PackagePath),
                                 Resources.CompatibleTfmValidatorHeader,
                                 string.Format(Resources.MissingApisForFrameworkAndRid, framework.ToString(), rid));
@@ -104,7 +112,7 @@ namespace Microsoft.DotNet.PackageValidation
                 }
             }
 
-            return (errors, apiCompatRunner.RunApiCompat());
+            _apiCompatRunner.RunApiCompat();
         }
 
         private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> InitializeTfmMappings()

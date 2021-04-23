@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.Client;
+using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 
@@ -15,28 +16,24 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class CompatibleFrameworkInPackageValidator
     {
-        private string _noWarn;
-        private (string, string)[] _ignoredDifferences;
-        ApiCompatRunner apiCompatRunner;
+        private ApiCompatRunner _apiCompatRunner;
+        private ILogger _log;
 
-        public CompatibleFrameworkInPackageValidator(string noWarn, (string, string)[] ignoredDifferences)
+        public CompatibleFrameworkInPackageValidator(string noWarn, (string, string)[] ignoredDifferences, ILogger log)
         {
-            _noWarn = noWarn;
-            _ignoredDifferences = ignoredDifferences;
-            apiCompatRunner = new(_noWarn, _ignoredDifferences);
+            _log = log;
+            _apiCompatRunner = new(noWarn, ignoredDifferences, _log);
         }
 
         /// <summary>
         /// Validates that the compatible frameworks have compatible surface area.
         /// </summary>
         /// <param name="package">Nuget Package that needs to be validated.</param>
-        /// <returns>The List of Package Validation Diagnostics.</returns>
-        public IEnumerable<ApiCompatDiagnostics> Validate(Package package)
+        public void Validate(Package package)
         {       
             IEnumerable<ContentItem> compileAssets = package.CompileAssets.OrderByDescending(t => ((NuGetFramework)t.Properties["tfm"]).Version);
             ManagedCodeConventions conventions = new ManagedCodeConventions(null);
             Queue<ContentItem> compileAssetsQueue = new Queue<ContentItem>(compileAssets);
-
 
             while (compileAssetsQueue.Count > 0)
             {
@@ -60,14 +57,17 @@ namespace Microsoft.DotNet.PackageValidation
 
                 if (compatibleFrameworkAsset != null)
                 {
-                    apiCompatRunner.QueueApiCompat(Helpers.GetFileStreamFromPackage(package.PackagePath, compatibleFrameworkAsset.Path),
-                        Helpers.GetFileStreamFromPackage(package.PackagePath, compileTimeAsset.Path),
+                    _apiCompatRunner.QueueApiCompat(package.PackagePath, 
+                        compatibleFrameworkAsset.Path,
+                        package.PackagePath,
+                        compileTimeAsset.Path,
                         Path.GetFileName(package.PackagePath),
                         Resources.CompatibleFrameworkInPackageValidatorHeader,
                         string.Format(Resources.MissingApisForFramework, framework.ToString()));
                 }
             }
-            return apiCompatRunner.RunApiCompat();
+            
+            _apiCompatRunner.RunApiCompat();
         }
     }
 }
