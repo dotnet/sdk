@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -91,7 +92,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private static bool HasAPropertyMatchInScope(OperationAnalysisContext context, string stringText)
         {
             var containingType = context.ContainingSymbol.ContainingType;
-            return containingType?.GetMembers(stringText).OfType<IPropertySymbol>().Any() == true;
+            return containingType?.GetMembers(stringText).Any(m => m.Kind == SymbolKind.Property) == true;
         }
 
         private static bool HasAParameterMatchInScope(OperationAnalysisContext context, string stringText)
@@ -132,6 +133,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                 parentOperation = parentOperation.Parent;
             }
+
+            return false;
         }
     }
 }
