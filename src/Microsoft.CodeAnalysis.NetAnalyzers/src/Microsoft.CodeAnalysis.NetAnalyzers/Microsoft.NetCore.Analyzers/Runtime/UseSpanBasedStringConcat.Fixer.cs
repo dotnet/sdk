@@ -48,11 +48,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode concatExpressionSyntax)
                 return;
+
             //  OperatorKind will be BinaryOperatorKind.Concatenate, even when '+' is used instead of '&' in Visual Basic.
             if (model.GetOperation(concatExpressionSyntax, cancellationToken) is not IBinaryOperation concatOperation || concatOperation.OperatorKind is not (BinaryOperatorKind.Add or BinaryOperatorKind.Concatenate))
                 return;
 
             var operands = UseSpanBasedStringConcat.FlattenBinaryOperation(concatOperation);
+
             //  Bail out if we don't have a long enough span-based string.Concat overload.
             if (!symbols.TryGetRoscharConcatMethodWithArity(operands.Length, out IMethodSymbol? roscharConcatMethod))
                 return;
@@ -66,7 +68,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 FixConcatOperationChain,
                 Resx.UseSpanBasedStringConcatCodeFixTitle);
             context.RegisterCodeFix(codeAction, diagnostic);
+            return;
 
+            // Local functions
             bool IsAnyNonConditionalSubstringInvocation(IOperation operation)
             {
                 var value = UseSpanBasedStringConcat.WalkDownBuiltInImplicitConversionOnConcatOperand(operation);

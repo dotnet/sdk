@@ -59,7 +59,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
 
             context.RegisterOperationBlockStartAction(OnOperationBlockStart);
+            return;
 
+            // Local functions
             void OnOperationBlockStart(OperationBlockStartAnalysisContext context)
             {
                 //  Maintain set of all top-most concat operations so we don't report sub-expressions of an
@@ -214,11 +216,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 SubstringStartLength = substring2;
                 AsSpanStart = asSpan1;
                 AsSpanStartLength = asSpan2;
-
-                RoslynDebug.Assert(
-                    StringType is not null && ReadOnlySpanOfCharType is not null &&
-                    SubstringStart is not null && SubstringStartLength is not null &&
-                    AsSpanStart is not null && AsSpanStartLength is not null);
             }
 
             public static bool TryGetSymbols(Compilation compilation, out RequiredSymbols symbols)
