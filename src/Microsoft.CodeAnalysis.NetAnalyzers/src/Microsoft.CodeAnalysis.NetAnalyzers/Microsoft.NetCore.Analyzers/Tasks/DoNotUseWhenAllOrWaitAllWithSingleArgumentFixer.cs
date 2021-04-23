@@ -97,7 +97,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         }
 
         private static SyntaxNode GetSingleArgumentSyntax(IInvocationOperation operation)
-            => operation.Arguments[0].Value.Syntax;
+            => ((IArrayCreationOperation)operation.Arguments[0].Value).Initializer.ElementValues[0].Syntax;
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
