@@ -2463,26 +2463,6 @@
             ]
           }
         },
-        "CA1842": {
-          "id": "CA1842",
-          "shortDescription": "Provide memory-based overrides of async methods when subclassing 'Stream'",
-          "fullDescription": "To improve performance, override the memory-based async methods when subclassing 'Stream'.",
-          "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": true,
-            "typeName": "ProvideStreamMemoryBasedAsyncOverrides",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA1839": {
           "id": "CA1839",
           "shortDescription": "Use 'Environment.ProcessPath'",
@@ -2553,6 +2533,26 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "DoNotUseWhenAllOrWaitAllWithSingleArgument",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1844": {
+          "id": "CA1844",
+          "shortDescription": "Provide memory-based overrides of async methods when subclassing 'Stream'",
+          "fullDescription": "To improve performance, override the memory-based async methods when subclassing 'Stream'.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "ProvideStreamMemoryBasedAsyncOverrides",
             "languages": [
               "C#",
               "Visual Basic"

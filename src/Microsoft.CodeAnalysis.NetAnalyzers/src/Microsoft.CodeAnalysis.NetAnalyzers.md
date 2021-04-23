@@ -1308,18 +1308,6 @@ Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in
 |CodeFix|False|
 ---
 
-## [CA1842](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842): Provide memory-based overrides of async methods when subclassing 'Stream'
-
-To improve performance, override the memory-based async methods when subclassing 'Stream'.
-
-|Item|Value|
-|-|-|
-|Category|Performance|
-|Enabled|True|
-|Severity|Info|
-|CodeFix|False|
----
-
 ## [CA1839](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839): Use 'Environment.ProcessPath'
 
 'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.
@@ -1378,6 +1366,18 @@ Using 'WaitAll' with a single task may result in performance loss, await or retu
 |Enabled|True|
 |Severity|Info|
 |CodeFix|True|
+---
+
+## [CA1844](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844): Provide memory-based overrides of async methods when subclassing 'Stream'
+
+To improve performance, override the memory-based async methods when subclassing 'Stream'.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
 ---
 
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
