@@ -23,6 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         internal const string TemplateConfigDirectoryName = ".template.config";
         internal const string TemplateConfigFileName = "template.json";
+        internal const string LocalizationFileSuffix = ".templatestrings.json";
         private const string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
         private const string GeneratorVersion = "1.0.0.0";
         private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
@@ -119,58 +120,41 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IList<ITemplate> GetTemplatesAndLangpacksFromDir(IMountPoint source, out IList<ILocalizationLocator> localizations)
         {
             IDirectory folder = source.Root;
-
-            Regex localeFileRegex = new Regex(
-                @"
-                ^
-                (?<locale>
-                    [a-z]{2}
-                    (?:-[A-Z]{2})?
-                )
-                \."
-                + Regex.Escape(TemplateConfigFileName)
-                + "$",
-                RegexOptions.IgnorePatternWhitespace);
-
             IList<ITemplate> templateList = new List<ITemplate>();
             localizations = new List<ILocalizationLocator>();
 
-            foreach (IFile file in folder.EnumerateFiles("*" + TemplateConfigFileName, SearchOption.AllDirectories))
+            foreach (IFile file in folder.EnumerateFiles(TemplateConfigFileName, SearchOption.AllDirectories))
             {
-                if (string.Equals(file.Name, TemplateConfigFileName, StringComparison.OrdinalIgnoreCase))
+                IFile hostConfigFile = file.MountPoint.EnvironmentSettings.SettingsLoader.FindBestHostTemplateConfigFile(file);
+
+                if (TryGetTemplateFromConfigInfo(file, out ITemplate template, hostTemplateConfigFile: hostConfigFile))
                 {
-                    IFile hostConfigFile = file.MountPoint.EnvironmentSettings.SettingsLoader.FindBestHostTemplateConfigFile(file);
+                    templateList.Add(template);
 
-                    if (TryGetTemplateFromConfigInfo(file, out ITemplate template, hostTemplateConfigFile: hostConfigFile))
+                    IDirectory localizeFolder = file.Parent.DirectoryInfo("localize");
+                    if (localizeFolder != null && localizeFolder.Exists)
                     {
-                        templateList.Add(template);
-                    }
-
-                    continue;
-                }
-
-                Match localeMatch = localeFileRegex.Match(file.Name);
-                if (localeMatch.Success)
-                {
-                    string locale = localeMatch.Groups["locale"].Value;
-
-                    if (TryGetLangPackFromFile(file, out ILocalizationModel locModel))
-                    {
-                        ILocalizationLocator locator = new LocalizationLocator()
+                        foreach (IFile locFile in localizeFolder.EnumerateFiles("*" + LocalizationFileSuffix, SearchOption.AllDirectories))
                         {
-                            Locale = locale,
-                            MountPointUri = source.MountPointUri,
-                            ConfigPlace = file.FullPath,
-                            Identity = locModel.Identity,
-                            Author = locModel.Author,
-                            Name = locModel.Name,
-                            Description = locModel.Description,
-                            ParameterSymbols = locModel.ParameterSymbols
-                        };
-                        localizations.Add(locator);
-                    }
+                            string locale = locFile.Name.Substring(0, locFile.Name.Length - LocalizationFileSuffix.Length);
 
-                    continue;
+                            if (TryGetLangPackFromFile(locFile, out ILocalizationModel locModel))
+                            {
+                                ILocalizationLocator locator = new LocalizationLocator()
+                                {
+                                    Locale = locale,
+                                    MountPointUri = source.MountPointUri,
+                                    ConfigPlace = locFile.FullPath,
+                                    Identity = locModel.Identity,
+                                    Author = locModel.Author,
+                                    Name = locModel.Name,
+                                    Description = locModel.Description,
+                                    ParameterSymbols = locModel.ParameterSymbols
+                                };
+                                localizations.Add(locator);
+                            }
+                        }
+                    }
                 }
             }
 
