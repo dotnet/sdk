@@ -1874,7 +1874,7 @@ public class Test
                 TestState =
                 {
                     Sources = { csCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", editorConfig) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") }
                 }
             };
 

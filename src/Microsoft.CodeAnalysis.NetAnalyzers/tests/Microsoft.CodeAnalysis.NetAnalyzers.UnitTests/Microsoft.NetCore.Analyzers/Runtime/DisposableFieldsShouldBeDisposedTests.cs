@@ -1013,7 +1013,7 @@ class C
                 TestState =
                 {
                     Sources = { csCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", editorConfig)}
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}")}
                 }
             };
 
@@ -1100,7 +1100,7 @@ class C
                 TestState =
                 {
                     Sources = { csCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", editorConfig) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}")}
                 }
             };
 

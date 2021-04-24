@@ -37,7 +37,7 @@ public class CultureInfoTestClass0
                 TestState =
                 {
                     Sources = { source },
-                    AnalyzerConfigFiles = { ("/.editorconfig", property) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{property}") }
                 }
             }.RunAsync();
         }

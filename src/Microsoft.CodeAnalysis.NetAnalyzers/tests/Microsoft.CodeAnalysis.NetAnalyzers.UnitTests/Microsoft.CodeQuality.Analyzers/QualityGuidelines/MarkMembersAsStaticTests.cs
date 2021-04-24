@@ -863,7 +863,7 @@ public class C : System.Web.HttpApplication
                 TestState =
                 {
                     Sources = { csSource},
-                    AnalyzerConfigFiles = { ("/.editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") }
                 }
             }.RunAsync();
 
@@ -1163,7 +1163,7 @@ public class Test
                 TestState =
                 {
                     Sources = { csSource },
-                    AnalyzerConfigFiles = { ("/.editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
                 }
             }.RunAsync();
 
