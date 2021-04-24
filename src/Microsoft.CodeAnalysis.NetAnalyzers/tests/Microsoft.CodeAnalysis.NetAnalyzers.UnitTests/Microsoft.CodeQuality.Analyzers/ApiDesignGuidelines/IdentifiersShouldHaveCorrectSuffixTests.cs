@@ -1767,7 +1767,6 @@ End Class"
                         @"
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 public class C : IReadOnlyDictionary<string, object>
 {
@@ -1789,7 +1788,7 @@ public class C : IReadOnlyDictionary<string, object>
         throw new System.NotImplementedException();
     }
 
-    public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+    public bool TryGetValue(string key, out object value)
     {
         throw new System.NotImplementedException();
     }
