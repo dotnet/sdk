@@ -59,17 +59,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         private string GetEditorConfigContentToDisableInterproceduralAnalysis(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var text = $@"dotnet_code_quality.interprocedural_analysis_kind = None
+            var text = $@"[*]
+                          dotnet_code_quality.interprocedural_analysis_kind = None
                           dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
             return text;
         }
 
         private string GetEditorConfigContent(DisposeAnalysisKind disposeAnalysisKind)
-            => $@"dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
+            => $@"[*]
+                  dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
 
         private string GetEditorConfigContent(PointsToAnalysisKind? pointsToAnalysisKind)
             => pointsToAnalysisKind.HasValue ?
-                $"dotnet_code_quality.CA2000.points_to_analysis_kind = {pointsToAnalysisKind}" :
+                $@"[*]
+                   dotnet_code_quality.CA2000.points_to_analysis_kind = {pointsToAnalysisKind}" :
                 string.Empty;
 
         [Fact]
@@ -9133,8 +9136,11 @@ End Class
 ";
             var vbTest = new VerifyVB.Test()
             {
-                TestCode = vbCode,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { vbCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) }
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)

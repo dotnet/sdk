@@ -1906,8 +1906,11 @@ End Class
 ".NormalizeLineEndings();
             var vbTest = new VerifyVB.Test()
             {
-                TestCode = vbCode,
-                AnalyzerConfigDocument = editorConfig
+                TestState =
+                {
+                    Sources = { vbCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") }
+                }
             };
 
             if (pointsToAnalysisKind == PointsToAnalysisKind.Complete)
