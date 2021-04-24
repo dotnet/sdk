@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     public abstract class UseSpanBasedStringConcat : DiagnosticAnalyzer
     {
-        internal const string RuleId = "CA1841";
+        internal const string RuleId = "CA1845";
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.UseSpanBasedStringConcatTitle), Resx.ResourceManager, typeof(Resx));
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(Resx.UseSpanBasedStringConcatMessage), Resx.ResourceManager, typeof(Resx));
