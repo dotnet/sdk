@@ -47,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return true;
             }
 
-            var symbolNamesOption = analyzerOptions.GetDisallowedSymbolNamesWithValueOption(Rule, containingMethod, compilation, cancellationToken);
+            var symbolNamesOption = analyzerOptions.GetDisallowedSymbolNamesWithValueOption(Rule, containingMethod, compilation);
             return symbolNamesOption.Contains(namedTypeSymbol);
         }
     }

@@ -82,14 +82,12 @@ namespace Microsoft.NetCore.Analyzers.Security
                         return;
                     }
 
-                    var cancellationToken = compilationStartAnalysisContext.CancellationToken;
                     var sufficientIterationCount = compilationStartAnalysisContext.Options.GetUnsignedIntegralOptionValue(
                         optionName: EditorConfigOptionNames.SufficientIterationCountForWeakKDFAlgorithm,
                         rule: DefinitelyUseWeakKDFInsufficientIterationCountRule,
                         tree,
                         compilationStartAnalysisContext.Compilation,
-                        defaultValue: 100000,
-                        cancellationToken: cancellationToken);
+                        defaultValue: 100000);
                     var constructorMapper = new ConstructorMapper(
                         (IMethodSymbol constructorMethod, IReadOnlyList<ValueContentAbstractValue> argumentValueContentAbstractValues,
                         IReadOnlyList<PointsToAbstractValue> argumentPointsToAbstractValues) =>
@@ -121,9 +119,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             // TODO: Handle case when exactly one of the below rules is configured to skip analysis.
                             if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(DefinitelyUseWeakKDFInsufficientIterationCountRule,
-                                    operationBlockStartAnalysisContext.OwningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken) &&
+                                    operationBlockStartAnalysisContext.OwningSymbol, operationBlockStartAnalysisContext.Compilation) &&
                                 operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(MaybeUseWeakKDFInsufficientIterationCountRule,
-                                    operationBlockStartAnalysisContext.OwningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
+                                    operationBlockStartAnalysisContext.OwningSymbol, operationBlockStartAnalysisContext.Compilation))
                             {
                                 return;
                             }
@@ -187,8 +185,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             SupportedDiagnostics,
                                             rootOperationsNeedingAnalysis.First().Item1,
                                             compilationStartAnalysisContext.Compilation,
-                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                            cancellationToken: cancellationToken));
+                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive));
                                 }
 
                                 if (allResults == null)

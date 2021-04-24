@@ -131,8 +131,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 SupportedDiagnostics,
                                 invocationOperation,
                                 operationAnalysisContext.Compilation,
-                                InterproceduralAnalysisKind.None,   // Just looking for simple cases.
-                                operationAnalysisContext.CancellationToken),
+                                InterproceduralAnalysisKind.None   // Just looking for simple cases.
+                            ),
                             out _,
                             out _);
                         if (valueContentResult == null)
@@ -166,6 +166,6 @@ namespace Microsoft.NetCore.Analyzers.Security
         }
 
         private static bool IsConfiguredToSkipAnalysis(DiagnosticDescriptor rule, OperationAnalysisContext context)
-            => context.Options.IsConfiguredToSkipAnalysis(rule, context.ContainingSymbol, context.Compilation, context.CancellationToken);
+            => context.Options.IsConfiguredToSkipAnalysis(rule, context.ContainingSymbol, context.Compilation);
     }
 }

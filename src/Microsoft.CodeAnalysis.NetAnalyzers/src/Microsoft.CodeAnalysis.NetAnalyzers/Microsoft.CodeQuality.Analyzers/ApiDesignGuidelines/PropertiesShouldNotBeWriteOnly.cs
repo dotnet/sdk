@@ -68,13 +68,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // Only analyze externally visible properties by default
-            if (!context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation))
             {
-                Debug.Assert(!context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation, context.CancellationToken));
+                Debug.Assert(!context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation));
                 return;
             }
 
-            Debug.Assert(context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation, context.CancellationToken));
+            Debug.Assert(context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation));
 
             // We handled the non-CA1044 cases earlier.  Now, we handle CA1044 cases
             // If there is no getter then it is not accessible

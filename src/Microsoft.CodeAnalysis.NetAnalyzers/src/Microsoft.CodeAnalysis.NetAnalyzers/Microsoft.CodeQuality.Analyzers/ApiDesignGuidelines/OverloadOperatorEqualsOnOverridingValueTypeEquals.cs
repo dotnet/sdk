@@ -41,7 +41,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
                 if (namedTypeSymbol.IsValueType &&
                     !(namedTypeSymbol.IsRefLikeType && namedTypeSymbol.TypeKind == TypeKind.Struct) &&
-                    context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation, context.CancellationToken) &&
+                    context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation) &&
                     namedTypeSymbol.OverridesEquals() &&
                     !namedTypeSymbol.ImplementsEqualityOperators())
                 {

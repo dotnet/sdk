@@ -203,7 +203,7 @@ namespace Microsoft.NetCore.Analyzers.Data
                                                  ISymbol invokedSymbol,
                                                  ISymbol containingMethod)
         {
-            if (operationContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationContext.Compilation, operationContext.CancellationToken))
+            if (operationContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationContext.Compilation))
             {
                 return false;
             }

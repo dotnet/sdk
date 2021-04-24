@@ -86,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var namedType = (INamedTypeSymbol)symbolStartContext.Symbol;
                 return disposeAnalysisHelper.IsDisposable(namedType) &&
                     !disposeAnalysisHelper.GetDisposableFields(namedType).IsEmpty &&
-                    !symbolStartContext.Options.IsConfiguredToSkipAnalysis(Rule, namedType, symbolStartContext.Compilation, symbolStartContext.CancellationToken);
+                    !symbolStartContext.Options.IsConfiguredToSkipAnalysis(Rule, namedType, symbolStartContext.Compilation);
             }
 
             bool IsDisposeMethod(IMethodSymbol method)

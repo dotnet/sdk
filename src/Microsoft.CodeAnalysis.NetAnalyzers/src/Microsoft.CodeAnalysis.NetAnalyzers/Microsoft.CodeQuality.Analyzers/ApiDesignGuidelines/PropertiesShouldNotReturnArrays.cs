@@ -45,7 +45,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var symbol = (IPropertySymbol)context.Symbol;
             if (symbol.Type.TypeKind == TypeKind.Array && !symbol.IsOverride)
             {
-                if (context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken) &&
+                if (context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation) &&
                     !symbol.ContainingType.IsAttribute())
                 {
                     context.ReportDiagnostic(symbol.CreateDiagnostic(Rule));

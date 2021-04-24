@@ -479,7 +479,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
             // For example inheriting from WPF/WinForms UserControl makes your class over the default threshold,
             // yet there isn't anything you can do about it.
             var inheritanceExcludedTypes = context.Options.GetInheritanceExcludedSymbolNamesOption(CA1501Rule,
-                tree, context.Compilation, defaultForcedValue: "N:System", context.CancellationToken);
+                tree, context.Compilation, defaultForcedValue: "N:System");
 
             if (inheritanceExcludedTypes.IsEmpty)
             {

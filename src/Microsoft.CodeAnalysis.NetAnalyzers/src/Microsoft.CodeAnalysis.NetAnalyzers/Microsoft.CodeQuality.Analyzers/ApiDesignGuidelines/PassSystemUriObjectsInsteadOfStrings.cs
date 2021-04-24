@@ -94,7 +94,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                if (!context.Options.MatchesConfiguredVisibility(Rule, method, context.ContainingSymbol, context.Compilation, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(Rule, method, context.ContainingSymbol, context.Compilation))
                 {
                     // only apply to methods that are exposed outside by default
                     return;

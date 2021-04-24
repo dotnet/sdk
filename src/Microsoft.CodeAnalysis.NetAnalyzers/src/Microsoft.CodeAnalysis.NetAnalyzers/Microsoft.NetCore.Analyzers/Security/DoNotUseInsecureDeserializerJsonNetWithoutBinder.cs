@@ -134,13 +134,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                             if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(
                                     DefinitelyInsecureSerializer,
                                     owningSymbol,
-                                    operationBlockStartAnalysisContext.Compilation,
-                                    operationBlockStartAnalysisContext.CancellationToken)
+                                    operationBlockStartAnalysisContext.Compilation)
                                 && operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(
                                     MaybeInsecureSerializer,
                                     owningSymbol,
-                                    operationBlockStartAnalysisContext.Compilation,
-                                    operationBlockStartAnalysisContext.CancellationToken))
+                                    operationBlockStartAnalysisContext.Compilation))
                             {
                                 return;
                             }
@@ -206,8 +204,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             SupportedDiagnostics,
                                             rootOperationsNeedingAnalysis.First().Operation,
                                             compilationAnalysisContext.Compilation,
-                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                            cancellationToken: compilationAnalysisContext.CancellationToken));
+                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive));
                                 }
 
                                 if (allResults == null)

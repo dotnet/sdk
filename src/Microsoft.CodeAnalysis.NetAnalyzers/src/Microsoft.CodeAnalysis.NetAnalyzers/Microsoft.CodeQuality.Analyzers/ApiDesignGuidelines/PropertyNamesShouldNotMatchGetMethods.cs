@@ -65,7 +65,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // Bail out if the method/property is not exposed (public, protected, or protected internal) by default
-            var configuredVisibilities = context.Options.GetSymbolVisibilityGroupOption(Rule, context.Symbol, context.Compilation, SymbolVisibilityGroup.Public, context.CancellationToken);
+            var configuredVisibilities = context.Options.GetSymbolVisibilityGroupOption(Rule, context.Symbol, context.Compilation, SymbolVisibilityGroup.Public);
             if (!configuredVisibilities.Contains(symbol.GetResultantVisibility()))
             {
                 return;

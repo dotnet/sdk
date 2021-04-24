@@ -141,13 +141,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                             if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(
                                     DefinitelyDisableHttpClientCRLCheckRule,
                                     owningSymbol,
-                                    operationBlockStartAnalysisContext.Compilation,
-                                    operationBlockStartAnalysisContext.CancellationToken) &&
+                                    operationBlockStartAnalysisContext.Compilation) &&
                                 operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(
                                     MaybeDisableHttpClientCRLCheckRule,
                                     owningSymbol,
-                                    operationBlockStartAnalysisContext.Compilation,
-                                    operationBlockStartAnalysisContext.CancellationToken))
+                                    operationBlockStartAnalysisContext.Compilation))
                             {
                                 return;
                             }
@@ -200,8 +198,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             SupportedDiagnostics,
                                             rootOperationsNeedingAnalysis.First().Item1,
                                             compilationAnalysisContext.Compilation,
-                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                            cancellationToken: compilationAnalysisContext.CancellationToken));
+                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive));
                                 }
 
                                 if (allResults == null)

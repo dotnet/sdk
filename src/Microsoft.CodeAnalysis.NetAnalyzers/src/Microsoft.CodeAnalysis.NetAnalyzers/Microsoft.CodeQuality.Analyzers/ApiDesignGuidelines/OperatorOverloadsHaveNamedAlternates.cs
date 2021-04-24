@@ -82,7 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // FxCop compat: only analyze externally visible symbols by default.
             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
             // will always have identical configured visibility.
-            if (!symbolContext.Options.MatchesConfiguredVisibility(DefaultRule, methodSymbol, symbolContext.Compilation, symbolContext.CancellationToken))
+            if (!symbolContext.Options.MatchesConfiguredVisibility(DefaultRule, methodSymbol, symbolContext.Compilation))
             {
                 return;
             }

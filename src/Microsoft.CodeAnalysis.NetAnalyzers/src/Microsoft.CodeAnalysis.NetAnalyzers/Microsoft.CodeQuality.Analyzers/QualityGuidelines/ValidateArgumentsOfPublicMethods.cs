@@ -44,7 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     if (operationBlockContext.OwningSymbol is not IMethodSymbol containingMethod ||
                         !containingMethod.IsExternallyVisible() ||
                         !containingMethod.Parameters.Any(p => p.Type.IsReferenceType) ||
-                        operationBlockContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationBlockContext.Compilation, operationBlockContext.CancellationToken))
+                        operationBlockContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationBlockContext.Compilation))
                     {
                         return;
                     }
@@ -108,8 +108,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                                     rule: Rule,
                                     containingMethod,
                                     operationBlockContext.Compilation,
-                                    defaultValue: false,
-                                    cancellationToken: operationBlockContext.CancellationToken);
+                                    defaultValue: false);
                                 if (excludeThisParameterOption)
                                 {
                                     continue;

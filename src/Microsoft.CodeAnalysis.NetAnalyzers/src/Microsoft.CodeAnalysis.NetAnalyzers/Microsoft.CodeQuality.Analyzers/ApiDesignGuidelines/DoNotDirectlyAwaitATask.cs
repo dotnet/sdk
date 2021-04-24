@@ -43,7 +43,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterCompilationStartAction(context =>
             {
                 if (context.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree ||
-                    !context.Options.GetOutputKindsOption(Rule, tree, context.Compilation, context.CancellationToken).Contains(context.Compilation.Options.OutputKind))
+                    !context.Options.GetOutputKindsOption(Rule, tree, context.Compilation).Contains(context.Compilation.Options.OutputKind))
                 {
                     // Configured to skip analysis for the compilation's output kind
                     return;
@@ -67,8 +67,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 rule: Rule,
                                 method,
                                 context.Compilation,
-                                defaultValue: false,
-                                cancellationToken: context.CancellationToken))
+                                defaultValue: false))
                         {
                             // Configured to skip this analysis in async void methods.
                             return;

@@ -133,7 +133,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool MatchesConfiguredVisibility(ISymbol owningSymbol, OperationAnalysisContext context) =>
              context.Options.MatchesConfiguredVisibility(RuleIncorrectParameterName, owningSymbol, context.Compilation,
-                 context.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.All);
+                 defaultRequiredVisibility: SymbolVisibilityGroup.All);
 
         private static bool HasParameters(ISymbol owningSymbol) => !owningSymbol.GetParameters().IsEmpty;
 

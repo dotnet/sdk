@@ -55,13 +55,13 @@ namespace Microsoft.NetCore.Analyzers.Publish
             {
                 var compilation = context.Compilation;
                 var isSingleFilePublish = context.Options.GetMSBuildPropertyValue(
-                    MSBuildPropertyOptionNames.PublishSingleFile, compilation, context.CancellationToken);
+                    MSBuildPropertyOptionNames.PublishSingleFile, compilation);
                 if (!string.Equals(isSingleFilePublish?.Trim(), "true", StringComparison.OrdinalIgnoreCase))
                 {
                     return;
                 }
                 var includesAllContent = context.Options.GetMSBuildPropertyValue(
-                    MSBuildPropertyOptionNames.IncludeAllContentForSelfExtract, compilation, context.CancellationToken);
+                    MSBuildPropertyOptionNames.IncludeAllContentForSelfExtract, compilation);
                 if (string.Equals(includesAllContent?.Trim(), "true", StringComparison.OrdinalIgnoreCase))
                 {
                     return;

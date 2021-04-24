@@ -159,7 +159,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     {
                         IOperation expression = ((IExpressionStatementOperation)opContext.Operation).Operation;
 
-                        var userDefinedMethods = compilationContext.Options.GetAdditionalUseResultsMethodsOption(UserDefinedMethodRule, expression.Syntax.SyntaxTree, compilationContext.Compilation, compilationContext.CancellationToken);
+                        var userDefinedMethods = compilationContext.Options.GetAdditionalUseResultsMethodsOption(UserDefinedMethodRule, expression.Syntax.SyntaxTree, compilationContext.Compilation);
 
                         DiagnosticDescriptor? rule = null;
                         string targetMethodName = "";

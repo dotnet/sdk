@@ -46,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     var field = (IFieldSymbol)context.Symbol;
 
                     // FxCop compat: only analyze externally visible symbols by default.
-                    if (!context.Options.MatchesConfiguredVisibility(Rule, field, context.Compilation, context.CancellationToken))
+                    if (!context.Options.MatchesConfiguredVisibility(Rule, field, context.Compilation))
                     {
                         return;
                     }
@@ -70,7 +70,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // FxCop compat: only analyze externally visible symbols by default.
-                    if (!context.Options.MatchesConfiguredVisibility(Rule, property, context.Compilation, context.CancellationToken))
+                    if (!context.Options.MatchesConfiguredVisibility(Rule, property, context.Compilation))
                     {
                         return;
                     }
@@ -100,7 +100,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // FxCop compat: only analyze externally visible symbols by default.
-                    if (!context.Options.MatchesConfiguredVisibility(Rule, methodSymbol, context.Compilation, context.CancellationToken))
+                    if (!context.Options.MatchesConfiguredVisibility(Rule, methodSymbol, context.Compilation))
                     {
                         return;
                     }

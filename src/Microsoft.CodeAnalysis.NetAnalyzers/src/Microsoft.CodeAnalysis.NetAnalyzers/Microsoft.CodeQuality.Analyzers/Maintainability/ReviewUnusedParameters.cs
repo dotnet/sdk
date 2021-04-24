@@ -225,7 +225,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 Rule,
                 method,
                 startOperationBlockContext.Compilation,
-                startOperationBlockContext.CancellationToken,
                 defaultRequiredVisibility: SymbolVisibilityGroup.All))
             {
                 return false;
