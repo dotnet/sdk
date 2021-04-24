@@ -1010,8 +1010,11 @@ class C
 ";
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = editorConfig
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", editorConfig)}
+                }
             };
 
             await csTest.RunAsync();
@@ -1094,8 +1097,11 @@ class C
 ";
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = editorConfig
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", editorConfig) }
+                }
             };
 
             await csTest.RunAsync();

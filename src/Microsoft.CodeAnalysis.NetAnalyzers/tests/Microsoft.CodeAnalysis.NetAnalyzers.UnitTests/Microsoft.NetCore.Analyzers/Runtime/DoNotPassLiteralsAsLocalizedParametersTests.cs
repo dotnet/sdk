@@ -1871,8 +1871,11 @@ public class Test
 ".NormalizeLineEndings();
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = editorConfig
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", editorConfig) }
+                }
             };
 
             if (pointsToAnalysisKind == PointsToAnalysisKind.Complete)

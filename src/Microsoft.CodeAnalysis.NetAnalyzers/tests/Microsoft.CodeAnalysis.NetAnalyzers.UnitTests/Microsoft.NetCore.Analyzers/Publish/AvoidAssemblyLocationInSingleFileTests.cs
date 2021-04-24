@@ -38,8 +38,11 @@ class C
 
             var test = new VerifyCS.Test
             {
-                TestCode = source,
-                AnalyzerConfigDocument = analyzerConfig
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", analyzerConfig) }
+                }
             };
 
             DiagnosticResult[] diagnostics;
@@ -156,8 +159,11 @@ build_property." + PublishSingleFile + " = true";
 
             var test = new VerifyCS.Test
             {
-                TestCode = source,
-                AnalyzerConfigDocument = singleFilePublishConfig
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", singleFilePublishConfig) }
+                }
             };
 
             test.ExpectedDiagnostics.AddRange(expected);

@@ -860,8 +860,11 @@ public class C : System.Web.HttpApplication
 
             await new VerifyCS.Test()
             {
-                TestCode = csSource,
-                AnalyzerConfigDocument = editorConfigText,
+                TestState =
+                {
+                    Sources = { csSource},
+                    AnalyzerConfigFiles = { ("/.editorconfig", editorConfigText) }
+                }
             }.RunAsync();
 
             var vbSource = @"
@@ -1157,8 +1160,11 @@ public class Test
 }";
             await new VerifyCS.Test()
             {
-                TestCode = csSource,
-                AnalyzerConfigDocument = editorConfigText,
+                TestState =
+                {
+                    Sources = { csSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", editorConfigText) },
+                }
             }.RunAsync();
 
             var vbSource = @"

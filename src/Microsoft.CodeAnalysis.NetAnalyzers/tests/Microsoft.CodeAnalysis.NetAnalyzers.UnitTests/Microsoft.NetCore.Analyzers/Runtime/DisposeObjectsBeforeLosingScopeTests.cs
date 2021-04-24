@@ -8196,10 +8196,7 @@ End Class");
         [InlineData(PointsToAnalysisKind.Complete)]
         public async Task MemberReferenceInQueryFromClause_Disposed_NoDiagnostic(PointsToAnalysisKind? analysisKind)
         {
-            await new VerifyCS.Test()
-            {
-                AnalyzerConfigDocument = GetEditorConfigContent(analysisKind),
-                TestCode = @"
+            var source = @"
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -8237,7 +8234,14 @@ class Test
         y.Dispose();
     }
 }
-",
+";
+            await new VerifyCS.Test()
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(analysisKind)) }
+                }
             }.RunAsync();
         }
 
@@ -8877,8 +8881,11 @@ public class Test
 ";
             var test = new VerifyCS.Test()
             {
-                TestCode = source,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) }
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
@@ -9015,8 +9022,11 @@ public class Test
 
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) }
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
@@ -9077,8 +9087,11 @@ public class Test
 }";
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) }
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
