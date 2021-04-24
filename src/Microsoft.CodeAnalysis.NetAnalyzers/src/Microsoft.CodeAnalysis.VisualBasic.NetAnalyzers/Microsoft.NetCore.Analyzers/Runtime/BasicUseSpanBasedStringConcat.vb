@@ -28,6 +28,11 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Return True
         End Function
 
+        Private Protected Overrides Function WalkDownBuiltInImplicitConversionOnConcatOperand(operand As IOperation) As IOperation
+
+            Return BasicWalkDownBuiltInImplicitConversionOnConcatOperand(operand)
+        End Function
+
         Private Shared Function IsStringConcatOperation(operation As IBinaryOperation) As Boolean
 
             'OperatorKind will be Concatenate even when the "+" operator is used, provided both operands are strings.

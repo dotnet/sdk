@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -33,16 +32,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        private const string SubstringName = nameof(string.Substring);
-        private const string AsSpanName = nameof(MemoryExtensions.AsSpan);
-        private const string ConcatName = nameof(string.Concat);
-
         /// <summary>
         /// If the specified binary operation is a string concatenation operation, we try to walk up to the top-most
         /// string-concatenation operation that it is part of. If it is not a string-concatenation operation, we simply
         /// return false.
         /// </summary>
         private protected abstract bool TryGetTopMostConcatOperation(IBinaryOperation binaryOperation, [NotNullWhen(true)] out IBinaryOperation? rootBinaryOperation);
+
+        /// <summary>
+        /// Remove the built in implicit conversion on operands to concat.
+        /// In VB, the conversion can be to either string or object.
+        /// In C#, the conversion is always to object.
+        /// </summary>
+        private protected abstract IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand);
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -141,62 +143,64 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal static ImmutableArray<IOperation> FlattenBinaryOperation(IBinaryOperation root)
         {
-            var stack = new Stack<IBinaryOperation>();
-            var builder = ImmutableArray.CreateBuilder<IOperation>();
-            GoLeft(root);
+            var walker = new BinaryOperandWalker();
+            walker.Visit(root);
 
-            while (stack.Count != 0)
+            return walker.Operands.ToImmutable();
+        }
+
+        private sealed class BinaryOperandWalker : OperationWalker
+        {
+            private BinaryOperatorKind _operatorKind;
+
+            public BinaryOperandWalker() : base() { }
+
+            public ImmutableArray<IOperation>.Builder Operands { get; } = ImmutableArray.CreateBuilder<IOperation>();
+
+            public override void DefaultVisit(IOperation operation)
             {
-                var current = stack.Pop();
-
-                if (current.LeftOperand is not IBinaryOperation leftBinary || leftBinary.OperatorKind != root.OperatorKind)
-                {
-                    builder.Add(current.LeftOperand);
-                }
-
-                if (current.RightOperand is not IBinaryOperation rightBinary || rightBinary.OperatorKind != root.OperatorKind)
-                {
-                    builder.Add(current.RightOperand);
-                }
-                else
-                {
-                    GoLeft(rightBinary);
-                }
+                Operands.Add(operation);
             }
 
-            return builder.ToImmutable();
-
-            void GoLeft(IBinaryOperation operation)
+            public override void VisitBinaryOperator(IBinaryOperation operation)
             {
-                IBinaryOperation? current = operation;
-                while (current is not null && current.OperatorKind == root.OperatorKind)
+                if (_operatorKind is BinaryOperatorKind.None)
                 {
-                    stack.Push(current);
-                    current = current.LeftOperand as IBinaryOperation;
+                    _operatorKind = operation.OperatorKind;
                 }
+                else if (_operatorKind != operation.OperatorKind)
+                {
+                    DefaultVisit(operation);
+                    return;
+                }
+
+                Visit(operation.LeftOperand);
+                Visit(operation.RightOperand);
             }
         }
 
-        /// <summary>
-        /// Remove the built in implicit conversion on operands to concat.
-        /// In VB, the conversion can be to either string or object.
-        /// In C#, the conversion is always to object.
-        /// </summary>
-        internal static IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand)
+        internal static IOperation CSharpWalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand)
         {
             if (operand is not IConversionOperation conversion)
                 return operand;
             if (!conversion.IsImplicit || conversion.Conversion.IsUserDefined)
                 return conversion;
+            if (conversion.Type.SpecialType is SpecialType.System_Object)
+                return conversion.Operand;
 
-            switch (conversion.Language)
-            {
-                case LanguageNames.CSharp when conversion.Type.SpecialType is SpecialType.System_Object:
-                case LanguageNames.VisualBasic when conversion.Type.SpecialType is SpecialType.System_Object or SpecialType.System_String:
-                    return conversion.Operand;
-                default:
-                    return conversion;
-            }
+            return conversion;
+        }
+
+        internal static IOperation BasicWalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand)
+        {
+            if (operand is not IConversionOperation conversion)
+                return operand;
+            if (!conversion.IsImplicit || conversion.Conversion.IsUserDefined)
+                return conversion;
+            if (conversion.Type.SpecialType is SpecialType.System_Object or SpecialType.System_String)
+                return conversion.Operand;
+
+            return conversion;
         }
 
         // Use readonly struct instead of record type to save on allocations, since it's not passed by-value.
@@ -207,15 +211,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             private RequiredSymbols(
                 INamedTypeSymbol stringType, INamedTypeSymbol roscharType,
-                IMethodSymbol substring1, IMethodSymbol substring2,
-                IMethodSymbol asSpan1, IMethodSymbol asSpan2)
+                IMethodSymbol substringStart, IMethodSymbol substringStartLength,
+                IMethodSymbol asSpanStart, IMethodSymbol asSpanStartLength)
             {
                 StringType = stringType;
                 ReadOnlySpanOfCharType = roscharType;
-                SubstringStart = substring1;
-                SubstringStartLength = substring2;
-                AsSpanStart = asSpan1;
-                AsSpanStartLength = asSpan2;
+                SubstringStart = substringStart;
+                SubstringStartLength = substringStartLength;
+                AsSpanStart = asSpanStart;
+                AsSpanStartLength = asSpanStartLength;
             }
 
             public static bool TryGetSymbols(Compilation compilation, out RequiredSymbols symbols)
@@ -241,11 +245,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var intParamInfo = ParameterInfo.GetParameterInfo(compilation.GetSpecialType(SpecialType.System_Int32));
                 var stringParamInfo = ParameterInfo.GetParameterInfo(stringType);
 
-                var substringMembers = stringType.GetMembers(SubstringName).OfType<IMethodSymbol>();
+                var substringMembers = stringType.GetMembers(nameof(string.Substring)).OfType<IMethodSymbol>();
                 var substringStart = substringMembers.GetFirstOrDefaultMemberWithParameterInfos(intParamInfo);
                 var substringStartLength = substringMembers.GetFirstOrDefaultMemberWithParameterInfos(intParamInfo, intParamInfo);
 
-                var asSpanMembers = memoryExtensionsType.GetMembers(AsSpanName).OfType<IMethodSymbol>();
+                var asSpanMembers = memoryExtensionsType.GetMembers(nameof(MemoryExtensions.AsSpan)).OfType<IMethodSymbol>();
                 var asSpanStart = asSpanMembers.GetFirstOrDefaultMemberWithParameterInfos(stringParamInfo, intParamInfo)?.ReduceExtensionMethod(stringType);
                 var asSpanStartLength = asSpanMembers.GetFirstOrDefaultMemberWithParameterInfos(stringParamInfo, intParamInfo, intParamInfo)?.ReduceExtensionMethod(stringType);
 
@@ -297,7 +301,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 for (int index = 0; index < arity; index++)
                     argumentList[index] = roscharParamInfo;
 
-                concatMethod = StringType.GetMembers(ConcatName)
+                concatMethod = StringType.GetMembers(nameof(string.Concat))
                     .OfType<IMethodSymbol>()
                     .GetFirstOrDefaultMemberWithParameterInfos(argumentList);
                 return concatMethod is not null;

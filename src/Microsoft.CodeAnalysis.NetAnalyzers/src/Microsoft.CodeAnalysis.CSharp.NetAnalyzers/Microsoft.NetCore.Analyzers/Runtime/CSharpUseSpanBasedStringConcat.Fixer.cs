@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
@@ -33,14 +31,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return false;
         }
 
-        private protected override SyntaxNode GenerateConditionalToStringInvocationExpression(SyntaxNode expression)
+        private protected override IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand)
         {
-            RoslynDebug.Assert(expression is ExpressionSyntax, $"{nameof(expression)} must be C# {nameof(ExpressionSyntax)}.");
-
-            var identifierName = SyntaxFactory.IdentifierName(ToStringName);
-            var memberBinding = SyntaxFactory.MemberBindingExpression(identifierName);
-            var invocation = SyntaxFactory.InvocationExpression(memberBinding, SyntaxFactory.ArgumentList());
-            return SyntaxFactory.ConditionalAccessExpression((ExpressionSyntax)expression.WithoutTrivia(), invocation).WithTriviaFrom(expression);
+            return UseSpanBasedStringConcat.CSharpWalkDownBuiltInImplicitConversionOnConcatOperand(operand);
         }
 
         private protected override bool IsNamedArgument(IArgumentOperation argumentOperation)

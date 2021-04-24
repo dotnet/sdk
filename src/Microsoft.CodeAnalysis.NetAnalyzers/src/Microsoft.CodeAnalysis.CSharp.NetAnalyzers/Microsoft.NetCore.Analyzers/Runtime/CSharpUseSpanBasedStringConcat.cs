@@ -32,5 +32,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     operation.Type.SpecialType == SpecialType.System_String;
             }
         }
+
+        private protected override IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand)
+        {
+            return CSharpWalkDownBuiltInImplicitConversionOnConcatOperand(operand);
+        }
     }
 }

@@ -28,8 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private protected abstract bool IsSystemNamespaceImported(Project project, IReadOnlyList<SyntaxNode> namespaceImports);
 
-        /// <summary>Invoke ToString with the Elvis operator.</summary>
-        private protected abstract SyntaxNode GenerateConditionalToStringInvocationExpression(SyntaxNode expression);
+        private protected abstract IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand);
 
         private protected abstract bool IsNamedArgument(IArgumentOperation argumentOperation);
 
@@ -50,14 +49,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
 
             //  OperatorKind will be BinaryOperatorKind.Concatenate, even when '+' is used instead of '&' in Visual Basic.
-            if (model.GetOperation(concatExpressionSyntax, cancellationToken) is not IBinaryOperation concatOperation || concatOperation.OperatorKind is not (BinaryOperatorKind.Add or BinaryOperatorKind.Concatenate))
+            if (model.GetOperation(concatExpressionSyntax, cancellationToken) is not IBinaryOperation concatOperation
+                || concatOperation.OperatorKind is not (BinaryOperatorKind.Add or BinaryOperatorKind.Concatenate))
+            {
                 return;
+            }
 
             var operands = UseSpanBasedStringConcat.FlattenBinaryOperation(concatOperation);
 
             //  Bail out if we don't have a long enough span-based string.Concat overload.
             if (!symbols.TryGetRoscharConcatMethodWithArity(operands.Length, out IMethodSymbol? roscharConcatMethod))
                 return;
+
             //  Bail if none of the operands are a non-conditional substring invocation. This could be the case if the
             //  only substring invocations in the expression were conditional invocations.
             if (!operands.Any(IsAnyNonConditionalSubstringInvocation))
@@ -68,12 +71,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 FixConcatOperationChain,
                 Resx.UseSpanBasedStringConcatCodeFixTitle);
             context.RegisterCodeFix(codeAction, diagnostic);
+
             return;
 
             // Local functions
+
             bool IsAnyNonConditionalSubstringInvocation(IOperation operation)
             {
-                var value = UseSpanBasedStringConcat.WalkDownBuiltInImplicitConversionOnConcatOperand(operation);
+                var value = WalkDownBuiltInImplicitConversionOnConcatOperand(operation);
                 return value is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod);
             }
 
@@ -121,7 +126,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private SyntaxNode ConvertOperandToArgument(in RequiredSymbols symbols, SyntaxGenerator generator, IOperation operand)
         {
-            var value = UseSpanBasedStringConcat.WalkDownBuiltInImplicitConversionOnConcatOperand(operand);
+            var value = WalkDownBuiltInImplicitConversionOnConcatOperand(operand);
 
             //  Convert substring invocations to equivalent AsSpan invocation.
             if (value is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod))

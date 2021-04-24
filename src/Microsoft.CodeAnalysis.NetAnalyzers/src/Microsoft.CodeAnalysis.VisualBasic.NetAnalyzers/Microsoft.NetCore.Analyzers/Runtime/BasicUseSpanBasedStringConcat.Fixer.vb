@@ -48,12 +48,9 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Return False
         End Function
 
-        Private Protected Overrides Function GenerateConditionalToStringInvocationExpression(expression As SyntaxNode) As SyntaxNode
+        Private Protected Overrides Function WalkDownBuiltInImplicitConversionOnConcatOperand(operand As IOperation) As IOperation
 
-            Dim identifierName = SyntaxFactory.IdentifierName(ToStringName)
-            Dim simpleMemberAccess = SyntaxFactory.SimpleMemberAccessExpression(identifierName)
-            Dim invocation = SyntaxFactory.InvocationExpression(simpleMemberAccess, SyntaxFactory.ArgumentList())
-            Return SyntaxFactory.ConditionalAccessExpression(DirectCast(expression, ExpressionSyntax).WithoutTrivia(), invocation).WithTriviaFrom(expression)
+            Return UseSpanBasedStringConcat.BasicWalkDownBuiltInImplicitConversionOnConcatOperand(operand)
         End Function
 
         Private Protected Overrides Function IsNamedArgument(argumentOperation As IArgumentOperation) As Boolean
