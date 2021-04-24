@@ -7,7 +7,7 @@ Imports Microsoft.CodeQuality.Analyzers.Documentation
 
 Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.Documentation
     ''' <summary>
-    ''' RS0010: Avoid using cref tags with a prefix
+    ''' CA1200: Avoid using cref tags with a prefix
     ''' </summary>
     <ExportCodeFixProvider(LanguageNames.VisualBasic), [Shared]>
     Public NotInheritable Class BasicAvoidUsingCrefTagsWithAPrefixFixer

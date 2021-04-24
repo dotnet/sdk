@@ -220,7 +220,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 isAsync = true;
             }
 
-            IOperation parentOperation = invocationOperation.Parent;
+            IOperation parentOperation = invocationOperation.WalkUpParentheses().WalkUpConversion().Parent;
 
             if (isAsync)
             {
@@ -230,11 +230,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return;
                 }
 
-                parentOperation = awaitOperation.Parent;
+                parentOperation = awaitOperation.WalkUpParentheses().WalkUpConversion().Parent;
             }
-
-            parentOperation = parentOperation.WalkUpParentheses();
-            parentOperation = parentOperation.WalkUpConversion();
 
             bool shouldReplaceParent = ShouldReplaceParent(ref parentOperation, out string? operationKey, out bool shouldNegateIsEmpty);
 
@@ -252,10 +249,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return;
             }
 
-            IOperation parentOperation = propertyReferenceOperation.Parent;
-
-            parentOperation = parentOperation.WalkUpParentheses();
-            parentOperation = parentOperation.WalkUpConversion();
+            IOperation parentOperation = propertyReferenceOperation.WalkUpParentheses().WalkUpConversion().Parent;
 
             bool shouldReplaceParent = ShouldReplaceParent(ref parentOperation, out string? operationKey, out bool shouldNegateIsEmpty);
 

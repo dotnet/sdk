@@ -46,34 +46,34 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         // Tuple says <TypeInheritedOrImplemented, AppropriateSuffix, Bool value saying if the suffix can `Collection` or the `AppropriateSuffix`>s
         // The bool values are as mentioned in the Uri
-        private static readonly List<(string typeName, string suffix, bool canSuffixBeCollection)> s_baseTypesAndTheirSuffix = new List<(string, string, bool)>()
-                                                    {
-                                                        ("System.Attribute", "Attribute", false),
-                                                        ("System.EventArgs", "EventArgs", false),
-                                                        ("System.Exception", "Exception", false),
-                                                        ("System.Collections.ICollection", "Collection", false),
-                                                        ("System.Collections.IDictionary", "Dictionary", false),
-                                                        ("System.Collections.IEnumerable", "Collection", false),
-                                                        ("System.Collections.Queue", "Queue", true),
-                                                        ("System.Collections.Stack", "Stack", true),
-                                                        ("System.Collections.Generic.Queue`1", "Queue", true),
-                                                        ("System.Collections.Generic.Stack`1", "Stack", true),
-                                                        ("System.Collections.Generic.ICollection`1", "Collection", false),
-                                                        ("System.Collections.Generic.IDictionary`2", "Dictionary", false),
-                                                        ("System.Collections.Generic.IReadOnlyDictionary`2", "Dictionary", false),
-                                                        ("System.Data.DataSet", "DataSet", false),
-                                                        ("System.Data.DataTable", "DataTable", true),
-                                                        ("System.IO.Stream", "Stream", false),
-                                                        ("System.Security.IPermission","Permission", false),
-                                                        ("System.Security.Policy.IMembershipCondition", "Condition", false)
-                                                    };
-
-        public override void Initialize(AnalysisContext analysisContext)
+        private static readonly List<(string typeName, string suffix, bool canSuffixBeCollection)> s_baseTypesAndTheirSuffix = new()
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            ("System.Attribute", "Attribute", false),
+            ("System.EventArgs", "EventArgs", false),
+            ("System.Exception", "Exception", false),
+            ("System.Collections.ICollection", "Collection", false),
+            ("System.Collections.IDictionary", "Dictionary", false),
+            ("System.Collections.IEnumerable", "Collection", false),
+            ("System.Collections.Queue", "Queue", true),
+            ("System.Collections.Stack", "Stack", true),
+            ("System.Collections.Generic.Queue`1", "Queue", true),
+            ("System.Collections.Generic.Stack`1", "Stack", true),
+            ("System.Collections.Generic.ICollection`1", "Collection", false),
+            ("System.Collections.Generic.IDictionary`2", "Dictionary", false),
+            ("System.Collections.Generic.IReadOnlyDictionary`2", "Dictionary", false),
+            ("System.Data.DataSet", "DataSet", false),
+            ("System.Data.DataTable", "DataTable", true),
+            ("System.IO.Stream", "Stream", false),
+            ("System.Security.IPermission", "Permission", false),
+            ("System.Security.Policy.IMembershipCondition", "Condition", false)
+        };
 
-            analysisContext.RegisterCompilationStartAction(AnalyzeCompilationStart);
+        public override void Initialize(AnalysisContext context)
+        {
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+
+            context.RegisterCompilationStartAction(AnalyzeCompilationStart);
         }
 
         private static void AnalyzeCompilationStart(CompilationStartAnalysisContext context)

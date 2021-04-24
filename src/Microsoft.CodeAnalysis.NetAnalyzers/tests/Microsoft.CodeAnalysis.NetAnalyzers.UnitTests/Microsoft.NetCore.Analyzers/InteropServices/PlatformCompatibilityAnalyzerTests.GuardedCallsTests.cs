@@ -120,19 +120,17 @@ public class Test
         }
         else
         {
-            [|WindowsOnlyMethod<BrowserOnlyType>()|];  // should flag for WindowsOnlyMethod method and BrowserOnlyType parameter
-            [|GenericMethod<WindowsOnlyType, BrowserOnlyType>()|]; // should flag for WindowsOnlyType and BrowserOnlyType parameters
+            {|#0:WindowsOnlyMethod<BrowserOnlyType>()|};  // should flag for WindowsOnlyMethod method and BrowserOnlyType parameter
+            {|#1:GenericMethod<WindowsOnlyType, BrowserOnlyType>()|}; // should flag for WindowsOnlyType and BrowserOnlyType parameters
         }
     }
 }
 ";
             await VerifyAnalyzerAsyncCs(csSource, s_msBuildPlatforms,
-#pragma warning disable RS0030 // Do not used banned APIs
-                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(24, 13).WithArguments("BrowserOnlyType", "'browser'"),
-#pragma warning restore RS0030 // Do not used banned APIs
-#pragma warning disable RS0030 // Do not used banned APIs
-                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(25, 13).WithArguments("WindowsOnlyType", "'windows'"));
-#pragma warning restore RS0030 // Do not used banned APIs
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("BrowserOnlyType", "'browser'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("Test.WindowsOnlyMethod<BrowserOnlyType>()", "'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).WithArguments("WindowsOnlyType", "'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).WithArguments("BrowserOnlyType", "'browser'"));
         }
 
         [Fact]
@@ -161,6 +159,103 @@ class Test
 }";
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact, WorkItem(4932, "https://github.com/dotnet/roslyn-analyzers/issues/4932")]
+        public async Task GuardMethodWith3VersionPartsEquavalentTo4PartsWithLeading0()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class MSAL
+{
+    [SupportedOSPlatform(""windows10.0.17763.0"")]
+    public static void UseWAMWithLeading0() { }
+
+    [SupportedOSPlatform(""windows10.0.17763"")]
+    public static void UseWAMNoLeading0() { }
+
+    static void Test()
+    {
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763, 0))
+        {
+            UseWAMWithLeading0();
+            UseWAMNoLeading0();
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763))
+        {
+            UseWAMWithLeading0();
+            UseWAMNoLeading0();
+        }
+    }
+}";
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task GuardMethodWith1VersionPartsEquavalentTo2PartsWithLeading0()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class MSAL
+{
+    [SupportedOSPlatform(""windows10.0"")]
+    public static void UseWAMWithLeading0() { }
+
+    static void Test()
+    {
+        if (OperatingSystem.IsWindowsVersionAtLeast(10))
+        {
+            UseWAMWithLeading0();
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0))
+        {
+            UseWAMWithLeading0();
+        }
+    }
+}";
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task GuardMethodWith2VersionPartsEquavalentTo3PartsWithLeading0()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class MSAL
+{
+    [SupportedOSPlatform(""windows10.1.0"")]
+    public static void UseWAMWithLeading0() { }
+
+    [SupportedOSPlatform(""windows10.1"")]
+    public static void UseWAMNoLeading0() { }
+
+    static void Test()
+    {
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 1))
+        {
+            UseWAMWithLeading0();
+            UseWAMNoLeading0();
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 1, 0))
+        {
+            UseWAMWithLeading0();
+            UseWAMNoLeading0();
+        }
+    }
+}";
+
+            await VerifyAnalyzerAsyncCs(source);
         }
 
         [Fact]
@@ -203,6 +298,147 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundSupported
 }";
 
             await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task SupportedOnOsx_GuardedWithIsMacOS()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class Test
+{
+    public void Api_Usage()
+    {
+        if (OperatingSystem.IsWindows() ||
+            OperatingSystem.IsLinux() ||
+            OperatingSystem.IsMacOS())
+        {
+            Api();
+            Api2();
+        }
+
+        [|Api()|]; // This call site is reachable on all platforms. 'Test.Api()' is only supported on: 'macOS/OSX', 'Linux', 'windows'.
+        [|Api2()|]; // This call site is reachable on all platforms. 'Test.Api2()' is only supported on: 'macOS/OSX', 'Linux', 'windows'.
+    }
+
+    [SupportedOSPlatform(""macos"")]
+    [SupportedOSPlatform(""windows"")]
+    [SupportedOSPlatform(""Linux"")]
+    void Api() { }
+
+    [SupportedOSPlatform(""windows"")]
+    [SupportedOSPlatform(""Osx"")]
+    [SupportedOSPlatform(""Linux"")]
+    void Api2() { }
+}";
+
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task UnsupportedOnOsx_GuardedWithIsMacOS()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class Test
+{
+    public void Api_Usage()
+    {
+        if (!OperatingSystem.IsWindows() &&
+            !OperatingSystem.IsLinux() &&
+            !OperatingSystem.IsMacOS())
+        {
+            Api();
+        }
+
+        [|Api()|]; // This call site is reachable on all platforms. 'Test.Api()' is unsupported on: 'macOS/OSX', 'windows'.
+    }
+
+    [UnsupportedOSPlatform(""windows"")]
+    [UnsupportedOSPlatform(""Linux"")]
+    [UnsupportedOSPlatform(""Osx"")]
+    void Api() { }
+}";
+
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task SupportedOnOsxVersioned_GuardedWithIsMacOSVersioned()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class Test
+{
+    public void Api_Usage()
+    {
+        if (OperatingSystem.IsWindowsVersionAtLeast(10) ||
+            OperatingSystem.IsLinux() ||
+            OperatingSystem.IsMacOSVersionAtLeast(11))
+        {
+            Api();
+        }
+
+        [|Api()|]; // This call site is reachable on all platforms. 'Test.Api2()' is only supported on: 'macOS/OSX' 10.1 and later, 'windows' 10.0 and later, 'Linux'.
+    }
+
+    [SupportedOSPlatform(""windows10.0"")]
+    [SupportedOSPlatform(""Linux"")]
+    [SupportedOSPlatform(""Osx10.1"")]
+    void Api() { }
+}";
+
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task SupportedUnsupportedOnOsx_GuardedWithIsMacOS_MessageParameterTest()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class Test
+{
+    public void Api_Usage()
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            MacOsApi();
+            OsxApi();
+            {|#0:UnsupportedOsxApi()|};
+        }
+        else
+        {
+            {|#1:MacOsApi()|}; // This call site is reachable on all platforms. 'Test.Api()' is only supported on: 'macOS/OSX', 'Linux', 'windows'.
+            {|#2:OsxApi()|}; // This call site is reachable on all platforms. 'Test.Api2()' is only supported on: 'macOS/OSX', 'Linux', 'windows'.
+            UnsupportedOsxApi();
+        }
+    }
+
+    [SupportedOSPlatform(""macos"")]
+    void MacOsApi() { }
+
+    [SupportedOSPlatform(""Osx"")]
+    void OsxApi() { }
+
+    [UnsupportedOSPlatform(""Osx"")]
+    void UnsupportedOsxApi() { }
+}";
+
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable)
+                    .WithLocation(0).WithArguments("Test.UnsupportedOsxApi()", "'macOS/OSX'", "'macOS/OSX'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms)
+                    .WithLocation(1).WithArguments("Test.MacOsApi()", "'macOS/OSX'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms)
+                    .WithLocation(2).WithArguments("Test.OsxApi()", "'macOS/OSX'"));
         }
 
         [Fact]

@@ -58,9 +58,9 @@ class C
     public void F() { }
 }
 ",
-    // Test0.cs(3,21): warning RS0010: Avoid using cref tags with a prefix
+    // Test0.cs(3,21): warning CA1200: Avoid using cref tags with a prefix
     GetCSharpResultAt(3, 21),
-    // Test0.cs(3,55): warning RS0010: Avoid using cref tags with a prefix
+    // Test0.cs(3,55): warning CA1200: Avoid using cref tags with a prefix
     GetCSharpResultAt(3, 55));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -72,9 +72,9 @@ Class C
     End Sub
 End Class
 ",
-    // Test0.vb(3,21): warning RS0010: Avoid using cref tags with a prefix
+    // Test0.vb(3,21): warning CA1200: Avoid using cref tags with a prefix
     GetBasicResultAt(3, 21),
-    // Test0.vb(3,55): warning RS0010: Avoid using cref tags with a prefix
+    // Test0.vb(3,55): warning CA1200: Avoid using cref tags with a prefix
     GetBasicResultAt(3, 55));
         }
 
