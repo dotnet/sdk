@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.PackageValidation
                     IAssemblySymbol rightSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName, rightAssemblyStream);
                     ApiComparer differ = new();
 
-                    IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbols, rightSymbols).Where(t => _checker.Contain(t.DiagnosticId, t.ReferenceId));
+                    IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbols, rightSymbols).Where(t => !_checker.Contain(t.DiagnosticId, t.ReferenceId));
 
                     if (differences.Any())
                     {

@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
 {
     public class PackageValidationTests : SdkTest
     {
-        public PackageValidationLogger _logger;
+        public TestLogger _logger;
 
         public PackageValidationTests(ITestOutputHelper log) : base(log) 
         {
@@ -31,6 +31,8 @@ namespace Microsoft.DotNet.PackageValidation.Tests
 
             Package package = new("TestPackage", "1.0.0", filePaths, null, null);
             new CompatibleTfmValidator(string.Empty, null, false, _logger).Validate(package);
+            Assert.Single(_logger.errors);
+            Assert.Equal("PKV004 There is no compatible runtime asset for target framework .NETCoreApp,Version=v3.1 in the package.", _logger.errors[0]);
         }
 
         [Fact]
@@ -44,6 +46,8 @@ namespace Microsoft.DotNet.PackageValidation.Tests
 
             Package package = new("TestPackage", "1.0.0", filePaths, null, null);
             new CompatibleTfmValidator(string.Empty, null, false, _logger).Validate(package);
+            Assert.NotEmpty(_logger.errors);
+            Assert.Contains("PKV004 There is no compatible runtime asset for target framework .NETStandard,Version=v2.0 in the package.", _logger.errors);
         }
 
         [Fact]
@@ -74,6 +78,8 @@ namespace PackageValidationTests
             string testPackagePath = Path.Combine(asset.TestRoot, testProject.Name, "bin", "debug", testProject.Name + ".1.0.0.nupkg");
             Package package = NupkgParser.CreatePackage(testPackagePath, null);
             new CompatibleFrameworkInPackageValidator(string.Empty, null, _logger).Validate(package);
+            Assert.NotEmpty(_logger.errors);
+            Assert.Contains("CP0002 : Member 'PackageValidationTests.First.test(string)' exists on the left but not on the right", _logger.errors);
         }
     }
 }
