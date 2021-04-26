@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,41 +19,84 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    public sealed class SettingsLoader : ISettingsLoader, IDisposable
+    internal sealed class SettingsLoader : ISettingsLoader, IDisposable
     {
-        public static readonly string HostTemplateFileConfigBaseName = ".host.json";
+        internal const string HostTemplateFileConfigBaseName = ".host.json";
         private const int MaxLoadAttempts = 20;
-        private readonly Paths _paths;
+        private static object _settingsLock = new object();
+        private static object _firstRunLock = new object();
+        private readonly SettingsFilePaths _paths;
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private SettingsStore _userSettings;
+        private readonly Action<IEngineEnvironmentSettings>? _onFirstRun;
+        private SettingsStore? _userSettings;
         private TemplateCache _userTemplateCache;
-        private IMountPointManager _mountPointManager;
-        private IComponentManager _componentManager;
-        private bool _isLoaded;
+        private IMountPointManager? _mountPointManager;
+        private IComponentManager? _componentManager;
         private bool _templatesLoaded;
         private TemplatePackageManager _templatePackagesManager;
         private volatile bool _disposed;
+        private bool _loaded;
 
-        public SettingsLoader(IEngineEnvironmentSettings environmentSettings)
+        public SettingsLoader(IEngineEnvironmentSettings environmentSettings, Action<IEngineEnvironmentSettings>? onFirstRun = null)
         {
             _environmentSettings = environmentSettings;
-            _paths = new Paths(environmentSettings);
+            _paths = new SettingsFilePaths(environmentSettings);
             _userTemplateCache = new TemplateCache(environmentSettings);
             _templatePackagesManager = new TemplatePackageManager(environmentSettings);
+            _onFirstRun = onFirstRun;
         }
 
         public IComponentManager Components
         {
             get
             {
-                EnsureLoaded();
-                return _componentManager;
+                lock (_settingsLock)
+                {
+                    if (_componentManager == null)
+                    {
+                        EnsureLoaded();
+                    }
+                    //EnsureLoaded sets _componentManager
+                    return _componentManager!;
+                }
             }
         }
 
         public IEngineEnvironmentSettings EnvironmentSettings => _environmentSettings;
 
         public ITemplatePackageManager TemplatePackagesManager => _templatePackagesManager;
+
+        private IMountPointManager MountPointManager
+        {
+            get
+            {
+                lock (_settingsLock)
+                {
+                    if (_mountPointManager == null)
+                    {
+                        EnsureLoaded();
+                    }
+                    //EnsureLoaded sets _userSettings
+                    return _mountPointManager!;
+                }
+            }
+        }
+
+        private SettingsStore UserSettings
+        {
+            get
+            {
+                lock (_settingsLock)
+                {
+                    if (_userSettings == null)
+                    {
+                        EnsureLoaded();
+                    }
+                    //EnsureLoaded sets _userSettings
+                    return _userSettings!;
+                }
+            }
+        }
 
         public void Save()
         {
@@ -60,8 +105,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 throw new ObjectDisposedException(nameof(SettingsLoader));
             }
 
-            JObject serialized = JObject.FromObject(_userSettings);
-            _paths.WriteAllText(_paths.User.SettingsFile, serialized.ToString());
+            JObject serialized = JObject.FromObject(UserSettings);
+            _paths.WriteAllText(_paths.SettingsFile, serialized.ToString());
         }
 
         public Task RebuildCacheAsync(CancellationToken token)
@@ -69,7 +114,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return RebuildCacheFromSettingsIfNotCurrent(true);
         }
 
-        public ITemplate LoadTemplate(ITemplateInfo info, string baselineName)
+        public ITemplate? LoadTemplate(ITemplateInfo info, string baselineName)
         {
             if (_disposed)
             {
@@ -83,18 +128,18 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             IMountPoint mountPoint;
-            if (!_mountPointManager.TryDemandMountPoint(info.MountPointUri, out mountPoint))
+            if (!MountPointManager.TryDemandMountPoint(info.MountPointUri, out mountPoint))
             {
                 return null;
             }
             IFileSystemInfo config = mountPoint.FileSystemInfo(info.ConfigPlace);
 
-            IFileSystemInfo localeConfig = null;
+            IFileSystemInfo? localeConfig = null;
             if (!string.IsNullOrEmpty(info.LocaleConfigPlace)
                     && !string.IsNullOrEmpty(info.MountPointUri))
             {
                 IMountPoint localeMountPoint;
-                if (!_mountPointManager.TryDemandMountPoint(info.MountPointUri, out localeMountPoint))
+                if (!MountPointManager.TryDemandMountPoint(info.MountPointUri, out localeMountPoint))
                 {
                     // TODO: decide if we should proceed without loc info, instead of bailing.
                     return null;
@@ -103,7 +148,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 localeConfig = localeMountPoint.FileSystemInfo(info.LocaleConfigPlace);
             }
 
-            IFile hostTemplateConfigFile = FindBestHostTemplateConfigFile(config);
+            IFile? hostTemplateConfigFile = FindBestHostTemplateConfigFile(config);
 
             ITemplate template;
             using (Timing.Over(_environmentSettings.Host, "Template from config"))
@@ -121,7 +166,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return null;
         }
 
-        public IFile FindBestHostTemplateConfigFile(IFileSystemInfo config)
+        public IFile? FindBestHostTemplateConfigFile(IFileSystemInfo config)
         {
             if (_disposed)
             {
@@ -160,12 +205,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 throw new ObjectDisposedException(nameof(SettingsLoader));
             }
-
             await RebuildCacheFromSettingsIfNotCurrent(false).ConfigureAwait(false);
             return _userTemplateCache.TemplateInfo;
         }
 
-        public async Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo>> filters, CancellationToken token = default)
+        public async Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters, CancellationToken token = default)
         {
             IReadOnlyList<ITemplateInfo> templates = await GetTemplatesAsync(token).ConfigureAwait(false);
             //TemplateListFilter.GetTemplateMatchInfo code should be moved to this method eventually, when no longer needed.
@@ -185,10 +229,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             int attemptCount = 0;
             bool successfulWrite = false;
 
-            EnsureLoaded();
             while (!successfulWrite && attemptCount++ < maxAttempts)
             {
-                if (!_userSettings.ProbingPaths.Add(probeIn))
+                if (!UserSettings.ProbingPaths.Add(probeIn))
                 {
                     return;
                 }
@@ -211,7 +254,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 throw new ObjectDisposedException(nameof(SettingsLoader));
             }
-            return _mountPointManager.TryDemandMountPoint(mountPointUri, out mountPoint);
+            return MountPointManager.TryDemandMountPoint(mountPointUri, out mountPoint);
+        }
+
+        public void ResetSettings()
+        {
+            lock (_settingsLock)
+            {
+                _paths.Delete(_paths.BaseDir);
+                _loaded = false;
+                _userSettings = null;
+                _componentManager = null;
+                _mountPointManager = null;
+            }
         }
 
         public void Dispose()
@@ -224,77 +279,104 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _templatePackagesManager.Dispose();
         }
 
-        private void EnsureLoaded()
+        private void EnsureFirstRun()
         {
-            if (_isLoaded)
+            lock (_firstRunLock)
             {
-                return;
-            }
-
-            string userSettings = null;
-            using (Timing.Over(_environmentSettings.Host, "Read settings"))
-            {
-                for (int i = 0; i < MaxLoadAttempts; ++i)
+                if (!_paths.Exists(_paths.BaseDir) || !_paths.Exists(_paths.FirstRunCookie))
                 {
                     try
                     {
-                        userSettings = _paths.ReadAllText(_paths.User.SettingsFile, "{}");
-                        break;
+                        _onFirstRun?.Invoke(EnvironmentSettings);
+                        _paths.WriteAllText(_paths.FirstRunCookie, "");
                     }
-                    catch (IOException)
+                    catch (Exception ex)
                     {
-                        if (i == MaxLoadAttempts - 1)
-                        {
-                            throw;
-                        }
-
-                        Task.Delay(2).Wait();
+                        _environmentSettings.Host.OnCriticalError(null, "Failed to initialize the host, unable to complete first run actions", "null", 0);
+                        _environmentSettings.Host.LogDiagnosticMessage($"Details: {ex.ToString()}", "First run");
+                        throw new EngineInitializationException("Failed to initialize the host, unable to complete first run actions", "First run", ex);
                     }
                 }
             }
+        }
 
-            JObject parsed;
-            using (Timing.Over(_environmentSettings.Host, "Parse settings"))
+        /// <summary>
+        /// Loads the settings, should be called under locking <see cref="_settingsLock"/>.
+        /// </summary>
+        private void EnsureLoaded()
+        {
+            lock (_settingsLock)
             {
-                try
+                if (_loaded)
                 {
-                    parsed = JObject.Parse(userSettings);
+                    return;
                 }
-                catch (Exception ex)
+
+                string? userSettings = null;
+                using (Timing.Over(_environmentSettings.Host, "Read settings"))
                 {
-                    throw new EngineInitializationException("Error parsing the user settings file", "Settings File", ex);
+                    for (int i = 0; i < MaxLoadAttempts; ++i)
+                    {
+                        try
+                        {
+                            userSettings = _paths.ReadAllText(_paths.SettingsFile, "{}");
+                            break;
+                        }
+                        catch (IOException)
+                        {
+                            if (i == MaxLoadAttempts - 1)
+                            {
+                                throw;
+                            }
+
+                            Task.Delay(2).Wait();
+                        }
+                    }
                 }
-            }
 
-            using (Timing.Over(_environmentSettings.Host, "Deserialize user settings"))
-            {
-                _userSettings = new SettingsStore(parsed);
-            }
-
-            using (Timing.Over(_environmentSettings.Host, "Init probing paths"))
-            {
-                if (_userSettings.ProbingPaths.Count == 0)
+                JObject parsed;
+                using (Timing.Over(_environmentSettings.Host, "Parse settings"))
                 {
-                    _userSettings.ProbingPaths.Add(_paths.User.Content);
+                    try
+                    {
+                        parsed = JObject.Parse(userSettings);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new EngineInitializationException("Error parsing the user settings file", "Settings File", ex);
+                    }
                 }
-            }
 
-            using (Timing.Over(_environmentSettings.Host, "Init Component manager"))
-            {
-                _componentManager = new ComponentManager(this, _userSettings);
-            }
+                using (Timing.Over(_environmentSettings.Host, "Deserialize user settings"))
+                {
+                    _userSettings = new SettingsStore(parsed);
+                }
 
-            using (Timing.Over(_environmentSettings.Host, "Init MountPoint manager"))
-            {
-                _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
-            }
+                using (Timing.Over(_environmentSettings.Host, "Init probing paths"))
+                {
+                    if (_userSettings.ProbingPaths.Count == 0)
+                    {
+                        _userSettings.ProbingPaths.Add(_paths.Content);
+                    }
+                }
 
-            using (Timing.Over(_environmentSettings.Host, "Demand template load"))
-            {
-                EnsureTemplatesLoaded();
-            }
+                using (Timing.Over(_environmentSettings.Host, "Init Component manager"))
+                {
+                    _componentManager = new ComponentManager(this, _userSettings);
+                }
 
-            _isLoaded = true;
+                using (Timing.Over(_environmentSettings.Host, "Init MountPoint manager"))
+                {
+                    _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
+                }
+
+                using (Timing.Over(_environmentSettings.Host, "Demand template load"))
+                {
+                    EnsureTemplatesLoaded();
+                }
+                _loaded = true;
+                EnsureFirstRun();
+            }
         }
 
         // Loads from the template cache
@@ -307,11 +389,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             string userTemplateCache;
 
-            if (_paths.Exists(_paths.User.TemplateCacheFile))
+            if (_paths.Exists(_paths.TemplateCacheFile))
             {
                 using (Timing.Over(_environmentSettings.Host, "Read template cache"))
                 {
-                    userTemplateCache = _paths.ReadAllText(_paths.User.TemplateCacheFile, "{}");
+                    userTemplateCache = _paths.ReadAllText(_paths.TemplateCacheFile, "{}");
                 }
             }
             else
@@ -340,7 +422,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 throw new ObjectDisposedException(nameof(SettingsLoader));
             }
 
-            EnsureLoaded();
+            EnsureTemplatesLoaded();
             forceRebuild |= _userTemplateCache.Locale != CultureInfo.CurrentUICulture.Name;
             if (_userTemplateCache.Version != TemplateInfo.CurrentVersion)
             {
