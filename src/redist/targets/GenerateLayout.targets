@@ -493,11 +493,7 @@
   </Target>
 
   <Target Name="GeneratePrecomputedRarCache" DependsOnTargets="LayoutTemplates;LayoutManifests;LayoutBundledTools">
-    <ItemGroup>
-      <SampleProjectForResolveAssemblyReferenceCache Include="$(RepoRoot)\TestAssets\TestProjects\RARPreCacheProject\**\*.*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(SampleProjectForResolveAssemblyReferenceCache)" DestinationFiles="$(RepoRoot)\artifacts\bin\redist\$(Configuration)\RARPreCacheProject\%(RecursiveDir)%(FileName)%(Extension)" />
-    <MSBuild Projects="$(RepoRoot)\artifacts\bin\redist\$(Configuration)\RARPreCacheProject\RARPreCacheProject.csproj" Properties="AssemblyInformationCacheOutputPath=$(RedistLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" Targets="ResolveAssemblyReferences" />
+    <ResolveAssemblyReference AssemblyFiles="$(RepoRoot)\**\*.dll" Silent="true" AssemblyInformationCacheOutputPath="$(RedistLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" SearchPaths="$(RepoRoot)\**" />
   </Target>
 
   <Target Name="GenerateLayout"
