@@ -14,51 +14,39 @@ using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge;
-using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
 using TemplateCreationResult = Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult;
 using TemplateCreator = Microsoft.TemplateEngine.Edge.Template.TemplateCreator;
 
 namespace Microsoft.TemplateEngine.IDE
 {
-    public class Bootstrapper
+    public class Bootstrapper : IDisposable
     {
         private readonly ITemplateEngineHost _host;
-        private readonly Action<IEngineEnvironmentSettings> _onFirstRun;
-        private readonly Paths _paths;
         private readonly TemplateCreator _templateCreator;
+        private readonly EngineEnvironmentSettings _engineEnvironmentSettings;
 
         public Bootstrapper(ITemplateEngineHost host, Action<IEngineEnvironmentSettings> onFirstRun, bool virtualizeConfiguration)
         {
-            _host = host;
-            EnvironmentSettings = new EngineEnvironmentSettings(host, x => new SettingsLoader(x));
-            _onFirstRun = onFirstRun;
-            _paths = new Paths(EnvironmentSettings);
-            _templateCreator = new TemplateCreator(EnvironmentSettings);
-
-            if (virtualizeConfiguration)
-            {
-                EnvironmentSettings.Host.VirtualizeDirectory(EnvironmentSettings.Paths.TemplateEngineRootDir);
-            }
+            _host = host ?? throw new ArgumentNullException(nameof(host));
+            _engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: virtualizeConfiguration, onFirstRun: onFirstRun);
+            _templateCreator = new TemplateCreator(_engineEnvironmentSettings);
         }
-
-        private EngineEnvironmentSettings EnvironmentSettings { get; }
 
         public void Register(Type type)
         {
-            EnvironmentSettings.SettingsLoader.Components.Register(type);
+            _engineEnvironmentSettings.SettingsLoader.Components.Register(type);
         }
 
         public void Register(Assembly assembly)
         {
-            EnvironmentSettings.SettingsLoader.Components.RegisterMany(assembly.GetTypes());
+            _engineEnvironmentSettings.SettingsLoader.Components.RegisterMany(assembly.GetTypes());
         }
 
         [Obsolete("Use " + nameof(GetTemplatesAsync) + "instead")]
         public async Task<IReadOnlyCollection<Edge.Template.IFilteredTemplateInfo>> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, Edge.Template.MatchInfo?>[] filters)
         {
-            EnsureInitialized();
-            return TemplateListFilter.FilterTemplates(await EnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false), exactMatchesOnly, filters);
+            return TemplateListFilter.FilterTemplates(await _engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false), exactMatchesOnly, filters);
         }
 
         /// <summary>
@@ -73,8 +61,7 @@ namespace Microsoft.TemplateEngine.IDE
         public Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(IEnumerable<Func<ITemplateInfo, MatchInfo?>>? filters = null, bool exactMatchesOnly = true, CancellationToken cancellationToken = default)
         {
             Func<ITemplateMatchInfo, bool> criteria = exactMatchesOnly ? WellKnownSearchFilters.MatchesAllCriteria : WellKnownSearchFilters.MatchesAtLeastOneCriteria;
-            EnsureInitialized();
-            return EnvironmentSettings.SettingsLoader.GetTemplatesAsync(criteria, filters ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>(), cancellationToken);
+            return _engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(criteria, filters ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>(), cancellationToken);
         }
 
         public async Task<ICreationResult> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, bool skipUpdateCheck, string baselineName)
@@ -99,8 +86,7 @@ namespace Microsoft.TemplateEngine.IDE
         public Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackages(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            EnsureInitialized();
-            return EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync();
+            return _engineEnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync();
         }
 
         /// <summary>
@@ -111,8 +97,7 @@ namespace Microsoft.TemplateEngine.IDE
         public Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackages(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            EnsureInitialized();
-            return EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetManagedTemplatePackagesAsync();
+            return _engineEnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetManagedTemplatePackagesAsync();
         }
 
         /// <summary>
@@ -130,7 +115,6 @@ namespace Microsoft.TemplateEngine.IDE
         {
             _ = installRequests ?? throw new ArgumentNullException(nameof(installRequests));
             cancellationToken.ThrowIfCancellationRequested();
-            EnsureInitialized();
 
             if (!installRequests.Any())
             {
@@ -143,7 +127,7 @@ namespace Microsoft.TemplateEngine.IDE
                 case InstallationScope.Global:
                 default:
                     {
-                        managedPackageProvider = EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetBuiltInManagedProvider(InstallationScope.Global);
+                        managedPackageProvider = _engineEnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetBuiltInManagedProvider(InstallationScope.Global);
                         break;
                     }
             }
@@ -161,7 +145,6 @@ namespace Microsoft.TemplateEngine.IDE
         {
             _ = managedPackages ?? throw new ArgumentNullException(nameof(managedPackages));
             cancellationToken.ThrowIfCancellationRequested();
-            EnsureInitialized();
 
             if (!managedPackages.Any())
             {
@@ -184,7 +167,6 @@ namespace Microsoft.TemplateEngine.IDE
         {
             _ = updateRequests ?? throw new ArgumentNullException(nameof(updateRequests));
             cancellationToken.ThrowIfCancellationRequested();
-            EnsureInitialized();
 
             if (!updateRequests.Any())
             {
@@ -207,7 +189,6 @@ namespace Microsoft.TemplateEngine.IDE
         {
             _ = managedPackages ?? throw new ArgumentNullException(nameof(managedPackages));
             cancellationToken.ThrowIfCancellationRequested();
-            EnsureInitialized();
 
             if (!managedPackages.Any())
             {
@@ -221,6 +202,8 @@ namespace Microsoft.TemplateEngine.IDE
         }
 
         #endregion Template Package Management
+
+        public void Dispose() => _engineEnvironmentSettings.Dispose();
 
         #region Obsolete
 
@@ -240,7 +223,6 @@ namespace Microsoft.TemplateEngine.IDE
         public void Install(IEnumerable<string> paths)
         {
             _ = paths ?? throw new ArgumentNullException(nameof(paths));
-            EnsureInitialized();
 
             if (!paths.Any())
             {
@@ -268,7 +250,6 @@ namespace Microsoft.TemplateEngine.IDE
         public IEnumerable<string> Uninstall(IEnumerable<string> paths)
         {
             _ = paths ?? throw new ArgumentNullException(nameof(paths));
-            EnsureInitialized();
 
             if (!paths.Any())
             {
@@ -289,16 +270,6 @@ namespace Microsoft.TemplateEngine.IDE
             uninstallTask.Wait();
             return uninstallTask.Result.Select(result => result.TemplatePackage.Identifier);
         }
-
         #endregion Obsolete
-
-        private void EnsureInitialized()
-        {
-            if (!_paths.Exists(_paths.User.BaseDir) || !_paths.Exists(_paths.User.FirstRunCookie))
-            {
-                _onFirstRun?.Invoke(EnvironmentSettings);
-                _paths.WriteAllText(_paths.User.FirstRunCookie, "");
-            }
-        }
     }
 }
