@@ -1,19 +1,18 @@
 <Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
-        <TestProject>true</TestProject>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <Compile Update="ConditionalTests.*.cs" DependentUpon="ConditionalTests.cs" />
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Update="ConditionalTests.*.cs" DependentUpon="ConditionalTests.cs" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
-        <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
-        <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
 
 </Project>

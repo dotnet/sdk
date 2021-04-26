@@ -1,22 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
-    <PropertyGroup>
-        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
-        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
-        <IsPackable>true</IsPackable>
-		<IsShipping>false</IsShipping>
-        <IsTestProject>false</IsTestProject>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.abstractions" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="xunit" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+  </ItemGroup>
 
 </Project>
