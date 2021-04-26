@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="info">Information about template.</param>
         /// <param name="baselineName">Defines which baseline of template to load.</param>
         /// <returns>Fully loaded template or <c>null</c> if it fails to load template.</returns>
-        ITemplate LoadTemplate(ITemplateInfo info, string baselineName);
+        ITemplate? LoadTemplate(ITemplateInfo info, string baselineName);
 
         /// <summary>
         /// Saves settings to file.
@@ -88,12 +88,18 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// </summary>
         /// <param name="config">File that represents original template file.</param>
         /// <returns>Host file if exists; otherwise <c>null</c>.</returns>
-        IFile FindBestHostTemplateConfigFile(IFileSystemInfo config);
+        IFile? FindBestHostTemplateConfigFile(IFileSystemInfo config);
 
         /// <summary>
         /// Deletes templates cache and rebuilds it.
         /// Useful if user suspects cache is corrupted and wants to rebuild it.
         /// </summary>
         Task RebuildCacheAsync(CancellationToken token);
+
+        /// <summary>
+        /// Resets settings of host version.
+        /// Useful when the settings need to be reset to default and all caches to be reinitialized.
+        /// </summary>
+        void ResetSettings();
     }
 }
