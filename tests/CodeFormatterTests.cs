@@ -504,6 +504,39 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 analyzerSeverity: DiagnosticSeverity.Error);
         }
 
+        [MSBuildFact]
+        public async Task AdditionalDocumentsSavedInAnalyzersSolution_WhenFixingAnalyzerErrors()
+        {
+            // Copy solution to temp folder so we can write changes to disk.
+            var solutionPath = CopyToTempFolder(s_analyzersSolutionPath);
+
+            try
+            {
+                // Fix PublicAPI analyzer diagnostics.
+                await TestFormatWorkspaceAsync(
+                    Path.Combine(solutionPath, "library", "library.csproj"),
+                    include: EmptyFilesList,
+                    exclude: EmptyFilesList,
+                    includeGenerated: false,
+                    expectedExitCode: 0,
+                    expectedFilesFormatted: 1,
+                    expectedFileCount: 3,
+                    fixCategory: FixCategory.Analyzers,
+                    analyzerSeverity: DiagnosticSeverity.Warning,
+                    diagnostics: new[] { "RS0016" },
+                    saveFormattedFiles: true);
+
+                // Verify that changes were persisted to disk.
+                var unshippedPublicApi = File.ReadAllText(Path.Combine(solutionPath, "library", "PublicAPI.Unshipped.txt"));
+                Assert.NotEqual(string.Empty, unshippedPublicApi);
+            }
+            finally
+            {
+                // Cleanup
+                Directory.Delete(solutionPath, true);
+            }
+        }
+
         internal async Task<string> TestFormatWorkspaceAsync(
             string workspaceFilePath,
             string[] include,
@@ -516,7 +549,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
             string[] diagnostics = null,
-            bool noRestore = false)
+            bool noRestore = false,
+            bool saveFormattedFiles = false)
         {
             var currentDirectory = Environment.CurrentDirectory;
             Environment.CurrentDirectory = TestProjectsPathHelper.GetProjectsDirectory();
@@ -551,7 +585,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 codeStyleSeverity,
                 analyzerSeverity,
                 diagnostics?.ToImmutableHashSet() ?? ImmutableHashSet<string>.Empty,
-                saveFormattedFiles: false,
+                saveFormattedFiles,
                 changesAreErrors: false,
                 fileMatcher,
                 reportPath: string.Empty,
@@ -574,6 +608,55 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
 
             return log;
+        }
+
+        /// <summary>
+        /// Copies the specified folder to the temp folder and returns the path.
+        /// </summary>
+        private static string CopyToTempFolder(string sourcePath)
+        {
+            var fullPath = Path.GetFullPath(sourcePath, TestProjectsPathHelper.GetProjectsDirectory());
+            var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            DirectoryCopy(fullPath, tempPath, true);
+
+            return tempPath;
+
+            static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+            {
+                // Get the subdirectories for the specified directory.
+                var dir = new DirectoryInfo(sourceDirName);
+
+                if (!dir.Exists)
+                {
+                    throw new DirectoryNotFoundException(
+                        "Source directory does not exist or could not be found: "
+                        + sourceDirName);
+                }
+
+                var dirs = dir.GetDirectories();
+
+                // If the destination directory doesn't exist, create it.
+                Directory.CreateDirectory(destDirName);
+
+                // Get the files in the directory and copy them to the new location.
+                var files = dir.GetFiles();
+                foreach (var file in files)
+                {
+                    var tempPath = Path.Combine(destDirName, file.Name);
+                    file.CopyTo(tempPath, false);
+                }
+
+                // If copying subdirectories, copy them and their contents to new location.
+                if (copySubDirs)
+                {
+                    foreach (var subdir in dirs)
+                    {
+                        var tempPath = Path.Combine(destDirName, subdir.Name);
+                        DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+                    }
+                }
+            }
         }
     }
 }
