@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Microsoft.TemplateEngine.Edge.Settings;
 
 #if !NETFULL
 
@@ -14,23 +15,13 @@ using System.Runtime.Loader;
 
 namespace Microsoft.TemplateEngine.Edge
 {
-    public static class AssemblyLoadContextHelper
+    internal static class AssemblyLoadContextHelper
     {
 #if !NETFULL
 
-        public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromCodebase(this AssemblyLoadContext context, Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
+        internal static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromPath(this AssemblyLoadContext context, SettingsFilePaths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
 #else
-        public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromCodebase(this AppDomain context, Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
-#endif
-        {
-            return LoadAllFromPath(context, paths, out loadFailures, paths.Global.BaseDir, pattern, searchOption);
-        }
-
-#if !NETFULL
-
-        public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromPath(this AssemblyLoadContext context, Paths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
-#else
-        public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromPath(this AppDomain context, Paths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
+        internal static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromPath(this AppDomain context, SettingsFilePaths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
 #endif
         {
             List<KeyValuePair<string, Assembly>> loaded = new List<KeyValuePair<string, Assembly>>();
