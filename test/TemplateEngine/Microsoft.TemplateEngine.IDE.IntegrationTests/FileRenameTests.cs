@@ -200,7 +200,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [MemberData(nameof(Get_FileRename_TestData))]
         internal async Task GetCreationEffectsTest(string templateName, string parameters, MockCreationEffects expectedResult)
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             await bootstrapper.InstallTestTemplateAsync(templateName).ConfigureAwait(false);
 
             string name = BasicParametersParser.GetNameFromParameterString(parameters);
@@ -229,7 +229,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [MemberData(nameof(Get_FileRename_TestData))]
         internal async Task CreateTest(string templateName, string parameters, MockCreationEffects expectedResult)
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             await bootstrapper.InstallTestTemplateAsync(templateName).ConfigureAwait(false);
 
             string name = BasicParametersParser.GetNameFromParameterString(parameters);
@@ -274,7 +274,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [MemberData(nameof(Get_FileRename_TestData))]
         internal async Task GetCreationEffectsTest_Package(string templateName, string parameters, MockCreationEffects expectedResult)
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string packageLocation = _packageManager.PackTestTemplatesNuGetPackage();
             await bootstrapper.InstallTemplateAsync(packageLocation).ConfigureAwait(false);
 
@@ -304,7 +304,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [MemberData(nameof(Get_FileRename_TestData))]
         internal async Task CreateTest_Package(string templateName, string parameters, MockCreationEffects expectedResult)
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string packageLocation = _packageManager.PackTestTemplatesNuGetPackage();
             await bootstrapper.InstallTemplateAsync(packageLocation).ConfigureAwait(false);
 

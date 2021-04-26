@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task CanInstall_LocalNuGetPackage()
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string packageLocation = await _packageManager.GetNuGetPackage("Microsoft.DotNet.Common.ProjectTemplates.5.0").ConfigureAwait(false);
 
             InstallRequest installRequest = new InstallRequest(Path.GetFullPath(packageLocation));
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task CanInstall_RemoteNuGetPackage()
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             InstallRequest installRequest = new InstallRequest(
                 "Take.Blip.Client.Templates",
                 "0.5.135",
@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task CanInstall_Folder()
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithSourceName");
 
             InstallRequest installRequest = new InstallRequest(Path.GetFullPath(templateLocation));
@@ -135,7 +135,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task CanCheckForLatestVersion_NuGetPackage()
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             InstallRequest installRequest = new InstallRequest("Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0");
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
@@ -158,7 +158,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task CanCheckForLatestVersion_Folder()
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithSourceName");
 
             InstallRequest installRequest = new InstallRequest(Path.GetFullPath(templateLocation));
@@ -182,7 +182,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task CanUpdate_NuGetPackage()
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             InstallRequest installRequest = new InstallRequest("Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0");
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
@@ -221,7 +221,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task CanUninstall_NuGetPackage()
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             InstallRequest installRequest = new InstallRequest("Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0");
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
@@ -251,7 +251,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task CanUninstall_Folder()
         {
-            Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithSourceName");
 
             InstallRequest installRequest = new InstallRequest(Path.GetFullPath(templateLocation));

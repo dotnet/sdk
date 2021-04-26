@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task GetCreationEffects_BasicTest_Folder()
         {
-            var bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             await bootstrapper.InstallTestTemplateAsync("TemplateWithSourceName").ConfigureAwait(false);
 
             string output = TestUtils.CreateTemporaryFolder();
@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task Create_BasicTest_Folder()
         {
-            var bootstrapper = BootstrapperFactory.GetBootstrapper(additionalVirtualLocations: new string[] { "test" });
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper(additionalVirtualLocations: new string[] { "test" });
             await bootstrapper.InstallTestTemplateAsync("TemplateWithSourceName").ConfigureAwait(false);
 
             string output = TestUtils.CreateTemporaryFolder();
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task GetCreationEffects_BasicTest_Package()
         {
-            var bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string packageLocation = await _packageManager.GetNuGetPackage("Microsoft.DotNet.Common.ProjectTemplates.5.0").ConfigureAwait(false);
             await bootstrapper.InstallTemplateAsync(packageLocation).ConfigureAwait(false);
 
@@ -97,7 +97,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task Create_BasicTest_Package()
         {
-            var bootstrapper = BootstrapperFactory.GetBootstrapper();
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string packageLocation = await _packageManager.GetNuGetPackage("Microsoft.DotNet.Common.ProjectTemplates.5.0").ConfigureAwait(false);
             await bootstrapper.InstallTemplateAsync(packageLocation).ConfigureAwait(false);
 
