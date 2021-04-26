@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,33 +10,46 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Edge.Settings;
 
-namespace Microsoft.TemplateEngine.Utils
+namespace Microsoft.TemplateEngine.Edge
 {
     public sealed class EngineEnvironmentSettings : IEngineEnvironmentSettings, IDisposable
     {
         private volatile bool _disposed;
 
-        public EngineEnvironmentSettings(ITemplateEngineHost host, Func<IEngineEnvironmentSettings, ISettingsLoader> settingsLoaderFactory)
-            : this(host, settingsLoaderFactory, null)
+        public EngineEnvironmentSettings(
+            ITemplateEngineHost host,
+            bool virtualizeSettings = false,
+            Action<IEngineEnvironmentSettings>? onFirstRun = null,
+            string? settingsLocation = null,
+            IEnvironment? environment = null)
         {
+            Host = host ?? throw new ArgumentNullException(nameof(host));
+            Environment = environment ?? new DefaultEnvironment();
+            SettingsLoader = new SettingsLoader(this, onFirstRun);
+            Paths = new DefaultPathInfo(this, settingsLocation);
+            if (virtualizeSettings)
+            {
+                Host.VirtualizeDirectory(Paths.GlobalSettingsDir);
+            }
         }
 
-        public EngineEnvironmentSettings(ITemplateEngineHost host, Func<IEngineEnvironmentSettings, ISettingsLoader> settingsLoaderFactory, string hiveLocation)
+        public EngineEnvironmentSettings(ITemplateEngineHost host, ISettingsLoader settingsLoader, IPathInfo pathInfo, IEnvironment? environment = null)
         {
-            Host = host;
-            Environment = new DefaultEnvironment();
-            Paths = new DefaultPathInfo(this, hiveLocation);
-            SettingsLoader = settingsLoaderFactory(this);
+            Host = host ?? throw new ArgumentNullException(nameof(host));
+            SettingsLoader = settingsLoader ?? throw new ArgumentNullException(nameof(settingsLoader));
+            Paths = pathInfo ?? throw new ArgumentNullException(nameof(pathInfo));
+            Environment = environment ?? new DefaultEnvironment();
         }
 
         public ISettingsLoader SettingsLoader { get; }
 
-        public ITemplateEngineHost Host { get; set; }
+        public ITemplateEngineHost Host { get;  }
 
-        public IEnvironment Environment { get; set; }
+        public IEnvironment Environment { get;  }
 
-        public IPathInfo Paths { get; set; }
+        public IPathInfo Paths { get;  }
 
         public void Dispose()
         {
@@ -48,23 +63,23 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class DefaultPathInfo : IPathInfo
         {
-            public DefaultPathInfo(IEngineEnvironmentSettings parent, string hiveLocation)
+            public DefaultPathInfo(IEngineEnvironmentSettings engineEnvironmentSettings, string? hiveLocation)
             {
                 bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-                UserProfileDir = parent.Environment.GetEnvironmentVariable(isWindows
+                UserProfileDir = engineEnvironmentSettings.Environment.GetEnvironmentVariable(isWindows
                     ? "USERPROFILE"
                     : "HOME");
-                TemplateEngineRootDir = hiveLocation ?? Path.Combine(UserProfileDir, ".templateengine");
-                TemplateEngineHostDir = Path.Combine(TemplateEngineRootDir, parent.Host.HostIdentifier);
-                TemplateEngineHostVersionDir = Path.Combine(TemplateEngineRootDir, parent.Host.HostIdentifier, parent.Host.Version);
+                GlobalSettingsDir = hiveLocation ?? Path.Combine(UserProfileDir, ".templateengine");
+                HostSettingsDir = Path.Combine(GlobalSettingsDir, engineEnvironmentSettings.Host.HostIdentifier);
+                HostVersionSettingsDir = Path.Combine(GlobalSettingsDir, engineEnvironmentSettings.Host.HostIdentifier, engineEnvironmentSettings.Host.Version);
             }
 
             public string UserProfileDir { get; }
 
-            public string TemplateEngineRootDir { get; }
-            public string TemplateEngineHostDir { get; }
+            public string GlobalSettingsDir { get; }
+            public string HostSettingsDir { get; }
 
-            public string TemplateEngineHostVersionDir { get; }
+            public string HostVersionSettingsDir { get; }
         }
 
         private class DefaultEnvironment : IEnvironment
