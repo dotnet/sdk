@@ -15,21 +15,24 @@ namespace Microsoft.TemplateEngine.Abstractions
         string UserProfileDir { get; }
 
         /// <summary>
-        /// Root of TemplateEngine shared between all hosts.
+        /// Gets the path of template engine global settings directory.
+        /// The directory should be used for settings shared between all template engine hosts.
         /// Usually at "C:\Users\userName\.templateengine\".
         /// </summary>
-        string TemplateEngineRootDir { get; }
+        string GlobalSettingsDir { get; }
 
         /// <summary>
-        /// Root of specific host shared between all versions.
+        /// Gets the path of template engine host settings directory.
+        /// The directory should be used for settings shared between all template engine host versions.
         /// E.g.: "C:\Users\userName\.templateengine\dotnet\".
         /// </summary>
-        string TemplateEngineHostDir { get; }
+        string HostSettingsDir { get; }
 
         /// <summary>
-        /// Folder where specific host with specific version stores cache and other files.
+        /// Gets the path of template engine host version settings directory.
+        /// The directory should be used for settings specific to certain host version.
         /// E.g.: "C:\Users\userName\.templateengine\dotnet\v1.0.0.0\".
         /// </summary>
-        string TemplateEngineHostVersionDir { get; }
+        string HostVersionSettingsDir { get; }
     }
 }
