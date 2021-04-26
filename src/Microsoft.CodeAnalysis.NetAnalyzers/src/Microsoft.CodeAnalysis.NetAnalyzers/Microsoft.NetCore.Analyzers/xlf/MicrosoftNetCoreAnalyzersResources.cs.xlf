@@ -8,8 +8,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AddPublicParameterlessConstructor">
-        <source>Add a public constructor that takes zero parameters.</source>
-        <target state="new">Add a public constructor that takes zero parameters.</target>
+        <source>Add a public constructor that takes zero parameters</source>
+        <target state="new">Add a public constructor that takes zero parameters</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
@@ -1313,8 +1313,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MakeParameterlessConstructorPublic">
-        <source>Make the constructor that takes zero parameters 'public'.</source>
-        <target state="new">Make the constructor that takes zero parameters 'public'.</target>
+        <source>Make the constructor that takes zero parameters 'public'</source>
+        <target state="new">Make the constructor that takes zero parameters 'public'</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
