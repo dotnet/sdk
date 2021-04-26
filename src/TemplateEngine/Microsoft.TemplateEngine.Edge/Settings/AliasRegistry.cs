@@ -13,13 +13,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     public class AliasRegistry
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly Paths _paths;
+        private readonly SettingsFilePaths _paths;
         private AliasModel _aliases;
 
         public AliasRegistry(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
-            _paths = new Paths(environmentSettings);
+            _paths = new SettingsFilePaths(environmentSettings);
         }
 
         public IReadOnlyDictionary<string, IReadOnlyList<string>> AllAliases
@@ -129,13 +129,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            if (!_paths.Exists(_paths.User.AliasesFile))
+            if (!_paths.Exists(_paths.AliasesFile))
             {
                 _aliases = new AliasModel();
                 return;
             }
 
-            string sourcesText = _paths.ReadAllText(_paths.User.AliasesFile, "{}");
+            string sourcesText = _paths.ReadAllText(_paths.AliasesFile, "{}");
             JObject parsed = JObject.Parse(sourcesText);
             IReadOnlyDictionary<string, IReadOnlyList<string>> commandAliases = parsed.ToStringListDictionary(StringComparer.OrdinalIgnoreCase, "CommandAliases");
 
@@ -145,7 +145,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private void Save()
         {
             JObject serialized = JObject.FromObject(_aliases);
-            _environmentSettings.Host.FileSystem.WriteAllText(_paths.User.AliasesFile, serialized.ToString());
+            _environmentSettings.Host.FileSystem.WriteAllText(_paths.AliasesFile, serialized.ToString());
         }
     }
 }

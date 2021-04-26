@@ -5,19 +5,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 {
     internal class FileSystemDirectory : DirectoryBase
     {
         private readonly string _physicalPath;
-        private readonly Paths _paths;
+        private readonly SettingsFilePaths _paths;
 
         public FileSystemDirectory(IMountPoint mountPoint, string fullPath, string name, string physicalPath)
             : base(mountPoint, EnsureTrailingSlash(fullPath), name)
         {
             _physicalPath = physicalPath;
-            _paths = new Paths(mountPoint.EnvironmentSettings);
+            _paths = new SettingsFilePaths(mountPoint.EnvironmentSettings);
         }
 
         public override bool Exists => _paths.DirectoryExists(_physicalPath);

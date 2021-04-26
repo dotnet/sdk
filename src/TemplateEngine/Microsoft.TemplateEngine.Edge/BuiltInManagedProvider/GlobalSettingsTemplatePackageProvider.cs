@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             Factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
 
-            _packagesFolder = Path.Combine(settings.Paths.TemplateEngineRootDir, "packages");
+            _packagesFolder = Path.Combine(settings.Paths.GlobalSettingsDir, "packages");
             if (!settings.Host.FileSystem.DirectoryExists(_packagesFolder))
             {
                 settings.Host.FileSystem.CreateDirectory(_packagesFolder);
@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
             }
 
-            _globalSettingsFilePath = Path.Combine(_environmentSettings.Paths.TemplateEngineRootDir, "packages.json");
+            _globalSettingsFilePath = Path.Combine(_environmentSettings.Paths.GlobalSettingsDir, "packages.json");
             _globalSettings = new GlobalSettings(_environmentSettings, _globalSettingsFilePath);
             // We can't just add "SettingsChanged+=TemplatePackagesChanged", because TemplatePackagesChanged is null at this time.
             _globalSettings.SettingsChanged += () => TemplatePackagesChanged?.Invoke();

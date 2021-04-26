@@ -17,14 +17,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly IDictionary<string, IDictionary<string, ILocalizationLocator>> _localizationMemoryCache = new Dictionary<string, IDictionary<string, ILocalizationLocator>>();
 
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly Paths _paths;
+        private readonly SettingsFilePaths _paths;
         private IDictionary<string, ITemplate> _templateMemoryCache = new Dictionary<string, ITemplate>();
         private Scanner _installScanner;
 
         public TemplateCache(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
-            _paths = new Paths(environmentSettings);
+            _paths = new SettingsFilePaths(environmentSettings);
             TemplateInfo = new List<TemplateInfo>();
             MountPointsInfo = new Dictionary<string, DateTime>();
             Locale = CultureInfo.CurrentUICulture.Name;
@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void DeleteAllLocaleCacheFiles()
         {
-            _paths.Delete(_paths.User.TemplateCacheFile);
+            _paths.Delete(_paths.TemplateCacheFile);
         }
 
         public void WriteTemplateCaches(Dictionary<string, DateTime> mountPoints)
@@ -195,7 +195,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             if (hasContentChanges || hasMountPointChanges)
             {
                 JObject serialized = JObject.FromObject(this);
-                _paths.WriteAllText(_paths.User.TemplateCacheFile, serialized.ToString());
+                _paths.WriteAllText(_paths.TemplateCacheFile, serialized.ToString());
             }
         }
 

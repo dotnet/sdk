@@ -16,13 +16,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     public class Scanner
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
-
-        private readonly Paths _paths;
+        private readonly SettingsFilePaths _paths;
 
         public Scanner(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
-            _paths = new Paths(environmentSettings);
+            _paths = new SettingsFilePaths(environmentSettings);
         }
 
         public ScanResult Scan(string sourceLocation)
@@ -50,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     // file-based and not originating in the scratch dir.
                     bool isLocalFlatFileSource = mountPoint is FileSystemMountPoint
-                                                && !sourceLocation.StartsWith(_paths.User.ScratchDir);
+                                                && !sourceLocation.StartsWith(_paths.ScratchDir);
 
                     return new MountPointScanSource()
                     {
@@ -79,7 +78,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             string actualScanPath;
             if (!source.ShouldStayInOriginalLocation)
             {
-                if (!TryCopyForNonFileSystemBasedMountPoints(source.MountPoint, source.Location, _paths.User.Content, true, out actualScanPath))
+                if (!TryCopyForNonFileSystemBasedMountPoints(source.MountPoint, source.Location, _paths.Content, true, out actualScanPath))
                 {
                     return;
                 }

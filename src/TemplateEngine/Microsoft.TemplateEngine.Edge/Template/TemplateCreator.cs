@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Template
@@ -14,12 +15,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
     public class TemplateCreator
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly Paths _paths;
+        private readonly SettingsFilePaths _paths;
 
         public TemplateCreator(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
-            _paths = new Paths(environmentSettings);
+            _paths = new SettingsFilePaths(environmentSettings);
         }
 
         public Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation, string baselineName)

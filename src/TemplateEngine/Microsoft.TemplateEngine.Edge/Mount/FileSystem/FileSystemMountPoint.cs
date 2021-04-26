@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 {
@@ -13,14 +14,14 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
     /// </summary>
     public class FileSystemMountPoint : IMountPoint
     {
-        private Paths _paths;
+        private SettingsFilePaths _paths;
 
         public FileSystemMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, string mountPointRootPath)
         {
             MountPointUri = mountPointUri;
             MountPointRootPath = mountPointRootPath;
             EnvironmentSettings = environmentSettings;
-            _paths = new Paths(environmentSettings);
+            _paths = new SettingsFilePaths(environmentSettings);
             Root = new FileSystemDirectory(this, "/", "", MountPointRootPath);
         }
 
