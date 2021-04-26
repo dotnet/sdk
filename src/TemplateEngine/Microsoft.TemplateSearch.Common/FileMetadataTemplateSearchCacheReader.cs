@@ -5,20 +5,27 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Edge;
-using Microsoft.TemplateEngine.Edge.Settings;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
     public static class FileMetadataTemplateSearchCacheReader
     {
-        public static bool TryReadDiscoveryMetadata(IEngineEnvironmentSettings environment, ISearchCacheConfig config, out TemplateDiscoveryMetadata discoveryMetadata)
+        public static bool TryReadDiscoveryMetadata(IEngineEnvironmentSettings environmentSettings, ISearchCacheConfig config, out TemplateDiscoveryMetadata discoveryMetadata)
         {
-            Paths paths = new Paths(environment);
-            string pathToConfig = Path.Combine(paths.User.BaseDir, config.TemplateDiscoveryFileName);
-            string cacheText = paths.ReadAllText(pathToConfig);
+            string pathToConfig = Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, config.TemplateDiscoveryFileName);
+            string cacheText = environmentSettings.Host.FileSystem.ReadAllText(pathToConfig);
 
+            if (TryReadDiscoveryMetadata(cacheText, config, out discoveryMetadata))
+            {
+                return true;
+            }
+            discoveryMetadata = null;
+            return false;
+        }
+
+        public static bool TryReadDiscoveryMetadata(string cacheText, ISearchCacheConfig config, out TemplateDiscoveryMetadata discoveryMetadata)
+        {
             JObject cacheObject = JObject.Parse(cacheText);
 
             // add the reader calls, build the model objects
@@ -62,7 +69,7 @@ namespace Microsoft.TemplateSearch.Common
                         {
                             if (entry != null && entry.Type == JTokenType.Object)
                             {
-                                buildingTemplateList.Add(TemplateInfo.FromJObject((JObject)entry, cacheVersion));
+                                buildingTemplateList.Add(BlobStorageTemplateInfo.FromJObject((JObject)entry));
                             }
                         }
                     }
@@ -74,8 +81,9 @@ namespace Microsoft.TemplateSearch.Common
                 templateList = null;
                 return false;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 templateList = null;
                 return false;
             }

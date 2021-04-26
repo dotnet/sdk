@@ -6,9 +6,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Edge.Settings;
-using Microsoft.TemplateEngine.Utils;
-using Microsoft.TemplateSearch.Common;
+using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
@@ -19,15 +17,15 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
         private const string _FilterId = "Template.json existence";
 
         private static ITemplateEngineHost _host = TemplateEngineHostHelper.CreateHost("filterHost");
-        private static EngineEnvironmentSettings _environemntSettings = new EngineEnvironmentSettings(_host, x => new SettingsLoader(x));
 
         public static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter()
         {
             Func<IDownloadedPackInfo, PreFilterResult> filter = (packInfo) =>
             {
-                foreach (IMountPointFactory factory in _environemntSettings.SettingsLoader.Components.OfType<IMountPointFactory>())
+                using EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(_host, virtualizeSettings: true);
+                foreach (IMountPointFactory factory in environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>())
                 {
-                    if (factory.TryMount(_environemntSettings, null, packInfo.Path, out IMountPoint mountPoint))
+                    if (factory.TryMount(environmentSettings, null, packInfo.Path, out IMountPoint mountPoint))
                     {
                         bool hasTemplateJson = mountPoint.Root.EnumerateFiles("template.json", SearchOption.AllDirectories).Any();
                         mountPoint.Dispose();

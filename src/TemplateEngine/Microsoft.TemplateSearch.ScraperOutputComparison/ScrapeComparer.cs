@@ -1,16 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Edge.Settings;
-using Microsoft.TemplateEngine.Utils;
+using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateSearch.Common;
 
 namespace Microsoft.TemplateSearch.ScraperOutputComparison
 {
-    internal class ScrapeComparer
+    internal class ScrapeComparer : IDisposable
     {
         private readonly ComparisonConfig _config;
 
@@ -20,7 +20,7 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
         {
             _config = config;
             ITemplateEngineHost host = TemplateEngineHostHelper.CreateHost("Comparison");
-            _environmentSettings = new EngineEnvironmentSettings(host, x => new SettingsLoader(x));
+            _environmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
         }
 
         // For now, it's just going to check the packs between the two runs
@@ -45,6 +45,8 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
             result = new ScrapeComparisonResult(_config.ScraperOutputOneFile, _config.ScraperOutputTwoFile, scraperOnePacks.ToList(), scraperTwoPacks.ToList());
             return true;
         }
+
+        public void Dispose() => _environmentSettings.Dispose();
 
         private bool TryReadScraperOutput(string scrapeFilePath, out TemplateDiscoveryMetadata discoveryMetadata)
         {

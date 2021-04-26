@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
-using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.TemplateSearch.Common
 {
@@ -27,14 +26,14 @@ namespace Microsoft.TemplateSearch.Common
         {
         }
 
-        public async Task<bool> TryEnsureSearchFileAsync(IEngineEnvironmentSettings environmentSettings, Paths paths, string metadataFileTargetLocation)
+        public async Task<bool> TryEnsureSearchFileAsync(IEngineEnvironmentSettings environmentSettings, string metadataFileTargetLocation)
         {
             string localOverridePath = environmentSettings.Environment.GetEnvironmentVariable(_localSourceSearchFileOverrideEnvVar);
             if (!string.IsNullOrEmpty(localOverridePath))
             {
-                if (paths.FileExists(localOverridePath))
+                if (environmentSettings.Host.FileSystem.FileExists(localOverridePath))
                 {
-                    paths.Copy(localOverridePath, metadataFileTargetLocation);
+                    environmentSettings.Host.FileSystem.FileCopy(localOverridePath, metadataFileTargetLocation, true);
                     return true;
                 }
 
@@ -45,7 +44,7 @@ namespace Microsoft.TemplateSearch.Common
             if (!string.IsNullOrEmpty(useLocalSearchFile))
             {
                 // evn var is set, only use a local copy of the search file. Don't try to acquire one from blob storage.
-                return TryUseLocalSearchFile(paths, metadataFileTargetLocation);
+                return TryUseLocalSearchFile(environmentSettings, metadataFileTargetLocation);
             }
             else
             {
@@ -53,7 +52,7 @@ namespace Microsoft.TemplateSearch.Common
                 // only download the file if it's been long enough since the last time it was downloaded.
                 if (ShouldDownloadFileFromCloud(environmentSettings, metadataFileTargetLocation))
                 {
-                    bool cloudResult = await TryAcquireFileFromCloudAsync(environmentSettings, paths, metadataFileTargetLocation).ConfigureAwait(false);
+                    bool cloudResult = await TryAcquireFileFromCloudAsync(environmentSettings, metadataFileTargetLocation).ConfigureAwait(false);
 
                     if (cloudResult)
                     {
@@ -67,7 +66,7 @@ namespace Microsoft.TemplateSearch.Common
                 }
 
                 // no cloud store file was available. Use a local file if possible.
-                return TryUseLocalSearchFile(paths, metadataFileTargetLocation);
+                return TryUseLocalSearchFile(environmentSettings, metadataFileTargetLocation);
             }
         }
 
@@ -90,12 +89,12 @@ namespace Microsoft.TemplateSearch.Common
             return true;
         }
 
-        private bool TryUseLocalSearchFile(Paths paths, string metadataFileTargetLocation)
+        private bool TryUseLocalSearchFile(IEngineEnvironmentSettings environmentSettings, string metadataFileTargetLocation)
         {
             // A previously acquired file may already be setup.
             // It could either be from online storage, or shipped in-box.
             // If so, fallback to using it.
-            if (paths.FileExists(metadataFileTargetLocation))
+            if (environmentSettings.Host.FileSystem.FileExists(metadataFileTargetLocation))
             {
                 return true;
             }
@@ -105,16 +104,16 @@ namespace Microsoft.TemplateSearch.Common
         // Attempt to get the search metadata file from cloud storage and place it in the expected search location.
         // Return true on success, false on failure.
         // Implement If-None-Match/ETag headers to avoid re-downloading the same content over and over again.
-        private async Task<bool> TryAcquireFileFromCloudAsync(IEngineEnvironmentSettings environmentSettings, Paths paths, string searchMetadataFileLocation)
+        private async Task<bool> TryAcquireFileFromCloudAsync(IEngineEnvironmentSettings environmentSettings, string searchMetadataFileLocation)
         {
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
                     string etagFileLocation = searchMetadataFileLocation + ETagFileSuffix;
-                    if (paths.FileExists(etagFileLocation))
+                    if (environmentSettings.Host.FileSystem.FileExists(etagFileLocation))
                     {
-                        string etagValue = paths.ReadAllText(etagFileLocation);
+                        string etagValue = environmentSettings.Host.FileSystem.ReadAllText(etagFileLocation);
                         client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, $"\"{etagValue}\"");
                     }
                     using (HttpResponseMessage response = client.GetAsync(_searchMetadataUri).Result)
@@ -122,14 +121,14 @@ namespace Microsoft.TemplateSearch.Common
                         if (response.IsSuccessStatusCode)
                         {
                             string resultText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            paths.WriteAllText(searchMetadataFileLocation, resultText);
+                            environmentSettings.Host.FileSystem.WriteAllText(searchMetadataFileLocation, resultText);
 
                             IEnumerable<string> etagValues;
                             if (response.Headers.TryGetValues(ETagHeaderName, out etagValues))
                             {
                                 if (etagValues.Count() == 1)
                                 {
-                                    paths.WriteAllText(etagFileLocation, etagValues.First());
+                                    environmentSettings.Host.FileSystem.WriteAllText(etagFileLocation, etagValues.First());
                                 }
                             }
 

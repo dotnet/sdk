@@ -7,7 +7,7 @@ using System.Reflection;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Utils;
 
-namespace Microsoft.TemplateSearch.Common
+namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
     public static class TemplateEngineHostHelper
     {

@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.TemplateSearch.Common
 {
@@ -16,6 +15,6 @@ namespace Microsoft.TemplateSearch.Common
         /// <param name="paths">A Paths instance, so the abstracted file system operations are available.</param>
         /// <param name="metadataFileTargetLocation">The expected location of the metadata file, after this is run.</param>
         /// <returns></returns>
-        Task<bool> TryEnsureSearchFileAsync(IEngineEnvironmentSettings environmentSettings, Paths paths, string metadataFileTargetLocation);
+        Task<bool> TryEnsureSearchFileAsync(IEngineEnvironmentSettings environmentSettings, string metadataFileTargetLocation);
     }
 }

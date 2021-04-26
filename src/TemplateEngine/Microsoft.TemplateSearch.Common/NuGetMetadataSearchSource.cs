@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.TemplateSearch.Common
 {
@@ -22,10 +21,9 @@ namespace Microsoft.TemplateSearch.Common
 
         public async override Task<bool> TryConfigure(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IManagedTemplatePackage> existingTemplatePackages)
         {
-            Paths paths = new Paths(environmentSettings);
-            string searchMetadataFileLocation = Path.Combine(paths.User.BaseDir, _templateDiscoveryMetadataFile);
+            string searchMetadataFileLocation = Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, _templateDiscoveryMetadataFile);
 
-            if (!await _searchInfoFileProvider.TryEnsureSearchFileAsync(environmentSettings, paths, searchMetadataFileLocation).ConfigureAwait(false))
+            if (!await _searchInfoFileProvider.TryEnsureSearchFileAsync(environmentSettings, searchMetadataFileLocation).ConfigureAwait(false))
             {
                 return false;
             }

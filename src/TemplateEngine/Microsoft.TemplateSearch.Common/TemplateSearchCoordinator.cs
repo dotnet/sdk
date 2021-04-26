@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateSearch.Common
 {
@@ -47,14 +46,7 @@ namespace Microsoft.TemplateSearch.Common
             TemplateSearcher searcher = new TemplateSearcher(EnvironmentSettings, DefaultLanguage, MatchFilter);
             IReadOnlyList<IManagedTemplatePackage> existingTemplatePackage;
 
-            if (EnvironmentSettings.SettingsLoader is SettingsLoader settingsLoader)
-            {
-                existingTemplatePackage = (await settingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync(false).ConfigureAwait(false)).OfType<IManagedTemplatePackage>().ToList();
-            }
-            else
-            {
-                existingTemplatePackage = new List<IManagedTemplatePackage>();
-            }
+            existingTemplatePackage = (await EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync(false).ConfigureAwait(false)).OfType<IManagedTemplatePackage>().ToList();
 
             SearchResults = await searcher.SearchForTemplatesAsync(existingTemplatePackage, InputTemplateName).ConfigureAwait(false);
 
