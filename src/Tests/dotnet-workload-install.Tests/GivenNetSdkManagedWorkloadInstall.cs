@@ -18,6 +18,8 @@ using Xunit;
 using Xunit.Abstractions;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -138,6 +140,21 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.Exists(installationRecordPath).Should().BeTrue();
 
             File.Exists(packInfo.Path).Should().BeTrue();
+        }
+
+        [Fact]
+        public void GivenManagedInstallItCanInstallPacksWithAliases()
+        {
+            var (dotnetRoot, installer, nugetInstaller) = GetTestInstaller();
+            var aliases = new Dictionary<string, WorkloadPackId>() { { "osx-x64", new WorkloadPackId("Xamarin.Android.BuildTools.MacHost") }, { "win-x64", new WorkloadPackId("Xamarin.Android.BuildTools.Win64Host") } };
+            var packInfo = new PackInfo("Xamarin.Android.BuildTools", "8.4.7", WorkloadPackKind.Sdk, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.BuildTools", "8.4.7"), aliases);
+            var version = "6.0.100";
+            installer.InstallWorkloadPack(packInfo, new SdkFeatureBand(version));
+
+            var expectedPackageId = OperatingSystem.IsWindows() && Environment.Is64BitOperatingSystem ? "Xamarin.Android.BuildTools.Win64Host" : 
+                OperatingSystem.IsMacOS() && Environment.Is64BitOperatingSystem ? "Xamarin.Android.BuildTools.MacHost" : packInfo.Id;
+            (nugetInstaller as MockNuGetPackageDownloader).InstallCallParams.Count.Should().Be(1);
+            (nugetInstaller as MockNuGetPackageDownloader).InstallCallParams[0].ShouldBeEquivalentTo((new PackageId(expectedPackageId), new NuGetVersion(packInfo.Version)));
         }
 
         [Fact]

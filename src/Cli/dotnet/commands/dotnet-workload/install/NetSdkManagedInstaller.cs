@@ -15,6 +15,8 @@ using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using EnvironmentProvider = Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -84,7 +86,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         if (!PackIsInstalled(packInfo))
                         {
-                            var packagePath = _nugetPackageInstaller.DownloadPackageAsync(new PackageId(packInfo.Id), new NuGetVersion(packInfo.Version)).Result;
+                            var packageId = GetPackageId(packInfo);
+                            var packagePath = _nugetPackageInstaller.DownloadPackageAsync(packageId, new NuGetVersion(packInfo.Version)).Result;
                             tempFilesToDelete.Add(packagePath);
 
                             if (!Directory.Exists(Path.GetDirectoryName(packInfo.Path)))
@@ -135,6 +138,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
                 }
             }
+        }
+
+        private PackageId GetPackageId(PackInfo packInfo)
+        {
+            var runtimeId = RuntimeInformation.RuntimeIdentifier;
+            var splitRuntimeId = RuntimeInformation.RuntimeIdentifier.Split('-');
+            var versionlessRuntimeId = $"{Regex.Replace(splitRuntimeId[0], @"[\d-]", string.Empty)}-{splitRuntimeId[1]}";
+            var packageId = packInfo.Aliases.ContainsKey(runtimeId) ? packInfo.Aliases[runtimeId].ToString() :
+                packInfo.Aliases.ContainsKey(versionlessRuntimeId) ? packInfo.Aliases[versionlessRuntimeId].ToString() : packInfo.Id;
+            return new PackageId(packageId);
         }
 
         public void RollBackWorkloadPackInstall(PackInfo packInfo, SdkFeatureBand sdkFeatureBand)
