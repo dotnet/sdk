@@ -269,7 +269,7 @@
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
         <source>Add 'System.Uri' overloads</source>
-        <target state="new">Add 'System.Uri' overloads</target>
+        <target state="translated">Adicionar sobrecarga 'System.Uri'.</target>
         <note>{Locked="System.Uri"}</note>
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
