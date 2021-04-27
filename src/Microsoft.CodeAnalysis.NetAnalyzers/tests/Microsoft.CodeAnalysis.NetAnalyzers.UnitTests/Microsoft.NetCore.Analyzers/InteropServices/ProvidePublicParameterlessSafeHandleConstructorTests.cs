@@ -271,6 +271,44 @@ class [|BarHandle|] : FooHandle
         }
 
         [Fact]
+        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoAccessibleBaseTypeParameterlessConstructor_DeepInheritance_Diagnostic_CS()
+        {
+            string source = @"
+using System;
+using Microsoft.Win32.SafeHandles;
+
+abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+{
+    protected FooHandle() : base(true)
+    {
+    }
+
+    public FooHandle(IntPtr handle) : base(true)
+    {
+        SetHandle(handle);
+    }
+
+    protected override bool ReleaseHandle() => true;
+}
+
+abstract class BarHandle : FooHandle
+{
+    protected BarHandle(IntPtr handle) : base(handle)
+    {
+    }
+}
+
+class [|BazHandle|] : BarHandle
+{
+    public BazHandle(IntPtr handle) : base(handle)
+    {
+    }
+}";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
         public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_CS()
         {
             string source = @"
