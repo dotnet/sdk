@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             int localizationIndex = 0;
             foreach (JToken action in jObject)
             {
-                IPostActionLocalizationModel actionLocalizations = localizations?.Count < localizationIndex ? localizations[localizationIndex] : null;
+                IPostActionLocalizationModel actionLocalizations = localizationIndex < localizations?.Count ? localizations[localizationIndex] : null;
                 localizationIndex++;
 
                 Dictionary<string, string> args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -47,19 +47,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 List<ManualInstructionModel> instructionOptions = new ();
 
                 JArray manualInstructions = action.Get<JArray>("ManualInstructions");
-                bool useLocalizedInstructions =
-                    actionLocalizations != null
-                    && manualInstructions != null
-                    && actionLocalizations.Instructions.Count == manualInstructions.Count;
 
                 if (manualInstructions != null)
                 {
                     for (int i = 0; i < manualInstructions.Count; i++)
                     {
                         string text;
-                        if (useLocalizedInstructions &&
-                            actionLocalizations.Instructions.Count > i &&
-                            !string.IsNullOrEmpty(actionLocalizations.Instructions[i]))
+                        if (actionLocalizations?.Instructions.Count > i && !string.IsNullOrEmpty(actionLocalizations.Instructions[i]))
                         {
                             text = actionLocalizations.Instructions[i];
                         }

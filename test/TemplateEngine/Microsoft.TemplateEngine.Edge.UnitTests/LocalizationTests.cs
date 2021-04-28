@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [Theory]
         [InlineData(null, "someChoice", "sym1_displayName")]
         [InlineData("de-DE", "someChoice", "sym1_displayName")]
-        [InlineData("tr-TR", "someChoice", "sym1_displayName")]
+        [InlineData("tr-TR", "someChoice", "sym1_displayName_tr-TR:çÇğĞıIİöÖşŞüÜ")]
         public void TestLocalizedSymbolChoiceDisplayName(string locale, string symbolName, string expectedDisplayName)
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
@@ -140,6 +140,18 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.True(effects.CreationResult.PostActions.Count > postActionIndex, "Template does not contain enough post actions");
             Assert.Equal(expectedDescription, effects.CreationResult.PostActions[postActionIndex].Description);
             Assert.Equal(expectedManualInstructions, effects.CreationResult.PostActions[postActionIndex].ManualInstructions);
+        }
+
+        [Theory]
+        [InlineData("de", "name_de-DE:äÄßöÖüÜ")]
+        [InlineData("de-de", "name_de-DE:äÄßöÖüÜ")]
+        [InlineData("de-Au", "name_de-DE:äÄßöÖüÜ")]
+        [InlineData("de-AU", "name_de-DE:äÄßöÖüÜ")]
+        public void TestLocaleCountryFallback(string locale, string expectedName)
+        {
+            _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
+
+            Assert.Equal(expectedName, localizationTemplate.Name);
         }
 
         public void Dispose() => _helper.Dispose();
