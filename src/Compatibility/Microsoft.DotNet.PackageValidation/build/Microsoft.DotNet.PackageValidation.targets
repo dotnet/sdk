@@ -19,13 +19,15 @@
       <PackageValidationBaselinePath>$([MSBuild]::NormalizePath('$(NuGetPackageRoot)', '$(PackageValidationBaselineName)', '$(PackageValidationBaselineVersion)', '$(PackageValidationBaselineName).$(PackageValidationBaselineVersion).nupkg'))</PackageValidationBaselinePath>
     </PropertyGroup>
 
-    <!-- PackageTargetPath isn't exposed by NuGet: https://github.com/NuGet/Home/issues/6671. -->
-    <ValidatePackage PackageTargetPath="$([MSBuild]::ValueOrDefault('$(PackageTargetPath)', '$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg'))"
-                     RuntimeGraph="$(RuntimeGraph)"
-                     NoWarn="$(NoWarn)"
-                     RunApiCompat="$([MSBuild]::ValueOrDefault('$(RunApiCompat)', 'true'))"
-                     BaselineValidation="$(EnablePackageBaselineValidation)"
-                     BaselinePackageTargetPath="$(PackageValidationBaselinePath)" />
+    <!-- PackageTargetPath isn't exposed by NuGet: https://github.com/NuGet/Home/issues/6671. Not using
+         PackageAbsoluteOutputPath to not depend on NuGet's internal _GetAbsoluteOutputPathsForPack target. -->
+    <Microsoft.DotNet.PackageValidation.ValidatePackage
+      PackageTargetPath="$([MSBuild]::ValueOrDefault('$(PackageTargetPath)', '$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg'))"
+      RuntimeGraph="$(RuntimeGraph)"
+      NoWarn="$(NoWarn)"
+      RunApiCompat="$([MSBuild]::ValueOrDefault('$(RunApiCompat)', 'true'))"
+      BaselineValidation="$(EnablePackageBaselineValidation)"
+      BaselinePackageTargetPath="$(PackageValidationBaselinePath)" />
   </Target>
 
   <!-- If package validation against a baseline is enabled and a local path to a baseline package
@@ -42,12 +44,13 @@
       <PackageValidationBaselineName>$([MSBuild]::ValueOrDefault('$(PackageValidationBaselineName)', '$(AssemblyName)'))</PackageValidationBaselineName>
     </PropertyGroup>
 
-    <GetLastStablePackage PackageId="$(PackageValidationBaselineName)"
-                          PackageVersion="$(Version)"
-                          NugetFeeds="$(_OutputSources)"
-                          Condition="'$(PackageValidationBaselineVersion)' == ''">
+    <Microsoft.DotNet.PackageValidation.GetLastStablePackage
+      PackageId="$(PackageValidationBaselineName)"
+      PackageVersion="$(Version)"
+      NugetFeeds="$(_OutputSources)"
+      Condition="'$(PackageValidationBaselineVersion)' == ''">
       <Output TaskParameter="LastStableVersion" PropertyName="PackageValidationBaselineVersion" />
-    </GetLastStablePackage>
+    </Microsoft.DotNet.PackageValidation.GetLastStablePackage>
 
     <ItemGroup>
       <PackageDownload Include="$(PackageValidationBaselineName)"
