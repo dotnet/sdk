@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,10 +24,6 @@ namespace Microsoft.DotNet.PackageValidation
 
         public string[] NugetFeeds { get; set; }
 
-        public string LocalPackagesPath { get; set; }
-
-        public bool UseLocalPackagesPath { get; set; }
-
         [Output]
         public string LastStableVersion { get; set; }
 
@@ -34,14 +31,6 @@ namespace Microsoft.DotNet.PackageValidation
         {
             NuGetVersion currentPackageVersion = new NuGetVersion(PackageVersion);
             NuGetVersion version = null;
-            if (UseLocalPackagesPath)
-            {
-                IEnumerable<NuGetVersion> versions = null;
-                versions = GetLatestPackageFromLocalFeed(LocalPackagesPath);
-                NuGetVersion packageVersion = versions?.Where(t => !t.IsPrerelease).OrderByDescending(t => t.Version).FirstOrDefault();
-                LastStableVersion = packageVersion?.ToNormalizedString();
-                return;
-            }
 
             foreach (string nugetFeed in NugetFeeds)
             {
@@ -60,18 +49,15 @@ namespace Microsoft.DotNet.PackageValidation
                     }
                 }
             }
-            LastStableVersion = version?.ToNormalizedString();
-        }
-
-        private IEnumerable<NuGetVersion> GetLatestPackageFromLocalFeed(string nugetArtifactsDirectory)
-        {
-            List<NuGetVersion> nugetVersions = new();
-            foreach (string file in Directory.GetDirectories(nugetArtifactsDirectory))
+            
+            // If no suitable package was found, error out.
+            // TODO: Localize error message and add more diagnostics.
+            if (version == null)
             {
-                DirectoryInfo di = new DirectoryInfo(file);
-                nugetVersions.Add(new NuGetVersion(di.Name));
+                throw new Exception("No baseline package with id '" + PackageId + "' found in feeds: " + Environment.NewLine + string.Join(Environment.NewLine + " - ", NugetFeeds));
             }
-            return nugetVersions;
+
+            LastStableVersion = version?.ToNormalizedString();
         }
     }
 }

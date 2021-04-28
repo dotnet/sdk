@@ -147,7 +147,7 @@
   <data name="NoCompatibleRuntimeAsset" xml:space="preserve">
     <value>There is no compatible runtime asset for target framework {0} in the package.</value>
   </data>
-  <data name="PreviousVersionValidatorHeader" xml:space="preserve">
+  <data name="BaselineVersionValidatorHeader" xml:space="preserve">
     <value>There shouldnt be any breaking changes between the packages.</value>
   </data>
   <data name="TargetFramework" xml:space="preserve">

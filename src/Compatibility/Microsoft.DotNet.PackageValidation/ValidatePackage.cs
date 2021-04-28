@@ -11,10 +11,7 @@ namespace Microsoft.DotNet.PackageValidation
     public class ValidatePackage : TaskBase
     {
         [Required]
-        public string PackagePath { get; set; }
-
-        [Required]
-        public string PreviousPackagePath { get; set; }
+        public string PackageTargetPath { get; set; }
 
         public string RuntimeGraph { get; set; }
 
@@ -22,24 +19,34 @@ namespace Microsoft.DotNet.PackageValidation
 
         public bool RunApiCompat { get; set; }
 
-        public bool ValidateWithPreviousVersion { get; set; }
+        public bool BaselineValidation { get; set; }
+
+        public string BaselinePackageTargetPath { get; set; }
 
         protected override void ExecuteCore()
         {
+#if DEBUG
             if (!Debugger.IsAttached) { Debugger.Launch(); } else { Debugger.Break(); }
+#endif
+
             RuntimeGraph runtimeGraph = null;
             if (!string.IsNullOrEmpty(RuntimeGraph))
             {
                 runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(RuntimeGraph);
             }
-            Package package = NupkgParser.CreatePackage(PackagePath, runtimeGraph);
-            Package previousPackage = NupkgParser.CreatePackage(PreviousPackagePath, runtimeGraph);
-            PackageValidationLogger log = new PackageValidationLogger();
+
+            Package package = NupkgParser.CreatePackage(PackageTargetPath, runtimeGraph);
+            PackageValidationLogger log = new();
 
             new CompatibleTfmValidator(NoWarn, null, RunApiCompat, log).Validate(package);
-            new PreviousVersionValidator(previousPackage, NoWarn, null, RunApiCompat, log).Validate(package);
+
+            if (BaselineValidation)
+            {
+                Package baselinePackage = NupkgParser.CreatePackage(BaselinePackageTargetPath, runtimeGraph);
+                new BaselinePackageValidator(baselinePackage, NoWarn, null, RunApiCompat, log).Validate(package);
+            }
+            
             new CompatibleFrameworkInPackageValidator(NoWarn, null, log).Validate(package);
         }
-
     }
 }

@@ -52,7 +52,7 @@
         <target state="new">There is no compatible runtime asset for target framework {0} in the package.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PreviousVersionValidatorHeader">
+      <trans-unit id="BaselineVersionValidatorHeader">
         <source>There shouldnt be any breaking changes between the packages.</source>
         <target state="new">There shouldnt be any breaking changes between the packages.</target>
         <note />
