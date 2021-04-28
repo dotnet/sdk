@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,118 +15,52 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     internal class TemplateCache
     {
-        // locale -> identity -> locator
-        private readonly IDictionary<string, IDictionary<string, ILocalizationLocator>> _localizationMemoryCache = new Dictionary<string, IDictionary<string, ILocalizationLocator>>();
-
-        private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly SettingsFilePaths _paths;
-        private IDictionary<string, ITemplate> _templateMemoryCache = new Dictionary<string, ITemplate>();
-        private Scanner _installScanner;
-
-        public TemplateCache(IEngineEnvironmentSettings environmentSettings)
+        public TemplateCache(IEnumerable<ScanResult> scanResults, Dictionary<string, DateTime> mountPoints)
         {
-            _environmentSettings = environmentSettings;
-            _paths = new SettingsFilePaths(environmentSettings);
-            TemplateInfo = new List<TemplateInfo>();
-            MountPointsInfo = new Dictionary<string, DateTime>();
-            Locale = CultureInfo.CurrentUICulture.Name;
-        }
+            var localizationMemoryCache = new Dictionary<string, IDictionary<string, ILocalizationLocator>>();
+            var templateMemoryCache = new Dictionary<string, ITemplate>();
 
-        public TemplateCache(IEngineEnvironmentSettings environmentSettings, JObject parsed)
-            : this(environmentSettings)
-        {
-            ParseCacheContent(parsed);
-        }
-
-        [JsonProperty]
-        public string Version { get; private set; }
-
-        [JsonProperty]
-        public string Locale { get; private set; }
-
-        [JsonProperty]
-        public IReadOnlyList<TemplateInfo> TemplateInfo { get; set; }
-
-        [JsonProperty]
-        public Dictionary<string, DateTime> MountPointsInfo { get; set; }
-
-        private Scanner InstallScanner
-        {
-            get
+            foreach (var scanResult in scanResults)
             {
-                if (_installScanner == null)
+                foreach (ILocalizationLocator locator in scanResult.Localizations)
                 {
-                    _installScanner = new Scanner(_environmentSettings);
+                    if (!localizationMemoryCache.TryGetValue(locator.Locale, out IDictionary<string, ILocalizationLocator> localeLocators))
+                    {
+                        localizationMemoryCache[locator.Locale] = localeLocators = new Dictionary<string, ILocalizationLocator>();
+                    }
+
+                    localeLocators[locator.Identity] = locator;
                 }
 
-                return _installScanner;
+                foreach (ITemplate template in scanResult.Templates)
+                {
+                    templateMemoryCache[template.Identity] = template;
+                }
             }
-        }
 
-        public void Scan(string installDir)
-        {
-            ScanResult scanResult = InstallScanner.Scan(installDir);
-            AddTemplatesAndLangPacksFromScanResult(scanResult);
-        }
-
-        public void DeleteAllLocaleCacheFiles()
-        {
-            _paths.Delete(_paths.TemplateCacheFile);
-        }
-
-        public void WriteTemplateCaches(Dictionary<string, DateTime> mountPoints)
-        {
-            bool hasContentChanges = false;
-
-            HashSet<string> foundTemplates = new HashSet<string>();
-            List<TemplateInfo> mergedTemplateList = new List<TemplateInfo>();
-
+            string locale = CultureInfo.CurrentUICulture.Name;
             // These are from langpacks being installed... identity -> locator
-            if (string.IsNullOrEmpty(Locale)
-                || !_localizationMemoryCache.TryGetValue(Locale, out IDictionary<string, ILocalizationLocator> newLocatorsForLocale))
+            if (string.IsNullOrEmpty(locale)
+                || !localizationMemoryCache.TryGetValue(locale, out IDictionary<string, ILocalizationLocator> newLocatorsForLocale))
             {
                 newLocatorsForLocale = new Dictionary<string, ILocalizationLocator>();
             }
-            else
-            {
-                hasContentChanges = true;   // there are new langpacks for this locale
-            }
 
-            foreach (ITemplate newTemplate in _templateMemoryCache.Values)
+            List<TemplateInfo> templates = new List<TemplateInfo>();
+            foreach (ITemplate newTemplate in templateMemoryCache.Values)
             {
-                ILocalizationLocator locatorForTemplate = GetPreferredLocatorForTemplate(newTemplate.Identity, newLocatorsForLocale);
+                ILocalizationLocator? locatorForTemplate = GetPreferredLocatorForTemplate(newTemplate.Identity, newLocatorsForLocale);
                 TemplateInfo localizedTemplate = LocalizeTemplate(newTemplate, locatorForTemplate);
-                mergedTemplateList.Add(localizedTemplate);
-                foundTemplates.Add(newTemplate.Identity);
-
-                hasContentChanges = true;   // new template
+                templates.Add(localizedTemplate);
             }
 
-            foreach (TemplateInfo existingTemplate in TemplateInfo)
-            {
-                if (!foundTemplates.Contains(existingTemplate.Identity))
-                {
-                    mergedTemplateList.Add(existingTemplate);
-                    foundTemplates.Add(existingTemplate.Identity);
-                }
-            }
-            WriteTemplateCache(mountPoints, mergedTemplateList, hasContentChanges);
+            Version = Settings.TemplateInfo.CurrentVersion;
+            Locale = locale;
+            TemplateInfo = templates;
+            MountPointsInfo = mountPoints;
         }
 
-        private void AddTemplatesAndLangPacksFromScanResult(ScanResult scanResult)
-        {
-            foreach (ILocalizationLocator locator in scanResult.Localizations)
-            {
-                AddLocalizationToMemoryCache(locator);
-            }
-
-            foreach (ITemplate template in scanResult.Templates)
-            {
-                AddTemplateToMemoryCache(template);
-            }
-        }
-
-        private void ParseCacheContent(JObject contentJobject)
+        public TemplateCache(JObject contentJobject)
         {
             if (contentJobject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken versionToken))
             {
@@ -132,24 +68,29 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             else
             {
-                Version = string.Empty;
+                Version = null;
+                TemplateInfo = new List<TemplateInfo>();
+                MountPointsInfo = new Dictionary<string, DateTime>();
+                Locale = string.Empty;
+                return;
             }
 
             if (contentJobject.TryGetValue(nameof(Locale), StringComparison.OrdinalIgnoreCase, out JToken localeToken))
             {
                 Locale = localeToken.ToString();
             }
+            else
+            {
+                Locale = string.Empty;
+            }
 
             var mountPointInfo = new Dictionary<string, DateTime>();
 
-            if (contentJobject.TryGetValue(nameof(MountPointsInfo), StringComparison.OrdinalIgnoreCase, out JToken mountPointInfoToken))
+            if (contentJobject.TryGetValue(nameof(MountPointsInfo), StringComparison.OrdinalIgnoreCase, out JToken mountPointInfoToken) && mountPointInfoToken is IDictionary<string, JToken> dict)
             {
-                if (mountPointInfoToken is IDictionary<string, JToken> dict)
+                foreach (var entry in dict)
                 {
-                    foreach (var entry in dict)
-                    {
-                        mountPointInfo.Add(entry.Key, entry.Value.ToObject<DateTime>());
-                    }
+                    mountPointInfo.Add(entry.Key, entry.Value.ToObject<DateTime>());
                 }
             }
 
@@ -157,16 +98,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             List<TemplateInfo> templateList = new List<TemplateInfo>();
 
-            if (contentJobject.TryGetValue(nameof(TemplateInfo), StringComparison.OrdinalIgnoreCase, out JToken templateInfoToken))
+            if (contentJobject.TryGetValue(nameof(TemplateInfo), StringComparison.OrdinalIgnoreCase, out JToken templateInfoToken) && templateInfoToken is JArray arr)
             {
-                if (templateInfoToken is JArray arr)
+                foreach (JToken entry in arr)
                 {
-                    foreach (JToken entry in arr)
+                    if (entry != null && entry.Type == JTokenType.Object)
                     {
-                        if (entry != null && entry.Type == JTokenType.Object)
-                        {
-                            templateList.Add(Settings.TemplateInfo.FromJObject((JObject)entry, Version));
-                        }
+                        templateList.Add(Settings.TemplateInfo.FromJObject((JObject)entry, Version));
                     }
                 }
             }
@@ -174,33 +112,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             TemplateInfo = templateList;
         }
 
-        private void WriteTemplateCache(Dictionary<string, DateTime> mountPoints, List<TemplateInfo> templates, bool hasContentChanges)
-        {
-            bool hasMountPointChanges = false;
+        [JsonProperty]
+        public string? Version { get; }
 
-            for (int i = 0; i < templates.Count; ++i)
-            {
-                if (!mountPoints.ContainsKey(templates[i].MountPointUri))
-                {
-                    templates.RemoveAt(i);
-                    --i;
-                    hasMountPointChanges = true;
-                    continue;
-                }
-            }
+        [JsonProperty]
+        public string Locale { get; }
 
-            this.Version = Settings.TemplateInfo.CurrentVersion;
-            this.TemplateInfo = templates;
-            this.MountPointsInfo = mountPoints;
+        [JsonProperty]
+        public IReadOnlyList<TemplateInfo> TemplateInfo { get; }
 
-            if (hasContentChanges || hasMountPointChanges)
-            {
-                JObject serialized = JObject.FromObject(this);
-                _paths.WriteAllText(_paths.TemplateCacheFile, serialized.ToString());
-            }
-        }
+        [JsonProperty]
+        public Dictionary<string, DateTime> MountPointsInfo { get; }
 
-        private ILocalizationLocator GetPreferredLocatorForTemplate(string identity, IDictionary<string, ILocalizationLocator> newLocatorsForLocale)
+        private static ILocalizationLocator? GetPreferredLocatorForTemplate(string identity, IDictionary<string, ILocalizationLocator> newLocatorsForLocale)
         {
             if (newLocatorsForLocale.TryGetValue(identity, out ILocalizationLocator locatorForTemplate))
             {
@@ -209,7 +133,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return null;
         }
 
-        private TemplateInfo LocalizeTemplate(ITemplateInfo template, ILocalizationLocator localizationInfo)
+        private static TemplateInfo LocalizeTemplate(ITemplateInfo template, ILocalizationLocator? localizationInfo)
         {
             TemplateInfo localizedTemplate = new TemplateInfo
             {
@@ -239,7 +163,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return localizedTemplate;
         }
 
-        private IReadOnlyDictionary<string, ICacheTag> LocalizeCacheTags(ITemplateInfo template, ILocalizationLocator localizationInfo)
+        private static IReadOnlyDictionary<string, ICacheTag> LocalizeCacheTags(ITemplateInfo template, ILocalizationLocator? localizationInfo)
         {
             if (localizationInfo == null || localizationInfo.ParameterSymbols == null)
             {
@@ -290,7 +214,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return localizedCacheTags;
         }
 
-        private IReadOnlyDictionary<string, ICacheParameter> LocalizeCacheParameters(ITemplateInfo template, ILocalizationLocator localizationInfo)
+        private static IReadOnlyDictionary<string, ICacheParameter> LocalizeCacheParameters(ITemplateInfo template, ILocalizationLocator? localizationInfo)
         {
             if (localizationInfo == null || localizationInfo.ParameterSymbols == null)
             {
@@ -324,56 +248,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             return localizedCacheParams;
-        }
-
-        // return dict is: Identity -> locator
-        private IDictionary<string, ILocalizationLocator> GetLocalizationsFromTemplates(IReadOnlyList<TemplateInfo> templateList, string locale)
-        {
-            IDictionary<string, ILocalizationLocator> locatorLookup = new Dictionary<string, ILocalizationLocator>();
-
-            foreach (TemplateInfo template in templateList)
-            {
-                if (string.IsNullOrEmpty(template.LocaleConfigPlace))
-                {
-                    // Indicates an unlocalized entry in the locale specific template cache.
-                    continue;
-                }
-
-                ILocalizationLocator locator = new LocalizationLocator()
-                {
-                    Locale = locale,
-                    MountPointUri = template.MountPointUri,
-                    ConfigPlace = template.LocaleConfigPlace,
-                    Identity = template.Identity,
-                    Author = template.Author,
-                    Name = template.Name,
-                    Description = template.Description
-                    // ParameterSymbols are not needed here. If things get refactored too much, they might become needed
-                };
-
-                locatorLookup.Add(locator.Identity, locator);
-            }
-
-            return locatorLookup;
-        }
-
-        // Adds the template to the memory cache, keyed on identity.
-        // If the identity is the same as an existing one, it's overwritten.
-        // (last in wins)
-        private void AddTemplateToMemoryCache(ITemplate template)
-        {
-            _templateMemoryCache[template.Identity] = template;
-        }
-
-        private void AddLocalizationToMemoryCache(ILocalizationLocator locator)
-        {
-            if (!_localizationMemoryCache.TryGetValue(locator.Locale, out IDictionary<string, ILocalizationLocator> localeLocators))
-            {
-                localeLocators = new Dictionary<string, ILocalizationLocator>();
-                _localizationMemoryCache.Add(locator.Locale, localeLocators);
-            }
-
-            localeLocators[locator.Identity] = locator;
         }
     }
 }

@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Gets all templates based on current settings.
         /// </summary>
         /// <remarks>
-        /// This call is cached. And can be invalidated by <see cref="RebuildCacheAsync"/>.
+        /// This call is cached. And can be invalidated by <see cref="RebuildTemplateCacheAsync"/>.
         /// </remarks>
         Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token);
 
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Deletes templates cache and rebuilds it.
         /// Useful if user suspects cache is corrupted and wants to rebuild it.
         /// </summary>
-        Task RebuildCacheAsync(CancellationToken token);
+        Task RebuildTemplateCacheAsync(CancellationToken token);
 
         /// <summary>
         /// Resets settings of host version.

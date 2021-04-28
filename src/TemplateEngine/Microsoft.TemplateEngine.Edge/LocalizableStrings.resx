@@ -167,4 +167,7 @@
   <data name="NuGetInstaller_Error_FileAlreadyExists" xml:space="preserve">
     <value>File {0} already exists</value>
   </data>
+  <data name="SettingsLoader_Error_FailedToScan" xml:space="preserve">
+    <value>Failed to scan "{0}": {1}</value>
+  </data>
 </root>

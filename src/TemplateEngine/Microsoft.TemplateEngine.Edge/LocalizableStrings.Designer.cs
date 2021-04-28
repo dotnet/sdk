@@ -203,5 +203,14 @@ namespace Microsoft.TemplateEngine.Edge {
                 return ResourceManager.GetString("NuGetInstaller_Error_FileAlreadyExists", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to scan &quot;{0}&quot;: {1}.
+        /// </summary>
+        internal static string SettingsLoader_Error_FailedToScan {
+            get {
+                return ResourceManager.GetString("SettingsLoader_Error_FailedToScan", resourceCulture);
+            }
+        }
     }
 }

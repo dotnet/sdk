@@ -82,6 +82,11 @@
         <target state="new">File {0} already exists</target>
         <note />
       </trans-unit>
+      <trans-unit id="SettingsLoader_Error_FailedToScan">
+        <source>Failed to scan "{0}": {1}</source>
+        <target state="new">Failed to scan "{0}": {1}</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

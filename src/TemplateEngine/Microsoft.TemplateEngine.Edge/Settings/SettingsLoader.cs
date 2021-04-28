@@ -28,11 +28,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly SettingsFilePaths _paths;
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Action<IEngineEnvironmentSettings>? _onFirstRun;
+        private readonly Scanner _installScanner;
         private volatile SettingsStore? _userSettings;
-        private TemplateCache _userTemplateCache;
+        private volatile TemplateCache? _userTemplateCache;
         private volatile IMountPointManager? _mountPointManager;
         private volatile IComponentManager? _componentManager;
-        private bool _templatesLoaded;
         private TemplatePackageManager _templatePackagesManager;
         private volatile bool _disposed;
         private bool _loaded;
@@ -41,9 +41,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             _environmentSettings = environmentSettings;
             _paths = new SettingsFilePaths(environmentSettings);
-            _userTemplateCache = new TemplateCache(environmentSettings);
             _templatePackagesManager = new TemplatePackageManager(environmentSettings);
             _onFirstRun = onFirstRun;
+            _installScanner = new Scanner(environmentSettings);
         }
 
         public IComponentManager Components
@@ -127,9 +127,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _paths.WriteAllText(_paths.SettingsFile, serialized.ToString());
         }
 
-        public Task RebuildCacheAsync(CancellationToken token)
+        public Task RebuildTemplateCacheAsync(CancellationToken token)
         {
-            return RebuildCacheFromSettingsIfNotCurrent(true);
+            return UpdateTemplateCacheAsync(true);
         }
 
         public ITemplate? LoadTemplate(ITemplateInfo info, string baselineName)
@@ -223,8 +223,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 throw new ObjectDisposedException(nameof(SettingsLoader));
             }
-            await RebuildCacheFromSettingsIfNotCurrent(false).ConfigureAwait(false);
-            return _userTemplateCache.TemplateInfo;
+            var userTemplateCache = await UpdateTemplateCacheAsync(false).ConfigureAwait(false);
+            return userTemplateCache.TemplateInfo;
         }
 
         public async Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters, CancellationToken token = default)
@@ -388,116 +388,104 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
                 }
 
-                using (Timing.Over(_environmentSettings.Host, "Demand template load"))
-                {
-                    EnsureTemplatesLoaded();
-                }
                 _loaded = true;
                 EnsureFirstRun();
             }
         }
 
-        // Loads from the template cache
-        private void EnsureTemplatesLoaded()
+        private async Task<TemplateCache> UpdateTemplateCacheAsync(bool needsRebuild)
         {
-            if (_templatesLoaded)
+            // Kick off gathering template packages, so parsing cache can happen in parallel.
+            Task<IReadOnlyList<ITemplatePackage>> getTemplatePackagesTask = _templatePackagesManager.GetTemplatePackagesAsync(needsRebuild);
+
+            if (!(_userTemplateCache is TemplateCache cache))
             {
-                return;
+                cache = new TemplateCache(JObject.Parse(_paths.ReadAllText(_paths.TemplateCacheFile, "{}")));
             }
 
-            string userTemplateCache;
-
-            if (_paths.Exists(_paths.TemplateCacheFile))
+            if (cache.Version == null)
             {
-                using (Timing.Over(_environmentSettings.Host, "Read template cache"))
-                {
-                    userTemplateCache = _paths.ReadAllText(_paths.TemplateCacheFile, "{}");
-                }
-            }
-            else
-            {
-                userTemplateCache = "{}";
+                // Null version means, parsing cache failed.
+                needsRebuild = true;
             }
 
-            JObject parsed;
-            using (Timing.Over(_environmentSettings.Host, "Parse template cache"))
-            {
-                parsed = JObject.Parse(userTemplateCache);
-            }
-
-            using (Timing.Over(_environmentSettings.Host, "Init template cache"))
-            {
-                _userTemplateCache = new TemplateCache(_environmentSettings, parsed);
-            }
-
-            _templatesLoaded = true;
-        }
-
-        private async Task RebuildCacheFromSettingsIfNotCurrent(bool forceRebuild)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(SettingsLoader));
-            }
-
-            EnsureTemplatesLoaded();
-            forceRebuild |= _userTemplateCache.Locale != CultureInfo.CurrentUICulture.Name;
-            if (_userTemplateCache.Version != TemplateInfo.CurrentVersion)
+            if (!needsRebuild && cache.Version != TemplateInfo.CurrentVersion)
             {
                 _environmentSettings.Host.LogDiagnosticMessage(
-                        $"Template cache file version is {_userTemplateCache.Version}, but template engine is {TemplateInfo.CurrentVersion}, rebuilding cache.",
+                        $"Template cache file version is {cache.Version}, but template engine is {TemplateInfo.CurrentVersion}, rebuilding cache.",
                         "Debug");
-                forceRebuild = true;
+                needsRebuild = true;
             }
 
-            var placesThatNeedScanning = new HashSet<string>();
-            var allTemplatePackages = await _templatePackagesManager.GetTemplatePackagesAsync(forceRebuild).ConfigureAwait(false);
+            if (!needsRebuild && cache.Locale != CultureInfo.CurrentUICulture.Name)
+            {
+                _environmentSettings.Host.LogDiagnosticMessage(
+                        $"Template cache locale is {cache.Locale}, but CurrentUICulture is {CultureInfo.CurrentUICulture.Name}, rebuilding cache.",
+                        "Debug");
+                needsRebuild = true;
+            }
+
+            var allTemplatePackages = await getTemplatePackagesTask.ConfigureAwait(false);
+
             var mountPoints = new Dictionary<string, DateTime>();
 
-            if (forceRebuild)
+            foreach (var package in allTemplatePackages)
             {
-                _userTemplateCache = new TemplateCache(_environmentSettings);
-                foreach (var source in allTemplatePackages)
-                {
-                    mountPoints[source.MountPointUri] = source.LastChangeTime;
-                    placesThatNeedScanning.Add(source.MountPointUri);
-                }
-            }
-            else
-            {
-                foreach (var source in allTemplatePackages)
-                {
-                    mountPoints[source.MountPointUri] = source.LastChangeTime;
+                mountPoints[package.MountPointUri] = package.LastChangeTime;
 
-                    if (_userTemplateCache.MountPointsInfo.TryGetValue(source.MountPointUri, out var cachedLastChangeTime))
+                // We can stop comparing, but we need to keep looping to fill mountPoints
+                if (!needsRebuild)
+                {
+                    if (cache.MountPointsInfo.TryGetValue(package.MountPointUri, out var cachedLastChangeTime))
                     {
-                        if (source.LastChangeTime > cachedLastChangeTime)
+                        if (package.LastChangeTime > cachedLastChangeTime)
                         {
-                            placesThatNeedScanning.Add(source.MountPointUri);
+                            needsRebuild = true;
                         }
                     }
                     else
                     {
-                        placesThatNeedScanning.Add(source.MountPointUri);
+                        needsRebuild = true;
                     }
                 }
             }
 
-            foreach (var place in mountPoints.Where(k => placesThatNeedScanning.Contains(k.Key)).OrderBy(k => k.Value))
+            // Check that some mountpoint wasn't removed...
+            if (!needsRebuild && mountPoints.Keys.Count != cache.MountPointsInfo.Count)
+            {
+                needsRebuild = true;
+            }
+
+            // Cool, looks like everything is up to date, exit
+            if (!needsRebuild)
+            {
+                return cache;
+            }
+
+            var scanResults = new List<(ITemplatePackage Package, ScanResult ScanResult)>();
+            Parallel.ForEach(allTemplatePackages, (package) =>
             {
                 try
                 {
-                    _userTemplateCache.Scan(place.Key);
+                    var scanResult = _installScanner.Scan(package.MountPointUri);
+                    lock (scanResults)
+                    {
+                        scanResults.Add((package, scanResult));
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _environmentSettings.Host.OnNonCriticalError(null, $"Failed to scan \"{place}\":{Environment.NewLine}{ex}", null, 0);
+                    _environmentSettings.Host.OnNonCriticalError(null, $"Failed to scan \"{package.MountPointUri}\":{Environment.NewLine}{ex}", null, 0);
                 }
-            }
+            });
 
-            // When writing the template caches, we need the existing cache version to read the existing caches for before updating.
-            // so don't update it until after the template caches are written.
-            _userTemplateCache.WriteTemplateCaches(mountPoints);
+            cache = new TemplateCache(
+                scanResults.OrderBy((p) => (p.Package.Provider.Factory as IPrioritizedComponent)?.Priority ?? 0).Select((pair) => pair.ScanResult),
+                mountPoints
+                );
+            JObject serialized = JObject.FromObject(cache);
+            _paths.WriteAllText(_paths.TemplateCacheFile, serialized.ToString());
+            return _userTemplateCache = cache;
         }
     }
 }

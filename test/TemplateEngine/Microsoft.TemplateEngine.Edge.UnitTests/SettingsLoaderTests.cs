@@ -76,49 +76,14 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
 
             monitoredFileSystem.Reset();
-            await engineEnvironmentSettings.SettingsLoader.RebuildCacheAsync(default).ConfigureAwait(false);
+            await engineEnvironmentSettings.SettingsLoader.RebuildTemplateCacheAsync(default).ConfigureAwait(false);
             // Make sure that we rescan with force=false
             AssertMountPointsWereOpened(allNupkgs, engineEnvironmentSettings);
-        }
-
-        [Fact]
-        public async Task RebuildCacheFromSettingsOnlyScansOutOfDateFileSystemMountPoints()
-        {
-            var engineEnvironmentSettings = helper.CreateEnvironment();
-
-            var tmpFolder = helper.CreateTemporaryFolder();
-            foreach (var item in Directory.GetFiles(GetNupkgsFolder()))
-            {
-                File.Copy(item, Path.Combine(tmpFolder, Path.GetFileName(item)));
-            }
-
-            var nupkgsWildcard = new[] { Path.Combine(tmpFolder, "*.nupkg") };
-
-            FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
-            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
-            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
-
-            var allNupkgs = Directory.GetFiles(tmpFolder);
-            // All mount points should have been scanned
-            AssertMountPointsWereOpened(allNupkgs, engineEnvironmentSettings);
-
-            var monitoredFileSystem = (MonitoredFileSystem)engineEnvironmentSettings.Host.FileSystem;
 
             monitoredFileSystem.Reset();
             await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
             // Make sure that we don't rescan with force=false
             AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
-
-            // Update LastWriteTime on one of files:
-            var modifiedFile = Directory.GetFiles(tmpFolder)[0];
-            File.SetLastWriteTimeUtc(modifiedFile, DateTime.UtcNow.AddSeconds(5));
-
-            FakeFactory.TriggerChanged();
-
-            monitoredFileSystem.Reset();
-            await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
-            // Make sure that we rescan with force=false
-            AssertMountPointsWereOpened(new[] { modifiedFile }, engineEnvironmentSettings);
         }
 
         [Fact]
@@ -176,8 +141,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             FakeFactory.TriggerChanged();
 
             var templatesOnly1 = await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
-            // Make sure that we don't rescan anything, since we only removed sources
-            AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
 
             // Make sure that templates return only have MountPointUri of our remaining nupkg
             Assert.Equal(allNupkgs, templatesOnly1.Select(t => t.MountPointUri).Distinct().OrderBy(m => m));
