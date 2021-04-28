@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.TraversalRules
     /// </summary>
     internal abstract class TraversalRule
     {
-        private readonly List<TraversalRule> _childRules = new ();
+        private readonly List<TraversalRule> _childRules = new();
 
         protected TraversalRule(IJsonKeyCreator? keyCreator = default)
         {

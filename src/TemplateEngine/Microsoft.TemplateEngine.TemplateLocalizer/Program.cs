@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer
             using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             ILogger logger = loggerFactory.CreateLogger<Program>();
 
-            RootCommand rootCommand = new ();
+            RootCommand rootCommand = new();
             rootCommand.Name = "dotnet-template-localizer";
 
             foreach (Func<ILoggerFactory, ExecutableCommand> commandCreator in CommandCreators)

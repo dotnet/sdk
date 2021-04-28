@@ -208,7 +208,8 @@ Past endif
 //#endif
 Past endif
     ...uncommented in original
-// dont uncomment", "special #if (true)")]
+// dont uncomment",
+            "special #if (true)")]
         [InlineData(
             @"Hello
 ////#if (VALUE_IF)
@@ -220,7 +221,8 @@ Past endif
 //#endif
 Past endif
     ...uncommented in original
-// dont uncomment", "special #if (true), regular #else")]
+// dont uncomment",
+            "special #if (true), regular #else")]
         [InlineData(
             @"Hello
 ////#if (VALUE_IF)
@@ -232,7 +234,8 @@ Past endif
 //#endif
 Past endif
     ...uncommented in original
-// dont uncomment", "special #if (true), special #else ignored")]
+// dont uncomment",
+            "special #if (true), special #else ignored")]
         [InlineData(
             @"Hello
 ////#if (VALUE_IF)
@@ -247,7 +250,8 @@ Past endif
 //#endif
 Past endif
     ...uncommented in original
-// dont uncomment", "special #if (true), regular #elseif, regular #else")]
+// dont uncomment",
+            "special #if (true), regular #elseif, regular #else")]
         [InlineData(
             @"Hello
 ////#if (VALUE_IF)
@@ -262,7 +266,8 @@ Past endif
 //#endif
 Past endif
     ...uncommented in original
-// dont uncomment", "special #if (true), special #elseif, regular #else")]
+// dont uncomment",
+            "special #if (true), special #elseif, regular #else")]
         [InlineData(
             @"Hello
 ////#if (VALUE_IF)
@@ -277,7 +282,8 @@ Past endif
 //#endif
 Past endif
     ...uncommented in original
-// dont uncomment", "special #if (true), regular #elseif, special #else")]
+// dont uncomment",
+            "special #if (true), regular #elseif, special #else")]
         [InlineData(
             @"Hello
 ////#if (VALUE_IF)
@@ -292,7 +298,8 @@ Past endif
 //#endif
 Past endif
     ...uncommented in original
-// dont uncomment", "special #if (true), special #elseif, special #else")]
+// dont uncomment",
+            "special #if (true), special #elseif, special #else")]
         public void VerifySpecialIfTrueUncomments(string test, string comment)
         {
             // with the if is true, all of the above test cases should emit this

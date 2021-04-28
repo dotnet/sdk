@@ -17,20 +17,20 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
     {
         private static readonly IReadOnlyList<TemplateString> InputStrings = new List<TemplateString>()
         {
-            new ("..name", "name", "Class library"),
-            new ("..description", "description", "dEscRiPtiON: ,./|\\<>{}!@#$%^&*()_+-=? 12 äÄßöÖüÜçÇğĞıIİşŞ"),
-            new ("..symbols.targetframeworkoverride.displayname", "symbols.TargetFrameworkOverride.displayName", "tfm display name"),
-            new ("..symbols.targetframeworkoverride.description", "symbols.TargetFrameworkOverride.description", "tfm description"),
-            new ("..symbols.framework.displayname", "symbols.Framework.displayName", "framework display name"),
-            new ("..symbols.framework.description", "symbols.Framework.description", "framework description"),
-            new ("..symbols.framework.choices.0.displayname", "symbols.Framework.choices.net5_0.displayName", "net5.0 display name"),
-            new ("..symbols.framework.choices.0.description", "symbols.Framework.choices.net5_0.description", "Target net5.0"),
-            new ("..symbols.framework.choices.1.description", "symbols.Framework.choices.netstandard2_1.description", "Target netstandard2.1"),
-            new ("..symbols.framework.choices.2.displayname", "symbols.Framework.choices.netstandard2_0.displayName", "netstandard2.0 display name"),
-            new ("..symbols.framework.choices.2.description", "symbols.Framework.choices.netstandard2_0.description", "Target netstandard2.0"),
-            new ("..postactions.0.description", "postActions[0].description", "Restore NuGet packages required by this project."),
-            new ("..postactions.0.manualinstructions.0.text", "postActions[0].manualInstructions[0].text", "Run 'dotnet restore'"),
-            new ("..postactions.1.description", "postActions[1].description", "Opens Class1.cs in the editor")
+            new("..name", "name", "Class library"),
+            new("..description", "description", "dEscRiPtiON: ,./|\\<>{}!@#$%^&*()_+-=? 12 äÄßöÖüÜçÇğĞıIİşŞ"),
+            new("..symbols.targetframeworkoverride.displayname", "symbols.TargetFrameworkOverride.displayName", "tfm display name"),
+            new("..symbols.targetframeworkoverride.description", "symbols.TargetFrameworkOverride.description", "tfm description"),
+            new("..symbols.framework.displayname", "symbols.Framework.displayName", "framework display name"),
+            new("..symbols.framework.description", "symbols.Framework.description", "framework description"),
+            new("..symbols.framework.choices.0.displayname", "symbols.Framework.choices.net5_0.displayName", "net5.0 display name"),
+            new("..symbols.framework.choices.0.description", "symbols.Framework.choices.net5_0.description", "Target net5.0"),
+            new("..symbols.framework.choices.1.description", "symbols.Framework.choices.netstandard2_1.description", "Target netstandard2.1"),
+            new("..symbols.framework.choices.2.displayname", "symbols.Framework.choices.netstandard2_0.displayName", "netstandard2.0 display name"),
+            new("..symbols.framework.choices.2.description", "symbols.Framework.choices.netstandard2_0.description", "Target netstandard2.0"),
+            new("..postactions.0.description", "postActions[0].description", "Restore NuGet packages required by this project."),
+            new("..postactions.0.manualinstructions.0.text", "postActions[0].manualInstructions[0].text", "Run 'dotnet restore'"),
+            new("..postactions.1.description", "postActions[1].description", "Opens Class1.cs in the editor")
         };
 
         private string _workingDirectory;
@@ -157,7 +157,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         private static async Task<Dictionary<string, string>> ReadTemplateStringsFromJsonFile(string path, CancellationToken cancellationToken)
         {
             using FileStream openStream = File.OpenRead(path);
-            JsonSerializerOptions serializerOptions = new ()
+            JsonSerializerOptions serializerOptions = new()
             {
                 AllowTrailingCommas = true,
                 MaxDepth = 1,

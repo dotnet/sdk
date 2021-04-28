@@ -82,9 +82,9 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         /// <returns>The list of localizable strings.</returns>
         public IReadOnlyList<TemplateString> ExtractStrings(out string language)
         {
-            List<TemplateString> extractedStrings = new ();
+            List<TemplateString> extractedStrings = new();
 
-            TraversalArgs traversalArgs = new (
+            TraversalArgs traversalArgs = new(
                     identifierPrefix: string.Empty,
                     keyPrefix: string.Empty,
                     rules: new List<TraversalRule>() { _documentRootTraversalRule },

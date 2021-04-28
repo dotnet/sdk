@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
                 AllowTrailingCommas = true,
             });
 
-            TemplateStringExtractor templateStringExtractor = new (jsonDocument);
+            TemplateStringExtractor templateStringExtractor = new(jsonDocument);
             return templateStringExtractor.ExtractStrings(out language);
         }
 

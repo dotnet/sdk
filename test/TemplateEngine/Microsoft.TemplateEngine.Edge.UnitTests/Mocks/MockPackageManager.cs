@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
             return Task.FromResult(new NuGetPackageInfo("Microsoft", Path.Combine(downloadPath, targetFileName), DefaultFeed, identifier, version));
         }
 
-        public Task<(string latestVersion, bool isLatestVersion)> GetLatestVersionAsync(string identifier, string version = null, string additionalNuGetSource = null, CancellationToken cancellationToken = default)
+        public Task<(string LatestVersion, bool IsLatestVersion)> GetLatestVersionAsync(string identifier, string version = null, string additionalNuGetSource = null, CancellationToken cancellationToken = default)
         {
             // names of exceptions throw them for test purposes
             switch (identifier)
