@@ -5,7 +5,6 @@
     <RootNamespace>Microsoft.AspNetCore.Watch.BrowserRefresh</RootNamespace>
     <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <OutputType>Exe</OutputType>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
