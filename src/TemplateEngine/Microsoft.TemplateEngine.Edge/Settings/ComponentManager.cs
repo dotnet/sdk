@@ -105,23 +105,26 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public IEnumerable<T> OfType<T>()
             where T : class, IIdentifiedComponent
         {
-            if (!_componentIdsByType.TryGetValue(typeof(T), out HashSet<Guid> ids))
+            lock (_componentIdToAssemblyQualifiedTypeName)
             {
-                if (_settings.ComponentTypeToGuidList.TryGetValue(typeof(T).AssemblyQualifiedName, out ids))
+                if (!_componentIdsByType.TryGetValue(typeof(T), out HashSet<Guid> ids))
                 {
-                    _componentIdsByType[typeof(T)] = ids;
+                    if (_settings.ComponentTypeToGuidList.TryGetValue(typeof(T).AssemblyQualifiedName, out ids))
+                    {
+                        _componentIdsByType[typeof(T)] = ids;
+                    }
+                    else
+                    {
+                        yield break;
+                    }
                 }
-                else
-                {
-                    yield break;
-                }
-            }
 
-            foreach (Guid id in ids)
-            {
-                if (TryGetComponent(id, out T component))
+                foreach (Guid id in ids)
                 {
-                    yield return component;
+                    if (TryGetComponent(id, out T component))
+                    {
+                        yield return component;
+                    }
                 }
             }
         }
@@ -155,26 +158,29 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public bool TryGetComponent<T>(Guid id, out T component)
                     where T : class, IIdentifiedComponent
         {
-            component = default;
-            if (ComponentCache.TryGetValue(typeof(T), out Dictionary<Guid, object> typeCache) && typeCache != null
-                && typeCache.TryGetValue(id, out object resolvedComponent) && resolvedComponent != null && resolvedComponent is T t)
+            lock (_componentIdToAssemblyQualifiedTypeName)
             {
-                component = t;
-                return true;
-            }
-
-            if (_componentIdToAssemblyQualifiedTypeName.TryGetValue(id, out string assemblyQualifiedName))
-            {
-                Type type = TypeEx.GetType(assemblyQualifiedName);
-                component = Activator.CreateInstance(type) as T;
-
-                if (component != null)
+                component = default;
+                if (ComponentCache.TryGetValue(typeof(T), out Dictionary<Guid, object> typeCache) && typeCache != null
+                    && typeCache.TryGetValue(id, out object resolvedComponent) && resolvedComponent != null && resolvedComponent is T t)
                 {
-                    AddComponent(typeof(T), component);
+                    component = t;
                     return true;
                 }
+
+                if (_componentIdToAssemblyQualifiedTypeName.TryGetValue(id, out string assemblyQualifiedName))
+                {
+                    Type type = TypeEx.GetType(assemblyQualifiedName);
+                    component = Activator.CreateInstance(type) as T;
+
+                    if (component != null)
+                    {
+                        AddComponent(typeof(T), component);
+                        return true;
+                    }
+                }
+                return false;
             }
-            return false;
         }
 
         // This method does not save the settings, it just registers into the memory cache.
@@ -191,41 +197,44 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return false;
             }
 
-            IIdentifiedComponent instance = (IIdentifiedComponent)Activator.CreateInstance(type);
-
-            foreach (Type interfaceType in interfaceTypesToRegisterFor)
+            lock (_componentIdToAssemblyQualifiedTypeName)
             {
-                AddComponent(interfaceType, instance);
+                IIdentifiedComponent instance = (IIdentifiedComponent)Activator.CreateInstance(type);
 
-                _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
-                _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;
-
-                if (!_componentIdsByType.TryGetValue(interfaceType, out HashSet<Guid> idsForInterfaceType))
+                foreach (Type interfaceType in interfaceTypesToRegisterFor)
                 {
-                    _componentIdsByType[interfaceType] = idsForInterfaceType = new HashSet<Guid>();
-                }
-                idsForInterfaceType.Add(instance.Id);
+                    AddComponent(interfaceType, instance);
 
-                // for backwards compat & cleanup from when the keys were interfaceType.FullName
-                if (_settings.ComponentTypeToGuidList.TryGetValue(interfaceType.FullName, out HashSet<Guid> idsFromOldStyleKey))
-                {
-                    _settings.ComponentTypeToGuidList.Remove(interfaceType.FullName);
+                    _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
+                    _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;
+
+                    if (!_componentIdsByType.TryGetValue(interfaceType, out HashSet<Guid> idsForInterfaceType))
+                    {
+                        _componentIdsByType[interfaceType] = idsForInterfaceType = new HashSet<Guid>();
+                    }
+                    idsForInterfaceType.Add(instance.Id);
+
+                    // for backwards compat & cleanup from when the keys were interfaceType.FullName
+                    if (_settings.ComponentTypeToGuidList.TryGetValue(interfaceType.FullName, out HashSet<Guid> idsFromOldStyleKey))
+                    {
+                        _settings.ComponentTypeToGuidList.Remove(interfaceType.FullName);
+                    }
+
+                    if (!_settings.ComponentTypeToGuidList.TryGetValue(interfaceType.AssemblyQualifiedName, out HashSet<Guid> idsForInterfaceTypeForSettings))
+                    {
+                        _settings.ComponentTypeToGuidList[interfaceType.AssemblyQualifiedName] = idsForInterfaceTypeForSettings = new HashSet<Guid>();
+                    }
+                    idsForInterfaceTypeForSettings.Add(instance.Id);
+
+                    // for backwards compat & cleanup from when the keys were interfaceType.FullName
+                    if (idsFromOldStyleKey != null)
+                    {
+                        idsForInterfaceTypeForSettings.UnionWith(idsFromOldStyleKey);
+                    }
                 }
 
-                if (!_settings.ComponentTypeToGuidList.TryGetValue(interfaceType.AssemblyQualifiedName, out HashSet<Guid> idsForInterfaceTypeForSettings))
-                {
-                    _settings.ComponentTypeToGuidList[interfaceType.AssemblyQualifiedName] = idsForInterfaceTypeForSettings = new HashSet<Guid>();
-                }
-                idsForInterfaceTypeForSettings.Add(instance.Id);
-
-                // for backwards compat & cleanup from when the keys were interfaceType.FullName
-                if (idsFromOldStyleKey != null)
-                {
-                    idsForInterfaceTypeForSettings.UnionWith(idsFromOldStyleKey);
-                }
+                return true;
             }
-
-            return true;
         }
 
         private void Save()
