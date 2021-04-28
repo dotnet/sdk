@@ -18,15 +18,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Args { get; private set; }
 
-        // Each key value pair represents a manual instruction option.
-        // The key is the text of the instruction
-        // The value is a conditional to evaluate to determine if the instruction is valid in this context.
-        // The instructions get resolved when turning the model into the actual - at most 1 will be chosen.
-        public IReadOnlyList<KeyValuePair<string, string>> ManualInstructionInfo { get; private set; }
+        public IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; private set; }
 
         public string ConfigFile { get; private set; }
 
-        internal static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyDictionary<Guid, IPostActionLocalizationModel> localizations)
+        internal static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyList<IPostActionLocalizationModel> localizations)
         {
             List<IPostActionModel> modelList = new List<IPostActionModel>();
 
@@ -35,14 +31,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return modelList;
             }
 
+            int localizationIndex = 0;
             foreach (JToken action in jObject)
             {
-                Guid actionId = action.ToGuid(nameof(ActionId));
-                IPostActionLocalizationModel actionLocalizations;
-                if (localizations == null || !localizations.TryGetValue(actionId, out actionLocalizations))
-                {
-                    actionLocalizations = null;
-                }
+                IPostActionLocalizationModel actionLocalizations = localizations?.Count < localizationIndex ? localizations[localizationIndex] : null;
+                localizationIndex++;
 
                 Dictionary<string, string> args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -51,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     args.Add(argInfo.Name, argInfo.Value.ToString());
                 }
 
-                List<KeyValuePair<string, string>> instructionOptions = new List<KeyValuePair<string, string>>();
+                List<ManualInstructionModel> instructionOptions = new ();
 
                 JArray manualInstructions = action.Get<JArray>("ManualInstructions");
                 bool useLocalizedInstructions =
@@ -75,8 +68,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             text = manualInstructions[i].ToString("text");
                         }
 
-                        KeyValuePair<string, string> instruction = new KeyValuePair<string, string>(text, manualInstructions[i].ToString("condition"));
-                        instructionOptions.Add(instruction);
+                        instructionOptions.Add(new ManualInstructionModel(text, manualInstructions[i].ToString("condition")));
                     }
                 }
 
@@ -84,7 +76,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     Condition = action.ToString(nameof(model.Condition)),
                     Description = actionLocalizations?.Description ?? action.ToString(nameof(model.Description)),
-                    ActionId = actionId,
+                    ActionId = action.ToGuid(nameof(ActionId)),
                     ContinueOnError = action.ToBool(nameof(model.ContinueOnError)),
                     Args = args,
                     ManualInstructionInfo = instructionOptions,

@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [Theory]
         [InlineData(null, "sym1_desc", "sym1_choice0", "sym1_choice1", "sym1_choice2")]
         [InlineData("de-DE", "sym1_desc_de-DE:äÄßöÖüÜ", "sym1_choice0_de-DE:äÄßöÖüÜ", "sym1_choice1_de-DE:äÄßöÖüÜ", "sym1_choice2")]
-        [InlineData("tr-TR", "sym1_desc_tr-TR:çÇğĞıIİöÖşŞüÜ", "sym1_choice0_tr-TR:çÇğĞıIİöÖşŞüÜ", "sym1_choice1_tr-TR:çÇğĞıIİöÖşŞüÜ", "sym1_choice2")]
+        [InlineData("tr-TR", "sym1_desc_tr-TR:çÇğĞıIİöÖşŞüÜ", "sym1_choice0_tr-TR:çÇğĞıIİöÖşŞüÜ", "sym1_choice1", "sym1_choice2_tr-TR:çÇğĞıIİöÖşŞüÜ")]
         public void TestLocalizedSymbolChoices(
             string locale,
             string symbolDesc,

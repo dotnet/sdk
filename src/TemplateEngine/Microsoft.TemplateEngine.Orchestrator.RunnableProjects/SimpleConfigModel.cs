@@ -13,7 +13,6 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
@@ -715,7 +714,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Dictionary<string, IReadOnlyList<IOperationProvider>> localizations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
             if (localizationModel != null && localizationModel.FileLocalizations != null)
             {
-                foreach (FileLocalizationModel fileLocalization in localizationModel.FileLocalizations)
+                foreach (IFileLocalizationModel fileLocalization in localizationModel.FileLocalizations)
                 {
                     List<IOperationProvider> localizationsForFile = new List<IOperationProvider>();
                     foreach (KeyValuePair<string, string> localizationInfo in fileLocalization.Localizations)
@@ -738,74 +737,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return null;
             }
 
-            LocalizationModel locModel = new LocalizationModel()
-            {
-                Author = source.ToString(nameof(locModel.Author)),
-                Name = source.ToString(nameof(locModel.Name)),
-                Description = source.ToString(nameof(locModel.Description)),
-                Identity = source.ToString(nameof(locModel.Identity)),
-            };
-
-            // symbol description & choice localizations
-            Dictionary<string, IParameterSymbolLocalizationModel> parameterLocalizations = new Dictionary<string, IParameterSymbolLocalizationModel>();
-            IReadOnlyDictionary<string, JToken> symbolInfoList = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "symbols");
-
-            foreach (KeyValuePair<string, JToken> symbolDetail in symbolInfoList)
-            {
-                string symbol = symbolDetail.Key;
-                string displayName = symbolDetail.Value.ToString("displayName");
-                string description = symbolDetail.Value.ToString("description");
-                var choiceLocalizations = new Dictionary<string, ParameterChoiceLocalizationModel>();
-
-                foreach (JObject choiceObject in symbolDetail.Value.Items<JObject>("choices"))
-                {
-                    string choiceName = choiceObject.ToString("choice");
-                    if (string.IsNullOrEmpty(choiceName))
-                    {
-                        continue;
-                    }
-
-                    choiceLocalizations.Add(choiceName, new ParameterChoiceLocalizationModel(
-                        choiceObject.ToString("displayName"),
-                        choiceObject.ToString("description")));
-                }
-
-                var symbolLocalization = new ParameterSymbolLocalizationModel(
-                    symbol,
-                    displayName,
-                    description,
-                    choiceLocalizations);
-                parameterLocalizations.Add(symbol, symbolLocalization);
-            }
-
-            locModel.ParameterSymbols = parameterLocalizations;
-
-            // post action localizations
-            Dictionary<Guid, IPostActionLocalizationModel> postActions = new Dictionary<Guid, IPostActionLocalizationModel>();
-            foreach (JObject item in source.Items<JObject>(nameof(locModel.PostActions)))
-            {
-                IPostActionLocalizationModel postActionModel = PostActionLocalizationModel.FromJObject(item);
-                postActions.Add(postActionModel.ActionId, postActionModel);
-            }
-            locModel.PostActions = postActions;
-
-            // regular file localizations
-            IReadOnlyDictionary<string, JToken> fileLocalizationJson = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "localizations");
-            List<FileLocalizationModel> fileLocalizations = new List<FileLocalizationModel>();
-
-            if (fileLocalizationJson != null)
-            {
-                foreach (KeyValuePair<string, JToken> fileLocInfo in fileLocalizationJson)
-                {
-                    string fileName = fileLocInfo.Key;
-                    JToken localizationJson = fileLocInfo.Value;
-                    FileLocalizationModel fileModel = FileLocalizationModel.FromJObject(fileName, (JObject)localizationJson);
-                    fileLocalizations.Add(fileModel);
-                }
-            }
-            locModel.FileLocalizations = fileLocalizations;
-
-            return locModel;
+            return LocalizationModelDeserializer.Deserialize(source);
         }
 
         // If the token is a string:

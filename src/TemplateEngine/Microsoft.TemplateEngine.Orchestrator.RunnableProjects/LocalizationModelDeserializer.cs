@@ -21,7 +21,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public static ILocalizationModel Deserialize(JObject data)
         {
-            var locModel = new LocalizationModel();
             var parameterLocalizations = new Dictionary<string, ParameterSymbolLocalizationModel>();
 
             // Property names are in format: symbols.framework.choices.0.description
@@ -39,14 +38,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 .Where(s => s.nameParts.FirstOrDefault().StartsWith(PostActionIndexPrefix))
                 .Select(s => (s.nameParts, s.localizedString)));
 
-            return new LocalizationModel()
+            return new LocalizationModel(symbols, postActions, new List<IFileLocalizationModel>())
             {
-                Author = stringsWithNames.FirstOrDefault(s => s.nameParts.SingleOrDefault() == "author").localizedString,
-                Name = stringsWithNames.FirstOrDefault(s => s.nameParts.SingleOrDefault() == "name").localizedString,
-                Description = stringsWithNames.FirstOrDefault(s => s.nameParts.SingleOrDefault() == "description").localizedString,
-                ParameterSymbols = symbols,
-                // TODO uncomment once type compatibility issues are fixed.
-                // PostActions = postActions,
+                Author = stringsWithNames.SingleOrDefault(s => s.nameParts.FirstOrDefault() == "author").localizedString,
+                Name = stringsWithNames.SingleOrDefault(s => s.nameParts.FirstOrDefault() == "name").localizedString,
+                Description = stringsWithNames.SingleOrDefault(s => s.nameParts.FirstOrDefault() == "description").localizedString,
             };
         }
 
@@ -74,8 +70,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 string symbolName = parameterParts.Key;
-                string? displayName = parameterParts.FirstOrDefault(p => p.nameParts.Skip(1).SingleOrDefault() == "displayName").localizedString;
-                string? description = parameterParts.FirstOrDefault(p => p.nameParts.Skip(1).SingleOrDefault() == "description").localizedString;
+                string? displayName = parameterParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "displayName").localizedString;
+                string? description = parameterParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "description").localizedString;
 
                 IReadOnlyDictionary<string, ParameterChoiceLocalizationModel>? choiceModels = LoadChoiceModels(strings
                     .Where(s => s.nameParts.Skip(1).FirstOrDefault() == "choices")
@@ -114,8 +110,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                string? displayName = choiceParts.FirstOrDefault(p => p.nameParts.Skip(1).SingleOrDefault() == "displayName").localizedString;
-                string? description = choiceParts.FirstOrDefault(p => p.nameParts.Skip(1).SingleOrDefault() == "description").localizedString;
+                string? displayName = choiceParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "displayName").localizedString;
+                string? description = choiceParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "description").localizedString;
 
                 results.Add(choiceParts.Key, new ParameterChoiceLocalizationModel(displayName, description));
             }
@@ -151,7 +147,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     results.Add(null);
                 }
 
-                string? description = postActionParts.FirstOrDefault(p => p.nameParts.Skip(1).SingleOrDefault() == "description").localizedString;
+                string? description = postActionParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "description").localizedString;
                 var instructions = LoadManualInstructionModels(postActionParts
                     .Where(s => s.nameParts.Skip(1).FirstOrDefault().StartsWith(ManualInstructionIndexPrefix))
                     .Select(s => (s.nameParts.Skip(1), s.localizedString)));
@@ -194,7 +190,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     results.Add(null);
                 }
 
-                string? text = instructionParts.FirstOrDefault(p => p.nameParts.Skip(1).SingleOrDefault() == "text").localizedString;
+                string? text = instructionParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "text").localizedString;
                 results[instructionIndex] = text;
             }
 

@@ -59,22 +59,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 if (model.ManualInstructionInfo != null)
                 {
-                    foreach (KeyValuePair<string, string> modelInstruction in model.ManualInstructionInfo)
+                    foreach (ManualInstructionModel modelInstruction in model.ManualInstructionInfo)
                     {
-                        if (string.IsNullOrEmpty(modelInstruction.Value))
+                        if (string.IsNullOrEmpty(modelInstruction.Condition))
                         {
                             // no condition
                             if (string.IsNullOrEmpty(chosenInstruction))
                             {
                                 // No condition, and no instruction previously chosen. Take this one.
                                 // We don't want a default instruction to override a conditional one.
-                                chosenInstruction = modelInstruction.Key;
+                                chosenInstruction = modelInstruction.Text;
                             }
                         }
-                        else if (Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, modelInstruction.Value, rootVariableCollection))
+                        else if (Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, modelInstruction.Condition, rootVariableCollection))
                         {
                             // condition is not blank and true, take this one. This results in a last-in-wins behaviour for conditions that are true.
-                            chosenInstruction = modelInstruction.Key;
+                            chosenInstruction = modelInstruction.Text;
                         }
                     }
                 }

@@ -9,15 +9,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal interface IPostActionModel : IConditionedConfigurationElement
     {
+        /// <summary>
+        /// Gets the description of the post action.
+        /// </summary>
         string Description { get; }
 
+        /// <summary>
+        /// Gets the identifier of the action that will be performed.
+        /// Note that this is not an identifier for the post action itself.
+        /// </summary>
         Guid ActionId { get; }
 
+        /// <summary>
+        /// Gets a value indicating wheather the template instantiation should continue
+        /// in case of an error with this post action.
+        /// </summary>
         bool ContinueOnError { get; }
 
         IReadOnlyDictionary<string, string> Args { get; }
 
-        IReadOnlyList<KeyValuePair<string, string>> ManualInstructionInfo { get; }
+        /// <summary>
+        /// Gets the list of instructions that should be manually performed by the user.
+        /// "instruction" contains the text that explains the steps to be taken by the user.
+        /// An instruction is only considered if the "condition" evaluates to true.
+        /// </summary>
+        IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; }
 
         string ConfigFile { get; }
     }

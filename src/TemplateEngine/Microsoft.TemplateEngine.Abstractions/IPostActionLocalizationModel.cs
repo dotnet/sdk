@@ -12,8 +12,11 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string Description { get; }
 
-        // The order corresponds to the order of the instructions in the same action
-        // in the culture neutral TemplateConfigFile
+        /// <summary>
+        /// Gets the localized manual instructions that the user should perform.
+        /// The order of the items in this list are the same as the order of the
+        /// instructions in the same post action in the template.
+        /// </summary>
         IReadOnlyList<string> Instructions { get; }
     }
 }

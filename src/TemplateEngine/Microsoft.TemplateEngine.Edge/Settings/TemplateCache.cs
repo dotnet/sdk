@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             List<TemplateInfo> templates = new List<TemplateInfo>();
             foreach (ITemplate newTemplate in templateMemoryCache.Values)
             {
-                ILocalizationLocator? locatorForTemplate = GetPreferredLocatorForTemplate(newTemplate.Identity, newLocatorsForLocale);
+                newLocatorsForLocale.TryGetValue(newTemplate.Identity, out ILocalizationLocator locatorForTemplate);
                 TemplateInfo localizedTemplate = LocalizeTemplate(newTemplate, locatorForTemplate);
                 templates.Add(localizedTemplate);
             }
@@ -123,15 +123,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public Dictionary<string, DateTime> MountPointsInfo { get; }
-
-        private static ILocalizationLocator? GetPreferredLocatorForTemplate(string identity, IDictionary<string, ILocalizationLocator> newLocatorsForLocale)
-        {
-            if (newLocatorsForLocale.TryGetValue(identity, out ILocalizationLocator locatorForTemplate))
-            {
-                return locatorForTemplate;
-            }
-            return null;
-        }
 
         private static TemplateInfo LocalizeTemplate(ITemplateInfo template, ILocalizationLocator? localizationInfo)
         {

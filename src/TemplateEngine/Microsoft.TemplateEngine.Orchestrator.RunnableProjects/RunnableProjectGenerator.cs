@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -145,7 +144,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                     Locale = locale,
                                     MountPointUri = source.MountPointUri,
                                     ConfigPlace = locFile.FullPath,
-                                    Identity = locModel.Identity,
+                                    Identity = template.Identity,
                                     Author = locModel.Author,
                                     Name = locModel.Name,
                                     Description = locModel.Description,
@@ -477,7 +476,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         internal JObject ReadJObjectFromIFile(IFile file)
         {
             using (Stream s = file.OpenRead())
-            using (TextReader tr = new StreamReader(s, true))
+            using (TextReader tr = new StreamReader(s, System.Text.Encoding.UTF8, true))
             using (JsonReader r = new JsonTextReader(tr))
             {
                 return JObject.Load(r);
