@@ -217,7 +217,7 @@ namespace Microsoft.TemplateEngine.Utils
                     return new MatchInfo(MatchInfo.BuiltIn.Author, author, MatchKind.Mismatch);
                 }
 
-                int authorIndex = template.Author.IndexOf(author, StringComparison.OrdinalIgnoreCase);
+                int authorIndex = template.Author!.IndexOf(author, StringComparison.OrdinalIgnoreCase);
 
                 if (authorIndex == 0 && template.Author.Length == author.Length)
                 {

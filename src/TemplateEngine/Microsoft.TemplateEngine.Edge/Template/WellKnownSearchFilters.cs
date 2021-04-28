@@ -206,7 +206,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     return new MatchInfo { Location = MatchLocation.Author, Kind = MatchKind.Mismatch };
                 }
 
-                int authorIndex = template.Author.IndexOf(author, StringComparison.OrdinalIgnoreCase);
+                int authorIndex = template.Author!.IndexOf(author, StringComparison.OrdinalIgnoreCase);
 
                 if (authorIndex == 0 && template.Author.Length == author.Length)
                 {

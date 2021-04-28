@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,76 +16,83 @@ namespace Microsoft.TemplateSearch.Common
     public class BlobStorageTemplateInfo : ITemplateInfo
     {
         [JsonProperty(PropertyName = "Tags")]
-        private IReadOnlyDictionary<string, CacheTag> _tags;
+        private IReadOnlyDictionary<string, CacheTag> _tags = new Dictionary<string, CacheTag>();
 
         [JsonProperty(PropertyName = "CacheParameters")]
-        private IReadOnlyDictionary<string, CacheParameter> _cacheParameters;
+        private IReadOnlyDictionary<string, CacheParameter> _cacheParameters = new Dictionary<string, CacheParameter>();
 
         [JsonProperty(PropertyName = "BaselineInfo")]
-        private IReadOnlyDictionary<string, BaselineCacheInfo> _baselineInfo;
+        private IReadOnlyDictionary<string, BaselineCacheInfo> _baselineInfo = new Dictionary<string, BaselineCacheInfo>();
 
-        private List<ITemplateParameter> _parameters;
+        [JsonConstructor]
+        private BlobStorageTemplateInfo(string identity, string name, IEnumerable<string> shortNameList)
+        {
+            if (string.IsNullOrWhiteSpace(identity))
+            {
+                throw new ArgumentException($"'{nameof(identity)}' cannot be null or whitespace.", nameof(identity));
+            }
 
-        private BlobStorageTemplateInfo() { }
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException($"'{nameof(name)}' cannot be null or whitespace.", nameof(name));
+            }
+
+            if (!shortNameList.Any())
+            {
+                throw new ArgumentException($"'{nameof(shortNameList)}' should have at least one entry", nameof(shortNameList));
+            }
+
+            Identity = identity;
+            Name = name;
+            ShortNameList = shortNameList.ToList();
+        }
 
         [JsonIgnore]
         IReadOnlyList<ITemplateParameter> ITemplateInfo.Parameters
         {
             get
             {
-                if (_parameters == null)
+                List<ITemplateParameter> parameters = new List<ITemplateParameter>();
+
+                foreach (KeyValuePair<string, ICacheTag> tagInfo in Tags)
                 {
-                    List<ITemplateParameter> parameters = new List<ITemplateParameter>();
-
-                    foreach (KeyValuePair<string, ICacheTag> tagInfo in Tags)
+                    ITemplateParameter param = new TemplateParameter
                     {
-                        ITemplateParameter param = new TemplateParameter
-                        {
-                            Name = tagInfo.Key,
-                            Documentation = tagInfo.Value.Description,
-                            DefaultValue = tagInfo.Value.DefaultValue,
-                            Choices = tagInfo.Value.Choices,
-                            DataType = "choice"
-                        };
+                        Name = tagInfo.Key,
+                        Documentation = tagInfo.Value.Description,
+                        DefaultValue = tagInfo.Value.DefaultValue,
+                        Choices = tagInfo.Value.Choices,
+                        DataType = "choice"
+                    };
 
-                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
-                            && tagInfo.Value is IAllowDefaultIfOptionWithoutValue tagWithNoValueDefault)
-                        {
-                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = tagWithNoValueDefault.DefaultIfOptionWithoutValue;
-                            parameters.Add(paramWithNoValueDefault as TemplateParameter);
-                        }
-                        else
-                        {
-                            parameters.Add(param);
-                        }
+                    if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
+                        && tagInfo.Value is IAllowDefaultIfOptionWithoutValue tagWithNoValueDefault)
+                    {
+                        paramWithNoValueDefault.DefaultIfOptionWithoutValue = tagWithNoValueDefault.DefaultIfOptionWithoutValue;
                     }
 
-                    foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
-                    {
-                        ITemplateParameter param = new TemplateParameter
-                        {
-                            Name = paramInfo.Key,
-                            Documentation = paramInfo.Value.Description,
-                            DataType = paramInfo.Value.DataType,
-                            DefaultValue = paramInfo.Value.DefaultValue,
-                        };
-
-                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
-                            && paramInfo.Value is IAllowDefaultIfOptionWithoutValue infoWithNoValueDefault)
-                        {
-                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = infoWithNoValueDefault.DefaultIfOptionWithoutValue;
-                            parameters.Add(paramWithNoValueDefault as TemplateParameter);
-                        }
-                        else
-                        {
-                            parameters.Add(param);
-                        }
-                    }
-
-                    _parameters = parameters;
+                    parameters.Add(param);
                 }
 
-                return _parameters;
+                foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
+                {
+                    ITemplateParameter param = new TemplateParameter
+                    {
+                        Name = paramInfo.Key,
+                        Documentation = paramInfo.Value.Description,
+                        DataType = paramInfo.Value.DataType,
+                        DefaultValue = paramInfo.Value.DefaultValue,
+                    };
+
+                    if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
+                        && paramInfo.Value is IAllowDefaultIfOptionWithoutValue infoWithNoValueDefault)
+                    {
+                        paramWithNoValueDefault.DefaultIfOptionWithoutValue = infoWithNoValueDefault.DefaultIfOptionWithoutValue;
+                    }
+                    parameters.Add(param);
+                }
+
+                return parameters;
             }
         }
 
@@ -91,16 +100,16 @@ namespace Microsoft.TemplateSearch.Common
         string ITemplateInfo.MountPointUri => throw new NotImplementedException();
 
         [JsonProperty]
-        public string Author { get; private set; }
+        public string? Author { get; private set; }
 
         [JsonProperty]
-        public IReadOnlyList<string> Classifications { get; private set; }
+        public IReadOnlyList<string> Classifications { get; private set; } = new List<string>();
 
         [JsonProperty]
-        public string DefaultName { get; private set; }
+        public string? DefaultName { get; private set; }
 
         [JsonProperty]
-        public string Description { get; private set; }
+        public string? Description { get; private set; }
 
         [JsonProperty]
         public string Identity { get; private set; }
@@ -109,7 +118,7 @@ namespace Microsoft.TemplateSearch.Common
         Guid ITemplateInfo.GeneratorId => throw new NotImplementedException();
 
         [JsonProperty]
-        public string GroupIdentity { get; private set; }
+        public string? GroupIdentity { get; private set; }
 
         [JsonProperty]
         public int Precedence { get; private set; }
@@ -140,7 +149,7 @@ namespace Microsoft.TemplateSearch.Common
         string ITemplateInfo.HostConfigPlace => throw new NotImplementedException();
 
         [JsonProperty]
-        public string ThirdPartyNotices { get; private set; }
+        public string? ThirdPartyNotices { get; private set; }
 
         [JsonIgnore]
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo => _baselineInfo.ToDictionary(kvp => kvp.Key, kvp => (IBaselineInfo)kvp.Value);
@@ -158,61 +167,61 @@ namespace Microsoft.TemplateSearch.Common
     internal class CacheTag : ICacheTag
     {
         [JsonProperty(PropertyName = "ChoicesAndDescriptions")]
-        private IReadOnlyDictionary<string, string> _choices;
+        private IReadOnlyDictionary<string, string> _choices = new Dictionary<string, string>();
 
         [JsonIgnore]
-        public string DisplayName => throw new NotImplementedException();
+        public string? DisplayName => throw new NotImplementedException();
 
         [JsonProperty]
-        public string Description { get; private set; }
+        public string? Description { get; private set; }
 
         [JsonIgnore]
         public IReadOnlyDictionary<string, ParameterChoice> Choices => _choices.ToDictionary(kvp => kvp.Key, kvp => new ParameterChoice(null, kvp.Value));
 
         [JsonProperty]
-        public string DefaultValue { get; private set; }
+        public string? DefaultValue { get; private set; }
     }
 
     internal class CacheParameter : ICacheParameter
     {
         [JsonProperty]
-        public string DataType { get; private set; }
+        public string? DataType { get; private set; }
 
         [JsonProperty]
-        public string DefaultValue { get; private set; }
+        public string? DefaultValue { get; private set; }
 
         [JsonIgnore]
-        public string DisplayName => throw new NotImplementedException();
+        public string? DisplayName => throw new NotImplementedException();
 
         [JsonProperty]
-        public string Description { get; private set; }
+        public string? Description { get; private set; }
     }
 
     internal class BaselineCacheInfo : IBaselineInfo
     {
         [JsonProperty]
-        public string Description { get; private set; }
+        public string? Description { get; private set; }
 
         [JsonProperty]
-        public IReadOnlyDictionary<string, string> DefaultOverrides { get; private set; }
+        public IReadOnlyDictionary<string, string> DefaultOverrides { get; private set; } = new Dictionary<string, string>();
     }
 
     internal class TemplateParameter : ITemplateParameter
     {
-        public string Documentation { get; internal set; }
+        public string? Documentation { get; internal set; }
 
-        public string Name { get; internal set; }
+        public string? Name { get; internal set; }
 
         public TemplateParameterPriority Priority { get; internal set; }
 
-        public string Type { get; internal set; }
+        public string? Type { get; internal set; }
 
         public bool IsName { get; internal set; }
 
-        public string DefaultValue { get; internal set; }
+        public string? DefaultValue { get; internal set; }
 
-        public string DataType { get; internal set; }
+        public string? DataType { get; internal set; }
 
-        public IReadOnlyDictionary<string, ParameterChoice> Choices { get; internal set; }
+        public IReadOnlyDictionary<string, ParameterChoice> Choices { get; internal set; } = new Dictionary<string, ParameterChoice>();
     }
 }

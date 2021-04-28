@@ -10,19 +10,19 @@ namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface ITemplateInfo
     {
-        string Author { get; }
+        string? Author { get; }
 
-        string Description { get; }
+        string? Description { get; }
 
         IReadOnlyList<string> Classifications { get; }
 
-        string DefaultName { get; }
+        string? DefaultName { get; }
 
         string Identity { get; }
 
         Guid GeneratorId { get; }
 
-        string GroupIdentity { get; }
+        string? GroupIdentity { get; }
 
         int Precedence { get; }
 
@@ -41,11 +41,11 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string ConfigPlace { get; }
 
-        string LocaleConfigPlace { get; }
+        string? LocaleConfigPlace { get; }
 
-        string HostConfigPlace { get; }
+        string? HostConfigPlace { get; }
 
-        string ThirdPartyNotices { get; }
+        string? ThirdPartyNotices { get; }
 
         IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
 

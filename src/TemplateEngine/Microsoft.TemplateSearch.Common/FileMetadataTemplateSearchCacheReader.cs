@@ -16,7 +16,7 @@ namespace Microsoft.TemplateSearch.Common
             string pathToConfig = Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, config.TemplateDiscoveryFileName);
             string cacheText = environmentSettings.Host.FileSystem.ReadAllText(pathToConfig);
 
-            if (TryReadDiscoveryMetadata(cacheText, config, out discoveryMetadata))
+            if (TryReadDiscoveryMetadata(environmentSettings, cacheText, config, out discoveryMetadata))
             {
                 return true;
             }
@@ -24,13 +24,13 @@ namespace Microsoft.TemplateSearch.Common
             return false;
         }
 
-        public static bool TryReadDiscoveryMetadata(string cacheText, ISearchCacheConfig config, out TemplateDiscoveryMetadata discoveryMetadata)
+        public static bool TryReadDiscoveryMetadata(IEngineEnvironmentSettings environmentSettings, string cacheText, ISearchCacheConfig config, out TemplateDiscoveryMetadata discoveryMetadata)
         {
             JObject cacheObject = JObject.Parse(cacheText);
 
             // add the reader calls, build the model objects
             if (TryReadVersion(cacheObject, out string version)
-                && TryReadTemplateList(cacheObject, version, out IReadOnlyList<ITemplateInfo> templateList)
+                && TryReadTemplateList(environmentSettings, cacheObject, version, out IReadOnlyList<ITemplateInfo> templateList)
                 && TryReadPackToTemplateMap(cacheObject, out IReadOnlyDictionary<string, PackToTemplateEntry> packToTemplateMap)
                 && TryReadAdditionalData(cacheObject, config.AdditionalDataReaders, out IReadOnlyDictionary<string, object> additionalDta))
             {
@@ -54,7 +54,11 @@ namespace Microsoft.TemplateSearch.Common
             return false;
         }
 
-        private static bool TryReadTemplateList(JObject cacheObject, string cacheVersion, out IReadOnlyList<ITemplateInfo> templateList)
+        private static bool TryReadTemplateList(
+            IEngineEnvironmentSettings environmentSettings,
+            JObject cacheObject,
+            string cacheVersion,
+            out IReadOnlyList<ITemplateInfo> templateList)
         {
             try
             {
@@ -69,7 +73,14 @@ namespace Microsoft.TemplateSearch.Common
                         {
                             if (entry != null && entry.Type == JTokenType.Object)
                             {
-                                buildingTemplateList.Add(BlobStorageTemplateInfo.FromJObject((JObject)entry));
+                                try
+                                {
+                                    buildingTemplateList.Add(BlobStorageTemplateInfo.FromJObject((JObject)entry));
+                                }
+                                catch (ArgumentException ex)
+                                {
+                                    environmentSettings.Host.LogDiagnosticMessage($"Failed to read template info entry, missing mandatory fields. Details: {ex}", "Search cache");
+                                }
                             }
                         }
                     }
@@ -83,7 +94,7 @@ namespace Microsoft.TemplateSearch.Common
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                environmentSettings.Host.LogDiagnosticMessage($"Failed to read template info entries. Details: {ex}", "Search cache");
                 templateList = null;
                 return false;
             }

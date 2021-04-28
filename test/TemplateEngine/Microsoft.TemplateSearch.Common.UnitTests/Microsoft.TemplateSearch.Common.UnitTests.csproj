@@ -10,6 +10,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Update="NuGetTemplateSearchInfoWithInvalidData.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
       <None Update="NuGetTemplateSearchInfo.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
