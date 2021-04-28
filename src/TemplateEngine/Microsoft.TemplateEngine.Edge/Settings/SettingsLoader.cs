@@ -28,10 +28,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly SettingsFilePaths _paths;
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Action<IEngineEnvironmentSettings>? _onFirstRun;
-        private SettingsStore? _userSettings;
+        private volatile SettingsStore? _userSettings;
         private TemplateCache _userTemplateCache;
-        private IMountPointManager? _mountPointManager;
-        private IComponentManager? _componentManager;
+        private volatile IMountPointManager? _mountPointManager;
+        private volatile IComponentManager? _componentManager;
         private bool _templatesLoaded;
         private TemplatePackageManager _templatePackagesManager;
         private volatile bool _disposed;
@@ -50,6 +50,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             get
             {
+                var local = _componentManager;
+                if (local != null)
+                {
+                    return local;
+                }
+
                 lock (_settingsLock)
                 {
                     if (_componentManager == null)
@@ -70,6 +76,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             get
             {
+                var local = _mountPointManager;
+                if (local != null)
+                {
+                    return local;
+                }
+
                 lock (_settingsLock)
                 {
                     if (_mountPointManager == null)
@@ -86,6 +98,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             get
             {
+                var local = _userSettings;
+                if (local != null)
+                {
+                    return local;
+                }
+
                 lock (_settingsLock)
                 {
                     if (_userSettings == null)
