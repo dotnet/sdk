@@ -257,7 +257,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return MountPointManager.TryDemandMountPoint(mountPointUri, out mountPoint);
         }
 
-        public void ResetSettings()
+        public void ResetHostSettings()
         {
             lock (_settingsLock)
             {

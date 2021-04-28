@@ -100,6 +100,6 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Resets settings of host version.
         /// Useful when the settings need to be reset to default and all caches to be reinitialized.
         /// </summary>
-        void ResetSettings();
+        void ResetHostSettings();
     }
 }
