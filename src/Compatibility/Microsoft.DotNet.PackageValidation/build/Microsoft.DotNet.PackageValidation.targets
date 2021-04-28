@@ -5,17 +5,20 @@
   <UsingTask TaskName="ValidatePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
   <UsingTask TaskName="GetLastStablePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
 
+  <PropertyGroup>
+    <PreviousPackageVersionFilePath>$(IntermediateOutputPath)\PreviousPackageVersion.txt</PreviousPackageVersionFilePath>
+    <PreviousPackageName>$([MSBuild]::ValueOrDefault('$(PreviousPackageName)', '$(AssemblyName)'))</PreviousPackageName>
+  </PropertyGroup>
+
   <Target Name="RunPackageValidation" AfterTargets="Pack">
     
-    <GetLastStablePackage PackageId="$(PackageId)"
-      LocalPackagesPath="$(NuGetPackageRoot)$(PreviousPackageName)"
-      UseLocalPackagesPath="true" >
-      <Output TaskParameter="LastStableVersion" PropertyName="PreviousPackageVersion" />
-    </GetLastStablePackage>
-    
+    <PropertyGroup Condition="'$(ValidateWithPreviousVersion)' == 'true' and '$(PreviousPackagePath)' == ''">
+      <PreviousPackageVersion>$([System.IO.File]::ReadAllText('$(PreviousPackageVersionFilePath)').Trim())</PreviousPackageVersion>
+      <PreviousPackagePath>$(NuGetPackageRoot)$(PreviousPackageName)\$(PreviousPackageVersion)\$(PreviousPackageName).$(PreviousPackageVersion).nupkg</PreviousPackagePath>
+    </PropertyGroup>
+
     <PropertyGroup>
       <PackagePath Condition="'$(PackagePath)' == ''">$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg</PackagePath>
-      <PreviousPackagePath>$(NuGetPackageRoot)$(PreviousPackageName)\$(PreviousPackageVersion)\$(PreviousPackageName).$(PreviousPackageVersion).nupkg</PreviousPackagePath>
     </PropertyGroup>
 
     <ValidatePackage PackagePath="$(PackagePath)"
@@ -26,24 +29,21 @@
                      ValidateWithPreviousVersion="$(ValidateWithPreviousVersion)"/>
   </Target>
 
-  <Target Name="AddPackageDownload" BeforeTargets="CollectPackageDownloads">
-
-    <ItemGroup>
-      <Feeds Include="$(_OutputSources)" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <PreviousPackageName>$([MSBuild]::ValueOrDefault('$(PreviousPackageName)', '$(MSbuildProjectName)'))</PreviousPackageName>
-    </PropertyGroup>
-
+  <Target Name="AddPackageDownload" BeforeTargets="CollectPackageDownloads" Condition="'$(ValidateWithPreviousVersion)' == 'true' and '$(PreviousPackagePath)' == ''">
     <GetLastStablePackage Condition="'$(PreviousPackageVersion)' == ''"
-      PackageId="$(PreviousPackageName)"
-      NugetFeeds="@(Feeds)">
+                          PackageId="$(PreviousPackageName)"
+                          PackageVersion="$(Version)"
+                          NugetFeeds="$(_OutputSources)">
       <Output TaskParameter="LastStableVersion" PropertyName="PreviousPackageVersion" />
     </GetLastStablePackage>
 
     <ItemGroup Condition="'$(PreviousPackageVersion)' != ''">
       <PackageDownload Include="$(PreviousPackageName)" Version="[$(PreviousPackageVersion)]" />
     </ItemGroup>
+
+    <WriteLinesToFile File="$(PreviousPackageVersionFilePath)"
+                      Lines="$(PreviousPackageVersion)"
+                      Overwrite="true"
+                      Encoding="Unicode" />
   </Target>
 </Project>

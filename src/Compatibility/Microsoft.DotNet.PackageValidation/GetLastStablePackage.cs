@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -20,6 +19,8 @@ namespace Microsoft.DotNet.PackageValidation
         [Required]
         public string PackageId { get; set; }
 
+        public string PackageVersion { get; set; }
+
         public string[] NugetFeeds { get; set; }
 
         public string LocalPackagesPath { get; set; }
@@ -31,6 +32,7 @@ namespace Microsoft.DotNet.PackageValidation
 
         protected override void ExecuteCore()
         {
+            NuGetVersion currentPackageVersion = new NuGetVersion(PackageVersion);
             NuGetVersion version = null;
             if (UseLocalPackagesPath)
             {
@@ -52,11 +54,7 @@ namespace Microsoft.DotNet.PackageValidation
 
                 if (packageVersion != null)
                 {
-                    if (version == null)
-                    {
-                        version = packageVersion;
-                    }
-                    if (packageVersion > version)
+                    if ((version == null || packageVersion > version) && packageVersion.Version < currentPackageVersion.Version)
                     {
                         version = packageVersion;
                     }
