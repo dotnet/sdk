@@ -40,21 +40,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         internal string TemplateCacheFile => GetOrComputePath(ref _templatesCacheFile, BaseDir, "templatecache.json");
 
-        internal string ProcessPath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return path;
-            }
-
-            if (path[0] != '~')
-            {
-                return path;
-            }
-
-            return Path.Combine(_environmentSettings.Paths.UserProfileDir, path.Substring(1));
-        }
-
         internal void Copy(string path, string targetPath)
         {
             if (_environmentSettings.Host.FileSystem.FileExists(path))
@@ -87,69 +72,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        internal Stream OpenRead(string path)
-        {
-            return _environmentSettings.Host.FileSystem.OpenRead(path);
-        }
-
-#pragma warning disable SA1011 // Closing square brackets should be spaced correctly - conflicting analyzer rules
-        internal byte[]? ReadAllBytes(string path)
-#pragma warning restore SA1011 // Closing square brackets should be spaced correctly
-        {
-            if (Exists(path))
-            {
-                using (Stream s = _environmentSettings.Host.FileSystem.OpenRead(path))
-                {
-                    byte[] buffer = new byte[s.Length];
-                    s.Read(buffer, 0, buffer.Length);
-                    return buffer;
-                }
-            }
-            return null;
-        }
-
-        internal void CreateDirectory(string path, string parent)
-        {
-            string[] parts = path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            string current = parent;
-
-            for (int i = 0; i < parts.Length; ++i)
-            {
-                current = Path.Combine(current, parts[i]);
-                _environmentSettings.Host.FileSystem.CreateDirectory(current);
-            }
-        }
-
-        internal void CreateDirectory(string path)
-        {
-            _environmentSettings.Host.FileSystem.CreateDirectory(path);
-        }
-
         internal void Delete(string path)
-        {
-            DeleteDirectory(path);
-            DeleteFile(path);
-        }
-
-        internal void DeleteDirectory(string path)
         {
             if (_environmentSettings.Host.FileSystem.DirectoryExists(path))
             {
                 _environmentSettings.Host.FileSystem.DirectoryDelete(path, true);
             }
-        }
-
-        internal void DeleteFile(string path)
-        {
             if (_environmentSettings.Host.FileSystem.FileExists(path))
             {
                 _environmentSettings.Host.FileSystem.FileDelete(path);
             }
-        }
-
-        internal bool DirectoryExists(string path)
-        {
-            return _environmentSettings.Host.FileSystem.DirectoryExists(path);
         }
 
         internal IEnumerable<string> EnumerateDirectories(string path, string pattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly)
@@ -194,12 +126,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         internal bool Exists(string path)
         {
-            return FileExists(path) || DirectoryExists(path);
-        }
-
-        internal bool FileExists(string path)
-        {
-            return _environmentSettings.Host.FileSystem.FileExists(path);
+            return _environmentSettings.Host.FileSystem.FileExists(path) || _environmentSettings.Host.FileSystem.DirectoryExists(path);
         }
 
         internal string Name(string path)
@@ -223,6 +150,33 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             _environmentSettings.Host.FileSystem.WriteAllText(path, value);
+        }
+
+        private void CreateDirectory(string path, string parent)
+        {
+            string[] parts = path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            string current = parent;
+
+            for (int i = 0; i < parts.Length; ++i)
+            {
+                current = Path.Combine(current, parts[i]);
+                _environmentSettings.Host.FileSystem.CreateDirectory(current);
+            }
+        }
+
+        private string ProcessPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return path;
+            }
+
+            if (path[0] != '~')
+            {
+                return path;
+            }
+
+            return Path.Combine(_environmentSettings.Paths.UserProfileDir, path.Substring(1));
         }
 
         private string GetOrComputePath(ref string? cache, params string[] paths)

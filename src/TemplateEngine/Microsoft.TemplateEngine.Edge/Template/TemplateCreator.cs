@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 {
                     if (!dryRun)
                     {
-                        _paths.CreateDirectory(targetDir);
+                        _environmentSettings.Host.FileSystem.CreateDirectory(targetDir);
                     }
 
                     Stopwatch sw = Stopwatch.StartNew();

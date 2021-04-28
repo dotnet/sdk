@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
@@ -13,15 +14,17 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
     {
         private readonly string _physicalPath;
         private readonly SettingsFilePaths _paths;
+        private readonly IPhysicalFileSystem _fileSystem;
 
         public FileSystemDirectory(IMountPoint mountPoint, string fullPath, string name, string physicalPath)
             : base(mountPoint, EnsureTrailingSlash(fullPath), name)
         {
             _physicalPath = physicalPath;
             _paths = new SettingsFilePaths(mountPoint.EnvironmentSettings);
+            _fileSystem = mountPoint.EnvironmentSettings.Host.FileSystem;
         }
 
-        public override bool Exists => _paths.DirectoryExists(_physicalPath);
+        public override bool Exists => _fileSystem.DirectoryExists(_physicalPath);
 
         public override IEnumerable<IFileSystemInfo> EnumerateFileSystemInfos(string pattern, SearchOption searchOption)
         {
@@ -39,7 +42,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                     baseName = "/" + baseName;
                 }
 
-                if (_paths.DirectoryExists(x) && baseName[baseName.Length - 1] != '/')
+                if (_fileSystem.DirectoryExists(x) && baseName[baseName.Length - 1] != '/')
                 {
                     baseName = baseName + "/";
                 }

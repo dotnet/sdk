@@ -118,6 +118,11 @@ namespace Microsoft.TemplateEngine.Mocks
             return Encoding.UTF8.GetString(_files[path].Data);
         }
 
+        public byte[] ReadAllBytes(string path)
+        {
+            return _files[path].Data;
+        }
+
         public void DirectoryDelete(string path, bool recursive)
         {
             if (!recursive

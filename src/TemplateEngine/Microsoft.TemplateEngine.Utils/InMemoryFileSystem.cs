@@ -539,6 +539,21 @@ namespace Microsoft.TemplateEngine.Utils
             }
         }
 
+        public byte[] ReadAllBytes(string path)
+        {
+            //file can be either memory or physical file here
+            using Stream s = OpenRead(path);
+            if (!(s is MemoryStream))
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    s.CopyTo(ms);
+                    return ms.ToArray();
+                }
+            }
+            return (s as MemoryStream).ToArray();
+        }
+
         public void WriteAllText(string path, string value)
         {
             using (Stream s = CreateFile(path))

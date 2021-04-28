@@ -60,6 +60,12 @@ namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
         string ReadAllText(string path);
 
         /// <summary>
+        /// Opens a binary file, reads the contents of the file into a byte array, and then closes the file.
+        /// Same behavior as <see cref="File.ReadAllBytes(string)"/>.
+        /// </summary>
+        byte[] ReadAllBytes(string path);
+
+        /// <summary>
         /// Same behavior as <see cref="File.WriteAllText(string, string)"/>.
         /// </summary>
         void WriteAllText(string path, string value);

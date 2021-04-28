@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -18,11 +20,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             { "prefs:language", "C#" }
         };
 
-        public static DefaultTemplateEngineHost CreateHost(string hostIdentifier, string hostVersion = null, Dictionary<string, string> preferences = null)
+        public static DefaultTemplateEngineHost CreateHost(string hostIdentifier, string? hostVersion = null, Dictionary<string, string>? preferences = null)
         {
             if (string.IsNullOrEmpty(hostIdentifier))
             {
-                throw new Exception("hostIdentifier cannot be null");
+                throw new ArgumentException("hostIdentifier cannot be null");
             }
 
             if (string.IsNullOrEmpty(hostVersion))

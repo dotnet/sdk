@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 
 namespace Microsoft.TemplateEngine.Utils
@@ -53,11 +52,12 @@ namespace Microsoft.TemplateEngine.Utils
 
         public string ReadAllText(string path)
         {
-            using (Stream file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (StreamReader reader = new StreamReader(file, Encoding.UTF8, true, 8192, true))
-            {
-                return reader.ReadToEnd();
-            }
+            return File.ReadAllText(path);
+        }
+
+        public byte[] ReadAllBytes(string path)
+        {
+            return File.ReadAllBytes(path);
         }
 
         public void WriteAllText(string path, string value)

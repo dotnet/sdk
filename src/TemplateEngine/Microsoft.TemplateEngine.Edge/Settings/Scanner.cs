@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+#if !NETFULL
+using System.Runtime.Loader;
+#endif
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
@@ -91,7 +94,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 isCopiedIntoContentDirectory = false;
             }
 
-            foreach (KeyValuePair<string, Assembly> asm in AssemblyLoader.LoadAllFromPath(_paths, out IEnumerable<string> failures, actualScanPath))
+            foreach (KeyValuePair<string, Assembly> asm in LoadAllFromPath(out IEnumerable<string> failures, actualScanPath))
             {
                 try
                 {
@@ -142,7 +145,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
                 else
                 {
-                    _paths.CreateDirectory(targetBasePath); // creates Packages/ or Content/ if needed
+                    _environmentSettings.Host.FileSystem.CreateDirectory(targetBasePath); // creates Packages/ or Content/ if needed
                     _paths.Copy(sourceLocation, targetPath);
                 }
             }
@@ -177,6 +180,60 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 source.FoundTemplates |= templateList.Count > 0 || localizationInfo.Count > 0;
             }
+        }
+
+        /// <summary>
+        /// Loads assemblies for components from the given <paramref name="path"/>.
+        /// </summary>
+        /// <param name="loadFailures">Errors happened when loading assemblies.</param>
+        /// <param name="path">The path to load assemblies from.</param>
+        /// <param name="pattern">Filename pattern to use when searching for files.</param>
+        /// <param name="searchOption"><see cref="SearchOption"/> to use when searching for files.</param>
+        /// <returns>The list of loaded assemblies in format (filename, loaded assembly).</returns>
+        private IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromPath(
+            out IEnumerable<string> loadFailures,
+            string path,
+            string pattern = "*.dll",
+            SearchOption searchOption = SearchOption.AllDirectories)
+        {
+            List<KeyValuePair<string, Assembly>> loaded = new List<KeyValuePair<string, Assembly>>();
+            List<string> failures = new List<string>();
+
+            foreach (string file in _paths.EnumerateFiles(path, pattern, searchOption))
+            {
+                try
+                {
+                    Assembly assembly = null;
+
+#if !NETFULL
+                    if (file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1)
+                    {
+                        using (Stream fileStream = _environmentSettings.Host.FileSystem.OpenRead(file))
+                        {
+                            assembly = AssemblyLoadContext.Default.LoadFromStream(fileStream);
+                        }
+                    }
+#else
+                    if (file.IndexOf("net4", StringComparison.OrdinalIgnoreCase) > -1)
+                    {
+                        byte[] fileBytes = _environmentSettings.Host.FileSystem.ReadAllBytes(file);
+                        assembly = Assembly.Load(fileBytes);
+                    }
+#endif
+
+                    if (assembly != null)
+                    {
+                        loaded.Add(new KeyValuePair<string, Assembly>(file, assembly));
+                    }
+                }
+                catch
+                {
+                    failures.Add(file);
+                }
+            }
+
+            loadFailures = failures;
+            return loaded;
         }
 
         private class MountPointScanSource
