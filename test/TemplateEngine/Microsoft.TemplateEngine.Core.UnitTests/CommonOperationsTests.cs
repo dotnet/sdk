@@ -15,6 +15,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     public class CommonOperationsTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings;
+
         public CommonOperationsTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);

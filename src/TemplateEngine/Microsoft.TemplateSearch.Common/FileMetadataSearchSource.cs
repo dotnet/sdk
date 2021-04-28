@@ -15,8 +15,11 @@ namespace Microsoft.TemplateSearch.Common
     public abstract class FileMetadataSearchSource : ITemplateSearchSource
     {
         private ISearchPackFilter _packFilter;
+
         public abstract string DisplayName { get; }
+
         public abstract Guid Id { get; }
+
         protected IFileMetadataTemplateSearchCache SearchCache { get; set; }
 
         public abstract Task<bool> TryConfigure(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IManagedTemplatePackage> existingTemplatePackage);

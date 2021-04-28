@@ -25,6 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 return _conditionResult;
             }
+
             private set
             {
                 _conditionResult = value;

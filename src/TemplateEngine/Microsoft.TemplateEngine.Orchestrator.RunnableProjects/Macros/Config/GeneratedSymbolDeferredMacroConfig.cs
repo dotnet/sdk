@@ -25,7 +25,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         public string Type { get; private set; }
 
         internal Guid Id => new Guid("12CA34F3-A1B7-4859-B08C-172483C9B0FD");
+
         internal string DataType { get; }
+
         internal IReadOnlyDictionary<string, JToken> Parameters { get; private set; }
     }
 }

@@ -77,6 +77,7 @@ namespace Microsoft.TemplateEngine.Edge
             public string UserProfileDir { get; }
 
             public string GlobalSettingsDir { get; }
+
             public string HostSettingsDir { get; }
 
             public string HostVersionSettingsDir { get; }

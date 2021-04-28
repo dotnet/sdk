@@ -13,7 +13,9 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
         }
 
         public string ScraperOutputOneFile { get; }
+
         public string ScraperOutputTwoFile { get; }
+
         public string ComparisonResultFile { get; }
     }
 }

@@ -50,6 +50,7 @@ namespace Microsoft.TemplateEngine.Core
         public IVariableCollection Parent
         {
             get { return _parent; }
+
             set
             {
                 _parent = value;
@@ -77,6 +78,7 @@ namespace Microsoft.TemplateEngine.Core
 
                 throw new KeyNotFoundException($"No entry was found for key: {key}");
             }
+
             set
             {
                 bool changing = !_values.ContainsKey(key);

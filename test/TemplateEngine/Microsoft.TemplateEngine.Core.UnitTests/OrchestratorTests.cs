@@ -11,10 +11,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     public class OrchestratorTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings;
+
         public OrchestratorTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
+
         [Fact(DisplayName = nameof(VerifyRun))]
         public void VerifyRun()
         {

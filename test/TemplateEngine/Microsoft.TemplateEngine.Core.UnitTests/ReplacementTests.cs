@@ -15,10 +15,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     public class ReplacementTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings;
+
         public ReplacementTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
+
         [Fact(DisplayName = nameof(VerifyReplacement))]
         public void VerifyReplacement()
         {

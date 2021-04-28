@@ -14,6 +14,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     public class SetFlagTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
         private EnvironmentSettingsHelper _environmentSettingsHelper;
+
         public SetFlagTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _environmentSettingsHelper = environmentSettingsHelper;

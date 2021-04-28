@@ -21,9 +21,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         }
 
         internal string EvaluatorType { get; set; }
+
         internal bool WholeLine { get; set; }
+
         internal bool TrimWhitespace { get; set; }
+
         internal string Id { get; set; }
+
         internal bool OnByDefault { get; set; }
 
         internal static ConditionalOperationOptions FromJObject(JObject rawConfiguration)

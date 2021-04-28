@@ -18,10 +18,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
     public class CaseChangeMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings;
+
         public CaseChangeMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
+
         [Fact(DisplayName = nameof(TestCaseChangeToLowerConfig))]
         public void TestCaseChangeToLowerConfig()
         {

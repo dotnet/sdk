@@ -144,6 +144,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IReadOnlyList<string> IgnoreFileNames
         {
             get { return _ignoreFileNames ?? (_isPlaceholderFileNameCustomized ? new[] { PlaceholderFilename } : new[] { PlaceholderFilename, "_._" }); }
+
             set
             {
                 _ignoreFileNames = value;
@@ -464,6 +465,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 return _placeholderValue;
             }
+
             set
             {
                 _placeholderValue = value ?? DefaultPlaceholderFilename;

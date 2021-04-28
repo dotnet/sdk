@@ -142,6 +142,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 return string.Empty;
             }
+
             set
             {
                 if (ShortNameList.Count > 0)
@@ -162,6 +163,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 return _tags;
             }
+
             set
             {
                 _tags = value;
@@ -176,6 +178,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 return _cacheParameters;
             }
+
             set
             {
                 _cacheParameters = value;

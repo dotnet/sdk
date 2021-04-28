@@ -32,6 +32,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
         public ITokenConfig StartToken { get; }
 
         public Func<string, Stream> SourceStreamOpener { get; }
+
         public string Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)

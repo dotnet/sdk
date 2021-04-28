@@ -19,10 +19,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
     public class NowMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings;
+
         public NowMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
+
         // tests regular Now configuration, and Utc = true
         [Fact(DisplayName = nameof(EvaluateNowConfig))]
         public void EvaluateNowConfig()

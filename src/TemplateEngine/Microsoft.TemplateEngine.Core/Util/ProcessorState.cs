@@ -132,6 +132,7 @@ namespace Microsoft.TemplateEngine.Core.Util
         public Encoding Encoding
         {
             get { return _encoding; }
+
             set
             {
                 _encoding = value;

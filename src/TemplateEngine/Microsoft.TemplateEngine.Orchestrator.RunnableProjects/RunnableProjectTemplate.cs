@@ -66,9 +66,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IReadOnlyList<string> Classifications { get; }
 
         public string DefaultName { get; }
+
         public IGenerator Generator { get; }
+
         public string GroupIdentity { get; }
+
         public int Precedence { get; set; }
+
         public string Name { get; }
 
         public string ShortName
@@ -82,6 +86,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 return string.Empty;
             }
+
             set
             {
                 if (ShortNameList.Count > 0)
@@ -101,6 +106,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 return _tags;
             }
+
             set
             {
                 _tags = value;
@@ -114,6 +120,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 return _cacheParameters;
             }
+
             set
             {
                 _cacheParameters = value;
@@ -182,19 +189,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         public IFileSystemInfo Configuration => ConfigFile;
+
         public string MountPointUri => Configuration.MountPoint.MountPointUri;
+
         public string ConfigPlace => Configuration.FullPath;
+
         public IFileSystemInfo LocaleConfiguration => LocaleConfigFile;
+
         public string LocaleConfigPlace => LocaleConfiguration.FullPath;
+
         public bool IsNameAgreementWithFolderPreferred { get; }
+
         public string HostConfigPlace { get; }
+
         public string ThirdPartyNotices { get; }
+
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
 
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
+
         internal IRunnableProjectConfig Config { get; private set; }
+
         internal IMountPoint Source { get; }
+
         internal IFile ConfigFile { get; }
+
         internal IFile LocaleConfigFile { get; }
     }
 }

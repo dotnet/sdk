@@ -13,11 +13,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     internal class PostAction : IPostAction
     {
         Guid IPostAction.ActionId => ActionId;
+
         bool IPostAction.ContinueOnError => ContinueOnError;
+
         IReadOnlyDictionary<string, string> IPostAction.Args => Args;
+
         string IPostAction.ManualInstructions => ManualInstructions;
+
         string IPostAction.ConfigFile => ConfigFile;
+
         string IPostAction.Description => Description;
+
         internal string Description { get; private set; }
 
         internal Guid ActionId { get; private set; }

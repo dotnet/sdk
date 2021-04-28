@@ -45,6 +45,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 return DefaultIfOptionWithoutValue;
             }
+
             set
             {
                 DefaultIfOptionWithoutValue = value;

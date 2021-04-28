@@ -16,6 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
     internal class EvaluateMacro : IMacro
     {
         internal const string DefaultEvaluator = "C++";
+
         public Guid Id => new Guid("BB625F71-6404-4550-98AF-B2E546F46C5F");
 
         public string Type => "evaluate";

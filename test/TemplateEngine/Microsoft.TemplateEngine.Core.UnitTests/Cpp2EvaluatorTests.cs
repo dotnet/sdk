@@ -11,6 +11,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     public class Cpp2EvaluatorTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings;
+
         public Cpp2EvaluatorTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);

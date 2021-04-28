@@ -16,8 +16,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         }
 
         public string Type => "casing";
+
         public string VariableName { get; }
+
         internal string DataType { get; }
+
         internal string SourceVariable { get; }
 
         internal bool ToLower { get; }

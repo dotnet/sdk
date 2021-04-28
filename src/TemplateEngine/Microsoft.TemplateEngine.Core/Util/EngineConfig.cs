@@ -27,6 +27,7 @@ namespace Microsoft.TemplateEngine.Core.Util
         public static IReadOnlyList<string> DefaultLineEndings { get; set; } = new[] { "\r", "\n", "\r\n" };
 
         public static IReadOnlyList<string> DefaultWhitespaces { get; set; } = new[] { " ", "\t" };
+
         public IReadOnlyList<string> LineEndings { get; }
 
         public string VariableFormatString { get; }

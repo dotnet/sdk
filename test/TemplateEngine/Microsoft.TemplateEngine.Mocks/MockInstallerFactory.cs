@@ -10,6 +10,7 @@ namespace Microsoft.TemplateEngine.Mocks
     public class MockInstallerFactory : IInstallerFactory
     {
         private Guid _factoryId = new Guid("00000000-0000-0000-0000-000000000000");
+
         public string Name => "MockInstallerFactory";
 
         public Guid Id => _factoryId;

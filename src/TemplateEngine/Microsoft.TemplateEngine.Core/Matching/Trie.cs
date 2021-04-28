@@ -14,6 +14,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
         }
 
         public Dictionary<byte, TrieNode<T>> NextNodes { get; }
+
         public int MaxRemainingLength { get; private set; }
 
         public void AddPath(byte[] path, T terminal)

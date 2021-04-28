@@ -230,7 +230,9 @@ namespace Microsoft.TemplateEngine.Mocks
         public class DirectoryScanParameters
         {
             public string DirectoryName { get; set; }
+
             public string Pattern { get; set; }
+
             public SearchOption SearchOption { get; set; }
         }
 
@@ -248,7 +250,9 @@ namespace Microsoft.TemplateEngine.Mocks
             }
 
             public byte[] Data { get; set; }
+
             public FileAttributes Attributes { get; set; }
+
             public DateTime LastWriteTimeUtc { get; set; }
         }
     }

@@ -15,6 +15,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     public partial class ConditionalTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings;
+
         public ConditionalTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);

@@ -17,8 +17,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         }
 
         public string VariableName { get; private set; }
+
         public string Type { get; private set; }
+
         internal string DataType { get; }
+
         internal string Format { get; private set; }
 
         internal bool Utc { get; private set; }

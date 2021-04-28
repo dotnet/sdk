@@ -26,6 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private const string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
         private const string GeneratorVersion = "1.0.0.0";
         private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
+
         public Guid Id => GeneratorId;
 
         //

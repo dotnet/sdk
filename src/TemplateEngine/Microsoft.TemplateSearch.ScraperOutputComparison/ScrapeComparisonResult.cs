@@ -16,9 +16,11 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
         }
 
         public string FirstScrapeFile { get; }
+
         public string SecondScrapeFile { get; }
 
         public List<string> PacksInFirstScrapeOnly { get; }
+
         public List<string> PacksInSecondScrapeOnly { get; }
     }
 }

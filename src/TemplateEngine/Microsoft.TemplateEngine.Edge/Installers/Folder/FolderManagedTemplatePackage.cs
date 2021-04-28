@@ -30,7 +30,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         }
 
         public string DisplayName => Identifier;
+
         public string Identifier => MountPointUri;
+
         public IInstaller Installer { get; }
 
         public DateTime LastChangeTime
@@ -50,8 +52,11 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         }
 
         public string MountPointUri { get; }
+
         public ITemplatePackageProvider Provider => ManagedProvider;
+
         public IManagedTemplatePackageProvider ManagedProvider { get; }
+
         public string Version => null;
 
         public IReadOnlyDictionary<string, string> GetDetails() => _emptyDictionary;

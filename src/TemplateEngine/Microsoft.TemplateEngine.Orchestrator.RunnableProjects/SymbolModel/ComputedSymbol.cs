@@ -12,7 +12,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         internal const string TypeName = "computed";
 
         public string Value { get; internal set; }
+
         public string Type { get; private set; }
+
         public IReadOnlyList<IReplacementContext> ReplacementContexts => Empty<IReplacementContext>.List.Value;
 
         string ISymbolModel.Binding
@@ -34,6 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         }
 
         internal string DataType { get; private set; }
+
         internal string Evaluator { get; private set; }
 
         internal static ISymbolModel FromJObject(JObject jObject)

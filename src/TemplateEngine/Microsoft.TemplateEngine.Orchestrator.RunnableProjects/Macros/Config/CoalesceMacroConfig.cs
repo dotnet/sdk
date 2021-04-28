@@ -17,8 +17,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         }
 
         public string VariableName { get; }
+
         public string Type => "coalesce";
+
         internal string DataType { get; }
+
         internal string SourceVariableName { get; }
 
         internal string DefaultValue { get; }

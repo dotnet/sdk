@@ -25,9 +25,13 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         protected IEngineEnvironmentSettings EnvironmentSettings { get; }
+
         protected string InputTemplateName { get; }
+
         protected string DefaultLanguage { get; }
+
         protected Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> MatchFilter { get; set; }
+
         protected SearchResults SearchResults { get; set; }
 
         public async Task<SearchResults> SearchAsync()

@@ -14,6 +14,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     public class InlineMarkupConditionalTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings;
+
         public InlineMarkupConditionalTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);

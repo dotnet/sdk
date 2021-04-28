@@ -21,6 +21,7 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         public static PackInfo Empty { get; set; } = new PackInfo(string.Empty, string.Empty);
+
         public string Name { get; }
 
         public string Version { get; }

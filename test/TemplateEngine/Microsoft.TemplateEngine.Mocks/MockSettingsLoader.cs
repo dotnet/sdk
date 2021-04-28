@@ -40,7 +40,9 @@ namespace Microsoft.TemplateEngine.Mocks
         public ITemplate LoadTemplate(ITemplateInfo info, string baselineName) => throw new NotImplementedException();
 
         public Task RebuildCacheAsync(CancellationToken token) => throw new NotImplementedException();
+
         public void ResetHostSettings() => throw new NotImplementedException();
+
         public void Save() => throw new NotImplementedException();
 
         public bool TryGetMountPoint(string mountPointUri, out IMountPoint mountPoint) => throw new NotImplementedException();

@@ -18,6 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     public class FileRenameTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private EnvironmentSettingsHelper _environmentSettingsHelper;
+
         public FileRenameTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _environmentSettingsHelper = environmentSettingsHelper;

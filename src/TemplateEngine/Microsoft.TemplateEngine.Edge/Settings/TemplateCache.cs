@@ -60,6 +60,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return _installScanner;
             }
         }
+
         public void Scan(string installDir)
         {
             ScanResult scanResult = InstallScanner.Scan(installDir);

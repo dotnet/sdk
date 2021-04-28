@@ -182,9 +182,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private class MountPointScanSource
         {
             public string Location { get; set; }
+
             public IMountPoint MountPoint { get; set; }
+
             public bool ShouldStayInOriginalLocation { get; set; }
+
             public bool FoundComponents { get; set; }
+
             public bool FoundTemplates { get; set; }
 
             public bool AnythingFound

@@ -20,7 +20,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         public AliasManipulationStatus Status { get; }
+
         public string AliasName { get; }
+
         public IReadOnlyList<string> AliasTokens { get; }
     }
 }

@@ -12,10 +12,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         internal const string TypeName = "generated";
 
         public string Binding { get; set; }
+
         public string Replaces { get; set; }
+
         public string FileRename { get; set; }
+
         public string Type { get; set; }
+
         public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
+
         internal string DataType { get; set; }
 
         // Refers to the Type property value of a concrete IMacro

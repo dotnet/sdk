@@ -14,10 +14,12 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
     public class DefaultTemplatePackageProviderTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings;
+
         public DefaultTemplatePackageProviderTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
+
         [Fact]
         public async Task ReturnsFoldersAndNuPkgs()
         {

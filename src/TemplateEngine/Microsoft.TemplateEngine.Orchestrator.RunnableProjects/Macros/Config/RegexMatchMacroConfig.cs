@@ -17,8 +17,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         }
 
         public string VariableName { get; }
+
         public string Type { get; }
+
         internal string DataType { get; }
+
         internal string SourceVariable { get; }
 
         internal string Pattern { get; }

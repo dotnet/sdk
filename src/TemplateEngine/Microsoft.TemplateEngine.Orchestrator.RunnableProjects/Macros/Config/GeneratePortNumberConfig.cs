@@ -55,8 +55,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         }
 
         public string VariableName { get; }
+
         public string Type => "port";
+
         internal string DataType { get; }
+
         internal Socket Socket { get; }
 
         internal int Port { get; }

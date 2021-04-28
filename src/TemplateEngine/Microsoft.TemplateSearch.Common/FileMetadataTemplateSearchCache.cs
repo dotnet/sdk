@@ -21,8 +21,11 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         protected string PathToMetadta { get; }
+
         protected bool IsInitialized { get; set; }
+
         protected TemplateDiscoveryMetadata TemplateDiscoveryMetadata { get; set; }
+
         protected TemplateToPackMap TemplateToPackMap { get; set; }
 
         public IReadOnlyList<ITemplateInfo> GetNameMatchedTemplates(string searchName)

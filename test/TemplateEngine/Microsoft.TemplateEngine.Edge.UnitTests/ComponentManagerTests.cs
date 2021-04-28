@@ -13,6 +13,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
     public class ComponentManagerTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private EnvironmentSettingsHelper _environmentSettingsHelper;
+
         public ComponentManagerTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _environmentSettingsHelper = environmentSettingsHelper;

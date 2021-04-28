@@ -84,6 +84,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 return Details.TryGetValue(AuthorKey, out string author) ? author : null;
             }
+
             set
             {
                 if (!string.IsNullOrWhiteSpace(value))
@@ -98,7 +99,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         }
 
         public string DisplayName => string.IsNullOrWhiteSpace(Version) ? Identifier : $"{Identifier}::{Version}";
+
         public string Identifier => Details.TryGetValue(PackageIdKey, out string identifier) ? identifier : null;
+
         public IInstaller Installer { get; }
 
         public DateTime LastChangeTime
@@ -127,6 +130,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
                 return false;
             }
+
             set
             {
                 if (value)
@@ -148,6 +152,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 return Details.TryGetValue(NuGetSourceKey, out string nugetSource) ? nugetSource : null;
             }
+
             set
             {
                 if (!string.IsNullOrWhiteSpace(value))
@@ -162,6 +167,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         }
 
         public ITemplatePackageProvider Provider => ManagedProvider;
+
         public IManagedTemplatePackageProvider ManagedProvider { get; }
 
         public string Version
@@ -170,6 +176,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 return Details.TryGetValue(PackageVersionKey, out string version) ? version : null;
             }
+
             set
             {
                 if (!string.IsNullOrWhiteSpace(value))

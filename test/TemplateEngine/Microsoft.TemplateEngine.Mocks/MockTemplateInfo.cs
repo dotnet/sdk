@@ -129,6 +129,7 @@ namespace Microsoft.TemplateEngine.Mocks
                 }
                 return _parameters;
             }
+
             set
             {
                 _parameters = value;

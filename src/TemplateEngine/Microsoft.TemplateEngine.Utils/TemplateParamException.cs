@@ -47,7 +47,9 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public string ParamName { get; private set; }
+
         public string InputValue { get; private set; }
+
         public string DataType { get; private set; }
 
         // Helper to create a standard, generic message including the detailed parm info.

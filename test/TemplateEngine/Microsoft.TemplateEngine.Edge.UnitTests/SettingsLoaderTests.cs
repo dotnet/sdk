@@ -229,6 +229,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         private class FakeFactory : ITemplatePackageProviderFactory
         {
             private static List<WeakReference<DefaultTemplatePackageProvider>> allCreatedProviders = new List<WeakReference<DefaultTemplatePackageProvider>>();
+
             public string DisplayName => nameof(FakeFactory);
 
             public Guid Id { get; } = new Guid("{61CFA828-97B6-44EB-A44D-0AE673D6DF52}");

@@ -13,10 +13,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     public class PhasedOperationTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings;
+
         public PhasedOperationTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
+
         [Fact(DisplayName = nameof(VerifyPhasedOperationStateProgression))]
         public void VerifyPhasedOperationStateProgression()
         {

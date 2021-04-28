@@ -12,6 +12,7 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         public string Identity { get; }
+
         public string GroupIdentity { get; }
     }
 }
