@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="tr" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="command_export_help_description">
+        <source>Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</source>
+        <target state="new">Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</target>
+        <note>The phrase "localization files" here mean the files that will be given to the translators to be localized.</note>
+      </trans-unit>
+      <trans-unit id="command_export_help_dryrun_description">
+        <source>If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</source>
+        <target state="new">If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_help_language_description">
+        <source>The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</source>
+        <target state="new">The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_help_recursive_description">
+        <source>When specified, subdirectories are also searched for template.json files.</source>
+        <target state="new">When specified, subdirectories are also searched for template.json files.</target>
+        <note>Do not localize: "template.json"</note>
+      </trans-unit>
+      <trans-unit id="command_export_help_templatePath_description">
+        <source>Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</source>
+        <target state="new">Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</target>
+        <note>Do not localize: "template.json", "--recursive"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_cancelled">
+        <source>"--export" command for the following file was cancelled: "{0}".</source>
+        <target state="new">"--export" command for the following file was cancelled: "{0}".</target>
+        <note>Do not localize: "--export"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_executionEnded">
+        <source>Execution of "--export" command has completed. {0} files were processed.</source>
+        <target state="new">Execution of "--export" command has completed. {0} files were processed.</target>
+        <note>{0} is the number of files. Do not localize "--export"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_templateExportFailedWithError">
+        <source>Generating localization files for the following template.json file has failed: "{0}". Error message: "{1}".</source>
+        <target state="new">Generating localization files for the following template.json file has failed: "{0}". Error message: "{1}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_log_templateExportFailedWithException">
+        <source>Generating localization files for the following template.json file has failed: "{0}".</source>
+        <target state="new">Generating localization files for the following template.json file has failed: "{0}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_log_templateExportSucceeded">
+        <source>Localization files were successfully generated for the template.json file at path "{0}".</source>
+        <target state="new">Localization files were successfully generated for the template.json file at path "{0}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_log_templateJsonNotFound">
+        <source>Failed to find "template.json" file under the path "{0}".</source>
+        <target state="new">Failed to find "template.json" file under the path "{0}".</target>
+        <note>Do not localize: "template.json"</note>
+      </trans-unit>
+      <trans-unit id="generic_log_commandExecutionFailed">
+        <source>"--{0}" command has encountered an error. See the logs for more details.</source>
+        <target state="new">"--{0}" command has encountered an error. See the logs for more details.</target>
+        <note>{0} will be replaced by the command name. Such as: "export" command has encountered an error.</note>
+      </trans-unit>
+      <trans-unit id="generic_log_commandExecutionFailedWithErrorMessage">
+        <source>There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</source>
+        <target state="new">There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

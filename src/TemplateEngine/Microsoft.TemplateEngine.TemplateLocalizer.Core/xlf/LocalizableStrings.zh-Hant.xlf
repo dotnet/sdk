@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="stringExtractor_log_commandDebugElementExcluded">
+        <source>The following element in the template.json will not be included in the localizations because it does not match any of the rules for localizable elements: {0}</source>
+        <target state="new">The following element in the template.json will not be included in the localizations because it does not match any of the rules for localizable elements: {0}</target>
+        <note>{0} will be replaced by the element name string</note>
+      </trans-unit>
+      <trans-unit id="stringExtractor_log_commandElementAdded">
+        <source>Adding into localizable strings: {0}</source>
+        <target state="new">Adding into localizable strings: {0}</target>
+        <note>{0} will be replaced by the element identifier</note>
+      </trans-unit>
+      <trans-unit id="stringExtractor_log_commandElementAlreadyAdded">
+        <source>The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}</source>
+        <target state="new">The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}</target>
+        <note>{0} will be replaced by the element identifier</note>
+      </trans-unit>
+      <trans-unit id="stringUpdater_log_commandFailedToReadLocFile">
+        <source>"Failed to read the existing strings from "{0}"</source>
+        <target state="new">"Failed to read the existing strings from "{0}"</target>
+        <note>{0} will be replaced by the localization file path.</note>
+      </trans-unit>
+      <trans-unit id="stringUpdater_log_commandLoadingLocFile">
+        <source>Loading existing localizations from file "{0}"</source>
+        <target state="new">Loading existing localizations from file "{0}"</target>
+        <note>{0} will be replaced by the localization file path.</note>
+      </trans-unit>
+      <trans-unit id="stringUpdater_log_commandOpeningTemplatesJson">
+        <source>"Opening the following templatestrings.json file for writing: "{0}"</source>
+        <target state="new">"Opening the following templatestrings.json file for writing: "{0}"</target>
+        <note>{0} will be replaced by the templates string JSon file path.</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
