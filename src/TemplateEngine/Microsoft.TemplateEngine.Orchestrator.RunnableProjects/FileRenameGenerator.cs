@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
@@ -31,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             object resolvedNameParamValue,
             IParameterSet parameterSet,
             Dictionary<string, string> fileRenames,
-            IReadOnlyList<IReplacementTokens> symbolBasedFileRenames = null)
+            IReadOnlyList<IReplacementTokens>? symbolBasedFileRenames = null)
         {
             Dictionary<string, string> allRenames = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -63,7 +66,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             string sourceName,
             object resolvedNameParamValue,
             IParameterSet parameterSet,
-            IReadOnlyList<IReplacementTokens> symbolBasedFileRenames = null)
+            IReadOnlyList<IReplacementTokens>? symbolBasedFileRenames = null)
         {
             string targetDirectoryStub = string.Empty;
             IProcessor symbolRenameProcessor = SetupSymbolBasedRenameProcessor(environmentSettings, sourceName, ref targetDirectoryStub, resolvedNameParamValue, parameterSet, symbolBasedFileRenames);
@@ -104,7 +107,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ref string targetDirectory,
             object resolvedNameParamValue,
             IParameterSet parameterSet,
-            IReadOnlyList<IReplacementTokens> symbolBasedFileRenames)
+            IReadOnlyList<IReplacementTokens>? symbolBasedFileRenames)
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
             SetupRenameForTargetDirectory(sourceName, resolvedNameParamValue, ref targetDirectory, operations);
@@ -113,9 +116,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (IReplacementTokens fileRenameToken in symbolBasedFileRenames)
                 {
-                    if (parameterSet.TryGetRuntimeValue(environmentSettings, fileRenameToken.VariableName, out object value) && value is string valueString)
+                    if (parameterSet.TryGetRuntimeValue(environmentSettings, fileRenameToken.VariableName, out object newValueObject))
                     {
-                        operations.Add(new Replacement(fileRenameToken.OriginalValue, valueString, null, true));
+                        string newValue = newValueObject.ToString();
+
+                        //remove invalid chars in paths
+                        string regexSearch = new string(Path.GetInvalidPathChars()) + new string(Path.GetInvalidFileNameChars());
+                        //directory separators are allowed
+                        regexSearch = regexSearch.Replace($"{Path.DirectorySeparatorChar}", "");
+                        regexSearch = regexSearch.Replace($"{Path.AltDirectorySeparatorChar}", "");
+                        Regex r = new Regex($"[{Regex.Escape(regexSearch)}]");
+                        newValue = r.Replace(newValue, "");
+
+                        operations.Add(new Replacement(fileRenameToken.OriginalValue, newValue, null, true));
                     }
                 }
             }

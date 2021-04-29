@@ -1,9 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -35,9 +39,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);  // one source had changes
-            Assert.True(allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes), "No changes for source './'");
+            Assert.True(allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2>? changes), "No changes for source './'");
 
-            Assert.Equal(2, changes.Count);
+            Assert.Equal(2, changes!.Count);
             Assert.Equal(1, changes.Count(x => string.Equals(x.TargetRelativePath, "YesNewName.txt", StringComparison.Ordinal)));
             Assert.Equal(1, changes.Count(x => string.Equals(x.TargetRelativePath, "dontrenameme.txt", StringComparison.Ordinal)));
             Assert.Equal(0, changes.Count(x => string.Equals(x.TargetRelativePath, "NoNewName.txt", StringComparison.Ordinal)));
@@ -54,9 +58,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);  // one source had changes
-            Assert.True(allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes), "No changes for source './'");
+            Assert.True(allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2>? changes), "No changes for source './'");
 
-            Assert.Equal(2, changes.Count);
+            Assert.Equal(2, changes!.Count);
             Assert.Equal(1, changes.Count(x => string.Equals(x.TargetRelativePath, "YesNewName.txt", StringComparison.Ordinal)));
             Assert.Equal(1, changes.Count(x => string.Equals(x.TargetRelativePath, "dontrenameme.txt", StringComparison.Ordinal)));
             Assert.Equal(0, changes.Count(x => string.Equals(x.TargetRelativePath, "NoNewName.txt", StringComparison.Ordinal)));
@@ -163,7 +167,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
             templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, string.Empty);
             // content
@@ -199,6 +203,68 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal("Replace1Value_file.txt", allChanges["Replace1_file.txt"]);
         }
 
+        [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames))]
+        public void CanGenerateFileRenamesForSymbolBasedRenames_NonString()
+        {
+            //environment
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+
+            //simulate template files
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
+            // template.json
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, string.Empty);
+            // content
+            templateSourceFiles.Add("intdate_name.txt", null);
+            templateSourceFiles.Add("date_name.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
+            setup.WriteSource();
+
+            //get target directory
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+
+            //prepare parameters
+            ParameterSet parameters = new ParameterSet(SimpleConfigModel.FromJObject(environment, JObject.Parse("{}")));
+            Parameter nameParameter = new Parameter()
+            {
+                Name = "name"
+            };
+            Parameter intDateParameter = new Parameter()
+            {
+                Name = "intdate"
+            };
+            Parameter dateParameter = new Parameter()
+            {
+                Name = "date"
+            };
+            parameters.AddParameter(nameParameter);
+            parameters.AddParameter(intDateParameter);
+            parameters.AddParameter(dateParameter);
+            parameters.ResolvedValues[nameParameter] = "testName";
+            parameters.ResolvedValues[intDateParameter] = 20210429;
+            DateTime testDate = new DateTime(2021, 4, 29);
+            parameters.ResolvedValues[dateParameter] = new DateTime(2021, 4, 29);
+
+            //prepare renames configuration
+            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
+            symbolBasedRenames.Add(new ReplacementTokens("intdate", TokenConfig.FromValue("intdate")));
+            symbolBasedRenames.Add(new ReplacementTokens("date", TokenConfig.FromValue("date")));
+            symbolBasedRenames.Add(new ReplacementTokens("name", TokenConfig.FromValue("name")));
+
+            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
+            Assert.Equal(2, allChanges.Count);
+            Assert.Equal("20210429_testName.txt", allChanges["intdate_name.txt"]);
+
+            //remove invalid chars in paths
+            string regexSearch = new string(Path.GetInvalidPathChars()) + new string(Path.GetInvalidFileNameChars());
+            //directory separators are allowed
+            regexSearch = regexSearch.Replace($"{Path.DirectorySeparatorChar}", "");
+            regexSearch = regexSearch.Replace($"{Path.AltDirectorySeparatorChar}", "");
+            Regex r = new Regex($"[{Regex.Escape(regexSearch)}]");
+
+            Assert.Equal($"{r.Replace(testDate.ToString(), "")}_testName.txt", allChanges["date_name.txt"]);
+        }
+
         [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_Forms))]
         public void CanGenerateFileRenamesForSymbolBasedRenames_Forms()
         {
@@ -207,7 +273,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
             templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, string.Empty);
             // content
@@ -268,7 +334,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
             templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, string.Empty);
             // content
@@ -320,7 +386,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
             templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, string.Empty);
             // content
@@ -365,7 +431,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
             templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, string.Empty);
             // content
@@ -415,7 +481,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   ]
 }";
 
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
             templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, sourceConfig);
             // content
@@ -445,7 +511,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 }
 ";
 
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
             templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, sourceConfig);
             // content

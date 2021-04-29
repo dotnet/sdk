@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
@@ -32,7 +34,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string variableName = "nowString";
             string format = "";
             bool utc = true;
-            NowMacroConfig macroConfig = new NowMacroConfig(variableName, null, format, utc);
+            NowMacroConfig macroConfig = new NowMacroConfig(variableName, format, utc);
+            Assert.Equal("string", macroConfig.DataType);
 
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
@@ -43,6 +46,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
             ITemplateParameter resultParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
+            Assert.IsType<string>(parameters.ResolvedValues[resultParam]);
             string macroNowString = (string)parameters.ResolvedValues[resultParam];
             DateTime macroNowTime = Convert.ToDateTime(macroNowString);
 
@@ -71,9 +75,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             NowMacro macro = new NowMacro();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
+            Assert.Equal("string", (realConfig as NowMacroConfig)?.DataType);
+
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
             ITemplateParameter resultParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
+            Assert.IsType<string>(parameters.ResolvedValues[resultParam]);
             string macroNowString = (string)parameters.ResolvedValues[resultParam];
             DateTime macroNowTime = Convert.ToDateTime(macroNowString);
 
@@ -81,6 +88,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             // 10 seconds is quite a lot of wiggle room, but should be fine, and safe.
             Assert.True(difference.TotalSeconds < 10);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("string")]
+        [InlineData("date")]
+        public void EvaluateNowOverrideDatatypeInConfig(string type)
+        {
+            string variableName = "nowString";
+            string format = "";
+            bool utc = false;
+            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
+            jsonParameters.Add("format", format);
+            jsonParameters.Add("utc", utc);
+            jsonParameters.Add("datatype", type);
+            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("NowMacro", type, variableName, jsonParameters);
+            NowMacro macro = new NowMacro();
+            IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
+            Assert.Equal("string", (realConfig as NowMacroConfig)?.DataType);
         }
     }
 }
