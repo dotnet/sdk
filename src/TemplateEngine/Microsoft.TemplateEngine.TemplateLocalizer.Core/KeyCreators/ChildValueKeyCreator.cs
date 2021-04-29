@@ -28,12 +28,12 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.KeyCreators
         {
             if (!element.TryGetProperty(MemberPropertyName, out JsonElement keyProperty) || keyProperty.ValueKind != JsonValueKind.String)
             {
-                string owningElementName = (parentElementName == null ? elementName : (parentElementName + "." + elementName)) ?? string.Empty;
+                string owningElementName = (parentElementName == null ? elementName : (parentElementName + TemplateStringExtractor._keySeparator + elementName)) ?? string.Empty;
                 throw new JsonMemberMissingException(owningElementName, MemberPropertyName);
             }
 
-            string key = keyProperty.GetString()?.Replace('.', '_') ?? string.Empty;
-            return parentElementName == null ? key : string.Concat(parentElementName, ".", key);
+            string key = keyProperty.GetString() ?? string.Empty;
+            return parentElementName == null ? key : string.Concat(parentElementName, TemplateStringExtractor._keySeparator, key);
         }
     }
 }

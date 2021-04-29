@@ -15,8 +15,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "..name" && s.LocalizationKey == "name" && s.Value == "name");
-            Assert.Contains(strings, s => s.Identifier == "..description" && s.LocalizationKey == "description" && s.Value == "desc");
+            Assert.Contains(strings, s => s.Identifier == "//name" && s.LocalizationKey == "name" && s.Value == "name");
+            Assert.Contains(strings, s => s.Identifier == "//description" && s.LocalizationKey == "description" && s.Value == "desc");
         }
 
         [Fact]
@@ -24,9 +24,9 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.DoesNotContain(strings, s => s.Identifier == "..$schema" || s.LocalizationKey == "$schema");
-            Assert.DoesNotContain(strings, s => s.Identifier == "..classification" || s.LocalizationKey == "classification");
-            Assert.DoesNotContain(strings, s => s.Identifier == "..groupIdentity" || s.LocalizationKey == "groupIdentity");
+            Assert.DoesNotContain(strings, s => s.Identifier == "//$schema" || s.LocalizationKey == "$schema");
+            Assert.DoesNotContain(strings, s => s.Identifier == "//classification" || s.LocalizationKey == "classification");
+            Assert.DoesNotContain(strings, s => s.Identifier == "//groupIdentity" || s.LocalizationKey == "groupIdentity");
         }
 
         [Fact]
@@ -42,10 +42,10 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "..symbols.somesymbol.description" && s.LocalizationKey == "symbols.someSymbol.description" && s.Value == "sym0_desc");
-            Assert.Contains(strings, s => s.Identifier == "..symbols.somesymbol.displayname" && s.LocalizationKey == "symbols.someSymbol.displayName" && s.Value == "sym0_displayName");
-            Assert.Contains(strings, s => s.Identifier == "..symbols.somechoice.description" && s.LocalizationKey == "symbols.someChoice.description" && s.Value == "sym1_desc");
-            Assert.Contains(strings, s => s.Identifier == "..symbols.somechoice.displayname" && s.LocalizationKey == "symbols.someChoice.displayName" && s.Value == "sym1_displayName");
+            Assert.Contains(strings, s => s.Identifier == "//symbols/somesymbol/description" && s.LocalizationKey == "symbols/someSymbol/description" && s.Value == "sym0_desc");
+            Assert.Contains(strings, s => s.Identifier == "//symbols/somesymbol/displayname" && s.LocalizationKey == "symbols/someSymbol/displayName" && s.Value == "sym0_displayName");
+            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/description" && s.LocalizationKey == "symbols/someChoice/description" && s.Value == "sym1_desc");
+            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/displayname" && s.LocalizationKey == "symbols/someChoice/displayName" && s.Value == "sym1_displayName");
         }
 
         [Fact]
@@ -53,10 +53,10 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "..symbols.somechoice.choices.0.description" && s.LocalizationKey == "symbols.someChoice.choices.choice0.description" && s.Value == "sym1_choice0");
-            Assert.Contains(strings, s => s.Identifier == "..symbols.somechoice.choices.0.displayname" && s.LocalizationKey == "symbols.someChoice.choices.choice0.displayName" && s.Value == "sym1_choice0_displayName");
-            Assert.Contains(strings, s => s.Identifier == "..symbols.somechoice.choices.2.description" && s.LocalizationKey == "symbols.someChoice.choices.choice2.description" && s.Value == "sym1_choice2");
-            Assert.Contains(strings, s => s.Identifier == "..symbols.somechoice.choices.2.displayname" && s.LocalizationKey == "symbols.someChoice.choices.choice2.displayName" && s.Value == "sym1_choice2_displayName");
+            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/choices/0/description" && s.LocalizationKey == "symbols/someChoice/choices/choice0/description" && s.Value == "sym1_choice0");
+            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/choices/0/displayname" && s.LocalizationKey == "symbols/someChoice/choices/choice0/displayName" && s.Value == "sym1_choice0_displayName");
+            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/choices/2/description" && s.LocalizationKey == "symbols/someChoice/choices/choice2/description" && s.Value == "sym1_choice2");
+            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/choices/2/displayname" && s.LocalizationKey == "symbols/someChoice/choices/choice2/displayName" && s.Value == "sym1_choice2_displayName");
         }
 
         [Fact]
@@ -64,8 +64,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "..postactions.0.description" && s.LocalizationKey == "postActions[0].description" && s.Value == "pa0_desc");
-            Assert.Contains(strings, s => s.Identifier == "..postactions.1.description" && s.LocalizationKey == "postActions[1].description" && s.Value == "pa1_desc");
+            Assert.Contains(strings, s => s.Identifier == "//postactions/0/description" && s.LocalizationKey == "postActions[0]/description" && s.Value == "pa0_desc");
+            Assert.Contains(strings, s => s.Identifier == "//postactions/1/description" && s.LocalizationKey == "postActions[1]/description" && s.Value == "pa1_desc");
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "..postactions.0.manualinstructions.0.text" && s.LocalizationKey == "postActions[0].manualInstructions[0].text" && s.Value == "pa0_manualInstructions");
+            Assert.Contains(strings, s => s.Identifier == "//postactions/0/manualinstructions/0/text" && s.LocalizationKey == "postActions[0]/manualInstructions[0]/text" && s.Value == "pa0_manualInstructions");
         }
 
         private static IReadOnlyList<TemplateString> ExtractStrings(string json, out string language)

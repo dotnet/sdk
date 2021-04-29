@@ -16,8 +16,14 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// </summary>
         string? DisplayName { get; }
 
+        /// <summary>
+        /// Gets the localized description of the symbol.
+        /// </summary>
         string? Description { get; }
 
+        /// <summary>
+        /// Gets the localization models for choices of this symbol.
+        /// </summary>
         IReadOnlyDictionary<string, ParameterChoiceLocalizationModel> Choices { get; }
     }
 }

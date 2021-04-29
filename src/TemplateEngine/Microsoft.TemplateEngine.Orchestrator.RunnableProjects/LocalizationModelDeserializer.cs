@@ -13,6 +13,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal static class LocalizationModelDeserializer
     {
+        /// <summary>
+        /// Character to be used when separating a key into parts.
+        /// </summary>
+        private const char KeySeparator = '/';
+
         private const string PostActionIndexPrefix = "postActions[";
         private const string PostActionIndexSuffix = "]";
 
@@ -27,7 +32,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             // Split them using '.' and store together with the localized string (property value).
             IEnumerable<(IEnumerable<string> nameParts, string localizedString)> stringsWithNames = data.Properties()
                 .Where(p => p.Value.Type == JTokenType.String)
-                .Select(p => (p.Name.Split('.').AsEnumerable(), p.Value.ToString()))
+                .Select(p => (p.Name.Split(KeySeparator).AsEnumerable(), p.Value.ToString()))
                 .ToList();
 
             var symbols = LoadSymbolModels(stringsWithNames
@@ -50,10 +55,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// Generates parameter symbol localization models. The given name parts should begin with the parameter name
         /// as shown below and should not contain the string "symbols".
         /// <list type="table">
-        /// <item>framework.displayName</item>
-        /// <item>framework.description</item>
-        /// <item>framework.choices.net5_0.description</item>
-        /// <item>targetframeworkoverride.description</item>
+        /// <item>framework/displayName</item>
+        /// <item>framework/description</item>
+        /// <item>framework/choices/net5.0/description</item>
+        /// <item>targetframeworkoverride/description</item>
         /// </list>
         /// </summary>
         private static IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> LoadSymbolModels(IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings)
@@ -93,9 +98,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// Generates post action localization models. The given parts should begin with the choice name
         /// as shown below (prior parts of the name such as "symbols" and parameter name shouldn't be included).
         /// <list type="table">
-        /// <item>net5_0.displayName</item>
-        /// <item>net5_0.description</item>
-        /// <item>netstandard2_0.description</item>
+        /// <item>net5.0/displayName</item>
+        /// <item>net5.0/description</item>
+        /// <item>netstandard2.0/description</item>
         /// </list>
         /// </summary>
         private static IReadOnlyDictionary<string, ParameterChoiceLocalizationModel> LoadChoiceModels(IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings)
@@ -122,9 +127,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <summary>
         /// Generates post action localization models from name parts such as:
         /// <list type="table">
-        /// <item>postActions[0].description</item>
-        /// <item>postActions[0].manualInstructions[0].text</item>
-        /// <item>postActions[0].manualInstructions[1].text</item>
+        /// <item>postActions[0]/description</item>
+        /// <item>postActions[0]/manualInstructions[0]/text</item>
+        /// <item>postActions[0]/manualInstructions[1]/text</item>
         /// </list>
         /// </summary>
         private static IReadOnlyList<IPostActionLocalizationModel?> LoadPostActionModels(IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings)
@@ -166,8 +171,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// Generates manual instruction localization models. The given parts should begin with the index string
         /// as shown below and shouldn't include "postActions[x]".
         /// <list type="table">
-        /// <item>manualInstructions[0].text</item>
-        /// <item>manualInstructions[1].text</item>
+        /// <item>manualInstructions[0]/text</item>
+        /// <item>manualInstructions[1]/text</item>
         /// </list>
         /// </summary>
         private static IReadOnlyList<string?> LoadManualInstructionModels(IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings)
