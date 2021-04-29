@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
+using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -12,13 +13,14 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
     {
         public IList<PackInfo> InstalledPacks = new List<PackInfo>();
         public IList<PackInfo> RolledBackPacks = new List<PackInfo>();
-        public IList<WorkloadId> WorkloadInstallRecord = new List<WorkloadId>();
         public bool GarbageCollectionCalled = false;
-        private readonly string FailingWorkload;
+        public MockInstallationRecordRepository InstallationRecordRepository;
+        public bool FailingRollback;
 
-        public MockPackWorkloadInstaller(string failingWorkload = null)
+        public MockPackWorkloadInstaller(string failingWorkload = null, bool failingRollback = false)
         {
-            FailingWorkload = failingWorkload;
+            InstallationRecordRepository = new MockInstallationRecordRepository(failingWorkload);
+            FailingRollback = failingRollback;
         }
 
         public void InstallWorkloadPack(PackInfo packInfo, SdkFeatureBand sdkFeatureBand, bool useOfflineCache = false)
@@ -28,21 +30,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         public void RollBackWorkloadPackInstall(PackInfo packInfo, SdkFeatureBand sdkFeatureBand)
         {
-            RolledBackPacks.Add(packInfo);
-        }
-
-        public void WriteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand)
-        {
-            WorkloadInstallRecord.Add(workloadId);
-            if (workloadId.ToString().Equals(FailingWorkload))
+            if (FailingRollback)
             {
-                throw new Exception($"Failing workload: {workloadId}");
+                throw new Exception("Rollback failure");
             }
-        }
-
-        public void DeleteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand)
-        {
-            WorkloadInstallRecord.Remove(workloadId);
+            RolledBackPacks.Add(packInfo);
         }
 
         public void GarbageCollectInstalledWorkloadPacks()
@@ -60,10 +52,41 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return this;
         }
 
+        public IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository()
+        {
+            return InstallationRecordRepository;
+        }
+
         public void DownloadToOfflineCache(IEnumerable<string> manifests) => throw new System.NotImplementedException();
-        public IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords() => throw new System.NotImplementedException();
-        public IEnumerable<string> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand) => throw new System.NotImplementedException();
         public void InstallWorkloadManifest(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand) => throw new System.NotImplementedException();
         public IWorkloadInstaller GetWorkloadInstaller() => throw new NotImplementedException();
+    }
+
+    internal class MockInstallationRecordRepository : IWorkloadInstallationRecordRepository
+    {
+        public IList<WorkloadId> WorkloadInstallRecord = new List<WorkloadId>();
+        private readonly string FailingWorkload;
+
+        public MockInstallationRecordRepository(string failingWorkload = null)
+        {
+            FailingWorkload = failingWorkload;
+        }
+
+        public void WriteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand)
+        {
+            WorkloadInstallRecord.Add(workloadId);
+            if (workloadId.ToString().Equals(FailingWorkload))
+            {
+                throw new Exception($"Failing workload: {workloadId}");
+            }
+        }
+
+        public void DeleteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand)
+        {
+            WorkloadInstallRecord.Remove(workloadId);
+        }
+
+        public IEnumerable<string> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand) => throw new NotImplementedException();
+        public IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords() => throw new NotImplementedException();
     }
 }

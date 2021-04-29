@@ -255,6 +255,30 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
+        public void No_runtime_files_6_0()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = "net6.0",
+                IsExe = true,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier)
+                .Should()
+                .Pass();
+
+            string[] expectedFiles = { $"{testProject.Name}{Constants.ExeSuffix}", $"{testProject.Name}.pdb" };
+            GetPublishDirectory(publishCommand, "net6.0")
+                .Should()
+                .OnlyHaveFiles(expectedFiles);
+        }
+
+        [RequiresMSBuildVersionFact("16.8.0")]
         public void It_generates_a_single_file_with_native_binaries_for_framework_dependent_apps()
         {
             var publishCommand = GetPublishCommand();
@@ -707,10 +731,6 @@ class C
                 IsExe = true,
             };
 
-            // NOTE: this can be removed when we support compressing managed assemblies
-            //       we only have this to add some native library to the bundle
-            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
-
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
             var singleFilePath = Path.Combine(GetPublishDirectory(publishCommand, "net6.0").FullName, $"SingleFileTest{Constants.ExeSuffix}");
@@ -733,7 +753,7 @@ class C
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
-        public void It_compresses_single_file_by_default()
+        public void It_does_not_compress_single_file_by_default()
         {
             var testProject = new TestProject()
             {
@@ -741,10 +761,6 @@ class C
                 TargetFrameworks = "net6.0",
                 IsExe = true,
             };
-
-            // NOTE: this can be removed when we support compressing managed assemblies
-            //       we only have this to add some native library to the bundle
-            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
@@ -764,7 +780,7 @@ class C
                 .Pass();
             var compressedSize = new FileInfo(singleFilePath).Length;
 
-            uncompressedSize.Should().BeGreaterThan(compressedSize);
+            uncompressedSize.Should().Be(compressedSize);
         }
     }
 }

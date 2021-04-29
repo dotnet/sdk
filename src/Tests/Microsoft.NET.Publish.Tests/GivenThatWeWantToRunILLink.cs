@@ -1322,7 +1322,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: "GivenThatWeWantToRunILLink");
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -1370,7 +1370,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var properties = new XElement(ns + "PropertyGroup");
             project.Root.Add(properties);
-            properties.Add(new XElement(ns + "_TrimmerDefaultAction", action));
+            properties.Add(new XElement(ns + "TrimmerDefaultAction", action));
         }
 
         private void EnableNonFrameworkTrimming(XDocument project)
