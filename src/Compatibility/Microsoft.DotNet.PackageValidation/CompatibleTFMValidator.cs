@@ -18,10 +18,10 @@ namespace Microsoft.DotNet.PackageValidation
         private static string[] s_diagList = { DiagnosticIds.CompatibleRuntimeRidLessAsset, DiagnosticIds.ApplicableCompileTimeAsset };
         private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> s_packageTfmMapping = InitializeTfmMappings();
 
-        private bool _runApiCompat;
-        private ApiCompatRunner _apiCompatRunner;
-        private Checker _checker;
-        private ILogger _log;
+        private readonly bool _runApiCompat;
+        private readonly ApiCompatRunner _apiCompatRunner;
+        private readonly Checker _checker;
+        private readonly ILogger _log;
 
         public CompatibleTfmValidator(string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, ILogger log)
         {

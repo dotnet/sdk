@@ -18,13 +18,14 @@ namespace Microsoft.DotNet.PackageValidation
     public class ApiCompatRunner
     {
         private List<(string leftAssemblyPackagePath, string leftAssemblyRelativePath, string rightAssemblyPackagePath, string rightAssemblyRelativePath, string assemblyName, string compatibilityReason, string header)> _queue = new();
-        private ILogger _log;
-        private Checker _checker;
+        private readonly ILogger _log;
+        private readonly ApiComparer _differ = new();
 
         public ApiCompatRunner(string noWarn, (string, string)[] ignoredDifferences, ILogger log)
         {
             _log = log;
-            _checker = new Checker(noWarn, ignoredDifferences, null);
+            _differ.NoWarn = noWarn;
+            _differ.IgnoredDifferences = ignoredDifferences;
         }
 
         /// <summary>
@@ -42,9 +43,8 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     IAssemblySymbol leftSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName, leftAssemblyStream);
                     IAssemblySymbol rightSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName, rightAssemblyStream);
-                    ApiComparer differ = new();
 
-                    IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbols, rightSymbols).Where(t => !_checker.Contain(t.DiagnosticId, t.ReferenceId));
+                    IEnumerable<CompatDifference> differences = _differ.GetDifferences(leftSymbols, rightSymbols);
 
                     if (differences.Any())
                     {
@@ -82,11 +82,8 @@ namespace Microsoft.DotNet.PackageValidation
             using (FileStream stream = File.OpenRead(packagePath))
             {
                 var zipFile = new ZipArchive(stream);
-                using (Stream fileStream = zipFile.GetEntry(entry).Open())
-                {
-                    fileStream.CopyTo(ms);
-                    ms.Seek(0, SeekOrigin.Begin);
-                }
+                zipFile.GetEntry(entry).Open().CopyTo(ms);
+                ms.Seek(0, SeekOrigin.Begin);
             }
             return ms;
         }

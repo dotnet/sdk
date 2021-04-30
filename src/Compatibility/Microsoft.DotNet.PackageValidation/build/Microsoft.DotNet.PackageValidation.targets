@@ -36,9 +36,8 @@
           Condition="'$(EnablePackageBaselineValidation)' == 'true' and
                      '$(PackageValidationBaselinePath)' == '' and
                      '$(IsCrossTargetingBuild)' == 'true'">
-    <!-- TODO: Why not use PackageId instead of AssemblyName? -->
     <PropertyGroup>
-      <PackageValidationBaselineName Condition="'$(PackageValidationBaselineName)' == ''">$(AssemblyName)</PackageValidationBaselineName>
+      <PackageValidationBaselineName Condition="'$(PackageValidationBaselineName)' == ''">$(PackageId)</PackageValidationBaselineName>
     </PropertyGroup>
 
     <!-- Relying on the private _OutputSources property to pass in the current feeds. -->

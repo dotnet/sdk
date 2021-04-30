@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.PackageValidation
 {
     public class Package
     {
-        private ManagedCodeConventions _conventions;
+        private readonly ManagedCodeConventions _conventions;
         private ContentItemCollection _packageAssets = new();
         private string _packagePath;
 

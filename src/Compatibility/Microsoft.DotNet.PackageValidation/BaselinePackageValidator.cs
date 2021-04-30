@@ -16,11 +16,11 @@ namespace Microsoft.DotNet.PackageValidation
     {
         private static string[] s_diagList = { DiagnosticIds.TargetFrameworkDropped, DiagnosticIds.TargetFrameworkAndRidPairDropped };
 
-        private Package _baselinePackage;
-        private bool _runApiCompat;
-        private ApiCompatRunner _apiCompatRunner;
-        private ILogger _log;
-        private Checker _checker;
+        private readonly Package _baselinePackage;
+        private readonly bool _runApiCompat;
+        private readonly ApiCompatRunner _apiCompatRunner;
+        private readonly ILogger _log;
+        private readonly Checker _checker;
 
         public BaselinePackageValidator(Package baselinePackage, string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, ILogger log)
         {
@@ -49,18 +49,15 @@ namespace Microsoft.DotNet.PackageValidation
                         _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
                     }
                 }
-                else
+                else if (_runApiCompat)
                 {
-                    if (_runApiCompat)
-                    {
-                        _apiCompatRunner.QueueApiCompat(_baselinePackage.PackagePath,
-                            baselineCompileTimeAsset.Path,
-                            package.PackagePath, 
-                            latestCompileTimeAsset.Path,
-                            Path.GetFileName(package.PackagePath),
-                            Resources.BaselineVersionValidatorHeader,
-                            string.Format(Resources.MissingApisForFramework, baselineTargetFramework.ToString()));
-                    }
+                    _apiCompatRunner.QueueApiCompat(_baselinePackage.PackagePath,
+                        baselineCompileTimeAsset.Path,
+                        package.PackagePath,
+                        latestCompileTimeAsset.Path,
+                        Path.GetFileName(package.PackagePath),
+                        Resources.BaselineVersionValidatorHeader,
+                        string.Format(Resources.MissingApisForFramework, baselineTargetFramework.ToString()));
                 }
             }
 
