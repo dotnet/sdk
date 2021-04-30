@@ -35,17 +35,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     building in VS. However, we want to continue to leverage the cross-genned assemblies in
     environments where it makes sense so we load them in the CLI and elsewhere.
     For more info, see https://github.com/dotnet/aspnetcore/issues/32296. -->
-    <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
-      <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
-      <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.AspNetCore.Razor.Language.dll" />
-      <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.CodeAnalysis.Razor.dll" />
-      <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.NET.Sdk.Razor.SourceGenerators.dll" />
-    </ItemGroup>
+    <PropertyGroup>
+      <_RazorCompilerBinaryPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(_RazorSdkSourceGeneratorDirectoryRoot)</_RazorCompilerBinaryPath>
+      <_RazorCompilerBinaryPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(_RazorSdkToolsDirectoryRoot)</_RazorCompilerBinaryPath>
+    </PropertyGroup>
 
-    <ItemGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
-      <_RazorAnalyzer Include="$(_RazorSdkToolsDirectoryRoot)Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
-      <_RazorAnalyzer Include="$(_RazorSdkToolsDirectoryRoot)Microsoft.AspNetCore.Razor.Language.dll" />
-      <_RazorAnalyzer Include="$(_RazorSdkToolsDirectoryRoot)Microsoft.CodeAnalysis.Razor.dll" />
+    <ItemGroup>
+      <_RazorAnalyzer Include="$(_RazorCompilerBinaryPath)Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+      <_RazorAnalyzer Include="$(_RazorCompilerBinaryPath)Microsoft.AspNetCore.Razor.Language.dll" />
+      <_RazorAnalyzer Include="$(_RazorCompilerBinaryPath)Microsoft.CodeAnalysis.Razor.dll" />
       <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.NET.Sdk.Razor.SourceGenerators.dll" />
     </ItemGroup>
 
