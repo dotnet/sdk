@@ -601,6 +601,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       IntermediateAssembly="@(IntermediateAssembly)"
       ComHostName="$(ComHostFileName)"
       ClsidMapPath="@(ClsidMap)"
+      TypeLibraries="@(ComHostTypeLibrary)"
       ComManifestPath="@(RegFreeComManifest)" />
   </Target>
 

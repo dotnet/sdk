@@ -783,7 +783,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1168: "}</comment>
   </data>
   <data name="InvalidTypeLibrary" xml:space="preserve">
-    <value>NETSDK1169: One of the provided type libraries is in an invalid format.</value>
+    <value>NETSDK1169: The provided type library '{0}' is in an invalid format.</value>
     <comment>{StrBegin="NETSDK1169: "}</comment>
   </data>
   <data name="TrimmingWindowsFormsIsNotSupported" xml:space="preserve">

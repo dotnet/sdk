@@ -493,8 +493,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1140: "}</note>
       </trans-unit>
       <trans-unit id="InvalidTypeLibrary">
-        <source>NETSDK1169: One of the provided type libraries is in an invalid format.</source>
-        <target state="new">NETSDK1169: One of the provided type libraries is in an invalid format.</target>
+        <source>NETSDK1169: The provided type library '{0}' is in an invalid format.</source>
+        <target state="new">NETSDK1169: The provided type library '{0}' is in an invalid format.</target>
         <note>{StrBegin="NETSDK1169: "}</note>
       </trans-unit>
       <trans-unit id="InvalidTypeLibraryId">

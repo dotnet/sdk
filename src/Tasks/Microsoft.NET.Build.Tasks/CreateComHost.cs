@@ -29,8 +29,15 @@ namespace Microsoft.NET.Build.Tasks
         {
             try
             {
-                if (!TryCreateTypeLibraryIdDictionary(TypeLibraries, out var typeLibIdMap))
+                if (!TypeLibraryDictionaryBuilder.TryCreateTypeLibraryIdDictionary(
+                    TypeLibraries,
+                    out Dictionary<int, string> typeLibIdMap,
+                    out List<string> errors))
                 {
+                    foreach (string error in errors)
+                    {
+                        Log.LogError(error);
+                    }
                     return;
                 }
                 ComHost.Create(
@@ -51,61 +58,10 @@ namespace Microsoft.NET.Build.Tasks
             {
                 Log.LogError(Strings.InvalidTypeLibraryId, ex.Id.ToString(), ex.Path);
             }
-            catch (HResultException hr) when (hr.Win32HResult == E_INVALIDARG)
+            catch (InvalidTypeLibraryException ex)
             {
-                Log.LogError(Strings.InvalidTypeLibrary);
+                Log.LogError(Strings.InvalidTypeLibrary, ex.Path);
             }
-        }
-
-        private bool TryCreateTypeLibraryIdDictionary(ITaskItem[] typeLibraries, out Dictionary<int, string> typeLibraryIdMap)
-        {
-            typeLibraryIdMap = null;
-            if (typeLibraries is null || typeLibraries.Length == 0)
-            {
-                return true;
-            }
-            else if (typeLibraries.Length == 1)
-            {
-                int id = 1;
-                string idMetadata = typeLibraries[0].GetMetadata("Id");
-                if (!string.IsNullOrEmpty(idMetadata))
-                {
-                    if (!int.TryParse(idMetadata, out id) || id == 0)
-                    {
-                        Log.LogError(Strings.InvalidTypeLibraryId, idMetadata, typeLibraries[0].ItemSpec);
-                        return false;
-                    }
-                }
-                typeLibraryIdMap = new Dictionary<int, string> { { id, typeLibraries[0].ItemSpec } };
-                return true;
-            }
-            typeLibraryIdMap = new Dictionary<int, string>();
-            foreach (ITaskItem typeLibrary in typeLibraries)
-            {
-                string idMetadata = typeLibrary.GetMetadata("Id");
-                if (string.IsNullOrEmpty(idMetadata))
-                {
-                    Log.LogError(Strings.MissingTypeLibraryId, typeLibrary.ItemSpec);
-                    return false;
-                }
-
-                if (!int.TryParse(idMetadata, out int id) || id == 0)
-                {
-                    Log.LogError(Strings.InvalidTypeLibraryId, idMetadata, typeLibrary.ItemSpec);
-                    return false;
-                }
-
-                if (typeLibraryIdMap.ContainsKey(id))
-                {
-                    Log.LogError(Strings.DuplicateTypeLibraryIds, idMetadata, typeLibraryIdMap[id], typeLibrary.ItemSpec);
-                    return false;
-                }
-                else
-                {
-                    typeLibraryIdMap[id] = typeLibrary.ItemSpec;
-                }
-            }
-            return true;
         }
     }
 }
