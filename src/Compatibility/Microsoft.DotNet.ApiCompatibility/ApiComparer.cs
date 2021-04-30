@@ -14,6 +14,9 @@ namespace Microsoft.DotNet.ApiCompatibility
     /// </summary>
     public class ApiComparer
     {
+        /// <summary>
+        /// Flag indicating whether internal symbols should be included in the comparisons or not.
+        /// </summary>
         public bool IncludeInternalSymbols { get; set; }
 
         /// <summary>
@@ -26,10 +29,14 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// </summary>
         public (string diagnosticId, string memberId)[] IgnoredDifferences { get; set; }
 
+        /// <summary>
+        /// Callback function to get the <see cref="ComparingSettings"/> to be used when creating the settings to get the differences.
+        /// This callback is called at the beginning of every <see cref="GetDifferences"/> overload.
+        /// </summary>
         public Func<ComparingSettings> GetComparingSettings { get; set; }
 
         /// <summary>
-        /// Get's the differences when comparing Left vs Right based on the settings when instanciating the object.
+        /// Get's the differences when comparing Left vs Right based on the settings at the moment this method is called.
         /// It compares two lists of symbols.
         /// </summary>
         /// <param name="left">Left symbols to compare against.</param>
@@ -57,7 +64,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         }
 
         /// <summary>
-        /// Get's the differences when comparing Left vs Right based on the settings when instanciating the object.
+        /// Get's the differences when comparing Left vs Right based on the settings at the moment this method is called.
         /// It compares two symbols.
         /// </summary>
         /// <param name="left">Left symbol to compare against.</param>
@@ -84,6 +91,14 @@ namespace Microsoft.DotNet.ApiCompatibility
             return visitor.DiagnosticBags.First().Differences;
         }
 
+        /// <summary>
+        /// Get the differences for all the combinations of <paramref name="left"/> against each <paramref name="right"/>
+        /// </summary>
+        /// <param name="left">The left that we are going to use to compare against the multiple rights.</param>
+        /// <param name="right">Multiple elements to compare as the right hand side against the provided left.</param>
+        /// <returns>Return a list containing the (left, right) tuple and it's list of <see cref="CompatDifference"/>.
+        /// The returning list contains one element per (left, right) combination, which is the same length as <paramref name="right"/>.
+        /// </returns>
         public IEnumerable<(MetadataInformation left, MetadataInformation right, IEnumerable<CompatDifference> differences)> GetDifferences(ElementContainer<IAssemblySymbol> left, IList<ElementContainer<IAssemblySymbol>> right)
         {
             if (left == null)

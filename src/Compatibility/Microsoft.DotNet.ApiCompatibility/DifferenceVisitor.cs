@@ -17,6 +17,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <summary>
         /// Instantiates the visitor with the desired settings.
         /// </summary>
+        /// <param name="rightCount">Represents the number of elements that the mappers contain on the right hand side.</param>
         /// <param name="noWarn">A comma separated list of diagnostic IDs to ignore.</param>
         /// <param name="ignoredDifferences">A list of tuples to ignore diagnostic IDs by symbol.</param>
         public DifferenceVisitor(int rightCount = 1, string noWarn = null, (string diagnosticId, string symbolId)[] ignoredDifferences = null)
@@ -83,7 +84,8 @@ namespace Microsoft.DotNet.ApiCompatibility
         }
 
         /// <summary>
-        /// The <see cref="DiagnosticBag{CompatDifference}"/> containing all the differences.
+        /// A list of <see cref="DiagnosticBag{CompatDifference}"/>.
+        /// One per element compared in the right hand side.
         /// </summary>
         public IEnumerable<DiagnosticBag<CompatDifference>> DiagnosticBags => _diagnosticBags;
 

@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 }
                 else if (mapper is TypeMapper tm)
                 {
-                    if (!tm.IsNestedType || tm.ShouldDiffElement(rightIndex))
+                    if (tm.ShouldDiffElement(rightIndex))
                         _context.RunOnTypeSymbolActions((ITypeSymbol)mapper.Left, (ITypeSymbol)right, differences);
                 }
                 else if (mapper is MemberMapper mm)

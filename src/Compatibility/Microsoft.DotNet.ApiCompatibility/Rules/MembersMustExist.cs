@@ -14,6 +14,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     /// </summary>
     public class MembersMustExist : Rule
     {
+        /// <summary>
+        /// Method that is called when the rules are created by the <see cref="IRuleRunner"/> in
+        /// order to do the initial setup for the rule.
+        /// </summary>
+        /// <param name="context">The context that the <see cref="IRuleRunner"/> creates holding callbacks to get the differences.</param>
         public override void Initialize(RuleRunnerContext context)
         {
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);

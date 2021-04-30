@@ -9,22 +9,38 @@ using Microsoft.DotNet.ApiCompatibility.Abstractions;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
+    /// <summary>
+    /// Class representing the context of the <see cref="IRuleRunner"/> used to run the rules.
+    /// This is provided to each rule when initializing them to add events for the rules to be invoked.
+    /// </summary>
     public class RuleRunnerContext
     {
         private readonly List<Action<IAssemblySymbol, IAssemblySymbol, IList<CompatDifference>>> _onAssemblySymbolActions = new();
         private readonly List<Action<ITypeSymbol, ITypeSymbol, IList<CompatDifference>>> _onTypeSymbolActions = new();
         private readonly List<Action<ISymbol, ISymbol, IList<CompatDifference>>> _onMemberSymbolActions = new();
 
+        /// <summary>
+        /// Registers a callback to invoke when two <see cref="IAssemblySymbol"/> are compared.
+        /// </summary>
+        /// <param name="action">The action to invoke.</param>
         public void RegisterOnAssemblySymbolAction(Action<IAssemblySymbol, IAssemblySymbol, IList<CompatDifference>> action)
         {
             _onAssemblySymbolActions.Add(action);
         }
 
+        /// <summary>
+        /// Registers a callback to invoke when two <see cref="ITypeSymbol"/> are compared.
+        /// </summary>
+        /// <param name="action">The action to invoke.</param>
         public void RegisterOnTypeSymbolAction(Action<ITypeSymbol, ITypeSymbol, IList<CompatDifference>> action)
         {
             _onTypeSymbolActions.Add(action);
         }
 
+        /// <summary>
+        /// Registers a callback to invoke when two <see cref="ISymbol"/> members of a <see cref="ITypeSymbol"/> are compared.
+        /// </summary>
+        /// <param name="action">The action to invoke.</param>
         public void RegisterOnMemberSymbolAction(Action<ISymbol, ISymbol, IList<CompatDifference>> action)
         {
             _onMemberSymbolActions.Add(action);

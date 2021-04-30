@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 
         internal bool ShouldDiffElement(int rightIndex)
         {
-            if (IsNestedType)
+            if (IsNested)
             {
                 Debug.Assert(_containingType.ShouldDiffMembers);
 
@@ -69,7 +69,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
             }
         }
 
-        public bool IsNestedType => _containingType != null;
+        /// <summary>
+        /// Indicates whether a type is nested or not.
+        /// </summary>
+        public bool IsNested => _containingType != null;
 
         /// <summary>
         /// Gets the nested types within the mapped types.

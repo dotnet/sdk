@@ -3,6 +3,9 @@
 
 namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 {
+    /// <summary>
+    /// Enum representing the side of an element in the mappers.
+    /// </summary>
     public enum ElementSide : byte
     {
         Left = 0,

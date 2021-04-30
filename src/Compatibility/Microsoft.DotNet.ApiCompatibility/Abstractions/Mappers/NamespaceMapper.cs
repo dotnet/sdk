@@ -54,6 +54,18 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
             return _types.Values;
         }
 
+        /// <summary>
+        /// Adds forwarded types to the mapper to the index specified in the mapper.
+        /// </summary>
+        /// <param name="forwardedTypes">List containing the <see cref="INamedTypeSymbol"/> that represents the forwarded types.</param>
+        /// <param name="side">Side to add the forwarded types into, 0 (Left) or 1 (Right).</param>
+        /// <param name="setIndex">Value representing the index on the set of elements corresponding to the compared side.</param>
+        public void AddForwardedTypes(IEnumerable<INamedTypeSymbol> forwardedTypes, ElementSide side, int setIndex)
+        {
+            EnsureTypesInitialized();
+            AddOrCreateMappers(forwardedTypes, side, setIndex);
+        }
+
         private void EnsureTypesInitialized()
         {
             if (_types == null)
@@ -88,18 +100,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
                     mapper.AddElement(type, side, setIndex);
                 }
             }
-        }
-
-        /// <summary>
-        /// Adds forwarded types to the mapper to the index specified in the mapper.
-        /// </summary>
-        /// <param name="forwardedTypes">List containing the <see cref="INamedTypeSymbol"/> that represents the forwarded types.</param>
-        /// <param name="side">Side to add the forwarded types into, 0 (Left) or 1 (Right).</param>
-        /// <param name="setIndex">Value representing the index on the set of elements corresponding to the compared side.</param>
-        public void AddForwardedTypes(IEnumerable<INamedTypeSymbol> forwardedTypes, ElementSide side, int setIndex)
-        {
-            EnsureTypesInitialized();
-            AddOrCreateMappers(forwardedTypes, side, setIndex);
         }
     }
 }

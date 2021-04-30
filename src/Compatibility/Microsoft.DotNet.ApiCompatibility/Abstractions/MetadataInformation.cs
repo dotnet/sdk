@@ -5,6 +5,10 @@ using System;
 
 namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 {
+    /// <summary>
+    /// Struct containing the assembly's relevant information, used to distinguish different tuple comparisons
+    /// and different list of <see cref="CompatDifference"/>.
+    /// </summary>
     public readonly struct MetadataInformation : IEquatable<MetadataInformation>
     {
         public readonly string AssemblyName;

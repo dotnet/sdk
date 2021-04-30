@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         public T Left { get; private set; }
 
         /// <summary>
-        /// Property representing the Right hand side of the mapping.
+        /// Property representing the Right hand side element(s) of the mapping.
         /// </summary>
         public T[] Right { get; private set; }
 
@@ -32,7 +32,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// Instantiates an object with the provided <see cref="ComparingSettings"/>.
         /// </summary>
         /// <param name="settings">The settings used to diff the elements in the mapper.</param>
-        /// <param name="leftSetSize">The number of elements in the left set to compare.</param>
         /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
         public ElementMapper(ComparingSettings settings, int rightSetSize)
         {
@@ -43,14 +42,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
             Right = new T[rightSetSize];
         }
 
+        /// <summary>
+        /// Adds an element to the given <paramref name="side"/> using the index 0 for <see cref="ElementSide.Right"/>.
+        /// </summary>
+        /// <param name="element">The element to add.</param>
+        /// <param name="side">Value representing the side of the mapping. </param>
         public virtual void AddElement(T element, ElementSide side) => AddElement(element, side, 0);
 
         /// <summary>
-        /// Adds an element to the mapping given the index, 0 (Left) or 1 (Right).
+        /// Adds an element to the mapping given the <paramref name="side"/> and the <paramref name="setIndex"/>.
         /// </summary>
         /// <param name="element">The element to add to the mapping.</param>
         /// <param name="side">Value representing the side of the mapping.</param>
-        /// <param name="setIndex">Value representing the index on the set of elements corresponding to the compared side.</param>
+        /// <param name="setIndex">Value representing the index the element is added. Only used when adding to <see cref="ElementSide.Right"/>.</param>
         public virtual void AddElement(T element, ElementSide side, int setIndex)
         {
             if (side == ElementSide.Left)
@@ -69,7 +73,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <summary>
         /// Runs the rules found by the rule driver on the element mapper and returns a list of differences.
         /// </summary>
-        /// <returns>The list of <see cref="CompatDifference"/>.</returns>
+        /// <returns>A list containing the list of differences for each possible combination of
+        /// (<see cref="ElementMapper{T}.Left"/>, <see cref="ElementMapper{T}.Right"/>).
+        /// One list of <see cref="CompatDifference"/> per the number of right elements that the <see cref="ElementMapper{T}"/> contains.</returns>
         public IReadOnlyList<IEnumerable<CompatDifference>> GetDifferences()
         {
             return _differences ??= Settings.RuleRunnerFactory.GetRuleRunner().Run(this);

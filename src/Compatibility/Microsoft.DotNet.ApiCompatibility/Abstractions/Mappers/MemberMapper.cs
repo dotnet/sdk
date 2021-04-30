@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 
         // If we got to this point it means that _containingType.Left is not null.
         // Because of that we can only check _containingType.Right.
-        public bool ShouldDiffElement(int rightIndex) =>
+        internal bool ShouldDiffElement(int rightIndex) =>
             _containingType.Right.Length == 1 || _containingType.Right[rightIndex] != null;
     }
 }
