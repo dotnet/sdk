@@ -40,6 +40,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     return;
                 }
+
                 ComHost.Create(
                     ComHostSourcePath,
                     ComHostDestinationPath,

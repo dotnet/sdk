@@ -44,6 +44,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     return;
                 }
+
                 RegFreeComManifest.CreateManifestFromClsidmap(
                     Path.GetFileNameWithoutExtension(IntermediateAssembly),
                     ComHostName,
