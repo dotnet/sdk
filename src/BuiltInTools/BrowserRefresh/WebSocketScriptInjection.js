@@ -98,7 +98,16 @@ setTimeout(function () {
   }
 
   function applyBlazorDeltas(deltas) {
-    deltas.forEach(d => window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta));
+    let applyFailed = false;
+    deltas.forEach(d => {
+      try {
+        window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta)
+      } catch (error) {
+        console.warn(error);
+        applyFailed = true;
+      } 
+    });
+    
     fetch('_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: JSON.stringify(deltas) })
       .then(response => {
         if (response.status == 200) {
@@ -106,14 +115,20 @@ setTimeout(function () {
           window.sessionStorage.setItem('blazor-webasssembly-cache', { etag, deltas });
         }
       });
-    notifyHotReloadApplied();
+    
+    if (applyFailed) {
+      sendDeltaNotApplied();
+    } else {
+      sendDeltaApplied();
+      notifyHotReloadApplied();
+    }
   }
 
   function displayDiagnostics(diagnostics) {
     document.querySelectorAll('#dotnet-compile-error').forEach(el => el.remove());
     const el = document.body.appendChild(document.createElement('div'));
     el.id = 'dotnet-compile-error';
-    el.setAttribute('style', 'z-index:1000000; position:fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); color:black');
+    el.setAttribute('style', 'z-index:1000000; position:fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); color:black; overflow: scroll;');
     diagnostics.forEach(error => {
       const item = el.appendChild(document.createElement('div'));
       item.setAttribute('style', 'border: 2px solid red; padding: 8px; background-color: #faa;')
@@ -135,5 +150,17 @@ setTimeout(function () {
     el.textContent = 'Updated the page';
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 520);
+  }
+
+  function sendDeltaApplied() {
+    const webAssemblyHotReloadSuccessPayload = new ArrayBuffer(1);
+    webAssemblyHotReloadSuccessPayload[0] = 1;
+    connection.send(webAssemblyHotReloadSuccessPayload);
+  }
+
+  function sendDeltaNotApplied() {
+    const webAssemblyHotReloadFailurePayload = new ArrayBuffer(1);
+    webAssemblyHotReloadFailurePayload[0] = 0;
+    connection.send(webAssemblyHotReloadFailurePayload);
   }
 }, 500);
