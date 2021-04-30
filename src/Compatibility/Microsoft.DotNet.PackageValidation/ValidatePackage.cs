@@ -25,10 +25,6 @@ namespace Microsoft.DotNet.PackageValidation
 
         protected override void ExecuteCore()
         {
-#if DEBUG
-            if (!Debugger.IsAttached) { Debugger.Launch(); } else { Debugger.Break(); }
-#endif
-
             RuntimeGraph runtimeGraph = null;
             if (!string.IsNullOrEmpty(RuntimeGraph))
             {

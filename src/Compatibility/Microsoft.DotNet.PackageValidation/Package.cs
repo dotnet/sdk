@@ -13,6 +13,9 @@ using NuGet.RuntimeModel;
 
 namespace Microsoft.DotNet.PackageValidation
 {
+    /// <summary>
+    /// This class represents a dotnet package.
+    /// </summary>
     public class Package
     {
         private readonly ManagedCodeConventions _conventions;
@@ -42,10 +45,19 @@ namespace Microsoft.DotNet.PackageValidation
             FrameworksInPackage = FrameworksInPackageList.Distinct();
         }
 
+        /// <summary>
+        /// The name of the package
+        /// </summary>
         public string PackageId { get; private set; }
 
+        /// <summary>
+        /// The version of the package.
+        /// </summary>
         public string Version { get; private set; }
 
+        /// <summary>
+        /// Local path of the package.
+        /// </summary>
         public string PackagePath 
         {
             get
@@ -69,24 +81,57 @@ namespace Microsoft.DotNet.PackageValidation
 
         public Dictionary<NuGetFramework, IEnumerable<PackageDependency>> PackageDependencies { get; set; }
 
+        /// <summary>
+        /// List of compile assets in the package.
+        /// </summary>
         public IEnumerable<ContentItem> CompileAssets { get; private set; }
 
+        /// <summary>
+        /// List of assets under ref in the package.
+        /// </summary>
         public IEnumerable<ContentItem> RefAssets { get; private set; }
+
+        /// <summary>
+        /// List of assets under lib in the package.
+        /// </summary>
 
         public IEnumerable<ContentItem> LibAssets { get; private set; }
         
+        /// <summary>
+        /// List of all the assets in the package.
+        /// </summary>
         public IEnumerable<ContentItem> PackageAssets { get; private set; }
 
+        /// <summary>
+        /// List of all the runtime specific assets in the package.
+        /// </summary>
         public IEnumerable<ContentItem> RuntimeSpecificAssets { get; private set; }
 
+        /// <summary>
+        /// List of all the runtime assets in the package.
+        /// </summary>
         public IEnumerable<ContentItem> RuntimeAssets { get; private set; }
 
+        /// <summary>
+        /// Checks if there are any assemblies under ref folder in the package.
+        /// </summary>
         public bool HasRefAssemblies => RefAssets.Any();
 
+        /// <summary>
+        /// List of rids in the package.
+        /// </summary>
         public IEnumerable<string> Rids { get; private set; }
 
+        /// <summary>
+        /// List of the frameworks in the package.
+        /// </summary>
         public IEnumerable<NuGetFramework> FrameworksInPackage { get; private set; }
 
+        /// <summary>
+        /// Finds the best runtime asset for for a specific framework.
+        /// </summary>
+        /// <param name="framework">The framework where the package needs to be installed.</param>
+        /// <returns>A ContentItem representing the best runtime asset</returns>
         public ContentItem FindBestRuntimeAssetForFramework(NuGetFramework framework)
         {
             SelectionCriteria managedCriteria = _conventions.Criteria.ForFramework(framework);
@@ -94,6 +139,12 @@ namespace Microsoft.DotNet.PackageValidation
                 _conventions.Patterns.RuntimeAssemblies)?.Items.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Finds the best runtime asset for a framework-rid pair.
+        /// </summary>
+        /// <param name="framework">The framework where the package needs to be installed.</param>
+        /// <param name="rid">The rid where the package needs to be installed.</param>
+        /// <returns>A ContentItem representing the best runtime asset</returns>
         public ContentItem FindBestRuntimeAssetForFrameworkAndRuntime(NuGetFramework framework, string rid)
         {
             SelectionCriteria managedCriteria = _conventions.Criteria.ForFrameworkAndRuntime(framework, rid);
@@ -101,6 +152,11 @@ namespace Microsoft.DotNet.PackageValidation
                 _conventions.Patterns.RuntimeAssemblies)?.Items.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Finds the best compile time assset for a specific framework.
+        /// </summary>
+        /// <param name="framework">The framework where the package needs to be installed.</param>
+        /// <returns>A ContentItem representing the best compile time asset.</returns>
         public ContentItem FindBestCompileAssetForFramework(NuGetFramework framework)
         {
             SelectionCriteria managedCriteria = _conventions.Criteria.ForFramework(framework);

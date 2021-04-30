@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.ApiCompatibility;
@@ -17,7 +18,7 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class BaselinePackageValidator
     {
-        private static string[] s_diagList = { DiagnosticIds.TargetFrameworkDropped, DiagnosticIds.TargetFrameworkAndRidPairDropped };
+        private static HashSet<string> s_diagList = new HashSet<string>{ DiagnosticIds.TargetFrameworkDropped, DiagnosticIds.TargetFrameworkAndRidPairDropped };
 
         private readonly Package _baselinePackage;
         private readonly bool _runApiCompat;

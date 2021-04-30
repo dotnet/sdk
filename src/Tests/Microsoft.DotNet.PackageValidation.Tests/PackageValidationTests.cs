@@ -94,6 +94,7 @@ namespace PackageValidationTests
 
             Package package = new("TestPackage", "1.0.0", filePaths, null, null);
             new CompatibleTfmValidator(string.Empty, null, false, _logger).Validate(package);
+            Assert.Empty(_logger.errors);
         }
     }
 }
