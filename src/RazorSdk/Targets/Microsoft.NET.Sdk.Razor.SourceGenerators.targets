@@ -29,13 +29,28 @@ Copyright (c) .NET Foundation. All rights reserved.
       <EditorConfigFiles Include="$(RazorEncConfigFile)" Condition="'$(DesignTimeBuild)' == 'true' AND '$(BuildingInsideVisualStudio)' == 'true'"/>
     </ItemGroup>
 
-    <!-- Configure analyzers -->
-    <ItemGroup>
+    <!-- Assemblies in the SDK are cross-genned to improve performance. However, these
+    cross-genned assemblies cannot be loaded into 32-bit VS. To work around these, we load
+    the binaries that are not cross-genned (those in the source-generators directory) when
+    building in VS. However, we want to continue to leverage the cross-genned assemblies in
+    environments where it makes sense so we load them in the CLI and elsewhere.
+    For more info, see https://github.com/dotnet/aspnetcore/issues/32296. -->
+    <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
       <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
       <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.AspNetCore.Razor.Language.dll" />
       <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.CodeAnalysis.Razor.dll" />
       <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.NET.Sdk.Razor.SourceGenerators.dll" />
+    </ItemGroup>
 
+    <ItemGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+      <_RazorAnalyzer Include="$(_RazorSdkToolsDirectoryRoot)Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+      <_RazorAnalyzer Include="$(_RazorSdkToolsDirectoryRoot)Microsoft.AspNetCore.Razor.Language.dll" />
+      <_RazorAnalyzer Include="$(_RazorSdkToolsDirectoryRoot)Microsoft.CodeAnalysis.Razor.dll" />
+      <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.NET.Sdk.Razor.SourceGenerators.dll" />
+    </ItemGroup>
+
+    <!-- Configure analyzers -->
+    </ItemGroup>
       <Analyzer Include="@(_RazorAnalyzer)" />
 
       <RazorComponentWithTargetPath
