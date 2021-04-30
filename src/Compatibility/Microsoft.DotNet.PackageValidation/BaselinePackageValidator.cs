@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using System.Linq;
+using Microsoft.DotNet.ApiCompatibility;
+using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
@@ -20,7 +23,7 @@ namespace Microsoft.DotNet.PackageValidation
         private readonly bool _runApiCompat;
         private readonly ApiCompatRunner _apiCompatRunner;
         private readonly ILogger _log;
-        private readonly Checker _checker;
+        private readonly DiagnosticBag<IDiagnostic> _diagnosticBag;
 
         public BaselinePackageValidator(Package baselinePackage, string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, ILogger log)
         {
@@ -28,7 +31,7 @@ namespace Microsoft.DotNet.PackageValidation
             _runApiCompat = runApiCompat;
             _log = log;
             _apiCompatRunner = new(noWarn, ignoredDifferences, _log);
-            _checker = new(noWarn, ignoredDifferences, s_diagList);
+            _diagnosticBag = new(noWarn?.Split(';')?.Where(t => s_diagList.Contains(t)), ignoredDifferences);
         }
 
         /// <summary>
@@ -43,7 +46,7 @@ namespace Microsoft.DotNet.PackageValidation
                 ContentItem latestCompileTimeAsset = package.FindBestCompileAssetForFramework(baselineTargetFramework);
                 if (latestCompileTimeAsset == null)
                 {
-                    if (!_checker.Contain(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
+                    if (!_diagnosticBag.Contain(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
                     {
                         string message = string.Format(Resources.MissingTargetFramework, baselineTargetFramework.ToString());
                         _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
@@ -67,7 +70,7 @@ namespace Microsoft.DotNet.PackageValidation
                 ContentItem latestRuntimeAsset = package.FindBestRuntimeAssetForFramework(baselineTargetFramework);
                 if (latestRuntimeAsset == null)
                 {
-                    if (!_checker.Contain(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
+                    if (!_diagnosticBag.Contain(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
                     {
                         string message = string.Format(Resources.MissingTargetFramework, baselineTargetFramework.ToString());
                         _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
@@ -95,7 +98,7 @@ namespace Microsoft.DotNet.PackageValidation
                 ContentItem latestRuntimeSpecificAsset = package.FindBestRuntimeAssetForFrameworkAndRuntime(baselineTargetFramework, baselineRid);
                 if (latestRuntimeSpecificAsset == null)
                 {
-                    if (!_checker.Contain(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString() + "-" + baselineRid))
+                    if (!_diagnosticBag.Contain(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString() + "-" + baselineRid))
                     {
                         string message = string.Format(Resources.MissingTargetFrameworkAndRid, baselineTargetFramework.ToString(), baselineRid);
                         _log.LogError(DiagnosticIds.TargetFrameworkAndRidPairDropped + " " + message);

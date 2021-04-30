@@ -3,6 +3,9 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Microsoft.DotNet.ApiCompatibility;
+using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
@@ -20,15 +23,15 @@ namespace Microsoft.DotNet.PackageValidation
 
         private readonly bool _runApiCompat;
         private readonly ApiCompatRunner _apiCompatRunner;
-        private readonly Checker _checker;
         private readonly ILogger _log;
+        private readonly DiagnosticBag<IDiagnostic> _diagnosticBag;
 
         public CompatibleTfmValidator(string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, ILogger log)
         {
-            _checker = new(noWarn, ignoredDifferences, s_diagList);
             _runApiCompat = runApiCompat;
             _log = log;
             _apiCompatRunner = new(noWarn, ignoredDifferences, _log);
+            _diagnosticBag = new(noWarn?.Split(';')?.Where(t => s_diagList.Contains(t)), ignoredDifferences);
         }
 
         /// <summary>
@@ -54,7 +57,7 @@ namespace Microsoft.DotNet.PackageValidation
 
                 if (compileTimeAsset == null)
                 {
-                    if (!_checker.Contain(DiagnosticIds.ApplicableCompileTimeAsset, framework.ToString()))
+                    if (!_diagnosticBag.Contain(DiagnosticIds.ApplicableCompileTimeAsset, framework.ToString()))
                     {
                         string message = string.Format(Resources.NoCompatibleCompileTimeAsset, framework.ToString());
                         _log.LogError(DiagnosticIds.ApplicableCompileTimeAsset + " " + message);
@@ -65,7 +68,7 @@ namespace Microsoft.DotNet.PackageValidation
                 ContentItem runtimeAsset = package.FindBestRuntimeAssetForFramework(framework);
                 if (runtimeAsset == null)
                 {
-                    if (!_checker.Contain(DiagnosticIds.CompatibleRuntimeRidLessAsset, framework.ToString()))
+                    if (!_diagnosticBag.Contain(DiagnosticIds.CompatibleRuntimeRidLessAsset, framework.ToString()))
                     {
                         string message = string.Format(Resources.NoCompatibleRuntimeAsset, framework.ToString());
                         _log.LogError(DiagnosticIds.CompatibleRuntimeRidLessAsset + " " + message);
@@ -90,7 +93,7 @@ namespace Microsoft.DotNet.PackageValidation
                     runtimeAsset = package.FindBestRuntimeAssetForFrameworkAndRuntime(framework, rid);
                     if (runtimeAsset == null)
                     {
-                        if (!_checker.Contain(DiagnosticIds.CompatibleRuntimeRidSpecificAsset, framework.ToString() + "-" + rid))
+                        if (!_diagnosticBag.Contain(DiagnosticIds.CompatibleRuntimeRidSpecificAsset, framework.ToString() + "-" + rid))
                         {
                             string message = string.Format(Resources.NoCompatibleRidSpecificRuntimeAsset, framework.ToString(), rid);
                             _log.LogError(DiagnosticIds.CompatibleRuntimeRidSpecificAsset + " " + message);

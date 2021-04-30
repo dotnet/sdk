@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
 using System.IO;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
@@ -80,6 +79,21 @@ namespace PackageValidationTests
             new CompatibleFrameworkInPackageValidator(string.Empty, null, _logger).Validate(package);
             Assert.NotEmpty(_logger.errors);
             Assert.Contains("CP0002 : Member 'PackageValidationTests.First.test(string)' exists on the left but not on the right", _logger.errors);
+        }
+
+        [Fact]
+        public void CompatibleFrameworksWithDifferentAssets()
+        {
+            string[] filePaths = new[]
+            {
+                @"ref/netstandard2.0/TestPackage.dll",
+                @"ref/netcoreapp3.1/TestPackage.dll",
+                @"lib/netstandard2.0/TestPackage.dll",
+                @"lib/net5.0/TestPackage.dll"
+            };
+
+            Package package = new("TestPackage", "1.0.0", filePaths, null, null);
+            new CompatibleTfmValidator(string.Empty, null, false, _logger).Validate(package);
         }
     }
 }
