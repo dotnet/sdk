@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
                 if (string.IsNullOrEmpty(p.DataType))
                 {
-                    p.DataType = "string";
+                    p.DataType = config.DataType;
                 }
             }
             else
@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 {
                     IsVariable = true,
                     Name = config.VariableName,
-                    DataType = "string"
+                    DataType = config.DataType
                 };
             }
 

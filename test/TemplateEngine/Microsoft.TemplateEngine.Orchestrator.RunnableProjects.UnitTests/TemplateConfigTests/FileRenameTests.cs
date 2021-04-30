@@ -5,9 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -215,8 +213,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             // template.json
             templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, string.Empty);
             // content
-            templateSourceFiles.Add("intdate_name.txt", null);
             templateSourceFiles.Add("date_name.txt", null);
+            templateSourceFiles.Add("other_name.txt", null);
             TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
@@ -231,38 +229,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             };
             Parameter intDateParameter = new Parameter()
             {
-                Name = "intdate"
-            };
-            Parameter dateParameter = new Parameter()
-            {
                 Name = "date"
+            };
+            Parameter otherParameter = new Parameter()
+            {
+                Name = "other"
             };
             parameters.AddParameter(nameParameter);
             parameters.AddParameter(intDateParameter);
-            parameters.AddParameter(dateParameter);
+            parameters.AddParameter(otherParameter);
             parameters.ResolvedValues[nameParameter] = "testName";
             parameters.ResolvedValues[intDateParameter] = 20210429;
-            DateTime testDate = new DateTime(2021, 4, 29);
-            parameters.ResolvedValues[dateParameter] = new DateTime(2021, 4, 29);
+            parameters.ResolvedValues[otherParameter] = new TestParameterValueClass { A = "foo", B = "bar" };
 
             //prepare renames configuration
             List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
-            symbolBasedRenames.Add(new ReplacementTokens("intdate", TokenConfig.FromValue("intdate")));
             symbolBasedRenames.Add(new ReplacementTokens("date", TokenConfig.FromValue("date")));
+            symbolBasedRenames.Add(new ReplacementTokens("other", TokenConfig.FromValue("other")));
             symbolBasedRenames.Add(new ReplacementTokens("name", TokenConfig.FromValue("name")));
 
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
-            Assert.Equal("20210429_testName.txt", allChanges["intdate_name.txt"]);
-
-            //remove invalid chars in paths
-            string regexSearch = new string(Path.GetInvalidPathChars()) + new string(Path.GetInvalidFileNameChars());
-            //directory separators are allowed
-            regexSearch = regexSearch.Replace($"{Path.DirectorySeparatorChar}", "");
-            regexSearch = regexSearch.Replace($"{Path.AltDirectorySeparatorChar}", "");
-            Regex r = new Regex($"[{Regex.Escape(regexSearch)}]");
-
-            Assert.Equal($"{r.Replace(testDate.ToString(), "")}_testName.txt", allChanges["date_name.txt"]);
+            Assert.Equal("20210429_testName.txt", allChanges["date_name.txt"]);
+            Assert.Equal("foo-bar_testName.txt", allChanges["other_name.txt"]);
         }
 
         [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_Forms))]
@@ -520,6 +509,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
+        }
+
+        private class TestParameterValueClass
+        {
+            public string? A { get; set; }
+
+            public string? B { get; set; }
+
+            public override string ToString() => $"{A}-{B}";
         }
     }
 }

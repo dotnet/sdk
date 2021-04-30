@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
@@ -119,15 +118,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (parameterSet.TryGetRuntimeValue(environmentSettings, fileRenameToken.VariableName, out object newValueObject))
                     {
                         string newValue = newValueObject.ToString();
-
-                        //remove invalid chars in paths
-                        string regexSearch = new string(Path.GetInvalidPathChars()) + new string(Path.GetInvalidFileNameChars());
-                        //directory separators are allowed
-                        regexSearch = regexSearch.Replace($"{Path.DirectorySeparatorChar}", "");
-                        regexSearch = regexSearch.Replace($"{Path.AltDirectorySeparatorChar}", "");
-                        Regex r = new Regex($"[{Regex.Escape(regexSearch)}]");
-                        newValue = r.Replace(newValue, "");
-
                         operations.Add(new Replacement(fileRenameToken.OriginalValue, newValue, null, true));
                     }
                 }
