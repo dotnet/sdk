@@ -72,12 +72,13 @@ namespace PackageValidationTests
 
             testProject.SourceFiles.Add("Hello.cs", sourceCode);
             TestAsset asset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
-            var result = new PackCommand(Log, Path.Combine(asset.TestRoot, testProject.Name)).Execute();
+            PackCommand packCommand = new PackCommand(Log, Path.Combine(asset.TestRoot, testProject.Name));
+            var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
-            string testPackagePath = Path.Combine(asset.TestRoot, testProject.Name, "bin", "debug", testProject.Name + ".1.0.0.nupkg");
-            Package package = NupkgParser.CreatePackage(testPackagePath, null);
+            Package package = NupkgParser.CreatePackage(packCommand.GetNuGetPackage(), null);
             new CompatibleFrameworkInPackageValidator(string.Empty, null, _logger).Validate(package);
             Assert.NotEmpty(_logger.errors);
+            // TODO: add asserts for assembly and header metadata.
             Assert.Contains("CP0002 : Member 'PackageValidationTests.First.test(string)' exists on the left but not on the right", _logger.errors);
         }
 

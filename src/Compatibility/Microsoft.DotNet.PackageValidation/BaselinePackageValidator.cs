@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.PackageValidation
                 ContentItem latestCompileTimeAsset = package.FindBestCompileAssetForFramework(baselineTargetFramework);
                 if (latestCompileTimeAsset == null)
                 {
-                    if (!_diagnosticBag.Contain(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
+                    if (!_diagnosticBag.Filter(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
                     {
                         string message = string.Format(Resources.MissingTargetFramework, baselineTargetFramework.ToString());
                         _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.PackageValidation
                         latestCompileTimeAsset.Path,
                         Path.GetFileName(package.PackagePath),
                         Resources.BaselineVersionValidatorHeader,
-                        string.Format(Resources.MissingApisForFramework, baselineTargetFramework.ToString()));
+                        string.Format(Resources.ApiCompatibilityHeader, baselineCompileTimeAsset.Path, latestCompileTimeAsset.Path));
                 }
             }
 
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.PackageValidation
                 ContentItem latestRuntimeAsset = package.FindBestRuntimeAssetForFramework(baselineTargetFramework);
                 if (latestRuntimeAsset == null)
                 {
-                    if (!_diagnosticBag.Contain(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
+                    if (!_diagnosticBag.Filter(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
                     {
                         string message = string.Format(Resources.MissingTargetFramework, baselineTargetFramework.ToString());
                         _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.PackageValidation
                             latestRuntimeAsset.Path,
                             Path.GetFileName(package.PackagePath),
                             Resources.BaselineVersionValidatorHeader,
-                            string.Format(Resources.MissingApisForFramework, baselineTargetFramework.ToString()));
+                            string.Format(Resources.ApiCompatibilityHeader, baselineRuntimeAsset.Path, latestRuntimeAsset.Path));
                     }
                 }
             }
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.PackageValidation
                 ContentItem latestRuntimeSpecificAsset = package.FindBestRuntimeAssetForFrameworkAndRuntime(baselineTargetFramework, baselineRid);
                 if (latestRuntimeSpecificAsset == null)
                 {
-                    if (!_diagnosticBag.Contain(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString() + "-" + baselineRid))
+                    if (!_diagnosticBag.Filter(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString() + "-" + baselineRid))
                     {
                         string message = string.Format(Resources.MissingTargetFrameworkAndRid, baselineTargetFramework.ToString(), baselineRid);
                         _log.LogError(DiagnosticIds.TargetFrameworkAndRidPairDropped + " " + message);
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.PackageValidation
                             latestRuntimeSpecificAsset.Path,
                             Path.GetFileName(package.PackagePath),
                             Resources.BaselineVersionValidatorHeader,
-                            string.Format(Resources.MissingTargetFrameworkAndRid, baselineTargetFramework.ToString(), baselineRid));
+                            string.Format(Resources.ApiCompatibilityHeader, baselineRuntimeSpecificAsset.Path, latestRuntimeSpecificAsset.Path));
                     }
                 }
             }

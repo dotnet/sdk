@@ -46,7 +46,6 @@ namespace Microsoft.DotNet.ApiCompatibility
             }
         }
 
-
         /// <summary>
         /// Adds the differences to the diagnostic bag if they are not found in the exclusion settings.
         /// </summary>
@@ -68,21 +67,13 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <param name="difference">The difference to add.</param>
         public void Add(T difference)
         {
-            if (_noWarn.Contains(difference.DiagnosticId))
-                return;
-
-            if (_ignore.TryGetValue(difference.DiagnosticId, out HashSet<string> members))
+            if (!Filter(difference.DiagnosticId, difference.ReferenceId))
             {
-                if (members.Contains(difference.ReferenceId))
-                {
-                    return;
-                }
+                _differences.Add(difference);
             }
-
-            _differences.Add(difference);
         }
 
-        public bool Contain(string diagnosticId, string referenceId)
+        public bool Filter(string diagnosticId, string referenceId)
         {
             if (_noWarn.Contains(diagnosticId))
                 return true;

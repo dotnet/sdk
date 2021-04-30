@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.PackageValidation
                         compileTimeAsset.Path,
                         Path.GetFileName(package.PackagePath),
                         Resources.CompatibleFrameworkInPackageValidatorHeader,
-                        string.Format(Resources.MissingApisForFramework, framework.ToString()));
+                        string.Format(Resources.ApiCompatibilityHeader, compatibleFrameworkAsset.Path, compileTimeAsset.Path));
                 }
             }
 

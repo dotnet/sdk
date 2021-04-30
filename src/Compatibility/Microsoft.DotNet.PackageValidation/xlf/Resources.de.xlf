@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../Resources.resx">
     <body>
+      <trans-unit id="ApiCompatibilityHeader">
+        <source>There are API Compatibility errors in between {0}  and {1}.</source>
+        <target state="new">There are API Compatibility errors in between {0}  and {1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CompatibleFrameworkInPackageValidatorHeader">
         <source>Api surface area should be compatible among compatible frameworks.</source>
         <target state="new">Api surface area should be compatible among compatible frameworks.</target>
@@ -17,16 +22,6 @@
         <target state="new">Package Path {0} is invalid. Please Check the path .</target>
         <note />
       </trans-unit>
-      <trans-unit id="MissingApisForFramework">
-        <source>Following apis are missing at runtime for  target framework {0}.</source>
-        <target state="new">Following apis are missing at runtime for  target framework {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MissingApisForFrameworkAndRid">
-        <source>Following apis are missing at runtime for  target framework {0}-{1}.</source>
-        <target state="new">Following apis are missing at runtime for  target framework {0}-{1}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MissingTargetFramework">
         <source>TargetFramework {0} is no longer supported in the latest version.</source>
         <target state="new">TargetFramework {0} is no longer supported in the latest version.</target>
@@ -38,13 +33,13 @@
         <note />
       </trans-unit>
       <trans-unit id="NoCompatibleCompileTimeAsset">
-        <source>There is no compatible  compile time asset for target framework {0}.</source>
-        <target state="new">There is no compatible  compile time asset for target framework {0}.</target>
+        <source>There is no compatible compile time asset for target framework {0}.</source>
+        <target state="new">There is no compatible compile time asset for target framework {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoCompatibleRidSpecificRuntimeAsset">
-        <source>There is no compatible runtime asset for target framework {0} -{1}.</source>
-        <target state="new">There is no compatible runtime asset for target framework {0} -{1}.</target>
+        <source>There is no compatible runtime asset for target framework {0}-{1}.</source>
+        <target state="new">There is no compatible runtime asset for target framework {0}-{1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoCompatibleRuntimeAsset">
@@ -53,8 +48,8 @@
         <note />
       </trans-unit>
       <trans-unit id="BaselineVersionValidatorHeader">
-        <source>There shouldnt be any breaking changes between the packages.</source>
-        <target state="new">There shouldnt be any breaking changes between the packages.</target>
+        <source>There should not be any breaking changes between the packages.</source>
+        <target state="new">There should not be any breaking changes between the packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="TargetFramework">
