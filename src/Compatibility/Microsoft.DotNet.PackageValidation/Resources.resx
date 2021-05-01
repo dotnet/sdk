@@ -127,7 +127,7 @@
     <value>Package Path {0} is invalid. Please Check the path .</value>
   </data>
   <data name="ApiCompatibilityHeader" xml:space="preserve">
-    <value>There are API Compatibility errors in between {0}  and {1}.</value>
+    <value>There are API Compatibility errors in between {0} (left) and {1} (right).</value>
   </data>
   <data name="MissingTargetFramework" xml:space="preserve">
     <value>TargetFramework {0} is no longer supported in the latest version.</value>

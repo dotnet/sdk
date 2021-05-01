@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="ru" original="../Resources.resx">
     <body>
       <trans-unit id="ApiCompatibilityHeader">
-        <source>There are API Compatibility errors in between {0}  and {1}.</source>
-        <target state="new">There are API Compatibility errors in between {0}  and {1}.</target>
+        <source>There are API Compatibility errors in between {0} (left) and {1} (right).</source>
+        <target state="new">There are API Compatibility errors in between {0} (left) and {1} (right).</target>
         <note />
       </trans-unit>
       <trans-unit id="CompatibleFrameworkInPackageValidatorHeader">
