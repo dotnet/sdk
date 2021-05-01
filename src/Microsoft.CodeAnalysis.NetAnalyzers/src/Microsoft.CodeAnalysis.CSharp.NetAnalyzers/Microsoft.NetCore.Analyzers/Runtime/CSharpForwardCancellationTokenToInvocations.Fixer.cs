@@ -1,19 +1,23 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.Analyzers.Runtime;
+using NullableAnnotation = Analyzer.Utilities.Lightup.NullableAnnotation;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
     [ExportCodeFixProvider(LanguageNames.CSharp)]
-    public sealed class CSharpForwardCancellationTokenToInvocationsFixer : ForwardCancellationTokenToInvocationsFixer
+    public sealed partial class CSharpForwardCancellationTokenToInvocationsFixer : ForwardCancellationTokenToInvocationsFixer<ArgumentSyntax>
     {
         protected override bool TryGetInvocation(
             SemanticModel model,
@@ -46,18 +50,46 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         protected override bool TryGetExpressionAndArguments(
             SyntaxNode invocationNode,
             [NotNullWhen(returnValue: true)] out SyntaxNode? expression,
-            out ImmutableArray<SyntaxNode> arguments)
+            out ImmutableArray<ArgumentSyntax> arguments)
         {
             if (invocationNode is InvocationExpressionSyntax invocationExpression)
             {
                 expression = invocationExpression.Expression;
-                arguments = ImmutableArray.CreateRange<SyntaxNode>(invocationExpression.ArgumentList.Arguments);
+                arguments = invocationExpression.ArgumentList.Arguments.ToImmutableArray();
                 return true;
             }
 
             expression = null;
-            arguments = ImmutableArray<SyntaxNode>.Empty;
+            arguments = ImmutableArray<ArgumentSyntax>.Empty;
             return false;
+        }
+
+
+        protected override SyntaxNode GetTypeSyntaxForArray(IArrayTypeSymbol type)
+        {
+            var typeName = Visitor.GenerateTypeSyntax(type.ElementType);
+            if (type.ElementType.IsReferenceType)
+            {
+                var additionalAnnotation = type.NullableAnnotation() switch
+                {
+                    NullableAnnotation.None => NullableSyntaxAnnotationEx.Oblivious,
+                    NullableAnnotation.Annotated => NullableSyntaxAnnotationEx.AnnotatedOrNotAnnotated,
+                    NullableAnnotation.NotAnnotated => NullableSyntaxAnnotationEx.AnnotatedOrNotAnnotated,
+                    _ => null,
+                };
+
+                if (additionalAnnotation is not null)
+                {
+                    typeName = typeName.WithAdditionalAnnotations(additionalAnnotation);
+                }
+            }
+
+            return typeName;
+        }
+
+        protected override IEnumerable<SyntaxNode> GetExpressions(ImmutableArray<ArgumentSyntax> newArguments)
+        {
+            return newArguments.Select(x => x.Expression);
         }
     }
 }

@@ -2479,6 +2479,48 @@ class P
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
+        [Fact]
+        [WorkItem(4842, "https://github.com/dotnet/roslyn-analyzers/issues/4842")]
+        public Task CS_ParamsArray()
+        {
+            // Local static functions are available in C# >= 8.0
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C{
+  public ValueTask<object> FindAsync(params object[] keyValues) => throw new NotImplementedException();
+  public ValueTask<object> FindAsync(object[] keyValues, CancellationToken cancellationToken) => throw new NotImplementedException();
+}
+
+public class B {
+    async Task M(string[] args, CancellationToken token)
+    {
+        var c = new C();
+        var result = await [|c.FindAsync|](5);
+    }
+}";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C{
+  public ValueTask<object> FindAsync(params object[] keyValues) => throw new NotImplementedException();
+  public ValueTask<object> FindAsync(object[] keyValues, CancellationToken cancellationToken) => throw new NotImplementedException();
+}
+
+public class B {
+    async Task M(string[] args, CancellationToken token)
+    {
+        var c = new C();
+        var result = await c.FindAsync(new object[] { 5 }, cancellationToken: token);
+    }
+}";
+            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
         #endregion
 
         #region No Diagnostic - VB
@@ -4633,6 +4675,53 @@ Module Program
         Throw New NotImplementedException
     End Function
 End Module
+";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4842, "https://github.com/dotnet/roslyn-analyzers/issues/4842")]
+        public Task VB_ParamsArray()
+        {
+            string originalCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Public Class C
+    Public Function FindAsync(ParamArray keyValues() As Object) As Task(Of Object)
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function FindAsync(keyValues() As Object, cancellationToken As CancellationToken) As Task(Of Object)
+        Throw New NotImplementedException()
+    End Function
+
+    Async Function M(args As String(), cancellationToken As CancellationToken) As Task
+        Dim c = New C()
+        Dim result = Await c.[|FindAsync|](5)
+    End Function
+End Class
+";
+            string fixedCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Public Class C
+    Public Function FindAsync(ParamArray keyValues() As Object) As Task(Of Object)
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function FindAsync(keyValues() As Object, cancellationToken As CancellationToken) As Task(Of Object)
+        Throw New NotImplementedException()
+    End Function
+
+    Async Function M(args As String(), cancellationToken As CancellationToken) As Task
+        Dim c = New C()
+        Dim result = Await c.FindAsync(New Object() {5}, cancellationToken:=cancellationToken)
+    End Function
+End Class
 ";
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }

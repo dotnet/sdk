@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
@@ -13,7 +15,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
-    public abstract class ForwardCancellationTokenToInvocationsFixer : CodeFixProvider
+    public abstract class ForwardCancellationTokenToInvocationsFixer<TArgumentSyntax> : CodeFixProvider
+        where TArgumentSyntax : SyntaxNode
     {
         // Attempts to retrieve the invocation from the current operation.
         protected abstract bool TryGetInvocation(
@@ -26,13 +29,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         protected abstract bool TryGetExpressionAndArguments(
             SyntaxNode invocationNode,
             [NotNullWhen(returnValue: true)] out SyntaxNode? expression,
-            out ImmutableArray<SyntaxNode> arguments);
+            out ImmutableArray<TArgumentSyntax> arguments);
 
         // Verifies if the specified argument was passed with an explicit name.
         protected abstract bool IsArgumentNamed(IArgumentOperation argumentOperation);
 
         // Retrieves the invocation expression for a conditional operation, which consists of the dot and the method name.
         protected abstract SyntaxNode GetConditionalOperationInvocationExpression(SyntaxNode invocationNode);
+
+        protected abstract SyntaxNode GetTypeSyntaxForArray(IArrayTypeSymbol type);
+        protected abstract IEnumerable<SyntaxNode> GetExpressions(ImmutableArray<TArgumentSyntax> newArguments);
 
         public override ImmutableArray<string> FixableDiagnosticIds =>
             ImmutableArray.Create(ForwardCancellationTokenToInvocationsAnalyzer.RuleId);
@@ -83,14 +89,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             string title = MicrosoftNetCoreAnalyzersResources.ForwardCancellationTokenToInvocationsTitle;
 
-            if (!TryGetExpressionAndArguments(invocation.Syntax, out SyntaxNode? expression, out ImmutableArray<SyntaxNode> newArguments))
+            if (!TryGetExpressionAndArguments(invocation.Syntax, out SyntaxNode? expression, out ImmutableArray<TArgumentSyntax> newArguments))
             {
                 return;
             }
 
+            var paramsArrayType = invocation.Arguments.SingleOrDefault(a => a.ArgumentKind == ArgumentKind.ParamArray)?.Value.Type as IArrayTypeSymbol;
             Task<Document> CreateChangedDocumentAsync(CancellationToken _)
             {
-                SyntaxNode newRoot = TryGenerateNewDocumentRoot(doc, root, invocation, argumentName, parameterName, expression, newArguments);
+                SyntaxNode newRoot = TryGenerateNewDocumentRoot(doc, root, invocation, argumentName, parameterName, expression, newArguments, paramsArrayType);
                 Document newDocument = doc.WithSyntaxRoot(newRoot);
                 return Task.FromResult(newDocument);
             }
@@ -110,9 +117,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             string invocationTokenArgumentName,
             string ancestorTokenParameterName,
             SyntaxNode expression,
-            ImmutableArray<SyntaxNode> newArguments)
+            ImmutableArray<TArgumentSyntax> currentArguments,
+            IArrayTypeSymbol? paramsArrayType)
         {
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(doc);
+
+            ImmutableArray<SyntaxNode> newArguments;
+            if (paramsArrayType is not null)
+            {
+                // current callsite is a params array, we need to wrap all these arguments to preserve sematnics
+                var typeSyntax = GetTypeSyntaxForArray(paramsArrayType);
+                var expressions = GetExpressions(currentArguments);
+                newArguments = ImmutableArray.Create(generator.ArrayCreationExpression(typeSyntax, expressions));
+            }
+            else
+            {
+                // not a params array just pass the existing arguments along
+                newArguments = currentArguments.CastArray<SyntaxNode>();
+            }
 
             SyntaxNode identifier = generator.IdentifierName(invocationTokenArgumentName);
             SyntaxNode cancellationTokenArgument;
