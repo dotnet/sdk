@@ -2,6 +2,22 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">
+        <source>"templatestrings.json" file should only contain elements with type "string". Remove elements that are not strings.</source>
+        <target state="new">"templatestrings.json" file should only contain elements with type "string". Remove elements that are not strings.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Authoring_InvalidManualInstructionLocalizationIndex">
+        <source>In templatestrings.json file under the post action with index {1}, there are localized strings for manual instruction(s) {0}. These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file.</source>
+        <target state="new">In templatestrings.json file under the post action with index {1}, there are localized strings for manual instruction(s) {0}. These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file.</target>
+        <note>{0} is a list of indices separated by comma. Such as "3, 7, 22".
+{1} is a whole number. Such as "5".</note>
+      </trans-unit>
+      <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">
+        <source>Post action(s) with index(es) {0} specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file.</source>
+        <target state="new">Post action(s) with index(es) {0} specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file.</target>
+        <note>{0} is a list of indices separated by comma. Such as "3, 7, 22".</note>
+      </trans-unit>
       <trans-unit id="Authoring_InvalidRegex">
         <source>'{0}' could not be parsed as a regular expression</source>
         <target state="new">'{0}' could not be parsed as a regular expression</target>

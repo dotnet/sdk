@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
@@ -28,18 +29,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             var parameterLocalizations = new Dictionary<string, ParameterSymbolLocalizationModel>();
 
-            List<(string key, string value)> localizedStrings = data.Properties()
-                .Where(p => p.Value.Type == JTokenType.String)
-                .Select(p => (p.Name, p.Value.ToString()))
+            List<(string Key, string Value)> localizedStrings = data.Properties()
+                .Select(p => p.Value.Type == JTokenType.String ? (p.Name, p.Value.ToString()) : throw new Exception(LocalizableStrings.Authoring_InvalidJsonElementInLocalizationFile))
                 .ToList();
 
             var symbols = LoadSymbolModels(localizedStrings);
             var postActions = LoadPostActionModels(localizedStrings);
 
             return new LocalizationModel(
-                name: localizedStrings.FirstOrDefault(s => s.key == "name").value,
-                description: localizedStrings.FirstOrDefault(s => s.key == "description").value,
-                author: localizedStrings.FirstOrDefault(s => s.key == "author").value,
+                name: localizedStrings.FirstOrDefault(s => s.Key == "name").Value,
+                description: localizedStrings.FirstOrDefault(s => s.Key == "description").Value,
+                author: localizedStrings.FirstOrDefault(s => s.Key == "author").Value,
                 symbols,
                 postActions);
         }
@@ -47,19 +47,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <summary>
         /// Generates parameter symbol localization models from the given localized strings.
         /// </summary>
-        private static IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> LoadSymbolModels(List<(string key, string value)> localizedStrings)
+        private static IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> LoadSymbolModels(List<(string Key, string Value)> localizedStrings)
         {
             var results = new Dictionary<string, IParameterSymbolLocalizationModel>();
 
             // Property names are in format: symbols/framework/choices[0]/description
             // Split them using '/' and store together with the localized string.
-            IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings = localizedStrings
-                .Where(s => s.key.StartsWith("symbols" + KeySeparator))
-                .Select(s => (s.key.Split(KeySeparator).AsEnumerable().Skip(1), s.value))
+            IEnumerable<(IEnumerable<string> NameParts, string LocalizedString)> strings = localizedStrings
+                .Where(s => s.Key.StartsWith("symbols" + KeySeparator))
+                .Select(s => (s.Key.Split(KeySeparator).AsEnumerable().Skip(1), s.Value))
                 .ToList();
 
             // Group by symbol name
-            foreach (var parameterParts in strings.GroupBy(p => p.nameParts.FirstOrDefault()))
+            foreach (var parameterParts in strings.GroupBy(p => p.NameParts.FirstOrDefault()))
             {
                 if (string.IsNullOrEmpty(parameterParts.Key))
                 {
@@ -68,12 +68,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 string symbolName = parameterParts.Key;
-                string? displayName = parameterParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "displayName").localizedString;
-                string? description = parameterParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "description").localizedString;
+                string? displayName = parameterParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "displayName").LocalizedString;
+                string? description = parameterParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "description").LocalizedString;
 
                 IReadOnlyDictionary<string, ParameterChoiceLocalizationModel>? choiceModels = LoadChoiceModels(strings
-                    .Where(s => s.nameParts.Skip(1).FirstOrDefault() == "choices")
-                    .Select(s => (s.nameParts.Skip(2), s.localizedString)));
+                    .Where(s => s.NameParts.Skip(1).FirstOrDefault() == "choices")
+                    .Select(s => (s.NameParts.Skip(2), s.LocalizedString)));
 
                 ParameterSymbolLocalizationModel paramLoc = new ParameterSymbolLocalizationModel(
                     symbolName,
@@ -96,11 +96,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <item>netstandard2.0/description</item>
         /// </list>
         /// </summary>
-        private static IReadOnlyDictionary<string, ParameterChoiceLocalizationModel> LoadChoiceModels(IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings)
+        private static IReadOnlyDictionary<string, ParameterChoiceLocalizationModel> LoadChoiceModels(IEnumerable<(IEnumerable<string> NameParts, string LocalizedString)> strings)
         {
             var results = new Dictionary<string, ParameterChoiceLocalizationModel>();
 
-            foreach (var choiceParts in strings.GroupBy(p => p.nameParts.FirstOrDefault()))
+            foreach (var choiceParts in strings.GroupBy(p => p.NameParts.FirstOrDefault()))
             {
                 if (string.IsNullOrEmpty(choiceParts.Key))
                 {
@@ -108,8 +108,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                string? displayName = choiceParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "displayName").localizedString;
-                string? description = choiceParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "description").localizedString;
+                string? displayName = choiceParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "displayName").LocalizedString;
+                string? description = choiceParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "description").LocalizedString;
 
                 results.Add(choiceParts.Key, new ParameterChoiceLocalizationModel(displayName, description));
             }
@@ -120,18 +120,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <summary>
         /// Generates post action localization models from the given localized strings.
         /// </summary>
-        private static IReadOnlyDictionary<int, IPostActionLocalizationModel> LoadPostActionModels(List<(string key, string value)> localizedStrings)
+        private static IReadOnlyDictionary<int, IPostActionLocalizationModel> LoadPostActionModels(List<(string Key, string Value)> localizedStrings)
         {
             var results = new Dictionary<int, IPostActionLocalizationModel>();
 
             // Property names are in format: postActions[2]/manualInstructions[0]/description
             // Split them using '/' and store together with the localized string.
-            IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings = localizedStrings
-                .Where(s => s.key.StartsWith(PostActionIndexPrefix))
-                .Select(s => (s.key.Split(KeySeparator).AsEnumerable(), s.value))
+            IEnumerable<(IEnumerable<string> NameParts, string LocalizedString)> strings = localizedStrings
+                .Where(s => s.Key.StartsWith(PostActionIndexPrefix))
+                .Select(s => (s.Key.Split(KeySeparator).AsEnumerable(), s.Value))
                 .ToList();
 
-            foreach (var postActionParts in strings.GroupBy(p => p.nameParts.FirstOrDefault()))
+            foreach (var postActionParts in strings.GroupBy(p => p.NameParts.FirstOrDefault()))
             {
                 if (!GetIndexFromString(postActionParts.Key, PostActionIndexPrefix, PostActionIndexSuffix, out int postActionIndex))
                 {
@@ -139,10 +139,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                string? description = postActionParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "description").localizedString;
+                string? description = postActionParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "description").LocalizedString;
                 var instructions = LoadManualInstructionModels(postActionParts
-                    .Where(s => s.nameParts.Skip(1).FirstOrDefault().StartsWith(ManualInstructionIndexPrefix))
-                    .Select(s => (s.nameParts.Skip(1), s.localizedString)));
+                    .Where(s => s.NameParts.Skip(1).FirstOrDefault().StartsWith(ManualInstructionIndexPrefix))
+                    .Select(s => (s.NameParts.Skip(1), s.LocalizedString)));
 
                 results[postActionIndex] = new PostActionLocalizationModel()
                 {
@@ -162,11 +162,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <item>manualInstructions[1]/text</item>
         /// </list>
         /// </summary>
-        private static IReadOnlyDictionary<int, string> LoadManualInstructionModels(IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings)
+        private static IReadOnlyDictionary<int, string> LoadManualInstructionModels(IEnumerable<(IEnumerable<string> NameParts, string LocalizedString)> strings)
         {
             var results = new Dictionary<int, string>();
 
-            foreach (var instructionParts in strings.GroupBy(p => p.nameParts.FirstOrDefault()))
+            foreach (var instructionParts in strings.GroupBy(p => p.NameParts.FirstOrDefault()))
             {
                 if (!GetIndexFromString(instructionParts.Key, ManualInstructionIndexPrefix, ManualInstructionIndexSuffix, out int instructionIndex))
                 {
@@ -174,7 +174,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                string? text = instructionParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "text").localizedString;
+                string? text = instructionParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "text").LocalizedString;
                 results[instructionIndex] = text;
             }
 

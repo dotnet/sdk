@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
@@ -42,8 +43,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string? ConfigFile { get; private set; }
 
-        internal static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyDictionary<int, IPostActionLocalizationModel>? localizations)
+        internal static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyDictionary<int, IPostActionLocalizationModel>? localizations, ITemplateEngineHost host)
         {
+            // TODO Host is only here to allow logging. Once ILogger is available, remove host from required parameters.
             List<IPostActionModel> modelList = new List<IPostActionModel>();
 
             if (jObject == null)
@@ -66,21 +68,40 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     args.Add(argInfo.Name, argInfo.Value.ToString());
                 }
 
-                List<ManualInstructionModel> instructionOptions = new ();
+                List<ManualInstructionModel> instructionOptions = new();
 
                 JArray? manualInstructions = action.Get<JArray>("ManualInstructions");
 
                 if (manualInstructions != null)
                 {
+                    int localizedManualInstructions = 0;
                     for (int i = 0; i < manualInstructions.Count; i++)
                     {
                         string? text = string.Empty;
-                        if (!actionLocalizations?.Instructions.TryGetValue(i, out text) ?? true || string.IsNullOrEmpty(text))
+                        if (actionLocalizations?.Instructions.TryGetValue(i, out text) ?? false)
+                        {
+                            localizedManualInstructions++;
+                        }
+
+                        if (string.IsNullOrEmpty(text))
                         {
                             text = manualInstructions[i].ToString("text");
                         }
 
                         instructionOptions.Add(new ManualInstructionModel(text ?? string.Empty, manualInstructions[i].ToString("condition")));
+                    }
+
+                    if (actionLocalizations?.Instructions.Count > localizedManualInstructions)
+                    {
+                        // Localizations provide more translations than the number of manual instructions we have.
+                        string excessInstructionLocalizationIndexes = string.Join(
+                            ", ",
+                            actionLocalizations.Instructions.Keys.Where(k => k < 0 || k > instructionOptions.Count).Select(k => k.ToString()));
+                        host.OnNonCriticalError(
+                            null,
+                            string.Format(LocalizableStrings.Authoring_InvalidManualInstructionLocalizationIndex, excessInstructionLocalizationIndexes, postActionIndex),
+                            nameof(PostActionModel) + ".cs",
+                            0);
                     }
                 }
 
@@ -97,6 +118,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 modelList.Add(model);
             }
 
+            if (localizations?.Count > localizedPostActions)
+            {
+                // Localizations provide more translations than the number of post actions we have.
+                string excessPostActionLocalizationIndexes = string.Join(", ", localizations.Keys.Where(k => k < 0 || k > modelList.Count).Select(k => k.ToString()));
+                host.OnNonCriticalError(
+                    null,
+                    string.Format(LocalizableStrings.Authoring_InvalidPostActionLocalizationIndex, excessPostActionLocalizationIndexes),
+                    nameof(PostActionModel) + ".cs",
+                    0);
+            }
             return modelList;
         }
     }

@@ -10,7 +10,6 @@
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -20,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class LocalizableStrings {
@@ -40,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.TemplateEngine.Orchestrator.RunnableProjects.LocalizableStrings", typeof(LocalizableStrings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.TemplateEngine.Orchestrator.RunnableProjects.LocalizableStrings", typeof(LocalizableStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -58,6 +57,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;templatestrings.json&quot; file should only contain elements with type &quot;string&quot;. Remove elements that are not strings..
+        /// </summary>
+        internal static string Authoring_InvalidJsonElementInLocalizationFile {
+            get {
+                return ResourceManager.GetString("Authoring_InvalidJsonElementInLocalizationFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In templatestrings.json file under the post action with index {1}, there are localized strings for manual instruction(s) {0}. These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file..
+        /// </summary>
+        internal static string Authoring_InvalidManualInstructionLocalizationIndex {
+            get {
+                return ResourceManager.GetString("Authoring_InvalidManualInstructionLocalizationIndex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Post action(s) with index(es) {0} specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file..
+        /// </summary>
+        internal static string Authoring_InvalidPostActionLocalizationIndex {
+            get {
+                return ResourceManager.GetString("Authoring_InvalidPostActionLocalizationIndex", resourceCulture);
             }
         }
         

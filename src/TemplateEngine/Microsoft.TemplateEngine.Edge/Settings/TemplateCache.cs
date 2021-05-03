@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
@@ -17,45 +18,45 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     {
         public TemplateCache(IEnumerable<ScanResult> scanResults, Dictionary<string, DateTime> mountPoints)
         {
-            var localizationMemoryCache = new Dictionary<string, IDictionary<string, ILocalizationLocator>>();
-            var templateMemoryCache = new Dictionary<string, ITemplate>();
+            var localizationsByTemplateId = new Dictionary<string, ILocalizationLocator>();
+
+            string uiLocale = CultureInfo.CurrentUICulture.Name;
+            string uiLocaleWithoutCountry = GetLocaleNameWithoutCountry(uiLocale);
 
             foreach (var scanResult in scanResults)
             {
                 foreach (ILocalizationLocator locator in scanResult.Localizations)
                 {
-                    if (!localizationMemoryCache.TryGetValue(locator.Locale, out IDictionary<string, ILocalizationLocator> localeLocators))
+                    if (uiLocale != locator.Locale &&
+                        localizationsByTemplateId.TryGetValue(locator.Identity, out ILocalizationLocator existingLoc) &&
+                        existingLoc.Locale == GetLocaleNameWithoutCountry(existingLoc.Locale))
                     {
-                        localizationMemoryCache[locator.Locale] = localeLocators = new Dictionary<string, ILocalizationLocator>();
+                        // This localization is not a perfect match and we already have the localizations for countryless locale available. Ignore this one.
+                        continue;
                     }
 
-                    localeLocators[locator.Identity] = locator;
-                }
+                    string templateLocaleWithoutCountry = GetLocaleNameWithoutCountry(locator.Locale);
+                    if (uiLocaleWithoutCountry != templateLocaleWithoutCountry)
+                    {
+                        // UI is "fr", but the localizations are for "en". This localization is not good enough to be a substitude.
+                        continue;
+                    }
 
-                foreach (ITemplate template in scanResult.Templates)
-                {
-                    templateMemoryCache[template.Identity] = template;
+                    // This localization is either the perfect match, or a suitable substitude and there are no other candidates for the job yet.
+                    localizationsByTemplateId[locator.Identity] = locator;
                 }
             }
 
-            string locale = CultureInfo.CurrentUICulture.Name;
-            // These are from langpacks being installed... identity -> locator
-            if (string.IsNullOrEmpty(locale)
-                || !localizationMemoryCache.TryGetValue(locale, out IDictionary<string, ILocalizationLocator> newLocatorsForLocale))
+            var templates = new List<TemplateInfo>();
+            foreach (ITemplate newTemplate in scanResults.SelectMany(s => s.Templates))
             {
-                newLocatorsForLocale = new Dictionary<string, ILocalizationLocator>();
-            }
-
-            List<TemplateInfo> templates = new List<TemplateInfo>();
-            foreach (ITemplate newTemplate in templateMemoryCache.Values)
-            {
-                newLocatorsForLocale.TryGetValue(newTemplate.Identity, out ILocalizationLocator locatorForTemplate);
+                localizationsByTemplateId.TryGetValue(newTemplate.Identity, out ILocalizationLocator locatorForTemplate);
                 TemplateInfo localizedTemplate = LocalizeTemplate(newTemplate, locatorForTemplate);
                 templates.Add(localizedTemplate);
             }
 
             Version = Settings.TemplateInfo.CurrentVersion;
-            Locale = locale;
+            Locale = uiLocale;
             TemplateInfo = templates;
             MountPointsInfo = mountPoints;
         }
@@ -239,6 +240,29 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             return localizedCacheParams;
+        }
+
+        /// <summary>
+        /// Given a locale, removes the country part and returns.
+        /// </summary>
+        /// <param name="locale">Locale in format "language-country".</param>
+        /// <examples>
+        /// <list type="bullet">
+        /// <item>Input "en-US" returns "en".</item>
+        /// <item>Input "de-AU" returns "de".</item>
+        /// <item>Input "de" returns "de".</item>
+        /// </list>
+        /// </examples>
+        private static string GetLocaleNameWithoutCountry(string locale)
+        {
+            int countrySplitterIndex = locale.IndexOf('-');
+            if (countrySplitterIndex != -1)
+            {
+                return locale.Substring(0, countrySplitterIndex);
+            }
+
+            // This locale doesn't have country to begin with.
+            return locale;
         }
     }
 }

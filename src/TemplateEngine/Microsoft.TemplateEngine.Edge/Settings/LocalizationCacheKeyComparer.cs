@@ -11,18 +11,18 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     /// <summary>
     /// Makes an ordinal, case insensitive comparison with the two strings of the given tuples.
     /// </summary>
-    internal class LocalizationCacheKeyComparer : IEqualityComparer<(string? key, string? value)>
+    internal class LocalizationCacheKeyComparer : IEqualityComparer<(string? Key, string? Value)>
     {
-        public bool Equals((string? key, string? value) x, (string? key, string? value) y)
+        public bool Equals((string? Key, string? Value) x, (string? Key, string? Value) y)
         {
-            return string.Equals(x.key, y.key, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(x.value, y.value, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(x.Key, y.Key, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.Value, y.Value, StringComparison.OrdinalIgnoreCase);
         }
 
-        public int GetHashCode((string? key, string? value) obj)
+        public int GetHashCode((string? Key, string? Value) obj)
         {
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.key) * 17 +
-                StringComparer.OrdinalIgnoreCase.GetHashCode(obj.value);
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Key) * 17 +
+                StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Value);
         }
     }
 }
