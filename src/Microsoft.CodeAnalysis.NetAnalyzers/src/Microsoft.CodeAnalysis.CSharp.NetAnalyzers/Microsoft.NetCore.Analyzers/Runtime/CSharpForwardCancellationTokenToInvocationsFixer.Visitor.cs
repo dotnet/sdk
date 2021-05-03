@@ -192,9 +192,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 return false;
             }
 
-            private static SyntaxToken ToIdentifierToken(string identifier, bool isQueryContext = false)
+            private static SyntaxToken ToIdentifierToken(string identifier)
             {
-                var escaped = EscapeIdentifier(identifier, isQueryContext);
+                var escaped = EscapeIdentifier(identifier);
 
                 if (escaped.Length == 0 || escaped[0] != '@')
                 {
@@ -216,7 +216,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 return token;
             }
 
-            private static string EscapeIdentifier(string identifier, bool isQueryContext = false)
+            private static string EscapeIdentifier(string identifier)
             {
                 var nullIndex = identifier.IndexOf('\0');
                 if (nullIndex >= 0)
@@ -225,9 +225,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 }
 
                 var needsEscaping = SyntaxFacts.GetKeywordKind(identifier) != SyntaxKind.None;
-
-                // Check if we need to escape this contextual keyword
-                needsEscaping = needsEscaping || (isQueryContext && SyntaxFacts.IsQueryContextualKeyword(SyntaxFacts.GetContextualKeywordKind(identifier)));
 
                 return needsEscaping ? "@" + identifier : identifier;
             }
