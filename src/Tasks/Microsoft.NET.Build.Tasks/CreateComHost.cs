@@ -12,8 +12,6 @@ namespace Microsoft.NET.Build.Tasks
 {
     public class CreateComHost : TaskWithAssemblyResolveHooks
     {
-        private const int E_INVALIDARG = unchecked((int)0x80070057);
-
         [Required]
         public string ComHostSourcePath { get; set; }
 
@@ -32,7 +30,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (!TypeLibraryDictionaryBuilder.TryCreateTypeLibraryIdDictionary(
                     TypeLibraries,
                     out Dictionary<int, string> typeLibIdMap,
-                    out List<string> errors))
+                    out IEnumerable<string> errors))
                 {
                     foreach (string error in errors)
                     {

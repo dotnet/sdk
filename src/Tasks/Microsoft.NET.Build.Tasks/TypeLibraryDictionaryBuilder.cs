@@ -13,10 +13,11 @@ namespace Microsoft.NET.Build.Tasks
 {
     static class TypeLibraryDictionaryBuilder
     {
-        public static bool TryCreateTypeLibraryIdDictionary(ITaskItem[] typeLibraries, out Dictionary<int, string> typeLibraryIdMap, out List<string> errors)
+        public static bool TryCreateTypeLibraryIdDictionary(ITaskItem[] typeLibraries, out Dictionary<int, string> typeLibraryIdMap, out IEnumerable<string> errors)
         {
             typeLibraryIdMap = null;
-            errors = new List<string>();
+            errors = Enumerable.Empty<string>();
+            List<string> errorsLocal = new List<string>();
             if (typeLibraries is null || typeLibraries.Length == 0)
             {
                 return true;
@@ -29,7 +30,8 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     if (!int.TryParse(idMetadata, out id) || id == 0)
                     {
-                        errors.Add(string.Format(Strings.InvalidTypeLibraryId, idMetadata, typeLibraries[0].ItemSpec));
+                        errorsLocal.Add(string.Format(Strings.InvalidTypeLibraryId, idMetadata, typeLibraries[0].ItemSpec));
+                        errors = errorsLocal;
                         return false;
                     }
                 }
@@ -42,26 +44,27 @@ namespace Microsoft.NET.Build.Tasks
                 string idMetadata = typeLibrary.GetMetadata("Id");
                 if (string.IsNullOrEmpty(idMetadata))
                 {
-                    errors.Add(string.Format(Strings.MissingTypeLibraryId, typeLibrary.ItemSpec));
+                    errorsLocal.Add(string.Format(Strings.MissingTypeLibraryId, typeLibrary.ItemSpec));
                     continue;
                 }
 
                 if (!int.TryParse(idMetadata, out int id) || id == 0)
                 {
-                    errors.Add(string.Format(Strings.InvalidTypeLibraryId, idMetadata, typeLibrary.ItemSpec));
+                    errorsLocal.Add(string.Format(Strings.InvalidTypeLibraryId, idMetadata, typeLibrary.ItemSpec));
                     continue;
                 }
 
                 if (typeLibraryIdMap.ContainsKey(id))
                 {
-                    errors.Add(string.Format(Strings.DuplicateTypeLibraryIds, idMetadata, typeLibraryIdMap[id], typeLibrary.ItemSpec));
+                    errorsLocal.Add(string.Format(Strings.DuplicateTypeLibraryIds, idMetadata, typeLibraryIdMap[id], typeLibrary.ItemSpec));
                 }
                 else
                 {
                     typeLibraryIdMap[id] = typeLibrary.ItemSpec;
                 }
             }
-            return errors.Count == 0;
+            errors = errorsLocal;
+            return errorsLocal.Count == 0;
         }
     }
 }

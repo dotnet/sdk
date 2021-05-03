@@ -36,7 +36,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (!TypeLibraryDictionaryBuilder.TryCreateTypeLibraryIdDictionary(
                     TypeLibraries,
                     out Dictionary<int, string> typeLibIdMap,
-                    out List<string> errors))
+                    out IEnumerable<string> errors))
                 {
                     foreach (string error in errors)
                     {
