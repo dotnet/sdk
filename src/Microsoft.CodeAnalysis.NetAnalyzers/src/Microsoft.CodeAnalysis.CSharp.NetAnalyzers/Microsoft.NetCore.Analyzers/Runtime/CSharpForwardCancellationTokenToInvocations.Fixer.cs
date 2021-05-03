@@ -65,7 +65,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return false;
         }
 
-
         protected override SyntaxNode GetTypeSyntaxForArray(IArrayTypeSymbol type)
         {
             var typeName = TypeNameVisitor.GetTypeSyntaxForSymbol(type.ElementType);
