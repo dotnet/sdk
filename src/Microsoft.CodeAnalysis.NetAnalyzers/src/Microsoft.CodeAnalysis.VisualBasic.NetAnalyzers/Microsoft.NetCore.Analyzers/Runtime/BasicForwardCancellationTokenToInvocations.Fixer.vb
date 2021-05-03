@@ -5,6 +5,7 @@ Imports System.Diagnostics.CodeAnalysis
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
+Imports Microsoft.CodeAnalysis.Editing
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Operations
 Imports Microsoft.CodeAnalysis.Simplification
@@ -73,6 +74,15 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
         Protected Overrides Function GetExpressions(newArguments As ImmutableArray(Of ArgumentSyntax)) As IEnumerable(Of SyntaxNode)
             Return From argument In newArguments
                    Select argument.GetExpression()
+        End Function
+
+        Protected Overrides Function GetArrayCreationExpression(generator As SyntaxGenerator, typeSyntax As SyntaxNode, expressions As IEnumerable(Of SyntaxNode)) As SyntaxNode
+            ' VB SyntaxGenerator will create ArgumentList nodes by default but the parse creates ArrayRankSpecifier nodes
+            ' We contruct the syntax manually to work around this
+            Dim rankSpecifiers = SyntaxFactory.List(Of ArrayRankSpecifierSyntax).Add(SyntaxFactory.ArrayRankSpecifier(SyntaxFactory.Token(SyntaxKind.OpenParenToken), Nothing, SyntaxFactory.Token(SyntaxKind.CloseParenToken)))
+            Dim initializer = SyntaxFactory.CollectionInitializer(SyntaxFactory.SeparatedList(expressions.Cast(Of ExpressionSyntax)))
+            Dim arrayCreationExpression = SyntaxFactory.ArrayCreationExpression(SyntaxFactory.Token(SyntaxKind.NewKeyword), Nothing, CType(typeSyntax, TypeSyntax), Nothing, rankSpecifiers, initializer)
+            Return arrayCreationExpression.WithAdditionalAnnotations(Formatter.Annotation, Simplifier.Annotation)
         End Function
     End Class
 End Namespace

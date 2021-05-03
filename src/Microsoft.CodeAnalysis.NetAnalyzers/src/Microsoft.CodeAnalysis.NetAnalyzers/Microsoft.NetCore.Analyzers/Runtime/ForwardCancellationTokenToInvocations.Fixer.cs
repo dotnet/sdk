@@ -39,6 +39,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         protected abstract SyntaxNode GetTypeSyntaxForArray(IArrayTypeSymbol type);
         protected abstract IEnumerable<SyntaxNode> GetExpressions(ImmutableArray<TArgumentSyntax> newArguments);
+        protected abstract SyntaxNode GetArrayCreationExpression(SyntaxGenerator generator, SyntaxNode typeSyntax, IEnumerable<SyntaxNode> expressions);
 
         public override ImmutableArray<string> FixableDiagnosticIds =>
             ImmutableArray.Create(ForwardCancellationTokenToInvocationsAnalyzer.RuleId);
@@ -128,7 +129,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // current callsite is a params array, we need to wrap all these arguments to preserve sematnics
                 var typeSyntax = GetTypeSyntaxForArray(paramsArrayType);
                 var expressions = GetExpressions(currentArguments);
-                newArguments = ImmutableArray.Create(generator.ArrayCreationExpression(typeSyntax, expressions));
+                newArguments = ImmutableArray.Create(GetArrayCreationExpression(generator, typeSyntax, expressions));
             }
             else
             {

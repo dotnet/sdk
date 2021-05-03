@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.Analyzers.Runtime;
 using NullableAnnotation = Analyzer.Utilities.Lightup.NullableAnnotation;
@@ -90,6 +91,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         protected override IEnumerable<SyntaxNode> GetExpressions(ImmutableArray<ArgumentSyntax> newArguments)
         {
             return newArguments.Select(x => x.Expression);
+        }
+
+        protected override SyntaxNode GetArrayCreationExpression(SyntaxGenerator generator, SyntaxNode typeSyntax, IEnumerable<SyntaxNode> expressions)
+        {
+            return generator.ArrayCreationExpression(typeSyntax, expressions);
         }
     }
 }
