@@ -2483,7 +2483,6 @@ class P
         [WorkItem(4842, "https://github.com/dotnet/roslyn-analyzers/issues/4842")]
         public Task CS_ParamsArray()
         {
-            // Local static functions are available in C# >= 8.0
             string originalCode = @"
 using System;
 using System.Threading;
