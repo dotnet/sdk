@@ -48,7 +48,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Configure analyzers -->
-    </ItemGroup>
+    <ItemGroup>
       <Analyzer Include="@(_RazorAnalyzer)" />
 
       <RazorComponentWithTargetPath
