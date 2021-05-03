@@ -9,8 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     /// Represents an instruction that should be manually performed by the user
     /// as part of a post action.
     /// </summary>
-    public sealed class ManualInstructionModel
-
+    internal sealed class ManualInstructionModel : ConditionedConfigurationElementBase
     {
         public ManualInstructionModel(string text)
         {
@@ -27,11 +26,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// Gets the text explaining the steps the user should take.
         /// </summary>
         public string Text { get; }
-
-        /// <summary>
-        /// Gets the condition that decides wheather this instruction
-        /// should be displayed or ignored.
-        /// </summary>
-        public string? Condition { get; }
     }
 }

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
@@ -10,7 +12,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class PostActionModel : ConditionedConfigurationElementBase, IPostActionModel
     {
-        public string Description { get; private set; }
+        public PostActionModel(
+            string? description,
+            Guid actionId,
+            bool continueOnError,
+            IReadOnlyDictionary<string, string> args,
+            IReadOnlyList<ManualInstructionModel> manualInstructionInfo,
+            string? configFile,
+            string? condition)
+        {
+            Description = description;
+            ActionId = actionId;
+            ContinueOnError = continueOnError;
+            Args = args;
+            ManualInstructionInfo = manualInstructionInfo;
+            ConfigFile = configFile;
+            Condition = condition;
+        }
+
+        public string? Description { get; private set; }
 
         public Guid ActionId { get; private set; }
 
@@ -20,9 +40,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; private set; }
 
-        public string ConfigFile { get; private set; }
+        public string? ConfigFile { get; private set; }
 
-        internal static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyList<IPostActionLocalizationModel> localizations)
+        internal static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyDictionary<int, IPostActionLocalizationModel>? localizations)
         {
             List<IPostActionModel> modelList = new List<IPostActionModel>();
 
@@ -31,11 +51,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return modelList;
             }
 
-            int localizationIndex = 0;
+            int postActionIndex = 0;
+            int localizedPostActions = 0;
             foreach (JToken action in jObject)
             {
-                IPostActionLocalizationModel actionLocalizations = localizationIndex < localizations?.Count ? localizations[localizationIndex] : null;
-                localizationIndex++;
+                IPostActionLocalizationModel? actionLocalizations = null;
+                localizations?.TryGetValue(postActionIndex++, out actionLocalizations);
+                localizedPostActions += actionLocalizations != null ? 1 : 0;
 
                 Dictionary<string, string> args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -46,36 +68,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 List<ManualInstructionModel> instructionOptions = new ();
 
-                JArray manualInstructions = action.Get<JArray>("ManualInstructions");
+                JArray? manualInstructions = action.Get<JArray>("ManualInstructions");
 
                 if (manualInstructions != null)
                 {
                     for (int i = 0; i < manualInstructions.Count; i++)
                     {
-                        string text;
-                        if (actionLocalizations?.Instructions.Count > i && !string.IsNullOrEmpty(actionLocalizations.Instructions[i]))
-                        {
-                            text = actionLocalizations.Instructions[i];
-                        }
-                        else
+                        string? text = string.Empty;
+                        if (!actionLocalizations?.Instructions.TryGetValue(i, out text) ?? true || string.IsNullOrEmpty(text))
                         {
                             text = manualInstructions[i].ToString("text");
                         }
 
-                        instructionOptions.Add(new ManualInstructionModel(text, manualInstructions[i].ToString("condition")));
+                        instructionOptions.Add(new ManualInstructionModel(text ?? string.Empty, manualInstructions[i].ToString("condition")));
                     }
                 }
 
-                PostActionModel model = new PostActionModel()
-                {
-                    Condition = action.ToString(nameof(model.Condition)),
-                    Description = actionLocalizations?.Description ?? action.ToString(nameof(model.Description)),
-                    ActionId = action.ToGuid(nameof(ActionId)),
-                    ContinueOnError = action.ToBool(nameof(model.ContinueOnError)),
-                    Args = args,
-                    ManualInstructionInfo = instructionOptions,
-                    ConfigFile = action.ToString(nameof(model.ConfigFile))
-                };
+                PostActionModel model = new PostActionModel(
+                    actionLocalizations?.Description ?? action.ToString(nameof(model.Description)),
+                    action.ToGuid(nameof(ActionId)),
+                    action.ToBool(nameof(model.ContinueOnError)),
+                    args,
+                    instructionOptions,
+                    action.ToString(nameof(model.ConfigFile)),
+                    action.ToString(nameof(model.Condition))
+                );
 
                 modelList.Add(model);
             }

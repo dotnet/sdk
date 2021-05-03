@@ -18,12 +18,12 @@ namespace Microsoft.TemplateEngine.Abstractions
         string? Author { get; }
 
         /// <summary>
-        /// Get the localized template name.
+        /// Gets the localized template name.
         /// </summary>
         string? Name { get; }
 
         /// <summary>
-        /// Get the localized template description.
+        /// Gets the localized template description.
         /// </summary>
         string? Description { get; }
 
@@ -34,12 +34,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         /// <summary>
         /// Gets the localization models for the post actions defined in this template.
+        /// The keys represend the indices of the post actions as they appear in the template config file.
         /// </summary>
-        IReadOnlyList<IPostActionLocalizationModel?> PostActions { get; }
-
-        /// <summary>
-        /// Gets the localization models for the file localizations defined in this template.
-        /// </summary>
-        IReadOnlyList<IFileLocalizationModel> FileLocalizations { get; }
+        IReadOnlyDictionary<int, IPostActionLocalizationModel> PostActions { get; }
     }
 }

@@ -246,15 +246,13 @@ namespace Microsoft.TemplateEngine.Core.Util
                                 }
                             }
 
-                            spec.LocalizationOperations.TryGetValue(sourceRel, out IReadOnlyList<IOperationProvider> locOperations);
-
                             if (checkingDirWithPlaceholderFile)
                             {
                                 CreateTargetDir(environmentSettings, sourceRel, targetDir, spec);
                             }
                             else if (!copy)
                             {
-                                ProcessFile(file, sourceRel, targetDir, spec, fallback, fileGlobProcessors, locOperations);
+                                ProcessFile(file, sourceRel, targetDir, spec, fallback, fileGlobProcessors);
                             }
                             else
                             {
@@ -274,17 +272,12 @@ namespace Microsoft.TemplateEngine.Core.Util
             }
         }
 
-        private void ProcessFile(IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IEnumerable<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors, IReadOnlyList<IOperationProvider> locOperations)
+        private void ProcessFile(IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IEnumerable<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors)
         {
             IProcessor runner = fileGlobProcessors.FirstOrDefault(x => x.Key.IsMatch(sourceRel)).Value ?? fallback;
             if (runner == null)
             {
                 throw new InvalidOperationException("At least one of [runner] or [fallback] cannot be null");
-            }
-
-            if (locOperations != null)
-            {
-                runner = runner.CloneAndAppendOperations(locOperations);
             }
 
             if (!spec.TryGetTargetRelPath(sourceRel, out string targetRel))

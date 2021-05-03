@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -12,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <summary>
         /// Gets the description of the post action.
         /// </summary>
-        string Description { get; }
+        string? Description { get; }
 
         /// <summary>
         /// Gets the identifier of the action that will be performed.
@@ -26,6 +28,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         bool ContinueOnError { get; }
 
+        /// <summary>
+        /// Gets the arguments for this post action.
+        /// </summary>
         IReadOnlyDictionary<string, string> Args { get; }
 
         /// <summary>
@@ -35,6 +40,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; }
 
-        string ConfigFile { get; }
+        string? ConfigFile { get; }
     }
 }

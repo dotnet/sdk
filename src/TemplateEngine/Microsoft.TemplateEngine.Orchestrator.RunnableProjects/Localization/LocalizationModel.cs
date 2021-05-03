@@ -11,34 +11,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
     internal class LocalizationModel : ILocalizationModel
     {
-        public LocalizationModel() : this(
-            new Dictionary<string, IParameterSymbolLocalizationModel>(),
-            new List<IPostActionLocalizationModel>(),
-            new List<IFileLocalizationModel>())
-        { }
-
         public LocalizationModel(
+            string? name,
+            string? description,
+            string? author,
             IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> parameterSymbols,
-            IReadOnlyList<IPostActionLocalizationModel?> postActions,
-            IReadOnlyList<IFileLocalizationModel> fileLocalizations)
+            IReadOnlyDictionary<int, IPostActionLocalizationModel> postActions)
         {
+            Name = name;
+            Description = description;
+            Author = author;
             ParameterSymbols = parameterSymbols ?? throw new ArgumentNullException(nameof(parameterSymbols));
             PostActions = postActions ?? throw new ArgumentNullException(nameof(postActions));
-            FileLocalizations = fileLocalizations ?? throw new ArgumentNullException(nameof(fileLocalizations));
         }
 
-        public string? Author { get; set; }
+        /// <inheritdoc/>
+        public string? Author { get; }
 
-        public string? Name { get; set; }
+        /// <inheritdoc/>
+        public string? Name { get; }
 
-        public string? Description { get; set; }
+        /// <inheritdoc/>
+        public string? Description { get; }
 
-        public string? Identity { get; set; }
+        /// <inheritdoc/>
+        public IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> ParameterSymbols { get; }
 
-        public IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> ParameterSymbols { get; set; }
-
-        public IReadOnlyList<IPostActionLocalizationModel?> PostActions { get; set; }
-
-        public IReadOnlyList<IFileLocalizationModel> FileLocalizations { get; set; }
+        /// <inheritdoc/>
+        public IReadOnlyDictionary<int, IPostActionLocalizationModel> PostActions { get; }
     }
 }

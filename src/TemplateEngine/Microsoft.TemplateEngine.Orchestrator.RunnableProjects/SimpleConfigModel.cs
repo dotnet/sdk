@@ -403,9 +403,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        // file -> replacements
-        public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; private set; }
-
         internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
         {
             get
@@ -709,24 +706,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             config._specialCustomSetup = specialCustomSetup;
-
-            // localization operations for individual files
-            Dictionary<string, IReadOnlyList<IOperationProvider>> localizations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
-            if (localizationModel != null && localizationModel.FileLocalizations != null)
-            {
-                foreach (IFileLocalizationModel fileLocalization in localizationModel.FileLocalizations)
-                {
-                    List<IOperationProvider> localizationsForFile = new List<IOperationProvider>();
-                    foreach (KeyValuePair<string, string> localizationInfo in fileLocalization.Localizations)
-                    {
-                        localizationsForFile.Add(new Replacement(localizationInfo.Key.TokenConfig(), localizationInfo.Value, null, true));
-                    }
-
-                    localizations.Add(fileLocalization.File, localizationsForFile);
-                }
-            }
-            config.LocalizationOperations = localizations;
-
             return config;
         }
 

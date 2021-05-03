@@ -28,42 +28,35 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             var parameterLocalizations = new Dictionary<string, ParameterSymbolLocalizationModel>();
 
-            // Property names are in format: symbols.framework.choices.0.description
-            // Split them using '.' and store together with the localized string (property value).
-            IEnumerable<(IEnumerable<string> nameParts, string localizedString)> stringsWithNames = data.Properties()
+            List<(string key, string value)> localizedStrings = data.Properties()
                 .Where(p => p.Value.Type == JTokenType.String)
-                .Select(p => (p.Name.Split(KeySeparator).AsEnumerable(), p.Value.ToString()))
+                .Select(p => (p.Name, p.Value.ToString()))
                 .ToList();
 
-            var symbols = LoadSymbolModels(stringsWithNames
-                .Where(s => s.nameParts.FirstOrDefault() == "symbols")
-                .Select(s => (s.nameParts.Skip(1), s.localizedString)));
+            var symbols = LoadSymbolModels(localizedStrings);
+            var postActions = LoadPostActionModels(localizedStrings);
 
-            var postActions = LoadPostActionModels(stringsWithNames
-                .Where(s => s.nameParts.FirstOrDefault().StartsWith(PostActionIndexPrefix))
-                .Select(s => (s.nameParts, s.localizedString)));
-
-            return new LocalizationModel(symbols, postActions, new List<IFileLocalizationModel>())
-            {
-                Author = stringsWithNames.SingleOrDefault(s => s.nameParts.FirstOrDefault() == "author").localizedString,
-                Name = stringsWithNames.SingleOrDefault(s => s.nameParts.FirstOrDefault() == "name").localizedString,
-                Description = stringsWithNames.SingleOrDefault(s => s.nameParts.FirstOrDefault() == "description").localizedString,
-            };
+            return new LocalizationModel(
+                name: localizedStrings.FirstOrDefault(s => s.key == "name").value,
+                description: localizedStrings.FirstOrDefault(s => s.key == "description").value,
+                author: localizedStrings.FirstOrDefault(s => s.key == "author").value,
+                symbols,
+                postActions);
         }
 
         /// <summary>
-        /// Generates parameter symbol localization models. The given name parts should begin with the parameter name
-        /// as shown below and should not contain the string "symbols".
-        /// <list type="table">
-        /// <item>framework/displayName</item>
-        /// <item>framework/description</item>
-        /// <item>framework/choices/net5.0/description</item>
-        /// <item>targetframeworkoverride/description</item>
-        /// </list>
+        /// Generates parameter symbol localization models from the given localized strings.
         /// </summary>
-        private static IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> LoadSymbolModels(IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings)
+        private static IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> LoadSymbolModels(List<(string key, string value)> localizedStrings)
         {
             var results = new Dictionary<string, IParameterSymbolLocalizationModel>();
+
+            // Property names are in format: symbols/framework/choices[0]/description
+            // Split them using '/' and store together with the localized string.
+            IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings = localizedStrings
+                .Where(s => s.key.StartsWith("symbols" + KeySeparator))
+                .Select(s => (s.key.Split(KeySeparator).AsEnumerable().Skip(1), s.value))
+                .ToList();
 
             // Group by symbol name
             foreach (var parameterParts in strings.GroupBy(p => p.nameParts.FirstOrDefault()))
@@ -125,31 +118,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         /// <summary>
-        /// Generates post action localization models from name parts such as:
-        /// <list type="table">
-        /// <item>postActions[0]/description</item>
-        /// <item>postActions[0]/manualInstructions[0]/text</item>
-        /// <item>postActions[0]/manualInstructions[1]/text</item>
-        /// </list>
+        /// Generates post action localization models from the given localized strings.
         /// </summary>
-        private static IReadOnlyList<IPostActionLocalizationModel?> LoadPostActionModels(IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings)
+        private static IReadOnlyDictionary<int, IPostActionLocalizationModel> LoadPostActionModels(List<(string key, string value)> localizedStrings)
         {
-            var results = new List<IPostActionLocalizationModel?>();
+            var results = new Dictionary<int, IPostActionLocalizationModel>();
+
+            // Property names are in format: postActions[2]/manualInstructions[0]/description
+            // Split them using '/' and store together with the localized string.
+            IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings = localizedStrings
+                .Where(s => s.key.StartsWith(PostActionIndexPrefix))
+                .Select(s => (s.key.Split(KeySeparator).AsEnumerable(), s.value))
+                .ToList();
 
             foreach (var postActionParts in strings.GroupBy(p => p.nameParts.FirstOrDefault()))
             {
-                if (!GetIndexFromString(postActionParts.Key, PostActionIndexPrefix, PostActionIndexSuffix, out int postActionIndex) ||
-                    postActionIndex > 256)
+                if (!GetIndexFromString(postActionParts.Key, PostActionIndexPrefix, PostActionIndexSuffix, out int postActionIndex))
                 {
                     // Invalid index.
                     continue;
-                }
-
-                while (results.Count <= postActionIndex)
-                {
-                    // We haven't processed localizations for these post actions. Just put null for now.
-                    // Localization file also may not specify translations for all the post actions.
-                    results.Add(null);
                 }
 
                 string? description = postActionParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "description").localizedString;
@@ -175,24 +162,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <item>manualInstructions[1]/text</item>
         /// </list>
         /// </summary>
-        private static IReadOnlyList<string?> LoadManualInstructionModels(IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings)
+        private static IReadOnlyDictionary<int, string> LoadManualInstructionModels(IEnumerable<(IEnumerable<string> nameParts, string localizedString)> strings)
         {
-            var results = new List<string?>();
+            var results = new Dictionary<int, string>();
 
             foreach (var instructionParts in strings.GroupBy(p => p.nameParts.FirstOrDefault()))
             {
-                if (!GetIndexFromString(instructionParts.Key, ManualInstructionIndexPrefix, ManualInstructionIndexSuffix, out int instructionIndex) ||
-                    instructionIndex > 256)
+                if (!GetIndexFromString(instructionParts.Key, ManualInstructionIndexPrefix, ManualInstructionIndexSuffix, out int instructionIndex))
                 {
                     // Invalid index.
                     continue;
-                }
-
-                while (results.Count <= instructionIndex)
-                {
-                    // We haven't processed localizations for these instructions. Just put null for now.
-                    // Localization file also may not specify translations for all the manual instructions.
-                    results.Add(null);
                 }
 
                 string? text = instructionParts.SingleOrDefault(p => p.nameParts.Skip(1).FirstOrDefault() == "text").localizedString;

@@ -9,8 +9,6 @@ namespace Microsoft.TemplateEngine.Abstractions
     {
         string Locale { get; }
 
-        string MountPointUri { get; }
-
         string ConfigPlace { get; }
 
         string Identity { get; }

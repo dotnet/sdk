@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            GlobalRunSpec runSpec = new GlobalRunSpec(template.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.LocalizationOperations, template.Config.IgnoreFileNames);
+            GlobalRunSpec runSpec = new GlobalRunSpec(template.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.IgnoreFileNames);
 
             foreach (FileSourceMatchInfo source in template.Config.Sources)
             {
@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            GlobalRunSpec runSpec = new GlobalRunSpec(template.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.LocalizationOperations, template.Config.IgnoreFileNames);
+            GlobalRunSpec runSpec = new GlobalRunSpec(template.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.IgnoreFileNames);
             List<IFileChange2> changes = new List<IFileChange2>();
 
             foreach (FileSourceMatchInfo source in template.Config.Sources)
@@ -139,18 +139,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                             if (TryGetLangPackFromFile(locFile, out ILocalizationModel locModel))
                             {
-                                ILocalizationLocator locator = new LocalizationLocator()
-                                {
-                                    Locale = locale,
-                                    MountPointUri = source.MountPointUri,
-                                    ConfigPlace = locFile.FullPath,
-                                    Identity = template.Identity,
-                                    Author = locModel.Author,
-                                    Name = locModel.Name,
-                                    Description = locModel.Description,
-                                    ParameterSymbols = locModel.ParameterSymbols
-                                };
-                                localizations.Add(locator);
+                                localizations.Add(new LocalizationLocator(
+                                    locale,
+                                    locFile.FullPath,
+                                    template.Identity,
+                                    locModel.Author,
+                                    locModel.Name,
+                                    locModel.Description,
+                                    locModel.ParameterSymbols));
                             }
                         }
                     }
