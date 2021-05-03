@@ -67,7 +67,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         protected override SyntaxNode GetTypeSyntaxForArray(IArrayTypeSymbol type)
         {
-            var typeName = Visitor.GenerateTypeSyntax(type.ElementType);
+            var typeName = TypeNameVisitor.GetTypeSyntaxForSymbol(type.ElementType);
             if (type.ElementType.IsReferenceType)
             {
                 var additionalAnnotation = type.NullableAnnotation() switch

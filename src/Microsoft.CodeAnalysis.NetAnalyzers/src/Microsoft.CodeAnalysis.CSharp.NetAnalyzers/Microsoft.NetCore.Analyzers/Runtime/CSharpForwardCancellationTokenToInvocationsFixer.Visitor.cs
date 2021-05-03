@@ -15,11 +15,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
     public sealed partial class CSharpForwardCancellationTokenToInvocationsFixer
     {
-        private class Visitor : SymbolVisitor<TypeSyntax>
+        private class TypeNameVisitor : SymbolVisitor<TypeSyntax>
         {
-            public static TypeSyntax GenerateTypeSyntax(INamespaceOrTypeSymbol symbol)
+            public static TypeSyntax GetTypeSyntaxForSymbol(INamespaceOrTypeSymbol symbol)
             {
-                return symbol.Accept(new Visitor()).WithAdditionalAnnotations(Simplifier.Annotation);
+                return symbol.Accept(new TypeNameVisitor()).WithAdditionalAnnotations(Simplifier.Annotation);
             }
 
             public override TypeSyntax DefaultVisit(ISymbol symbol)
@@ -142,7 +142,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
                 var typeArguments = symbol.IsUnboundGenericType
                     ? Enumerable.Repeat((TypeSyntax)OmittedTypeArgument(), symbol.TypeArguments.Length)
-                    : symbol.TypeArguments.Select(t => GenerateTypeSyntax(t));
+                    : symbol.TypeArguments.Select(t => GetTypeSyntaxForSymbol(t));
 
                 return GenericName(
                     ToIdentifierToken(symbol.Name),

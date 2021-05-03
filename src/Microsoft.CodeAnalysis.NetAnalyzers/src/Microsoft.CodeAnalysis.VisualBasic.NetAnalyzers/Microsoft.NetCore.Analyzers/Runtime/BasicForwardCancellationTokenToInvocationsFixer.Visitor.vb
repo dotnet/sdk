@@ -7,11 +7,11 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
     Partial Public NotInheritable Class BasicForwardCancellationTokenToInvocationsFixer
-        Private Class Visitor
+        Private Class TypeNameVisitor
             Inherits SymbolVisitor(Of TypeSyntax)
 
-            Public Shared Function GenerateTypeSyntax(symbol As INamespaceOrTypeSymbol) As TypeSyntax
-                Return symbol.Accept(New Visitor()).WithAdditionalAnnotations(Simplifier.Annotation)
+            Public Shared Function GetTypeSyntaxForSymbol(symbol As INamespaceOrTypeSymbol) As TypeSyntax
+                Return symbol.Accept(New TypeNameVisitor()).WithAdditionalAnnotations(Simplifier.Annotation)
             End Function
 
             Public Overrides Function DefaultVisit(symbol As ISymbol) As TypeSyntax
@@ -117,7 +117,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 End If
 
                 If symbol.OriginalDefinition.SpecialType = SpecialType.System_Nullable_T Then
-                    Return AddInformationTo(SyntaxFactory.NullableType(symbol.TypeArguments.First().Accept(New Visitor())))
+                    Return AddInformationTo(SyntaxFactory.NullableType(symbol.TypeArguments.First().Accept(New TypeNameVisitor())))
                 End If
 
                 If symbol.TypeParameters.Length = 0 Then
@@ -126,7 +126,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
                 Return SyntaxFactory.GenericName(
                 ToIdentifierToken(symbol.Name),
-                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(symbol.TypeArguments.[Select](Function(t) t.Accept(New Visitor())))))
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(symbol.TypeArguments.[Select](Function(t) t.Accept(New TypeNameVisitor())))))
             End Function
 
             Private Shared Function TryCreateSpecializedNamedTypeSyntax(symbol As INamedTypeSymbol) As TypeSyntax
@@ -182,9 +182,9 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                                                                         SyntaxFactory.SimpleAsClause(
                                                                                     SyntaxFactory.Token(SyntaxKind.AsKeyword),
                                                                                     Nothing,
-                                                                                    GenerateTypeSyntax(element.Type))),
+                                                                                    GetTypeSyntaxForSymbol(element.Type))),
                                                         DirectCast(SyntaxFactory.TypedTupleElement(
-                                                                        GenerateTypeSyntax(element.Type)), TupleElementSyntax)))))
+                                                                        GetTypeSyntaxForSymbol(element.Type)), TupleElementSyntax)))))
             End Function
 
             Private Shared Function ToIdentifierName(text As String) As IdentifierNameSyntax

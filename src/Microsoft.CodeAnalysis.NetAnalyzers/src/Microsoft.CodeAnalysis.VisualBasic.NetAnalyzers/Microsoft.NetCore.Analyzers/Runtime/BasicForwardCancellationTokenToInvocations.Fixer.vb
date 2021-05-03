@@ -67,7 +67,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
         End Function
 
         Protected Overrides Function GetTypeSyntaxForArray(type As IArrayTypeSymbol) As SyntaxNode
-            Return Visitor.GenerateTypeSyntax(type.ElementType)
+            Return TypeNameVisitor.GetTypeSyntaxForSymbol(type.ElementType)
         End Function
 
         Protected Overrides Function GetExpressions(newArguments As ImmutableArray(Of ArgumentSyntax)) As IEnumerable(Of SyntaxNode)
