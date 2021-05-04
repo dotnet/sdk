@@ -1,7 +1,10 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 using System.Collections.Generic;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -13,24 +16,26 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var queue = new Queue<ProjectGraphNode>(projectGraph.EntryPointNodes);
 
-            var seenAspNetCoreProject = false;
+            ProjectInstance? aspnetCoreProject = null;
 
             while (queue.Count > 0)
             {
-                var next = queue.Dequeue();
-                var projectCapability = next.ProjectInstance.GetItems("ProjectCapability");
+                var currentNode = queue.Dequeue();
+                var projectCapability = currentNode.ProjectInstance.GetItems("ProjectCapability");
 
                 foreach (var item in projectCapability)
                 {
                     if (item.EvaluatedInclude == "AspNetCore")
                     {
-                        seenAspNetCoreProject = true;
+                        aspnetCoreProject = currentNode.ProjectInstance;
+                        break;
                     }
                     else if (item.EvaluatedInclude == "WebAssembly")
                     {
-                        if (seenAspNetCoreProject)
+                        // We saw a previous project that was AspNetCore. This must he a blazor hosted app.
+                        if (aspnetCoreProject is not null && aspnetCoreProject != currentNode.ProjectInstance)
                         {
-                            reporter.Verbose("HotReloadProfile: BlazorHosted.");
+                            reporter.Verbose($"HotReloadProfile: BlazorHosted. {aspnetCoreProject.FullPath} references BlazorWebAssembly project {currentNode.ProjectInstance.FullPath}.");
                             return HotReloadProfile.BlazorHosted;
                         }
 
@@ -39,7 +44,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     }
                 }
 
-                foreach (var project in next.ProjectReferences)
+                foreach (var project in currentNode.ProjectReferences)
                 {
                     queue.Enqueue(project);
                 }
