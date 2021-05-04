@@ -10,7 +10,7 @@ using BenchmarkDotNet.Jobs;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.CodeAnalysis.Tools.Perf
+namespace Microsoft.CodeAnalysis.Tools.Perf.Real
 {
     [Config(typeof(RealWorldConfig))]
     public class RealWorldSolution

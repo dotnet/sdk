@@ -44,12 +44,12 @@ try {
     
     if ($micro) {
         # Default case, run very small tests
-        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter *Formatted*'
+        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter Microsoft.CodeAnalysis.Tools.Perf.Micro*'
         exit 0
     }
     
     if ($real) {
-        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter RealWorldSolution'
+        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter Microsoft.CodeAnalysis.Tools.Perf.Real*'
         exit 0
     }
     

@@ -17,8 +17,19 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
             if (Interlocked.Increment(ref s_registered) == 1)
             {
                 s_currentDirectory = Environment.CurrentDirectory;
-                var solutionPath = RepositoryRootDirectory;
-                Environment.CurrentDirectory = solutionPath;
+                var info = new DirectoryInfo(s_currentDirectory);
+                while (true)
+                {
+                    if (File.Exists(Path.Combine(info.FullName, "format.sln")))
+                    {
+                        break;
+                    }
+
+                    info = info.Parent;
+                }
+
+
+                Environment.CurrentDirectory = info.FullName;
             }
         }
 

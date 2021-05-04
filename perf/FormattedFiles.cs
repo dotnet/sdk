@@ -9,7 +9,7 @@ using BenchmarkDotNet.Jobs;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.CodeAnalysis.Tools.Perf
+namespace Microsoft.CodeAnalysis.Tools.Perf.Micro
 {
     [SimpleJob(RuntimeMoniker.NetCoreApp31)]
     public class FormattedFiles
