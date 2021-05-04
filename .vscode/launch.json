@@ -10,7 +10,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp3.1/dotnet-format.dll",
       "args": [
         "-f",
         "-v",
@@ -29,7 +29,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp3.1/dotnet-format.dll",
       "args": [
         "format.sln",
         "-v",
@@ -48,7 +48,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp3.1/dotnet-format.dll",
       "args": [
         "format.sln",
         "--fix-whitespace",
@@ -70,7 +70,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp3.1/dotnet-format.dll",
       "args": [
         "format.sln",
         "--fix-analyzers",

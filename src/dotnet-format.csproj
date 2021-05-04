@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <LangVersion>9.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -19,7 +19,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <!-- Always run on the latest runtime installed. -->
-    <RuntimeFrameworkVersion>2.1.0-rc1</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>3.1.0-preview3.19553.2</RuntimeFrameworkVersion>
     <RollForward>LatestMajor</RollForward>
 
     <IsPackable>true</IsPackable>
@@ -56,6 +56,11 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection"  />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing"  />
     <PackageReference Include="Microsoft.Extensions.Logging"  />
+
+    <!-- Avoids NuGet version conflict. -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <PackageReference Include="System.Security.Principal.Windows" />
+    <PackageReference Include="Microsoft.Win32.Registry" />
   </ItemGroup>
 
   <ItemGroup>
