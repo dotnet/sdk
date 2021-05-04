@@ -70,7 +70,7 @@ try {
 
             if ($stage -eq "format-workspace") {
                 Write-Output "$(Get-Date) - $solutionFile - Formatting Workspace"
-                $output = dotnet.exe "$currentLocation/artifacts/bin/dotnet-format/Release/netcoreapp2.1/dotnet-format.dll" $solution --no-restore -wsa -v diag --check | Out-String
+                $output = dotnet.exe "$currentLocation/artifacts/bin/dotnet-format/Release/netcoreapp3.1/dotnet-format.dll" $solution --no-restore -wsa -v diag --check | Out-String
                 Write-Output $output.TrimEnd()
 
                 # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
@@ -92,7 +92,7 @@ try {
 
     if ($stage -eq "format-folder") {
         Write-Output "$(Get-Date) - $folderName - Formatting Folder"
-        $output = dotnet.exe "$currentLocation/artifacts/bin/dotnet-format/Release/netcoreapp2.1/dotnet-format.dll" -f $repoPath -v diag --check | Out-String
+        $output = dotnet.exe "$currentLocation/artifacts/bin/dotnet-format/Release/netcoreapp3.1/dotnet-format.dll" -f $repoPath -v diag --check | Out-String
         Write-Output $output.TrimEnd()
 
         # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
