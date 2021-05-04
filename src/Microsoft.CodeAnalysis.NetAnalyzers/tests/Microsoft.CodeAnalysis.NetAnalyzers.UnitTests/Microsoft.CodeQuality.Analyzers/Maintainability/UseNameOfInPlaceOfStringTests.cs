@@ -18,6 +18,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         #region Unit tests for no analyzer diagnostic
 
         [Fact]
+        [WorkItem(3023, "https://github.com/dotnet/roslyn-analyzers/issues/3023")]
+        public async Task NoDiagnostic_ArgList()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public void M(__arglist)
+    {
+        M(__arglist());
+    }
+}");
+        }
+
+        [Fact]
         public async Task NoDiagnostic_NoArguments()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
