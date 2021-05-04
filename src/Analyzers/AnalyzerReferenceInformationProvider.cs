@@ -15,6 +15,8 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
     internal class AnalyzerReferenceInformationProvider : IAnalyzerInformationProvider
     {
         private static readonly Dictionary<string, Assembly> s_pathsToAssemblies = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, Assembly> s_namesToAssemblies = new(StringComparer.OrdinalIgnoreCase);
+
         private static readonly object s_guard = new();
 
         public ImmutableDictionary<ProjectId, AnalyzersAndFixers> GetAnalyzersAndFixers(
@@ -53,18 +55,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
                 try
                 {
-                    var analyzerDirectory = new DirectoryInfo(Path.GetDirectoryName(path));
-
-                    // Analyzer packages will put language specific assemblies in subfolders.
-                    if (analyzerDirectory.Name == "cs" || analyzerDirectory.Name == "vb")
-                    {
-                        // Get the root analyzer folder.
-                        analyzerDirectory = analyzerDirectory.Parent;
-                    }
-
-                    var context = new AnalyzerLoadContext(analyzerDirectory.FullName);
-
-                    // First try loading the assembly from disk.
+                    var context = new AnalyzerLoadContext(path);
                     var assembly = context.LoadFromAssemblyPath(path);
 
                     s_pathsToAssemblies.Add(path, assembly);
@@ -74,7 +65,6 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 catch { }
             }
 
-            // Give up.
             return null;
         }
 
@@ -83,18 +73,51 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         internal sealed class AnalyzerLoadContext : AssemblyLoadContext
         {
             internal string AssemblyFolderPath { get; }
+            internal AssemblyDependencyResolver DependencyResolver { get; }
 
-            public AnalyzerLoadContext(string assemblyFolderPath)
+            public AnalyzerLoadContext(string assemblyPath)
             {
-                AssemblyFolderPath = assemblyFolderPath;
+                var analyzerDirectory = new DirectoryInfo(Path.GetDirectoryName(assemblyPath));
+
+                // Analyzer packages will put language specific assemblies in subfolders.
+                if (analyzerDirectory.Name == "cs" || analyzerDirectory.Name == "vb")
+                {
+                    // Get the root analyzer folder.
+                    analyzerDirectory = analyzerDirectory.Parent;
+                }
+
+                AssemblyFolderPath = analyzerDirectory.FullName;
+                DependencyResolver = new AssemblyDependencyResolver(assemblyPath);
             }
 
-            protected override Assembly Load(AssemblyName assemblyName)
+            protected override Assembly? Load(AssemblyName assemblyName)
             {
-                // Since we build against .NET Core 2.1 we do not have access to the
-                // AssemblyDependencyResolver which resolves depenendency assembly paths
-                // from AssemblyName by using the .deps.json.
+                if (s_namesToAssemblies.TryGetValue(assemblyName.FullName, out var assembly))
+                {
+                    return assembly;
+                }
 
+                assembly = TryLoad(assemblyName);
+                if (assembly is not null)
+                {
+                    s_namesToAssemblies[assemblyName.FullName] = assembly;
+                }
+
+                return assembly;
+            }
+
+            private Assembly? TryLoad(AssemblyName assemblyName)
+            {
+                // If the analyzer was packaged with a .deps.json file which described
+                // its dependencies, then the DependencyResolver should locate them for us.
+                var resolvedPath = DependencyResolver.ResolveAssemblyToPath(assemblyName);
+                if (resolvedPath is not null)
+                {
+                    return LoadFromAssemblyPath(resolvedPath);
+                }
+
+                // The dependency resolver failed to locate the dependency so fall back to inspecting
+                // the analyzer package folder.
                 foreach (var searchPath in
                     new[]
                     {
@@ -116,8 +139,20 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     catch { }
                 }
 
-                // Try to load the requested assembly from the default load context.
-                return AssemblyLoadContext.Default.LoadFromAssemblyName(assemblyName);
+                return null;
+            }
+
+            protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+            {
+                // If the analyzer was packaged with a .deps.json file which described
+                // its dependencies, then the DependencyResolver should locate them for us.
+                var resolvedPath = DependencyResolver.ResolveUnmanagedDllToPath(unmanagedDllName);
+                if (resolvedPath is not null)
+                {
+                    return LoadUnmanagedDllFromPath(resolvedPath);
+                }
+
+                return base.LoadUnmanagedDll(unmanagedDllName);
             }
         }
     }
