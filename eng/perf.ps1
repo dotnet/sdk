@@ -32,7 +32,6 @@ try {
     Invoke-Expression 'eng\common\build.ps1 -build -configuration release'
 
     Write-Output "running tests"
-    Invoke-Expression 'dotnet tool restore '
     
     if ($real -or $all) {
         # Real-World case, download the project
@@ -41,21 +40,21 @@ try {
         }
     }
     
-    Invoke-Expression 'cd artifacts\bin\dotnet-format.Performance\Release\netcoreapp2.1'
+    Invoke-Expression 'cd perf'
     
     if ($micro) {
         # Default case, run very small tests
-        Invoke-Expression 'dotnet benchmark dotnet-format.Performance.dll --memory --join --filter *Formatted*'
+        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter *Formatted*'
         exit 0
     }
     
     if ($real) {
-        Invoke-Expression 'dotnet benchmark dotnet-format.Performance.dll --memory --join --filter RealWorldSolution'
+        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter RealWorldSolution'
         exit 0
     }
     
     if ($all) {
-        Invoke-Expression 'dotnet benchmark dotnet-format.Performance.dll --memory --join --filter *'
+        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter *'
         exit 0
     }
 }
