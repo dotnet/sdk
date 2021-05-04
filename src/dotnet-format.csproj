@@ -57,7 +57,7 @@
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing"  />
     <PackageReference Include="Microsoft.Extensions.Logging"  />
 
-    <!-- Avoids NuGet version conflict. -->
+    <!-- Avoid version conflicts during build. -->
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="System.Security.Principal.Windows" />
     <PackageReference Include="Microsoft.Win32.Registry" />
