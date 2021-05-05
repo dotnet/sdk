@@ -63,7 +63,7 @@ dotnet tool install -g dotnet-format
 
 Development builds of `dotnet-format` are being hosted on Azure Packages. You can visit the [dotnet-format Azure Packages page](https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet-tools&view=versions&package=dotnet-format&protocolType=NuGet).
 
-You can install the latest  build of the tool using the following command.
+You can install the latest build of the tool using the following command.
 
 ```console
 dotnet tool install -g dotnet-format --version 6.0.* --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
@@ -132,8 +132,8 @@ You can build and package the tool using the following commands. The instruction
 ```console
 build -pack
 # The final line from the build will read something like
-# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.5.1.0-dev.nupkg'.
-# Use the value that is in the form `5.1.0-dev` as the version in the next command.
+# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.6.0.0-dev.nupkg'.
+# Use the value that is in the form `6.0.0-dev` as the version in the next command.
 dotnet tool install --add-source .\artifacts\packages\Debug\Shipping -g dotnet-format --version <version>
 dotnet format
 ```
