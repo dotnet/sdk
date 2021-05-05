@@ -335,7 +335,7 @@ namespace CompatTests
             Assert.Equal(expected, differences);
         }
 
-                [Fact]
+        [Fact]
         public static void MultipleRightsMissingMembersAreReported()
         {
             string leftSyntax = @"

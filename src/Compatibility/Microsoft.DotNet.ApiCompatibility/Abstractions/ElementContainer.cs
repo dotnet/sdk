@@ -23,11 +23,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <summary>
         /// The element that the container is holding.
         /// </summary>
-        public T Element { get; set; }
+        public T Element { get; private set; }
 
         /// <summary>
         /// The metadata associated to the element.
         /// </summary>
-        public MetadataInformation MetadataInformation { get; set; }
+        public MetadataInformation MetadataInformation { get; private set; }
     }
 }
