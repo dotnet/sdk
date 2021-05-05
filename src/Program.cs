@@ -48,8 +48,8 @@ namespace Microsoft.CodeAnalysis.Tools
             bool noRestore,
             bool folder,
             bool fixWhitespace,
-            string? fixStyle,
-            string? fixAnalyzers,
+            string fixStyle,
+            string fixAnalyzers,
             string[] diagnostics,
             string? verbosity,
             bool check,
@@ -173,8 +173,8 @@ namespace Microsoft.CodeAnalysis.Tools
                     noRestore,
                     logLevel,
                     fixType,
-                    codeStyleSeverity: GetSeverity(fixStyle ?? FixSeverity.Error),
-                    analyzerSeverity: GetSeverity(fixAnalyzers ?? FixSeverity.Error),
+                    codeStyleSeverity: GetSeverity(fixStyle),
+                    analyzerSeverity: GetSeverity(fixAnalyzers),
                     diagnostics: diagnostics.ToImmutableHashSet(),
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
@@ -318,6 +318,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             return severity?.ToLowerInvariant() switch
             {
+                "" => DiagnosticSeverity.Error,
                 FixSeverity.Error => DiagnosticSeverity.Error,
                 FixSeverity.Warn => DiagnosticSeverity.Warning,
                 FixSeverity.Info => DiagnosticSeverity.Info,
