@@ -1,12 +1,12 @@
 # Branches that trigger a build on commit
 trigger:
-- master
+- main
 - feature/*
 - release/*
 
 # Branches that trigger builds on PR
 pr:
-- master
+- main
 - feature/*
 - release/*
 
@@ -113,7 +113,7 @@ jobs:
     vmImage: 'ubuntu-latest'
   timeoutInMinutes: 5
   steps:
-    - script: ./restore.sh && dotnet run --project ./src/dotnet-format.csproj -c Release -- @validate.rsp
+    - script: ./restore.sh && ./.dotnet/dotnet run --project ./src/dotnet-format.csproj -c Release -- @validate.rsp
       displayName: Build and Run dotnet-format
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs

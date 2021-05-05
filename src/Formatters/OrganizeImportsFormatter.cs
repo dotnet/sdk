@@ -20,6 +20,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         protected override string FormatWarningDescription => Resources.Fix_imports_ordering;
         private readonly DocumentFormatter _endOfLineFormatter = new EndOfLineFormatter();
 
+        public override string Name => "IMPORTS";
         public override FixCategory Category => FixCategory.Whitespace;
 
         internal override async Task<SourceText> FormatFileAsync(

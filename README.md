@@ -5,27 +5,27 @@
 
 |Branch| Windows (Debug)| Windows (Release)| Linux (Debug) | Linux (Release) | Localization (Debug) | Localization (Release) |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|
-[master](https://github.com/dotnet/format/tree/master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux_Spanish&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux_Spanish&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|
+[main](https://github.com/dotnet/format/tree/main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Windows&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Windows&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Linux&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Linux&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Linux_Spanish&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Linux_Spanish&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|
 
 
 `dotnet-format` is a code formatter for `dotnet` that applies style preferences to a project or solution. Preferences will be read from an `.editorconfig` file, if present, otherwise a default set of preferences will be used. At this time `dotnet-format` is able to format C# and Visual Basic projects with a subset of [supported .editorconfig options](./docs/Supported-.editorconfig-options.md).
 
 ### New in v5.1
 
-### New Features
+#### New Features
 
 - Can now specify that format run against a solution filter with `dotnet format solution.slnf`
 - Can now filter diagnostics with `dotnet format --fix-analyzers --diagnostics ID0001`
 - Can now generate a MSBuild binary log with `dotnet format --binary-log PATH`
 - Now with support for analyzers such as the [PublicApiAnalyzers](https://github.com/dotnet/roslyn-analyzers#microsoftcodeanalysispublicapianalyzers) which update non-code files
 
-### Breaking Changes
+#### Breaking Changes
 
 - Implicit restore when fixing code style or 3rd party analyzers. Opt-out with `--no-restore` options.
 - Adopt csc style warnings and errors
 - Write warnings and errors to standard error stream
 
-### Changes
+#### Changes
 - [Update System.CommandLine to 2.0.0-beta1.21216.1 (1118)](https://www.github.com/dotnet/format/pull/1118)
 - [Support AdditionalDocument changes (1106)](https://www.github.com/dotnet/format/pull/1106)
 - [Fix typo in examples (1082)](https://www.github.com/dotnet/format/pull/1082)
@@ -79,6 +79,7 @@ Arguments:
   <workspace>    A path to a solution file, a project file, or a folder containing a solution or project file. If a path is not specified then the current directory is used.
 
 Options:
+  --no-restore                        Doesn't execute an implicit restore before formatting.
   --folder, -f                        Whether to treat the `<workspace>` argument as a simple folder of files.
   --fix-whitespace, -w                Run whitespace formatting. Run by default when not applying fixes.
   --fix-style, -s <severity>          Run code style analyzers and apply fixes.
@@ -88,6 +89,7 @@ Options:
   --exclude <exclude>                 A list of relative file or folder paths to exclude from formatting.
   --check                             Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.
   --report <report>                   Accepts a file path, which if provided, will produce a json report in the given directory.
+  --binarylog <binary-log-path>       Log all project or solution load information to a binary log file.
   --verbosity, -v <verbosity>         Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
   --version                           Show version information
 ```
@@ -100,12 +102,13 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | `dotnet format <workspace>`                                      | Formats a specific project or solution.                                                            |
 | `dotnet format <workspace> -f`                                   | Formats a particular folder and subfolders.                                                        |
 | `dotnet format <workspace> --fix-style warn`                     | Fixes only codestyle analyzer warnings.                                                            |
+| `dotnet format <workspace> --fix-style --no-restore`             | Fixes only codestyle analyzer errors without performing an implicit restore.                       |
 | `dotnet format <workspace> --fix-style --diagnostics IDE0005`    | Fixes only codestyle analyzer errors for the IDE0005 diagnostic.                                   |
 | `dotnet format <workspace> --fix-whitespace --fix-style`         | Formats and fixes codestyle analyzer errors.                                                       |
 | `dotnet format <workspace> --fix-analyzers`                      | Fixes only 3rd party analyzer errors.                                                              |
 | `dotnet format <workspace> -wsa`                                 | Formats, fixes codestyle errors, and fixes 3rd party analyzer errors.                              |
 | `dotnet format -v diag`                                          | Formats with very verbose logging.                                                                 |
-| `dotnet format --include Programs.cs Utility\Logging.cs`         | Formats the files Program.cs and Utility\Logging.cs                                                |
+| `dotnet format --include Program.cs Utility\Logging.cs`         | Formats the files Program.cs and Utility\Logging.cs                                                |
 | `dotnet format --check`                                          | Formats but does not save. Returns a non-zero exit code if any files would have been changed.      |
 | `dotnet format --report <report-path>`                           | Formats and saves a json report file to the given directory.                                       |
 | `dotnet format --include test/Utilities/*.cs --folder`           | Formats the files expanded from native shell globbing (e.g. bash). Space-separated list of files are fed to formatter in this case. Also applies to `--exclude` option. |

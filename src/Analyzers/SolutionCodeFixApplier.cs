@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.Extensions.Logging;
@@ -22,54 +23,54 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var fixAllProvider = codeFix.GetFixAllProvider();
-            if (fixAllProvider?.GetSupportedFixAllScopes()?.Contains(FixAllScope.Solution) != true)
-            {
-                logger.LogWarning(Resources.Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution, diagnosticId, codeFix.GetType().Name);
-                return solution;
-            }
-
-            var diagnostic = result.Diagnostics
-                .SelectMany(kvp => kvp.Value)
-                .Where(diagnostic => diagnostic.Location.SourceTree != null)
-                .FirstOrDefault();
-
-            if (diagnostic is null)
-            {
-                return solution;
-            }
-
-            var document = solution.GetDocument(diagnostic.Location.SourceTree);
-
-            if (document is null)
-            {
-                return solution;
-            }
-
-            CodeAction? action = null;
-            var context = new CodeFixContext(document, diagnostic,
-                (a, _) =>
-                {
-                    if (action == null)
-                    {
-                        action = a;
-                    }
-                },
-                cancellationToken);
-
-            await codeFix.RegisterCodeFixesAsync(context).ConfigureAwait(false);
-
-            var fixAllContext = new FixAllContext(
-                document: document,
-                codeFixProvider: codeFix,
-                scope: FixAllScope.Solution,
-                codeActionEquivalenceKey: action?.EquivalenceKey!, // FixAllState supports null equivalence key. This should still be supported.
-                diagnosticIds: new[] { diagnosticId },
-                fixAllDiagnosticProvider: new DiagnosticProvider(result),
-                cancellationToken: cancellationToken);
-
             try
             {
+                var fixAllProvider = codeFix.GetFixAllProvider();
+                if (fixAllProvider?.GetSupportedFixAllScopes()?.Contains(FixAllScope.Solution) != true)
+                {
+                    logger.LogWarning(Resources.Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution, diagnosticId, codeFix.GetType().Name);
+                    return solution;
+                }
+
+                var diagnostic = result.Diagnostics
+                    .SelectMany(kvp => kvp.Value)
+                    .Where(diagnostic => diagnostic.Location.SourceTree != null)
+                    .FirstOrDefault();
+
+                if (diagnostic is null)
+                {
+                    return solution;
+                }
+
+                var document = solution.GetDocument(diagnostic.Location.SourceTree);
+
+                if (document is null)
+                {
+                    return solution;
+                }
+
+                CodeAction? action = null;
+                var context = new CodeFixContext(document, diagnostic,
+                    (a, _) =>
+                    {
+                        if (action == null)
+                        {
+                            action = a;
+                        }
+                    },
+                    cancellationToken);
+
+                await codeFix.RegisterCodeFixesAsync(context).ConfigureAwait(false);
+
+                var fixAllContext = new FixAllContext(
+                    document: document,
+                    codeFixProvider: codeFix,
+                    scope: FixAllScope.Solution,
+                    codeActionEquivalenceKey: action?.EquivalenceKey!, // FixAllState supports null equivalence key. This should still be supported.
+                    diagnosticIds: new[] { diagnosticId },
+                    fixAllDiagnosticProvider: new DiagnosticProvider(result),
+                    cancellationToken: cancellationToken);
+
                 var fixAllAction = await fixAllProvider.GetFixAsync(fixAllContext).ConfigureAwait(false);
                 if (fixAllAction is null)
                 {

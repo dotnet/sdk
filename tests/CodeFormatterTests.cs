@@ -36,6 +36,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         private static readonly string s_codeStyleSolutionPath = Path.Combine("for_code_formatter", "codestyle_solution");
         private static readonly string s_codeStyleSolutionFilePath = Path.Combine(s_codeStyleSolutionPath, "codestyle_solution.sln");
 
+        private static readonly string s_codeStyleSolutionFilterFilePath = Path.Combine(s_codeStyleSolutionPath, "codestyle_solution_filter.slnf");
+
         private static readonly string s_analyzersSolutionPath = Path.Combine("for_code_formatter", "analyzers_solution");
         private static readonly string s_analyzersSolutionFilePath = Path.Combine(s_analyzersSolutionPath, "analyzers_solution.sln");
 
@@ -118,7 +120,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             var logLines = log.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
             Assert.Contains(logLines, line => line.Contains("unformatted_project.AssemblyInfo.cs"));
-            Assert.Contains(logLines, line => line.Contains("NETCoreApp,Version=v3.0.AssemblyAttributes.cs"));
+            Assert.Contains(logLines, line => line.Contains("NETCoreApp,Version=v3.1.AssemblyAttributes.cs"));
         }
 
         [MSBuildFact]
@@ -414,9 +416,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenNotFixingCodeStyle()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -431,9 +430,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenFixingCodeStyleErrors()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -449,9 +445,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task FilesFormattedInCodeStyleSolution_WhenFixingCodeStyleWarnings()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -465,11 +458,26 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [MSBuildFact]
-        public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
+        public async Task FilesFormattedInCodeStyleSolutionFilter_WhenFixingCodeStyleWarnings()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_analyzersSolutionFilePath, _output);
+            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilterFilePath, _output);
             Assert.Equal(0, restoreExitCode);
 
+            await TestFormatWorkspaceAsync(
+                s_codeStyleSolutionFilterFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 1,
+                expectedFileCount: 3,
+                fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle,
+                codeStyleSeverity: DiagnosticSeverity.Warning);
+        }
+
+        [MSBuildFact]
+        public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
+        {
             await TestFormatWorkspaceAsync(
                 s_analyzersSolutionFilePath,
                 include: EmptyFilesList,
@@ -484,9 +492,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task FilesFormattedInAnalyzersSolution_WhenFixingAnalyzerErrors()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_analyzersSolutionFilePath, _output);
-            Assert.Equal(0, restoreExitCode);
-
             await TestFormatWorkspaceAsync(
                 s_analyzersSolutionFilePath,
                 include: EmptyFilesList,
@@ -497,6 +502,39 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 7,
                 fixCategory: FixCategory.Whitespace | FixCategory.Analyzers,
                 analyzerSeverity: DiagnosticSeverity.Error);
+        }
+
+        [MSBuildFact]
+        public async Task AdditionalDocumentsSavedInAnalyzersSolution_WhenFixingAnalyzerErrors()
+        {
+            // Copy solution to temp folder so we can write changes to disk.
+            var solutionPath = CopyToTempFolder(s_analyzersSolutionPath);
+
+            try
+            {
+                // Fix PublicAPI analyzer diagnostics.
+                await TestFormatWorkspaceAsync(
+                    Path.Combine(solutionPath, "library", "library.csproj"),
+                    include: EmptyFilesList,
+                    exclude: EmptyFilesList,
+                    includeGenerated: false,
+                    expectedExitCode: 0,
+                    expectedFilesFormatted: 1,
+                    expectedFileCount: 3,
+                    fixCategory: FixCategory.Analyzers,
+                    analyzerSeverity: DiagnosticSeverity.Warning,
+                    diagnostics: new[] { "RS0016" },
+                    saveFormattedFiles: true);
+
+                // Verify that changes were persisted to disk.
+                var unshippedPublicApi = File.ReadAllText(Path.Combine(solutionPath, "library", "PublicAPI.Unshipped.txt"));
+                Assert.NotEqual(string.Empty, unshippedPublicApi);
+            }
+            finally
+            {
+                // Cleanup
+                Directory.Delete(solutionPath, true);
+            }
         }
 
         internal async Task<string> TestFormatWorkspaceAsync(
@@ -510,7 +548,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             FixCategory fixCategory = FixCategory.Whitespace,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error,
-            string[] diagnostics = null)
+            string[] diagnostics = null,
+            bool noRestore = false,
+            bool saveFormattedFiles = false)
         {
             var currentDirectory = Environment.CurrentDirectory;
             Environment.CurrentDirectory = TestProjectsPathHelper.GetProjectsDirectory();
@@ -524,13 +564,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
             else
             {
-                workspaceType = workspacePath.EndsWith(".sln")
-                    ? WorkspaceType.Solution
-                    : WorkspaceType.Project;
+                workspaceType = workspacePath.EndsWith("proj")
+                    ? WorkspaceType.Project
+                    : WorkspaceType.Solution;
             }
 
             var logger = new TestLogger();
-            var msBuildPath = MSBuildRegistrar.RegisterInstance(logger);
+            var msBuildPath = MSBuildRegistrar.RegisterInstance();
 
             logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, Program.GetRuntimeVersion());
             logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
@@ -539,12 +579,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var formatOptions = new FormatOptions(
                 workspacePath,
                 workspaceType,
+                noRestore,
                 LogLevel.Trace,
                 fixCategory,
                 codeStyleSeverity,
                 analyzerSeverity,
                 diagnostics?.ToImmutableHashSet() ?? ImmutableHashSet<string>.Empty,
-                saveFormattedFiles: false,
+                saveFormattedFiles,
                 changesAreErrors: false,
                 fileMatcher,
                 reportPath: string.Empty,
@@ -567,6 +608,55 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
 
             return log;
+        }
+
+        /// <summary>
+        /// Copies the specified folder to the temp folder and returns the path.
+        /// </summary>
+        private static string CopyToTempFolder(string sourcePath)
+        {
+            var fullPath = Path.GetFullPath(sourcePath, TestProjectsPathHelper.GetProjectsDirectory());
+            var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            DirectoryCopy(fullPath, tempPath, true);
+
+            return tempPath;
+
+            static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+            {
+                // Get the subdirectories for the specified directory.
+                var dir = new DirectoryInfo(sourceDirName);
+
+                if (!dir.Exists)
+                {
+                    throw new DirectoryNotFoundException(
+                        "Source directory does not exist or could not be found: "
+                        + sourceDirName);
+                }
+
+                var dirs = dir.GetDirectories();
+
+                // If the destination directory doesn't exist, create it.
+                Directory.CreateDirectory(destDirName);
+
+                // Get the files in the directory and copy them to the new location.
+                var files = dir.GetFiles();
+                foreach (var file in files)
+                {
+                    var tempPath = Path.Combine(destDirName, file.Name);
+                    file.CopyTo(tempPath, false);
+                }
+
+                // If copying subdirectories, copy them and their contents to new location.
+                if (copySubDirs)
+                {
+                    foreach (var subdir in dirs)
+                    {
+                        var tempPath = Path.Combine(destDirName, subdir.Name);
+                        DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+                    }
+                }
+            }
         }
     }
 }

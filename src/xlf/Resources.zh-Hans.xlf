@@ -52,6 +52,16 @@
         <target state="new">Cannot specify the '--folder' option when running analyzers.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_with_no_restore">
+        <source>Cannot specify the '--folder' option with '--no-restore'.</source>
+        <target state="new">Cannot specify the '--folder' option with '--no-restore'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_when_writing_a_binary_log">
+        <source>Cannot specify the '--folder' option when writing a binary log.</source>
+        <target state="new">Cannot specify the '--folder' option when writing a binary log.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Code_Style">
         <source>Code Style</source>
         <target state="translated">代码样式</target>
@@ -72,6 +82,11 @@
         <target state="translated">无法设置“{0}”的格式。该格式当前仅支持 C# 和 Visual Basic 项目。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Delete_0_characters">
+        <source>Delete {0} characters.</source>
+        <target state="new">Delete {0} characters.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Determining_diagnostics">
         <source>Determining diagnostics...</source>
         <target state="translated">正在确定诊断…</target>
@@ -80,6 +95,11 @@
       <trans-unit id="Determining_formattable_files">
         <source>Determining formattable files.</source>
         <target state="translated">正在确定可格式化的文件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Doesnt_execute_an_implicit_restore_before_formatting">
+        <source>Doesn't execute an implicit restore before formatting.</source>
+        <target state="new">Doesn't execute an implicit restore before formatting.</target>
         <note />
       </trans-unit>
       <trans-unit id="Failed_to_apply_code_fix_0_for_1_2">
@@ -152,9 +172,19 @@
         <target state="translated">在格式化操作中包含所生成的代码文件。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Insert_0">
+        <source>Insert '{0}'.</source>
+        <target state="new">Insert '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Loading_workspace">
         <source>Loading workspace.</source>
         <target state="translated">正在加载工作区。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Log_all_project_or_solution_load_information_to_a_binary_log_file">
+        <source>Log all project or solution load information to a binary log file.</source>
+        <target state="new">Log all project or solution load information to a binary log file.</target>
         <note />
       </trans-unit>
       <trans-unit id="Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
@@ -170,6 +200,11 @@
       <trans-unit id="Project_0_is_using_configuration_from_1">
         <source>Project {0} is using configuration from '{1}'.</source>
         <target state="new">Project {0} is using configuration from '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Replace_0_characters_with_1">
+        <source>Replace {0} characters with '{1}'.</source>
+        <target state="new">Replace {0} characters with '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting">

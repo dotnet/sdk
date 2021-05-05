@@ -10,6 +10,7 @@
 A workspace path is needed when running dotnet-format. By default, the current folder will be used as the workspace path. The workspace path and type of workspace determines which code files are considered for formatting.
 
 - Solutions and Projects - By default dotnet-format will open the workspace path as a MSBuild solution or project.
+- `--no-restore` - When formatting a solution or project the no restore option will stop dotnet-format from performing an implicit package restore.
 - `--folder` - When the folder options is specified the workspace path will be treated as a folder of code files.
 
 *Example:*
@@ -34,7 +35,7 @@ dotnet-format ./src --folder
 
 ### Whitespace formatting
 
-Whitespace formatting includes the core .editorconfig settings along with the placement of spaces and newlines. The whitespace formatter is run by default when not running analysis. When you want to run analysis and fix formatting issues you must specify both.
+Whitespace formatting includes the core .editorconfig settings along with the placement of spaces and newlines. The whitespace formatter is run by default when not running analysis. When only performing whitespace formatting, an implicit restore is not perfomed. When you want to run analysis and fix formatting issues you must specify both.
 
 Whitespace formatting run by default.
 
@@ -52,7 +53,7 @@ dotnet-format ./format.sln --fix-whitespace --fix-style
 
 #### CodeStyle analysis
 
-Running codestyle analysis requires the use of a MSBuild solution or project file as the workspace. Enforces the .NET [Language conventions](https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-language-conventions?view=vs-2019) and [Naming conventions](https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-naming-conventions?view=vs-2019).
+Running codestyle analysis requires the use of a MSBuild solution or project file as the workspace. By default an implicit restore on the solution or project is performed. Enforces the .NET [Language conventions](https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-language-conventions?view=vs-2019) and [Naming conventions](https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-naming-conventions?view=vs-2019).
 
 - `--fix-style <severity>` - Runs analysis and attempts to fix issues with severity equal or greater than specified. If severity is not specified then severity defaults to error.
 
@@ -78,7 +79,7 @@ dotnet-format ./src --folder --fix-style
 
 #### 3rd party analysis
 
-Running 3rd party analysis requires the use of a MSBuild solution or project file as the workspace. 3rd party analyzers are discovered from the `<PackageReferences>` specified in the workspace project files.
+Running 3rd party analysis requires the use of a MSBuild solution or project file as the workspace. By default an implicit restore on the solution or project is performed. 3rd party analyzers are discovered from the `<PackageReferences>` specified in the workspace project files.
 
 - `--fix-analyzers <severity>` - Runs analysis and attempts to fix issues with severity equal or greater than specified. If no severity is specified then this defaults to error.
 
@@ -117,6 +118,7 @@ dotnet format -f --include ./src/ ./tests/ --exclude ./src/submodule-a/ --check
 
 - `--verbosity` - Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
 - `--report` - Writes a json file to the given directory. Defaults to 'format-report.json' if no filename given.
+- `--binarylog` - Writes a [binary log file](https://msbuildlog.com/) to help in diagnosing solution or project load errors. Defaults to 'format.binlog' if no filename given.
 
 ### Validate formatting
 

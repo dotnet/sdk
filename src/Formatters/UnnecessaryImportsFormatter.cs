@@ -20,6 +20,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         protected override string FormatWarningDescription => Resources.Remove_unnecessary_import;
 
+        public override string Name => IDE0005;
         public override FixCategory Category => FixCategory.CodeStyle;
 
         internal override async Task<SourceText> FormatFileAsync(

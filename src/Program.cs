@@ -12,9 +12,10 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.CodeAnalysis.Tools.Logging;
-using Microsoft.CodeAnalysis.Tools.MSBuild;
 using Microsoft.CodeAnalysis.Tools.Utilities;
+using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -44,10 +45,11 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public static async Task<int> Run(
             string? workspace,
+            bool noRestore,
             bool folder,
             bool fixWhitespace,
-            string? fixStyle,
-            string? fixAnalyzers,
+            string fixStyle,
+            string fixAnalyzers,
             string[] diagnostics,
             string? verbosity,
             bool check,
@@ -55,6 +57,7 @@ namespace Microsoft.CodeAnalysis.Tools
             string[] exclude,
             string? report,
             bool includeGenerated,
+            string? binarylog,
             IConsole console = null!)
         {
             if (s_parseResult == null)
@@ -167,10 +170,11 @@ namespace Microsoft.CodeAnalysis.Tools
                 var formatOptions = new FormatOptions(
                     workspacePath,
                     workspaceType,
+                    noRestore,
                     logLevel,
                     fixType,
-                    codeStyleSeverity: GetSeverity(fixStyle ?? FixSeverity.Error),
-                    analyzerSeverity: GetSeverity(fixAnalyzers ?? FixSeverity.Error),
+                    codeStyleSeverity: GetSeverity(fixStyle),
+                    analyzerSeverity: GetSeverity(fixAnalyzers),
                     diagnostics: diagnostics.ToImmutableHashSet(),
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
@@ -182,9 +186,28 @@ namespace Microsoft.CodeAnalysis.Tools
                     formatOptions,
                     logger,
                     cancellationTokenSource.Token,
-                    createBinaryLog: logLevel == LogLevel.Trace).ConfigureAwait(false);
+                    binaryLogPath: GetBinaryLogPath(s_parseResult, binarylog)).ConfigureAwait(false);
 
                 return GetExitCode(formatResult, check);
+
+                static string? GetBinaryLogPath(ParseResult parseResult, string? binarylog)
+                {
+                    if (parseResult.WasOptionUsed("--binarylog"))
+                    {
+                        if (binarylog is null)
+                        {
+                            return Path.Combine(Directory.GetCurrentDirectory(), "format.binlog");
+                        }
+                        else if (Path.GetExtension(binarylog)?.Equals(".binlog") == false)
+                        {
+                            return Path.ChangeExtension(binarylog, ".binlog");
+                        }
+
+                        return binarylog;
+                    }
+
+                    return null;
+                }
             }
             catch (FileNotFoundException fex)
             {
@@ -289,6 +312,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             return severity?.ToLowerInvariant() switch
             {
+                "" => DiagnosticSeverity.Error,
                 FixSeverity.Error => DiagnosticSeverity.Error,
                 FixSeverity.Warn => DiagnosticSeverity.Warning,
                 FixSeverity.Info => DiagnosticSeverity.Info,
@@ -338,15 +362,7 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 // Since we are running as a dotnet tool we should be able to find an instance of
                 // MSBuild in a .NET Core SDK.
-                var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances().First();
-
-                // Since we do not inherit msbuild.deps.json when referencing the SDK copy
-                // of MSBuild and because the SDK no longer ships with version matched assemblies, we
-                // register an assembly loader that will load assemblies from the msbuild path with
-                // equal or higher version numbers than requested.
-                LooseVersionAssemblyLoader.Register(msBuildInstance.MSBuildPath);
-                Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
-
+                var msBuildInstance = Build.Locator.MSBuildLocator.RegisterDefaults();
                 msBuildPath = msBuildInstance.MSBuildPath;
                 return true;
             }

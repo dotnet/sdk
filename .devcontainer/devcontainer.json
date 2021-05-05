@@ -6,8 +6,8 @@
     "dockerfile": "Dockerfile",
     "args": {
       // Update 'VARIANT' to pick a .NET Core version. Rebuild the container if
-      // it already exists to update. Example variants: 2.1-bionic, 3.1-bionic
-      "VARIANT": "3.1-bionic",
+      // it already exists to update. Example variants: 3.1, 5.0, 6.0
+      "VARIANT": "6.0",
       // Options
       "INSTALL_NODE": "false",
       "NODE_VERSION": "lts/*",

@@ -228,6 +228,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var formatOptions = new FormatOptions(
                 workspaceFilePath: project.FilePath!,
                 workspaceType: WorkspaceType.Solution,
+                noRestore: false,
                 logLevel: LogLevel.Trace,
                 fixCategory,
                 codeStyleSeverity,
