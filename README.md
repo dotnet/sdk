@@ -21,9 +21,9 @@
 
 #### Breaking Changes
 
-- Implicit restore when fixing code style or 3rd party analyzers. Opt-out with `--no-restore` options.
-- Adopt csc style warnings and errors
-- Write warnings and errors to standard error stream
+- Implicit restore when fixing code style or 3rd party analyzers (disable with `--no-restore`)
+- Adopt csc style for warnings and errors
+- Warnings and errors are now written to the standard error stream
 
 #### Changes
 - [Update System.CommandLine to 2.0.0-beta1.21216.1 (1118)](https://www.github.com/dotnet/format/pull/1118)
