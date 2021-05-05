@@ -23,7 +23,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
                 var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
                 if (programFiles is not null)
                 {
-                    var sdkPath = Path.Combine(programFiles, "dotnet","sdk");
+                    var sdkPath = Path.Combine(programFiles, "dotnet", "sdk");
                     if (Directory.Exists(sdkPath))
                     {
                         sdkDirectory = new DirectoryInfo(Path.Combine(programFiles, @"dotnet\sdk"));
