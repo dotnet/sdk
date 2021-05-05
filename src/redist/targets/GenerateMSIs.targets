@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">  
   <PropertyGroup>
-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\net5.0\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\net472\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+    <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core'">netcoreapp3.1</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
+    <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net5.0</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
+    <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
+    <MicrosoftDotNetBuildTasksInstallersTaskAssembly>$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\$(MicrosoftDotNetBuildTasksInstallersTaskTargetFramework)\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="CreateLightCommandPackageDrop" AssemblyFile="$(MicrosoftDotNetBuildTasksInstallersTaskAssembly)" />
