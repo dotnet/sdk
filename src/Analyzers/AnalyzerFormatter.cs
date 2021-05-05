@@ -162,7 +162,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                         logger.LogDiagnosticIssue(document, diagnosticPosition, diagnostic, changesAreErrors);
                     }
 
-                    formattedFiles.Add(new FormattedFile(document, new[] { new FileChange(diagnosticPosition, $"{diagnostic.Severity.ToString().ToLower()} {diagnostic.Id}: {diagnostic.GetMessage()}") }));
+                    formattedFiles.Add(new FormattedFile(document, new[] { new FileChange(diagnosticPosition, diagnostic.Id, $"{diagnostic.Severity.ToString().ToLower()} {diagnostic.Id}: {diagnostic.GetMessage()}") }));
                 }
             }
         }
