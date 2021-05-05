@@ -17,7 +17,7 @@
 - Can now specify that format run against a solution filter with `dotnet format solution.slnf`
 - Can now filter diagnostics with `dotnet format --fix-analyzers --diagnostics ID0001`
 - Can now generate a MSBuild binary log with `dotnet format --binary-log PATH`
-- Now with support for analyzers such as the [PublicApiAnalyzers](https://github.com/dotnet/roslyn-analyzers#microsoftcodeanalysispublicapianalyzers) which update non-code files
+- Now with support for analyzers, such as the [PublicApiAnalyzers](https://github.com/dotnet/roslyn-analyzers#microsoftcodeanalysispublicapianalyzers), which update non-code files
 
 #### Breaking Changes
 
