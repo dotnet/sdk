@@ -30,6 +30,12 @@ jobs:
         _targetSolution: "Compilers.sln"
         _branchName: "main"
         _sha: "7e99a9ab877c4233b6a87c555d4c42b29f40c553"
+      sdk:
+        _repo: "https://github.com/dotnet/sdk"
+        _repoName: "dotnet/sdk"
+        _targetSolution: "sdk.sln"
+        _branchName: "master"
+        _sha: "41cd7eb0d418f558c03459dfabef3601019d97b6"
       project-system:
         _repo: "https://github.com/dotnet/project-system"
         _repoName: "dotnet/project-system"
@@ -42,12 +48,24 @@ jobs:
         _targetSolution: "MSBuild.sln"
         _branchName: "master"
         _sha: "0be0490bd1261ff4a6ad64267879b36a63a33faf"
+      aspnetcore:
+        _repo: "https://github.com/dotnet/aspnetcore"
+        _repoName: "dotnet/aspnetcore"
+        _targetSolution: "AspNetCore.sln"
+        _branchName: "main"
+        _sha: "1e19c6fd19fe2f19af25da25f86d90b6fd2623fc"
       efcore:
         _repo: "https://github.com/dotnet/efcore"
         _repoName: "dotnet/efcore"
         _targetSolution: "All.sln"
         _branchName: "main"
         _sha: "f1a0d8c9928668310336565e73861a7e1702ddaf"
+      ef6:
+        _repo: "https://github.com/dotnet/ef6"
+        _repoName: "dotnet/ef6"
+        _targetSolution: "EntityFramework.sln"
+        _branchName: "main"
+        _sha: "ad101227fdf8ef7c2028f1b0ee2f73c426c56a33"
   timeoutInMinutes: 60
   steps:
     - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
