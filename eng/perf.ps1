@@ -36,7 +36,8 @@ try {
     if ($real -or $all) {
         # Real-World case, download the project
         if (-not (Test-Path -LiteralPath "temp\project-system\ProjectSystem.sln")) {
-            Invoke-Expression 'eng\format-verifier.ps1 -repo https://github.com/dotnet/project-system -sha fc3b12e47adaad6e4813dc600acf190156fecc24 -testPath temp -stage prepare'
+            Invoke-Expression 'eng\format-verifier.ps1 -repo https://github.com/dotnet/project-system -sha 88387e5b7f3c9ccd342562a157e67f4a639ef421 -testPath temp -stage prepare'
+            Invoke-Expression 'dotnet restore temp\project-system\ProjectSystem.sln'
         }
     }
     
