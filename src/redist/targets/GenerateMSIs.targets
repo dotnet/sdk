@@ -27,6 +27,8 @@
       <SdkGenerateBundlePowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatebundle.ps1</SdkGenerateBundlePowershellScript>
       <GenerateNupkgPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatenupkg.ps1</GenerateNupkgPowershellScript>
 
+      <FinalizerExe>$(ArtifactsDir)bin/finalizer/$(Architecture)/$(Configuration)/bin/finalizer.exe</FinalizerExe>
+
       <ToolsetInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.NetCore.Toolset.nuspec</ToolsetInstallerNuspecFile>
       <ToolsetInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Toolset.$(Architecture).$(FullNugetVersion).nupkg</ToolsetInstallerNupkgFile>
       <SdkPlaceholderInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.NetCore.SdkPlaceholder.nuspec</SdkPlaceholderInstallerNuspecFile>
@@ -345,6 +347,7 @@
                       '$(DownloadsFolder)$(DownloadedArm64NetCoreAppHostPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
+                      '$(FinalizerExe)' ^
                       '$(LatestTemplateMsiInstallerFile)' ^
                       '$(ManifestsMsiInstallerFile)' ^
                       '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^

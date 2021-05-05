@@ -175,10 +175,10 @@
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
         <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
       </MsiPackage>
-    <MsiPackage SourceFile="$(var.ManifestsMsiSourcePath)">
+      <MsiPackage SourceFile="$(var.ManifestsMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
         <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
-    </MsiPackage>
+      </MsiPackage>
       <MsiPackage SourceFile="$(var.CLISDKMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
         <MsiProperty Name="DOTNETHOME_X86" Value="[DOTNETHOME_X86]" />
@@ -194,6 +194,20 @@
       <?elseif $(var.Platform)=arm64?>
         <PackageGroupRef Id="PG_AspNetCoreSharedFramework_arm64"/>
       <?endif?>
+
+      <!-- 
+        The finalizer is not an actual installation package. We "detect" the EXE
+        based on the action the bundle is performing to ensure that it runs the uninstall
+        command only when the bundle is being removed. The package is always installable because the bundle
+        will remove (execute the uninstall command) the package if it is not installable when then bundle is 
+        being installed.
+      -->
+      <ExePackage SourceFile="$(var.FinalizerExeSourcePath)"
+                  DetectCondition="WixBundleAction >= 3"
+                  Id="Finalizer"
+                  InstallCondition="WixBundleAction >= 4"
+                  UninstallCommand="&quot;[WixBundleLog_Finalizer]&quot; $(var.SdkDependent)"
+                  Vital="no" />
     </Chain>
   </Bundle>
 
