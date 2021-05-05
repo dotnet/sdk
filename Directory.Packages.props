@@ -2,7 +2,7 @@
   <!-- <Import Project="eng\Versions.props" /> -->
 
   <PropertyGroup>
-    <MicrosoftBuildVersion>15.3.409</MicrosoftBuildVersion>
+    <MicrosoftBuildVersion>16.5.0</MicrosoftBuildVersion>
     <MicrosoftExtensionsVersion>5.0.0-preview.7.20364.11</MicrosoftExtensionsVersion>
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
     <NuGetVersion>5.8.0-preview.3.6823</NuGetVersion>
@@ -35,8 +35,13 @@
     <PackageVersion Include="NuGet.Packaging" Version="$(NuGetVersion)" />
     <PackageVersion Include="NuGet.Protocol" Version="$(NuGetVersion)" />
     <PackageVersion Include="NuGet.Versioning" Version="$(NuGetVersion)" />
-    <PackageVersion Include="System.CommandLine.Rendering" Version="0.3.0-alpha.20371.2" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta1.20371.2" />
+    <PackageVersion Include="System.CommandLine.Rendering" Version="0.3.0-alpha.21216.1" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta1.21216.1" />
     <PackageVersion Include="System.Text.Json" Version="$(MicrosoftExtensionsVersion)" />
+
+    <!-- Avoid version conflicts during build. -->
+    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="$(MicrosoftExtensionsVersion)"/>
+    <PackageVersion Include="System.Security.Principal.Windows" Version="$(MicrosoftExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Win32.Registry" Version="$(MicrosoftExtensionsVersion)" />
   </ItemGroup>
 </Project>
