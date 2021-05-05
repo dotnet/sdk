@@ -168,7 +168,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
                 var changePosition = originalText.Lines.GetLinePosition(change.Span.Start);
 
-                var fileChange = new FileChange(changePosition, $"{FormatWarningDescription}{changeMessage}");
+                var fileChange = new FileChange(changePosition, Name, $"{FormatWarningDescription}{changeMessage}");
                 fileChanges.Add(fileChange);
 
                 if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Debug)
