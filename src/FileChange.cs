@@ -10,13 +10,16 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public int CharNumber { get; }
 
+        public string DiagnosticId { get; }
+
         public string FormatDescription { get; }
 
-        public FileChange(LinePosition changePosition, string formatDescription)
+        public FileChange(LinePosition changePosition, string diagnosticId, string formatDescription)
         {
             // LinePosition is zero based so we need to increment to report numbers people expect.
             LineNumber = changePosition.Line + 1;
             CharNumber = changePosition.Character + 1;
+            DiagnosticId = diagnosticId;
             FormatDescription = formatDescription;
         }
     }
