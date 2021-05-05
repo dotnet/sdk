@@ -59,17 +59,17 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Equal(0, result.Errors.Count);
             Assert.Equal(0, result.UnmatchedTokens.Count);
             Assert.Equal(0, result.UnparsedTokens.Count);
-            Assert.True(result.ValueForOption<bool>("folder"));
-            Assert.Collection(result.ValueForOption<IEnumerable<string>>("include"),
+            Assert.True(result.ValueForOption<bool>("--folder"));
+            Assert.Collection(result.ValueForOption<IEnumerable<string>>("--include"),
                 i0 => Assert.Equal("include1", i0),
                 i1 => Assert.Equal("include2", i1));
-            Assert.Collection(result.ValueForOption<IEnumerable<string>>("exclude"),
+            Assert.Collection(result.ValueForOption<IEnumerable<string>>("--exclude"),
                 i0 => Assert.Equal("exclude1", i0),
                 i1 => Assert.Equal("exclude2", i1));
-            Assert.True(result.ValueForOption<bool>("check"));
-            Assert.Equal("report", result.ValueForOption("report"));
-            Assert.Equal("detailed", result.ValueForOption("verbosity"));
-            Assert.True(result.ValueForOption<bool>("include-generated"));
+            Assert.True(result.ValueForOption<bool>("--check"));
+            Assert.Equal("report", result.ValueForOption("--report"));
+            Assert.Equal("detailed", result.ValueForOption("--verbosity"));
+            Assert.True(result.ValueForOption<bool>("--include-generated"));
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.CommandResult.GetArgumentValueOrDefault("workspace"));
+            Assert.Equal("workspaceValue", result.ValueForArgument("workspace"));
         }
 
         [Fact]
@@ -97,8 +97,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.CommandResult.GetArgumentValueOrDefault("workspace"));
-            Assert.Equal("detailed", result.ValueForOption("verbosity"));
+            Assert.Equal("workspaceValue", result.ValueForArgument("workspace"));
+            Assert.Equal("detailed", result.ValueForOption("--verbosity"));
         }
 
         [Fact]
@@ -112,8 +112,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.CommandResult.GetArgumentValueOrDefault("workspace"));
-            Assert.Equal("detailed", result.ValueForOption("verbosity"));
+            Assert.Equal("workspaceValue", result.ValueForArgument("workspace"));
+            Assert.Equal("detailed", result.ValueForOption("--verbosity"));
         }
 
         [Fact]
@@ -295,6 +295,45 @@ report.json
 
             // Assert
             Assert.Equal(1, result.Errors.Count);
+        }
+
+        [Fact]
+        public void CommandLine_Diagnostics_FailsIfDiagnosticNoSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--diagnostics" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+        }
+
+        [Fact]
+        public void CommandLine_Diagnostics_DoesNotFailIfDiagnosticIsSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--diagnostics", "RS0016" });
+
+            // Assert
+            Assert.Equal(0, result.Errors.Count);
+        }
+
+        [Fact]
+        public void CommandLine_Diagnostics_DoesNotFailIfMultipleDiagnosticAreSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--diagnostics", "RS0016", "RS0017", "RS0018" });
+
+            // Assert
+            Assert.Equal(0, result.Errors.Count);
         }
     }
 }
