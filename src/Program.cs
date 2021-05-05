@@ -266,8 +266,14 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 for (var i = 0; Console.In.Peek() != -1; ++i)
                 {
+                    var line = Console.In.ReadLine();
+                    if (line is null)
+                    {
+                        continue;
+                    }
+
                     Array.Resize(ref subject, subject.Length + 1);
-                    subject[i] = Console.In.ReadLine();
+                    subject[i] = line;
                 }
 
                 return true;
@@ -331,11 +337,11 @@ namespace Microsoft.CodeAnalysis.Tools
             return logger!;
         }
 
-        private static string GetVersion()
+        private static string? GetVersion()
         {
             return Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                .InformationalVersion;
+                ?.InformationalVersion;
         }
 
         private static bool TryGetDotNetCliVersion([NotNullWhen(returnValue: true)] out string? dotnetVersion)
