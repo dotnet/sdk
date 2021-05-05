@@ -10,14 +10,14 @@
 
 `dotnet-format` is a code formatter for `dotnet` that applies style preferences to a project or solution. Preferences will be read from an `.editorconfig` file, if present, otherwise a default set of preferences will be used. At this time `dotnet-format` is able to format C# and Visual Basic projects with a subset of [supported .editorconfig options](./docs/Supported-.editorconfig-options.md).
 
-### New in v5.1
+### New in v5.1.225507
 
 #### New Features
 
 - Can now specify that format run against a solution filter with `dotnet format solution.slnf`
 - Can now filter diagnostics with `dotnet format --fix-analyzers --diagnostics ID0001`
 - Can now generate a MSBuild binary log with `dotnet format --binary-log PATH`
-- Now with support for analyzers, such as the [PublicApiAnalyzers](https://github.com/dotnet/roslyn-analyzers#microsoftcodeanalysispublicapianalyzers), which update non-code files
+- Can now support analyzers which update non-code files, such as the [PublicApiAnalyzers](https://github.com/dotnet/roslyn-analyzers#microsoftcodeanalysispublicapianalyzers)
 
 #### Breaking Changes
 
@@ -26,6 +26,8 @@
 - Warnings and errors are now written to the standard error stream
 
 #### Changes
+- [Add DiagnosticId to the format report (1133)](https://github.com/dotnet/format/pull/1133)
+- [Reenabled .NET Core 2.1 support (1021)](https://github.com/dotnet/format/pull/1021)
 - [Update System.CommandLine to 2.0.0-beta1.21216.1 (1118)](https://www.github.com/dotnet/format/pull/1118)
 - [Support AdditionalDocument changes (1106)](https://www.github.com/dotnet/format/pull/1106)
 - [Fix typo in examples (1082)](https://www.github.com/dotnet/format/pull/1082)
@@ -45,7 +47,7 @@
 
 ### .NET Core 2.1 SDK Support
 
-The dotnet-format 5.x releases will continue to support users who only have .NET Core 2.1 SDK installed. Releases with bug fixes will continue until it reaches [end of support](https://dotnet.microsoft.com/platform/support/policy/dotnet-core) on August 21, 2021. Version 6.0 will require .NET Core SDK 3.1 or higher.
+The dotnet-format 5.1.x releases will continue to support users who only have .NET Core 2.1 SDK installed. Releases with bug fixes will continue until it reaches [end of support](https://dotnet.microsoft.com/platform/support/policy/dotnet-core) on August 21, 2021. Version 6.0 will require .NET Core SDK 3.1 or higher.
 
 ### How To Install
 
