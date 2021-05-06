@@ -19,7 +19,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             bool continueOnError,
             IReadOnlyDictionary<string, string> args,
             IReadOnlyList<ManualInstructionModel> manualInstructionInfo,
-            string? configFile,
             string? condition)
         {
             Description = description;
@@ -27,7 +26,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ContinueOnError = continueOnError;
             Args = args;
             ManualInstructionInfo = manualInstructionInfo;
-            ConfigFile = configFile;
             Condition = condition;
         }
 
@@ -40,8 +38,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IReadOnlyDictionary<string, string> Args { get; private set; }
 
         public IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; private set; }
-
-        public string? ConfigFile { get; private set; }
 
         internal static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyDictionary<int, IPostActionLocalizationModel>? localizations, ITemplateEngineHost host)
         {
@@ -111,7 +107,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     action.ToBool(nameof(model.ContinueOnError)),
                     args,
                     instructionOptions,
-                    action.ToString(nameof(model.ConfigFile)),
                     action.ToString(nameof(model.Condition))
                 );
 

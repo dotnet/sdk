@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
     public interface IConditionedConfigurationElement
     {
         /// <summary>
-        /// Gets or sets the condition string to be evaluated.
+        /// Gets the condition string to be evaluated.
         /// </summary>
         string? Condition { get; }
 

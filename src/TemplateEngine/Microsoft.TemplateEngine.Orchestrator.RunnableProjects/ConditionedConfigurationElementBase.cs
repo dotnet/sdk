@@ -18,7 +18,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         private bool? _conditionResult;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the condition string to be evaluated.
+        /// </summary>
         public string? Condition { get; set; }
 
         /// <inheritdoc/>

@@ -38,7 +38,5 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Manual instructions are used when the host does not have the associated post action processor implemented.
         /// </summary>
         string? ManualInstructions { get; }
-
-        string? ConfigFile { get; }
     }
 }

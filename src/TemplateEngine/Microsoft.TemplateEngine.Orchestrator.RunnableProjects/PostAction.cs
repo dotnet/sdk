@@ -19,8 +19,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string IPostAction.ManualInstructions => ManualInstructions;
 
-        string IPostAction.ConfigFile => ConfigFile;
-
         string IPostAction.Description => Description;
 
         internal string Description { get; private set; }
@@ -32,8 +30,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         internal IReadOnlyDictionary<string, string> Args { get; private set; }
 
         internal string ManualInstructions { get; private set; }
-
-        internal string ConfigFile { get; private set; }
 
         internal static List<IPostAction> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IPostActionModel> modelList, IVariableCollection rootVariableCollection)
         {
@@ -85,7 +81,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     ContinueOnError = model.ContinueOnError,
                     Args = model.Args,
                     ManualInstructions = chosenInstruction,
-                    ConfigFile = model.ConfigFile,
                 };
 
                 actionList.Add(postAction);

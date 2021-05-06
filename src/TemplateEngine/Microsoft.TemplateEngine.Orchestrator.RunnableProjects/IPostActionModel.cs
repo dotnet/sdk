@@ -39,7 +39,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// An instruction is only considered if the "condition" evaluates to true.
         /// </summary>
         IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; }
-
-        string? ConfigFile { get; }
     }
 }

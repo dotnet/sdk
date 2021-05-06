@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 
@@ -11,11 +10,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
     internal class PostActionLocalizationModel : IPostActionLocalizationModel
     {
-        /// <summary>
-        /// Identifier for the post action as declared in the culture-neutral template config file.
-        /// </summary>
-        public Guid ActionId { get; set; }
-
         /// <summary>
         /// Localized description of the post action.
         /// </summary>

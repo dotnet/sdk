@@ -3,15 +3,15 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface IPostActionLocalizationModel
     {
-        Guid ActionId { get; }
-
+        /// <summary>
+        /// Gets the localized description of this post action.
+        /// </summary>
         string? Description { get; }
 
         /// <summary>

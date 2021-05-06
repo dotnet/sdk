@@ -18,7 +18,5 @@ namespace Microsoft.TemplateEngine.Mocks
         public IReadOnlyDictionary<string, string> Args { get; set; }
 
         public string ManualInstructions { get; set; }
-
-        public string ConfigFile { get; set; }
     }
 }
