@@ -3,11 +3,13 @@
   <UsingTask TaskName="Microsoft.DotNet.PackageValidation.ValidatePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
   <UsingTask TaskName="Microsoft.DotNet.PackageValidation.GetLastStablePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
   
-  <PropertyGroup Condition="'$(EnablePackageBaselineValidation)' == 'true' and '$(IsCrossTargetingBuild)' == 'true'">
-    <!-- Static graph restore invokes CollectPackageDownloads from an outer build, non static graph restore doesn't.
-         To avoid multiple target invocations, hook onto an outer build extension point for non static graph restore. -->
-    <AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets Condition="'$(IsGraphBuild)' == 'true'">CollectPackageDownloads</AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets>
-    <AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets Condition="'$(IsGraphBuild)' != 'true'">_GenerateRestoreDependencies</AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets>
+  <PropertyGroup>
+    <!-- Create the intermediate file which contains the PackageDownload item before static graph restore (out-of-proc) is invoked. -->
+    <AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets Condition="'$(RestoreUseStaticGraphEvaluation)' == 'true'">Restore</AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets>
+    <!-- For a non static graph restore with a single tfm, hook onto CollectPackageDownloads which will then be invoked just once. -->
+    <AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets Condition="'$(AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets)' == '' and '$(TargetFrameworks)' == '' and '$(TargetFramework)' != ''">CollectPackageDownloads</AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets>
+    <!-- For a non static graph restore with multiple tfms, hook onto the target that fans out to the individual tfm restore graph walk operations. -->
+    <AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets Condition="'$(AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets)' == ''">_GetAllRestoreProjectPathItems</AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets>
   </PropertyGroup>
 
   <Target Name="RunPackageValidation"
@@ -15,6 +17,8 @@
           Condition="$(IsPackable) == 'true'">
     <PropertyGroup Condition="'$(EnablePackageBaselineValidation)' == 'true' and
                               '$(PackageValidationBaselinePath)' == ''">
+      <PackageValidationBaselineName Condition="'$(PackageValidationBaselineName)' == ''">$(_PackageValidationBaselineName)</PackageValidationBaselineName>
+      <PackageValidationBaselineVersion Condition="'$(PackageValidationBaselineVersion)' == ''">$(_PackageValidationBaselineVersion)</PackageValidationBaselineVersion>
       <PackageValidationBaselinePath>$([MSBuild]::NormalizePath('$(NuGetPackageRoot)', '$(PackageValidationBaselineName)', '$(PackageValidationBaselineVersion)', '$(PackageValidationBaselineName).$(PackageValidationBaselineVersion).nupkg'))</PackageValidationBaselinePath>
     </PropertyGroup>
 
@@ -41,8 +45,7 @@
           BeforeTargets="$(AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets)"
           DependsOnTargets="_GetRestoreSettings"
           Condition="'$(EnablePackageBaselineValidation)' == 'true' and
-                     '$(PackageValidationBaselinePath)' == '' and
-                     '$(IsCrossTargetingBuild)' == 'true'">
+                     '$(PackageValidationBaselinePath)' == ''">
     <PropertyGroup>
       <PackageValidationBaselineName Condition="'$(PackageValidationBaselineName)' == ''">$(PackageId)</PackageValidationBaselineName>
     </PropertyGroup>
@@ -64,11 +67,14 @@
     <PropertyGroup>
       <_PackageValidationIntermediateBaselineFile>$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).packagevalidation.g.props</_PackageValidationIntermediateBaselineFile>
       <_PackageValidationIntermediateBaselineFileContent>
-<![CDATA[<Project Condition="'%24(EnablePackageBaselineValidation)' == 'true'">
-  <PropertyGroup>
-    <PackageValidationBaselineName Condition="'%24(PackageValidationBaselineName)' == ''">$(PackageValidationBaselineName)</PackageValidationBaselineName>
-    <PackageValidationBaselineVersion Condition="'%24(PackageValidationBaselineVersion)' == ''">$(PackageValidationBaselineVersion)</PackageValidationBaselineVersion>
+<![CDATA[<Project>
+  <PropertyGroup Condition="'%24(EnablePackageBaselineValidation)' == 'true'">
+    <_PackageValidationBaselineName>$(PackageValidationBaselineName)</_PackageValidationBaselineName>
+    <_PackageValidationBaselineVersion>$(PackageValidationBaselineVersion)</_PackageValidationBaselineVersion>
   </PropertyGroup>
+  <ItemGroup Condition="'%24(EnablePackageBaselineValidation)' == 'true'">
+    <PackageDownload Include="$(PackageValidationBaselineName)" Version="[$(PackageValidationBaselineVersion)]" />
+  </ItemGroup>
 </Project>]]>
       </_PackageValidationIntermediateBaselineFileContent>
     </PropertyGroup>
