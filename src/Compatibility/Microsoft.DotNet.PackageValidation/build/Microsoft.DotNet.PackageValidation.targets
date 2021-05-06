@@ -50,7 +50,7 @@
     <!-- Relying on the private _OutputSources property to pass in the current feeds. -->
     <Microsoft.DotNet.PackageValidation.GetLastStablePackage
       PackageId="$(PackageValidationBaselineName)"
-      PackageVersion="$(Version)"
+      PackageVersion="$(PackageVersion)"
       NugetFeeds="$(_OutputSources)"
       Condition="'$(PackageValidationBaselineVersion)' == ''">
       <Output TaskParameter="LastStableVersion" PropertyName="PackageValidationBaselineVersion" />
