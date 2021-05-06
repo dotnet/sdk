@@ -9,81 +9,21 @@ namespace Microsoft.DotNet.PackageValidation
 {
     public class PackageValidationLogger : ILogger
     {
-        public void Log(LogLevel level, string data)
-        {
-            switch (level)
-            {
-                case LogLevel.Debug:
-                    LogDebug(data);
-                    break;
-                case LogLevel.Error:
-                    LogError(data);
-                    break;
-                case LogLevel.Information:
-                    LogInformation(data);
-                    break;
-                case LogLevel.Minimal:
-                    LogMinimal(data);
-                    break;
-                case LogLevel.Verbose:
-                    LogVerbose(data);
-                    break;
-                case LogLevel.Warning:
-                    LogWarning(data);
-                    break;
-            }
-        }
-
-        public void Log(ILogMessage message)
-        {
-            Log(message.Level, message.Message);
-        }
-
-        public Task LogAsync(LogLevel level, string data)
-        {
-            Log(level, data);
-            return Task.FromResult(0);
-        }
-
-        public Task LogAsync(ILogMessage message)
-        {
-            Log(message);
-            return Task.FromResult(0);
-        }
-
-        public void LogDebug(string data)
-        {
-            Console.WriteLine($"[DEBUG] {data}");
-        }
-
+        public void Log(LogLevel level, string data) => throw new NotImplementedException();
+        public void Log(ILogMessage message) => throw new NotImplementedException();
+        public Task LogAsync(LogLevel level, string data) => throw new NotImplementedException();
+        public Task LogAsync(ILogMessage message) => throw new NotImplementedException();
+        public void LogDebug(string data) => throw new NotImplementedException();
+        public void LogInformation(string data) => throw new NotImplementedException();
+        public void LogInformationSummary(string data) => throw new NotImplementedException();
+        public void LogMinimal(string data) => throw new NotImplementedException();
+        public void LogVerbose(string data) => throw new NotImplementedException();
+        public void LogWarning(string data) => throw new NotImplementedException();
         public void LogError(string data)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"[Error] {data}");
-        }
-
-        public void LogInformation(string data)
-        {
-            Console.WriteLine($"[Info] {data}");
-        }
-
-        public void LogInformationSummary(string data)
-        {
-            Console.WriteLine($"[Info Summary] {data}");
-        }
-
-        public void LogMinimal(string data)
-        {
-            Console.WriteLine($"{data}");
-        }
-
-        public void LogVerbose(string data)
-        {
-            Console.WriteLine($"[Verbose] {data}");
-        }
-
-        public void LogWarning(string data)
-        {
-            Console.WriteLine($"[Warning] {data}");
+            Console.ResetColor();
         }
     }
 }

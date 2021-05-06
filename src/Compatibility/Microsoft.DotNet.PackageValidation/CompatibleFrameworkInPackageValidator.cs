@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.PackageValidation
                         package.PackagePath,
                         compileTimeAsset.Path,
                         Path.GetFileName(package.PackagePath),
-                        Resources.CompatibleFrameworkInPackageValidatorHeader,
+                        string.Format(Resources.CompatibleFrameworkInPackageValidatorHeader, ((NuGetFramework)compatibleFrameworkAsset.Properties["tfm"]).ToString(), framework.ToString()),
                         string.Format(Resources.ApiCompatibilityHeader, compatibleFrameworkAsset.Path, compileTimeAsset.Path));
                 }
             }

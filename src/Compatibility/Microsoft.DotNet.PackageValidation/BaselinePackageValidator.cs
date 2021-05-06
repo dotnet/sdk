@@ -41,27 +41,30 @@ namespace Microsoft.DotNet.PackageValidation
         /// <param name="package">Nuget Package that needs to be validated.</param>
         public void Validate(Package package)
         {
-            foreach (ContentItem baselineCompileTimeAsset in _baselinePackage.CompileAssets)
+            if (package.HasRefAssemblies)
             {
-                NuGetFramework baselineTargetFramework = (NuGetFramework)baselineCompileTimeAsset.Properties["tfm"];
-                ContentItem latestCompileTimeAsset = package.FindBestCompileAssetForFramework(baselineTargetFramework);
-                if (latestCompileTimeAsset == null)
+                foreach (ContentItem baselineCompileTimeAsset in _baselinePackage.CompileAssets)
                 {
-                    if (!_diagnosticBag.Filter(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
+                    NuGetFramework baselineTargetFramework = (NuGetFramework)baselineCompileTimeAsset.Properties["tfm"];
+                    ContentItem latestCompileTimeAsset = package.FindBestCompileAssetForFramework(baselineTargetFramework);
+                    if (latestCompileTimeAsset == null)
                     {
-                        string message = string.Format(Resources.MissingTargetFramework, baselineTargetFramework.ToString());
-                        _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
+                        if (!_diagnosticBag.Filter(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
+                        {
+                            string message = string.Format(Resources.MissingTargetFramework, baselineTargetFramework.ToString());
+                            _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
+                        }
                     }
-                }
-                else if (_runApiCompat)
-                {
-                    _apiCompatRunner.QueueApiCompat(_baselinePackage.PackagePath,
-                        baselineCompileTimeAsset.Path,
-                        package.PackagePath,
-                        latestCompileTimeAsset.Path,
-                        Path.GetFileName(package.PackagePath),
-                        Resources.BaselineVersionValidatorHeader,
-                        string.Format(Resources.ApiCompatibilityHeader, baselineCompileTimeAsset.Path, latestCompileTimeAsset.Path));
+                    else if (_runApiCompat)
+                    {
+                        _apiCompatRunner.QueueApiCompat(_baselinePackage.PackagePath,
+                            baselineCompileTimeAsset.Path,
+                            package.PackagePath,
+                            latestCompileTimeAsset.Path,
+                            Path.GetFileName(package.PackagePath),
+                            Resources.BaselineVersionValidatorHeader,
+                            string.Format(Resources.ApiCompatibilityBaselineHeader, baselineCompileTimeAsset.Path, latestCompileTimeAsset.Path, _baselinePackage.Version, package.Version));
+                    }
                 }
             }
 
@@ -87,7 +90,7 @@ namespace Microsoft.DotNet.PackageValidation
                             latestRuntimeAsset.Path,
                             Path.GetFileName(package.PackagePath),
                             Resources.BaselineVersionValidatorHeader,
-                            string.Format(Resources.ApiCompatibilityHeader, baselineRuntimeAsset.Path, latestRuntimeAsset.Path));
+                            string.Format(Resources.ApiCompatibilityBaselineHeader, baselineRuntimeAsset.Path, latestRuntimeAsset.Path, _baselinePackage.Version, package.Version));
                     }
                 }
             }
@@ -115,7 +118,7 @@ namespace Microsoft.DotNet.PackageValidation
                             latestRuntimeSpecificAsset.Path,
                             Path.GetFileName(package.PackagePath),
                             Resources.BaselineVersionValidatorHeader,
-                            string.Format(Resources.ApiCompatibilityHeader, baselineRuntimeSpecificAsset.Path, latestRuntimeSpecificAsset.Path));
+                            string.Format(Resources.BaselineVersionValidatorHeader, baselineRuntimeSpecificAsset.Path, latestRuntimeSpecificAsset.Path, _baselinePackage.Version, package.Version));
                     }
                 }
             }

@@ -35,9 +35,7 @@ namespace Microsoft.DotNet.PackageValidation
         {
             foreach (var apicompatTuples in _queue.Distinct())
             {
-                // TODO: Add Assembly version check.
                 // TODO: Add optimisations tuples.
-                // TODO: Run it Asynchronously.
                 using (Stream leftAssemblyStream = GetFileStreamFromPackage(apicompatTuples.leftAssemblyPackagePath, apicompatTuples.leftAssemblyRelativePath))
                 using (Stream rightAssemblyStream = GetFileStreamFromPackage(apicompatTuples.rightAssemblyPackagePath, apicompatTuples.rightAssemblyRelativePath))
                 {
