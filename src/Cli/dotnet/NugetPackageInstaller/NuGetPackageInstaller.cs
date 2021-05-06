@@ -270,9 +270,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             if (!accumulativeSearchResults.Any())
             {
-                throw new NuGetPackageInstallerException(
+                throw new Exception(
                     string.Format(
-                        LocalizableStrings.IsNotFoundInNuGetFeeds,
+                        LocalizableStrings.FailedToLoadNuGetSourceSourceIsNotValid,
                         packageIdentifier,
                         string.Join(", ", packageSources.Select(source => source.Source))));
             }

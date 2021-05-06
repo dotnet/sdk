@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _workloadInstaller = workloadInstaller ?? WorkloadInstallerFactory.GetWorkloadInstaller(_reporter, sdkFeatureBand, _workloadResolver);
             userHome = userHome ?? CliFolderPathCalculator.DotnetHomePath;
             var tempPackagesDir = new DirectoryPath(Path.Combine(userHome, ".dotnet", "sdk-advertising-temp"));
-            _nugetPackageDownloader = nugetPackageDownloader ?? new NuGetPackageDownloader(tempPackagesDir, new NullLogger());
+            _nugetPackageDownloader = nugetPackageDownloader ?? new NuGetPackageDownloader(tempPackagesDir);
             _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(_reporter, _workloadManifestProvider, _nugetPackageDownloader, userHome);
         }
 
@@ -134,7 +134,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             else
             {
-                InstallWorkloads(_workloadIds.Select(id => new WorkloadId(id)), _skipManifestUpdate, _includePreviews);
+                try
+                {
+                    InstallWorkloads(_workloadIds.Select(id => new WorkloadId(id)), _skipManifestUpdate, _includePreviews);
+                }
+                catch (Exception e)
+                {
+                    // Don't show entire stack trace
+                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadInstallationFailed, e.Message), e);
+                }
             }
 
             return 0;
@@ -218,7 +226,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             _workloadInstaller.GetWorkloadInstallationRecordRepository()
                                 .WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                         }
-
                     },
                     rollback: () => {
                         foreach (var manifest in manifestsToUpdate)
