@@ -28,23 +28,6 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
         }
 
         [Fact]
-        public void TopologicalSort_UsesFullName()
-        {
-            // Arrange
-            var assembly1 = GetAssembly("System.Private.CoreLib", Array.Empty<AssemblyName>());
-            var assembly2 = GetAssembly("System.Text.Json", new[] { new AssemblyName("System.Private.CoreLib"), });
-            var assembly3 = GetAssembly("System.Text.Json, Culture=fr-FR", new[] { new AssemblyName("System.Private.CoreLib"), });
-            var assembly4 = GetAssembly("Microsoft.AspNetCore.Components", new[] { new AssemblyName("System.Private.CoreLib"), });
-            var assembly5 = GetAssembly("Microsoft.AspNetCore.Components.Web", new[] { new AssemblyName("Microsoft.AspNetCore.Components"), new AssemblyName("System.Text.Json"), });
-            var assembly6 = GetAssembly("Microsoft.AspNetCore.Components.Web, Culture=fr-FR", new[] { new AssemblyName("System.Private.CoreLib"), });
-
-            var sortedList = HotReloadAgent.TopologicalSort(new[] { assembly2, assembly4, assembly1, assembly3, assembly5, assembly6 });
-
-            // Assert
-            Assert.Equal(new[] { assembly1, assembly2, assembly4, assembly3, assembly5, assembly6, }, sortedList);
-        }
-
-        [Fact]
         public void TopologicalSort_IgnoresUnknownReferencedAssemblies()
         {
             // Arrange

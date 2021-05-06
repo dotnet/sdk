@@ -6,8 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.Watcher.Tools;
 
 namespace Microsoft.Extensions.HotReload
@@ -54,37 +52,37 @@ namespace Microsoft.Extensions.HotReload
 
         private UpdateHandlerActions GetMetadataUpdateHandlerActions()
         {
-            // In a typical app, a handful of assemblies will have metadata handler attributes. We need to discover these assemblies
-            // and ensure that they are topologically sorted so that handlers in a dependency are executed before the dependent (e.g.
-            // the reflection cache action in System.Private.CoreLib is executed before System.Text.Json clears it's own cache.)
-            // This would ensure that there is a well-defined order and that caches and updates more lower in the application stack
-            // are up to date before ones higher in the stack are recomputed.
-            var assemblies = GetAssembliesWithMetadataUpdateHandlerAttributes();
-            var sortedAssemblies = TopologicalSort(CollectionsMarshal.AsSpan(assemblies));
+            // We need to execute MetadataUpdateHandlers in a well-defined order. For v1, the strategy that is used is to topologically
+            // sort assemblies so that handlers in a dependency are executed before the dependent (e.g. the reflection cache action
+            // in System.Private.CoreLib is executed before System.Text.Json clears it's own cache.)
+            // This would ensure that caches and updates more lower in the application stack are up to date
+            // before ones higher in the stack are recomputed.
+            var sortedAssemblies = TopologicalSort(AppDomain.CurrentDomain.GetAssemblies());
             var handlerActions = new UpdateHandlerActions();
-            foreach (var assembly in CollectionsMarshal.AsSpan(sortedAssemblies))
+            foreach (var assembly in sortedAssemblies)
             {
-                foreach (var attribute in assembly.GetCustomAttributes<MetadataUpdateHandlerAttribute>())
+                foreach (var attr in assembly.GetCustomAttributesData())
                 {
-                    GetHandlerActions(handlerActions, attribute.HandlerType);
+                    // Look up the attribute by name rather than by type. This would allow netstandard targeting libraries to
+                    // define their own copy without having to cross-compile.
+                    if (attr.AttributeType.FullName != "System.Reflection.Metadata.MetadataUpdateHandlerAttribute")
+                    {
+                        continue;
+                    }
+
+                    IList<CustomAttributeTypedArgument> ctorArgs = attr.ConstructorArguments;
+                    if (ctorArgs.Count != 1 ||
+                        ctorArgs[0].Value is not Type handlerType)
+                    {
+                        _log($"'{attr}' found with invalid arguments.");
+                        continue;
+                    }
+
+                    GetHandlerActions(handlerActions, handlerType);
                 }
             }
 
             return handlerActions;
-
-            static List<Assembly> GetAssembliesWithMetadataUpdateHandlerAttributes()
-            {
-                var assemblies = new List<Assembly>();
-                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-                {
-                    if (assembly.IsDefined(typeof(MetadataUpdateHandlerAttribute)))
-                    {
-                        assemblies.Add(assembly);
-                    }
-                }
-
-                return assemblies;
-            }
         }
 
         internal void GetHandlerActions(UpdateHandlerActions handlerActions, Type handlerType)
@@ -160,7 +158,7 @@ namespace Microsoft.Extensions.HotReload
             }
         }
 
-        internal static List<Assembly> TopologicalSort(ReadOnlySpan<Assembly> assemblies)
+        internal static List<Assembly> TopologicalSort(Assembly[] assemblies)
         {
             var sortedAssemblies = new List<Assembly>(assemblies.Length);
 
@@ -171,9 +169,9 @@ namespace Microsoft.Extensions.HotReload
                 Visit(assemblies, assembly, sortedAssemblies, visited);
             }
 
-            static void Visit(ReadOnlySpan<Assembly> assemblies, Assembly assembly, List<Assembly> sortedAssemblies, HashSet<string> visited)
+            static void Visit(Assembly[] assemblies, Assembly assembly, List<Assembly> sortedAssemblies, HashSet<string> visited)
             {
-                var assemblyIdentifier = assembly.FullName ?? assembly.ToString();
+                var assemblyIdentifier = assembly.GetName().Name!;
                 if (!visited.Add(assemblyIdentifier))
                 {
                     return;
@@ -181,7 +179,7 @@ namespace Microsoft.Extensions.HotReload
 
                 foreach (var dependencyName in assembly.GetReferencedAssemblies())
                 {
-                    var dependency = FindDependency(assemblies, dependencyName);
+                    var dependency = Array.Find(assemblies, a => a.GetName().Name == dependencyName.Name);
                     if (dependency is not null)
                     {
                         Visit(assemblies, dependency, sortedAssemblies, visited);
@@ -189,19 +187,6 @@ namespace Microsoft.Extensions.HotReload
                 }
 
                 sortedAssemblies.Add(assembly);
-            }
-
-            static Assembly? FindDependency(ReadOnlySpan<Assembly> assemblies, AssemblyName dependencyName)
-            {
-                foreach (var assembly in assemblies)
-                {
-                    if (assembly.FullName == dependencyName.FullName)
-                    {
-                        return assembly;
-                    }
-                }
-
-                return null;
             }
 
             return sortedAssemblies;
@@ -219,7 +204,7 @@ namespace Microsoft.Extensions.HotReload
                 // TODO: Get types to pass in
                 Type[]? updatedTypes = null;
 
-                InvokeActions(handlerActions.Before, updatedTypes);
+                handlerActions.Before.ForEach(b => b(updatedTypes));
 
                 for (var i = 0; i < deltas.Count; i++)
                 {
@@ -231,23 +216,15 @@ namespace Microsoft.Extensions.HotReload
                     }
                 }
 
-                InvokeActions(handlerActions.ClearCache, updatedTypes);
-                InvokeActions(handlerActions.After, updatedTypes);
-                InvokeActions(handlerActions.UpdateApplication, updatedTypes);
+                handlerActions.ClearCache.ForEach(a => a(updatedTypes));
+                handlerActions.After.ForEach(c => c(updatedTypes));
+                handlerActions.UpdateApplication.ForEach(a => a(updatedTypes));
 
                 _log("Deltas applied.");
             }
             catch (Exception ex)
             {
                 _log(ex.ToString());
-            }
-
-            static void InvokeActions(List<Action<Type[]?>> actions, Type[]? updatedTypes)
-            {
-                foreach (var action in CollectionsMarshal.AsSpan(actions))
-                {
-                    action(updatedTypes);
-                }
             }
         }
 
