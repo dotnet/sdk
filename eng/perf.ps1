@@ -32,30 +32,30 @@ try {
     Invoke-Expression 'eng\common\build.ps1 -build -configuration release'
 
     Write-Output "running tests"
-    Invoke-Expression 'dotnet tool restore '
     
     if ($real -or $all) {
         # Real-World case, download the project
         if (-not (Test-Path -LiteralPath "temp\project-system\ProjectSystem.sln")) {
-            Invoke-Expression 'eng\format-verifier.ps1 -repo https://github.com/dotnet/project-system -sha fc3b12e47adaad6e4813dc600acf190156fecc24 -testPath temp -stage prepare'
+            Invoke-Expression 'eng\format-verifier.ps1 -repo https://github.com/dotnet/project-system -sha 88387e5b7f3c9ccd342562a157e67f4a639ef421 -testPath temp -stage prepare'
+            Invoke-Expression 'dotnet restore temp\project-system\ProjectSystem.sln'
         }
     }
     
-    Invoke-Expression 'cd artifacts\bin\dotnet-format.Performance\Release\netcoreapp2.1'
+    Invoke-Expression 'cd perf'
     
     if ($micro) {
         # Default case, run very small tests
-        Invoke-Expression 'dotnet benchmark dotnet-format.Performance.dll --memory --join --filter *Formatted*'
+        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter Microsoft.CodeAnalysis.Tools.Perf.Micro*'
         exit 0
     }
     
     if ($real) {
-        Invoke-Expression 'dotnet benchmark dotnet-format.Performance.dll --memory --join --filter RealWorldSolution'
+        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter Microsoft.CodeAnalysis.Tools.Perf.Real*'
         exit 0
     }
     
     if ($all) {
-        Invoke-Expression 'dotnet benchmark dotnet-format.Performance.dll --memory --join --filter *'
+        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter *'
         exit 0
     }
 }

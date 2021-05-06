@@ -2,14 +2,16 @@
 
 using System;
 using System.Collections.Immutable;
+
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
+
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Perf
 {
-    [SimpleJob(RuntimeMoniker.NetCoreApp21)]
+    [SimpleJob(RuntimeMoniker.NetCoreApp31)]
     public class NoFilesFormatted
     {
         private const string FormattedProjectPath = "tests/projects/for_code_formatter/formatted_project/";
@@ -22,8 +24,8 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
         [IterationSetup]
         public void NoFilesFormattedSetup()
         {
-            MSBuildRegister.RegisterInstance();
             SolutionPathSetter.SetCurrentDirectory();
+            MSBuildRegister.RegisterInstance(Environment.CurrentDirectory);
         }
 
         [Benchmark(Description = "No Files are Formatted (folder)")]
