@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
 
         private const string InstrumentationKey = "74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
         private const string TelemetryOptout = "DOTNET_CLI_TELEMETRY_OPTOUT";
+        private const string TelemetryOptoutCommon = "DO_NOT_TRACK";
 
         public bool Enabled { get; }
 
@@ -42,7 +43,9 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 environmentProvider = new EnvironmentProvider();
             }
 
-            Enabled = !environmentProvider.GetEnvironmentVariableAsBool(TelemetryOptout, false) && PermissionExists(sentinel);
+            Enabled = !environmentProvider.GetEnvironmentVariableAsBool(TelemetryOptout, false)
+                   && !environmentProvider.GetEnvironmentVariableAsBool(TelemetryOptoutCommon, false)
+                   && PermissionExists(sentinel);
 
             if (!Enabled)
             {

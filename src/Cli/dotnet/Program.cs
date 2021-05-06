@@ -158,7 +158,8 @@ namespace Microsoft.DotNet.Cli
                     bool generateAspNetCertificate =
                         environmentProvider.GetEnvironmentVariableAsBool("DOTNET_GENERATE_ASPNET_CERTIFICATE", defaultValue: true);
                     bool telemetryOptout =
-                      environmentProvider.GetEnvironmentVariableAsBool("DOTNET_CLI_TELEMETRY_OPTOUT", defaultValue: false);
+                      environmentProvider.GetEnvironmentVariableAsBool("DOTNET_CLI_TELEMETRY_OPTOUT", defaultValue: false)
+                      || environmentProvider.GetEnvironmentVariableAsBool("DO_NOT_TRACK", defaultValue: false);
                     bool addGlobalToolsToPath =
                         environmentProvider.GetEnvironmentVariableAsBool("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", defaultValue: true);
                     bool nologo =

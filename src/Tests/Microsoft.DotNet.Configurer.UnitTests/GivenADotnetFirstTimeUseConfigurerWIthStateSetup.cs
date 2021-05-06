@@ -86,6 +86,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _environmentProvider
                 .Setup(p => p.GetEnvironmentVariableAsBool("DOTNET_GENERATE_ASPNET_CERTIFICATE", It.IsAny<bool>()))
                 .Returns(DOTNET_GENERATE_ASPNET_CERTIFICATE);
+            // XXX: Handle DO_NOT_TRACK?
             _environmentProvider
                 .Setup(p => p.GetEnvironmentVariableAsBool("DOTNET_CLI_TELEMETRY_OPTOUT", It.IsAny<bool>()))
                 .Returns(DOTNET_CLI_TELEMETRY_OPTOUT);
@@ -215,7 +216,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             bool generateAspNetCertificate =
                  _environmentProviderObject.GetEnvironmentVariableAsBool("DOTNET_GENERATE_ASPNET_CERTIFICATE", true);
             bool telemetryOptout =
-                _environmentProviderObject.GetEnvironmentVariableAsBool("DOTNET_CLI_TELEMETRY_OPTOUT", false);
+                _environmentProviderObject.GetEnvironmentVariableAsBool("DOTNET_CLI_TELEMETRY_OPTOUT", false)
+             || _environmentProviderObject.GetEnvironmentVariableAsBool("DO_NOT_TRACK", false);
             bool addGlobalToolsToPath =
                 _environmentProviderObject.GetEnvironmentVariableAsBool("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", defaultValue: true);
             bool nologo =
