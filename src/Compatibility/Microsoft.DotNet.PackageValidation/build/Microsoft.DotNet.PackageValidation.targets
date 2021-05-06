@@ -68,7 +68,7 @@
       <_PackageValidationIntermediateBaselineFile>$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).packagevalidation.g.props</_PackageValidationIntermediateBaselineFile>
       <_PackageValidationIntermediateBaselineFileContent>
 <![CDATA[<Project>
-  <PropertyGroup Condition="'%24(EnablePackageBaselineValidation)' == 'true'">
+  <PropertyGroup>
     <_PackageValidationBaselineName>$(PackageValidationBaselineName)</_PackageValidationBaselineName>
     <_PackageValidationBaselineVersion>$(PackageValidationBaselineVersion)</_PackageValidationBaselineVersion>
   </PropertyGroup>
