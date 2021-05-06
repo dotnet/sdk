@@ -3,23 +3,23 @@
   <file datatype="xml" source-language="en" target-language="cs" original="../Resources.resx">
     <body>
       <trans-unit id="ApiCompatibilityBaselineHeader">
-        <source>There are API Compatibility errors in between {0} (left) and {1} (right) for versions {2} and {3} respectively.</source>
-        <target state="new">There are API Compatibility errors in between {0} (left) and {1} (right) for versions {2} and {3} respectively.</target>
+        <source>Api compatibility errors in between {0} (left) and {1} (right) for versions {2} and {3} respectively are as follows:</source>
+        <target state="new">Api compatibility errors in between {0} (left) and {1} (right) for versions {2} and {3} respectively are as follows:</target>
         <note />
       </trans-unit>
       <trans-unit id="ApiCompatibilityHeader">
-        <source>There are API Compatibility errors in between {0} (left) and {1} (right).</source>
-        <target state="new">There are API Compatibility errors in between {0} (left) and {1} (right).</target>
+        <source>Api Compatibility errors  between {0} (left) and {1} (right) are as follows:</source>
+        <target state="new">Api Compatibility errors  between {0} (left) and {1} (right) are as follows:</target>
         <note />
       </trans-unit>
       <trans-unit id="BaselinePackageNotFound">
-        <source>No baseline package with id {1} found in feeds:  {2}.</source>
-        <target state="new">No baseline package with id {1} found in feeds:  {2}.</target>
+        <source>No baseline package with id {0} found in feeds:  {1}.</source>
+        <target state="new">No baseline package with id {0} found in feeds:  {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CompatibleFrameworkInPackageValidatorHeader">
-        <source>{1} assembly api surface area should be compatible with {2} assembly surface area so we can compile against {1} and run on {2} framework.</source>
-        <target state="new">{1} assembly api surface area should be compatible with {2} assembly surface area so we can compile against {1} and run on {2} framework.</target>
+        <source>{0} assembly api surface area should be compatible with {1} assembly surface area so we can compile against {0} and run on {1} .framework.</source>
+        <target state="new">{0} assembly api surface area should be compatible with {1} assembly surface area so we can compile against {0} and run on {1} .framework.</target>
         <note />
       </trans-unit>
       <trans-unit id="CompatibleTfmValidatorHeader">
@@ -63,23 +63,13 @@
         <note />
       </trans-unit>
       <trans-unit id="BaselineVersionValidatorHeader">
-        <source>There are breaking changes between the versions. Please add\modify the apis in the recent version or suppress the intentional breaking changes</source>
-        <target state="new">There are breaking changes between the versions. Please add\modify the apis in the recent version or suppress the intentional breaking changes</target>
+        <source>There are breaking changes between the versions. Please add or modify the apis in the recent version or suppress the intentional breaking changes.</source>
+        <target state="new">There are breaking changes between the versions. Please add or modify the apis in the recent version or suppress the intentional breaking changes.</target>
         <note />
       </trans-unit>
       <trans-unit id="NonExistentPackagePath">
         <source>{0} doesnt exist. Please check the package path.</source>
         <target state="new">{0} doesnt exist. Please check the package path.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TargetFramework">
-        <source>TargetFramework {0}</source>
-        <target state="new">TargetFramework {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TargetFrameworkRid">
-        <source>TargetFramework {0} Rid {1}</source>
-        <target state="new">TargetFramework {0} Rid {1}</target>
         <note />
       </trans-unit>
     </body>
