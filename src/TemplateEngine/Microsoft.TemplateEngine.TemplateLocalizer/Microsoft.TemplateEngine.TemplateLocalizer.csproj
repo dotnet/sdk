@@ -9,7 +9,6 @@
 
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-template-localizer</ToolCommandName>
-    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
