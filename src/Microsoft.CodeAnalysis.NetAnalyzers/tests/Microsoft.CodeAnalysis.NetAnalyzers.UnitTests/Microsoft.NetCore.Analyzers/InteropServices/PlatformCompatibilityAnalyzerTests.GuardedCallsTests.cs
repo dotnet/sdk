@@ -163,6 +163,103 @@ class Test
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
+        [Fact, WorkItem(4932, "https://github.com/dotnet/roslyn-analyzers/issues/4932")]
+        public async Task GuardMethodWith3VersionPartsEquavalentTo4PartsWithLeading0()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class MSAL
+{
+    [SupportedOSPlatform(""windows10.0.17763.0"")]
+    public static void UseWAMWithLeading0() { }
+
+    [SupportedOSPlatform(""windows10.0.17763"")]
+    public static void UseWAMNoLeading0() { }
+
+    static void Test()
+    {
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763, 0))
+        {
+            UseWAMWithLeading0();
+            UseWAMNoLeading0();
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763))
+        {
+            UseWAMWithLeading0();
+            UseWAMNoLeading0();
+        }
+    }
+}";
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task GuardMethodWith1VersionPartsEquavalentTo2PartsWithLeading0()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class MSAL
+{
+    [SupportedOSPlatform(""windows10.0"")]
+    public static void UseWAMWithLeading0() { }
+
+    static void Test()
+    {
+        if (OperatingSystem.IsWindowsVersionAtLeast(10))
+        {
+            UseWAMWithLeading0();
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0))
+        {
+            UseWAMWithLeading0();
+        }
+    }
+}";
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task GuardMethodWith2VersionPartsEquavalentTo3PartsWithLeading0()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class MSAL
+{
+    [SupportedOSPlatform(""windows10.1.0"")]
+    public static void UseWAMWithLeading0() { }
+
+    [SupportedOSPlatform(""windows10.1"")]
+    public static void UseWAMNoLeading0() { }
+
+    static void Test()
+    {
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 1))
+        {
+            UseWAMWithLeading0();
+            UseWAMNoLeading0();
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 1, 0))
+        {
+            UseWAMWithLeading0();
+            UseWAMNoLeading0();
+        }
+    }
+}";
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
         [Fact]
         public async Task GuardsAroundSupported_SimpleIfElse()
         {
