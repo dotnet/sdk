@@ -1,11 +1,11 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ItemGroup>
-    <BundledManifests Include="Microsoft.NET.Workload.Android" Version="$(XamarinAndroidWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.Android" />
-    <BundledManifests Include="Microsoft.NET.Workload.iOS" Version="$(XamarinIOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.iOS" />
-    <BundledManifests Include="Microsoft.NET.Workload.MacCatalyst" Version="$(XamarinMacCatalystWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.MacCatalyst" />
-    <BundledManifests Include="Microsoft.NET.Workload.macOS" Version="$(XamarinMacOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.macOS" />
-    <BundledManifests Include="Microsoft.NET.Workload.tvOS" Version="$(XamarinTvOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.tvOS" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Android.Manifest-6.0.100" Version="$(XamarinAndroidWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.Android" />
+    <BundledManifests Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.100" Version="$(XamarinIOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.iOS" />
+    <BundledManifests Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-6.0.100" Version="$(XamarinMacCatalystWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.MacCatalyst" />
+    <BundledManifests Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.100" Version="$(XamarinMacOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.macOS" />
+    <BundledManifests Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.100" Version="$(XamarinTvOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.tvOS" />
     <BundledManifests Include="Microsoft.NET.Sdk.BlazorWebAssembly.AOT" Version="$(BlazorWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.BlazorWebAssembly" />
   </ItemGroup>
 
