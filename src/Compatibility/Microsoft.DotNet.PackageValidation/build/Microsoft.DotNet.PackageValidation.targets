@@ -38,8 +38,8 @@
        Using the private _GetRestoreSettings target which makes the restore settings (i.e. the feeds) available for
        consumption. -->
   <Target Name="AddPackageValidationBaselinePackageAsPackageDownload"
-          BeforeTargets="_GenerateRestoreGraph;CollectPackageDownloads"
-          DependsOnTargets="$(AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets)"
+          BeforeTargets="$(AddPackageValidationBaselinePackageAsPackageDownloadBeforeTargets)"
+          DependsOnTargets="_GetRestoreSettings"
           Condition="'$(EnablePackageBaselineValidation)' == 'true' and
                      '$(PackageValidationBaselinePath)' == '' and
                      '$(IsCrossTargetingBuild)' == 'true'">
