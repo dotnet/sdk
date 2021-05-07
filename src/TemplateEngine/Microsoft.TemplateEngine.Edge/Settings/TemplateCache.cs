@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
@@ -19,6 +18,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public TemplateCache(IEnumerable<ScanResult> scanResults, Dictionary<string, DateTime> mountPoints)
         {
             var localizationsByTemplateId = new Dictionary<string, ILocalizationLocator>();
+            var templateMemoryCache = new Dictionary<string, ITemplate>();
 
             string uiLocale = CultureInfo.CurrentUICulture.Name;
             string uiLocaleWithoutCountry = GetLocaleNameWithoutCountry(uiLocale);
@@ -45,10 +45,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     // This localization is either the perfect match, or a suitable substitude and there are no other candidates for the job yet.
                     localizationsByTemplateId[locator.Identity] = locator;
                 }
+
+                foreach (ITemplate template in scanResult.Templates)
+                {
+                    templateMemoryCache[template.Identity] = template;
+                }
             }
 
             var templates = new List<TemplateInfo>();
-            foreach (ITemplate newTemplate in scanResults.SelectMany(s => s.Templates))
+            foreach (ITemplate newTemplate in templateMemoryCache.Values)
             {
                 localizationsByTemplateId.TryGetValue(newTemplate.Identity, out ILocalizationLocator locatorForTemplate);
                 TemplateInfo localizedTemplate = LocalizeTemplate(newTemplate, locatorForTemplate);

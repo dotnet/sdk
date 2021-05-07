@@ -53,10 +53,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             var sources = new List<ITemplatePackage>();
-            foreach (var task in cachedSources.Values)
+            foreach (var task in cachedSources.OrderBy((p) => (p.Key.Factory as IPrioritizedComponent)?.Priority ?? 0))
             {
-                sources.AddRange(await task.ConfigureAwait(false));
+                sources.AddRange(await task.Value.ConfigureAwait(false));
             }
+
             return sources;
         }
 

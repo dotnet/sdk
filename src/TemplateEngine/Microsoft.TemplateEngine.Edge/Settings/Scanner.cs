@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,9 +37,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             MountPointScanSource source = GetOrCreateMountPointScanInfoForInstallSource(sourceLocation);
 
-            ScanResult scanResult = new ScanResult();
             ScanForComponents(source);
-            ScanMountPointForTemplatesAndLangpacks(source, scanResult);
+            var scanResult = ScanMountPointForTemplatesAndLangpacks(source);
 
             source.MountPoint.Dispose();
 
@@ -54,14 +55,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     bool isLocalFlatFileSource = mountPoint is FileSystemMountPoint
                                                 && !sourceLocation.StartsWith(_paths.ScratchDir);
 
-                    return new MountPointScanSource()
-                    {
-                        Location = sourceLocation,
-                        MountPoint = mountPoint,
-                        ShouldStayInOriginalLocation = isLocalFlatFileSource,
-                        FoundTemplates = false,
-                        FoundComponents = false,
-                    };
+                    return new MountPointScanSource(
+                        sourceLocation,
+                        mountPoint,
+                        isLocalFlatFileSource,
+                        false,
+                        false
+                    );
                 }
             }
             throw new Exception($"source location {sourceLocation} is not supported, or doesn't exist.");
@@ -78,10 +78,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            string actualScanPath;
+            string? actualScanPath;
             if (!source.ShouldStayInOriginalLocation)
             {
-                if (!TryCopyForNonFileSystemBasedMountPoints(source.MountPoint, source.Location, _paths.Content, true, out actualScanPath))
+                if (!TryCopyForNonFileSystemBasedMountPoints(source.MountPoint, source.Location, _paths.Content, true, out actualScanPath) || actualScanPath == null)
                 {
                     return;
                 }
@@ -133,7 +133,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        private bool TryCopyForNonFileSystemBasedMountPoints(IMountPoint mountPoint, string sourceLocation, string targetBasePath, bool expandIfArchive, out string diskPath)
+        private bool TryCopyForNonFileSystemBasedMountPoints(IMountPoint mountPoint, string sourceLocation, string targetBasePath, bool expandIfArchive, out string? diskPath)
         {
             string targetPath = Path.Combine(targetBasePath, Path.GetFileName(sourceLocation));
 
@@ -160,26 +160,32 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return true;
         }
 
-        private void ScanMountPointForTemplatesAndLangpacks(MountPointScanSource source, ScanResult scanResult)
+        private ScanResult ScanMountPointForTemplatesAndLangpacks(MountPointScanSource source)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
             // look for things to install
+
+            var templates = new List<ITemplate>();
+            var localizationLocators = new List<ILocalizationLocator>();
+
             foreach (IGenerator generator in _environmentSettings.SettingsLoader.Components.OfType<IGenerator>())
             {
                 IList<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(source.MountPoint, out IList<ILocalizationLocator> localizationInfo);
 
                 foreach (ILocalizationLocator locator in localizationInfo)
                 {
-                    scanResult.AddLocalization(locator);
+                    localizationLocators.Add(locator);
                 }
 
                 foreach (ITemplate template in templateList)
                 {
-                    scanResult.AddTemplate(template);
+                    templates.Add(template);
                 }
 
                 source.FoundTemplates |= templateList.Count > 0 || localizationInfo.Count > 0;
             }
+
+            return new ScanResult(templates, localizationLocators);
         }
 
         /// <summary>
@@ -203,7 +209,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 try
                 {
-                    Assembly assembly = null;
+                    Assembly? assembly = null;
 
 #if !NETFULL
                     if (file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1)
@@ -238,11 +244,20 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private class MountPointScanSource
         {
-            public string Location { get; set; }
+            public MountPointScanSource(string location, IMountPoint mountPoint, bool shouldStayInOriginalLocation, bool foundComponents, bool foundTemplates)
+            {
+                Location = location;
+                MountPoint = mountPoint;
+                ShouldStayInOriginalLocation = shouldStayInOriginalLocation;
+                FoundComponents = foundComponents;
+                FoundTemplates = foundTemplates;
+            }
 
-            public IMountPoint MountPoint { get; set; }
+            public string Location { get; }
 
-            public bool ShouldStayInOriginalLocation { get; set; }
+            public IMountPoint MountPoint { get; }
+
+            public bool ShouldStayInOriginalLocation { get; }
 
             public bool FoundComponents { get; set; }
 

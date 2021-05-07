@@ -20,6 +20,63 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         private EnvironmentSettingsHelper helper = new EnvironmentSettingsHelper();
 
         [Fact]
+        public async Task OrderOfScanningIsCorrect()
+        {
+            var engineEnvironmentSettings = helper.CreateEnvironment();
+            var workingDir = TestUtils.CreateTemporaryFolder("workingDir");
+            var folders = new List<string>();
+
+            for (int i = 0; i < 100; i++)
+            {
+                var folderPath = Path.Combine(workingDir, $"Folder{i}");
+                folders.Add(folderPath);
+                engineEnvironmentSettings.Host.FileSystem.CreateDirectory(Path.Combine(folderPath, ".template.config"));
+                engineEnvironmentSettings.Host.FileSystem.WriteAllText(
+                    Path.Combine(folderPath, ".template.config", "template.json"),
+                    $"{{ \"identity\": \"AllHaveSameIdentity\", \"shortName\": \"sample{i}\", \"name\": \"sample name {i}\"}}");
+            }
+
+            FakeFactory.SetNuPkgsAndFolders(folders: folders);
+            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
+            var templates = await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default)
+                .ConfigureAwait(false);
+
+            Assert.Equal(1, templates.Count);
+            Assert.Equal("sample99", templates.Single().ShortNameList[0]);
+        }
+
+        [Fact]
+        public async Task OrderOfScanningIsCorrectWithPriority()
+        {
+            var engineEnvironmentSettings = helper.CreateEnvironment();
+            var workingDir = TestUtils.CreateTemporaryFolder("workingDir");
+            var folders = new List<string>();
+
+            for (int i = 0; i < 100; i++)
+            {
+                var folderPath = Path.Combine(workingDir, $"Folder{i}");
+                folders.Add(folderPath);
+                engineEnvironmentSettings.Host.FileSystem.CreateDirectory(Path.Combine(folderPath, ".template.config"));
+                engineEnvironmentSettings.Host.FileSystem.WriteAllText(
+                    Path.Combine(folderPath, ".template.config", "template.json"),
+                    $"{{ \"identity\": \"AllHaveSameIdentity\", \"shortName\": \"sample{i}\", \"name\": \"sample name {i}\"}}");
+            }
+
+            FakeFactoryWithPriority.StaticPriority = 100;
+            FakeFactoryWithPriority.SetNuPkgsAndFolders(folders: folders.Take(50));
+            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactoryWithPriority));
+
+            FakeFactory.SetNuPkgsAndFolders(folders: folders.Skip(50).Take(50));
+            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
+
+            var templates = await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default)
+                .ConfigureAwait(false);
+
+            Assert.Equal(1, templates.Count);
+            Assert.Equal("sample49", templates.Single().ShortNameList[0]);
+        }
+
+        [Fact]
         public async Task RebuildCacheIfNotCurrentScansAll()
         {
             var engineEnvironmentSettings = helper.CreateEnvironment();
@@ -223,6 +280,50 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 var defaultTemplatePackageProvider = new DefaultTemplatePackageProvider(this, settings, NuPkgs, Folders);
                 allCreatedProviders.Add(new WeakReference<DefaultTemplatePackageProvider>(defaultTemplatePackageProvider));
                 return defaultTemplatePackageProvider;
+            }
+        }
+
+        private class FakeFactoryWithPriority : ITemplatePackageProviderFactory, IPrioritizedComponent
+        {
+            private static List<WeakReference<DefaultTemplatePackageProvider>> allCreatedProviders = new List<WeakReference<DefaultTemplatePackageProvider>>();
+
+            public string DisplayName => nameof(FakeFactory);
+
+            public Guid Id { get; } = new Guid("{D98CAC97-2474-48B2-AE8D-B665D9E79C66}");
+
+            private static IEnumerable<string> Folders { get; set; }
+
+            private static IEnumerable<string> NuPkgs { get; set; }
+
+            public static void SetNuPkgsAndFolders(IEnumerable<string> nupkgs = null, IEnumerable<string> folders = null)
+            {
+                NuPkgs = nupkgs;
+                Folders = folders;
+            }
+
+            public static void TriggerChanged()
+            {
+                foreach (var provider in allCreatedProviders)
+                {
+                    if (provider.TryGetTarget(out var actualProvider))
+                    {
+                        actualProvider.UpdatePackages(NuPkgs, Folders);
+                    }
+                }
+            }
+
+            public static int StaticPriority { get; set; }
+
+            public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
+            {
+                var defaultTemplatePackageProvider = new DefaultTemplatePackageProvider(this, settings, NuPkgs, Folders);
+                allCreatedProviders.Add(new WeakReference<DefaultTemplatePackageProvider>(defaultTemplatePackageProvider));
+                return defaultTemplatePackageProvider;
+            }
+
+            public int Priority
+            {
+                get => StaticPriority;
             }
         }
     }

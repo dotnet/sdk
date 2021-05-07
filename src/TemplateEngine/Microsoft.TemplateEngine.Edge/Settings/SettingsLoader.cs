@@ -462,25 +462,23 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return cache;
             }
 
-            var scanResults = new List<(ITemplatePackage Package, ScanResult ScanResult)>();
-            Parallel.ForEach(allTemplatePackages, (package) =>
+            var scanResults = new ScanResult[allTemplatePackages.Count];
+            Parallel.For(0, allTemplatePackages.Count, (int index) =>
             {
                 try
                 {
-                    var scanResult = _installScanner.Scan(package.MountPointUri);
-                    lock (scanResults)
-                    {
-                        scanResults.Add((package, scanResult));
-                    }
+                    var scanResult = _installScanner.Scan(allTemplatePackages[index].MountPointUri);
+                    scanResults[index] = scanResult;
                 }
                 catch (Exception ex)
                 {
-                    _environmentSettings.Host.OnNonCriticalError(null, $"Failed to scan \"{package.MountPointUri}\":{Environment.NewLine}{ex}", null, 0);
+                    scanResults[index] = ScanResult.Empty;
+                    _environmentSettings.Host.OnNonCriticalError(null, $"Failed to scan \"{allTemplatePackages[index].MountPointUri}\":{Environment.NewLine}{ex}", null, 0);
                 }
             });
 
             cache = new TemplateCache(
-                scanResults.OrderBy((p) => (p.Package.Provider.Factory as IPrioritizedComponent)?.Priority ?? 0).Select((pair) => pair.ScanResult),
+                scanResults,
                 mountPoints
                 );
             JObject serialized = JObject.FromObject(cache);
