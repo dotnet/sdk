@@ -75,9 +75,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         [System.Diagnostics.Conditional("DEBUG")]
         private static void AssertOrFailFast(bool condition, string message)
         {
-#if NET20 || NETSTANDARD1_3
-            Debug.Assert(condition, message);
-#else
             if (!condition)
             {
                 message ??= $"{nameof(AssertOrFailFast)} failed";
@@ -100,7 +97,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             {
                 Debug.Assert(false, message);
             }
-#endif
         }
     }
 }
