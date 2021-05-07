@@ -3,18 +3,18 @@
   <file datatype="xml" source-language="en" target-language="ko" original="../Resources.resx">
     <body>
       <trans-unit id="ApiCompatibilityBaselineHeader">
-        <source>Api compatibility errors in between {0} (left) and {1} (right) for versions {2} and {3} respectively are as follows:</source>
-        <target state="new">Api compatibility errors in between {0} (left) and {1} (right) for versions {2} and {3} respectively are as follows:</target>
+        <source>API compatibility errors in between {0} (left) and {1} (right) for versions {2} and {3} respectively:</source>
+        <target state="new">API compatibility errors in between {0} (left) and {1} (right) for versions {2} and {3} respectively:</target>
         <note />
       </trans-unit>
       <trans-unit id="ApiCompatibilityHeader">
-        <source>Api Compatibility errors  between {0} (left) and {1} (right) are as follows:</source>
-        <target state="new">Api Compatibility errors  between {0} (left) and {1} (right) are as follows:</target>
+        <source>API Compatibility errors between {0} (left) and {1} (right):</source>
+        <target state="new">API Compatibility errors between {0} (left) and {1} (right):</target>
         <note />
       </trans-unit>
       <trans-unit id="BaselinePackageNotFound">
-        <source>No baseline package with id {0} found in feeds:  {1}.</source>
-        <target state="new">No baseline package with id {0} found in feeds:  {1}.</target>
+        <source>No baseline package with id {0} found in feeds: {1}.</source>
+        <target state="new">No baseline package with id {0} found in feeds: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CompatibleFrameworkInPackageValidatorHeader">
@@ -28,8 +28,8 @@
         <note />
       </trans-unit>
       <trans-unit id="EmptyPackagePath">
-        <source>{0} is empty or null.  Please check the package path.</source>
-        <target state="new">{0} is empty or null.  Please check the package path.</target>
+        <source>{0} is empty or null.  Please provide a valid package path.</source>
+        <target state="new">{0} is empty or null.  Please provide a valid package path.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackagePath">
@@ -68,8 +68,8 @@
         <note />
       </trans-unit>
       <trans-unit id="NonExistentPackagePath">
-        <source>{0} doesnt exist. Please check the package path.</source>
-        <target state="new">{0} doesnt exist. Please check the package path.</target>
+        <source>{0} does not exist. Please provide a valid package path.</source>
+        <target state="new">{0} does not exist. Please provide a valid package path.</target>
         <note />
       </trans-unit>
     </body>
