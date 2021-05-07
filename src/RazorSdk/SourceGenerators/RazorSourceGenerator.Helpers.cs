@@ -88,10 +88,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 {
                     Environment.FailFast(message);
                 }
-                else
-                {
-                    Debug.Assert(condition, message);
-                }
             }
             else
             {
