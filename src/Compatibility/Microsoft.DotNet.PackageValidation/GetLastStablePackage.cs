@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -31,7 +32,6 @@ namespace Microsoft.DotNet.PackageValidation
         {
             NuGetVersion currentPackageVersion = new NuGetVersion(PackageVersion);
             NuGetVersion version = null;
-
             foreach (string nugetFeed in NugetFeeds)
             {
                 SourceRepository repository = Repository.Factory.GetCoreV3(nugetFeed);
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.PackageValidation
                 SourceCacheContext cache = new SourceCacheContext();
                 IEnumerable<NuGetVersion> versions = resource?.GetAllVersionsAsync(PackageId, cache, NullLogger.Instance, CancellationToken.None).Result;
 
-                NuGetVersion packageVersion = versions?.Where(t => !t.IsPrerelease).OrderByDescending(t => t.Version).FirstOrDefault();
+                NuGetVersion packageVersion = versions?.Where(t => !t.IsPrerelease && t != currentPackageVersion).OrderByDescending(t => t.Version).FirstOrDefault();
 
                 if (packageVersion != null)
                 {

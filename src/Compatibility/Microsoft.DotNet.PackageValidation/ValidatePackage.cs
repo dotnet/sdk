@@ -31,17 +31,14 @@ namespace Microsoft.DotNet.PackageValidation
             }
 
             Package package = NupkgParser.CreatePackage(PackageTargetPath, runtimeGraph);
-            PackageValidationLogger log = new();
 
-            new CompatibleTfmValidator(NoWarn, null, RunApiCompat, log).Validate(package);
-
+            new CompatibleTfmValidator(NoWarn, null, RunApiCompat, Log).Validate(package);
+            new CompatibleFrameworkInPackageValidator(NoWarn, null, Log).Validate(package);
             if (BaselineValidation)
             {
                 Package baselinePackage = NupkgParser.CreatePackage(BaselinePackageTargetPath, runtimeGraph);
-                new BaselinePackageValidator(baselinePackage, NoWarn, null, RunApiCompat, log).Validate(package);
+                new BaselinePackageValidator(baselinePackage, NoWarn, null, RunApiCompat, Log).Validate(package);
             }
-            
-            new CompatibleFrameworkInPackageValidator(NoWarn, null, log).Validate(package);
         }
     }
 }

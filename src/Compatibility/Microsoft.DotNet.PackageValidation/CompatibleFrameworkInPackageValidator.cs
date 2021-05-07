@@ -4,8 +4,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.NET.Build.Tasks;
 using NuGet.Client;
-using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 
@@ -16,13 +16,11 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class CompatibleFrameworkInPackageValidator
     {
-        private readonly ApiCompatRunner _apiCompatRunner;
-        private readonly ILogger _log;
-
-        public CompatibleFrameworkInPackageValidator(string noWarn, (string, string)[] ignoredDifferences, ILogger log)
+        private ApiCompatRunner _apiCompatRunner;
+        
+        internal CompatibleFrameworkInPackageValidator(string noWarn, (string, string)[] ignoredDifferences, Logger log)
         {
-            _log = log;
-            _apiCompatRunner = new(noWarn, ignoredDifferences, _log);
+            _apiCompatRunner = new(noWarn, ignoredDifferences, log);
         }
 
         /// <summary>
