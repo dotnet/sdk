@@ -44,15 +44,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 var (hint, sourceText) = outputs[i];
                 if (sourceText != null)
                 {
-                    try
-                    {
-                        context.AddSource(hint, sourceText);
-                    }
-                    catch
-                    {
-                        // Call AssertOrFailFast so that we can get error dumps.
-                        AssertOrFailFast(true, "Unexpected error when adding sources.");
-                    }
+                    context.AddSource(hint, sourceText);
                 }
             }
 
