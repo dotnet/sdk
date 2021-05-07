@@ -127,7 +127,7 @@
     <value>Package Path {0} is invalid. Please Check the path .</value>
   </data>
   <data name="ApiCompatibilityHeader" xml:space="preserve">
-    <value>Api Compatibility errors  between {0} (left) and {1} (right) are as follows:</value>
+    <value>API Compatibility errors between {0} (left) and {1} (right):</value>
   </data>
   <data name="MissingTargetFramework" xml:space="preserve">
     <value>TargetFramework {0} is no longer supported in the latest version.</value>
@@ -148,15 +148,15 @@
     <value>There are breaking changes between the versions. Please add or modify the apis in the recent version or suppress the intentional breaking changes.</value>
   </data>
   <data name="ApiCompatibilityBaselineHeader" xml:space="preserve">
-    <value>Api compatibility errors in between {0} (left) and {1} (right) for versions {2} and {3} respectively are as follows:</value>
+    <value>API compatibility errors in between {0} (left) and {1} (right) for versions {2} and {3} respectively:</value>
   </data>
   <data name="BaselinePackageNotFound" xml:space="preserve">
-    <value>No baseline package with id {0} found in feeds:  {1}.</value>
+    <value>No baseline package with id {0} found in feeds: {1}.</value>
   </data>
   <data name="EmptyPackagePath" xml:space="preserve">
-    <value>{0} is empty or null.  Please check the package path.</value>
+    <value>{0} is empty or null.  Please provide a valid package path.</value>
   </data>
   <data name="NonExistentPackagePath" xml:space="preserve">
-    <value>{0} doesnt exist. Please check the package path.</value>
+    <value>{0} does not exist. Please provide a valid package path.</value>
   </data>
 </root>
