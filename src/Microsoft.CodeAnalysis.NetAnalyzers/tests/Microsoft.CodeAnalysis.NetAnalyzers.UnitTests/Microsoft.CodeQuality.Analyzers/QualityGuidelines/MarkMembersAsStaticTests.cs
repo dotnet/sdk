@@ -1357,6 +1357,22 @@ public class DummyAwaiter : INotifyCompletion
 }");
         }
 
+        [Fact]
+        public async Task InstanceMemberUsedInXml_NoDiagnostic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Property Language As String
+    Private Sub M()
+        Dim x =
+<Workspace>
+    <Project Language=<%= Me.Language %>>
+    </Project>
+</Workspace>
+        End Sub
+End Class");
+        }
+
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
 #pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()

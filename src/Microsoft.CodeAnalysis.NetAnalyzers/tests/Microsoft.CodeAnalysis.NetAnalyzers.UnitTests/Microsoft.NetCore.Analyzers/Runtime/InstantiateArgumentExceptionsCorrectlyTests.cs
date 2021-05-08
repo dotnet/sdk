@@ -685,7 +685,11 @@ public class C
     }}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
             }.RunAsync();
@@ -705,7 +709,11 @@ public class C
      End Sub
  End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
             }.RunAsync();
@@ -734,7 +742,10 @@ public class C
                             }}
                         }}"
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA2208.api_surface = public") }
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA2208.api_surface = public") }
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
             }.RunAsync();
