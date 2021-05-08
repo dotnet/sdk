@@ -1296,7 +1296,7 @@ Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in
 |CodeFix|False|
 ---
 
-## [CA1842](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842): Prefer 'AsSpan' over 'Substring'
+## [CA1846](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846): Prefer 'AsSpan' over 'Substring'
 
 'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.
 

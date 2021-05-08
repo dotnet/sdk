@@ -2,7 +2,7 @@
 ### New Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-CA1842 | Performance | Info | PreferAsSpanOverSubstring, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842)
+CA1846 | Performance | Info | PreferAsSpanOverSubstring, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846)
 
 ### Removed Rules
 
