@@ -1623,8 +1623,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.</source>
-        <target state="new">'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.</target>
+        <source>'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) copy.</source>
+        <target state="new">'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) copy.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
