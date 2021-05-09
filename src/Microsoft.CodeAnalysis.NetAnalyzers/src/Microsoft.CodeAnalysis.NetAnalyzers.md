@@ -1370,7 +1370,7 @@ Using 'WaitAll' with a single task may result in performance loss, await or retu
 
 ## [CA1846](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846): Prefer 'AsSpan' over 'Substring'
 
-'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.
+'Substring' performs an O(n) string copy, while 'AsSpan' does not.
 
 |Item|Value|
 |-|-|

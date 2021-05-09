@@ -2463,26 +2463,6 @@
             ]
           }
         },
-        "CA1846": {
-          "id": "CA1846",
-          "shortDescription": "Prefer 'AsSpan' over 'Substring'",
-          "fullDescription": "'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.",
-          "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": true,
-            "typeName": "PreferAsSpanOverSubstring",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA1839": {
           "id": "CA1839",
           "shortDescription": "Use 'Environment.ProcessPath'",
@@ -2553,6 +2533,26 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "DoNotUseWhenAllOrWaitAllWithSingleArgument",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1846": {
+          "id": "CA1846",
+          "shortDescription": "Prefer 'AsSpan' over 'Substring'",
+          "fullDescription": "'Substring' performs an O(n) string copy, while 'AsSpan' does not.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "PreferAsSpanOverSubstring",
             "languages": [
               "C#",
               "Visual Basic"
