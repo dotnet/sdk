@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
-using Microsoft.NET.Build.Tasks;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 
@@ -16,7 +15,7 @@ namespace Microsoft.DotNet.PackageValidation
     /// Validates that there are compile time and runtime assets for all the compatible frameworks.
     /// Queues the apicompat between the applicable compile and runtime assemblies for these frameworks.
     /// </summary>
-    internal class CompatibleTfmValidator
+    public class CompatibleTfmValidator
     {
         private static HashSet<string> s_diagList = new HashSet<string>{ DiagnosticIds.CompatibleRuntimeRidLessAsset, DiagnosticIds.ApplicableCompileTimeAsset };
         private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> s_packageTfmMapping = InitializeTfmMappings();
@@ -24,9 +23,9 @@ namespace Microsoft.DotNet.PackageValidation
         private readonly bool _runApiCompat;
         private readonly DiagnosticBag<IDiagnostic> _diagnosticBag;
         private ApiCompatRunner _apiCompatRunner;
-        private Logger _log;
+        private ILogger _log;
 
-        internal CompatibleTfmValidator(string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, Logger log)
+        public CompatibleTfmValidator(string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, ILogger log)
         {
             _runApiCompat = runApiCompat;
             _log = log;
@@ -60,7 +59,7 @@ namespace Microsoft.DotNet.PackageValidation
                     if (!_diagnosticBag.Filter(DiagnosticIds.ApplicableCompileTimeAsset, framework.ToString()))
                     {
                         string message = string.Format(Resources.NoCompatibleCompileTimeAsset, framework.ToString());
-                        _log.LogNonSdkError(DiagnosticIds.ApplicableCompileTimeAsset + " " + message);
+                        _log.LogError(DiagnosticIds.ApplicableCompileTimeAsset + " " + message);
                     }
                     break;
                 }
@@ -71,7 +70,7 @@ namespace Microsoft.DotNet.PackageValidation
                     if (!_diagnosticBag.Filter(DiagnosticIds.CompatibleRuntimeRidLessAsset, framework.ToString()))
                     {
                         string message = string.Format(Resources.NoCompatibleRuntimeAsset, framework.ToString());
-                        _log.LogNonSdkError(DiagnosticIds.CompatibleRuntimeRidLessAsset + " " + message);
+                        _log.LogError(DiagnosticIds.CompatibleRuntimeRidLessAsset + " " + message);
                     }
                 }
                 else
@@ -96,7 +95,7 @@ namespace Microsoft.DotNet.PackageValidation
                         if (!_diagnosticBag.Filter(DiagnosticIds.CompatibleRuntimeRidSpecificAsset, framework.ToString() + "-" + rid))
                         {
                             string message = string.Format(Resources.NoCompatibleRidSpecificRuntimeAsset, framework.ToString(), rid);
-                            _log.LogNonSdkError(DiagnosticIds.CompatibleRuntimeRidSpecificAsset + " " + message);
+                            _log.LogError(DiagnosticIds.CompatibleRuntimeRidSpecificAsset + " " + message);
                         }
                     }
                     else

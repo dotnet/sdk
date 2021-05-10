@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.NET.Build.Tasks;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
@@ -14,11 +13,11 @@ namespace Microsoft.DotNet.PackageValidation
     /// <summary>
     /// Validates that the api surface of the compatible frameworks.
     /// </summary>
-    internal class CompatibleFrameworkInPackageValidator
+    public class CompatibleFrameworkInPackageValidator
     {
         private ApiCompatRunner _apiCompatRunner;
         
-        internal CompatibleFrameworkInPackageValidator(string noWarn, (string, string)[] ignoredDifferences, Logger log)
+        public CompatibleFrameworkInPackageValidator(string noWarn, (string, string)[] ignoredDifferences, ILogger log)
         {
             _apiCompatRunner = new(noWarn, ignoredDifferences, log);
         }

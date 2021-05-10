@@ -8,20 +8,19 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
-using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.DotNet.PackageValidation
 {
     /// <summary>
     /// Runs ApiCompat over different assembly tuples.
     /// </summary>
-    internal class ApiCompatRunner
+    public class ApiCompatRunner
     {
         private List<(string leftAssemblyPackagePath, string leftAssemblyRelativePath, string rightAssemblyPackagePath, string rightAssemblyRelativePath, string assemblyName, string compatibilityReason, string header)> _queue = new();
         private readonly ApiComparer _differ = new();
-        private Logger _log;
+        private ILogger _log;
 
-        public ApiCompatRunner(string noWarn, (string, string)[] ignoredDifferences, Logger log)
+        public ApiCompatRunner(string noWarn, (string, string)[] ignoredDifferences, ILogger log)
         {
             _differ.NoWarn = noWarn;
             _differ.IgnoredDifferences = ignoredDifferences;
@@ -46,13 +45,13 @@ namespace Microsoft.DotNet.PackageValidation
 
                     if (differences.Any())
                     {
-                        _log.LogNonSdkError(apicompatTuples.compatibilityReason);
-                        _log.LogNonSdkError(apicompatTuples.header);
+                        _log.LogError(apicompatTuples.compatibilityReason);
+                        _log.LogError(apicompatTuples.header);
                     }
 
                     foreach (CompatDifference difference in differences)
                     {
-                        _log.LogNonSdkError(difference.ToString());
+                        _log.LogError(difference.ToString());
                     }
                 }
             }
