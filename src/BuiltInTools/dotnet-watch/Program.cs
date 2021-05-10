@@ -79,7 +79,7 @@ Examples:
             _reporter = CreateReporter(verbose: true, quiet: false, console: _console);
 
             // Register listeners that load Roslyn-related assemblies from the `Rosyln/bincore` directory.
-            RegisterAssemblyResolutionEvents();
+            RegisterAssemblyResolutionEvents(sdkRootDirectory);
         }
 
         public static async Task<int> Main(string[] args)
@@ -383,16 +383,15 @@ Examples:
             _cts.Dispose();
         }
 
-        private static void RegisterAssemblyResolutionEvents()
+        private static void RegisterAssemblyResolutionEvents(string sdkRootDirectory)
         {
-            var roslynPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "..", "..", "Roslyn", "bincore");
+            var roslynPath = Path.Combine(sdkRootDirectory, "Roslyn", "bincore");
 
             AssemblyLoadContext.Default.Resolving += (context, assembly) =>
             {
-                var assemblyFilename = $"{assembly.Name}.dll";
-                if (assemblyFilename == "Microsoft.CodeAnalysis.CSharp.dll" || assemblyFilename == "Microsoft.CodeAnalysis.dll")
+                if (assembly.Name is "Microsoft.CodeAnalysis" or "Microsoft.CodeAnalysis.CSharp")
                 {
-                    return context.LoadFromAssemblyPath(Path.Combine(roslynPath, assemblyFilename));
+                    return context.LoadFromAssemblyPath(Path.Combine(roslynPath, assembly.Name + ".dll"));
                 }
                 return null;
             };

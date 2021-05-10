@@ -63,14 +63,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         private static void RegisterAssemblyResolutionEvents()
         {
-            var roslynPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Roslyn", "bincore");
+            var roslynPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Roslyn", "bincore");
 
             AssemblyLoadContext.Default.Resolving += (context, assembly) =>
             {
-                var assemblyFilename = $"{assembly.Name}.dll";
-                if (assemblyFilename == "Microsoft.CodeAnalysis.CSharp.dll" || assemblyFilename == "Microsoft.CodeAnalysis.dll")
+                if (assembly.Name is "Microsoft.CodeAnalysis" or "Microsoft.CodeAnalysis.CSharp")
                 {
-                    return context.LoadFromAssemblyPath(Path.Combine(roslynPath, assemblyFilename));
+                    return context.LoadFromAssemblyPath(Path.Combine(roslynPath, assembly.Name + ".dll"));
                 }
                 return null;
             };
