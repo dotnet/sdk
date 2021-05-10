@@ -43,11 +43,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 //          throw new OperationCanceledException();
                 //  Replace with:
                 //      token.ThrowIfCancellationRequested();
+                //
+                //  For simple checks of the form:
+                //      if (token.IsCancellationRequested)
+                //          throw new OperationCanceledException();
+                //      else
+                //          Frob();
+                //  Replace with:
+                //      token.ThrowIfCancellationRequested();
+                //      Frob();
                 createChangedDocument = async token =>
                 {
                     var editor = await DocumentEditor.CreateAsync(context.Document, token).ConfigureAwait(false);
                     SyntaxNode expressionStatement = CreateThrowIfCancellationRequestedExpressionStatement(editor, conditional, propertyReference);
                     editor.ReplaceNode(conditional.Syntax, expressionStatement);
+
+                    if (conditional.WhenFalse is IBlockOperation block)
+                    {
+                        editor.InsertAfter(expressionStatement, block.Operations.Select(x => x.Syntax.WithAdditionalAnnotations(Formatter.Annotation)));
+                    }
+                    else if (conditional.WhenFalse is not null)
+                    {
+                        editor.InsertAfter(expressionStatement, conditional.WhenFalse.Syntax);
+                    }
+
                     return editor.GetChangedDocument();
                 };
             }
@@ -64,6 +83,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var editor = await DocumentEditor.CreateAsync(context.Document, token).ConfigureAwait(false);
                     SyntaxNode expressionStatement = CreateThrowIfCancellationRequestedExpressionStatement(editor, conditional, propertyReference);
                     editor.ReplaceNode(conditional.Syntax, expressionStatement);
+
                     if (conditional.WhenTrue is IBlockOperation block)
                     {
                         editor.InsertAfter(expressionStatement, block.Operations.Select(x => x.Syntax.WithAdditionalAnnotations(Formatter.Annotation)));

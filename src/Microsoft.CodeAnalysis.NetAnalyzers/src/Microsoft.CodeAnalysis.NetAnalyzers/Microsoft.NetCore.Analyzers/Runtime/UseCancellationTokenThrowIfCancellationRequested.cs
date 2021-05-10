@@ -140,8 +140,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     SymbolEqualityComparer.Default.Equals(propertyReference.Property, IsCancellationRequestedProperty) &&
                     whenTrueUnwrapped is IThrowOperation @throw &&
                     @throw.Exception is IObjectCreationOperation objectCreation &&
-                    IsDefaultOrTokenOperationCanceledExceptionCtor(objectCreation.Constructor) &&
-                    conditional.WhenFalse is null)
+                    IsDefaultOrTokenOperationCanceledExceptionCtor(objectCreation.Constructor))
                 {
                     isCancellationRequestedPropertyReference = propertyReference;
                     return true;

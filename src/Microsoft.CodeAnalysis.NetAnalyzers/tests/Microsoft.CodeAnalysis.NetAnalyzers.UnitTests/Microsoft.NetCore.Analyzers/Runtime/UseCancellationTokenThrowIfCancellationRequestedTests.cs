@@ -154,6 +154,55 @@ else
             }
         }
 
+        [Fact]
+        public Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.Threading;
+
+public class C
+{
+    private CancellationToken token;
+
+    public void M()
+    {
+        {|#0:if (token.IsCancellationRequested)
+        {
+            throw new OperationCanceledException();
+        }
+        else
+        {
+            Frob();
+        }|}
+    }
+    
+    private void Frob() { }
+}",
+                FixedCode = @"
+using System;
+using System.Threading;
+
+public class C
+{
+    private CancellationToken token;
+
+    public void M()
+    {
+        token.ThrowIfCancellationRequested();
+        Frob();
+    }
+    
+    private void Frob() { }
+}",
+                ExpectedDiagnostics = { CS.DiagnosticAt(0) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
         [Theory]
         [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_CS))]
         public Task NegatedCheckWithElse_ReportedAndFixed_CS(string operationCanceledExceptionCtor, string conditionalFormatString)
