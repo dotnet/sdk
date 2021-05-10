@@ -203,6 +203,50 @@ public class C
             return test.RunAsync();
         }
 
+        [Fact]
+        public Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_VB()
+        {
+            var test = new VerifyVB.Test
+            {
+                TestCode = @"
+Imports System
+Imports System.Threading
+
+Public Class C
+    Private token As CancellationToken
+
+    Public Sub M()
+        {|#0:If token.IsCancellationRequested Then
+            Throw New OperationCanceledException()
+        Else
+            Frob()
+        End If|}
+    End Sub
+
+    Private Sub Frob()
+    End Sub
+End Class",
+                FixedCode = @"
+Imports System
+Imports System.Threading
+
+Public Class C
+    Private token As CancellationToken
+
+    Public Sub M()
+        token.ThrowIfCancellationRequested()
+        Frob()
+    End Sub
+
+    Private Sub Frob()
+    End Sub
+End Class",
+                ExpectedDiagnostics = { VB.DiagnosticAt(0) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
         [Theory]
         [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_CS))]
         public Task NegatedCheckWithElse_ReportedAndFixed_CS(string operationCanceledExceptionCtor, string conditionalFormatString)
