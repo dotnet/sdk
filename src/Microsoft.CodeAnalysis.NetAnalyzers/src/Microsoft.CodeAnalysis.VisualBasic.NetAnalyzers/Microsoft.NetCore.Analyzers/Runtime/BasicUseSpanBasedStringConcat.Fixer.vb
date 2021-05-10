@@ -25,7 +25,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
         Private Protected Overrides Function IsSystemNamespaceImported(project As Project, namespaceImports As IReadOnlyList(Of SyntaxNode)) As Boolean
 
             Dim options = DirectCast(project.CompilationOptions, VisualBasicCompilationOptions)
-            If options.GlobalImports.Any(Function(x) x.Name = NameOf(System)) Then
+            If options.GlobalImports.Any(Function(x) String.Compare(x.Name, NameOf(System), StringComparison.OrdinalIgnoreCase) = 0) Then
                 Return True
             End If
 
