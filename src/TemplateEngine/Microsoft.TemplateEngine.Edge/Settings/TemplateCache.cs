@@ -243,9 +243,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         /// <summary>
-        /// Given a locale, removes the country part and returns.
+        /// Given a locale, removes the country/region part and returns.
         /// </summary>
-        /// <param name="locale">Locale in format "language-country".</param>
+        /// <param name="locale">Locale in format "language-countryRegion".</param>
         /// <examples>
         /// <list type="bullet">
         /// <item>Input "en-US" returns "en".</item>
@@ -261,7 +261,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return locale.Substring(0, countrySplitterIndex);
             }
 
-            // This locale doesn't have country to begin with.
+            // This locale doesn't have country/Region to begin with.
             return locale;
         }
     }
