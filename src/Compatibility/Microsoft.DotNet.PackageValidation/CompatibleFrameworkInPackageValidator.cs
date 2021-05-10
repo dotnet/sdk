@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.PackageValidation
     /// <summary>
     /// Validates that the api surface of the compatible frameworks.
     /// </summary>
-    public class CompatibleFrameworkInPackageValidator
+    internal class CompatibleFrameworkInPackageValidator
     {
         private ApiCompatRunner _apiCompatRunner;
         

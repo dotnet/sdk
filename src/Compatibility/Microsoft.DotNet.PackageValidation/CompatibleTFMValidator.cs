@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.PackageValidation
     /// Validates that there are compile time and runtime assets for all the compatible frameworks.
     /// Queues the apicompat between the applicable compile and runtime assemblies for these frameworks.
     /// </summary>
-    public class CompatibleTfmValidator
+    internal class CompatibleTfmValidator
     {
         private static HashSet<string> s_diagList = new HashSet<string>{ DiagnosticIds.CompatibleRuntimeRidLessAsset, DiagnosticIds.ApplicableCompileTimeAsset };
         private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> s_packageTfmMapping = InitializeTfmMappings();
