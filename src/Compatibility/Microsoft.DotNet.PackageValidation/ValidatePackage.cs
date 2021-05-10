@@ -41,18 +41,21 @@ namespace Microsoft.DotNet.PackageValidation
                 new BaselinePackageValidator(baselinePackage, NoWarn, null, RunApiCompat, logger).Validate(package);
             }
         }
+    }
 
-        internal class PackageValidationLogger : ILogger
+
+    internal class PackageValidationLogger : ILogger
+    {
+        private Logger _log;
+
+        public PackageValidationLogger(Logger log)
         {
-            private Logger _log;
-            public PackageValidationLogger(Logger log)
-            {
-                _log = log;
-            }
-            public void LogError(string message)
-            {
-                _log.LogNonSdkError(message);
-            }
+            _log = log;
+        }
+
+        public void LogError(string message)
+        {
+            _log.LogNonSdkError(message);
         }
     }
 }
