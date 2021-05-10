@@ -42,20 +42,4 @@ namespace Microsoft.DotNet.PackageValidation
             }
         }
     }
-
-
-    internal class PackageValidationLogger : ILogger
-    {
-        private Logger _log;
-
-        public PackageValidationLogger(Logger log)
-        {
-            _log = log;
-        }
-
-        public void LogError(string message)
-        {
-            _log.LogNonSdkError(message);
-        }
-    }
 }

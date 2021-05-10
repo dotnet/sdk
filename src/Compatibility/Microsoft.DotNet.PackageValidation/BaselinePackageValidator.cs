@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
-using Microsoft.NET.Build.Tasks;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 
@@ -22,8 +21,8 @@ namespace Microsoft.DotNet.PackageValidation
         private readonly Package _baselinePackage;
         private readonly bool _runApiCompat;
         private readonly DiagnosticBag<IDiagnostic> _diagnosticBag;
-        private ApiCompatRunner _apiCompatRunner;
-        private ILogger _log;
+        private readonly ApiCompatRunner _apiCompatRunner;
+        private readonly ILogger _log;
 
         public BaselinePackageValidator(Package baselinePackage, string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, ILogger log)
         {

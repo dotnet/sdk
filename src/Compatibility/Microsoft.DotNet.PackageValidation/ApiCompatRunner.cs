@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.PackageValidation
     {
         private List<(string leftAssemblyPackagePath, string leftAssemblyRelativePath, string rightAssemblyPackagePath, string rightAssemblyRelativePath, string assemblyName, string compatibilityReason, string header)> _queue = new();
         private readonly ApiComparer _differ = new();
-        private ILogger _log;
+        private readonly ILogger _log;
 
         public ApiCompatRunner(string noWarn, (string, string)[] ignoredDifferences, ILogger log)
         {

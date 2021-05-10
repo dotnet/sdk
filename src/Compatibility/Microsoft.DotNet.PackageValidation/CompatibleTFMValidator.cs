@@ -22,8 +22,8 @@ namespace Microsoft.DotNet.PackageValidation
 
         private readonly bool _runApiCompat;
         private readonly DiagnosticBag<IDiagnostic> _diagnosticBag;
-        private ApiCompatRunner _apiCompatRunner;
-        private ILogger _log;
+        private readonly ApiCompatRunner _apiCompatRunner;
+        private readonly ILogger _log;
 
         public CompatibleTfmValidator(string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, ILogger log)
         {
