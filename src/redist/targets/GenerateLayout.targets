@@ -492,6 +492,13 @@
 
   </Target>
 
+  <Target Name="GeneratePrecomputedRarCache" DependsOnTargets="LayoutTemplates;LayoutManifests;LayoutBundledTools">
+    <ItemGroup>
+      <AssembliesToResolve Include="$(RedistLayoutPath)\**\*.dll" Exclude="$(RedistLayoutPath)\**\native\**\*.dll" />
+    </ItemGroup>
+    <ResolveAssemblyReference AssemblyFiles="@(AssembliesToResolve)" Silent="false" AssemblyInformationCacheOutputPath="$(RedistLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" SearchPaths="{RawFileName}" />
+  </Target>
+
   <Target Name="GenerateLayout"
           DependsOnTargets="DownloadBundledComponents;
                             CleanLayoutPath;
@@ -506,6 +513,7 @@
                             RetargetTools;
                             CrossgenLayout;
                             LayoutAppHostTemplate;
+                            GeneratePrecomputedRarCache;
                             SignLayout"
           BeforeTargets="AfterBuild">
 

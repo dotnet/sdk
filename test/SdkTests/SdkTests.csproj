@@ -244,7 +244,7 @@
       <ResultsStdOutPath>$(ArtifactsLogDir)$(TestProjectName).log</ResultsStdOutPath>
 
       <TestArgs>-noautoreporters -noRepoInference</TestArgs>
-      <TestArgs>$(TestArgs) -dotnetPath $(DotnetToTestPath)\dotnet</TestArgs>
+      <TestArgs>$(TestArgs) -dotnetPath $(DotnetToTestPath)dotnet</TestArgs>
       <TestArgs>$(TestArgs) -testExecutionDirectory $(TestExecutionDirectory)</TestArgs>
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestConfig.xml"</TestArgs>
       <TestArgs>$(TestArgs) -xml "$(ResultsXmlPath)"</TestArgs>
