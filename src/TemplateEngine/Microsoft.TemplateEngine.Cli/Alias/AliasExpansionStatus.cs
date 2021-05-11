@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.TemplateEngine.Edge.Settings
+#nullable enable
+
+namespace Microsoft.TemplateEngine.Cli.Alias
 {
-    public enum AliasExpansionStatus
+    internal enum AliasExpansionStatus
     {
         NoChange,
         Expanded,

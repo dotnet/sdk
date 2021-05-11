@@ -32,23 +32,6 @@ Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.GeneratorId.get -> System.G
 Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.HasScriptRunningPostActions.get -> bool
 Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.HasScriptRunningPostActions.set -> void
 Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Precedence.get -> int
-Microsoft.TemplateEngine.Edge.Settings.AliasExpansionStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasExpansionStatus.Expanded = 1 -> Microsoft.TemplateEngine.Edge.Settings.AliasExpansionStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasExpansionStatus.ExpansionError = 2 -> Microsoft.TemplateEngine.Edge.Settings.AliasExpansionStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasExpansionStatus.NoChange = 0 -> Microsoft.TemplateEngine.Edge.Settings.AliasExpansionStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasManipulationResult
-Microsoft.TemplateEngine.Edge.Settings.AliasManipulationResult.AliasManipulationResult(Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus status) -> void
-Microsoft.TemplateEngine.Edge.Settings.AliasManipulationResult.Status.get -> Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus.Created = 0 -> Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus.InvalidInput = 5 -> Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus.Removed = 1 -> Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus.RemoveNonExistentFailed = 2 -> Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus.Updated = 3 -> Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus.WouldCreateCycle = 4 -> Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus
-Microsoft.TemplateEngine.Edge.Settings.AliasModel
-Microsoft.TemplateEngine.Edge.Settings.AliasModel.AliasModel() -> void
-Microsoft.TemplateEngine.Edge.Settings.AliasRegistry
 Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo
 Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.HasAmbiguousParameterMatch.get -> bool
 Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.HasInvalidParameterValue.get -> bool
@@ -166,18 +149,6 @@ virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.TryGetHostParamD
 ~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ShortNameList.set -> void
 ~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Tags.get -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateEngine.Abstractions.ICacheTag>
 ~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ThirdPartyNotices.get -> string
-~Microsoft.TemplateEngine.Edge.Settings.AliasManipulationResult.AliasManipulationResult(Microsoft.TemplateEngine.Edge.Settings.AliasManipulationStatus status, string aliasName, System.Collections.Generic.IReadOnlyList<string> aliasTokens) -> void
-~Microsoft.TemplateEngine.Edge.Settings.AliasManipulationResult.AliasName.get -> string
-~Microsoft.TemplateEngine.Edge.Settings.AliasManipulationResult.AliasTokens.get -> System.Collections.Generic.IReadOnlyList<string>
-~Microsoft.TemplateEngine.Edge.Settings.AliasModel.AddCommandAlias(string aliasName, System.Collections.Generic.IReadOnlyList<string> aliasTokens) -> void
-~Microsoft.TemplateEngine.Edge.Settings.AliasModel.AliasModel(System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<string>> commandAliases) -> void
-~Microsoft.TemplateEngine.Edge.Settings.AliasModel.CommandAliases.get -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.IReadOnlyList<string>>
-~Microsoft.TemplateEngine.Edge.Settings.AliasModel.CommandAliases.set -> void
-~Microsoft.TemplateEngine.Edge.Settings.AliasModel.TryRemoveCommandAlias(string aliasName, out System.Collections.Generic.IReadOnlyList<string> aliasTokens) -> bool
-~Microsoft.TemplateEngine.Edge.Settings.AliasRegistry.AliasRegistry(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings) -> void
-~Microsoft.TemplateEngine.Edge.Settings.AliasRegistry.AllAliases.get -> System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<string>>
-~Microsoft.TemplateEngine.Edge.Settings.AliasRegistry.TryCreateOrRemoveAlias(string aliasName, System.Collections.Generic.IReadOnlyList<string> aliasTokens) -> Microsoft.TemplateEngine.Edge.Settings.AliasManipulationResult
-~Microsoft.TemplateEngine.Edge.Settings.AliasRegistry.TryExpandCommandAliases(System.Collections.Generic.IReadOnlyList<string> inputTokens, out System.Collections.Generic.IReadOnlyList<string> expandedInputTokens) -> bool
 ~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.FilteredTemplateInfo(Microsoft.TemplateEngine.Abstractions.ITemplateInfo info, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Edge.Template.MatchInfo> matchDisposition) -> void
 ~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.Info.get -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo
 ~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.MatchDisposition.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Edge.Template.MatchInfo>
