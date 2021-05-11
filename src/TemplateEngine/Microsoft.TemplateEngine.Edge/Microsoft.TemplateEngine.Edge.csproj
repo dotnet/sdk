@@ -1,42 +1,44 @@
-<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
-        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
-        <Description>Helper package for adding Template Engine to consuming applications</Description>
-        <IsPackable>true</IsPackable>
-        <DefineConstants Condition="'$(TargetFramework)' == '$(NETFullTargetFramework)'">$(DefineConstants);NETFULL</DefineConstants>
-    </PropertyGroup>
+﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
+    <Description>Helper package for adding Template Engine to consuming applications</Description>
+    <IsPackable>true</IsPackable>
+    <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
+    <DefineConstants Condition="'$(TargetFramework)' == '$(NETFullTargetFramework)'">$(DefineConstants);NETFULL</DefineConstants>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="NuGet.Configuration" Version="5.8.1" />
-        <PackageReference Include="NuGet.Credentials" Version="5.8.1" />
-        <PackageReference Include="NuGet.Protocol" Version="5.8.1" />
-        <PackageReference Include="System.IO.Compression" />
-        <PackageReference Include="Newtonsoft.Json" />
-        <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFramework)' != '$(NETFullTargetFramework)'"/>
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NuGet.Configuration" Version="5.8.1" />
+    <PackageReference Include="NuGet.Credentials" Version="5.8.1" />
+    <PackageReference Include="NuGet.Protocol" Version="5.8.1" />
+    <PackageReference Include="System.IO.Compression" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFramework)' != '$(NETFullTargetFramework)'"/>
+  </ItemGroup>
 
-    <ItemGroup>
-      <Compile Update="LocalizableStrings.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>LocalizableStrings.resx</DependentUpon>
-      </Compile>
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Update="LocalizableStrings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LocalizableStrings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
 
-    <ItemGroup>
-      <EmbeddedResource Update="LocalizableStrings.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-    </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="LocalizableStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

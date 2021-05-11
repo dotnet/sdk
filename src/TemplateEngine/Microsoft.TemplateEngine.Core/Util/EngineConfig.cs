@@ -9,7 +9,12 @@ namespace Microsoft.TemplateEngine.Core.Util
 {
     public class EngineConfig : IEngineConfig
     {
-        public EngineConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, string variableFormatString = "{0}")
+        public EngineConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables)
+             : this(environmentSettings, DefaultWhitespaces, DefaultLineEndings, variables)
+        {
+        }
+
+        public EngineConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, string variableFormatString)
             : this(environmentSettings, DefaultWhitespaces, DefaultLineEndings, variables, variableFormatString)
         {
         }

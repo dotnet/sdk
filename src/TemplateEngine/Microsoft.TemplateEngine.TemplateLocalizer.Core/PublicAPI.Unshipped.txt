@@ -1,0 +1,27 @@
+﻿Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.DryRun.get -> bool
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.Equals(Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions other) -> bool
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.ExportOptions() -> void
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.ExportOptions(bool dryRun, string? targetDirectory = null, System.Collections.Generic.IEnumerable<string!>? languages = null) -> void
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.Languages.get -> System.Collections.Generic.IEnumerable<string!>?
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.TargetDirectory.get -> string?
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult.ErrorMessage.get -> string?
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult.ExportResult(string? templateJsonPath) -> void
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult.ExportResult(string? templateJsonPath, string? errorMessage) -> void
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult.ExportResult(string? templateJsonPath, string? errorMessage, System.Exception? innerException) -> void
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult.ExportResult(string? templateJsonPath, System.Exception? innerException) -> void
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult.InnerException.get -> System.Exception?
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult.Succeeded.get -> bool
+Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult.TemplateJsonPath.get -> string?
+Microsoft.TemplateEngine.TemplateLocalizer.Core.TemplateLocalizer
+Microsoft.TemplateEngine.TemplateLocalizer.Core.TemplateLocalizer.ExportLocalizationFilesAsync(string! templateJsonPath, Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult!>!
+Microsoft.TemplateEngine.TemplateLocalizer.Core.TemplateLocalizer.TemplateLocalizer() -> void
+Microsoft.TemplateEngine.TemplateLocalizer.Core.TemplateLocalizer.TemplateLocalizer(Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory) -> void
+override Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.Equals(object! obj) -> bool
+override Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.GetHashCode() -> int
+override Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.ToString() -> string!
+override Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportResult.ToString() -> string!
+static Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.DefaultLanguages.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.operator !=(Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions x, Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions y) -> bool
+static Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions.operator ==(Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions x, Microsoft.TemplateEngine.TemplateLocalizer.Core.ExportOptions y) -> bool

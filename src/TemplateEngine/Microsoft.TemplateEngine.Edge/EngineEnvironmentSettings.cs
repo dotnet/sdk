@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Edge
             }
         }
 
-        public EngineEnvironmentSettings(ITemplateEngineHost host, ISettingsLoader settingsLoader, IPathInfo pathInfo, IEnvironment? environment = null)
+        public EngineEnvironmentSettings(ITemplateEngineHost host, ISettingsLoader settingsLoader, IPathInfo pathInfo, IEnvironment? environment)
         {
             Host = host ?? throw new ArgumentNullException(nameof(host));
             SettingsLoader = settingsLoader ?? throw new ArgumentNullException(nameof(settingsLoader));

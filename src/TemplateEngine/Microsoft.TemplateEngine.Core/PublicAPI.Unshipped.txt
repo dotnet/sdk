@@ -1,0 +1,593 @@
+﻿abstract Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.DereferenceInLiterals.get -> bool
+abstract Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.GenerateMap() -> Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<Microsoft.TemplateEngine.Core.Expressions.Operators, TTokens>
+abstract Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.GetSymbols(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor) -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
+abstract Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.NullTokenValue.get -> string
+Microsoft.TemplateEngine.Core.CommonOperations
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.BinaryScope(Microsoft.TemplateEngine.Core.Expressions.IEvaluable parent, TOperator operator, System.Func<object, object, object> evaluate) -> void
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.Evaluate() -> object
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.IsFull.get -> bool
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.IsIndivisible.get -> bool
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.Left.get -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.Left.set -> void
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.Operator.get -> TOperator
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.Parent.get -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.Parent.set -> void
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.Right.get -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.Right.set -> void
+Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.TryAccept(Microsoft.TemplateEngine.Core.Expressions.IEvaluable child) -> bool
+Microsoft.TemplateEngine.Core.Expressions.Converter
+Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition
+Microsoft.TemplateEngine.Core.Expressions.Cpp.QuotedRegionKind
+Microsoft.TemplateEngine.Core.Expressions.Cpp.QuotedRegionKind.DoubleQuoteRegion = 1 -> Microsoft.TemplateEngine.Core.Expressions.Cpp.QuotedRegionKind
+Microsoft.TemplateEngine.Core.Expressions.Cpp.QuotedRegionKind.None = 0 -> Microsoft.TemplateEngine.Core.Expressions.Cpp.QuotedRegionKind
+Microsoft.TemplateEngine.Core.Expressions.Cpp.QuotedRegionKind.SingleQuoteRegion = 2 -> Microsoft.TemplateEngine.Core.Expressions.Cpp.QuotedRegionKind
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Cpp2StyleEvaluatorDefinition() -> void
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.Add = 19 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.And = 0 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.BitwiseAnd = 23 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.BitwiseOr = 24 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.CloseBrace = 10 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.Divide = 22 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.DoubleQuote = 26 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.EqualTo = 7 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.GreaterThan = 3 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.GreaterThanOrEqualTo = 4 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.LeftShift = 17 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.LegacyMacEOL = 15 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.LessThan = 5 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.LessThanOrEqualTo = 6 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.Literal = 27 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.Multiply = 21 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.Not = 2 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.NotEqualTo = 8 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.OpenBrace = 9 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.Or = 1 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.Quote = 16 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.RightShift = 18 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.SingleQuote = 25 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.Space = 11 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.Subtract = 20 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.Tab = 12 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.UnixEOL = 14 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens.WindowsEOL = 13 -> Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.IEvaluable
+Microsoft.TemplateEngine.Core.Expressions.IEvaluable.Evaluate() -> object
+Microsoft.TemplateEngine.Core.Expressions.IEvaluable.IsFull.get -> bool
+Microsoft.TemplateEngine.Core.Expressions.IEvaluable.IsIndivisible.get -> bool
+Microsoft.TemplateEngine.Core.Expressions.IEvaluable.Parent.get -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
+Microsoft.TemplateEngine.Core.Expressions.IEvaluable.Parent.set -> void
+Microsoft.TemplateEngine.Core.Expressions.IEvaluable.TryAccept(Microsoft.TemplateEngine.Core.Expressions.IEvaluable child) -> bool
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.BadSyntaxTokens.get -> System.Collections.Generic.ISet<TToken>
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.CloseGroupToken.get -> TToken
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.Decode(string value) -> string
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.Encode(string value) -> string
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.Identity.get -> TOperator
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.LiteralSequenceBoundsMarkers.get -> System.Collections.Generic.ISet<TToken>
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.LiteralToken.get -> TToken
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.NoOpTokens.get -> System.Collections.Generic.ISet<TToken>
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.OpenGroupToken.get -> TToken
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.OperatorScopeLookupFactory.get -> System.Collections.Generic.IReadOnlyDictionary<TOperator, System.Func<Microsoft.TemplateEngine.Core.Expressions.IEvaluable, Microsoft.TemplateEngine.Core.Expressions.IEvaluable>>
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.Terminators.get -> System.Collections.Generic.ISet<TToken>
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.TokensToOperatorsMap.get -> System.Collections.Generic.IReadOnlyDictionary<TToken, TOperator>
+Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken>.TryConvert<T>(object source, out T result) -> bool
+Microsoft.TemplateEngine.Core.Expressions.ITypeConverter
+Microsoft.TemplateEngine.Core.Expressions.ITypeConverter.Register<T>(Microsoft.TemplateEngine.Core.Expressions.TypeConverterDelegate<T> converter) -> Microsoft.TemplateEngine.Core.Expressions.ITypeConverter
+Microsoft.TemplateEngine.Core.Expressions.ITypeConverter.TryConvert<T>(object source, out T result) -> bool
+Microsoft.TemplateEngine.Core.Expressions.ITypeConverter.TryCoreConvert<T>(object source, out T result) -> bool
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.MSBuildStyleEvaluatorDefinition() -> void
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.And = 0 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.CloseBrace = 10 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.EqualTo = 7 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.GreaterThan = 3 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.GreaterThanOrEqualTo = 4 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.LegacyMacEOL = 15 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.LessThan = 5 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.LessThanOrEqualTo = 6 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.Literal = 18 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.Not = 2 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.NotEqualTo = 8 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.OpenBrace = 9 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.Or = 1 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.Quote = 16 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.Space = 11 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.Tab = 12 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.UnixEOL = 14 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.VariableStart = 17 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens.WindowsEOL = 13 -> Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens
+Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.Add = 28 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.And = 41 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.BadSyntax = -1 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.BitwiseAnd = 38 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.BitwiseOr = 40 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.Divide = 26 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.EqualTo = 36 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.Exponentiate = 24 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.GreaterThan = 33 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.GreaterThanOrEqualTo = 35 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.Identity = 1 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.LeftShift = 30 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.LessThan = 32 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.LessThanOrEqualTo = 34 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.Modulus = 27 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.Multiply = 25 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.None = 0 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.Not = 2 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.NotEqualTo = 37 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.Or = 42 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.RightShift = 31 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.Subtract = 29 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.Operators.Xor = 39 -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Add(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.And(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.BadSyntax(params TToken[] token) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.BadSyntaxTokens.get -> System.Collections.Generic.ISet<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.BitwiseAnd(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.BitwiseOr(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.CloseGroup(TToken token) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.CloseGroupToken.get -> TToken
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.CustomTypeConverter<TScope>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.CustomTypeConverter<TScope>.CustomTypeConverter() -> void
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.CustomTypeConverter<TScope>.Register<T>(Microsoft.TemplateEngine.Core.Expressions.TypeConverterDelegate<T> converter) -> Microsoft.TemplateEngine.Core.Expressions.ITypeConverter
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.CustomTypeConverter<TScope>.ScopeType.get -> System.Type
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.CustomTypeConverter<TScope>.TryConvert<T>(object source, out T result) -> bool
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.CustomTypeConverter<TScope>.TryCoreConvert<T>(object source, out T result) -> bool
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Decode(string value) -> string
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Divide(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Encode(string value) -> string
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.EqualTo(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Exponentiate(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.GreaterThan(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.GreaterThanOrEqualTo(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Identity.get -> Microsoft.TemplateEngine.Core.Expressions.Operators
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Ignore(params TToken[] token) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.LeftShift(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.LessThan(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.LessThanOrEqualTo(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Literal(TToken token) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.LiteralBoundsMarkers(params TToken[] token) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.LiteralSequenceBoundsMarkers.get -> System.Collections.Generic.ISet<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.LiteralToken.get -> TToken
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Multiply(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.NoOpTokens.get -> System.Collections.Generic.ISet<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Not(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.NotEqualTo(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.OpenGroup(TToken token) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.OpenGroupToken.get -> TToken
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.OperatorScopeLookupFactory.get -> System.Collections.Generic.IReadOnlyDictionary<Microsoft.TemplateEngine.Core.Expressions.Operators, System.Func<Microsoft.TemplateEngine.Core.Expressions.IEvaluable, Microsoft.TemplateEngine.Core.Expressions.IEvaluable>>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.OperatorSetBuilder(System.Func<string, string> encoder, System.Func<string, string> decoder) -> void
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Or(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Other(Microsoft.TemplateEngine.Core.Expressions.Operators operator, TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.IEvaluable, Microsoft.TemplateEngine.Core.Expressions.IEvaluable> nodeFactory) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.RightShift(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Subtract(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.TerminateWith(params TToken[] token) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Terminators.get -> System.Collections.Generic.ISet<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.TokensToOperatorsMap.get -> System.Collections.Generic.IReadOnlyDictionary<TToken, Microsoft.TemplateEngine.Core.Expressions.Operators>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.TryConvert<T>(object sender, out T result) -> bool
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.TypeConverter<TSelf>(System.Action<Microsoft.TemplateEngine.Core.Expressions.ITypeConverter> configureConverter) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Xor(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
+Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>
+Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>.Build(ref int bufferLength, ref int bufferPosition, System.Action<System.Collections.Generic.IReadOnlyList<byte>> onFault) -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
+Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>.ScopeBuilder(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie tokens, Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken> operatorMap, bool dereferenceInLiterals) -> void
+Microsoft.TemplateEngine.Core.Expressions.ScopeBuilderHelper
+Microsoft.TemplateEngine.Core.Expressions.Shared.CoreConverters
+Microsoft.TemplateEngine.Core.Expressions.Shared.CppStyleConverters
+Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>
+Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.SharedEvaluatorDefinition() -> void
+Microsoft.TemplateEngine.Core.Expressions.Shared.VisualBasicStyleConverters
+Microsoft.TemplateEngine.Core.Expressions.Shared.XmlStyleConverters
+Microsoft.TemplateEngine.Core.Expressions.Token<TToken>
+Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Family.get -> TToken
+Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Token(TToken family, string value) -> void
+Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Value.get -> string
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.Evaluate() -> object
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.IsFull.get -> bool
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.IsIndivisible.get -> bool
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.IsQuoted.get -> bool
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.IsQuoted.set -> void
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.Parent.get -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.Parent.set -> void
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.Token.get -> Microsoft.TemplateEngine.Core.Expressions.Token<TToken>
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.TokenScope(Microsoft.TemplateEngine.Core.Expressions.IEvaluable parent, Microsoft.TemplateEngine.Core.Expressions.Token<TToken> token) -> void
+Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.TryAccept(Microsoft.TemplateEngine.Core.Expressions.IEvaluable child) -> bool
+Microsoft.TemplateEngine.Core.Expressions.TypeConverterDelegate<T>
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.Evaluate() -> object
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.IsFull.get -> bool
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.IsIndivisible.get -> bool
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.Operand.get -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.Operand.set -> void
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.Operator.get -> TOperator
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.Parent.get -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.Parent.set -> void
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.TryAccept(Microsoft.TemplateEngine.Core.Expressions.IEvaluable child) -> bool
+Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.UnaryScope(Microsoft.TemplateEngine.Core.Expressions.IEvaluable parent, TOperator operator, System.Func<object, object> evaluate) -> void
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Add = 22 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.And = 0 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.AndAlso = 1 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.CloseBrace = 13 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Divide = 25 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.DoubleQuote = 27 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.EqualTo = 9 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Exponentiate = 26 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.GreaterThan = 5 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.GreaterThanOrEqualTo = 6 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.LeftShift = 20 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.LegacyMacEOL = 18 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.LessThan = 7 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.LessThanOrEqualTo = 8 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Literal = 28 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Multiply = 24 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Not = 4 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.NotEqualTo = 10 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.OpenBrace = 12 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Or = 2 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.OrElse = 3 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Quote = 19 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.RightShift = 21 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Space = 14 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Subtract = 23 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Tab = 15 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.UnixEOL = 17 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.WindowsEOL = 16 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens.Xor = 11 -> Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens
+Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.VisualBasicStyleEvaluatorDefintion() -> void
+Microsoft.TemplateEngine.Core.FileChange
+Microsoft.TemplateEngine.Core.FileChange.ChangeKind.get -> Microsoft.TemplateEngine.Abstractions.ChangeKind
+Microsoft.TemplateEngine.Core.FileChange.Contents.get -> byte[]
+Microsoft.TemplateEngine.Core.FileChange.FileChange(string sourceRelativePath, string targetRelativePath, Microsoft.TemplateEngine.Abstractions.ChangeKind changeKind, byte[] contents = null) -> void
+Microsoft.TemplateEngine.Core.FileChange.SourceRelativePath.get -> string
+Microsoft.TemplateEngine.Core.FileChange.TargetRelativePath.get -> string
+Microsoft.TemplateEngine.Core.KeysChangedEventArgs
+Microsoft.TemplateEngine.Core.KeysChangedEventArgs.KeysChangedEventArgs() -> void
+Microsoft.TemplateEngine.Core.Matching.OperationTerminal
+Microsoft.TemplateEngine.Core.Matching.OperationTerminal.Operation.get -> Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Matching.OperationTerminal.OperationTerminal(Microsoft.TemplateEngine.Core.Contracts.IOperation operation, int token, int tokenLength, int start = 0, int end = -1) -> void
+Microsoft.TemplateEngine.Core.Matching.OperationTerminal.Token.get -> int
+Microsoft.TemplateEngine.Core.Matching.TerminalBase
+Microsoft.TemplateEngine.Core.Matching.TerminalBase.End.get -> int
+Microsoft.TemplateEngine.Core.Matching.TerminalBase.End.set -> void
+Microsoft.TemplateEngine.Core.Matching.TerminalBase.Length.get -> int
+Microsoft.TemplateEngine.Core.Matching.TerminalBase.Start.get -> int
+Microsoft.TemplateEngine.Core.Matching.TerminalBase.Start.set -> void
+Microsoft.TemplateEngine.Core.Matching.TerminalBase.TerminalBase(int tokenLength, int start, int end) -> void
+Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>
+Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>.Location.get -> int
+Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>.Location.set -> void
+Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>.Terminal.get -> T
+Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>.TerminalLocation(T terminal, int location) -> void
+Microsoft.TemplateEngine.Core.Matching.Trie<T>
+Microsoft.TemplateEngine.Core.Matching.Trie<T>.AddPath(byte[] path, T terminal) -> void
+Microsoft.TemplateEngine.Core.Matching.Trie<T>.MaxRemainingLength.get -> int
+Microsoft.TemplateEngine.Core.Matching.Trie<T>.NextNodes.get -> System.Collections.Generic.Dictionary<byte, Microsoft.TemplateEngine.Core.Matching.TrieNode<T>>
+Microsoft.TemplateEngine.Core.Matching.Trie<T>.Trie() -> void
+Microsoft.TemplateEngine.Core.Matching.TrieEvaluationDriver<T>
+Microsoft.TemplateEngine.Core.Matching.TrieEvaluationDriver<T>.Evaluate(byte[] buffer, int bufferLength, bool isFinalBuffer, int lastNetBufferEffect, ref int bufferPosition) -> Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>
+Microsoft.TemplateEngine.Core.Matching.TrieEvaluationDriver<T>.TrieEvaluationDriver(Microsoft.TemplateEngine.Core.Matching.TrieEvaluator<T> trie) -> void
+Microsoft.TemplateEngine.Core.Matching.TrieEvaluator<T>
+Microsoft.TemplateEngine.Core.Matching.TrieEvaluator<T>.Accept(byte data, ref int sequenceNumber, out Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T> terminal) -> bool
+Microsoft.TemplateEngine.Core.Matching.TrieEvaluator<T>.FinalizeMatchesInProgress(ref int sequenceNumber, out Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T> terminals) -> void
+Microsoft.TemplateEngine.Core.Matching.TrieEvaluator<T>.MaxLength.get -> int
+Microsoft.TemplateEngine.Core.Matching.TrieEvaluator<T>.OldestRequiredSequenceNumber.get -> int
+Microsoft.TemplateEngine.Core.Matching.TrieEvaluator<T>.TrieEvaluator(Microsoft.TemplateEngine.Core.Matching.Trie<T> trie) -> void
+Microsoft.TemplateEngine.Core.Matching.TrieEvaluator<T>.TryGetNext(bool isFinal, ref int sequenceNumber, out Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T> terminalLocation) -> bool
+Microsoft.TemplateEngine.Core.Matching.TrieNode<T>
+Microsoft.TemplateEngine.Core.Matching.TrieNode<T>.IsTerminal.get -> bool
+Microsoft.TemplateEngine.Core.Matching.TrieNode<T>.Match.get -> byte
+Microsoft.TemplateEngine.Core.Matching.TrieNode<T>.Terminals.get -> System.Collections.Generic.List<T>
+Microsoft.TemplateEngine.Core.Matching.TrieNode<T>.Terminals.set -> void
+Microsoft.TemplateEngine.Core.Matching.TrieNode<T>.TrieNode(byte match) -> void
+Microsoft.TemplateEngine.Core.Operations.BalancedNesting
+Microsoft.TemplateEngine.Core.Operations.BalancedNesting.BalancedNesting(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig startToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig realEndToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig pseudoEndToken, string id, string resetFlag, bool initialState) -> void
+Microsoft.TemplateEngine.Core.Operations.BalancedNesting.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Operations.BalancedNesting.Id.get -> string
+Microsoft.TemplateEngine.Core.Operations.Conditional
+Microsoft.TemplateEngine.Core.Operations.Conditional.Conditional(Microsoft.TemplateEngine.Core.Operations.ConditionalTokens tokenVariants, bool wholeLine, bool trimWhitespace, Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator evaluator, string id, bool initialState) -> void
+Microsoft.TemplateEngine.Core.Operations.Conditional.Evaluator.get -> Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator
+Microsoft.TemplateEngine.Core.Operations.Conditional.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Operations.Conditional.Id.get -> string
+Microsoft.TemplateEngine.Core.Operations.Conditional.Tokens.get -> Microsoft.TemplateEngine.Core.Operations.ConditionalTokens
+Microsoft.TemplateEngine.Core.Operations.Conditional.TrimWhitespace.get -> bool
+Microsoft.TemplateEngine.Core.Operations.Conditional.WholeLine.get -> bool
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ActionableElseIfTokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig>
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ActionableElseIfTokens.set -> void
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ActionableElseTokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig>
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ActionableElseTokens.set -> void
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ActionableIfTokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig>
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ActionableIfTokens.set -> void
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ActionableOperations.get -> System.Collections.Generic.IReadOnlyList<string>
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ActionableOperations.set -> void
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ConditionalTokens() -> void
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ElseIfTokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig>
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ElseIfTokens.set -> void
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ElseTokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig>
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ElseTokens.set -> void
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.EndIfTokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig>
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.EndIfTokens.set -> void
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.IfTokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig>
+Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.IfTokens.set -> void
+Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.CBlockComments = 5 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.CLineComments = 4 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.CNoComments = 3 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.HamlLineComment = 9 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.HashSignLineComment = 6 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.JsxBlockComment = 10 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.MSBuild = 8 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.None = 0 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.Razor = 2 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.RemLineComment = 7 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.VB = 11 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionalType.Xml = 1 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
+Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator
+Microsoft.TemplateEngine.Core.Operations.ExpandVariables
+Microsoft.TemplateEngine.Core.Operations.ExpandVariables.ExpandVariables(string id, bool initialState) -> void
+Microsoft.TemplateEngine.Core.Operations.ExpandVariables.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Operations.ExpandVariables.Id.get -> string
+Microsoft.TemplateEngine.Core.Operations.Include
+Microsoft.TemplateEngine.Core.Operations.Include.EndToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.Include.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Operations.Include.Id.get -> string
+Microsoft.TemplateEngine.Core.Operations.Include.Include(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig startToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig endToken, System.Func<string, System.IO.Stream> sourceStreamOpener, string id, bool initialState) -> void
+Microsoft.TemplateEngine.Core.Operations.Include.SourceStreamOpener.get -> System.Func<string, System.IO.Stream>
+Microsoft.TemplateEngine.Core.Operations.Include.StartToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Evaluator.get -> Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Id.get -> string
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.HandleMatch(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, System.IO.Stream target) -> int
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.Id.get -> string
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.Impl(Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional definition, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken> tokens, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie structureTrie, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie closeConditionTrie, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie scanBackTrie, Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping mapping, string id, bool initialState) -> void
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.IsInitialStateOn.get -> bool
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken>
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.InlineMarkupConditional(Microsoft.TemplateEngine.Core.Operations.MarkupTokens tokens, bool wholeLine, bool trimWhitespace, Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator evaluator, string variableFormat, string id, bool initialState) -> void
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Tokens.get -> Microsoft.TemplateEngine.Core.Operations.MarkupTokens
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.TrimWhitespace.get -> bool
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.VariableFormat.get -> string
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.WholeLine.get -> bool
+Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping
+Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping.CloseElementTagToken.get -> int
+Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping.MarkupTokenMapping(int openOpenElementToken, int openCloseElementToken, int closeCloseElementToken, int selfClosingElementEndToken) -> void
+Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping.OpenCloseElementToken.get -> int
+Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping.OpenOpenElementToken.get -> int
+Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping.SelfClosingElementEndToken.get -> int
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.CloseConditionExpression.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.CloseElementTagToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.MarkupTokens(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig openOpenElementToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig openCloseElementToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig closeElementTagToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig selfClosingElementEndToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig openConditionExpression, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig closeConditionExpression) -> void
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.OpenCloseElementToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.OpenConditionExpression.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.OpenOpenElementToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.SelfClosingElementEndToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.Phase
+Microsoft.TemplateEngine.Core.Operations.Phase.Match.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.Phase.Next.get -> System.Collections.Generic.List<Microsoft.TemplateEngine.Core.Operations.Phase>
+Microsoft.TemplateEngine.Core.Operations.Phase.Phase(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig match, string replacement, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig> resetsWith) -> void
+Microsoft.TemplateEngine.Core.Operations.Phase.Phase(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig match, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig> resetsWith) -> void
+Microsoft.TemplateEngine.Core.Operations.Phase.Replacement.get -> string
+Microsoft.TemplateEngine.Core.Operations.Phase.ResetsWith.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig>
+Microsoft.TemplateEngine.Core.Operations.PhasedOperation
+Microsoft.TemplateEngine.Core.Operations.PhasedOperation.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Operations.PhasedOperation.Id.get -> string
+Microsoft.TemplateEngine.Core.Operations.PhasedOperation.PhasedOperation(string id, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Operations.Phase> config, bool initialState) -> void
+Microsoft.TemplateEngine.Core.Operations.Region
+Microsoft.TemplateEngine.Core.Operations.Region.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Operations.Region.Id.get -> string
+Microsoft.TemplateEngine.Core.Operations.Region.Region(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig start, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig end, bool include, bool wholeLine, bool trimWhitespace, string id, bool initialState) -> void
+Microsoft.TemplateEngine.Core.Operations.Replacement
+Microsoft.TemplateEngine.Core.Operations.Replacement.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Operations.Replacement.Id.get -> string
+Microsoft.TemplateEngine.Core.Operations.Replacement.Replacement(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig match, string replaceWith, string id, bool initialState) -> void
+Microsoft.TemplateEngine.Core.Operations.ReplacementTokens
+Microsoft.TemplateEngine.Core.Operations.ReplacementTokens.OriginalValue.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.ReplacementTokens.ReplacementTokens(string identity, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig originalValue) -> void
+Microsoft.TemplateEngine.Core.Operations.ReplacementTokens.VariableName.get -> string
+Microsoft.TemplateEngine.Core.Operations.SetFlag
+Microsoft.TemplateEngine.Core.Operations.SetFlag.Default.get -> bool?
+Microsoft.TemplateEngine.Core.Operations.SetFlag.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Operations.SetFlag.Id.get -> string
+Microsoft.TemplateEngine.Core.Operations.SetFlag.Name.get -> string
+Microsoft.TemplateEngine.Core.Operations.SetFlag.Off.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.SetFlag.OffNoEmit.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.SetFlag.On.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.SetFlag.OnNoEmit.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.SetFlag.SetFlag(string name, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig on, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig off, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig onNoEmit, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig offNoEmit, string id, bool initialState, bool? default = null) -> void
+Microsoft.TemplateEngine.Core.TokenConfig
+Microsoft.TemplateEngine.Core.TokenConfig.After.get -> string
+Microsoft.TemplateEngine.Core.TokenConfig.Before.get -> string
+Microsoft.TemplateEngine.Core.TokenConfig.Equals(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig other) -> bool
+Microsoft.TemplateEngine.Core.TokenConfig.OnlyIfAfter(string prefix) -> Microsoft.TemplateEngine.Core.TokenConfig
+Microsoft.TemplateEngine.Core.TokenConfig.OnlyIfBefore(string suffix) -> Microsoft.TemplateEngine.Core.TokenConfig
+Microsoft.TemplateEngine.Core.TokenConfig.ToToken(System.Text.Encoding encoding) -> Microsoft.TemplateEngine.Core.Contracts.IToken
+Microsoft.TemplateEngine.Core.TokenConfig.Value.get -> string
+Microsoft.TemplateEngine.Core.TokenConfigExtensions
+Microsoft.TemplateEngine.Core.Util.EncodingConfig
+Microsoft.TemplateEngine.Core.Util.EncodingConfig.Encoding.get -> System.Text.Encoding
+Microsoft.TemplateEngine.Core.Util.EncodingConfig.EncodingConfig(Microsoft.TemplateEngine.Core.Contracts.IEngineConfig config, System.Text.Encoding encoding) -> void
+Microsoft.TemplateEngine.Core.Util.EncodingConfig.LineEndings.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
+Microsoft.TemplateEngine.Core.Util.EncodingConfig.this[int index].get -> object
+Microsoft.TemplateEngine.Core.Util.EncodingConfig.VariableKeys.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken>
+Microsoft.TemplateEngine.Core.Util.EncodingConfig.Variables.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
+Microsoft.TemplateEngine.Core.Util.EncodingConfig.VariableValues.get -> System.Collections.Generic.IReadOnlyList<System.Func<object>>
+Microsoft.TemplateEngine.Core.Util.EncodingConfig.Whitespace.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
+Microsoft.TemplateEngine.Core.Util.EncodingConfig.WhitespaceOrLineEnding.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
+Microsoft.TemplateEngine.Core.Util.EncodingUtil
+Microsoft.TemplateEngine.Core.Util.EncodingUtil.EncodingUtil() -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables, string variableFormatString) -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, System.Collections.Generic.IReadOnlyList<string> whitespaces, System.Collections.Generic.IReadOnlyList<string> lineEndings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables, string variableFormatString = "{0}") -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EnvironmentSettings.get -> Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string, bool>
+Microsoft.TemplateEngine.Core.Util.EngineConfig.LineEndings.get -> System.Collections.Generic.IReadOnlyList<string>
+Microsoft.TemplateEngine.Core.Util.EngineConfig.VariableFormatString.get -> string
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Variables.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Whitespaces.get -> System.Collections.Generic.IReadOnlyList<string>
+Microsoft.TemplateEngine.Core.Util.Orchestrator
+Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2>
+Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2>
+Microsoft.TemplateEngine.Core.Util.Orchestrator.Orchestrator() -> void
+Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
+Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
+Microsoft.TemplateEngine.Core.Util.Processor
+Microsoft.TemplateEngine.Core.Util.Processor.CloneAndAppendOperations(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> tempOperations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor
+Microsoft.TemplateEngine.Core.Util.Processor.Config.get -> Microsoft.TemplateEngine.Core.Util.EngineConfig
+Microsoft.TemplateEngine.Core.Util.Processor.Run(System.IO.Stream source, System.IO.Stream target) -> bool
+Microsoft.TemplateEngine.Core.Util.Processor.Run(System.IO.Stream source, System.IO.Stream target, int bufferSize) -> bool
+Microsoft.TemplateEngine.Core.Util.Processor.Run(System.IO.Stream source, System.IO.Stream target, int bufferSize, int flushThreshold) -> bool
+Microsoft.TemplateEngine.Core.Util.ProcessorState
+Microsoft.TemplateEngine.Core.Util.ProcessorState.AdvanceBuffer(int bufferPosition) -> bool
+Microsoft.TemplateEngine.Core.Util.ProcessorState.Config.get -> Microsoft.TemplateEngine.Core.Contracts.IEngineConfig
+Microsoft.TemplateEngine.Core.Util.ProcessorState.CurrentBuffer.get -> byte[]
+Microsoft.TemplateEngine.Core.Util.ProcessorState.CurrentBufferLength.get -> int
+Microsoft.TemplateEngine.Core.Util.ProcessorState.CurrentBufferPosition.get -> int
+Microsoft.TemplateEngine.Core.Util.ProcessorState.CurrentSequenceNumber.get -> int
+Microsoft.TemplateEngine.Core.Util.ProcessorState.Encoding.get -> System.Text.Encoding
+Microsoft.TemplateEngine.Core.Util.ProcessorState.Encoding.set -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.EncodingConfig.get -> Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig
+Microsoft.TemplateEngine.Core.Util.ProcessorState.Inject(System.IO.Stream staged) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.ProcessorState(System.IO.Stream source, System.IO.Stream target, int bufferSize, int flushThreshold, Microsoft.TemplateEngine.Core.Contracts.IEngineConfig config, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> operationProviders) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.Run() -> bool
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie match) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie match, bool consume) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie match) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardThrough(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition) -> void
+Microsoft.TemplateEngine.Core.Util.Token
+Microsoft.TemplateEngine.Core.Util.Token.Index.get -> int
+Microsoft.TemplateEngine.Core.Util.Token.Token(byte[] token, int index, int start = 0, int end = -1) -> void
+Microsoft.TemplateEngine.Core.Util.Token.Value.get -> byte[]
+Microsoft.TemplateEngine.Core.Util.TokenTrie
+Microsoft.TemplateEngine.Core.Util.TokenTrie.AddToken(byte[] literalToken) -> int
+Microsoft.TemplateEngine.Core.Util.TokenTrie.AddToken(byte[] literalToken, int index) -> void
+Microsoft.TemplateEngine.Core.Util.TokenTrie.AddToken(Microsoft.TemplateEngine.Core.Contracts.IToken token) -> int
+Microsoft.TemplateEngine.Core.Util.TokenTrie.AddToken(Microsoft.TemplateEngine.Core.Contracts.IToken token, int index) -> void
+Microsoft.TemplateEngine.Core.Util.TokenTrie.Append(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie) -> void
+Microsoft.TemplateEngine.Core.Util.TokenTrie.Count.get -> int
+Microsoft.TemplateEngine.Core.Util.TokenTrie.CreateEvaluator() -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator
+Microsoft.TemplateEngine.Core.Util.TokenTrie.GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, bool mustMatchPosition, out int token) -> bool
+Microsoft.TemplateEngine.Core.Util.TokenTrie.GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, out int token) -> bool
+Microsoft.TemplateEngine.Core.Util.TokenTrie.MaxLength.get -> int
+Microsoft.TemplateEngine.Core.Util.TokenTrie.MinLength.get -> int
+Microsoft.TemplateEngine.Core.Util.TokenTrie.TokenLength.get -> System.Collections.Generic.IReadOnlyList<int>
+Microsoft.TemplateEngine.Core.Util.TokenTrie.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken>
+Microsoft.TemplateEngine.Core.Util.TokenTrie.TokenTrie() -> void
+Microsoft.TemplateEngine.Core.Util.TokenTrieEvaluator
+Microsoft.TemplateEngine.Core.Util.TokenTrieEvaluator.Accept(byte data, ref int bufferPosition, out int token) -> bool
+Microsoft.TemplateEngine.Core.Util.TokenTrieEvaluator.BytesToKeepInBuffer.get -> int
+Microsoft.TemplateEngine.Core.Util.TokenTrieEvaluator.TokenTrieEvaluator(Microsoft.TemplateEngine.Core.Matching.Trie<Microsoft.TemplateEngine.Core.Util.Token> trie) -> void
+Microsoft.TemplateEngine.Core.Util.TokenTrieEvaluator.TryFinalizeMatchesInProgress(ref int bufferPosition, out int token) -> bool
+Microsoft.TemplateEngine.Core.ValueReadEventArgs
+Microsoft.TemplateEngine.Core.ValueReadEventArgs.Key.get -> string
+Microsoft.TemplateEngine.Core.ValueReadEventArgs.Key.set -> void
+Microsoft.TemplateEngine.Core.ValueReadEventArgs.Value.get -> object
+Microsoft.TemplateEngine.Core.ValueReadEventArgs.Value.set -> void
+Microsoft.TemplateEngine.Core.ValueReadEventArgs.ValueReadEventArgs(string key, object value) -> void
+Microsoft.TemplateEngine.Core.VariableCollection
+Microsoft.TemplateEngine.Core.VariableCollection.Add(string key, object value) -> void
+Microsoft.TemplateEngine.Core.VariableCollection.Add(System.Collections.Generic.KeyValuePair<string, object> item) -> void
+Microsoft.TemplateEngine.Core.VariableCollection.Clear() -> void
+Microsoft.TemplateEngine.Core.VariableCollection.Contains(System.Collections.Generic.KeyValuePair<string, object> item) -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.ContainsKey(string key) -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.CopyTo(System.Collections.Generic.KeyValuePair<string, object>[] array, int arrayIndex) -> void
+Microsoft.TemplateEngine.Core.VariableCollection.Count.get -> int
+Microsoft.TemplateEngine.Core.VariableCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>>
+Microsoft.TemplateEngine.Core.VariableCollection.IsReadOnly.get -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.Keys.get -> System.Collections.Generic.ICollection<string>
+Microsoft.TemplateEngine.Core.VariableCollection.KeysChanged -> Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander
+Microsoft.TemplateEngine.Core.VariableCollection.Parent.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
+Microsoft.TemplateEngine.Core.VariableCollection.Parent.set -> void
+Microsoft.TemplateEngine.Core.VariableCollection.Remove(string key) -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.Remove(System.Collections.Generic.KeyValuePair<string, object> item) -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.this[string key].get -> object
+Microsoft.TemplateEngine.Core.VariableCollection.this[string key].set -> void
+Microsoft.TemplateEngine.Core.VariableCollection.TryGetValue(string key, out object value) -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.ValueRead -> Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
+Microsoft.TemplateEngine.Core.VariableCollection.Values.get -> System.Collections.Generic.ICollection<object>
+Microsoft.TemplateEngine.Core.VariableCollection.VariableCollection() -> void
+Microsoft.TemplateEngine.Core.VariableCollection.VariableCollection(Microsoft.TemplateEngine.Core.Contracts.IVariableCollection parent, System.Collections.Generic.IDictionary<string, object> values) -> void
+Microsoft.TemplateEngine.Core.VariableCollection.VariableCollection(Microsoft.TemplateEngine.Core.VariableCollection parent) -> void
+override Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.ToString() -> string
+override Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.DereferenceInLiterals.get -> bool
+override Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.GenerateMap() -> Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<Microsoft.TemplateEngine.Core.Expressions.Operators, Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens>
+override Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.GetSymbols(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor) -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
+override Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.NullTokenValue.get -> string
+override Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.DereferenceInLiterals.get -> bool
+override Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.GenerateMap() -> Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<Microsoft.TemplateEngine.Core.Expressions.Operators, Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.Tokens>
+override Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.GetSymbols(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor) -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
+override Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.NullTokenValue.get -> string
+override Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.ToString() -> string
+override Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.ToString() -> string
+override Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.DereferenceInLiterals.get -> bool
+override Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.GenerateMap() -> Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<Microsoft.TemplateEngine.Core.Expressions.Operators, Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.Tokens>
+override Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.GetSymbols(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor) -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
+override Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.NullTokenValue.get -> string
+override Microsoft.TemplateEngine.Core.TokenConfig.Equals(object obj) -> bool
+override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
+static Microsoft.TemplateEngine.Core.CommonOperations.ConsumeWholeLine(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition) -> void
+static Microsoft.TemplateEngine.Core.CommonOperations.TrimWhitespace(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, bool forward, bool backward, ref int bufferLength, ref int currentBufferPosition) -> void
+static Microsoft.TemplateEngine.Core.CommonOperations.WhitespaceHandler(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, bool wholeLine = false, bool trim = false, bool trimForward = false, bool trimBackward = false) -> void
+static Microsoft.TemplateEngine.Core.Expressions.Converter.TryConvert<T>(object source, out T result) -> bool
+static Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
+static Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition.EvaluateFromString(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> bool
+static Microsoft.TemplateEngine.Core.Expressions.ScopeBuilderHelper.ScopeBuilder<TOperator, TToken>(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie tokens, Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken> operatorMap, bool dereferenceInLiterals = false) -> Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>
+static Microsoft.TemplateEngine.Core.Expressions.Shared.CoreConverters.TryHexConvert(string prefix, Microsoft.TemplateEngine.Core.Expressions.ITypeConverter obj, object source, out int result) -> bool
+static Microsoft.TemplateEngine.Core.Expressions.Shared.CoreConverters.TryHexConvert(string prefix, Microsoft.TemplateEngine.Core.Expressions.ITypeConverter obj, object source, out long result) -> bool
+static Microsoft.TemplateEngine.Core.Expressions.Shared.CppStyleConverters.ConfigureConverters(Microsoft.TemplateEngine.Core.Expressions.ITypeConverter obj) -> void
+static Microsoft.TemplateEngine.Core.Expressions.Shared.CppStyleConverters.Decode(string arg) -> string
+static Microsoft.TemplateEngine.Core.Expressions.Shared.CppStyleConverters.Encode(string arg) -> string
+static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.Compare(object left, object right) -> int
+static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
+static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> bool
+static Microsoft.TemplateEngine.Core.Expressions.Shared.VisualBasicStyleConverters.ConfigureConverters(Microsoft.TemplateEngine.Core.Expressions.ITypeConverter obj) -> void
+static Microsoft.TemplateEngine.Core.Expressions.Shared.XmlStyleConverters.XmlDecode(string arg) -> string
+static Microsoft.TemplateEngine.Core.Expressions.Shared.XmlStyleConverters.XmlEncode(string arg) -> string
+static Microsoft.TemplateEngine.Core.KeysChangedEventArgs.Default.get -> Microsoft.TemplateEngine.Core.KeysChangedEventArgs
+static Microsoft.TemplateEngine.Core.TokenConfig.FromValue(string value) -> Microsoft.TemplateEngine.Core.TokenConfig
+static Microsoft.TemplateEngine.Core.TokenConfig.LiteralToken(byte[] data, int start = 0, int end = -1) -> Microsoft.TemplateEngine.Core.Contracts.IToken
+static Microsoft.TemplateEngine.Core.TokenConfigExtensions.LiteralToken(this byte[] b, int start = 0, int end = -1) -> Microsoft.TemplateEngine.Core.Contracts.IToken
+static Microsoft.TemplateEngine.Core.TokenConfigExtensions.Token(this string s, System.Text.Encoding e) -> Microsoft.TemplateEngine.Core.Contracts.IToken
+static Microsoft.TemplateEngine.Core.TokenConfigExtensions.TokenConfig(this string s) -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+static Microsoft.TemplateEngine.Core.TokenConfigExtensions.TokenConfigBuilder(this string s) -> Microsoft.TemplateEngine.Core.TokenConfig
+static Microsoft.TemplateEngine.Core.TokenConfigExtensions.TokenConfigs(this System.Collections.Generic.IEnumerable<string> s) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig>
+static Microsoft.TemplateEngine.Core.Util.EncodingUtil.Detect(byte[] buffer, int currentBufferLength, out byte[] bom) -> System.Text.Encoding
+static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultLineEndings.get -> System.Collections.Generic.IReadOnlyList<string>
+static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultLineEndings.set -> void
+static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultWhitespaces.get -> System.Collections.Generic.IReadOnlyList<string>
+static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultWhitespaces.set -> void
+static Microsoft.TemplateEngine.Core.Util.Processor.Create(Microsoft.TemplateEngine.Core.Util.EngineConfig config, params Microsoft.TemplateEngine.Core.Contracts.IOperationProvider[] operations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor
+static Microsoft.TemplateEngine.Core.Util.Processor.Create(Microsoft.TemplateEngine.Core.Util.EngineConfig config, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> operations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor
+static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings) -> Microsoft.TemplateEngine.Core.VariableCollection
+static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, bool changeCase, bool upperCase) -> Microsoft.TemplateEngine.Core.VariableCollection
+static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, bool changeCase, bool upperCase, string formatString) -> Microsoft.TemplateEngine.Core.VariableCollection
+static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.VariableCollection parent) -> Microsoft.TemplateEngine.Core.VariableCollection
+static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.VariableCollection parent, bool changeCase, bool upperCase, string formatString) -> Microsoft.TemplateEngine.Core.VariableCollection
+static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.VariableCollection parent, string formatString) -> Microsoft.TemplateEngine.Core.VariableCollection
+static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string formatString) -> Microsoft.TemplateEngine.Core.VariableCollection
+static Microsoft.TemplateEngine.Core.VariableCollection.Root() -> Microsoft.TemplateEngine.Core.VariableCollection
+static Microsoft.TemplateEngine.Core.VariableCollection.Root(System.Collections.Generic.IDictionary<string, object> values) -> Microsoft.TemplateEngine.Core.VariableCollection
+static Microsoft.TemplateEngine.Core.VariableCollection.SetupVariables(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Abstractions.IParameterSet parameters, Microsoft.TemplateEngine.Core.Contracts.IVariableConfig variableConfig) -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
+static Microsoft.TemplateEngine.Core.VariableCollection.VariableCollectionFromParameters(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Abstractions.IParameterSet parameters, string format) -> Microsoft.TemplateEngine.Core.VariableCollection
+static readonly Microsoft.TemplateEngine.Core.Operations.BalancedNesting.OperationName -> string
+static readonly Microsoft.TemplateEngine.Core.Operations.Conditional.OperationName -> string
+static readonly Microsoft.TemplateEngine.Core.Operations.ExpandVariables.OperationName -> string
+static readonly Microsoft.TemplateEngine.Core.Operations.Include.OperationName -> string
+static readonly Microsoft.TemplateEngine.Core.Operations.Region.OperationName -> string
+static readonly Microsoft.TemplateEngine.Core.Operations.Replacement.OperationName -> string
+static readonly Microsoft.TemplateEngine.Core.Operations.SetFlag.OperationName -> string
+virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.RunSpecLoader(System.IO.Stream runSpec) -> Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec
+virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetBufferSize(Microsoft.TemplateEngine.Abstractions.Mount.IFile sourceFile, out int bufferSize) -> bool
+virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetFlushThreshold(Microsoft.TemplateEngine.Abstractions.Mount.IFile sourceFile, out int threshold) -> bool

@@ -1,38 +1,40 @@
-﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
-        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
-        <Description>An extension for Template Engine that allows projects that still run to be used as templates</Description>
-        <IsPackable>true</IsPackable>
-    </PropertyGroup>
+<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
+    <Description>An extension for Template Engine that allows projects that still run to be used as templates</Description>
+    <IsPackable>true</IsPackable>
+    <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <Compile Update="LocalizableStrings.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>LocalizableStrings.resx</DependentUpon>
-        </Compile>
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Update="LocalizableStrings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LocalizableStrings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
 
-    <ItemGroup>
-        <EmbeddedResource Update="LocalizableStrings.resx">
-            <Generator>ResXFileCodeGenerator</Generator>
-            <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-    </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="LocalizableStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

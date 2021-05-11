@@ -1,12 +1,13 @@
 <Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
-        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
-        <Description>Contracts for extending Microsoft.TemplateEngine.Core</Description>
-        <IsPackable>true</IsPackable>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
+    <Description>Contracts for extending Microsoft.TemplateEngine.Core</Description>
+    <IsPackable>true</IsPackable>
+    <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+  </ItemGroup>
 </Project>

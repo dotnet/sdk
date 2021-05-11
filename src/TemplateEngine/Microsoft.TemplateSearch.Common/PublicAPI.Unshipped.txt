@@ -1,0 +1,141 @@
+﻿~abstract Microsoft.TemplateSearch.Common.FileMetadataSearchSource.DisplayName.get -> string
+abstract Microsoft.TemplateSearch.Common.FileMetadataSearchSource.Id.get -> System.Guid
+~abstract Microsoft.TemplateSearch.Common.FileMetadataSearchSource.TryConfigure(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage> existingTemplatePackage) -> System.Threading.Tasks.Task<bool>
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Author.get -> string?
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.BaselineInfo.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IBaselineInfo!>!
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.CacheParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ICacheParameter!>!
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Classifications.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.DefaultName.get -> string?
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Description.get -> string?
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.GroupIdentity.get -> string?
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Identity.get -> string!
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Name.get -> string!
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Precedence.get -> int
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Tags.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ICacheTag!>!
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.ThirdPartyNotices.get -> string?
+Microsoft.TemplateSearch.Common.FileMetadataSearchSource
+~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.CheckForTemplateNameMatchesAsync(string searchName) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.ITemplateNameSearchResult>>
+~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.CheckForTemplatePackMatchesAsync(System.Collections.Generic.IReadOnlyList<string> packNameList) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackToTemplateEntry>>
+~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.Configure(Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache searchCache, Microsoft.TemplateEngine.Abstractions.ISearchPackFilter packFilter) -> void
+Microsoft.TemplateSearch.Common.FileMetadataSearchSource.FileMetadataSearchSource() -> void
+~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.SearchCache.get -> Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache
+~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.SearchCache.set -> void
+Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache
+~Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.FileMetadataTemplateSearchCache(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string pathToMetadata) -> void
+~Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.GetInfoForNamedPacks(System.Collections.Generic.IReadOnlyList<string> packNameList) -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackToTemplateEntry>
+~Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.GetNameMatchedTemplates(string searchName) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo>
+~Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.GetTemplateToPackMapForTemplateIdentities(System.Collections.Generic.IReadOnlyList<string> identities) -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackInfo>
+Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.IsInitialized.get -> bool
+Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.IsInitialized.set -> void
+~Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.PathToMetadta.get -> string
+~Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.TemplateDiscoveryMetadata.get -> Microsoft.TemplateSearch.Common.TemplateDiscoveryMetadata
+~Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.TemplateDiscoveryMetadata.set -> void
+~Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.TemplateToPackMap.get -> Microsoft.TemplateSearch.Common.TemplateToPackMap
+~Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.TemplateToPackMap.set -> void
+Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCacheReader
+Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache
+~Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache.GetInfoForNamedPacks(System.Collections.Generic.IReadOnlyList<string> packNameList) -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackToTemplateEntry>
+~Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache.GetNameMatchedTemplates(string searchName) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo>
+~Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache.GetTemplateToPackMapForTemplateIdentities(System.Collections.Generic.IReadOnlyList<string> identities) -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackInfo>
+Microsoft.TemplateSearch.Common.ISearchCacheConfig
+~Microsoft.TemplateSearch.Common.ISearchCacheConfig.AdditionalDataReaders.get -> System.Collections.Generic.IReadOnlyDictionary<string, System.Func<Newtonsoft.Json.Linq.JObject, object>>
+~Microsoft.TemplateSearch.Common.ISearchCacheConfig.TemplateDiscoveryFileName.get -> string
+Microsoft.TemplateSearch.Common.ITemplateNameSearchResult
+~Microsoft.TemplateSearch.Common.ITemplateNameSearchResult.PackInfo.get -> Microsoft.TemplateSearch.Common.PackInfo
+~Microsoft.TemplateSearch.Common.ITemplateNameSearchResult.Template.get -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo
+Microsoft.TemplateSearch.Common.ITemplateSearchSource
+~Microsoft.TemplateSearch.Common.ITemplateSearchSource.CheckForTemplateNameMatchesAsync(string templateName) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.ITemplateNameSearchResult>>
+~Microsoft.TemplateSearch.Common.ITemplateSearchSource.CheckForTemplatePackMatchesAsync(System.Collections.Generic.IReadOnlyList<string> packNameList) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackToTemplateEntry>>
+~Microsoft.TemplateSearch.Common.ITemplateSearchSource.DisplayName.get -> string
+~Microsoft.TemplateSearch.Common.ITemplateSearchSource.TryConfigure(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage> existingTemplatePackage) -> System.Threading.Tasks.Task<bool>
+Microsoft.TemplateSearch.Common.NuGetMetadataSearchSource
+Microsoft.TemplateSearch.Common.NuGetMetadataSearchSource.NuGetMetadataSearchSource() -> void
+Microsoft.TemplateSearch.Common.NuGetSearchCacheConfig
+~Microsoft.TemplateSearch.Common.NuGetSearchCacheConfig.AdditionalDataReaders.get -> System.Collections.Generic.Dictionary<string, System.Func<Newtonsoft.Json.Linq.JObject, object>>
+~Microsoft.TemplateSearch.Common.NuGetSearchCacheConfig.NuGetSearchCacheConfig(string templateDiscoveryFileName) -> void
+~Microsoft.TemplateSearch.Common.NuGetSearchCacheConfig.TemplateDiscoveryFileName.get -> string
+Microsoft.TemplateSearch.Common.NupkgHigherVersionInstalledPackFilter
+~Microsoft.TemplateSearch.Common.NupkgHigherVersionInstalledPackFilter.NupkgHigherVersionInstalledPackFilter(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage> existingInstallDecriptors) -> void
+~Microsoft.TemplateSearch.Common.NupkgHigherVersionInstalledPackFilter.ShouldPackBeFiltered(string candidatePackName, string candidatePackVersion) -> bool
+Microsoft.TemplateSearch.Common.PackInfo
+~Microsoft.TemplateSearch.Common.PackInfo.Name.get -> string
+~Microsoft.TemplateSearch.Common.PackInfo.PackInfo(string name, string version) -> void
+~Microsoft.TemplateSearch.Common.PackInfo.PackInfo(string name, string version, long totalDownloads) -> void
+Microsoft.TemplateSearch.Common.PackInfo.TotalDownloads.get -> long
+~Microsoft.TemplateSearch.Common.PackInfo.Version.get -> string
+Microsoft.TemplateSearch.Common.PackInfoEqualityComparer
+~Microsoft.TemplateSearch.Common.PackInfoEqualityComparer.Equals(Microsoft.TemplateSearch.Common.PackInfo x, Microsoft.TemplateSearch.Common.PackInfo y) -> bool
+~Microsoft.TemplateSearch.Common.PackInfoEqualityComparer.GetHashCode(Microsoft.TemplateSearch.Common.PackInfo info) -> int
+Microsoft.TemplateSearch.Common.PackInfoEqualityComparer.PackInfoEqualityComparer() -> void
+Microsoft.TemplateSearch.Common.PackToTemplateEntry
+~Microsoft.TemplateSearch.Common.PackToTemplateEntry.PackToTemplateEntry(string version, System.Collections.Generic.List<Microsoft.TemplateSearch.Common.TemplateIdentificationEntry> templateinfo) -> void
+~Microsoft.TemplateSearch.Common.PackToTemplateEntry.TemplateIdentificationEntry.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.TemplateIdentificationEntry>
+Microsoft.TemplateSearch.Common.PackToTemplateEntry.TotalDownloads.get -> long
+Microsoft.TemplateSearch.Common.PackToTemplateEntry.TotalDownloads.set -> void
+~Microsoft.TemplateSearch.Common.PackToTemplateEntry.Version.get -> string
+Microsoft.TemplateSearch.Common.SearchResults
+Microsoft.TemplateSearch.Common.SearchResults.AnySources.get -> bool
+~Microsoft.TemplateSearch.Common.SearchResults.MatchesBySource.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.TemplateSourceSearchResult>
+Microsoft.TemplateSearch.Common.SearchResults.SearchResults() -> void
+~Microsoft.TemplateSearch.Common.SearchResults.SearchResults(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.TemplateSourceSearchResult> matchesBySource, bool anySources) -> void
+Microsoft.TemplateSearch.Common.SettingsVersion
+Microsoft.TemplateSearch.Common.SettingsVersion.SettingsVersion() -> void
+~Microsoft.TemplateSearch.Common.SettingsVersion.Version.get -> string
+~Microsoft.TemplateSearch.Common.SettingsVersion.Version.set -> void
+Microsoft.TemplateSearch.Common.TemplateDiscoveryMetadata
+~Microsoft.TemplateSearch.Common.TemplateDiscoveryMetadata.AdditionalData.get -> System.Collections.Generic.IReadOnlyDictionary<string, object>
+~Microsoft.TemplateSearch.Common.TemplateDiscoveryMetadata.PackToTemplateMap.get -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackToTemplateEntry>
+~Microsoft.TemplateSearch.Common.TemplateDiscoveryMetadata.TemplateCache.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo>
+~Microsoft.TemplateSearch.Common.TemplateDiscoveryMetadata.TemplateDiscoveryMetadata(string version, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo> templateCache, System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackToTemplateEntry> packToTemplateMap, System.Collections.Generic.IReadOnlyDictionary<string, object> additionalData) -> void
+~Microsoft.TemplateSearch.Common.TemplateDiscoveryMetadata.Version.get -> string
+Microsoft.TemplateSearch.Common.TemplateIdentificationEntry
+~Microsoft.TemplateSearch.Common.TemplateIdentificationEntry.GroupIdentity.get -> string
+~Microsoft.TemplateSearch.Common.TemplateIdentificationEntry.Identity.get -> string
+~Microsoft.TemplateSearch.Common.TemplateIdentificationEntry.TemplateIdentificationEntry(string identity, string groupIdentity) -> void
+Microsoft.TemplateSearch.Common.TemplateNameSearchResult
+~Microsoft.TemplateSearch.Common.TemplateNameSearchResult.PackInfo.get -> Microsoft.TemplateSearch.Common.PackInfo
+~Microsoft.TemplateSearch.Common.TemplateNameSearchResult.Template.get -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo
+~Microsoft.TemplateSearch.Common.TemplateNameSearchResult.TemplateNameSearchResult(Microsoft.TemplateEngine.Abstractions.ITemplateInfo template, Microsoft.TemplateSearch.Common.PackInfo packInfo) -> void
+Microsoft.TemplateSearch.Common.TemplatePackSearchResult
+~Microsoft.TemplateSearch.Common.TemplatePackSearchResult.AddMatch(Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo match) -> void
+~Microsoft.TemplateSearch.Common.TemplatePackSearchResult.PackInfo.get -> Microsoft.TemplateSearch.Common.PackInfo
+~Microsoft.TemplateSearch.Common.TemplatePackSearchResult.TemplateMatches.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo>
+~Microsoft.TemplateSearch.Common.TemplatePackSearchResult.TemplatePackSearchResult(Microsoft.TemplateSearch.Common.PackInfo packInfo) -> void
+Microsoft.TemplateSearch.Common.TemplateSearchCoordinator
+~Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.DefaultLanguage.get -> string
+~Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.EnsureSearchResultsAsync() -> System.Threading.Tasks.Task
+~Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.EnvironmentSettings.get -> Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings
+~Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.InputTemplateName.get -> string
+~Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.MatchFilter.get -> System.Func<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.ITemplateNameSearchResult>, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo>>
+~Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.MatchFilter.set -> void
+~Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.SearchAsync() -> System.Threading.Tasks.Task<Microsoft.TemplateSearch.Common.SearchResults>
+~Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.SearchResults.get -> Microsoft.TemplateSearch.Common.SearchResults
+~Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.SearchResults.set -> void
+~Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.TemplateSearchCoordinator(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string inputTemplateName, string defaultLanguage, System.Func<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.ITemplateNameSearchResult>, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo>> matchFilter) -> void
+Microsoft.TemplateSearch.Common.TemplateSearcher
+~Microsoft.TemplateSearch.Common.TemplateSearcher.SearchForTemplatesAsync(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage> existingTemplatePackages, string inputTemplateName) -> System.Threading.Tasks.Task<Microsoft.TemplateSearch.Common.SearchResults>
+~Microsoft.TemplateSearch.Common.TemplateSearcher.TemplateSearcher(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string defaultLanguage, System.Func<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.ITemplateNameSearchResult>, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo>> matchFilter) -> void
+Microsoft.TemplateSearch.Common.TemplateSourceSearchResult
+~Microsoft.TemplateSearch.Common.TemplateSourceSearchResult.AddMatchForPack(Microsoft.TemplateSearch.Common.PackInfo packInfo, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo matchInfo) -> void
+~Microsoft.TemplateSearch.Common.TemplateSourceSearchResult.PacksWithMatches.get -> System.Collections.Generic.IReadOnlyDictionary<Microsoft.TemplateSearch.Common.PackInfo, Microsoft.TemplateSearch.Common.TemplatePackSearchResult>
+~Microsoft.TemplateSearch.Common.TemplateSourceSearchResult.SourceDisplayName.get -> string
+~Microsoft.TemplateSearch.Common.TemplateSourceSearchResult.TemplateSourceSearchResult(string sourceDisplayName) -> void
+Microsoft.TemplateSearch.Common.TemplateToPackMap
+~Microsoft.TemplateSearch.Common.TemplateToPackMap.TemplateToPackMap(System.Collections.Generic.Dictionary<string, Microsoft.TemplateSearch.Common.PackInfo> identityToPackMap, System.Collections.Generic.Dictionary<string, Microsoft.TemplateSearch.Common.PackInfo> groupIdentityToPackMap) -> void
+~Microsoft.TemplateSearch.Common.TemplateToPackMap.TryGetPackInfoForTemplateGroupIdentity(string templateName, out Microsoft.TemplateSearch.Common.PackInfo packAndVersion) -> bool
+~Microsoft.TemplateSearch.Common.TemplateToPackMap.TryGetPackInfoForTemplateIdentity(string templateName, out Microsoft.TemplateSearch.Common.PackInfo packAndVersion) -> bool
+~override Microsoft.TemplateSearch.Common.NuGetMetadataSearchSource.DisplayName.get -> string
+~override Microsoft.TemplateSearch.Common.NuGetMetadataSearchSource.TryConfigure(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage> existingTemplatePackages) -> System.Threading.Tasks.Task<bool>
+static Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.FromJObject(Newtonsoft.Json.Linq.JObject! entry) -> Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo!
+~static Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCacheReader.TryReadDiscoveryMetadata(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateSearch.Common.ISearchCacheConfig config, out Microsoft.TemplateSearch.Common.TemplateDiscoveryMetadata discoveryMetadata) -> bool
+~static Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCacheReader.TryReadDiscoveryMetadata(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string cacheText, Microsoft.TemplateSearch.Common.ISearchCacheConfig config, out Microsoft.TemplateSearch.Common.TemplateDiscoveryMetadata discoveryMetadata) -> bool
+~static Microsoft.TemplateSearch.Common.PackInfo.Empty.get -> Microsoft.TemplateSearch.Common.PackInfo
+~static Microsoft.TemplateSearch.Common.PackInfo.Empty.set -> void
+~static Microsoft.TemplateSearch.Common.TemplateToPackMap.FromPackToTemplateDictionary(System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackToTemplateEntry> templateDictionary) -> Microsoft.TemplateSearch.Common.TemplateToPackMap
+~static readonly Microsoft.TemplateSearch.Common.NuGetMetadataSearchSource._templateDiscoveryMetadataFile -> string
+~virtual Microsoft.TemplateSearch.Common.FileMetadataSearchSource.CreateNameSearchResult(Microsoft.TemplateEngine.Abstractions.ITemplateInfo candidateTemplateInfo, Microsoft.TemplateSearch.Common.PackInfo candidatePackInfo) -> Microsoft.TemplateSearch.Common.TemplateNameSearchResult
+virtual Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.EnsureInitialized() -> void
+~virtual Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.SetupSearchCacheConfig() -> Microsoft.TemplateSearch.Common.NuGetSearchCacheConfig
+~virtual Microsoft.TemplateSearch.Common.NuGetMetadataSearchSource.CreateSearchCache(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings) -> Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache
