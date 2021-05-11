@@ -16,7 +16,7 @@ using System.Runtime.Loader;
 
 namespace Microsoft.TemplateEngine.Edge
 {
-    public class ReflectionLoadProbingPath
+    internal class ReflectionLoadProbingPath
     {
         private static readonly ConcurrentDictionary<string, Assembly> LoadedAssemblies = new ConcurrentDictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
 
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Edge
             _path = path;
         }
 
-        public static void Add(string basePath)
+        internal static void Add(string basePath)
         {
             Instance.Add(new ReflectionLoadProbingPath(basePath));
 #if !NETFULL
@@ -39,12 +39,12 @@ namespace Microsoft.TemplateEngine.Edge
 #endif
         }
 
-        public static bool HasLoaded(string assemblyName)
+        internal static bool HasLoaded(string assemblyName)
         {
             return LoadedAssemblies.ContainsKey(assemblyName);
         }
 
-        public static void Reset()
+        internal static void Reset()
         {
             Instance.Clear();
         }

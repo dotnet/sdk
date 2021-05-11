@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 {
-    public class FileSystemMountPointFactory : IMountPointFactory
+    internal class FileSystemMountPointFactory : IMountPointFactory
     {
         internal static readonly Guid FactoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
 

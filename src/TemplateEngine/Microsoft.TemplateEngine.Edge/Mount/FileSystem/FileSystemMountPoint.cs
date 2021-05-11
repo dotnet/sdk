@@ -12,11 +12,11 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
     /// <summary>
     /// Mount point implementation for file system directory.
     /// </summary>
-    public class FileSystemMountPoint : IMountPoint
+    internal class FileSystemMountPoint : IMountPoint
     {
         private SettingsFilePaths _paths;
 
-        public FileSystemMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, string mountPointRootPath)
+        internal FileSystemMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, string mountPointRootPath)
         {
             MountPointUri = mountPointUri;
             MountPointRootPath = mountPointRootPath;

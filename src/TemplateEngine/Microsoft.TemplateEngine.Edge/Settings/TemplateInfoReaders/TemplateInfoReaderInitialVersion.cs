@@ -9,9 +9,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 {
-    public static class TemplateInfoReaderInitialVersion
+    internal static class TemplateInfoReaderInitialVersion
     {
-        public static TemplateInfo FromJObject(JObject entry)
+        internal static TemplateInfo FromJObject(JObject entry)
         {
             TemplateInfo info = new TemplateInfo();
 

@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
     {
         private readonly ZipFileMountPoint _mountPoint;
 
-        public ZipFileDirectory(IMountPoint mountPoint, string fullPath, string name)
+        internal ZipFileDirectory(IMountPoint mountPoint, string fullPath, string name)
             : base(mountPoint, fullPath, name)
         {
             _mountPoint = (ZipFileMountPoint)mountPoint;

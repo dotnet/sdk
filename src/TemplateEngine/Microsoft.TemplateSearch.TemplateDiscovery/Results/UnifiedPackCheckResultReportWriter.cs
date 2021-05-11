@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
 using Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
@@ -97,7 +96,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                 additionalData[dataProducer.DataUniqueName] = dataProducer.Data;
             }
 
-            return new TemplateDiscoveryMetadata(TemplateInfo.CurrentVersion, templateCache, packToTemplateMap, additionalData);
+            return new TemplateDiscoveryMetadata("1.0.0.0", templateCache, packToTemplateMap, additionalData);
         }
 
         private static bool TryWriteNonTemplatePackList(string reportPath, IReadOnlyList<PackCheckResult> packCheckResults)

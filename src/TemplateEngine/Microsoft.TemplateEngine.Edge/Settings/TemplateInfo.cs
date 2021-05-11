@@ -11,9 +11,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    public class TemplateInfo : ITemplateInfo
+    internal class TemplateInfo : ITemplateInfo
     {
-        public static readonly string CurrentVersion = "1.0.0.5";
+        internal const string CurrentVersion = "1.0.0.5";
 
         private static readonly Func<JObject, TemplateInfo> _defaultReader = TemplateInfoReaderInitialVersion.FromJObject;
 
@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
 
-        public TemplateInfo()
+        internal TemplateInfo()
         {
             ShortNameList = new List<string>();
         }

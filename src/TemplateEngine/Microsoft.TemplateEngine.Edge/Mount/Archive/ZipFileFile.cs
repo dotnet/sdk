@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
         private readonly ZipFileMountPoint _mountPoint;
         private ZipArchiveEntry _entry;
 
-        public ZipFileFile(IMountPoint mountPoint, string fullPath, string name, ZipArchiveEntry entry)
+        internal ZipFileFile(IMountPoint mountPoint, string fullPath, string name, ZipArchiveEntry entry)
             : base(mountPoint, fullPath, name)
         {
             _entry = entry;

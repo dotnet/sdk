@@ -5,9 +5,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 {
-    public class TemplateInfoReaderVersion1_0_0_1 : TemplateInfoReaderVersion1_0_0_0
+    internal class TemplateInfoReaderVersion1_0_0_1 : TemplateInfoReaderVersion1_0_0_0
     {
-        public static new TemplateInfo FromJObject(JObject jObject)
+        internal static new TemplateInfo FromJObject(JObject jObject)
         {
             TemplateInfoReaderVersion1_0_0_1 reader = new TemplateInfoReaderVersion1_0_0_1();
             return reader.Read(jObject);

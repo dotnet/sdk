@@ -6,7 +6,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Edge.Mount
 {
-    public abstract class FileSystemInfoBase : IFileSystemInfo
+    internal abstract class FileSystemInfoBase : IFileSystemInfo
     {
         private IDirectory _parent;
 

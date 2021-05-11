@@ -11,15 +11,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 {
-    public class TemplateInfoReaderVersion1_0_0_0
+    internal class TemplateInfoReaderVersion1_0_0_0
     {
-        public static TemplateInfo FromJObject(JObject jObject)
+        internal static TemplateInfo FromJObject(JObject jObject)
         {
             TemplateInfoReaderVersion1_0_0_0 reader = new TemplateInfoReaderVersion1_0_0_0();
             return reader.Read(jObject);
         }
 
-        public virtual TemplateInfo Read(JObject jObject)
+        internal virtual TemplateInfo Read(JObject jObject)
         {
             TemplateInfo info = new TemplateInfo();
 

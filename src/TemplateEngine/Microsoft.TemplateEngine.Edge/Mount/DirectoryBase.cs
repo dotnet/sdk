@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Edge.Mount
 {
-    public abstract class DirectoryBase : FileSystemInfoBase, IDirectory
+    internal abstract class DirectoryBase : FileSystemInfoBase, IDirectory
     {
         protected DirectoryBase(IMountPoint mountPoint, string fullPath, string name)
             : base(mountPoint, fullPath, name, FileSystemInfoKind.Directory)

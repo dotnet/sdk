@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
     {
         private readonly string _physicalPath;
 
-        public FileSystemFile(IMountPoint mountPoint, string fullPath, string name, string physicalPath)
+        internal FileSystemFile(IMountPoint mountPoint, string fullPath, string name, string physicalPath)
             : base(mountPoint, fullPath, name)
         {
             _physicalPath = physicalPath;

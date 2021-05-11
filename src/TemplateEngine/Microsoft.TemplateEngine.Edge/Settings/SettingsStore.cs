@@ -8,16 +8,16 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    public class SettingsStore
+    internal class SettingsStore
     {
-        public SettingsStore()
+        internal SettingsStore()
         {
             ComponentGuidToAssemblyQualifiedName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ComponentTypeToGuidList = new Dictionary<string, HashSet<Guid>>();
             ProbingPaths = new HashSet<string>();
         }
 
-        public SettingsStore(JObject obj)
+        internal SettingsStore(JObject obj)
             : this()
         {
             JToken componentGuidToAssemblyQualifiedNameToken;
@@ -85,12 +85,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         [JsonProperty]
-        public Dictionary<string, string> ComponentGuidToAssemblyQualifiedName { get; }
+        internal Dictionary<string, string> ComponentGuidToAssemblyQualifiedName { get; }
 
         [JsonProperty]
-        public HashSet<string> ProbingPaths { get; }
+        internal HashSet<string> ProbingPaths { get; }
 
         [JsonProperty]
-        public Dictionary<string, HashSet<Guid>> ComponentTypeToGuidList { get; }
+        internal Dictionary<string, HashSet<Guid>> ComponentTypeToGuidList { get; }
     }
 }

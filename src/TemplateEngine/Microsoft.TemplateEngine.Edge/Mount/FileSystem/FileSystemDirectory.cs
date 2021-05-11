@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         private readonly SettingsFilePaths _paths;
         private readonly IPhysicalFileSystem _fileSystem;
 
-        public FileSystemDirectory(IMountPoint mountPoint, string fullPath, string name, string physicalPath)
+        internal FileSystemDirectory(IMountPoint mountPoint, string fullPath, string name, string physicalPath)
             : base(mountPoint, EnsureTrailingSlash(fullPath), name)
         {
             _physicalPath = physicalPath;

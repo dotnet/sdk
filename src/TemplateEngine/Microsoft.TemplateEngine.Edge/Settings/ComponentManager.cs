@@ -16,6 +16,11 @@ using Microsoft.TemplateEngine.Edge.Installers.Folder;
 using Microsoft.TemplateEngine.Edge.Installers.NuGet;
 using Microsoft.TemplateEngine.Edge.Mount.Archive;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
+#if !NETFULL
+
+using System.Runtime.Loader;
+
+#endif
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
@@ -170,7 +175,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 if (_componentIdToAssemblyQualifiedTypeName.TryGetValue(id, out string assemblyQualifiedName))
                 {
-                    Type type = TypeEx.GetType(assemblyQualifiedName);
+                    Type type = GetType(assemblyQualifiedName);
                     component = Activator.CreateInstance(type) as T;
 
                     if (component != null)
@@ -277,6 +282,29 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 _componentIdsByType[type] = ids;
             }
             ids.Add(component.Id);
+        }
+
+        private Type GetType(string typeName)
+        {
+            int commaIndex = typeName.IndexOf(',');
+            if (commaIndex < 0)
+            {
+                return Type.GetType(typeName);
+            }
+
+            string asmName = typeName.Substring(commaIndex + 1).Trim();
+
+            if (!ReflectionLoadProbingPath.HasLoaded(asmName))
+            {
+                AssemblyName name = new AssemblyName(asmName);
+#if !NETFULL
+                AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+#else
+                AppDomain.CurrentDomain.Load(name);
+#endif
+            }
+
+            return Type.GetType(typeName);
         }
     }
 }

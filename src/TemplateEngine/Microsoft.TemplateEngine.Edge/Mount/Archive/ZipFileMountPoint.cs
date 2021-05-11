@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
     {
         private IReadOnlyDictionary<string, IFileSystemInfo> _universe;
 
-        public ZipFileMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, ZipArchive archive)
+        internal ZipFileMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, ZipArchive archive)
         {
             MountPointUri = mountPointUri;
             Parent = parent;
@@ -26,11 +26,17 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
             Root = new ZipFileDirectory(this, "/", "");
         }
 
-        public ZipArchive Archive { get; }
-
         public IDirectory Root { get; }
 
-        public IReadOnlyDictionary<string, IFileSystemInfo> Universe
+        public IMountPoint Parent { get; }
+
+        public string MountPointUri { get; }
+
+        public IEngineEnvironmentSettings EnvironmentSettings { get; }
+
+        internal ZipArchive Archive { get; }
+
+        internal IReadOnlyDictionary<string, IFileSystemInfo> Universe
         {
             get
             {
@@ -81,13 +87,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
             }
         }
 
-        public IEngineEnvironmentSettings EnvironmentSettings { get; }
-
-        public IMountPoint Parent { get; }
-
-        public Guid MountPointFactoryId => ZipFileMountPointFactory.FactoryId;
-
-        public string MountPointUri { get; }
+        internal Guid MountPointFactoryId => ZipFileMountPointFactory.FactoryId;
 
         public IFile FileInfo(string path)
         {
