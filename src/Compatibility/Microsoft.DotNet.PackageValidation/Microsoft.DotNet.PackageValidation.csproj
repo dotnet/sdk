@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
     <IsPackable>true</IsPackable>
-    <IsShipping>true</IsShipping>
+    <IsShippingPackage>true</IsShippingPackage>
     <StrongNameKeyId>Open</StrongNameKeyId>
     <PackageType>MSBuildSdk</PackageType>
     <VersionPrefix>1.0.0</VersionPrefix>
