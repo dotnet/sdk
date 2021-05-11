@@ -424,7 +424,6 @@ Microsoft.TemplateEngine.Core.Util.EncodingConfig.VariableValues.get -> System.C
 Microsoft.TemplateEngine.Core.Util.EncodingConfig.Whitespace.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
 Microsoft.TemplateEngine.Core.Util.EncodingConfig.WhitespaceOrLineEnding.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
 Microsoft.TemplateEngine.Core.Util.EncodingUtil
-Microsoft.TemplateEngine.Core.Util.EncodingUtil.EncodingUtil() -> void
 Microsoft.TemplateEngine.Core.Util.EngineConfig
 Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> void
 Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables, string variableFormatString) -> void

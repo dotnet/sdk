@@ -1,4 +1,6 @@
 ﻿Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.EngineEnvironmentSettings(Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost! host, Microsoft.TemplateEngine.Abstractions.ISettingsLoader! settingsLoader, Microsoft.TemplateEngine.Abstractions.IPathInfo! pathInfo, Microsoft.TemplateEngine.Abstractions.IEnvironment? environment) -> void
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.ScanResult(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>! templates, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>! localizations) -> void
+static readonly Microsoft.TemplateEngine.Edge.Settings.ScanResult.Empty -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
 ~abstract Microsoft.TemplateEngine.Edge.Mount.DirectoryBase.EnumerateFileSystemInfos(string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo>
 ~abstract Microsoft.TemplateEngine.Edge.Mount.FileBase.OpenRead() -> System.IO.Stream
 abstract Microsoft.TemplateEngine.Edge.Mount.FileSystemInfoBase.Exists.get -> bool
@@ -114,14 +116,11 @@ Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.IsPartialMatch.get -
 ~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.MatchDisposition.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Edge.Template.MatchInfo>
 ~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.MatchDisposition.set -> void
 Microsoft.TemplateEngine.Edge.Settings.Scanner
-~Microsoft.TemplateEngine.Edge.Settings.Scanner.Scan(string sourceLocation) -> Microsoft.TemplateEngine.Edge.Settings.ScanResult
-~Microsoft.TemplateEngine.Edge.Settings.Scanner.Scanner(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings) -> void
+Microsoft.TemplateEngine.Edge.Settings.Scanner.Scan(string! sourceLocation) -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
+Microsoft.TemplateEngine.Edge.Settings.Scanner.Scanner(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> void
 Microsoft.TemplateEngine.Edge.Settings.ScanResult
-~Microsoft.TemplateEngine.Edge.Settings.ScanResult.AddLocalization(Microsoft.TemplateEngine.Abstractions.ILocalizationLocator locater) -> void
-~Microsoft.TemplateEngine.Edge.Settings.ScanResult.AddTemplate(Microsoft.TemplateEngine.Abstractions.ITemplate template) -> void
-~Microsoft.TemplateEngine.Edge.Settings.ScanResult.Localizations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator>
-Microsoft.TemplateEngine.Edge.Settings.ScanResult.ScanResult() -> void
-~Microsoft.TemplateEngine.Edge.Settings.ScanResult.Templates.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate>
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.Localizations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>!
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.Templates.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>!
 Microsoft.TemplateEngine.Edge.Settings.SettingsStore
 ~Microsoft.TemplateEngine.Edge.Settings.SettingsStore.ComponentGuidToAssemblyQualifiedName.get -> System.Collections.Generic.Dictionary<string, string>
 ~Microsoft.TemplateEngine.Edge.Settings.SettingsStore.ComponentTypeToGuidList.get -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<System.Guid>>

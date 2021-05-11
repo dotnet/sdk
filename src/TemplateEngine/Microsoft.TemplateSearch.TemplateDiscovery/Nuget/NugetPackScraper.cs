@@ -12,7 +12,7 @@ using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
-    public class NugetPackScraper
+    public static class NugetPackScraper
     {
         private static readonly Dictionary<string, string> SupportedProviders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {

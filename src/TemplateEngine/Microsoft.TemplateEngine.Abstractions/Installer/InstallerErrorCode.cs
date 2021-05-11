@@ -34,12 +34,12 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         UnsupportedRequest = 4,
 
         /// <summary>
-        /// Generic error
+        /// Generic error.
         /// </summary>
         GenericError = 5,
 
         /// <summary>
-        /// The template package is already installed
+        /// The template package is already installed.
         /// </summary>
         AlreadyInstalled = 6,
 
