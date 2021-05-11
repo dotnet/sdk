@@ -1342,7 +1342,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 callSiteAttribute.SupportedFirst != null && callSiteAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attribute.SupportedFirst) ||
                 SuppressedByCallSiteUnsupported(callSiteAttribute, attribute.UnsupportedFirst!);
 
-            // As optional if call site supports that platform, their versions should match
+            // As optianal if call site supports that platform, their versions should match
             static bool OptionalOsSupportSuppressed(Versions callSiteAttribute, Versions attribute) =>
                 (callSiteAttribute.SupportedFirst == null || callSiteAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attribute.SupportedFirst)) &&
                 (callSiteAttribute.SupportedSecond == null || callSiteAttribute.SupportedSecond.IsGreaterThanOrEqualTo(attribute.SupportedFirst));
