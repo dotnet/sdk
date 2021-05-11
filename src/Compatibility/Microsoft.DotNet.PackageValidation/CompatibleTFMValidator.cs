@@ -58,8 +58,7 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     if (!_diagnosticBag.Filter(DiagnosticIds.ApplicableCompileTimeAsset, framework.ToString()))
                     {
-                        string message = string.Format(Resources.NoCompatibleCompileTimeAsset, framework.ToString());
-                        _log.LogError(DiagnosticIds.ApplicableCompileTimeAsset + " " + message);
+                        _log.LogError(DiagnosticIds.ApplicableCompileTimeAsset, Resources.NoCompatibleCompileTimeAsset, framework.ToString());
                     }
                     break;
                 }
@@ -69,8 +68,7 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     if (!_diagnosticBag.Filter(DiagnosticIds.CompatibleRuntimeRidLessAsset, framework.ToString()))
                     {
-                        string message = string.Format(Resources.NoCompatibleRuntimeAsset, framework.ToString());
-                        _log.LogError(DiagnosticIds.CompatibleRuntimeRidLessAsset + " " + message);
+                        _log.LogError(DiagnosticIds.CompatibleRuntimeRidLessAsset, Resources.NoCompatibleRuntimeAsset, framework.ToString());
                     }
                 }
                 else
@@ -94,8 +92,7 @@ namespace Microsoft.DotNet.PackageValidation
                     {
                         if (!_diagnosticBag.Filter(DiagnosticIds.CompatibleRuntimeRidSpecificAsset, framework.ToString() + "-" + rid))
                         {
-                            string message = string.Format(Resources.NoCompatibleRidSpecificRuntimeAsset, framework.ToString(), rid);
-                            _log.LogError(DiagnosticIds.CompatibleRuntimeRidSpecificAsset + " " + message);
+                            _log.LogError(DiagnosticIds.CompatibleRuntimeRidSpecificAsset, Resources.NoCompatibleRidSpecificRuntimeAsset, framework.ToString(), rid);
                         }
                     }
                     else

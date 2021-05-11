@@ -49,8 +49,7 @@ namespace Microsoft.DotNet.PackageValidation
                     {
                         if (!_diagnosticBag.Filter(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
                         {
-                            string message = string.Format(Resources.MissingTargetFramework, baselineTargetFramework.ToString());
-                            _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
+                            _log.LogError(DiagnosticIds.TargetFrameworkDropped, Resources.MissingTargetFramework, baselineTargetFramework.ToString());
                         }
                     }
                     else if (_runApiCompat)
@@ -74,8 +73,7 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     if (!_diagnosticBag.Filter(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
                     {
-                        string message = string.Format(Resources.MissingTargetFramework, baselineTargetFramework.ToString());
-                        _log.LogError(DiagnosticIds.TargetFrameworkDropped + " " + message);
+                        _log.LogError(DiagnosticIds.TargetFrameworkDropped, Resources.MissingTargetFramework, baselineTargetFramework.ToString());
                     }
                 }
                 else
@@ -102,8 +100,7 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     if (!_diagnosticBag.Filter(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString() + "-" + baselineRid))
                     {
-                        string message = string.Format(Resources.MissingTargetFrameworkAndRid, baselineTargetFramework.ToString(), baselineRid);
-                        _log.LogError(DiagnosticIds.TargetFrameworkAndRidPairDropped + " " + message);
+                        _log.LogError(DiagnosticIds.TargetFrameworkAndRidPairDropped, Resources.MissingTargetFrameworkAndRid, baselineTargetFramework.ToString(), baselineRid);
                     }
                 }
                 else

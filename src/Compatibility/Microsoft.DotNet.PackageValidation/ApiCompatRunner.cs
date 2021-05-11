@@ -45,13 +45,13 @@ namespace Microsoft.DotNet.PackageValidation
 
                     if (differences.Any())
                     {
-                        _log.LogError(apicompatTuples.compatibilityReason);
-                        _log.LogError(apicompatTuples.header);
+                        _log.LogError(null, apicompatTuples.compatibilityReason);
+                        _log.LogError(null, apicompatTuples.header);
                     }
 
                     foreach (CompatDifference difference in differences)
                     {
-                        _log.LogError(difference.ToString());
+                        _log.LogError(difference.DiagnosticId, difference.Message);
                     }
                 }
             }

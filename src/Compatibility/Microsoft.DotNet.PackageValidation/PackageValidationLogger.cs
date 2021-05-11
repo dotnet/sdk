@@ -15,9 +15,9 @@ namespace Microsoft.DotNet.PackageValidation
             _log = log;
         }
 
-        public void LogError(string message)
+        public void LogError(string code, string format, params string[] args)
         {
-            _log.LogNonSdkError(message);
+            _log.LogNonSdkError(code, format, args);
         }
     }
 }

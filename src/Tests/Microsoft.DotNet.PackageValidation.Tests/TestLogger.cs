@@ -9,9 +9,9 @@ namespace Microsoft.DotNet.PackageValidation.Tests
     {
         public List<string> errors = new();
 
-        public void LogError(string message)
+        public void LogError(string code, string format, params string[] args)
         {
-            errors.Add(message);
+            errors.Add(code + " " + string.Format(format, args));
         }
     }
 }

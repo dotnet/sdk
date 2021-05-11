@@ -5,6 +5,6 @@ namespace Microsoft.DotNet.PackageValidation
 {
     public interface ILogger
     {
-        void LogError(string message);
+        void LogError(string code, string format, params string[] args);
     }
 }

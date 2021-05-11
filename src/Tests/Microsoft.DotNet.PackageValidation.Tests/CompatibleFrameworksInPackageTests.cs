@@ -49,7 +49,7 @@ namespace PackageValidationTests
             new CompatibleFrameworkInPackageValidator(string.Empty, null, _log).Validate(package);
             Assert.NotEmpty(_log.errors);
             // TODO: add asserts for assembly and header metadata.
-            Assert.Contains("CP0002 : Member 'PackageValidationTests.First.test(string)' exists on the left but not on the right", _log.errors);
+            Assert.Contains("CP0002 Member 'PackageValidationTests.First.test(string)' exists on the left but not on the right", _log.errors);
         }
         
         [Fact]
@@ -85,8 +85,8 @@ namespace PackageValidationTests
             new CompatibleFrameworkInPackageValidator(string.Empty, null, _log).Validate(package);
             Assert.NotEmpty(_log.errors);
             // TODO: add asserts for assembly and header metadata.
-            Assert.Contains("CP0002 : Member 'PackageValidationTests.First.test(string)' exists on the left but not on the right", _log.errors);
-            Assert.Contains("CP0002 : Member 'PackageValidationTests.First.test(bool)' exists on the left but not on the right", _log.errors);
+            Assert.Contains("CP0002 Member 'PackageValidationTests.First.test(string)' exists on the left but not on the right", _log.errors);
+            Assert.Contains("CP0002 Member 'PackageValidationTests.First.test(bool)' exists on the left but not on the right", _log.errors);
         }
     }
 }
