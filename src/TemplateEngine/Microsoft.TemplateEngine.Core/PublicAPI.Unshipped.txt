@@ -454,7 +454,6 @@ Microsoft.TemplateEngine.Core.Util.ProcessorState.CurrentBufferLength.get -> int
 Microsoft.TemplateEngine.Core.Util.ProcessorState.CurrentBufferPosition.get -> int
 Microsoft.TemplateEngine.Core.Util.ProcessorState.CurrentSequenceNumber.get -> int
 Microsoft.TemplateEngine.Core.Util.ProcessorState.Encoding.get -> System.Text.Encoding
-Microsoft.TemplateEngine.Core.Util.ProcessorState.Encoding.set -> void
 Microsoft.TemplateEngine.Core.Util.ProcessorState.EncodingConfig.get -> Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig
 Microsoft.TemplateEngine.Core.Util.ProcessorState.Inject(System.IO.Stream staged) -> void
 Microsoft.TemplateEngine.Core.Util.ProcessorState.ProcessorState(System.IO.Stream source, System.IO.Stream target, int bufferSize, int flushThreshold, Microsoft.TemplateEngine.Core.Contracts.IEngineConfig config, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> operationProviders) -> void

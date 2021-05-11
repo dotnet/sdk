@@ -176,11 +176,11 @@ using System;
 #endif
 ";
 
-            VariableCollection vc = new VariableCollection();
+            VariableCollection vc = new();
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            EngineConfig engineConfig = new EngineConfig(environmentSettings, vc);
+            EngineConfig engineConfig = new(environmentSettings, vc);
 
-            ConditionalTokens tokens = new ConditionalTokens
+            ConditionalTokens tokens = new()
             {
                 IfTokens = new[] { "#if" }.TokenConfigs()
             };

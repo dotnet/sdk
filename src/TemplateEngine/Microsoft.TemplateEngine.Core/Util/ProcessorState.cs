@@ -23,6 +23,26 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, IEngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
+            if (operationProviders == null)
+            {
+                throw new ArgumentNullException(nameof(operationProviders));
+            }
+
             if (source.CanSeek)
             {
                 try
@@ -125,7 +145,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public IEncodingConfig EncodingConfig { get; }
 
-        public Encoding Encoding { get => EncodingConfig.Encoding; }
+        public Encoding Encoding => EncodingConfig.Encoding;
 
         public bool AdvanceBuffer(int bufferPosition)
         {

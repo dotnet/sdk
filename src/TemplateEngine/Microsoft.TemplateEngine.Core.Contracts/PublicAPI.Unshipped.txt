@@ -81,7 +81,6 @@ Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentBufferLength.get 
 Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentBufferPosition.get -> int
 Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentSequenceNumber.get -> int
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.Encoding.get -> System.Text.Encoding
-~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.Encoding.set -> void
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.EncodingConfig.get -> Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.Inject(System.IO.Stream staged) -> void
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie match) -> void
