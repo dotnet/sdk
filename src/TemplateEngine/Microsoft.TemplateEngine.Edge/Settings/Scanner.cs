@@ -56,11 +56,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                                                 && !sourceLocation.StartsWith(_paths.ScratchDir);
 
                     return new MountPointScanSource(
-                        sourceLocation,
-                        mountPoint,
-                        isLocalFlatFileSource,
-                        false,
-                        false
+                        location: sourceLocation,
+                        mountPoint: mountPoint,
+                        shouldStayInOriginalLocation: isLocalFlatFileSource,
+                        foundComponents: false,
+                        foundTemplates: false
                     );
                 }
             }

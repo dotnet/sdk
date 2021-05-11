@@ -17,8 +17,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     {
         public TemplateCache(IEnumerable<ScanResult> scanResults, Dictionary<string, DateTime> mountPoints)
         {
+            // We need this dictionary to de-duplicate templates that have same identity
+            // notice that IEnumerable<ScanResult> that we get in is order by priority which means
+            // last template with same Identity wins, others are ignored...
+            var templateDeduplicationDictionary = new Dictionary<string, ITemplate>();
             var localizationsByTemplateId = new Dictionary<string, ILocalizationLocator>();
-            var templateMemoryCache = new Dictionary<string, ITemplate>();
 
             string uiLocale = CultureInfo.CurrentUICulture.Name;
             string uiLocaleWithoutCountry = GetLocaleNameWithoutCountry(uiLocale);
@@ -38,22 +41,22 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     string templateLocaleWithoutCountry = GetLocaleNameWithoutCountry(locator.Locale);
                     if (uiLocaleWithoutCountry != templateLocaleWithoutCountry)
                     {
-                        // UI is "fr", but the localizations are for "en". This localization is not good enough to be a substitude.
+                        // UI is "fr", but the localizations are for "en". This localization is not good enough to be a substitute.
                         continue;
                     }
 
-                    // This localization is either the perfect match, or a suitable substitude and there are no other candidates for the job yet.
+                    // This localization is either the perfect match, or a suitable substitute and there are no other candidates for the job yet.
                     localizationsByTemplateId[locator.Identity] = locator;
                 }
 
                 foreach (ITemplate template in scanResult.Templates)
                 {
-                    templateMemoryCache[template.Identity] = template;
+                    templateDeduplicationDictionary[template.Identity] = template;
                 }
             }
 
             var templates = new List<TemplateInfo>();
-            foreach (ITemplate newTemplate in templateMemoryCache.Values)
+            foreach (ITemplate newTemplate in templateDeduplicationDictionary.Values)
             {
                 localizationsByTemplateId.TryGetValue(newTemplate.Identity, out ILocalizationLocator locatorForTemplate);
                 TemplateInfo localizedTemplate = LocalizeTemplate(newTemplate, locatorForTemplate);
