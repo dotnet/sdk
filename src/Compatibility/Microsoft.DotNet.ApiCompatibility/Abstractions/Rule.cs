@@ -16,5 +16,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// </summary>
         /// <param name="context">The context that the <see cref="IRuleRunner"/> creates holding callbacks to get the differences.</param>
         public abstract void Initialize(RuleRunnerContext context);
+
+        /// <summary>
+        /// Flag that rules should use to determine which mode the differences should be calculated.
+        /// </summary>
+        public bool StrictMode { get; set; }
     }
 }
