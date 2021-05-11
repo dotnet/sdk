@@ -79,7 +79,7 @@ namespace Microsoft.NET.Build.Tasks
             if (!WriteAdditionalProbingPathsToMainConfig)
             {
                 // If we want to generate the runtimeconfig.dev.json file
-                // and we have probing paths to log
+                // and we have additional probing paths to add to it
                 // BUT the runtimeconfigdevpath is empty, log a warning.
                 if (GenerateRuntimeConfigDevFile && AdditionalProbingPaths?.Any() == true && string.IsNullOrEmpty(RuntimeConfigDevPath))
                 {
@@ -141,7 +141,7 @@ namespace Microsoft.NET.Build.Tasks
                     projectContext.IsFrameworkDependent,
                     projectContext.LockFile.PackageFolders);
 
-                if (GenerateRuntimeConfigDevFile)
+                if (GenerateRuntimeConfigDevFile && !string.IsNullOrEmpty(RuntimeConfigDevPath))
                 {
                     WriteDevRuntimeConfig(projectContext.LockFile.PackageFolders);
                 }
