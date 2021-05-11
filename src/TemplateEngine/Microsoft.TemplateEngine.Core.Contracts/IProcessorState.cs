@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         IEncodingConfig EncodingConfig { get; }
 
-        Encoding Encoding { get; set; }
+        Encoding Encoding { get; }
 
         bool AdvanceBuffer(int bufferPosition);
 

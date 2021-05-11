@@ -159,5 +159,43 @@ End";
             IProcessor processor = Processor.Create(engineConfig, operations);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
+
+        // Using //-:cnd:noEmit on the first line of *.cs file corrupts file content when templating new project
+        // https://github.com/dotnet/templating/issues/2913
+        [Fact]
+        public void ValidateConditionOnStartOfFileWithBOM()
+        {
+            string originalValue = @"//-:cnd:noEmit
+#if DEBUG
+using System;
+#endif
+//+:cnd:noEmit";
+
+            string expectedValue = @"#if DEBUG
+using System;
+#endif
+";
+
+            VariableCollection vc = new VariableCollection();
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            EngineConfig engineConfig = new EngineConfig(environmentSettings, vc);
+
+            ConditionalTokens tokens = new ConditionalTokens
+            {
+                IfTokens = new[] { "#if" }.TokenConfigs()
+            };
+
+            string on = "//+:cnd";
+            string onNoEmit = on + ":noEmit";
+            string off = "//-:cnd";
+            string offNoEmit = off + ":noEmit";
+            IOperationProvider[] operations =
+            {
+                new SetFlag(Conditional.OperationName, on.TokenConfig(), off.TokenConfig(), onNoEmit.TokenConfig(), offNoEmit.TokenConfig(), null, true),
+                new Conditional(tokens, true, true, Expressions.Cpp.CppStyleEvaluatorDefinition.Evaluate, null, true)
+            };
+            IProcessor processor = Processor.Create(engineConfig, operations);
+            RunAndVerify(originalValue, expectedValue, processor, 9999, emitBOM: true);
+        }
     }
 }

@@ -349,5 +349,30 @@ Trailing stuff";
             IProcessor processor = SetupRazorStyleProcessor(NeitherClauseTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
+
+        [Theory]
+        [InlineData(true, "No Auth")]
+        [InlineData(false, "Auth")]
+        // File encoding is not maintained when first line of file is a conditional statement
+        // https://github.com/dotnet/templating/issues/2217
+        public void BomMentained(bool noAuth, string expected)
+        {
+            IProcessor processor = SetupRazorStyleProcessor(new VariableCollection
+            {
+                ["NoAuth"] = noAuth
+            });
+            RunAndVerify(
+                @"@*#if (NoAuth)
+No Auth
+#else
+Auth
+#endif*@
+Trailing stuff",
+                expected + @"
+Trailing stuff",
+                processor,
+                9999,
+                emitBOM: true);
+        }
     }
 }

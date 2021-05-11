@@ -18,10 +18,8 @@ namespace Microsoft.TemplateEngine.Core.Util
         private readonly Stream _target;
         private readonly TrieEvaluator<OperationTerminal> _trie;
         private readonly int _flushThreshold;
+        private readonly int _bomSize;
         private Stream _source;
-        private byte[] _bom;
-        private bool _isBomNeeded;
-        private Encoding _encoding;
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, IEngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
@@ -53,14 +51,12 @@ namespace Microsoft.TemplateEngine.Core.Util
             CurrentBuffer = new byte[bufferSize];
             CurrentBufferLength = source.Read(CurrentBuffer, 0, CurrentBuffer.Length);
 
-            Encoding encoding = EncodingUtil.Detect(CurrentBuffer, CurrentBufferLength, out _bom);
-            Encoding = encoding;
-            CurrentBufferPosition = _bom.Length;
-            CurrentSequenceNumber = _bom.Length;
-            if (_bom.Length > 0)
-            {
-                _isBomNeeded = true;
-            }
+            Encoding encoding = EncodingUtil.Detect(CurrentBuffer, CurrentBufferLength, out byte[] bom);
+            EncodingConfig = new EncodingConfig(Config, encoding);
+            _bomSize = bom.Length;
+            CurrentBufferPosition = _bomSize;
+            CurrentSequenceNumber = _bomSize;
+            target.Write(bom, 0, _bomSize);
 
             bool explicitOnConfigurationRequired = false;
             Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
@@ -111,7 +107,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 Buffer.BlockCopy(CurrentBuffer, CurrentBufferPosition, tmp, 0, CurrentBufferLength - CurrentBufferPosition);
                 int nRead = _source.Read(tmp, CurrentBufferLength - CurrentBufferPosition, tmp.Length - CurrentBufferLength);
                 CurrentBuffer = tmp;
-                CurrentBufferLength += nRead - _bom.Length;
+                CurrentBufferLength += nRead - _bomSize;
                 CurrentBufferPosition = 0;
                 CurrentSequenceNumber = 0;
             }
@@ -127,18 +123,9 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public int CurrentSequenceNumber { get; private set; }
 
-        public IEncodingConfig EncodingConfig { get; private set; }
+        public IEncodingConfig EncodingConfig { get; }
 
-        public Encoding Encoding
-        {
-            get { return _encoding; }
-
-            set
-            {
-                _encoding = value;
-                EncodingConfig = new EncodingConfig(Config, _encoding);
-            }
-        }
+        public Encoding Encoding { get => EncodingConfig.Encoding; }
 
         public bool AdvanceBuffer(int bufferPosition)
         {
@@ -209,11 +196,6 @@ namespace Microsoft.TemplateEngine.Core.Util
                             //Console.WriteLine("UnmatchedBlock");
                             //string text = System.Text.Encoding.UTF8.GetString(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite).Replace("\0", "\\0");
                             //Console.WriteLine(text);
-                            if (_isBomNeeded)
-                            {
-                                _target.Write(_bom, 0, _bom.Length);
-                                _isBomNeeded = false;
-                            }
                             _target.Write(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite);
                             bytesWrittenSinceLastFlush += toWrite;
                             nextSequenceNumberThatCouldBeWritten = posedPosition - matchLength + 1;
@@ -355,11 +337,11 @@ namespace Microsoft.TemplateEngine.Core.Util
         public void SeekBackUntil(ITokenTrie match, bool consume)
         {
             byte[] buffer = new byte[match.MaxLength];
-            while (_target.Position > 0)
+            while (_target.Position > _bomSize)
             {
-                if (_target.Position < buffer.Length)
+                if (_target.Position - _bomSize < buffer.Length)
                 {
-                    _target.Position = 0;
+                    _target.Position = _bomSize;
                 }
                 else
                 {
@@ -388,9 +370,9 @@ namespace Microsoft.TemplateEngine.Core.Util
                 }
 
                 //Back up the amount we already read to get a new window of data in
-                if (_target.Position < buffer.Length)
+                if (_target.Position - _bomSize < buffer.Length)
                 {
-                    _target.Position = 0;
+                    _target.Position = _bomSize;
                 }
                 else
                 {
@@ -398,20 +380,20 @@ namespace Microsoft.TemplateEngine.Core.Util
                 }
             }
 
-            if (_target.Position == 0)
+            if (_target.Position == _bomSize)
             {
-                _target.SetLength(0);
+                _target.SetLength(_bomSize);
             }
         }
 
         public void SeekBackWhile(ITokenTrie match)
         {
             byte[] buffer = new byte[match.MaxLength];
-            while (_target.Position > 0)
+            while (_target.Position > _bomSize)
             {
-                if (_target.Position < buffer.Length)
+                if (_target.Position - _bomSize < buffer.Length)
                 {
-                    _target.Position = 0;
+                    _target.Position = _bomSize;
                 }
                 else
                 {
@@ -440,9 +422,9 @@ namespace Microsoft.TemplateEngine.Core.Util
                 }
 
                 //Back up the amount we already read to get a new window of data in
-                if (_target.Position < buffer.Length)
+                if (_target.Position - _bomSize < buffer.Length)
                 {
-                    _target.Position = 0;
+                    _target.Position = _bomSize;
                 }
                 else
                 {
@@ -450,9 +432,9 @@ namespace Microsoft.TemplateEngine.Core.Util
                 }
             }
 
-            if (_target.Position == 0)
+            if (_target.Position == _bomSize)
             {
-                _target.SetLength(0);
+                _target.SetLength(_bomSize);
             }
         }
 

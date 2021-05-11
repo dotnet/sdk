@@ -11,19 +11,38 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public abstract class TestBase
     {
-        protected static void RunAndVerify(string originalValue, string expectedValue, IProcessor processor, int bufferSize, bool? changeOverride = null)
+        protected static void RunAndVerify(string originalValue, string expectedValue, IProcessor processor, int bufferSize, bool? changeOverride = null, bool emitBOM = false)
         {
             byte[] valueBytes = Encoding.UTF8.GetBytes(originalValue);
-            MemoryStream input = new MemoryStream(valueBytes);
-            MemoryStream output = new MemoryStream();
+            using MemoryStream input = new MemoryStream();
+            if (emitBOM)
+            {
+                byte[] preamble = new UTF8Encoding(true).GetPreamble();
+                input.Write(preamble, 0, preamble.Length);
+            }
+            input.Write(valueBytes, 0, valueBytes.Length);
+            input.Position = 0;
+            using MemoryStream output = new MemoryStream();
             bool changed = processor.Run(input, output, bufferSize);
-            Verify(Encoding.UTF8, output, changed, originalValue, expectedValue, changeOverride);
+            Verify(new UTF8Encoding(emitBOM), output, changed, originalValue, expectedValue, changeOverride, emitBOM);
         }
 
-        protected static void Verify(Encoding encoding, Stream output, bool changed, string source, string expected, bool? changeOverride = null)
+        protected static void Verify(Encoding encoding, Stream output, bool changed, string source, string expected, bool? changeOverride = null, bool checkBOM = false)
         {
             output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
+
+            if (checkBOM)
+            {
+                byte[] preamble = encoding.GetPreamble();
+                if (preamble.Length > 0)
+                {
+                    byte[] readPreamble = new byte[preamble.Length];
+                    Assert.Equal(readPreamble.Length, output.Read(readPreamble, 0, readPreamble.Length));
+                    Assert.Equal(preamble, readPreamble);
+                }
+            }
+
+            byte[] resultBytes = new byte[output.Length - output.Position];
             output.Read(resultBytes, 0, resultBytes.Length);
             string actual = encoding.GetString(resultBytes);
             Assert.Equal(expected, actual);
