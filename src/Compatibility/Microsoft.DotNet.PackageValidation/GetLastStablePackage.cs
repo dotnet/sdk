@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.PackageValidation
                 SourceRepository repository = Repository.Factory.GetCoreV3(nugetFeed);
                 FindPackageByIdResource resource = repository.GetResource<FindPackageByIdResource>();
                 SourceCacheContext cache = new SourceCacheContext();
-                IEnumerable<NuGetVersion> versions = resource?.GetAllVersionsAsync(PackageId, cache, NullLogger.Instance, CancellationToken.None).Result;
+                IEnumerable<NuGetVersion> versions = resource.GetAllVersionsAsync(PackageId, cache, NullLogger.Instance, CancellationToken.None).Result;
 
                 NuGetVersion packageVersion = versions?.Where(t => !t.IsPrerelease && t != currentPackageVersion).OrderByDescending(t => t.Version).FirstOrDefault();
 
