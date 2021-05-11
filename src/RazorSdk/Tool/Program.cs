@@ -11,7 +11,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 {
     internal static class Program
     {
-        static Program()
+        public static int Main(string[] args)
         {
             // To minimize the size of the SDK, we resolve all Rosyln-related assemblies
             // from the `Roslyn/bincore` location in the SDK. The `RegisterAssemblyResolutionEvents`
@@ -20,8 +20,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             // invoked, so we register the event listener here to ensure they are registered before
             // we `Main` is invoked.
             RegisterAssemblyResolutionEvents();
+            return RunApplication(args);
         }
-        public static int Main(string[] args)
+
+        private static int RunApplication(string[] args)
         {
             DebugMode.HandleDebugSwitch(ref args);
 
