@@ -49,6 +49,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         // version of internal attribute type which will cause ambiguity, to avoid that we are comparing the attributes by their name
         private const string SupportedOSPlatformAttribute = nameof(SupportedOSPlatformAttribute);
         private const string UnsupportedOSPlatformAttribute = nameof(UnsupportedOSPlatformAttribute);
+        private const string UnsupportedOSPlatformGuardAttribute = nameof(UnsupportedOSPlatformGuardAttribute);
+        private const string SupportedOSPlatformGuardAttribute = nameof(SupportedOSPlatformGuardAttribute);
 
         // Platform guard method name, prefix, suffix
         private const string IsOSPlatform = nameof(IsOSPlatform);
@@ -56,7 +58,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private const string OptionalSuffix = "VersionAtLeast";
         private const string Net = "net";
         private const string macOS = nameof(macOS);
+        private const string OSX = nameof(OSX);
         private const string MacSlashOSX = "macOS/OSX";
+        private static readonly Version EmptyVersion = new(0, 0);
 
         internal static DiagnosticDescriptor OnlySupportedCsReachable = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                       s_localizableTitle,
@@ -418,9 +422,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     }
                                     attribute.UnsupportedFirst = null;
                                 }
+                                else if (value.AnalysisValues.Contains(new PlatformMethodValue(info.PlatformName, EmptyVersion, false)))
+                                {
+                                    csAttributes = SetCallSiteUnsupportedAttribute(csAttributes, info);
+                                }
 
                                 if (attribute.UnsupportedSecond != null &&
-                                    info.Version.IsGreaterThanOrEqualTo(attribute.UnsupportedSecond))
+                                    attribute.UnsupportedSecond.IsGreaterThanOrEqualTo(info.Version))
                                 {
                                     attribute.UnsupportedSecond = null;
                                 }
@@ -456,16 +464,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     RemoveUnsupportedWithLessVersion(info.Version, attribute);
                                     RemoveOtherSupportsOnDifferentPlatforms(attributes, info.PlatformName);
                                 }
-
-                                if (attribute.SupportedSecond != null &&
-                                    info.Version.IsGreaterThanOrEqualTo(attribute.SupportedSecond))
+                                else
                                 {
-                                    attribute.SupportedSecond = null;
-                                    RemoveUnsupportedWithLessVersion(info.Version, attribute);
-                                    RemoveOtherSupportsOnDifferentPlatforms(attributes, info.PlatformName);
+                                    capturedVersions.TryGetValue(info.PlatformName, out var unsupportedVersion);
+                                    csAttributes = SetCallSiteSupportedAttribute(csAttributes, info, unsupportedVersion);
                                 }
 
-                                csAttributes = SetAsCallSiteSupportedAttribute(csAttributes, info);
                                 RemoveUnsupportsOnDifferentPlatforms(attributes, info.PlatformName);
                             }
                         }
@@ -473,7 +477,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             // it is checking one exact platform, other unsupported should be suppressed
                             RemoveUnsupportsOnDifferentPlatforms(attributes, info.PlatformName);
-                            csAttributes = SetAsCallSiteSupportedAttribute(csAttributes, info);
+                            csAttributes = SetCallSiteSupportedAttribute(csAttributes, info, null);
                         }
                     }
                 }
@@ -510,12 +514,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return true;
             }
 
-            static SmallDictionary<string, Versions> SetAsCallSiteSupportedAttribute(SmallDictionary<string, Versions>? csAttributes, PlatformMethodValue info)
+            static SmallDictionary<string, Versions> SetCallSiteSupportedAttribute(SmallDictionary<string, Versions>? csAttributes,
+                PlatformMethodValue info, Version? unsupportedVersion)
             {
-                if (csAttributes == null)
-                {
-                    csAttributes = new SmallDictionary<string, Versions>(StringComparer.OrdinalIgnoreCase);
-                }
+                csAttributes ??= new SmallDictionary<string, Versions>(StringComparer.OrdinalIgnoreCase);
+
                 if (csAttributes.TryGetValue(info.PlatformName, out var attributes))
                 {
                     if (attributes.SupportedFirst == null)
@@ -526,11 +529,36 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         attributes.SupportedSecond = info.Version;
                     }
+                    attributes.UnsupportedFirst = unsupportedVersion;
                 }
                 else
                 {
-                    csAttributes.Add(info.PlatformName, new Versions() { SupportedFirst = info.Version });
+                    csAttributes.Add(info.PlatformName, new Versions() { SupportedFirst = info.Version, UnsupportedFirst = unsupportedVersion });
                 }
+
+                return csAttributes;
+            }
+
+            static SmallDictionary<string, Versions> SetCallSiteUnsupportedAttribute(SmallDictionary<string, Versions>? csAttributes, PlatformMethodValue info)
+            {
+                csAttributes ??= new SmallDictionary<string, Versions>(StringComparer.OrdinalIgnoreCase);
+
+                if (csAttributes.TryGetValue(info.PlatformName, out var attributes))
+                {
+                    if (attributes.UnsupportedFirst == null)
+                    {
+                        attributes.UnsupportedFirst = info.Version;
+                    }
+                    else
+                    {
+                        attributes.UnsupportedSecond = info.Version;
+                    }
+                }
+                else
+                {
+                    csAttributes.Add(info.PlatformName, new Versions() { UnsupportedFirst = info.Version });
+                }
+
                 return csAttributes;
             }
 
@@ -1409,6 +1437,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 SmallDictionary<string, Versions>? childAttributes = null;
                 foreach (AttributeData attribute in immediateAttributes)
                 {
+                    if (attribute.AttributeClass.Name is SupportedOSPlatformGuardAttribute or UnsupportedOSPlatformGuardAttribute)
+                    {
+                        parentAttributes = new PlatformAttributes();
+                        return;
+                    }
                     if (s_osPlatformAttributes.Contains(attribute.AttributeClass.Name))
                     {
                         TryAddValidAttribute(ref childAttributes, attribute);
@@ -1590,19 +1623,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static bool TryAddValidAttribute([NotNullWhen(true)] ref SmallDictionary<string, Versions>? attributes, AttributeData attribute)
         {
-            if (!attribute.ConstructorArguments.IsEmpty &&
-                                attribute.ConstructorArguments[0] is { } argument &&
-                                argument.Kind == TypedConstantKind.Primitive &&
-                                argument.Type.SpecialType == SpecialType.System_String &&
-                                !argument.IsNull &&
-                                !argument.Value.Equals(string.Empty) &&
-                                TryParsePlatformNameAndVersion(argument.Value.ToString(), out string platformName, out Version? version))
+            if (TryParsePlatformNameAndVersion(attribute, out var platformName, out var version))
             {
                 attributes ??= new SmallDictionary<string, Versions>(StringComparer.OrdinalIgnoreCase);
-                if (platformName.Equals("OSX", StringComparison.OrdinalIgnoreCase))
-                {
-                    platformName = macOS;
-                }
 
                 if (!attributes.TryGetValue(platformName, out var _))
                 {
@@ -1616,6 +1639,34 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return false;
         }
 
+        private static bool TryParsePlatformNameAndVersion(AttributeData attribute, out string platformName, [NotNullWhen(true)] out Version? version)
+        {
+            if (HasNonEmptyStringArgument(attribute, out var argument))
+            {
+                return TryParsePlatformNameAndVersion(argument, out platformName, out version);
+            }
+
+            version = null;
+            platformName = string.Empty;
+            return false;
+        }
+
+        private static bool HasNonEmptyStringArgument(AttributeData attribute, [NotNullWhen(true)] out string? stringArgument)
+        {
+            if (!attribute.ConstructorArguments.IsEmpty &&
+                attribute.ConstructorArguments[0] is { } argument &&
+                argument.Type.SpecialType == SpecialType.System_String &&
+                !argument.IsNull &&
+                !argument.Value.Equals(string.Empty))
+            {
+                stringArgument = argument.Value.ToString();
+                return true;
+            }
+
+            stringArgument = null;
+            return false;
+        }
+
         private static bool TryParsePlatformNameAndVersion(string osString, out string osPlatformName, [NotNullWhen(true)] out Version? version)
         {
             version = null;
@@ -1626,7 +1677,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (i > 0 && Version.TryParse(osString[i..], out Version? parsedVersion))
                     {
-                        osPlatformName = osString.Substring(0, i);
+                        osPlatformName = GetNameAsMacOsWhenOSX(osString.Substring(0, i));
                         version = parsedVersion;
                         return true;
                     }
@@ -1635,10 +1686,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
             }
 
-            osPlatformName = osString;
-            version = new Version(0, 0);
+            osPlatformName = GetNameAsMacOsWhenOSX(osString);
+            version = EmptyVersion;
             return true;
         }
+
+        private static string GetNameAsMacOsWhenOSX(string platformName) =>
+            platformName.Equals(OSX, StringComparison.OrdinalIgnoreCase) ? macOS : platformName;
 
         private static void AddAttribute(string name, Version version, Versions attributes)
         {
