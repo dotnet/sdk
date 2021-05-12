@@ -1596,5 +1596,34 @@ There";
             //  pretend it's false because the inputs and outputs are the same
             Verify(Encoding.UTF8, output, false, value, expected);
         }
+
+        [Theory]
+        [InlineData("foo", true)]
+        [InlineData("foo", false)]
+        [InlineData("def", true)]
+        [InlineData("def", false)]
+        // dotnet new crashes if template contains #ifdef
+        // https://github.com/dotnet/templating/issues/3085
+        public void VerifyMisstypedIfTokenDoesntCrash(string varName, bool varValue)
+        {
+            string value = @"#ifdef
+GAGA
+#endif
+";
+            string expected = varName == "def" && varValue ? @"GAGA
+" : "";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            VariableCollection vc = new VariableCollection()
+            {
+                [varName] = varValue
+            };
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+            processor.Run(input, output, 999);
+            Verify(Encoding.UTF8, output, true, value, expected);
+        }
     }
 }

@@ -114,7 +114,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             }
 
             int braceDepth = 0;
-            if (tokens[0].Family == TokenFamily.OpenBrace)
+            if (tokens.Count > 0 && tokens[0].Family == TokenFamily.OpenBrace)
             {
                 ++braceDepth;
             }
