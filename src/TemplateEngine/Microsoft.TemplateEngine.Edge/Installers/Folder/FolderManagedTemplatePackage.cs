@@ -1,13 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.Folder
@@ -43,7 +44,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             {
                 try
                 {
-                    return (_settings.Host.FileSystem as IFileLastWriteTimeSource)?.GetLastWriteTimeUtc(MountPointUri) ?? File.GetLastWriteTime(MountPointUri);
+                    return _settings.Host.FileSystem.GetLastWriteTimeUtc(MountPointUri);
                 }
                 catch (Exception e)
                 {
@@ -59,7 +60,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 
         public IManagedTemplatePackageProvider ManagedProvider { get; }
 
-        public string Version => null;
+        public string? Version => null;
 
         public IReadOnlyDictionary<string, string> GetDetails() => _emptyDictionary;
     }

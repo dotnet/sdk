@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,19 +30,19 @@ namespace Microsoft.TemplateSearch.Common
 
         public async Task<bool> TryEnsureSearchFileAsync(IEngineEnvironmentSettings environmentSettings, string metadataFileTargetLocation)
         {
-            string localOverridePath = environmentSettings.Environment.GetEnvironmentVariable(_localSourceSearchFileOverrideEnvVar);
+            string? localOverridePath = environmentSettings.Environment.GetEnvironmentVariable(_localSourceSearchFileOverrideEnvVar);
             if (!string.IsNullOrEmpty(localOverridePath))
             {
-                if (environmentSettings.Host.FileSystem.FileExists(localOverridePath))
+                if (environmentSettings.Host.FileSystem.FileExists(localOverridePath!))
                 {
-                    environmentSettings.Host.FileSystem.FileCopy(localOverridePath, metadataFileTargetLocation, true);
+                    environmentSettings.Host.FileSystem.FileCopy(localOverridePath!, metadataFileTargetLocation, true);
                     return true;
                 }
 
                 return false;
             }
 
-            string useLocalSearchFile = environmentSettings.Environment.GetEnvironmentVariable(_useLocalSearchFileIfPresentEnvVar);
+            string? useLocalSearchFile = environmentSettings.Environment.GetEnvironmentVariable(_useLocalSearchFileIfPresentEnvVar);
             if (!string.IsNullOrEmpty(useLocalSearchFile))
             {
                 // evn var is set, only use a local copy of the search file. Don't try to acquire one from blob storage.
@@ -72,17 +74,13 @@ namespace Microsoft.TemplateSearch.Common
 
         private bool ShouldDownloadFileFromCloud(IEngineEnvironmentSettings environmentSettings, string metadataFileTargetLocation)
         {
-            IPhysicalFileSystem fileSystem = environmentSettings.Host.FileSystem;
-            if (fileSystem is IFileLastWriteTimeSource lastWriteTimeSource)
+            if (environmentSettings.Host.FileSystem.FileExists(metadataFileTargetLocation))
             {
-                if (fileSystem.FileExists(metadataFileTargetLocation))
+                DateTime utcNow = DateTime.UtcNow;
+                DateTime lastWriteTimeUtc = environmentSettings.Host.FileSystem.GetLastWriteTimeUtc(metadataFileTargetLocation);
+                if (lastWriteTimeUtc.AddHours(CachedFileValidityInHours) > utcNow)
                 {
-                    DateTime utcNow = DateTime.UtcNow;
-                    DateTime lastWriteTimeUtc = lastWriteTimeSource.GetLastWriteTimeUtc(metadataFileTargetLocation);
-                    if (lastWriteTimeUtc.AddHours(CachedFileValidityInHours) > utcNow)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
 
@@ -137,10 +135,8 @@ namespace Microsoft.TemplateSearch.Common
                         else if (response.StatusCode == HttpStatusCode.NotModified)
                         {
                             IPhysicalFileSystem fileSystem = environmentSettings.Host.FileSystem;
-                            if (fileSystem is IFileLastWriteTimeSource lastWriteTimeSource)
-                            {
-                                lastWriteTimeSource.SetLastWriteTimeUtc(searchMetadataFileLocation, DateTime.UtcNow);
-                            }
+
+                            environmentSettings.Host.FileSystem.SetLastWriteTimeUtc(searchMetadataFileLocation, DateTime.UtcNow);
                             return true;
                         }
 

@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 #nullable enable
@@ -56,23 +54,13 @@ namespace Microsoft.TemplateEngine.Utils
             var list = new List<ITemplatePackage>();
             foreach (var nupkg in expandedNupkgs)
             {
-                list.Add(new TemplatePackage(this, nupkg, GetLastWriteTimeUtc(nupkg)));
+                list.Add(new TemplatePackage(this, nupkg, _environmentSettings.Host.FileSystem.GetLastWriteTimeUtc(nupkg)));
             }
             foreach (var folder in expandedFolders)
             {
-                list.Add(new TemplatePackage(this, folder, GetLastWriteTimeUtc(folder)));
+                list.Add(new TemplatePackage(this, folder, _environmentSettings.Host.FileSystem.GetLastWriteTimeUtc(folder)));
             }
             return Task.FromResult<IReadOnlyList<ITemplatePackage>>(list);
-        }
-
-        private DateTime GetLastWriteTimeUtc(string path)
-        {
-            if (_environmentSettings.Host.FileSystem is IFileLastWriteTimeSource fileSystem)
-            {
-                return fileSystem.GetLastWriteTimeUtc(path);
-            }
-
-            return File.GetLastWriteTimeUtc(path);
         }
     }
 }

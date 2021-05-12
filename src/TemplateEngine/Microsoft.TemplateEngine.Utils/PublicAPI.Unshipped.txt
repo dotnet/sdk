@@ -43,6 +43,27 @@ Microsoft.TemplateEngine.Utils.FileFindHelpers
 Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions
 Microsoft.TemplateEngine.Utils.Glob
 Microsoft.TemplateEngine.Utils.InMemoryFileSystem
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.CreateDirectory(string! path) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.CreateFile(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.DirectoryDelete(string! path, bool recursive) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.DirectoryExists(string! directory) -> bool
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateDirectories(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateFiles(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateFileSystemEntries(string! directoryName, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.FileCopy(string! sourcePath, string! targetPath, bool overwrite) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.FileDelete(string! path) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.FileExists(string! file) -> bool
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.GetCurrentDirectory() -> string!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.GetFileAttributes(string! file) -> System.IO.FileAttributes
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.GetLastWriteTimeUtc(string! file) -> System.DateTime
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.InMemoryFileSystem(string! root, Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem! basis) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.OpenRead(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.ReadAllBytes(string! path) -> byte[]!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.ReadAllText(string! path) -> string!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.SetFileAttributes(string! file, System.IO.FileAttributes attributes) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.WatchFileChanges(string! filepath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.WriteAllText(string! path, string! value) -> void
 Microsoft.TemplateEngine.Utils.InstallRequestPathResolution
 Microsoft.TemplateEngine.Utils.ListExtensions
 Microsoft.TemplateEngine.Utils.LocalizationLocator
@@ -56,7 +77,27 @@ Microsoft.TemplateEngine.Utils.LocalizationLocator.Name.get -> string!
 Microsoft.TemplateEngine.Utils.LocalizationLocator.ParameterSymbols.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel!>!
 Microsoft.TemplateEngine.Utils.ParserExtensions
 Microsoft.TemplateEngine.Utils.PhysicalFileSystem
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.CreateDirectory(string! path) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.CreateFile(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.DirectoryDelete(string! path, bool recursive) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.DirectoryExists(string! directory) -> bool
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.EnumerateDirectories(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.EnumerateFiles(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.EnumerateFileSystemEntries(string! directoryName, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.FileCopy(string! source, string! target, bool overwrite) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.FileDelete(string! path) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.FileExists(string! file) -> bool
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.GetCurrentDirectory() -> string!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.GetFileAttributes(string! file) -> System.IO.FileAttributes
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.GetLastWriteTimeUtc(string! file) -> System.DateTime
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.OpenRead(string! path) -> System.IO.Stream!
 Microsoft.TemplateEngine.Utils.PhysicalFileSystem.PhysicalFileSystem() -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.ReadAllBytes(string! path) -> byte[]!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.ReadAllText(string! path) -> string!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.SetFileAttributes(string! file, System.IO.FileAttributes attributes) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.WatchFileChanges(string! filepath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.WriteAllText(string! path, string! value) -> void
 Microsoft.TemplateEngine.Utils.RangeVersionSpecification
 Microsoft.TemplateEngine.Utils.RangeVersionSpecification.IsEndInclusive.get -> bool
 Microsoft.TemplateEngine.Utils.RangeVersionSpecification.IsStartInclusive.get -> bool
@@ -139,47 +180,6 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~Microsoft.TemplateEngine.Utils.ExactVersionSpecification.ExactVersionSpecification(string version) -> void
 ~Microsoft.TemplateEngine.Utils.ExactVersionSpecification.RequiredVersion.get -> string
 ~Microsoft.TemplateEngine.Utils.Glob.IsMatch(string test) -> bool
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.CreateDirectory(string path) -> void
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.CreateFile(string path) -> System.IO.Stream
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.DirectoryDelete(string path, bool recursive) -> void
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.DirectoryExists(string directory) -> bool
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateDirectories(string path, string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateFiles(string path, string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateFileSystemEntries(string directoryName, string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.FileCopy(string sourcePath, string targetPath, bool overwrite) -> void
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.FileDelete(string path) -> void
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.FileExists(string file) -> bool
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.GetCurrentDirectory() -> string
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.GetFileAttributes(string file) -> System.IO.FileAttributes
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.GetLastWriteTimeUtc(string file) -> System.DateTime
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.InMemoryFileSystem(string root, Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem basis) -> void
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.OpenRead(string path) -> System.IO.Stream
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.ReadAllBytes(string path) -> byte[]
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.ReadAllText(string path) -> string
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.SetFileAttributes(string file, System.IO.FileAttributes attributes) -> void
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.SetLastWriteTimeUtc(string file, System.DateTime lastWriteTimeUtc) -> void
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.WatchFileChanges(string filepath, System.IO.FileSystemEventHandler fileChanged) -> System.IDisposable
-~Microsoft.TemplateEngine.Utils.InMemoryFileSystem.WriteAllText(string path, string value) -> void
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.CreateDirectory(string path) -> void
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.CreateFile(string path) -> System.IO.Stream
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.DirectoryDelete(string path, bool recursive) -> void
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.DirectoryExists(string directory) -> bool
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.EnumerateDirectories(string path, string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.EnumerateFiles(string path, string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.EnumerateFileSystemEntries(string directoryName, string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.FileCopy(string source, string target, bool overwrite) -> void
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.FileDelete(string path) -> void
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.FileExists(string file) -> bool
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.GetCurrentDirectory() -> string
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.GetFileAttributes(string file) -> System.IO.FileAttributes
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.GetLastWriteTimeUtc(string file) -> System.DateTime
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.OpenRead(string path) -> System.IO.Stream
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.ReadAllBytes(string path) -> byte[]
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.ReadAllText(string path) -> string
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.SetFileAttributes(string file, System.IO.FileAttributes attributes) -> void
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.SetLastWriteTimeUtc(string file, System.DateTime lastWriteTimeUtc) -> void
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.WatchFileChanges(string filepath, System.IO.FileSystemEventHandler fileChanged) -> System.IDisposable
-~Microsoft.TemplateEngine.Utils.PhysicalFileSystem.WriteAllText(string path, string value) -> void
 ~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.CheckIfVersionIsValid(string versionToCheck) -> bool
 ~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.MaxVersion.get -> string
 ~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.MinVersion.get -> string

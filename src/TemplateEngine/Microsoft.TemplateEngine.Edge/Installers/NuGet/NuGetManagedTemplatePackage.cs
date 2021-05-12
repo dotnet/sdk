@@ -1,14 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
@@ -78,9 +78,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 throw new ArgumentException($"{nameof(details)} should contain key {PackageIdKey}", nameof(details));
             }
+            _logger = settings.Host.LoggerFactory.CreateLogger<NuGetInstaller>();
         }
 
-        public string Author
+        public string? Author
         {
             get
             {
@@ -91,7 +92,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    Details[AuthorKey] = value;
+                    Details[AuthorKey] = value!;
                 }
                 else
                 {
@@ -102,7 +103,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public string DisplayName => string.IsNullOrWhiteSpace(Version) ? Identifier : $"{Identifier}::{Version}";
 
-        public string Identifier => Details.TryGetValue(PackageIdKey, out string identifier) ? identifier : null;
+        public string Identifier => Details[PackageIdKey];
 
         public IInstaller Installer { get; }
 
@@ -112,7 +113,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 try
                 {
-                    return (_settings.Host.FileSystem as IFileLastWriteTimeSource)?.GetLastWriteTimeUtc(MountPointUri) ?? File.GetLastWriteTime(MountPointUri);
+                    return _settings.Host.FileSystem.GetLastWriteTimeUtc(MountPointUri);
                 }
                 catch (Exception e)
                 {
@@ -148,7 +149,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public string MountPointUri { get; }
 
-        public string NuGetSource
+        public string? NuGetSource
         {
             get
             {
@@ -159,7 +160,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    Details[NuGetSourceKey] = value;
+                    Details[NuGetSourceKey] = value!;
                 }
                 else
                 {
@@ -172,7 +173,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public IManagedTemplatePackageProvider ManagedProvider { get; }
 
-        public string Version
+        public string? Version
         {
             get
             {
@@ -183,7 +184,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    Details[PackageVersionKey] = value;
+                    Details[PackageVersionKey] = value!;
                 }
                 else
                 {
@@ -209,11 +210,11 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             Dictionary<string, string> details = new Dictionary<string, string>();
             if (!string.IsNullOrWhiteSpace(Author))
             {
-                details[AuthorKey] = Author;
+                details[AuthorKey] = Author!;
             }
             if (!string.IsNullOrWhiteSpace(NuGetSource))
             {
-                details[NuGetSourceKey] = NuGetSource;
+                details[NuGetSourceKey] = NuGetSource!;
             }
             return details;
         }

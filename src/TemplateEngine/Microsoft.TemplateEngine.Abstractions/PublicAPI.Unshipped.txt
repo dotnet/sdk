@@ -167,6 +167,26 @@ Microsoft.TemplateEngine.Abstractions.ParameterChoiceLocalizationModel.DisplayNa
 Microsoft.TemplateEngine.Abstractions.ParameterChoiceLocalizationModel.ParameterChoiceLocalizationModel(string? displayName, string? description) -> void
 Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IFileLastWriteTimeSource
 Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.CreateDirectory(string! path) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.CreateFile(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.DirectoryDelete(string! path, bool recursive) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.DirectoryExists(string! directory) -> bool
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.EnumerateDirectories(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.EnumerateFiles(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.EnumerateFileSystemEntries(string! directoryName, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.FileCopy(string! sourcePath, string! targetPath, bool overwrite) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.FileDelete(string! path) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.FileExists(string! file) -> bool
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.GetCurrentDirectory() -> string!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.GetFileAttributes(string! file) -> System.IO.FileAttributes
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.GetLastWriteTimeUtc(string! file) -> System.DateTime
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.OpenRead(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.ReadAllBytes(string! path) -> byte[]!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.ReadAllText(string! path) -> string!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.SetFileAttributes(string! file, System.IO.FileAttributes attributes) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.WatchFileChanges(string! filepath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.WriteAllText(string! path, string! value) -> void
 Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo
 Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo.AddMatchDisposition(Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo! newDisposition) -> void
 Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo.Info.get -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo!
@@ -328,24 +348,6 @@ Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.VirtualizeDirectory(st
 ~Microsoft.TemplateEngine.Abstractions.Mount.IMountPointManager.TryDemandMountPoint(string mountPointUri, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> bool
 ~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IFileLastWriteTimeSource.GetLastWriteTimeUtc(string file) -> System.DateTime
 ~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IFileLastWriteTimeSource.SetLastWriteTimeUtc(string file, System.DateTime lastWriteTimeUtc) -> void
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.CreateDirectory(string path) -> void
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.CreateFile(string path) -> System.IO.Stream
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.DirectoryDelete(string path, bool recursive) -> void
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.DirectoryExists(string directory) -> bool
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.EnumerateDirectories(string path, string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.EnumerateFiles(string path, string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.EnumerateFileSystemEntries(string directoryName, string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.FileCopy(string sourcePath, string targetPath, bool overwrite) -> void
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.FileDelete(string path) -> void
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.FileExists(string file) -> bool
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.GetCurrentDirectory() -> string
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.GetFileAttributes(string file) -> System.IO.FileAttributes
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.OpenRead(string path) -> System.IO.Stream
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.ReadAllBytes(string path) -> byte[]
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.ReadAllText(string path) -> string
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.SetFileAttributes(string file, System.IO.FileAttributes attributes) -> void
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.WatchFileChanges(string filepath, System.IO.FileSystemEventHandler fileChanged) -> System.IDisposable
-~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.WriteAllText(string path, string value) -> void
 ~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.DisplayName.get -> string
 ~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.GetDetails() -> System.Collections.Generic.IReadOnlyDictionary<string, string>
 ~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.Identifier.get -> string

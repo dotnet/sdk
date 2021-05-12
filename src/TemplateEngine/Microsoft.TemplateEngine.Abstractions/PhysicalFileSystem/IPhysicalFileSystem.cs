@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -108,5 +110,21 @@ namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
         /// To stop watching dispose returned object.
         /// </remarks>
         IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged);
+
+        /// <summary>
+        /// Gets the last write time for the <paramref name="file"/> in UTC.
+        /// Same behavior as <see cref="File.GetLastWriteTimeUtc(string)"/>.
+        /// </summary>
+        /// <param name="file">The file to get last write time for.</param>
+        /// <returns></returns>
+        DateTime GetLastWriteTimeUtc(string file);
+
+        /// <summary>
+        /// Sets the last write time for the <paramref name="file"/> in UTC.
+        /// Same behavior as <see cref="File.SetLastWriteTimeUtc(string, DateTime)"/>.
+        /// </summary>
+        /// <param name="file">The file to set last write time for.</param>
+        /// <param name="lastWriteTimeUtc">the time to set.</param>
+        void SetLastWriteTimeUtc(string file, DateTime lastWriteTimeUtc);
     }
 }

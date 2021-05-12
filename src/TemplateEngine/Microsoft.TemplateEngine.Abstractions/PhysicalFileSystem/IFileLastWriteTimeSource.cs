@@ -5,6 +5,7 @@ using System;
 
 namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
 {
+    [Obsolete("Use IPhysicalFileSystem properties instead.")]
     public interface IFileLastWriteTimeSource
     {
         DateTime GetLastWriteTimeUtc(string file);

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +16,7 @@ namespace Microsoft.TemplateEngine.Utils
     /// In-memory file system implementation of <see cref="IPhysicalFileSystem"/>.
     /// </summary>
     /// <seealso cref="Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost"/>
-    public class InMemoryFileSystem : IPhysicalFileSystem, IFileLastWriteTimeSource
+    public class InMemoryFileSystem : IPhysicalFileSystem
     {
         private readonly FileSystemDirectory _root;
         private readonly IPhysicalFileSystem _basis;
@@ -116,7 +118,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             string[] parts = rel.Split('/', '\\');
             FileSystemDirectory currentDir = _root;
-            FileSystemDirectory parent = null;
+            FileSystemDirectory? parent = null;
 
             for (int i = 0; i < parts.Length; ++i)
             {
@@ -135,7 +137,7 @@ namespace Microsoft.TemplateEngine.Utils
                 throw new IOException("Directory is not empty");
             }
 
-            parent.Directories.Remove(currentDir.Name);
+            parent?.Directories.Remove(currentDir.Name);
         }
 
         public bool DirectoryExists(string directory)
@@ -550,15 +552,15 @@ namespace Microsoft.TemplateEngine.Utils
         {
             //file can be either memory or physical file here
             using Stream s = OpenRead(path);
-            if (!(s is MemoryStream))
+            if (!(s is MemoryStream ms))
             {
-                using (MemoryStream ms = new MemoryStream())
+                using (MemoryStream stream = new MemoryStream())
                 {
-                    s.CopyTo(ms);
-                    return ms.ToArray();
+                    s.CopyTo(stream);
+                    return stream.ToArray();
                 }
             }
-            return (s as MemoryStream).ToArray();
+            return ms.ToArray();
         }
 
         public void WriteAllText(string path, string value)
@@ -641,11 +643,7 @@ namespace Microsoft.TemplateEngine.Utils
         {
             if (!IsPathInCone(file, out string processedPath))
             {
-                if (_basis is IFileLastWriteTimeSource lastWriteTimeSource)
-                {
-                    return lastWriteTimeSource.GetLastWriteTimeUtc(file);
-                }
-                throw new NotImplementedException($"Basis file system must implement {nameof(IFileLastWriteTimeSource)}");
+                return _basis.GetLastWriteTimeUtc(file);
             }
 
             file = processedPath;
@@ -678,11 +676,7 @@ namespace Microsoft.TemplateEngine.Utils
         {
             if (!IsPathInCone(file, out string processedPath))
             {
-                if (_basis is IFileLastWriteTimeSource lastWriteTimeSource)
-                {
-                    lastWriteTimeSource.SetLastWriteTimeUtc(file, lastWriteTimeUtc);
-                }
-                throw new NotImplementedException($"Basis file system must implement {nameof(IFileLastWriteTimeSource)}");
+                _basis.SetLastWriteTimeUtc(file, lastWriteTimeUtc);
             }
 
             file = processedPath;

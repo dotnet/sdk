@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +13,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockFileSystem : IPhysicalFileSystem, IFileLastWriteTimeSource
+    public class MockFileSystem : IPhysicalFileSystem
     {
         private HashSet<string> _directories = new HashSet<string>(StringComparer.Ordinal);
 
@@ -19,11 +21,11 @@ namespace Microsoft.TemplateEngine.Mocks
 
         private List<DirectoryScanParameters> _directoriesScanned = new List<DirectoryScanParameters>();
 
-        public string CurrentDirectory { get; set; }
+        public string? CurrentDirectory { get; set; }
 
         public IReadOnlyList<DirectoryScanParameters> DirectoriesScanned => _directoriesScanned;
 
-        public MockFileSystem Add(string filePath, string contents, Encoding encoding = null, DateTime? lastWriteTime = null)
+        public MockFileSystem Add(string filePath, string contents, Encoding? encoding = null, DateTime? lastWriteTime = null)
         {
             _files[filePath] = new FileSystemFile()
             {
@@ -90,7 +92,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public string GetCurrentDirectory()
         {
-            return CurrentDirectory;
+            return CurrentDirectory ?? string.Empty;
         }
 
         public IEnumerable<string> EnumerateFiles(string path, string pattern, SearchOption searchOption)
@@ -120,7 +122,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public byte[] ReadAllBytes(string path)
         {
-            return _files[path].Data;
+            return _files[path].Data ?? Array.Empty<byte>();
         }
 
         public void DirectoryDelete(string path, bool recursive)
@@ -234,9 +236,9 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public class DirectoryScanParameters
         {
-            public string DirectoryName { get; set; }
+            public string? DirectoryName { get; set; }
 
-            public string Pattern { get; set; }
+            public string? Pattern { get; set; }
 
             public SearchOption SearchOption { get; set; }
         }
@@ -254,7 +256,7 @@ namespace Microsoft.TemplateEngine.Mocks
                 LastWriteTimeUtc = file.LastWriteTimeUtc;
             }
 
-            public byte[] Data { get; set; }
+            public byte[]? Data { get; set; }
 
             public FileAttributes Attributes { get; set; }
 
