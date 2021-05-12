@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 AddDifference(left, DifferenceType.Removed, "Type '{0}' exists on the left but not on the right");
             }
-            else if (StrictMode && left == null && right != null)
+            else if (Settings.StrictMode && left == null && right != null)
             {
                 AddDifference(right, DifferenceType.Added, "Type '{0}' exists on the right but not on the left");
             }

@@ -11,12 +11,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     internal class RuleRunner : IRuleRunner
     {
         private readonly RuleRunnerContext _context;
-        private readonly bool _strictMode;
+        private readonly RuleSettings _settings;
 
         internal RuleRunner(bool strictMode)
         {
             _context = new RuleRunnerContext();
-            _strictMode = strictMode;
+            _settings = new RuleSettings(strictMode);
             InitializeRules();
         }
 
@@ -66,9 +66,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 if (!type.IsAbstract && typeof(Rule).IsAssignableFrom(type))
                 {
-                    var rule = (Rule)Activator.CreateInstance(type);
-                    rule.StrictMode = _strictMode;
-                    rule.Initialize(_context);
+                    ((Rule)Activator.CreateInstance(type)).Setup(_context, _settings);
                 }
             }
 

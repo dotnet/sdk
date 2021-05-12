@@ -11,6 +11,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
     public abstract class Rule
     {
         /// <summary>
+        //// Method that is called when the rules are created by the <see cref="IRuleRunner"/> in
+        /// order to do the initial setup for the rule. This method stores the rule settings and calls
+        /// <see cref="Initialize(RuleRunnerContext)"/>.
+        /// </summary>
+        /// <param name="context">The context containing callbacks and settings for the rule to use.</param>
+        /// <param name="settings">The settings for the rule.</param>
+        public void Setup(RuleRunnerContext context, RuleSettings settings)
+        {
+            Settings = settings;
+            Initialize(context);
+        }
+
+        /// <summary>
         /// Method that is called when the rules are created by the <see cref="IRuleRunner"/> in
         /// order to do the initial setup for the rule.
         /// </summary>
@@ -18,8 +31,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         public abstract void Initialize(RuleRunnerContext context);
 
         /// <summary>
-        /// Flag that rules should use to determine which mode the differences should be calculated.
+        /// Settings use by the rules to determine how they should calculate differences.
         /// </summary>
-        public bool StrictMode { get; set; }
+        public RuleSettings Settings { get; private set; }
     }
 }
