@@ -119,6 +119,20 @@
       <NetCoreAppHostRids Include="@(Net60AppHostRids)" />
       <NetCoreRuntimePackRids Include="@(Net60RuntimePackRids)" />
 
+      <!--
+        In source-build, we build the current RID from source, which may be
+        non-portable and/or not an official RID. However, we can only use the
+        apphost pack, not the runtime pack, because:
+        - Apphost packs are distributed in the SDK.
+        - Runtime packs are not shipped with the SDK, only on NuGet.
+
+        Adding the ability to distribute and use source-built runtime packs is
+        tracked by: https://github.com/dotnet/source-build/issues/1215
+      -->
+      <NetCoreAppHostRids
+        Condition="'$(DotNetBuildFromSource)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <MonoRuntimePackRids Include="
           @(NetCoreRuntimePackRids);
           browser-wasm;
