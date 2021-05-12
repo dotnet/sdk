@@ -598,9 +598,11 @@ public static class Program
 
             result
                 .Should()
-                .Pass()
+                .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1033");
+                .HaveStdOutContaining("NETSDK1033")
+                .And
+                .HaveStdOutContaining("NETSDK1083");
         }
 
         [Fact]
