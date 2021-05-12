@@ -3,14 +3,55 @@ Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement.Conditi
 Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement.ConditionResult.get -> bool
 Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement.EvaluateCondition(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables) -> bool
 Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel
+Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel
+Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig
+Microsoft.TemplateEngine.Core.Contracts.IEngineConfig
+Microsoft.TemplateEngine.Core.Contracts.IEnvironmentInfo
+Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig
+Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec
+Microsoft.TemplateEngine.Core.Contracts.IKeysChangedEventArgs
+Microsoft.TemplateEngine.Core.Contracts.IMacroConfig
+Microsoft.TemplateEngine.Core.Contracts.IOperation
+Microsoft.TemplateEngine.Core.Contracts.IOperation.IsInitialStateOn.get -> bool
+Microsoft.TemplateEngine.Core.Contracts.IOperationProvider
+Microsoft.TemplateEngine.Core.Contracts.IOrchestrator
+Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2
+Microsoft.TemplateEngine.Core.Contracts.IPathMatcher
+Microsoft.TemplateEngine.Core.Contracts.IProcessor
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState.AdvanceBuffer(int bufferPosition) -> bool
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentBufferLength.get -> int
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentBufferPosition.get -> int
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentSequenceNumber.get -> int
+Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens
+Microsoft.TemplateEngine.Core.Contracts.IRunSpec
+Microsoft.TemplateEngine.Core.Contracts.IToken
+Microsoft.TemplateEngine.Core.Contracts.IToken.End.get -> int
+Microsoft.TemplateEngine.Core.Contracts.IToken.Length.get -> int
+Microsoft.TemplateEngine.Core.Contracts.IToken.Start.get -> int
+Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
+Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.Count.get -> int
+Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.MaxLength.get -> int
+Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.MinLength.get -> int
+Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator
+Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator.Accept(byte data, ref int bufferPosition, out int token) -> bool
+Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator.BytesToKeepInBuffer.get -> int
+Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator.TryFinalizeMatchesInProgress(ref int bufferPosition, out int token) -> bool
+Microsoft.TemplateEngine.Core.Contracts.IValueReadEventArgs
+Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
+Microsoft.TemplateEngine.Core.Contracts.IVariableCollection.KeysChanged -> Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander
+Microsoft.TemplateEngine.Core.Contracts.IVariableCollection.ValueRead -> Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
+Microsoft.TemplateEngine.Core.Contracts.IVariableConfig
+Microsoft.TemplateEngine.Core.Contracts.IVariableConfig.Expand.get -> bool
+Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander
+Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
 ~Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel.FlagPrefix.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel.Glob.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel.Operations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel>
 ~Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel.VariableFormat.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableConfig
-Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel
 ~Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel.Condition.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel.Type.get -> string
-Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.Encoding.get -> System.Text.Encoding
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.LineEndings.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.this[int index].get -> object
@@ -19,22 +60,18 @@ Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.VariableValues.get -> System.Collections.Generic.IReadOnlyList<System.Func<object>>
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.Whitespace.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.WhitespaceOrLineEnding.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
-Microsoft.TemplateEngine.Core.Contracts.IEngineConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.EnvironmentSettings.get -> Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string, bool>
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.LineEndings.get -> System.Collections.Generic.IReadOnlyList<string>
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.VariableFormatString.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Variables.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Whitespaces.get -> System.Collections.Generic.IReadOnlyList<string>
-Microsoft.TemplateEngine.Core.Contracts.IEnvironmentInfo
-Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.ComputedMacros.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IMacroConfig>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.CustomOperations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.Macros.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IMacroConfig>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.Operations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.Replacements.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.VariableSetup.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableConfig
-Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.CopyOnly.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IPathMatcher>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.Exclude.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IPathMatcher>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.IgnoreFileNames.get -> System.Collections.Generic.IReadOnlyList<string>
@@ -43,43 +80,29 @@ Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.RootVariableCollection.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.Special.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<Microsoft.TemplateEngine.Core.Contracts.IPathMatcher, Microsoft.TemplateEngine.Core.Contracts.IRunSpec>>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.TryGetTargetRelPath(string sourceRelPath, out string targetRelPath) -> bool
-Microsoft.TemplateEngine.Core.Contracts.IKeysChangedEventArgs
-Microsoft.TemplateEngine.Core.Contracts.IMacroConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IMacroConfig.Type.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IMacroConfig.VariableName.get -> string
-Microsoft.TemplateEngine.Core.Contracts.IOperation
 ~Microsoft.TemplateEngine.Core.Contracts.IOperation.HandleMatch(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, System.IO.Stream target) -> int
 ~Microsoft.TemplateEngine.Core.Contracts.IOperation.Id.get -> string
-Microsoft.TemplateEngine.Core.Contracts.IOperation.IsInitialStateOn.get -> bool
 ~Microsoft.TemplateEngine.Core.Contracts.IOperation.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken>
-Microsoft.TemplateEngine.Core.Contracts.IOperationProvider
 ~Microsoft.TemplateEngine.Core.Contracts.IOperationProvider.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
 ~Microsoft.TemplateEngine.Core.Contracts.IOperationProvider.Id.get -> string
-Microsoft.TemplateEngine.Core.Contracts.IOrchestrator
 ~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.GetFileChanges(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange>
 ~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.GetFileChanges(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange>
 ~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
 ~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.Run(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
-Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2
 ~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2.GetFileChanges(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2>
 ~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2.GetFileChanges(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2>
 ~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
 ~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2.Run(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
-Microsoft.TemplateEngine.Core.Contracts.IPathMatcher
 ~Microsoft.TemplateEngine.Core.Contracts.IPathMatcher.IsMatch(string path) -> bool
 ~Microsoft.TemplateEngine.Core.Contracts.IPathMatcher.Pattern.get -> string
-Microsoft.TemplateEngine.Core.Contracts.IProcessor
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessor.CloneAndAppendOperations(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> tempOperations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessor.Run(System.IO.Stream source, System.IO.Stream target) -> bool
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessor.Run(System.IO.Stream source, System.IO.Stream target, int bufferSize) -> bool
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessor.Run(System.IO.Stream source, System.IO.Stream target, int bufferSize, int flushThreshold) -> bool
-Microsoft.TemplateEngine.Core.Contracts.IProcessorState
-Microsoft.TemplateEngine.Core.Contracts.IProcessorState.AdvanceBuffer(int bufferPosition) -> bool
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.Config.get -> Microsoft.TemplateEngine.Core.Contracts.IEngineConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentBuffer.get -> byte[]
-Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentBufferLength.get -> int
-Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentBufferPosition.get -> int
-Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentSequenceNumber.get -> int
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.Encoding.get -> System.Text.Encoding
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.EncodingConfig.get -> Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.Inject(System.IO.Stream staged) -> void
@@ -89,54 +112,31 @@ Microsoft.TemplateEngine.Core.Contracts.IProcessorState.CurrentSequenceNumber.ge
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekForwardThrough(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition) -> void
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekForwardUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition) -> void
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekForwardWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition) -> void
-Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens
 ~Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens.OriginalValue.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens.VariableName.get -> string
-Microsoft.TemplateEngine.Core.Contracts.IRunSpec
 ~Microsoft.TemplateEngine.Core.Contracts.IRunSpec.GetOperations(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> sourceOperations) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider>
 ~Microsoft.TemplateEngine.Core.Contracts.IRunSpec.ProduceCollection(Microsoft.TemplateEngine.Core.Contracts.IVariableCollection parent) -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
 ~Microsoft.TemplateEngine.Core.Contracts.IRunSpec.TryGetTargetRelPath(string sourceRelPath, out string targetRelPath) -> bool
 ~Microsoft.TemplateEngine.Core.Contracts.IRunSpec.VariableFormatString.get -> string
-Microsoft.TemplateEngine.Core.Contracts.IToken
-Microsoft.TemplateEngine.Core.Contracts.IToken.End.get -> int
-Microsoft.TemplateEngine.Core.Contracts.IToken.Length.get -> int
-Microsoft.TemplateEngine.Core.Contracts.IToken.Start.get -> int
 ~Microsoft.TemplateEngine.Core.Contracts.IToken.Value.get -> byte[]
-Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.After.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.Before.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.ToToken(System.Text.Encoding encoding) -> Microsoft.TemplateEngine.Core.Contracts.IToken
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.Value.get -> string
-Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.AddToken(Microsoft.TemplateEngine.Core.Contracts.IToken token) -> int
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.AddToken(Microsoft.TemplateEngine.Core.Contracts.IToken token, int index) -> void
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.Append(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie) -> void
-Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.Count.get -> int
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.CreateEvaluator() -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, bool mustMatchPosition, out int token) -> bool
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, out int token) -> bool
-Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.MaxLength.get -> int
-Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.MinLength.get -> int
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.TokenLength.get -> System.Collections.Generic.IReadOnlyList<int>
 ~Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken>
-Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator
-Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator.Accept(byte data, ref int bufferPosition, out int token) -> bool
-Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator.BytesToKeepInBuffer.get -> int
-Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator.TryFinalizeMatchesInProgress(ref int bufferPosition, out int token) -> bool
-Microsoft.TemplateEngine.Core.Contracts.IValueReadEventArgs
 ~Microsoft.TemplateEngine.Core.Contracts.IValueReadEventArgs.Key.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IValueReadEventArgs.Key.set -> void
 ~Microsoft.TemplateEngine.Core.Contracts.IValueReadEventArgs.Value.get -> object
 ~Microsoft.TemplateEngine.Core.Contracts.IValueReadEventArgs.Value.set -> void
-Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
-Microsoft.TemplateEngine.Core.Contracts.IVariableCollection.KeysChanged -> Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander
 ~Microsoft.TemplateEngine.Core.Contracts.IVariableCollection.Parent.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
 ~Microsoft.TemplateEngine.Core.Contracts.IVariableCollection.Parent.set -> void
-Microsoft.TemplateEngine.Core.Contracts.IVariableCollection.ValueRead -> Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
-Microsoft.TemplateEngine.Core.Contracts.IVariableConfig
-Microsoft.TemplateEngine.Core.Contracts.IVariableConfig.Expand.get -> bool
 ~Microsoft.TemplateEngine.Core.Contracts.IVariableConfig.FallbackFormat.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IVariableConfig.Order.get -> System.Collections.Generic.IReadOnlyList<string>
 ~Microsoft.TemplateEngine.Core.Contracts.IVariableConfig.Sources.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
-Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander
-Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
