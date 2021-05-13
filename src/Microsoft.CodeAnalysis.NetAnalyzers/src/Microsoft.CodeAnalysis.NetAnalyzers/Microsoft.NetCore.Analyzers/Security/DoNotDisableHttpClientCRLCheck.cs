@@ -85,16 +85,16 @@ namespace Microsoft.NetCore.Analyzers.Security
                 "handler",
                 (IMethodSymbol methodSymbol, PropertySetAbstractValue abstractValue) =>
                 {
-                    return (abstractValue[ServerCertificateValidationCallbackIndex]) switch
+                    return abstractValue[ServerCertificateValidationCallbackIndex] switch
                     {
-                        PropertySetAbstractValueKind.Flagged => (abstractValue[CheckCertificateRevocationListIndex]) switch
+                        PropertySetAbstractValueKind.Flagged => abstractValue[CheckCertificateRevocationListIndex] switch
                         {
                             PropertySetAbstractValueKind.Flagged => HazardousUsageEvaluationResult.Flagged,
                             PropertySetAbstractValueKind.MaybeFlagged => HazardousUsageEvaluationResult.MaybeFlagged,
                             _ => HazardousUsageEvaluationResult.Unflagged,
                         },
 
-                        PropertySetAbstractValueKind.MaybeFlagged => (abstractValue[CheckCertificateRevocationListIndex]) switch
+                        PropertySetAbstractValueKind.MaybeFlagged => abstractValue[CheckCertificateRevocationListIndex] switch
                         {
                             PropertySetAbstractValueKind.Unflagged => HazardousUsageEvaluationResult.Unflagged,
                             _ => HazardousUsageEvaluationResult.MaybeFlagged,

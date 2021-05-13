@@ -70,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
             }
 
-            test.TestState.AdditionalFiles.Add(file);
+            test.TestState.AnalyzerConfigFiles.Add(file);
 
             test.TestState.ExpectedDiagnostics.AddRange(expected);
             await test.RunAsync();

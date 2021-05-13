@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -15,6 +16,28 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class SpecifyCultureInfoTests
     {
+        [Theory]
+        [InlineData("build_property.InvariantGlobalization = false", @"[|""aaa"".ToLower()|]")]
+        [InlineData("build_property.InvariantGlobalization = true", @"""aaa"".ToLower()")]
+        public async Task CA1304_PlainString_CSharp_InvariantGlobalization(string property, string returnExpression)
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = $@"
+using System;
+using System.Globalization;
+
+public class CultureInfoTestClass0
+{{
+    public string SpecifyCultureInfo01()
+    {{
+        return {returnExpression};
+    }}
+}}",
+                AnalyzerConfigDocument = property,
+            }.RunAsync();
+        }
+
         [Fact]
         public async Task CA1304_PlainString_CSharp()
         {
@@ -691,7 +714,11 @@ namespace NS
     }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
@@ -725,7 +752,11 @@ Namespace NS
     End Class
 End Namespace",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
