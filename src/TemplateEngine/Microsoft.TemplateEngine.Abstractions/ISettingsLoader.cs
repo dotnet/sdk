@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="info">Information about template.</param>
         /// <param name="baselineName">Defines which baseline of template to load.</param>
         /// <returns>Fully loaded template or <c>null</c> if it fails to load template.</returns>
-        ITemplate? LoadTemplate(ITemplateInfo info, string baselineName);
+        ITemplate? LoadTemplate(ITemplateInfo info, string? baselineName);
 
         /// <summary>
         /// Saves settings to file.

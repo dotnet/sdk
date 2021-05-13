@@ -32,10 +32,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = TestUtils.CreateTemporaryFolder();
             var foundTemplates = await bootstrapper.GetTemplatesAsync(
                 new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithSourceName") }).ConfigureAwait(false);
-            var result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string>(), "").ConfigureAwait(false);
-            Assert.Equal(2, result.CreationResult.PrimaryOutputs.Count);
-            Assert.Equal(0, result.CreationResult.PostActions.Count);
-            Assert.Equal(2, result.FileChanges.Count);
+            var result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string>()).ConfigureAwait(false);
+            Assert.Equal(2, result.CreationEffects.CreationResult.PrimaryOutputs.Count);
+            Assert.Equal(0, result.CreationEffects.CreationResult.PostActions.Count);
+            Assert.Equal(2, result.CreationEffects.FileChanges.Count);
 
             var expectedFileChanges = new FileChange[]
             {
@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IFileChangeComparer comparer = new IFileChangeComparer();
             Assert.Equal(
                 expectedFileChanges.OrderBy(s => s, comparer),
-                result.FileChanges.OrderBy(s => s, comparer),
+                result.CreationEffects.FileChanges.OrderBy(s => s, comparer),
                 comparer);
         }
 
@@ -59,10 +59,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var foundTemplates = await bootstrapper.GetTemplatesAsync(
                 new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithSourceName") }).ConfigureAwait(false);
 
-            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string>(), false, "").ConfigureAwait(false);
+            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string>()).ConfigureAwait(false);
 
-            Assert.Equal(2, result.PrimaryOutputs.Count);
-            Assert.Equal(0, result.PostActions.Count);
+            Assert.Equal(2, result.CreationResult.PrimaryOutputs.Count);
+            Assert.Equal(0, result.CreationResult.PostActions.Count);
             Assert.True(File.Exists(Path.Combine(output, "test.cs")));
             Assert.True(File.Exists(Path.Combine(output, "test/test.cs")));
         }
@@ -77,10 +77,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = TestUtils.CreateTemporaryFolder();
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("console") }).ConfigureAwait(false);
-            var result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string>(), "").ConfigureAwait(false);
-            Assert.Equal(2, result.CreationResult.PrimaryOutputs.Count);
-            Assert.Equal(2, result.CreationResult.PostActions.Count);
-            Assert.Equal(2, result.FileChanges.Count);
+            var result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string>()).ConfigureAwait(false);
+            Assert.Equal(2, result.CreationEffects.CreationResult.PrimaryOutputs.Count);
+            Assert.Equal(2, result.CreationEffects.CreationResult.PostActions.Count);
+            Assert.Equal(2, result.CreationEffects.FileChanges.Count);
 
             var expectedFileChanges = new FileChange[]
             {
@@ -90,7 +90,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IFileChangeComparer comparer = new IFileChangeComparer();
             Assert.Equal(
                 expectedFileChanges.OrderBy(s => s, comparer),
-                result.FileChanges.OrderBy(s => s, comparer),
+                result.CreationEffects.FileChanges.OrderBy(s => s, comparer),
                 comparer);
         }
 
@@ -103,9 +103,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("console") }).ConfigureAwait(false);
-            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string>(), false, "").ConfigureAwait(false);
-            Assert.Equal(2, result.PrimaryOutputs.Count);
-            Assert.Equal(2, result.PostActions.Count);
+            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string>()).ConfigureAwait(false);
+            Assert.Equal(2, result.CreationResult.PrimaryOutputs.Count);
+            Assert.Equal(2, result.CreationResult.PostActions.Count);
 
             Assert.True(File.Exists(Path.Combine(output, "Program.cs")));
             Assert.True(File.Exists(Path.Combine(output, "test.csproj")));

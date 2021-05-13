@@ -135,7 +135,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return UpdateTemplateCacheAsync(true);
         }
 
-        public ITemplate? LoadTemplate(ITemplateInfo info, string baselineName)
+        public ITemplate? LoadTemplate(ITemplateInfo info, string? baselineName)
         {
             if (_disposed)
             {

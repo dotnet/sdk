@@ -209,19 +209,19 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            ICreationEffects result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, "").ConfigureAwait(false);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict).ConfigureAwait(false);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs.Count);
+            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationEffects.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(
                 expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
+                result.CreationEffects.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
 
             IFileChangeComparer comparer = new IFileChangeComparer();
-            Assert.Equal(expectedResult.FileChanges.Count, result.FileChanges.Count);
+            Assert.Equal(expectedResult.FileChanges.Count, result.CreationEffects.FileChanges.Count);
             Assert.Equal(
                 expectedResult.FileChanges.OrderBy(s => s, comparer),
-                result.FileChanges.OrderBy(s => s, comparer),
+                result.CreationEffects.FileChanges.OrderBy(s => s, comparer),
                 comparer);
         }
 
@@ -238,12 +238,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, false, "").ConfigureAwait(false);
+            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict).ConfigureAwait(false);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.PrimaryOutputs.Count);
+            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(
                 expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
+                result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
 
             foreach (string file in expectedResult.FileChanges.Where(fc => fc.ChangeKind != ChangeKind.Delete).Select(fc => fc.TargetRelativePath))
@@ -284,19 +284,19 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            ICreationEffects result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, "").ConfigureAwait(false);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict).ConfigureAwait(false);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs.Count);
+            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationEffects.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(
                 expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
+                result.CreationEffects.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
 
             IFileChangeComparer comparer = new IFileChangeComparer();
-            Assert.Equal(expectedResult.FileChanges.Count, result.FileChanges.Count);
+            Assert.Equal(expectedResult.FileChanges.Count, result.CreationEffects.FileChanges.Count);
             Assert.Equal(
                 expectedResult.FileChanges.OrderBy(s => s, comparer),
-                result.FileChanges.OrderBy(s => s, comparer),
+                result.CreationEffects.FileChanges.OrderBy(s => s, comparer),
                 comparer);
         }
 
@@ -314,12 +314,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }).ConfigureAwait(false);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, false, "").ConfigureAwait(false);
+            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict).ConfigureAwait(false);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.PrimaryOutputs.Count);
+            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(
                 expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
+                result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
 
             foreach (string file in expectedResult.FileChanges.Where(fc => fc.ChangeKind != ChangeKind.Delete).Select(fc => fc.TargetRelativePath))

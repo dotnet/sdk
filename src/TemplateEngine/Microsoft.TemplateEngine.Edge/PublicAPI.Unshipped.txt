@@ -60,6 +60,13 @@ Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.HasParameterMismatc
 Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.IsMatch.get -> bool
 Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.IsParameterMatch.get -> bool
 Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.IsPartialMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.CreationEffects.get -> Microsoft.TemplateEngine.Abstractions.ICreationEffects?
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.CreationResult.get -> Microsoft.TemplateEngine.Abstractions.ICreationResult?
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.ErrorMessage.get -> string?
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.OutputBaseDirectory.get -> string?
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.Status.get -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.TemplateFullName.get -> string!
 Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo
 Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo.AddDisposition(Microsoft.TemplateEngine.Edge.Template.MatchInfo newDisposition) -> void
 Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo.IsMatch.get -> bool
@@ -93,9 +100,13 @@ Microsoft.TemplateEngine.Edge.Template.OrdinalIgnoreCaseMatchInfoComparer
 Microsoft.TemplateEngine.Edge.Template.OrdinalIgnoreCaseMatchInfoComparer.Equals(Microsoft.TemplateEngine.Edge.Template.MatchInfo x, Microsoft.TemplateEngine.Edge.Template.MatchInfo y) -> bool
 Microsoft.TemplateEngine.Edge.Template.OrdinalIgnoreCaseMatchInfoComparer.GetHashCode(Microsoft.TemplateEngine.Edge.Template.MatchInfo obj) -> int
 Microsoft.TemplateEngine.Edge.Template.OrdinalIgnoreCaseMatchInfoComparer.OrdinalIgnoreCaseMatchInfoComparer() -> void
-Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult
-Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult.Status.get -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.TemplateCreator
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.AnyParametersWithInvalidDefaultsUnresolved(System.Collections.Generic.IReadOnlyList<string!>! defaultParamsWithInvalidValues, System.Collections.Generic.IReadOnlyList<string!>! userParamsWithInvalidValues, System.Collections.Generic.IReadOnlyDictionary<string!, string?>! inputParameters, out System.Collections.Generic.IReadOnlyList<string!>! invalidDefaultParameters) -> bool
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.InstantiateAsync(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! templateInfo, string? name, string? fallbackName, string? outputPath, System.Collections.Generic.IReadOnlyDictionary<string!, string?>! inputParameters, bool forceCreation = false, string? baselineName = null, bool dryRun = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult!>!
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.ReleaseMountPoints(Microsoft.TemplateEngine.Abstractions.ITemplate! template) -> void
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.ResolveUserParameters(Microsoft.TemplateEngine.Abstractions.ITemplate! template, Microsoft.TemplateEngine.Abstractions.IParameterSet! templateParams, System.Collections.Generic.IReadOnlyDictionary<string!, string?>! inputParameters, out System.Collections.Generic.IReadOnlyList<string!>! paramsWithInvalidValues) -> void
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.SetupDefaultParamValuesFromTemplateAndHost(Microsoft.TemplateEngine.Abstractions.ITemplate! templateInfo, string! realName, out System.Collections.Generic.IReadOnlyList<string!>! paramsWithInvalidValues) -> Microsoft.TemplateEngine.Abstractions.IParameterSet!
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.TemplateCreator(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> void
 Microsoft.TemplateEngine.Edge.Template.TemplateEqualityComparer
 Microsoft.TemplateEngine.Edge.Template.TemplateEqualityComparer.TemplateEqualityComparer() -> void
 Microsoft.TemplateEngine.Edge.Template.TemplateMatchInfoEqualityComparer
@@ -156,21 +167,6 @@ virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.TryGetHostParamD
 ~Microsoft.TemplateEngine.Edge.Template.MatchInfo.InputParameterFormat -> string
 ~Microsoft.TemplateEngine.Edge.Template.MatchInfo.InputParameterName -> string
 ~Microsoft.TemplateEngine.Edge.Template.MatchInfo.ParameterValue -> string
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult.CreationEffects.get -> Microsoft.TemplateEngine.Abstractions.ICreationEffects
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult.Message.get -> string
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult.OutputBaseDirectory.get -> string
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult.ResultInfo.get -> Microsoft.TemplateEngine.Abstractions.ICreationResult
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult.TemplateCreationResult(string message, Microsoft.TemplateEngine.Edge.Template.CreationResultStatus status, string templateFullName) -> void
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult.TemplateCreationResult(string message, Microsoft.TemplateEngine.Edge.Template.CreationResultStatus status, string templateFullName, Microsoft.TemplateEngine.Abstractions.ICreationResult creationOutputs, string outputBaseDir, Microsoft.TemplateEngine.Abstractions.ICreationEffects creationEffects) -> void
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult.TemplateFullName.get -> string
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreator.AnyParametersWithInvalidDefaultsUnresolved(System.Collections.Generic.IReadOnlyList<string> defaultParamsWithInvalidValues, System.Collections.Generic.IReadOnlyList<string> userParamsWithInvalidValues, System.Collections.Generic.IReadOnlyDictionary<string, string> inputParameters, out System.Collections.Generic.IReadOnlyList<string> invalidDefaultParameters) -> bool
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreator.CheckForMissingRequiredParameters(Microsoft.TemplateEngine.Abstractions.IParameterSet templateParams, out System.Collections.Generic.IList<string> missingParamNames) -> bool
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreator.InstantiateAsync(Microsoft.TemplateEngine.Abstractions.ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, System.Collections.Generic.IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation, string baselineName) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult>
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreator.InstantiateAsync(Microsoft.TemplateEngine.Abstractions.ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, System.Collections.Generic.IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation, string baselineName, bool dryRun) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult>
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreator.ReleaseMountPoints(Microsoft.TemplateEngine.Abstractions.ITemplate template) -> void
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreator.ResolveUserParameters(Microsoft.TemplateEngine.Abstractions.ITemplate template, Microsoft.TemplateEngine.Abstractions.IParameterSet templateParams, System.Collections.Generic.IReadOnlyDictionary<string, string> inputParameters, out System.Collections.Generic.IReadOnlyList<string> paramsWithInvalidValues) -> void
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreator.SetupDefaultParamValuesFromTemplateAndHost(Microsoft.TemplateEngine.Abstractions.ITemplate templateInfo, string realName, out System.Collections.Generic.IReadOnlyList<string> paramsWithInvalidValues) -> Microsoft.TemplateEngine.Abstractions.IParameterSet
-~Microsoft.TemplateEngine.Edge.Template.TemplateCreator.TemplateCreator(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings) -> void
 ~Microsoft.TemplateEngine.Edge.Template.TemplateEqualityComparer.Equals(Microsoft.TemplateEngine.Abstractions.ITemplateInfo x, Microsoft.TemplateEngine.Abstractions.ITemplateInfo y) -> bool
 ~Microsoft.TemplateEngine.Edge.Template.TemplateEqualityComparer.GetHashCode(Microsoft.TemplateEngine.Abstractions.ITemplateInfo obj) -> int
 ~Microsoft.TemplateEngine.Edge.Template.TemplateMatchInfoEqualityComparer.Equals(Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo x, Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo y) -> bool

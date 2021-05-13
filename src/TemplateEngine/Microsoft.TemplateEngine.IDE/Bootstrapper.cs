@@ -15,7 +15,7 @@ using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Utils;
-using TemplateCreationResult = Microsoft.TemplateEngine.Edge.Template.TemplateCreationResult;
+using ITemplateCreationResult = Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult;
 using TemplateCreator = Microsoft.TemplateEngine.Edge.Template.TemplateCreator;
 
 namespace Microsoft.TemplateEngine.IDE
@@ -64,16 +64,64 @@ namespace Microsoft.TemplateEngine.IDE
             return _engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(criteria, filters ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>(), cancellationToken);
         }
 
-        public async Task<ICreationResult> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, bool skipUpdateCheck, string baselineName)
+        /// <summary>
+        /// Instantiates the template.
+        /// </summary>
+        /// <param name="info">The template to instantiate.</param>
+        /// <param name="name">The name to use.</param>
+        /// <param name="outputPath">The output directory for template instantiation.</param>
+        /// <param name="parameters">The template parameters.</param>
+        /// <param name="baselineName">The baseline configuration to use.</param>
+        /// <returns><see cref="TemplateCreationResult"/> containing information on created template or error occurred.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        public Task<ITemplateCreationResult> CreateAsync(
+            ITemplateInfo info,
+            string? name,
+            string outputPath,
+            IReadOnlyDictionary<string, string?> parameters,
+            string? baselineName = null,
+            CancellationToken cancellationToken = default)
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         {
-            TemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, skipUpdateCheck, false, baselineName).ConfigureAwait(false);
-            return instantiateResult.ResultInfo;
+            return _templateCreator.InstantiateAsync(
+                info,
+                name,
+                fallbackName: null,
+                outputPath: outputPath,
+                inputParameters: parameters,
+                forceCreation: false,
+                baselineName: baselineName,
+                dryRun: false,
+                cancellationToken: cancellationToken);
         }
 
-        public async Task<ICreationEffects> GetCreationEffectsAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, string baselineName)
+        /// <summary>
+        /// Dry runs the template with given parameters.
+        /// </summary>
+        /// <param name="info">The template to instantiate.</param>
+        /// <param name="name">The name to use.</param>
+        /// <param name="outputPath">The output directory for template instantiation.</param>
+        /// <param name="parameters">The template parameters.</param>
+        /// <param name="baselineName">The baseline configuration to use.</param>
+        /// <returns><see cref="ITemplateCreationResult"/> containing information on template that would be created or error occurred.</returns>
+        public Task<ITemplateCreationResult> GetCreationEffectsAsync(
+            ITemplateInfo info,
+            string? name,
+            string outputPath,
+            IReadOnlyDictionary<string, string?> parameters,
+            string? baselineName = null,
+            CancellationToken cancellationToken = default)
         {
-            TemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, true, false, baselineName, true).ConfigureAwait(false);
-            return instantiateResult.CreationEffects;
+            return _templateCreator.InstantiateAsync(
+                info,
+                name,
+                fallbackName: null,
+                outputPath: outputPath,
+                inputParameters: parameters,
+                forceCreation: false,
+                baselineName: baselineName,
+                dryRun: true,
+                cancellationToken: cancellationToken);
         }
 
         #region Template Package Management
@@ -270,6 +318,21 @@ namespace Microsoft.TemplateEngine.IDE
             uninstallTask.Wait();
             return uninstallTask.Result.Select(result => result.TemplatePackage.Identifier);
         }
+
+        [Obsolete("Use Task<TemplateCreationResult> CreateAsync(ITemplateInfo info, string? name, string outputPath, IReadOnlyDictionary<string, string> parameters, string? baselineName = null, CancellationToken cancellationToken = default) instead.")]
+        public async Task<ICreationResult?> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string?> parameters, bool skipUpdateCheck, string baselineName)
+        {
+            ITemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, false, baselineName).ConfigureAwait(false);
+            return instantiateResult.CreationResult;
+        }
+
+        [Obsolete("Use Task<TemplateCreationResult> GetCreationEffectsAsync(ITemplateInfo info, string? name, string outputPath, IReadOnlyDictionary<string, string> parameters, string? baselineName = null, CancellationToken cancellationToken = default) instead.")]
+        public async Task<ICreationEffects?> GetCreationEffectsAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string?> parameters, string baselineName)
+        {
+            ITemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters,  false, baselineName, true).ConfigureAwait(false);
+            return instantiateResult.CreationEffects;
+        }
+
         #endregion Obsolete
     }
 }
