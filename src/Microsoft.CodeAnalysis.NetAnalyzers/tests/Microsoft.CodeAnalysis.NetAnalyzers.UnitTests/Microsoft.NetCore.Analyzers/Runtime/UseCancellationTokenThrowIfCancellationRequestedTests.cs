@@ -100,7 +100,7 @@ End If";
                     $"Throw New {operationCanceledExceptionCtor}"),
                 0);
             string fixedStatements = @"token.ThrowIfCancellationRequested()";
-
+            var testCode = VB.CreateBlock(testStatements);
             var test = new VerifyVB.Test
             {
                 TestCode = VB.CreateBlock(testStatements),
@@ -242,6 +242,48 @@ Public Class C
     End Sub
 End Class",
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task TriviaInIfBlock_IsPreserved_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.Threading;
+
+public class C
+{
+    private CancellationToken token;
+
+    public void M()
+    {
+        {|#0:if (token.IsCancellationRequested)
+        {
+            // Comment
+            throw new OperationCanceledException();
+        }|}
+    }
+}",
+                FixedCode = @"
+using System;
+using System.Threading;
+
+public class C
+{
+    private CancellationToken token;
+
+    public void M()
+    {
+        // Comment
+        token.ThrowIfCancellationRequested();
+    }
+}",
+                ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             return test.RunAsync();
@@ -605,10 +647,8 @@ Imports System.Threading";
             {
                 return Usings + @"
 Partial Public Class Body
-
 " + IndentLines(members, "    ") + @"
     Public Sub Run()
-
 " + IndentLines(statements, "        ") + @"
     End Sub
 End Class";

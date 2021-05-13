@@ -81,7 +81,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 createChangedDocument = async token =>
                 {
                     var editor = await DocumentEditor.CreateAsync(context.Document, token).ConfigureAwait(false);
-                    SyntaxNode expressionStatement = CreateThrowIfCancellationRequestedExpressionStatement(editor, conditional, propertyReference);
+                    SyntaxNode expressionStatement = CreateThrowIfCancellationRequestedExpressionStatement(editor, conditional, propertyReference)
+                        .WithAdditionalAnnotations(Formatter.Annotation);
                     editor.ReplaceNode(conditional.Syntax, expressionStatement);
 
                     if (conditional.WhenTrue is IBlockOperation block)
@@ -120,7 +121,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 isCancellationRequestedPropertyReference.Instance.Syntax,
                 nameof(CancellationToken.ThrowIfCancellationRequested));
             SyntaxNode invocation = editor.Generator.InvocationExpression(memberAccess, Array.Empty<SyntaxNode>());
-            return editor.Generator.ExpressionStatement(invocation).WithTriviaFrom(conditional.Syntax);
+            var firstWhenTrueStatement = conditional.WhenTrue is IBlockOperation block ? block.Operations.FirstOrDefault() : conditional.WhenTrue;
+
+            var result = editor.Generator.ExpressionStatement(invocation);
+            result = firstWhenTrueStatement is not null ? result.WithTriviaFrom(firstWhenTrueStatement.Syntax) : result;
+            return result.WithAdditionalAnnotations(Formatter.Annotation);
         }
     }
 }
