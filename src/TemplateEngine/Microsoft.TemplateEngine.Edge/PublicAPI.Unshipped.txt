@@ -45,10 +45,10 @@ Microsoft.TemplateEngine.Edge.Settings.ScanResult.Templates.get -> System.Collec
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.Cancelled = -2147467260 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.CreateFailed = -2147352567 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
-Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.DestructiveChangesDetected = -2147467259 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.DestructiveChangesDetected = -2147352563 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.InvalidParamValues = -2147352571 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.MissingMandatoryParam = -2147352561 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
-Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.NotFound = 2097158 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.NotFound = -2147352570 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.OperationNotSpecified = -2147352562 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.Success = 0 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.FilteredTemplateEqualityComparer

@@ -1,16 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
-using System;
-
-namespace Microsoft.TemplateEngine.Edge.Template
+namespace Microsoft.TemplateEngine.Cli
 {
-    /// <summary>
-    /// Status of the template instantiation.
-    /// </summary>
-    public enum CreationResultStatus
+    internal enum New3CommandStatus
     {
         /// <summary>
         /// The template was instantiated successfully.
@@ -32,18 +25,30 @@ namespace Microsoft.TemplateEngine.Edge.Template
         /// </summary>
         InvalidParamValues = unchecked((int)0x80020005),
 
-        [Obsolete("not used.")]
+        /// <summary>
+        /// The subcommand to run is not specified.
+        /// </summary>
         OperationNotSpecified = unchecked((int)0x8002000E),
 
         /// <summary>
         /// The template is not found.
         /// </summary>
-        NotFound = unchecked((int)0x80020006),
+        NotFound = unchecked((int)0x800200006),
 
         /// <summary>
         /// The operation is cancelled.
         /// </summary>
         Cancelled = unchecked((int)0x80004004),
+
+        /// <summary>
+        /// The result received from template engine core is not expected.
+        /// </summary>
+        UnexpectedResult = unchecked((int)0x80010001),
+
+        /// <summary>
+        /// The manipulation with alias has failed.
+        /// </summary>
+        AliasFailed = unchecked((int)0x80010002),
 
         /// <summary>
         /// The operation is cancelled due to destructive changes to existing files are detected.
