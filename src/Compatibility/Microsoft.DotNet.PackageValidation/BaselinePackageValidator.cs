@@ -22,9 +22,9 @@ namespace Microsoft.DotNet.PackageValidation
         private readonly bool _runApiCompat;
         private readonly DiagnosticBag<IDiagnostic> _diagnosticBag;
         private readonly ApiCompatRunner _apiCompatRunner;
-        private readonly ILogger _log;
+        private readonly IPackageLogger _log;
 
-        public BaselinePackageValidator(Package baselinePackage, string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, ILogger log)
+        public BaselinePackageValidator(Package baselinePackage, string noWarn, (string, string)[] ignoredDifferences, bool runApiCompat, IPackageLogger log)
         {
             _baselinePackage = baselinePackage;
             _runApiCompat = runApiCompat;
@@ -39,29 +39,26 @@ namespace Microsoft.DotNet.PackageValidation
         /// <param name="package">Nuget Package that needs to be validated.</param>
         public void Validate(Package package)
         {
-            if (package.HasRefAssemblies)
+            foreach (ContentItem baselineCompileTimeAsset in _baselinePackage.RefAssets)
             {
-                foreach (ContentItem baselineCompileTimeAsset in _baselinePackage.CompileAssets)
+                NuGetFramework baselineTargetFramework = (NuGetFramework)baselineCompileTimeAsset.Properties["tfm"];
+                ContentItem latestCompileTimeAsset = package.FindBestCompileAssetForFramework(baselineTargetFramework);
+                if (latestCompileTimeAsset == null)
                 {
-                    NuGetFramework baselineTargetFramework = (NuGetFramework)baselineCompileTimeAsset.Properties["tfm"];
-                    ContentItem latestCompileTimeAsset = package.FindBestCompileAssetForFramework(baselineTargetFramework);
-                    if (latestCompileTimeAsset == null)
+                    if (!_diagnosticBag.Filter(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
                     {
-                        if (!_diagnosticBag.Filter(DiagnosticIds.TargetFrameworkDropped, baselineTargetFramework.ToString()))
-                        {
-                            _log.LogError(DiagnosticIds.TargetFrameworkDropped, Resources.MissingTargetFramework, baselineTargetFramework.ToString());
-                        }
+                        _log.LogError(DiagnosticIds.TargetFrameworkDropped, Resources.MissingTargetFramework, baselineTargetFramework.ToString());
                     }
-                    else if (_runApiCompat)
-                    {
-                        _apiCompatRunner.QueueApiCompat(_baselinePackage.PackagePath,
-                            baselineCompileTimeAsset.Path,
-                            package.PackagePath,
-                            latestCompileTimeAsset.Path,
-                            Path.GetFileName(package.PackagePath),
-                            Resources.BaselineVersionValidatorHeader,
-                            string.Format(Resources.ApiCompatibilityBaselineHeader, baselineCompileTimeAsset.Path, latestCompileTimeAsset.Path, _baselinePackage.Version, package.Version));
-                    }
+                }
+                else if (_runApiCompat)
+                {
+                    _apiCompatRunner.QueueApiCompat(_baselinePackage.PackagePath,
+                        baselineCompileTimeAsset.Path,
+                        package.PackagePath,
+                        latestCompileTimeAsset.Path,
+                        Path.GetFileName(package.PackagePath),
+                        Resources.BaselineVersionValidatorHeader,
+                        string.Format(Resources.ApiCompatibilityBaselineHeader, baselineCompileTimeAsset.Path, latestCompileTimeAsset.Path, _baselinePackage.Version, package.Version));
                 }
             }
 

@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.PackageValidation
     {
         private readonly ApiCompatRunner _apiCompatRunner;
         
-        public CompatibleFrameworkInPackageValidator(string noWarn, (string, string)[] ignoredDifferences, ILogger log)
+        public CompatibleFrameworkInPackageValidator(string noWarn, (string, string)[] ignoredDifferences, IPackageLogger log)
         {
             _apiCompatRunner = new(noWarn, ignoredDifferences, log);
         }

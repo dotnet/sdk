@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
 
         public CompatibleFrameworkValidatorTests(ITestOutputHelper log) : base(log)
         {
-            _log = new();
+            _log = new TestLogger();
         }
 
         [Fact]

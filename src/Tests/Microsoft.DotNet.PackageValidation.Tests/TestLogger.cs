@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.DotNet.PackageValidation.Tests
 {
-    public class TestLogger : ILogger
+    public class TestLogger : IPackageLogger
     {
         public List<string> errors = new();
 

@@ -23,8 +23,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CompatibleTfmValidatorHeader">
-        <source>The compile time assemblies public api surface area should be compatible with the runtime assemblies for all target frameworks and rids. Please add the following apis to the runtime assemblies.</source>
-        <target state="new">The compile time assemblies public api surface area should be compatible with the runtime assemblies for all target frameworks and rids. Please add the following apis to the runtime assemblies.</target>
+        <source>The compile time assemblies public api surface area should be compatible with the runtime assemblies for all target frameworks and RIDs. Please add the following apis to the runtime assemblies.</source>
+        <target state="new">The compile time assemblies public api surface area should be compatible with the runtime assemblies for all target frameworks and RIDs. Please add the following apis to the runtime assemblies.</target>
         <note />
       </trans-unit>
       <trans-unit id="EmptyPackagePath">

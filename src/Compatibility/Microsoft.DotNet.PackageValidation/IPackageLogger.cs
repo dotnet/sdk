@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.PackageValidation
 {
-    public interface ILogger
+    public interface IPackageLogger
     {
         void LogError(string code, string format, params string[] args);
     }

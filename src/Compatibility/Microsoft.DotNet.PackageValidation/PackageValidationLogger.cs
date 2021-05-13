@@ -6,9 +6,9 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.DotNet.PackageValidation
 {
-    internal class PackageValidationLogger : ILogger
+    internal class PackageValidationLogger : IPackageLogger
     {
-        private Logger _log;
+        private readonly Logger _log;
 
         public PackageValidationLogger(Logger log)
         {
