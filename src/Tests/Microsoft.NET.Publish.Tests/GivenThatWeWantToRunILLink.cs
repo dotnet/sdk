@@ -1252,12 +1252,13 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("net6.0")]
-        public void Build_respects_IsTrimmable_property(string targetFramework)
+        [InlineData("net6.0", true)]
+        [InlineData("net6.0", false)]
+        public void Build_respects_IsTrimmable_property(string targetFramework, bool isExe)
         {
             var projectName = "AnalysisWarnings";
 
-            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, isExe);
             testProject.AdditionalProperties["IsTrimmable"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -1274,11 +1275,14 @@ namespace Microsoft.NET.Publish.Tests
             // injects the IsTrimmable attribute
             AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("IsTrimmable:True");
 
-            // just setting IsTrimmable doesn't enable feature settings (this wouldn't make sense for libraries)
-            JObject runtimeConfig = JObject.Parse(File.ReadAllText(runtimeConfigPath));
-            JToken configProperties = runtimeConfig["runtimeOptions"]["configProperties"];
-            if (configProperties != null)
-                configProperties["System.StartupHookProvider.IsSupported"].Should().BeNull();
+            // just setting IsTrimmable doesn't enable feature settings
+            // (these only affect apps, and wouldn't make sense for libraries either)
+            if (isExe) {
+                JObject runtimeConfig = JObject.Parse(File.ReadAllText(runtimeConfigPath));
+                JToken configProperties = runtimeConfig["runtimeOptions"]["configProperties"];
+                if (configProperties != null)
+                    configProperties["System.StartupHookProvider.IsSupported"].Should().BeNull();
+            }
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
@@ -1487,13 +1491,13 @@ namespace Microsoft.NET.Publish.Tests
                                     new XAttribute("Trim", trim.ToString()))));
         }
 
-        private TestProject CreateTestProjectWithAnalysisWarnings(string targetFramework, string projectName)
+        private TestProject CreateTestProjectWithAnalysisWarnings(string targetFramework, string projectName, bool isExe = true)
         {
             var testProject = new TestProject()
             {
                 Name = projectName,
                 TargetFrameworks = targetFramework,
-                IsExe = true
+                IsExe = isExe
             };
 
             testProject.SourceFiles[$"{projectName}.cs"] = @"
