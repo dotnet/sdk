@@ -21,6 +21,7 @@ Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.IsInitialized.se
 Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCacheReader
 Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache
 Microsoft.TemplateSearch.Common.ISearchCacheConfig
+Microsoft.TemplateSearch.Common.ISearchPackFilter
 Microsoft.TemplateSearch.Common.ITemplateNameSearchResult
 Microsoft.TemplateSearch.Common.ITemplateSearchSource
 Microsoft.TemplateSearch.Common.NuGetMetadataSearchSource
@@ -53,7 +54,7 @@ virtual Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.EnsureIn
 ~abstract Microsoft.TemplateSearch.Common.FileMetadataSearchSource.TryConfigure(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage> existingTemplatePackage) -> System.Threading.Tasks.Task<bool>
 ~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.CheckForTemplateNameMatchesAsync(string searchName) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.ITemplateNameSearchResult>>
 ~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.CheckForTemplatePackMatchesAsync(System.Collections.Generic.IReadOnlyList<string> packNameList) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackToTemplateEntry>>
-~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.Configure(Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache searchCache, Microsoft.TemplateEngine.Abstractions.ISearchPackFilter packFilter) -> void
+~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.Configure(Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache searchCache, Microsoft.TemplateSearch.Common.ISearchPackFilter packFilter) -> void
 ~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.SearchCache.get -> Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache
 ~Microsoft.TemplateSearch.Common.FileMetadataSearchSource.SearchCache.set -> void
 ~Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.FileMetadataTemplateSearchCache(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string pathToMetadata) -> void
@@ -70,6 +71,7 @@ virtual Microsoft.TemplateSearch.Common.FileMetadataTemplateSearchCache.EnsureIn
 ~Microsoft.TemplateSearch.Common.IFileMetadataTemplateSearchCache.GetTemplateToPackMapForTemplateIdentities(System.Collections.Generic.IReadOnlyList<string> identities) -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateSearch.Common.PackInfo>
 ~Microsoft.TemplateSearch.Common.ISearchCacheConfig.AdditionalDataReaders.get -> System.Collections.Generic.IReadOnlyDictionary<string, System.Func<Newtonsoft.Json.Linq.JObject, object>>
 ~Microsoft.TemplateSearch.Common.ISearchCacheConfig.TemplateDiscoveryFileName.get -> string
+~Microsoft.TemplateSearch.Common.ISearchPackFilter.ShouldPackBeFiltered(string candidatePackName, string candidatePackVersion) -> bool
 ~Microsoft.TemplateSearch.Common.ITemplateNameSearchResult.PackInfo.get -> Microsoft.TemplateSearch.Common.PackInfo
 ~Microsoft.TemplateSearch.Common.ITemplateNameSearchResult.Template.get -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo
 ~Microsoft.TemplateSearch.Common.ITemplateSearchSource.CheckForTemplateNameMatchesAsync(string templateName) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.ITemplateNameSearchResult>>
