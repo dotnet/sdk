@@ -683,16 +683,16 @@ namespace Microsoft.NET.Publish.Tests
                 JObject runtimeConfig = JObject.Parse(runtimeConfigContents);
                 runtimeConfig["runtimeOptions"]["configProperties"]
                     ["System.Runtime.InteropServices.Marshal.IsBuiltInComSupported"].Value<bool>()
-                    .Should().Be(false);
+                    .Should().BeFalse();
                 runtimeConfig["runtimeOptions"]["configProperties"]
                     ["System.StartupHookProvider.IsSupported"].Value<bool>()
-                    .Should().Be(false);
+                    .Should().BeFalse();
                 runtimeConfig["runtimeOptions"]["configProperties"]
                     ["System.Resources.ResourceManager.AllowCustomResourceTypes"].Value<bool>()
-                    .Should().Be(false);
+                    .Should().BeFalse();
                 runtimeConfig["runtimeOptions"]["configProperties"]
                     ["System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"].Value<bool>()
-                    .Should().Be(false);
+                    .Should().BeFalse();
             }
             else
             {
@@ -1307,7 +1307,7 @@ namespace Microsoft.NET.Publish.Tests
             startupHookSupport.Value<bool>().Should().BeFalse();
 
             // just setting PublishTrimmed doesn't inject the IsTrimmable attribute
-            AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute").Should().Be(false);            
+            AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute").Should().BeFalse();
         }
 
         private static bool DoesImageHaveMethod(string path, string methodNameToCheck)
