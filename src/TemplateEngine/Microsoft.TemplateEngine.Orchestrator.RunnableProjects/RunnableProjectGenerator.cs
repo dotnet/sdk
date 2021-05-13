@@ -104,11 +104,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             fileChange.Contents)));
             }
 
-            return new CreationEffects2
-            {
-                FileChanges = changes,
-                CreationResult = GetCreationResult(environmentSettings, template, variables)
-            };
+            return new CreationEffects2(changes, GetCreationResult(environmentSettings, template, variables));
         }
 
         public IParameterSet GetParametersForTemplate(IEngineEnvironmentSettings environmentSettings, ITemplate template)
@@ -475,11 +471,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private static ICreationResult GetCreationResult(IEngineEnvironmentSettings environmentSettings, RunnableProjectTemplate template, IVariableCollection variables)
         {
-            return new CreationResult()
-            {
-                PostActions = PostAction.ListFromModel(environmentSettings, template.Config.PostActionModel, variables),
-                PrimaryOutputs = CreationPath.ListFromModel(environmentSettings, template.Config.PrimaryOutputs, variables)
-            };
+            return new CreationResult(
+                postActions: PostAction.ListFromModel(environmentSettings, template.Config.PostActionModel, variables),
+                primaryOutputs: CreationPath.ListFromModel(environmentSettings, template.Config.PrimaryOutputs, variables));
         }
 
         // Note the deferred-config macros (generated) are part of the runConfig.Macros

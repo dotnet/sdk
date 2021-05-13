@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
@@ -11,7 +13,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class CreationPath : ICreationPath
     {
-        public string Path { get; set; }
+        public CreationPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new System.ArgumentException($"'{nameof(path)}' cannot be null or whitespace.", nameof(path));
+            }
+
+            Path = path;
+        }
+
+        public string Path { get; }
 
         internal static IReadOnlyList<ICreationPath> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<ICreationPathModel> modelList, IVariableCollection rootVariableCollection)
         {
@@ -29,10 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 if (string.IsNullOrEmpty(model.Condition)
                     || Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, model.Condition, rootVariableCollection))
                 {
-                    ICreationPath path = new CreationPath()
-                    {
-                        Path = model.PathResolved
-                    };
+                    ICreationPath path = new CreationPath(model.PathResolved);
                     pathList.Add(path);
                 }
             }

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,11 +30,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             get
             {
-                return new MockCreationResult
-                {
-                    PrimaryOutputs = _primaryOutputs.Select(p => new MockCreationPath { Path = p }).ToList(),
-                    PostActions = new List<MockPostAction>()
-                };
+                return new MockCreationResult(primaryOutputs: _primaryOutputs.Select(p => new MockCreationPath(p)).ToList());
             }
         }
 

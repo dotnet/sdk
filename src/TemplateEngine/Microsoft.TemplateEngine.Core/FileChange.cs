@@ -1,18 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Core
 {
     public class FileChange : IFileChange2
     {
-        public FileChange(string sourceRelativePath, string targetRelativePath, ChangeKind changeKind, byte[] contents = null)
+        public FileChange(string sourceRelativePath, string targetRelativePath, ChangeKind changeKind, byte[]? contents = null)
         {
             SourceRelativePath = sourceRelativePath;
             TargetRelativePath = targetRelativePath;
             ChangeKind = changeKind;
-            Contents = contents;
+            Contents = contents ?? Array.Empty<byte>();
         }
 
         public string SourceRelativePath { get; }
