@@ -41,7 +41,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
@@ -142,7 +142,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => SetMetadata(project, referenceProjectName, "IsTrimmable", "True"));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -194,7 +194,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName, referenceProjectIdentifier: targetFramework);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + trimMode)
                 .WithProjectChanges(project => SetGlobalTrimMode(project, trimMode))
                 .WithProjectChanges(project => SetMetadata(project, referenceProjectName, "IsTrimmable", "True"))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
@@ -254,7 +254,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             testProject.AdditionalItems["TrimmableAssembly"] = new Dictionary<string, string> { ["Include"] = referenceProjectName };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true").Should().Pass();
@@ -276,7 +276,7 @@ namespace Microsoft.NET.Publish.Tests
             string projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testProject = CreateTestProjectWithIsTrimmableAttributes(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
@@ -298,7 +298,7 @@ namespace Microsoft.NET.Publish.Tests
             string projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testProject = CreateTestProjectWithIsTrimmableAttributes(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => SetMetadata(project, "UnusedTrimmableAssembly", "IsTrimmable", "false"))
                 .WithProjectChanges(project => SetMetadata(project, "UnusedNonTrimmableAssembly", "IsTrimmable", "true"));
 
@@ -323,7 +323,7 @@ namespace Microsoft.NET.Publish.Tests
             string projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testProject = CreateTestProjectWithIsTrimmableAttributes(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
@@ -351,7 +351,7 @@ namespace Microsoft.NET.Publish.Tests
             string projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testProject = CreateTestProjectWithIsTrimmableAttributes(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => SetTrimmerDefaultAction(project, "link"));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -381,7 +381,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}")
@@ -403,7 +403,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}")
@@ -426,7 +426,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}")
@@ -448,7 +448,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}")
@@ -470,7 +470,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
             testProject.AdditionalProperties["EnableTrimAnalyzer"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}")
@@ -565,7 +565,7 @@ namespace Microsoft.NET.Publish.Tests
   </assembly>
 </linker>
 ";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{projectName}.xml"));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -600,7 +600,7 @@ namespace Microsoft.NET.Publish.Tests
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:TrimMode=copyused");
@@ -616,7 +616,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true");
@@ -712,7 +712,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
 
@@ -834,7 +834,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -862,7 +862,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute("/v:n", $"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true").Should().Pass();
@@ -898,7 +898,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
 
@@ -950,7 +950,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -983,7 +983,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -1011,7 +1011,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -1039,7 +1039,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -1072,7 +1072,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
@@ -1091,7 +1091,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
             testProject.AdditionalProperties["WarningsNotAsErrors"] = "IL2075;IL2026";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
@@ -1111,7 +1111,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
@@ -1130,7 +1130,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
@@ -1147,7 +1147,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
@@ -1164,7 +1164,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
@@ -1184,7 +1184,7 @@ namespace Microsoft.NET.Publish.Tests
             var referenceProjectName = "ClassLibForILLink";
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute("/p:PublishTrimmed=true")
@@ -1201,7 +1201,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute("/p:PublishTrimmed=true", $"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true")
@@ -1260,7 +1260,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, isExe);
             testProject.AdditionalProperties["IsTrimmable"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + isExe);
 
             var buildCommand = new BuildCommand(testAsset);
             // IsTrimmable enables analysis warnings during build
@@ -1293,7 +1293,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             // PublishTrimmed enables analysis warnings during build
