@@ -4,7 +4,6 @@
 using System;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core
 {
@@ -46,23 +45,23 @@ namespace Microsoft.TemplateEngine.Core
 
         public IToken ToToken(Encoding encoding)
         {
-            byte[] pre = string.IsNullOrEmpty(After) ? Empty<byte>.Array.Value : encoding.GetBytes(After);
-            byte[] post = string.IsNullOrEmpty(Before) ? Empty<byte>.Array.Value : encoding.GetBytes(Before);
-            byte[] core = string.IsNullOrEmpty(Value) ? Empty<byte>.Array.Value : encoding.GetBytes(Value);
+            byte[] pre = string.IsNullOrEmpty(After) ? Array.Empty<byte>() : encoding.GetBytes(After);
+            byte[] post = string.IsNullOrEmpty(Before) ? Array.Empty<byte>() : encoding.GetBytes(Before);
+            byte[] core = string.IsNullOrEmpty(Value) ? Array.Empty<byte>() : encoding.GetBytes(Value);
 
             byte[] buffer = new byte[pre.Length + core.Length + post.Length];
 
-            if (pre != Empty<byte>.Array.Value)
+            if (pre.Length > 0)
             {
                 Buffer.BlockCopy(pre, 0, buffer, 0, pre.Length);
             }
 
-            if (core != Empty<byte>.Array.Value)
+            if (core.Length > 0)
             {
                 Buffer.BlockCopy(core, 0, buffer, pre.Length, core.Length);
             }
 
-            if (post != Empty<byte>.Array.Value)
+            if (post.Length > 0)
             {
                 Buffer.BlockCopy(post, 0, buffer, pre.Length + core.Length, post.Length);
             }

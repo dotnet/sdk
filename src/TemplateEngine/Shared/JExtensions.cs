@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 #nullable enable
@@ -137,7 +136,7 @@ namespace Microsoft.TemplateEngine
 
             if (obj == null)
             {
-                return Empty<JProperty>.List.Value;
+                return Array.Empty<JProperty>();
             }
 
             if (key != null)
@@ -145,7 +144,7 @@ namespace Microsoft.TemplateEngine
                 JToken element;
                 if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element))
                 {
-                    return Empty<JProperty>.List.Value;
+                    return Array.Empty<JProperty>();
                 }
 
                 obj = element as JObject;
@@ -153,7 +152,7 @@ namespace Microsoft.TemplateEngine
 
             if (obj == null)
             {
-                return Empty<JProperty>.List.Value;
+                return Array.Empty<JProperty>();
             }
 
             return obj.Properties();
@@ -243,7 +242,7 @@ namespace Microsoft.TemplateEngine
 
             if (arr == null)
             {
-                return Empty<string>.List.Value;
+                return Array.Empty<string>();
             }
 
             List<string> values = new List<string>();
@@ -270,7 +269,7 @@ namespace Microsoft.TemplateEngine
 
             if (arr == null)
             {
-                return Empty<Guid>.List.Value;
+                return Array.Empty<Guid>();
             }
 
             List<Guid> values = new List<Guid>();

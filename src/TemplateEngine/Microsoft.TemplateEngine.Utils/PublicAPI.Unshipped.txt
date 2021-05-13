@@ -36,9 +36,6 @@ Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.GetAllTemplatePack
 Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.TemplatePackagesChanged -> System.Action?
 Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.UpdatePackages(System.Collections.Generic.IEnumerable<string!>? nupkgs = null, System.Collections.Generic.IEnumerable<string!>? folders = null) -> void
 Microsoft.TemplateEngine.Utils.DictionaryExtensions
-Microsoft.TemplateEngine.Utils.Empty<T>
-Microsoft.TemplateEngine.Utils.Empty<T>.Array
-Microsoft.TemplateEngine.Utils.Empty<T>.List
 Microsoft.TemplateEngine.Utils.EngineInitializationException
 Microsoft.TemplateEngine.Utils.EqualityExtensions
 Microsoft.TemplateEngine.Utils.ExactVersionSpecification
@@ -244,8 +241,6 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.CompareVersions(string version1, string version2) -> int?
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.IsVersionWellFormed(string version) -> bool
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.TryParseVersionSpecification(string versionString, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool
-~static readonly Microsoft.TemplateEngine.Utils.Empty<T>.Array.Value -> T[]
-~static readonly Microsoft.TemplateEngine.Utils.Empty<T>.List.Value -> System.Collections.Generic.IReadOnlyList<T>
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.Guid, System.Func<System.Type>>>
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.LogMessage(string message) -> void
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnCriticalError(string code, string message, string currentFile, long currentPosition) -> void

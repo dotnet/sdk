@@ -7,7 +7,6 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
@@ -68,7 +67,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 config.Item1.EvaluateConfig(environmentSettings, variables, config.Item2, parameters, setter);
             }
 
-            return Empty<IOperationProvider>.List.Value;
+            return Array.Empty<IOperationProvider>();
         }
 
         private static void EnsureMacros(IComponentManager componentManager)
