@@ -55,7 +55,8 @@
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\net6.0\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\net6.0\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
+      <!-- Don't cross-gen rzc tool since it uses a consolidated assembly and only applies for tfm <= net5.0 -->
+      <!-- <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" /> -->
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\netcoreapp*\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.ILLink.Tasks\tools\net5.0\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\net6.0\**\*" />
