@@ -86,12 +86,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var charType = context.Compilation.GetSpecialType(SpecialType.System_Char);
             var boolType = context.Compilation.GetSpecialType(SpecialType.System_Boolean);
             var guidType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGuid);
+            var nullableTType = context.Compilation.GetSpecialType(SpecialType.System_Nullable_T);
+            INamedTypeSymbol? GetNullableType(INamedTypeSymbol? typeSymbol) => typeSymbol is not null ? nullableTType?.Construct(typeSymbol) : null;
 
             var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>();
+
             builder.AddIfNotNull(charType);
+            builder.AddIfNotNull(GetNullableType(charType));
             builder.AddIfNotNull(boolType);
+            builder.AddIfNotNull(GetNullableType(boolType));
             builder.AddIfNotNull(stringType);
             builder.AddIfNotNull(guidType);
+            builder.AddIfNotNull(GetNullableType(guidType));
+
             var invariantToStringTypes = builder.ToImmutableHashSet();
 
             var dateTimeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTime);

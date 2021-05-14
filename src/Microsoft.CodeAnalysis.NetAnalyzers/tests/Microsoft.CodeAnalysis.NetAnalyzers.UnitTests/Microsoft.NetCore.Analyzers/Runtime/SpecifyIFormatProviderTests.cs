@@ -958,7 +958,7 @@ public class SomeClass
 
     public string SomeMethod()
     {
-        return _char.ToString() + _bool.ToString() + _guid.ToString() + _guid.ToString(""D"");
+        return _char.ToString() + _bool.ToString() + _guid.ToString();
     }
 }");
 
@@ -970,7 +970,7 @@ Public Class SomeClass
     Private _guid As Guid?
 
     Public Function SomeMethod() As String
-        Return _char.ToString() & _bool.ToString() & _guid.ToString() & _guid.ToString(""D"")
+        Return _char.ToString() & _bool.ToString() & _guid.ToString()
     End Function
 End Class");
         }
