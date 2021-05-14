@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// Use <see cref="CancellationToken.ThrowIfCancellationRequested"/> instead of checking <see cref="CancellationToken.IsCancellationRequested"/> and
     /// throwing <see cref="OperationCanceledException"/>.
     /// </summary>
-    [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class UseCancellationTokenThrowIfCancellationRequestedFixer : CodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseCancellationTokenThrowIfCancellationRequested.RuleId);
