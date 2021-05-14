@@ -631,19 +631,19 @@ public class C
 {
     public static bool operator <=(C left, C right)
     {
-        throw new {|#0:Exception|}();
+        {|#0:throw new Exception();|}
     }
     public static bool operator >=(C left, C right)
     {
-        throw new {|#1:Exception|}();
+        {|#1:throw new Exception();|}
     }
     public static bool operator <(C left, C right)
     {
-        throw new {|#2:Exception|}();
+        {|#2:throw new Exception();|}
     }
     public static bool operator >(C left, C right)
     {
-        throw new {|#3:Exception|}();
+        {|#3:throw new Exception();|}
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(
@@ -662,16 +662,16 @@ Imports System
 
 Public Class C
     Public Shared Operator <=(left As C, right As C) As Boolean
-        Throw New {|#0:Exception|}()
+        {|#0:Throw New Exception()|}
     End Operator
     Public Shared Operator >=(left As C, right As C) As Boolean
-        Throw New {|#1:Exception|}()
+        {|#1:Throw New Exception()|}
     End Operator
     Public Shared Operator <(left As C, right As C) As Boolean
-        Throw New {|#2:Exception|}()
+        {|#2:Throw New Exception()|}
     End Operator
     Public Shared Operator >(left As C, right As C) As Boolean
-        Throw New {|#3:Exception|}()
+        {|#3:Throw New Exception()|}
     End Operator
 End Class";
             await VerifyVB.VerifyAnalyzerAsync(
