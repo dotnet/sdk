@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <IsPackable>true</IsPackable>
     <StrongNameKeyId>Open</StrongNameKeyId>
     <VersionPrefix>1.0.0</VersionPrefix>
     <!--We need to compare ISymbols in a special way (by name) and roslyn symbol comparers take more heuristics into consideration.-->
