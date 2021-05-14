@@ -100,7 +100,7 @@ End If";
                     $"Throw New {operationCanceledExceptionCtor}"),
                 0);
             string fixedStatements = @"token.ThrowIfCancellationRequested()";
-            var testCode = VB.CreateBlock(testStatements);
+
             var test = new VerifyVB.Test
             {
                 TestCode = VB.CreateBlock(testStatements),
