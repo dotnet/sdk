@@ -96,8 +96,8 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             ' whose identifier is an identifier name node, and its value is the same as the value of first argument, and the member name is `Length`
             Dim thirdArgumentIdentifierName = TryCast(thirdArgumentMemberAccessExpression.Expression, IdentifierNameSyntax)
             If thirdArgumentIdentifierName IsNot Nothing And
-                thirdArgumentIdentifierName.Identifier.Text = firstArgumentIdentifierName.Identifier.Text And
-                thirdArgumentMemberAccessExpression.Name.Identifier.Text = WellKnownMemberNames.LengthPropertyName Then
+                String.Equals(thirdArgumentIdentifierName.Identifier.Text, firstArgumentIdentifierName.Identifier.Text, StringComparison.OrdinalIgnoreCase) And
+                String.Equals(thirdArgumentMemberAccessExpression.Name.Identifier.Text, WellKnownMemberNames.LengthPropertyName, StringComparison.OrdinalIgnoreCase) Then
                 Return True
             End If
             Return False
