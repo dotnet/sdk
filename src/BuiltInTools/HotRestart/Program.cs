@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             }
         }
 
-        private class Observer : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object?>>
+        private sealed class Observer : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object?>>
         {
             public volatile bool EmulatedControlC = true;
 

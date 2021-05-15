@@ -61,6 +61,8 @@ internal sealed class StartupHook
                 (changedFile.EndsWith("Startup.cs", StringComparison.Ordinal) ||
                 changedFile.EndsWith("Program.cs", StringComparison.Ordinal)))
             {
+                // When hot restarting, HotRestart's Program.Main listens for indications that a Ctrl-C was emulated to keep looping.
+                // This write signals that state.
                 _listener.Write("signal", "1");
 
                 // When hot-restarting is enabled, kill the current host by simulating a Ctrl-C event.

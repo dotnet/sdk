@@ -221,12 +221,12 @@ namespace Microsoft.DotNet.Watcher
             // For webapps, we can support changes to Program.Main and Startup by restarting the host (aka hot restart).
             // First determine if we can perform hot restarts.
             if (!SuppressHotRestart &&
-                ProjectGraph.EntryPointNodes.FirstOrDefault().ProjectInstance is { } projectInstance &&
+                ProjectGraph.EntryPointNodes?.FirstOrDefault()?.ProjectInstance is { } projectInstance &&
                 !string.IsNullOrEmpty(projectInstance.GetPropertyValue("UsingMicrosoftNETSdkWeb")))
             {
-                // When performing a hot restart, we have to run a different assembly than the project's output. This
-                // is similar to how the inside dll works for dotnet-ef. Infer metadata from the project to allow the
-                // alternate entry point to run.
+                // When performing a hot restart, we have to use Microsoft.Extensions.HotRestart assembly as the app's entry assembly. This
+                // is similar to how the inside dll works in tools such as dotnet-ef. Infer metadata from the project required to run the
+                // alternate entry point.
                 var projectDll = projectInstance.GetPropertyValue("TargetPath");
                 var runtimeConfigPath = projectInstance.GetPropertyValue("ProjectRuntimeConfigFilePath");
                 var depsFilePath = projectInstance.GetPropertyValue("ProjectDepsFilePath");

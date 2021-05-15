@@ -224,9 +224,8 @@ namespace Microsoft.Extensions.HotReload
                 _handlerActions ??= GetMetadataUpdateHandlerActions();
                 var handlerActions = _handlerActions;
 
-                for (var i = 0; i < deltas.Count; i++)
+                foreach (var item in deltas)
                 {
-                    var item = deltas[i];
                     System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
                 }
 
