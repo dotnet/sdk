@@ -923,6 +923,44 @@ End Class
         }
 
         [Theory]
+        [InlineData("System")]
+        [InlineData("system")]
+        [InlineData("SYSTEM")]
+        [InlineData("systEM")]
+        public Task VB_Fixer_Diagnostic_EnsureSystemNamespaceNotAddedWhenAlreadyPresent(string systemNamespace)
+        {
+            string originalCode = $@"
+Imports System.IO
+Imports System.Threading
+Imports {systemNamespace}
+
+Class C
+    Public Async Sub M()
+        Using s As FileStream = New FileStream(""path.txt"", FileMode.Create)
+            Dim buffer As Byte() = New Byte(s.Length - 1) {{}}
+            Await s.ReadAsync(New Byte(s.Length - 1) {{}}, 0, s.Length)
+        End Using
+    End Sub
+End Class
+";
+            string fixedCode = $@"
+Imports System.IO
+Imports System.Threading
+Imports {systemNamespace}
+
+Class C
+    Public Async Sub M()
+        Using s As FileStream = New FileStream(""path.txt"", FileMode.Create)
+            Dim buffer As Byte() = New Byte(s.Length - 1) {{}}
+            Await s.ReadAsync((New Byte(s.Length - 1) {{}}).AsMemory(0, s.Length))
+        End Using
+    End Sub
+End Class
+";
+            return VisualBasicVerifyExpectedCodeFixDiagnosticsAsync(originalCode, fixedCode, GetVisualBasicResult(10, 19, 10, 70));
+        }
+
+        [Theory]
         [MemberData(nameof(VisualBasicUnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenFullBufferTestData))]

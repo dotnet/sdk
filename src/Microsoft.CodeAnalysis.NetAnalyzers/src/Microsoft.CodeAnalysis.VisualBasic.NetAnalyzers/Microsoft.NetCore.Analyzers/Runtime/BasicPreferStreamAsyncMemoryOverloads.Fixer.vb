@@ -27,7 +27,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                     Dim operation = args.FirstOrDefault(
                         Function(argOperation)
                             argNode = TryCast(argOperation.Syntax, SimpleArgumentSyntax)
-                            Return argNode.NameColonEquals?.Name?.Identifier.ValueText = name
+                            Return String.Equals(argNode.NameColonEquals?.Name?.Identifier.ValueText, name, StringComparison.OrdinalIgnoreCase)
                         End Function)
                     If operation IsNot Nothing Then
                         isNamed = True
@@ -46,7 +46,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                         Dim simpleClause = TryCast(clause, SimpleImportsClauseSyntax)
                         If simpleClause IsNot Nothing Then
                             Dim identifier = TryCast(simpleClause.Name, IdentifierNameSyntax)
-                            If identifier IsNot Nothing AndAlso identifier.Identifier.Text = "System" Then
+                            If identifier IsNot Nothing AndAlso String.Equals(identifier.Identifier.Text, "System", StringComparison.OrdinalIgnoreCase) Then
                                 Return True
                             End If
                         End If
