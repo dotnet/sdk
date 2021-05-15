@@ -889,6 +889,7 @@ End Class
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_ArgumentNaming(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
@@ -899,6 +900,7 @@ End Class
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_ArgumentNaming_WithConfigureAwait(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 
@@ -916,6 +918,7 @@ End Class
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_AsStream_WithConfigureAwait(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "Stream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 

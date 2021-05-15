@@ -929,6 +929,7 @@ End Class
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_ArgumentNaming(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
@@ -939,6 +940,7 @@ End Class
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_ArgumentNaming_WithConfigureAwait(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 
@@ -959,6 +961,7 @@ End Class
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_AwaitInvocationPassedAsArgument(string originalArgs, string fixedArgs) =>
             VB_Fixer_Diagnostic_AwaitInvocationPassedAsArgument_Internal(originalArgs, fixedArgs, isEmptyConfigureAwait: true);
 
@@ -969,6 +972,7 @@ End Class
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_AwaitInvocationPassedAsArgument_WithConfigureAwait(string originalArgs, string fixedArgs) =>
             VB_Fixer_Diagnostic_AwaitInvocationPassedAsArgument_Internal(originalArgs, fixedArgs, isEmptyConfigureAwait: false);
 
