@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery
@@ -36,11 +38,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 preferences = DefaultPreferences;
             }
 
-            var builtIns = new AssemblyComponentCatalog(new[]
-            {
-                typeof(Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro).GetTypeInfo().Assembly,    // RPG
-                typeof(Microsoft.TemplateEngine.Edge.Template.TemplateCreator).GetTypeInfo().Assembly,   // edge
-            });
+            var builtIns = new List<(Type, IIdentifiedComponent)>();
+            builtIns.AddRange(TemplateEngine.Edge.Components.AllComponents);
+            builtIns.AddRange(TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents);
 
             // use "dotnetcli" as a fallback host so the correct host specific files are read.
             DefaultTemplateEngineHost host = new DefaultTemplateEngineHost(hostIdentifier, hostVersion, preferences, builtIns, new[] { "dotnetcli" });

@@ -174,9 +174,9 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~Microsoft.TemplateEngine.Utils.ContentGenerationException.ContentGenerationException(string message, System.Exception innerException) -> void
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version) -> void
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version, System.Collections.Generic.Dictionary<string, string> defaults) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version, System.Collections.Generic.Dictionary<string, string> defaults, System.Collections.Generic.IReadOnlyList<(System.Type InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent Instance)> builtIns) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version, System.Collections.Generic.Dictionary<string, string> defaults, System.Collections.Generic.IReadOnlyList<(System.Type InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent Instance)> builtIns, System.Collections.Generic.IReadOnlyList<string> fallbackHostTemplateConfigNames) -> void
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version, System.Collections.Generic.Dictionary<string, string> defaults, System.Collections.Generic.IReadOnlyList<string> fallbackHostTemplateConfigNames) -> void
-~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version, System.Collections.Generic.Dictionary<string, string> defaults, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.Guid, System.Func<System.Type>>> builtIns) -> void
-~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version, System.Collections.Generic.Dictionary<string, string> defaults, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.Guid, System.Func<System.Type>>> builtIns, System.Collections.Generic.IReadOnlyList<string> fallbackHostTemplateConfigNames) -> void
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.FallbackHostTemplateConfigNames.get -> System.Collections.Generic.IReadOnlyList<string>
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.FileSystem.get -> Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.HostIdentifier.get -> string
@@ -241,7 +241,7 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.CompareVersions(string version1, string version2) -> int?
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.IsVersionWellFormed(string version) -> bool
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.TryParseVersionSpecification(string versionString, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool
-~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.Guid, System.Func<System.Type>>>
+~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent Instance)>
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.LogMessage(string message) -> void
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnCriticalError(string code, string message, string currentFile, long currentPosition) -> void
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnNonCriticalError(string code, string message, string currentFile, long currentPosition) -> bool

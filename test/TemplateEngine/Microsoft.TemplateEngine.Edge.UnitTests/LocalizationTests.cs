@@ -157,7 +157,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         private ITemplateEngineHost LoadHostWithLocalizationTemplates(string locale, out ISettingsLoader settingsLoaderOut, out ITemplateInfo localizationTemplate)
         {
             var env = _helper.CreateEnvironment(locale);
-            env.SettingsLoader.Components.Register(typeof(TemplatesFactory));
+            env.SettingsLoader.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new TemplatesFactory());
             settingsLoaderOut = env.SettingsLoader;
 
             IReadOnlyList<ITemplateInfo> localizedTemplates = settingsLoaderOut.GetTemplatesAsync(default).Result;

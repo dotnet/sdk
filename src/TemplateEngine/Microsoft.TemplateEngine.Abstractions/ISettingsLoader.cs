@@ -37,6 +37,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Adds path to be scanned by <see cref="IComponentManager"/> when looking up assemblies for components.
         /// </summary>
         /// <param name="probeIn">Absolute path to be probed.</param>
+        [Obsolete("Probing paths need to be handled by ComponentManager itself.")]
         void AddProbingPath(string probeIn);
 
         /// <summary>
@@ -72,6 +73,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Saves settings to file.
         /// </summary>
+        [Obsolete("Saving of settings needs to be handled by ComponentManager itself.")]
         void Save();
 
         /// <summary>

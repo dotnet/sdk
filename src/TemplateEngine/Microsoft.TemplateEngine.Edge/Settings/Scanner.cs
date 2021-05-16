@@ -19,6 +19,9 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
+    /// <summary>
+    /// Utility for scanning <see cref="IMountPoint"/> for templates, localizations and components.
+    /// </summary>
     public class Scanner
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
@@ -32,13 +35,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _logger = environmentSettings.Host.LoggerFactory.CreateLogger<Scanner>();
         }
 
-        public ScanResult Scan(string sourceLocation)
+        /// <summary>
+        /// Scans mount point for templates, localizations and components.
+        /// </summary>
+        public ScanResult Scan(string mountPointUri)
         {
-            if (string.IsNullOrWhiteSpace(sourceLocation))
+            if (string.IsNullOrWhiteSpace(mountPointUri))
             {
-                throw new ArgumentException($"{nameof(sourceLocation)} should not be null or empty");
+                throw new ArgumentException($"{nameof(mountPointUri)} should not be null or empty");
             }
-            MountPointScanSource source = GetOrCreateMountPointScanInfoForInstallSource(sourceLocation);
+            MountPointScanSource source = GetOrCreateMountPointScanInfoForInstallSource(mountPointUri);
 
             ScanForComponents(source);
             var scanResult = ScanMountPointForTemplatesAndLangpacks(source);
@@ -108,8 +114,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         // TODO: figure out what to do with probing path registration when components are not found.
                         // They need to be registered for dependent assemblies, not just when an assembly can be loaded.
                         // We'll need to figure out how to know when that is.
+#pragma warning disable CS0618 // Type or member is obsolete
                         _environmentSettings.SettingsLoader.Components.RegisterMany(typeList);
                         _environmentSettings.SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Key));
+#pragma warning restore CS0618 // Type or member is obsolete
                         source.FoundComponents = true;
                     }
                 }
@@ -187,7 +195,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 source.FoundTemplates |= templateList.Count > 0 || localizationInfo.Count > 0;
             }
 
-            return new ScanResult(templates, localizationLocators);
+            return new ScanResult(source.MountPoint.MountPointUri, templates, localizationLocators, Array.Empty<(string, Type, IIdentifiedComponent)>());
         }
 
         /// <summary>

@@ -33,14 +33,27 @@ namespace Microsoft.TemplateEngine.IDE
             _templateCreator = new TemplateCreator(_engineEnvironmentSettings);
         }
 
+        [Obsolete("Use ITemplateEngineHost.BuiltInComponents or AddComponent to add components.")]
         public void Register(Type type)
         {
             _engineEnvironmentSettings.SettingsLoader.Components.Register(type);
         }
 
+        [Obsolete("Use ITemplateEngineHost.BuiltInComponents or AddComponent to add components.")]
         public void Register(Assembly assembly)
         {
             _engineEnvironmentSettings.SettingsLoader.Components.RegisterMany(assembly.GetTypes());
+        }
+
+        /// <summary>
+        /// Adds component to manager, which can be looked up later via <see cref="IComponentManager.TryGetComponent{T}(Guid, out T)"/> or <see cref="IComponentManager.OfType{T}"/>.
+        /// Added components are not persisted and need to be called every time new instance of <see cref="Bootstrapper"/> is created.
+        /// </summary>
+        /// <param name="interfaceType">Interface type that added component implements.</param>
+        /// <param name="instance">Instance of type that implements <paramref name="interfaceType"/>.</param>
+        public void AddComponent(Type interfaceType, IIdentifiedComponent component)
+        {
+            _engineEnvironmentSettings.SettingsLoader.Components.AddComponent(interfaceType, component);
         }
 
         [Obsolete("Use " + nameof(GetTemplatesAsync) + "instead")]

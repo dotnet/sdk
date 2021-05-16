@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
 using Xunit;
@@ -37,7 +36,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             }
 
             FakeFactory.SetNuPkgsAndFolders(folders: folders);
-            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
+            engineEnvironmentSettings.SettingsLoader.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
             var templates = await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default)
                 .ConfigureAwait(false);
 
@@ -64,10 +63,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FakeFactoryWithPriority.StaticPriority = 100;
             FakeFactoryWithPriority.SetNuPkgsAndFolders(folders: folders.Take(50));
-            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactoryWithPriority));
+            engineEnvironmentSettings.SettingsLoader.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactoryWithPriority());
 
             FakeFactory.SetNuPkgsAndFolders(folders: folders.Skip(50).Take(50));
-            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
+            engineEnvironmentSettings.SettingsLoader.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
 
             var templates = await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default)
                 .ConfigureAwait(false);
@@ -85,7 +84,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
-            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
+            engineEnvironmentSettings.SettingsLoader.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
             await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
 
             var allNupkgs = Directory.GetFiles(nupkgFolder);
@@ -101,7 +100,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var validAndInvalidNuPkg = new[] { Directory.GetFiles(nupkgFolder, "*.nupkg")[0], Path.Combine(nupkgFolder, $"{default(Guid)}.nupkg") };
 
             FakeFactory.SetNuPkgsAndFolders(validAndInvalidNuPkg);
-            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
+            engineEnvironmentSettings.SettingsLoader.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
             await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
 
             var allNupkgs = validAndInvalidNuPkg.Take(1);
@@ -118,7 +117,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
-            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
+            engineEnvironmentSettings.SettingsLoader.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
             await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
 
             var allNupkgs = Directory.GetFiles(nupkgFolder);
@@ -152,14 +151,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
-            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
+            engineEnvironmentSettings.SettingsLoader.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
             await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
 
             var allNupkgs = Directory.GetFiles(nupkgFolder);
             // All mount points should have been scanned
             AssertMountPointsWereOpened(allNupkgs, engineEnvironmentSettings);
-
-            ((SettingsLoader)engineEnvironmentSettings.SettingsLoader).Save();
 
             var monitoredFileSystem = (MonitoredFileSystem)engineEnvironmentSettings.Host.FileSystem;
 
@@ -180,7 +177,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var allNupkgs = Directory.GetFiles(nupkgFolder).Select(Path.GetFullPath).ToList();
 
             FakeFactory.SetNuPkgsAndFolders(allNupkgs);
-            engineEnvironmentSettings.SettingsLoader.Components.Register(typeof(FakeFactory));
+            engineEnvironmentSettings.SettingsLoader.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
             var templatesAll = await engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
 
             // All mount points should have been scanned

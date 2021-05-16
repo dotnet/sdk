@@ -57,6 +57,10 @@ namespace Microsoft.TemplateEngine.Mocks
             return Cache<T>.Get(this).Lookup.TryGetValue(id, out component);
         }
 
+        public void AddComponent(Type interfaceType, IIdentifiedComponent instance) => throw new NotImplementedException();
+
+        public void RemoveComponent(Type interfaceType, IIdentifiedComponent instance) => throw new NotImplementedException();
+
         private class Cache<T> : ICache
             where T : IIdentifiedComponent
         {

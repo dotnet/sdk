@@ -15,9 +15,9 @@ namespace Microsoft.TemplateEngine.Edge
 {
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
-        private static readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> NoComponents = Array.Empty<KeyValuePair<Guid, Func<Type>>>();
+        private static readonly IReadOnlyList<(Type, IIdentifiedComponent)> NoComponents = Array.Empty<(Type, IIdentifiedComponent)>();
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
-        private readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> _hostBuiltInComponents;
+        private readonly IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> _hostBuiltInComponents;
         [Obsolete]
         private Dictionary<string, Action<string, string[]>> _diagnosticLoggers = new Dictionary<string, Action<string, string[]>>();
         private ILoggerFactory _loggerFactory;
@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Edge
             string hostIdentifier,
             string version,
             Dictionary<string, string>? defaults = null,
-            IReadOnlyList<KeyValuePair<Guid, Func<Type>>>? builtIns = null,
+            IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)>? builtIns = null,
             IReadOnlyList<string>? fallbackHostTemplateConfigNames = null,
             ILoggerFactory? loggerFactory = null)
         {
@@ -56,7 +56,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public string Version { get; }
 
-        public virtual IReadOnlyList<KeyValuePair<Guid, Func<Type>>> BuiltInComponents => _hostBuiltInComponents;
+        public virtual IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> BuiltInComponents => _hostBuiltInComponents;
 
         public ILogger Logger => _logger;
 

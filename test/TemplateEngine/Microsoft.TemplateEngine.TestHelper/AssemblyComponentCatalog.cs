@@ -8,12 +8,12 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.TemplateEngine.Abstractions;
 
-namespace Microsoft.TemplateEngine.Edge
+namespace Microsoft.TemplateEngine.TestHelper
 {
-    public class AssemblyComponentCatalog : IReadOnlyList<KeyValuePair<Guid, Func<Type>>>
+    public class AssemblyComponentCatalog : IReadOnlyList<(Type, IIdentifiedComponent)>
     {
         private readonly IReadOnlyList<Assembly> _assemblies;
-        private IReadOnlyList<KeyValuePair<Guid, Func<Type>>> _lookup;
+        private IReadOnlyList<(Type, IIdentifiedComponent)> _lookup;
 
         public AssemblyComponentCatalog(IReadOnlyList<Assembly> assemblies)
         {
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Edge
             }
         }
 
-        public KeyValuePair<Guid, Func<Type>> this[int index]
+        public (Type, IIdentifiedComponent) this[int index]
         {
             get
             {
@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Edge
             }
         }
 
-        public IEnumerator<KeyValuePair<Guid, Func<Type>>> GetEnumerator()
+        public IEnumerator<(Type, IIdentifiedComponent)> GetEnumerator()
         {
             EnsureLoaded();
             return _lookup.GetEnumerator();
@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Edge
                 return;
             }
 
-            Dictionary<Guid, Func<Type>> builder = new Dictionary<Guid, Func<Type>>();
+            var builder = new List<(Type, IIdentifiedComponent)>();
 
             foreach (Assembly asm in _assemblies)
             {
@@ -64,14 +64,17 @@ namespace Microsoft.TemplateEngine.Edge
                         continue;
                     }
 
-                    IReadOnlyList<Type> registerFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(x)).ToList();
+                    IReadOnlyList<Type> registerFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && x != typeof(IPrioritizedComponent) && typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(x)).ToList();
                     if (registerFor.Count == 0)
                     {
                         continue;
                     }
 
                     IIdentifiedComponent instance = (IIdentifiedComponent)Activator.CreateInstance(type);
-                    builder[instance.Id] = () => type;
+                    foreach (var interfaceType in registerFor)
+                    {
+                        builder.Add((interfaceType, instance));
+                    }
                 }
             }
 

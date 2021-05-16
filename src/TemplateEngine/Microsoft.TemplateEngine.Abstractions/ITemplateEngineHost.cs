@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Gets the list of built-in components provided by the host.
         /// </summary>
-        IReadOnlyList<KeyValuePair<Guid, Func<Type>>> BuiltInComponents { get; }
+        IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> BuiltInComponents { get; }
 
         /// <summary>
         /// Provides access to file system.

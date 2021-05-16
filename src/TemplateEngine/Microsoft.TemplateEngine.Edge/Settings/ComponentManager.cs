@@ -8,18 +8,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.TemplateEngine.Edge.BuiltInManagedProvider;
-using Microsoft.TemplateEngine.Edge.Installers.Folder;
-using Microsoft.TemplateEngine.Edge.Installers.NuGet;
-using Microsoft.TemplateEngine.Edge.Mount.Archive;
-using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
+using Newtonsoft.Json.Linq;
 #if !NETFULL
-
 using System.Runtime.Loader;
-
 #endif
 
 namespace Microsoft.TemplateEngine.Edge.Settings
@@ -30,13 +21,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly Dictionary<Guid, string> _componentIdToAssemblyQualifiedTypeName = new Dictionary<Guid, string>();
         private readonly Dictionary<Type, HashSet<Guid>> _componentIdsByType;
         private readonly SettingsStore _settings;
-        private readonly ISettingsLoader _loader;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly SettingsFilePaths _paths;
 
-        public ComponentManager(ISettingsLoader loader, SettingsStore userSettings)
+        public ComponentManager(IEngineEnvironmentSettings engineEnvironmentSettings)
         {
-            _loader = loader;
-            _settings = userSettings;
-            _loadLocations.AddRange(userSettings.ProbingPaths);
+            _engineEnvironmentSettings = engineEnvironmentSettings;
+            _paths = new SettingsFilePaths(engineEnvironmentSettings);
+            _settings = SettingsStore.Load(engineEnvironmentSettings, _paths);
+            _loadLocations.AddRange(_settings.ProbingPaths);
 
             ReflectionLoadProbingPath.Reset();
             foreach (string loadLocation in _loadLocations)
@@ -45,12 +38,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             _componentIdsByType = new Dictionary<Type, HashSet<Guid>>();
-            HashSet<Guid> allowedIds = new HashSet<Guid>();
 
-            foreach (KeyValuePair<string, HashSet<Guid>> bucket in userSettings.ComponentTypeToGuidList)
+            foreach (KeyValuePair<string, HashSet<Guid>> bucket in _settings.ComponentTypeToGuidList)
             {
-                allowedIds.UnionWith(bucket.Value);
-
                 Type interfaceType = Type.GetType(bucket.Key);
                 if (interfaceType != null)
                 {
@@ -58,50 +48,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            foreach (KeyValuePair<string, string> entry in userSettings.ComponentGuidToAssemblyQualifiedName)
+            foreach (KeyValuePair<string, string> entry in _settings.ComponentGuidToAssemblyQualifiedName)
             {
-                if (Guid.TryParse(entry.Key, out Guid componentId) && allowedIds.Contains(componentId))
+                if (Guid.TryParse(entry.Key, out Guid componentId))
                 {
                     _componentIdToAssemblyQualifiedTypeName[componentId] = entry.Value;
                 }
             }
 
-            if (!allowedIds.Contains(FileSystemMountPointFactory.FactoryId))
+            foreach (var (interfaceType, instance) in engineEnvironmentSettings.Host.BuiltInComponents)
             {
-                allowedIds.Add(FileSystemMountPointFactory.FactoryId);
-                AddComponent(typeof(IMountPointFactory), new FileSystemMountPointFactory());
-            }
-
-            if (!allowedIds.Contains(ZipFileMountPointFactory.FactoryId))
-            {
-                allowedIds.Add(ZipFileMountPointFactory.FactoryId);
-                AddComponent(typeof(IMountPointFactory), new ZipFileMountPointFactory());
-            }
-
-            if (!allowedIds.Contains(GlobalSettingsTemplatePackageProviderFactory.FactoryId))
-            {
-                allowedIds.Add(GlobalSettingsTemplatePackageProviderFactory.FactoryId);
-                AddComponent(typeof(ITemplatePackageProviderFactory), new GlobalSettingsTemplatePackageProviderFactory());
-            }
-
-            if (!allowedIds.Contains(NuGetInstallerFactory.FactoryId))
-            {
-                allowedIds.Add(NuGetInstallerFactory.FactoryId);
-                AddComponent(typeof(IInstallerFactory), new NuGetInstallerFactory());
-            }
-
-            if (!allowedIds.Contains(FolderInstallerFactory.FactoryId))
-            {
-                allowedIds.Add(FolderInstallerFactory.FactoryId);
-                AddComponent(typeof(IInstallerFactory), new FolderInstallerFactory());
-            }
-
-            foreach (KeyValuePair<Guid, Func<Type>> components in _loader.EnvironmentSettings.Host.BuiltInComponents)
-            {
-                if (allowedIds.Add(components.Key))
-                {
-                    RegisterType(components.Value());
-                }
+                AddComponent(interfaceType, instance);
             }
         }
 
@@ -188,6 +145,31 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
+        internal void AddProbingPath(string probeIn)
+        {
+            const int maxAttempts = 10;
+            int attemptCount = 0;
+            bool successfulWrite = false;
+
+            while (!successfulWrite && attemptCount++ < maxAttempts)
+            {
+                if (!_settings.ProbingPaths.Add(probeIn))
+                {
+                    return;
+                }
+
+                try
+                {
+                    Save();
+                    successfulWrite = true;
+                }
+                catch
+                {
+                    Task.Delay(10).Wait();
+                }
+            }
+        }
+
         // This method does not save the settings, it just registers into the memory cache.
         private bool RegisterType(Type type)
         {
@@ -242,7 +224,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        private void Save()
+#pragma warning disable SA1202 // Elements should be ordered by access, disabled to make review easier
+        internal void Save()
+#pragma warning restore SA1202 // Elements should be ordered by access
         {
             bool successfulWrite = false;
             const int maxAttempts = 10;
@@ -252,7 +236,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 try
                 {
-                    _loader.Save();
+                    JObject serialized = JObject.FromObject(_settings);
+                    _paths.WriteAllText(_paths.SettingsFile, serialized.ToString());
                     successfulWrite = true;
                 }
                 catch (IOException)
@@ -262,7 +247,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        private void AddComponent(Type type, IIdentifiedComponent component)
+#pragma warning disable SA1202 // Elements should be ordered by access, disabled to make review easier
+        public void AddComponent(Type type, IIdentifiedComponent component)
+#pragma warning restore SA1202 // Elements should be ordered by access
         {
             if (!type.IsAssignableFrom(component.GetType()))
             {
