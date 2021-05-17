@@ -113,6 +113,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             var int32Type = compilation.GetSpecialType(SpecialType.System_Int32);
             var byteType = compilation.GetSpecialType(SpecialType.System_Byte);
+
+            if (int32Type is null || byteType is null)
+            {
+                requiredSymbols = default;
+                return false;
+            }
+
             var byteArrayType = compilation.CreateArrayTypeSymbol(byteType);
             var memoryOfByteType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemory1)?.Construct(byteType);
             var readOnlyMemoryOfByteType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlyMemory1)?.Construct(byteType);
