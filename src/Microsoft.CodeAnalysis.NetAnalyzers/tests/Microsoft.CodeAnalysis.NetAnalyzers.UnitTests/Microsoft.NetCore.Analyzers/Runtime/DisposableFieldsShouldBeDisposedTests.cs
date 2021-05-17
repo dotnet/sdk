@@ -1013,7 +1013,7 @@ class C
                 TestState =
                 {
                     Sources = { csCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}")}
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
                 }
             };
 
@@ -1051,7 +1051,7 @@ End Class
                 TestState =
                 {
                     Sources = { vbCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}")}
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
                 }
             };
 
@@ -1103,7 +1103,7 @@ class C
                 TestState =
                 {
                     Sources = { csCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}")}
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
                 }
             };
 
@@ -1140,7 +1140,7 @@ End Class
                 TestState =
                 {
                     Sources = { vbCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}")}
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
                 }
             };
 
