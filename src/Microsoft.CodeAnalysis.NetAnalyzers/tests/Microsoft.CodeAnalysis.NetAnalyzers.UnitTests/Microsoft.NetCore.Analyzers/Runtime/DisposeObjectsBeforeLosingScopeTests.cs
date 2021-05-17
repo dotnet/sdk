@@ -8243,7 +8243,7 @@ class Test
                 TestState =
                 {
                     Sources = { source },
-                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(analysisKind)) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(analysisKind)) },
                 }
             }.RunAsync();
         }
@@ -8887,7 +8887,7 @@ public class Test
                 TestState =
                 {
                     Sources = { source },
-                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
                 }
             };
 
@@ -9028,7 +9028,7 @@ public class Test
                 TestState =
                 {
                     Sources = { csCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
                 }
             };
 
@@ -9093,7 +9093,7 @@ public class Test
                 TestState =
                 {
                     Sources = { csCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
                 }
             };
 
@@ -9139,7 +9139,7 @@ End Class
                 TestState =
                 {
                     Sources = { vbCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
                 }
             };
 
