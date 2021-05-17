@@ -622,6 +622,7 @@ End Class
         }
 
         [Fact]
+        [WorkItem(5021, "https://github.com/dotnet/roslyn-analyzers/issues/5021")]
         public async Task CSharpComparisonOperatorWithExceptions()
         {
             var code = @"
