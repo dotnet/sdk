@@ -47,6 +47,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
 
             context.RegisterOperationAction(AnalyzeOperation, OperationKind.Conditional);
+            return;
 
             void AnalyzeOperation(OperationAnalysisContext context)
             {
