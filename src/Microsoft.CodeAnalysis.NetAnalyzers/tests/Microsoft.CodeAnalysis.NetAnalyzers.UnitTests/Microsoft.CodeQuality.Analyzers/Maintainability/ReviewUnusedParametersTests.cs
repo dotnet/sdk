@@ -868,7 +868,7 @@ public class C
 
 [*]
 {editorConfigText}
-") }
+") },
                 }
             }.RunAsync();
 
