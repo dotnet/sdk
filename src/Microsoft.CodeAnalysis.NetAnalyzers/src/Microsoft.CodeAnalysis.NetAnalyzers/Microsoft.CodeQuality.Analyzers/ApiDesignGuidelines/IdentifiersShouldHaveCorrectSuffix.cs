@@ -176,14 +176,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             foreach (var type in typeSymbols)
             {
                 // User specific mapping has higher priority than hardcoded one
-                if (userMap.TryGetValue(type.OriginalDefinition, out var suffix) &&
-                    !RoslynString.IsNullOrWhiteSpace(suffix))
+                if (userMap.TryGetValue(type.OriginalDefinition, out var suffix))
                 {
-                    suffixInfo = SuffixInfo.Create(suffix, canSuffixBeCollection: false);
-                    return true;
+                    if (!RoslynString.IsNullOrWhiteSpace(suffix))
+                    {
+                        suffixInfo = SuffixInfo.Create(suffix, canSuffixBeCollection: false);
+                        return true;
+                    }
                 }
-
-                if (hardcodedMap.TryGetValue(type.OriginalDefinition, out suffixInfo))
+                else if (hardcodedMap.TryGetValue(type.OriginalDefinition, out suffixInfo))
                 {
                     return true;
                 }
