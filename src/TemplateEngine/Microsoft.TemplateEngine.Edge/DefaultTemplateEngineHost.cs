@@ -80,11 +80,6 @@ namespace Microsoft.TemplateEngine.Edge
             FileSystem = new InMemoryFileSystem(path, FileSystem);
         }
 
-        public bool OnPotentiallyDestructiveChangesDetected(IReadOnlyList<IFileChange> changes, IReadOnlyList<IFileChange> destructiveChanges)
-        {
-            return true;
-        }
-
         #region Obsolete
 
 #pragma warning disable SA1201 // Elements should appear in the correct order
@@ -93,18 +88,18 @@ namespace Microsoft.TemplateEngine.Edge
 #pragma warning restore SA1201 // Elements should appear in the correct order
 
         [Obsolete("The method is deprecated.")]
-        public bool OnConfirmPartialMatch(string name)
+        bool ITemplateEngineHost.OnConfirmPartialMatch(string name)
         {
             return true;
         }
 
         [Obsolete("The method is deprecated.")]
-        public virtual void OnSymbolUsed(string symbol, object value)
+        void ITemplateEngineHost.OnSymbolUsed(string symbol, object value)
         {
         }
 
         [Obsolete("The method is deprecated.")]
-        public virtual bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue)
+        bool ITemplateEngineHost.OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue)
         {
             newValue = "";
             return false;
@@ -117,7 +112,7 @@ namespace Microsoft.TemplateEngine.Edge
         }
 
         [Obsolete("Use " + nameof(Logger) + " instead")]
-        public void LogDiagnosticMessage(string message, string category, params string[] details)
+        void ITemplateEngineHost.LogDiagnosticMessage(string message, string category, params string[] details)
         {
             if (_diagnosticLoggers.TryGetValue(category, out Action<string, string[]> messageHandler))
             {
@@ -126,27 +121,33 @@ namespace Microsoft.TemplateEngine.Edge
         }
 
         [Obsolete("Use " + nameof(Logger) + " instead")]
-        public void LogTiming(string label, TimeSpan duration, int depth)
+        void ITemplateEngineHost.LogTiming(string label, TimeSpan duration, int depth)
         {
             OnLogTiming?.Invoke(label, duration, depth);
         }
 
         [Obsolete("Use " + nameof(Logger) + " instead")]
-        public virtual void LogMessage(string message)
+        void ITemplateEngineHost.LogMessage(string message)
         {
             Console.WriteLine(message);
         }
 
         [Obsolete("Use " + nameof(Logger) + " instead")]
-        public virtual void OnCriticalError(string code, string message, string currentFile, long currentPosition)
+        void ITemplateEngineHost.OnCriticalError(string code, string message, string currentFile, long currentPosition)
         {
         }
 
         [Obsolete("Use " + nameof(Logger) + " instead")]
-        public virtual bool OnNonCriticalError(string code, string message, string currentFile, long currentPosition)
+        bool ITemplateEngineHost.OnNonCriticalError(string code, string message, string currentFile, long currentPosition)
         {
-            LogMessage(string.Format($"Error: {message}"));
+            ((ITemplateEngineHost)this).LogMessage(string.Format($"Error: {message}"));
             return false;
+        }
+
+        [Obsolete]
+        bool ITemplateEngineHost.OnPotentiallyDestructiveChangesDetected(IReadOnlyList<IFileChange> changes, IReadOnlyList<IFileChange> destructiveChanges)
+        {
+            return true;
         }
         #endregion
     }

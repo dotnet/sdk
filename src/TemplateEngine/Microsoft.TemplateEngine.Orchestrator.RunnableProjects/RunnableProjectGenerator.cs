@@ -244,7 +244,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // which takes care of making null bool -> true as appropriate.
                     // This else can also happen if there is a value but it can't be converted.
                     string val;
+#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                     while (environmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out val) && !bool.TryParse(val, out boolVal))
+#pragma warning restore CS0618 // Type or member is obsolete
                     {
                     }
 
@@ -265,7 +267,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 string val;
+#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                 while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out val)
+#pragma warning restore CS0618 // Type or member is obsolete
                         && !TryResolveChoiceValue(literal, param, out val))
                 {
                 }
@@ -282,7 +286,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 else
                 {
                     string val;
+#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                     while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeFloat", out val) && (val == null || !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat)))
+#pragma warning restore CS0618 // Type or member is obsolete
                     {
                     }
 
@@ -300,7 +306,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 else
                 {
                     string val;
+#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                     while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeInteger", out val) && (val == null || !long.TryParse(val, out convertedInt)))
+#pragma warning restore CS0618 // Type or member is obsolete
                     {
                     }
 
@@ -317,7 +325,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 else
                 {
                     string val;
+#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                     while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeHex", out val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
+#pragma warning restore CS0618 // Type or member is obsolete
                     {
                     }
 

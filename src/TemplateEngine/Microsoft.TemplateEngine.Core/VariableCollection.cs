@@ -184,10 +184,6 @@ namespace Microsoft.TemplateEngine.Core
                 {
                     if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
                     {
-                        while (environmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out string val))
-                        {
-                        }
-
                         parameters.ResolvedValues[param] = value;
                     }
                 }
@@ -195,10 +191,6 @@ namespace Microsoft.TemplateEngine.Core
                 {
                     if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
                     {
-                        while (environmentSettings.Host.OnParameterError(param, null, "ParameterValueNull", out string val))
-                        {
-                        }
-
                         parameters.ResolvedValues[param] = value;
                     }
                 }

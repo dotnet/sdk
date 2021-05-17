@@ -5,14 +5,10 @@ Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.DefaultTemplateEngineHos
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.FallbackHostTemplateConfigNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.FileSystem.get -> Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem!
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.HostIdentifier.get -> string!
-Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.LogDiagnosticMessage(string! message, string! category, params string![]! details) -> void
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Logger.get -> Microsoft.Extensions.Logging.ILogger!
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory!
-Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.LogTiming(string! label, System.TimeSpan duration, int depth) -> void
-Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnConfirmPartialMatch(string! name) -> bool
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnLogTiming.get -> System.Action<string!, System.TimeSpan, int>?
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnLogTiming.set -> void
-Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnPotentiallyDestructiveChangesDetected(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>! changes, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>! destructiveChanges) -> bool
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.RegisterDiagnosticLogger(string! category, System.Action<string!, string![]!>! messageHandler) -> void
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Version.get -> string!
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.VirtualizeDirectory(string! path) -> void
@@ -49,6 +45,7 @@ Microsoft.TemplateEngine.Edge.Settings.ScanResult.Templates.get -> System.Collec
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.Cancelled = -2147467260 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.CreateFailed = -2147352567 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.DestructiveChangesDetected = -2147467259 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.InvalidParamValues = -2147352571 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.MissingMandatoryParam = -2147352561 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.NotFound = 2097158 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
@@ -119,11 +116,6 @@ static Microsoft.TemplateEngine.Edge.TemplateListFilter.GetTemplateMatchInfo(Sys
 static Microsoft.TemplateEngine.Edge.TemplateListFilter.PartialMatchFilter.get -> System.Func<Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo!, bool>!
 static readonly Microsoft.TemplateEngine.Edge.Settings.ScanResult.Empty -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
 virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.Guid, System.Func<System.Type!>!>>!
-virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.LogMessage(string! message) -> void
-virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnCriticalError(string! code, string! message, string! currentFile, long currentPosition) -> void
-virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnNonCriticalError(string! code, string! message, string! currentFile, long currentPosition) -> bool
-virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnParameterError(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter, string! receivedValue, string! message, out string! newValue) -> bool
-virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnSymbolUsed(string! symbol, object! value) -> void
 virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.TryGetHostParamDefault(string! paramName, out string? value) -> bool
 ~Microsoft.TemplateEngine.Edge.AssemblyComponentCatalog.AssemblyComponentCatalog(System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> assemblies) -> void
 ~Microsoft.TemplateEngine.Edge.AssemblyComponentCatalog.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Guid, System.Func<System.Type>>>

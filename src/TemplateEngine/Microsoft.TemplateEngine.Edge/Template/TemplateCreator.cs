@@ -79,9 +79,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
                     if (!forceCreation && destructiveChanges.Count > 0)
                     {
+                        //if-case should be removed after obsolete member is removed.
+#pragma warning disable CS0618 // Type or member is obsolete
                         if (!_environmentSettings.Host.OnPotentiallyDestructiveChangesDetected(changes, destructiveChanges))
+#pragma warning restore CS0618 // Type or member is obsolete
                         {
-                            return new TemplateCreationResult("Cancelled", CreationResultStatus.Cancelled, template.Name);
+                            return new TemplateCreationResult("Destructive changes detected", CreationResultStatus.DestructiveChangesDetected, template.Name, null, null, creationEffects);
                         }
                     }
 
@@ -254,7 +257,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 if (parameter.Priority == TemplateParameterPriority.Required && !templateParams.ResolvedValues.ContainsKey(parameter))
                 {
                     string newParamValue;
+#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                     while (host.OnParameterError(parameter, null, "Missing required parameter", out newParamValue)
+#pragma warning restore CS0618 // Type or member is obsolete
                         && string.IsNullOrEmpty(newParamValue))
                     {
                     }

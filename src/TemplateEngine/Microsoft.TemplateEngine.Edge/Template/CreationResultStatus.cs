@@ -11,6 +11,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         InvalidParamValues = unchecked((int)0x80020005),
         OperationNotSpecified = unchecked((int)0x8002000E),
         NotFound = unchecked((int)0x800200006),
-        Cancelled = unchecked((int)0x80004004)
+        Cancelled = unchecked((int)0x80004004),
+        DestructiveChangesDetected = unchecked((int)0x80004005)
     }
 }

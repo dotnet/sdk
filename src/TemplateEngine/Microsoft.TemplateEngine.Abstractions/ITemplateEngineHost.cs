@@ -67,20 +67,6 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="path"></param>
         void VirtualizeDirectory(string path);
 
-        /// <summary>
-        /// Action to be done when potentially destructive changes on template instantiation are detected.
-        /// The host can implement it as needed: prompt user, show error, etc.
-        /// In case template instantiation should proceed, the method should return true.
-        /// In case template instantiation should be aborted, the method should return false.
-        /// </summary>
-        /// <param name="changes">the list of file changes to be done on template instantiation.</param>
-        /// <param name="destructiveChanges">the list of destructive file changes (modify/remove) to be performed on template instantiation.</param>
-        /// <returns>
-        /// true - in case template engine should proceed with template instantiation and perform destructive changes;
-        /// false - if the template instantiation should be aborted.
-        /// </returns>
-        bool OnPotentiallyDestructiveChangesDetected(IReadOnlyList<IFileChange> changes, IReadOnlyList<IFileChange> destructiveChanges);
-
         #region Obsolete
 
         [Obsolete("Use " + nameof(Logger) + " instead.")]
@@ -95,6 +81,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         [Obsolete("Use " + nameof(Logger) + " instead.")]
         bool OnNonCriticalError(string code, string message, string currentFile, long currentPosition);
 
+        [Obsolete("The method is deprecated.")]
         bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue);
 
         [Obsolete("The method is deprecated.")]
@@ -105,6 +92,21 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         [Obsolete("The method is deprecated.")]
         bool OnConfirmPartialMatch(string name);
+
+        /// <summary>
+        /// Action to be done when potentially destructive changes on template instantiation are detected.
+        /// The host can implement it as needed: prompt user, show error, etc.
+        /// In case template instantiation should proceed, the method should return true.
+        /// In case template instantiation should be aborted, the method should return false.
+        /// </summary>
+        /// <param name="changes">the list of file changes to be done on template instantiation.</param>
+        /// <param name="destructiveChanges">the list of destructive file changes (modify/remove) to be performed on template instantiation.</param>
+        /// <returns>
+        /// true - in case template engine should proceed with template instantiation and perform destructive changes;
+        /// false - if the template instantiation should be aborted.
+        /// </returns>
+        [Obsolete("The method is deprecated. If potentially destructive changes are detected without passing force, TemplateCreator will return DestructiveChangesDetected CreationResultStatus that can be processed by host.")]
+        bool OnPotentiallyDestructiveChangesDetected(IReadOnlyList<IFileChange> changes, IReadOnlyList<IFileChange> destructiveChanges);
 
         #endregion
     }
