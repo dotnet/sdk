@@ -127,6 +127,8 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.FileSystem.get -> Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.HostIdentifier.get -> string
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.LogDiagnosticMessage(string message, string category, params string[] details) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.Logger.get -> Microsoft.Extensions.Logging.ILogger
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.LogTiming(string label, System.TimeSpan duration, int depth) -> void
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnConfirmPartialMatch(string name) -> bool
 ~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnLogTiming.get -> System.Action<string, System.TimeSpan, int>
@@ -214,7 +216,7 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string message, System.Exception inner) -> void
 ~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string message, System.Exception inner, string paramName, string inputValue, string dataType) -> void
 ~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string paramName, string inputValue, string dataType) -> void
-~Microsoft.TemplateEngine.Utils.Timing.Timing(System.Action<System.TimeSpan, int> result) -> void
+~Microsoft.TemplateEngine.Utils.Timing.Timing(Microsoft.Extensions.Logging.ILogger logger, string label) -> void
 ~static Microsoft.TemplateEngine.Utils.ArrayExtensions.CombineArrays<T>(params T[][] arrayList) -> T[]
 ~static Microsoft.TemplateEngine.Utils.DictionaryExtensions.CloneIfDifferentComparer<T>(this System.Collections.Generic.IReadOnlyDictionary<string, T> source, System.StringComparer comparer) -> System.Collections.Generic.IReadOnlyDictionary<string, T>
 ~static Microsoft.TemplateEngine.Utils.EqualityExtensions.AllAreTheSame<T, TValue>(this System.Collections.Generic.IEnumerable<T> items, System.Func<T, TValue> selector) -> bool
@@ -242,7 +244,7 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTemplateType(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo template) -> string
 ~static Microsoft.TemplateEngine.Utils.TemplatePackageExtensions.GetTemplates(this Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage templatePackage, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings settings) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateInfo>>
 ~static Microsoft.TemplateEngine.Utils.TemplateParamException.StandardizedMessage(string paramName, string inputValue = null, string dataType = null, string baseMessage = null) -> string
-~static Microsoft.TemplateEngine.Utils.Timing.Over(Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost host, string label) -> Microsoft.TemplateEngine.Utils.Timing
+~static Microsoft.TemplateEngine.Utils.Timing.Over(Microsoft.Extensions.Logging.ILogger logger, string label) -> Microsoft.TemplateEngine.Utils.Timing
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.CompareVersions(string version1, string version2) -> int?
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.IsVersionWellFormed(string version) -> bool
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.TryParseVersionSpecification(string versionString, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool

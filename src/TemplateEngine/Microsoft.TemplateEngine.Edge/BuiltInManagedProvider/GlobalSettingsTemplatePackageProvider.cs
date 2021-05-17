@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
@@ -23,6 +24,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         private readonly string _packagesFolder;
 
         private readonly IEngineEnvironmentSettings _environmentSettings;
+        private readonly ILogger _logger;
         private readonly Dictionary<Guid, IInstaller> _installersByGuid = new Dictionary<Guid, IInstaller>();
         private readonly Dictionary<string, IInstaller> _installersByName = new Dictionary<string, IInstaller>();
         private readonly GlobalSettings _globalSettings;
@@ -31,6 +33,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         {
             Factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _logger = settings.Host.LoggerFactory.CreateLogger<GlobalSettingsTemplatePackageProvider>();
 
             _packagesFolder = Path.Combine(settings.Paths.GlobalSettingsDir, "packages");
             if (!settings.Host.FileSystem.DirectoryExists(_packagesFolder))
@@ -72,7 +75,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                     }
                     catch (Exception e)
                     {
-                        _environmentSettings.Host.LogDiagnosticMessage($"[{Factory.DisplayName}] Failed to deserialize template package data entry {entry.MountPointUri}, details: {e}.", DebugLogCategory);
+                        _logger.LogDebug($"[{Factory.DisplayName}] Failed to deserialize template package data entry {entry.MountPointUri}, details: {e}.", DebugLogCategory);
                         //adding template package as non-managed
                         list.Add(new TemplatePackage(this, entry.MountPointUri, entry.LastChangeTime));
                     }
@@ -232,7 +235,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
                 if (!update)
                 {
-                    _environmentSettings.Host.LogMessage(
+                    _logger.LogInformation(
                         string.Format(
                             LocalizableStrings.GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled,
                             packageToBeUpdated.Identifier,
@@ -247,7 +250,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 {
                     return (InstallerErrorCode.UpdateUninstallFailed, uninstallResult.ErrorMessage);
                 }
-                _environmentSettings.Host.LogMessage(
+                _logger.LogInformation(
                     string.Format(
                         LocalizableStrings.GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled,
                         packageToBeUpdated.DisplayName));

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
 {

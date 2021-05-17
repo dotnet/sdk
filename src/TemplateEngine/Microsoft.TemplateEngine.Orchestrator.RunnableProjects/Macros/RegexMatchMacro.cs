@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
@@ -44,9 +45,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             {
                 result = Regex.IsMatch(value, config.Pattern);
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
-                environmentSettings.Host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_InvalidRegex, config.Pattern), "Authoring", ex.ToString());
+                environmentSettings.Host.Logger.LogDebug(string.Format(LocalizableStrings.Authoring_InvalidRegex, config.Pattern));
             }
 
             Parameter p;
@@ -103,7 +104,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             if (deferredConfig.DataType != null
                 && !string.Equals(deferredConfig.DataType, "bool", StringComparison.OrdinalIgnoreCase))
             {
-                environmentSettings.Host.LogDiagnosticMessage(LocalizableStrings.Authoring_NonBoolDataTypeForRegexMatch, "Authoring");
+                environmentSettings.Host.Logger.LogDebug(LocalizableStrings.Authoring_NonBoolDataTypeForRegexMatch);
             }
 
             IMacroConfig realConfig = new RegexMatchMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, sourceVariable, pattern);

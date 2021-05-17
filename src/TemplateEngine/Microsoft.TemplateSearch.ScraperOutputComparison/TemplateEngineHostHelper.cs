@@ -5,7 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Utils;
+using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.TemplateSearch.ScraperOutputComparison
 {

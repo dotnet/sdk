@@ -114,6 +114,8 @@ Microsoft.TemplateEngine.Abstractions.ISimpleConfigModifiers
 Microsoft.TemplateEngine.Abstractions.ITemplate
 Microsoft.TemplateEngine.Abstractions.ITemplate.IsNameAgreementWithFolderPreferred.get -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory!
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Author.get -> string?
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.BaselineInfo.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IBaselineInfo!>!
@@ -218,14 +220,14 @@ Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Suggested = 1 ->
 ~Microsoft.TemplateEngine.Abstractions.ICreationPath.Path.get -> string
 ~Microsoft.TemplateEngine.Abstractions.ICreationResult.PostActions.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IPostAction>
 ~Microsoft.TemplateEngine.Abstractions.ICreationResult.PrimaryOutputs.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ICreationPath>
-~Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.Environment.get -> Microsoft.TemplateEngine.Abstractions.IEnvironment
-~Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.Host.get -> Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost
-~Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.Paths.get -> Microsoft.TemplateEngine.Abstractions.IPathInfo
-~Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.SettingsLoader.get -> Microsoft.TemplateEngine.Abstractions.ISettingsLoader
-~Microsoft.TemplateEngine.Abstractions.IEnvironment.ExpandEnvironmentVariables(string name) -> string
-~Microsoft.TemplateEngine.Abstractions.IEnvironment.GetEnvironmentVariable(string name) -> string
-~Microsoft.TemplateEngine.Abstractions.IEnvironment.GetEnvironmentVariables() -> System.Collections.Generic.IReadOnlyDictionary<string, string>
-~Microsoft.TemplateEngine.Abstractions.IEnvironment.NewLine.get -> string
+Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.Environment.get -> Microsoft.TemplateEngine.Abstractions.IEnvironment!
+Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.Host.get -> Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost!
+Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.Paths.get -> Microsoft.TemplateEngine.Abstractions.IPathInfo!
+Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.SettingsLoader.get -> Microsoft.TemplateEngine.Abstractions.ISettingsLoader!
+Microsoft.TemplateEngine.Abstractions.IEnvironment.ExpandEnvironmentVariables(string! name) -> string!
+Microsoft.TemplateEngine.Abstractions.IEnvironment.GetEnvironmentVariable(string! name) -> string?
+Microsoft.TemplateEngine.Abstractions.IEnvironment.GetEnvironmentVariables() -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Abstractions.IEnvironment.NewLine.get -> string!
 ~Microsoft.TemplateEngine.Abstractions.IFileChange.Contents.get -> byte[]
 ~Microsoft.TemplateEngine.Abstractions.IFileChange.TargetRelativePath.get -> string
 ~Microsoft.TemplateEngine.Abstractions.IFileChange2.SourceRelativePath.get -> string
@@ -273,10 +275,10 @@ Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Suggested = 1 ->
 ~Microsoft.TemplateEngine.Abstractions.IParameterSet.RequiredBrokerCapabilities.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.TemplateEngine.Abstractions.IParameterSet.ResolvedValues.get -> System.Collections.Generic.IDictionary<Microsoft.TemplateEngine.Abstractions.ITemplateParameter, object>
 ~Microsoft.TemplateEngine.Abstractions.IParameterSet.TryGetParameterDefinition(string name, out Microsoft.TemplateEngine.Abstractions.ITemplateParameter parameter) -> bool
-~Microsoft.TemplateEngine.Abstractions.IPathInfo.GlobalSettingsDir.get -> string
-~Microsoft.TemplateEngine.Abstractions.IPathInfo.HostSettingsDir.get -> string
-~Microsoft.TemplateEngine.Abstractions.IPathInfo.HostVersionSettingsDir.get -> string
-~Microsoft.TemplateEngine.Abstractions.IPathInfo.UserProfileDir.get -> string
+Microsoft.TemplateEngine.Abstractions.IPathInfo.GlobalSettingsDir.get -> string!
+Microsoft.TemplateEngine.Abstractions.IPathInfo.HostSettingsDir.get -> string!
+Microsoft.TemplateEngine.Abstractions.IPathInfo.HostVersionSettingsDir.get -> string!
+Microsoft.TemplateEngine.Abstractions.IPathInfo.UserProfileDir.get -> string!
 ~Microsoft.TemplateEngine.Abstractions.ISearchPackFilter.ShouldPackBeFiltered(string candidatePackName, string candidatePackVersion) -> bool
 ~Microsoft.TemplateEngine.Abstractions.IShortNameList.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~Microsoft.TemplateEngine.Abstractions.ISimpleConfigModifiers.BaselineName.get -> string
@@ -284,22 +286,22 @@ Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Suggested = 1 ->
 ~Microsoft.TemplateEngine.Abstractions.ITemplate.Generator.get -> Microsoft.TemplateEngine.Abstractions.IGenerator
 ~Microsoft.TemplateEngine.Abstractions.ITemplate.LocaleConfiguration.get -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo
 ~Microsoft.TemplateEngine.Abstractions.ITemplate.TemplateSourceRoot.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.Guid, System.Func<System.Type>>>
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.FallbackHostTemplateConfigNames.get -> System.Collections.Generic.IReadOnlyList<string>
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.FileSystem.get -> Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.HostIdentifier.get -> string
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogDiagnosticMessage(string message, string category, params string[] details) -> void
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogMessage(string message) -> void
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogTiming(string label, System.TimeSpan duration, int depth) -> void
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnConfirmPartialMatch(string name) -> bool
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnCriticalError(string code, string message, string currentFile, long currentPosition) -> void
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnNonCriticalError(string code, string message, string currentFile, long currentPosition) -> bool
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnParameterError(Microsoft.TemplateEngine.Abstractions.ITemplateParameter parameter, string receivedValue, string message, out string newValue) -> bool
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnPotentiallyDestructiveChangesDetected(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange> changes, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange> destructiveChanges) -> bool
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnSymbolUsed(string symbol, object value) -> void
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.TryGetHostParamDefault(string paramName, out string value) -> bool
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.Version.get -> string
-~Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.VirtualizeDirectory(string path) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.Guid, System.Func<System.Type!>!>>!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.FallbackHostTemplateConfigNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.FileSystem.get -> Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.HostIdentifier.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogDiagnosticMessage(string! message, string! category, params string![]! details) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogMessage(string! message) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogTiming(string! label, System.TimeSpan duration, int depth) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnConfirmPartialMatch(string! name) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnCriticalError(string! code, string! message, string! currentFile, long currentPosition) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnNonCriticalError(string! code, string! message, string! currentFile, long currentPosition) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnParameterError(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter, string! receivedValue, string! message, out string! newValue) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnPotentiallyDestructiveChangesDetected(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>! changes, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>! destructiveChanges) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnSymbolUsed(string! symbol, object! value) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.TryGetHostParamDefault(string! paramName, out string? value) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.Version.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.VirtualizeDirectory(string! path) -> void
 ~Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateEngine.Abstractions.ParameterChoice>
 ~Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DataType.get -> string
 ~Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DefaultValue.get -> string

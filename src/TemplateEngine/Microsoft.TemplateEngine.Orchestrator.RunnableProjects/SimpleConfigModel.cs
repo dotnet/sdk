@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
@@ -918,7 +919,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         if (string.IsNullOrWhiteSpace(symbol.Value.Binding))
                         {
-                            EnvironmentSettings.Host.LogMessage($"Binding wasn't specified for bind-type symbol {symbol.Key}");
+                            EnvironmentSettings.Host.Logger.LogWarning($"Binding wasn't specified for bind-type symbol {symbol.Key}");
                         }
                         else
                         {
@@ -954,7 +955,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                 }
                                 else
                                 {
-                                    EnvironmentSettings.Host.LogDiagnosticMessage($"Unable to find a form called '{formName}'", "Authoring");
+                                    EnvironmentSettings.Host.Logger.LogDebug($"Unable to find a form called '{formName}'");
                                 }
                             }
                         }
@@ -1032,7 +1033,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         }
                         else
                         {
-                            EnvironmentSettings.Host.LogDiagnosticMessage($"Unable to find a form called '{formName}'", "Authoring");
+                            EnvironmentSettings.Host.Logger.LogDebug($"Unable to find a form called '{formName}'");
                         }
                     }
                 }

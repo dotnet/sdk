@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
@@ -211,7 +212,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             catch (Exception ex)
             {
-                host.LogMessage($"Error reading template from file: {templateFile.FullPath} | Error = {ex.Message}");
+                host.Logger.LogError($"Error reading template from file: {templateFile.FullPath} | Error = {ex.Message}");
             }
 
             template = null;
@@ -413,12 +414,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // checks that all the template sources are under the template root, and they exist.
         internal bool AreAllTemplatePathsValid(IRunnableProjectConfig templateConfig, RunnableProjectTemplate runnableTemplate)
         {
-            ITemplateEngineHost host = runnableTemplate.Source.EnvironmentSettings.Host;
+            ILogger logger = runnableTemplate.Source.EnvironmentSettings.Host.Logger;
 
             if (runnableTemplate.TemplateSourceRoot == null)
             {
-                host.LogDiagnosticMessage(string.Empty, "Authoring");
-                host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, runnableTemplate.Name), "Authoring");
+                logger.LogDebug(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, runnableTemplate.Name));
                 return false;
             }
 
@@ -433,10 +433,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (file?.Exists ?? false)
                     {
                         allSourcesValid = false;
-                        host.LogDiagnosticMessage(string.Empty, "Authoring");
-                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
-                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
-                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceMustBeDirectory, source.Source), "Authoring");
+                        logger.LogDebug(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name));
+                        logger.LogDebug(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath));
+                        logger.LogDebug(string.Format(LocalizableStrings.Authoring_SourceMustBeDirectory, source.Source));
                     }
                     else
                     {
@@ -446,11 +445,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         {
                             // non-existant directory
                             allSourcesValid = false;
-                            host.LogDiagnosticMessage(string.Empty, "Authoring");
-                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
-                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
-                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceDoesNotExist, source.Source), "Authoring");
-                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceIsOutsideInstallSource, sourceRoot.FullPath), "Authoring");
+                            logger.LogDebug(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name));
+                            logger.LogDebug(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath));
+                            logger.LogDebug(string.Format(LocalizableStrings.Authoring_SourceDoesNotExist, source.Source));
+                            logger.LogDebug(string.Format(LocalizableStrings.Authoring_SourceIsOutsideInstallSource, sourceRoot.FullPath));
                         }
                     }
                 }
@@ -459,10 +457,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // outside the mount point root
                     // TODO: after the null ref exception in DirectoryInfo is fixed, change how this check works.
                     allSourcesValid = false;
-                    host.LogDiagnosticMessage(string.Empty, "Authoring");
-                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
-                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
-                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, source.Source), "Authoring");
+                    logger.LogDebug(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name));
+                    logger.LogDebug(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath));
+                    logger.LogDebug(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, source.Source));
                 }
             }
 
@@ -653,21 +650,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (warningMessages.Count > 0)
             {
-                host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateMissingCommonInformation, templateFile.FullPath), "Authoring");
+                host.Logger.LogDebug(string.Format(LocalizableStrings.Authoring_TemplateMissingCommonInformation, templateFile.FullPath));
 
                 foreach (string message in warningMessages)
                 {
-                    host.LogDiagnosticMessage("    " + message, "Authoring");
+                    host.Logger.LogDebug("    " + message);
                 }
             }
 
             if (errorMessages.Count > 0)
             {
-                host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNotInstalled, templateFile.FullPath), "Authoring");
+                host.Logger.LogDebug(string.Format(LocalizableStrings.Authoring_TemplateNotInstalled, templateFile.FullPath));
 
                 foreach (string message in errorMessages)
                 {
-                    host.LogDiagnosticMessage("    " + message, "Authoring");
+                    host.Logger.LogDebug("    " + message);
                 }
 
                 return false;
@@ -693,7 +690,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             catch (Exception ex)
             {
                 ITemplateEngineHost host = file.MountPoint.EnvironmentSettings.Host;
-                host.LogMessage($"Error reading Langpack from file: {file.FullPath} | Error = {ex.ToString()}");
+                host.Logger.LogError($"Error reading Langpack from file: {file.FullPath} | Error = {ex.ToString()}");
             }
 
             locModel = null;

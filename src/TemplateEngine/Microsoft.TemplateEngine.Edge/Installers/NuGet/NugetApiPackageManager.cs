@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         internal NuGetApiPackageManager(IEngineEnvironmentSettings settings)
         {
             _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _nugetLogger = new NuGetLogger(settings);
+            _nugetLogger = new NuGetLogger(_environmentSettings.Host.LoggerFactory);
         }
 
         /// <summary>

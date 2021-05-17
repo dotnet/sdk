@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
@@ -19,8 +20,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         private const string NuGetSourceKey = "NuGetSource";
         private const string PackageIdKey = "PackageId";
         private const string PackageVersionKey = "Version";
-        private const string DebugLogCategory = "Installer";
-        private IEngineEnvironmentSettings _settings;
+        private readonly IEngineEnvironmentSettings _settings;
+        private readonly ILogger _logger;
 
         public NuGetManagedTemplatePackage(
           IEngineEnvironmentSettings settings,
@@ -41,6 +42,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             Installer = installer ?? throw new ArgumentNullException(nameof(installer));
             ManagedProvider = provider ?? throw new ArgumentNullException(nameof(provider));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _logger = settings.Host.LoggerFactory.CreateLogger<NuGetInstaller>();
 
             Details = new Dictionary<string, string>();
             Details[PackageIdKey] = packageIdentifier;
@@ -114,7 +116,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
                 catch (Exception e)
                 {
-                    _settings.Host.LogDiagnosticMessage($"Failed to get last changed time for {MountPointUri}, details: {e.ToString()}", DebugLogCategory);
+                    _logger.LogDebug($"Failed to get last changed time for {MountPointUri}, details: {e.ToString()}");
                     return default;
                 }
             }

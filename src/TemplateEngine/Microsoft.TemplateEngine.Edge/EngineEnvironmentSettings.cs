@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public ISettingsLoader SettingsLoader { get; }
 
-        public ITemplateEngineHost Host { get;  }
+        public ITemplateEngineHost Host { get; }
 
         public IEnvironment Environment { get;  }
 
@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Edge
                 bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
                 UserProfileDir = engineEnvironmentSettings.Environment.GetEnvironmentVariable(isWindows
                     ? "USERPROFILE"
-                    : "HOME");
+                    : "HOME") ?? throw new NotSupportedException("HOME or USERPROFILE environment variable is not defined, the environment is not supported");
                 GlobalSettingsDir = hiveLocation ?? Path.Combine(UserProfileDir, ".templateengine");
                 HostSettingsDir = Path.Combine(GlobalSettingsDir, engineEnvironmentSettings.Host.HostIdentifier);
                 HostVersionSettingsDir = Path.Combine(GlobalSettingsDir, engineEnvironmentSettings.Host.HostIdentifier, engineEnvironmentSettings.Host.Version);
@@ -113,9 +113,9 @@ namespace Microsoft.TemplateEngine.Edge
                 return System.Environment.ExpandEnvironmentVariables(name);
             }
 
-            public string GetEnvironmentVariable(string name)
+            public string? GetEnvironmentVariable(string name)
             {
-                _environmentVariables.TryGetValue(name, out string result);
+                _environmentVariables.TryGetValue(name, out string? result);
                 return result;
             }
 

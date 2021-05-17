@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
@@ -16,11 +16,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly SettingsFilePaths _paths;
+        private readonly ILogger _logger;
 
         public TemplateCreator(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
             _paths = new SettingsFilePaths(environmentSettings);
+            _logger = _environmentSettings.Host.LoggerFactory.CreateLogger<TemplateCreator>();
         }
 
         public Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation, string baselineName)
@@ -56,14 +58,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 ICreationResult creationResult = null;
                 string targetDir = outputPath ?? _environmentSettings.Host.FileSystem.GetCurrentDirectory();
 
+                Timing contentGeneratorBlock = Timing.Over(_logger, "Template content generation");
                 try
                 {
                     if (!dryRun)
                     {
                         _environmentSettings.Host.FileSystem.CreateDirectory(targetDir);
                     }
-
-                    Stopwatch sw = Stopwatch.StartNew();
                     IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
 
                     // setup separate sets of parameters to be used for GetCreationEffects() and by CreateAsync().
@@ -93,9 +94,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     {
                         creationResult = await template.Generator.CreateAsync(_environmentSettings, template, creationParams, componentManager, targetDir).ConfigureAwait(false);
                     }
-
-                    sw.Stop();
-                    _environmentSettings.Host.LogTiming("Content generation time", sw.Elapsed, 0);
                     return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, targetDir, creationEffects);
                 }
                 catch (ContentGenerationException cx)
@@ -111,6 +109,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 catch (Exception ex)
                 {
                     return new TemplateCreationResult(ex.Message, CreationResultStatus.CreateFailed, template.Name);
+                }
+                finally
+                {
+                    contentGeneratorBlock.Dispose();
                 }
             }
             finally
@@ -216,7 +218,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                             // don't fail on value resolution errors, but report them as authoring problems.
                             if (valueResolutionError)
                             {
-                                _environmentSettings.Host.LogDiagnosticMessage($"Template {template.Identity} has an invalid DefaultIfOptionWithoutValue value for parameter {inputParam.Key}", "Authoring");
+                                _logger.LogDebug($"Template {template.Identity} has an invalid DefaultIfOptionWithoutValue value for parameter {inputParam.Key}");
                             }
                         }
                         else

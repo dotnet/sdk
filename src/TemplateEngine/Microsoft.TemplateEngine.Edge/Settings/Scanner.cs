@@ -11,6 +11,7 @@ using System.Reflection;
 #if !NETFULL
 using System.Runtime.Loader;
 #endif
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
@@ -22,11 +23,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly SettingsFilePaths _paths;
+        private readonly ILogger _logger;
 
         public Scanner(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
             _paths = new SettingsFilePaths(environmentSettings);
+            _logger = environmentSettings.Host.LoggerFactory.CreateLogger<Scanner>();
         }
 
         public ScanResult Scan(string sourceLocation)
@@ -127,8 +130,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
                 catch (Exception ex)
                 {
-                    _environmentSettings.Host.LogDiagnosticMessage($"During ScanForComponents() cleanup, couldn't delete source copied into the content dir: {actualScanPath}", "Install");
-                    _environmentSettings.Host.LogDiagnosticMessage($"\tError: {ex.Message}", "Install");
+                    _logger.LogDebug($"During ScanForComponents() cleanup, couldn't delete source copied into the content dir: {actualScanPath}. Details: {ex}.");
                 }
             }
         }
@@ -151,7 +153,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             catch (IOException)
             {
-                _environmentSettings.Host.LogDiagnosticMessage($"Error copying scanLocation: {sourceLocation} into the target dir: {targetPath}", "Install");
+                _logger.LogDebug($"Error copying scanLocation: {sourceLocation} into the target dir: {targetPath}");
                 diskPath = null;
                 return false;
             }

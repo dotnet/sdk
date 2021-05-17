@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public bool TryDemandMountPoint(string mountPointUri, out IMountPoint mountPoint)
         {
             //TODO: Split mountPointUri with ;(semicolon) and loop parents instead of always `null`
-            using (Timing.Over(EnvironmentSettings.Host, "Get mount point"))
+            using (Timing.Over(EnvironmentSettings.Host.Logger, "Get mount point"))
             {
                 foreach (var factory in mountPointFactories)
                 {

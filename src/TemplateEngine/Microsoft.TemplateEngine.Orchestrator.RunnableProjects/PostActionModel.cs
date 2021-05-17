@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
@@ -93,11 +94,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         string excessInstructionLocalizationIndexes = string.Join(
                             ", ",
                             actionLocalizations.Instructions.Keys.Where(k => k < 0 || k > instructionOptions.Count).Select(k => k.ToString()));
-                        host.OnNonCriticalError(
-                            null,
-                            string.Format(LocalizableStrings.Authoring_InvalidManualInstructionLocalizationIndex, excessInstructionLocalizationIndexes, postActionIndex),
-                            nameof(PostActionModel) + ".cs",
-                            0);
+                        host.Logger.LogWarning(string.Format(LocalizableStrings.Authoring_InvalidManualInstructionLocalizationIndex, excessInstructionLocalizationIndexes, postActionIndex));
                     }
                 }
 
@@ -117,11 +114,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 // Localizations provide more translations than the number of post actions we have.
                 string excessPostActionLocalizationIndexes = string.Join(", ", localizations.Keys.Where(k => k < 0 || k > modelList.Count).Select(k => k.ToString()));
-                host.OnNonCriticalError(
-                    null,
-                    string.Format(LocalizableStrings.Authoring_InvalidPostActionLocalizationIndex, excessPostActionLocalizationIndexes),
-                    nameof(PostActionModel) + ".cs",
-                    0);
+                host.Logger.LogWarning(string.Format(LocalizableStrings.Authoring_InvalidPostActionLocalizationIndex, excessPostActionLocalizationIndexes));
             }
             return modelList;
         }

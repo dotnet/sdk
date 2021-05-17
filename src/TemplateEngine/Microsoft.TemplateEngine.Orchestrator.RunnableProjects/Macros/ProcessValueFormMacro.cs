@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
@@ -78,7 +79,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
             else
             {
-                environmentSettings.Host.LogDiagnosticMessage($"Unable to find a form called '{realConfig.FormName}'", "Authoring");
+                environmentSettings.Host.Logger.LogDebug($"Unable to find a form called '{realConfig.FormName}'");
             }
         }
     }

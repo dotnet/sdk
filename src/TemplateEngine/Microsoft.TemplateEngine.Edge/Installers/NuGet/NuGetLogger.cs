@@ -2,34 +2,35 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.Extensions.Logging;
 using NuGet.Common;
+using INuGetLogger = global::NuGet.Common.ILogger;
+using NuGetLogLevel = global::NuGet.Common.LogLevel;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
     /// <summary>
     /// Default logger to be used with NuGet API. It forwards all the messages to different methods of ITemplateEngineHost depending on the log level.
     /// </summary>
-    internal class NuGetLogger : ILogger
+    internal class NuGetLogger : INuGetLogger
     {
-        private const string DebugLogCategory = "Installer";
-        private ITemplateEngineHost _host;
+        private readonly Microsoft.Extensions.Logging.ILogger _baseLogger;
 
-        internal NuGetLogger(IEngineEnvironmentSettings settings)
+        internal NuGetLogger(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory)
         {
-            _host = settings.Host;
+            _baseLogger = loggerFactory.CreateLogger("NuGetLogger") ?? throw new System.ArgumentNullException(nameof(loggerFactory));
         }
 
-        public void Log(LogLevel level, string data)
+        public void Log(NuGetLogLevel level, string data)
         {
             switch (level)
             {
-                case LogLevel.Debug: LogDebug(data); break;
-                case LogLevel.Error: LogError(data); break;
-                case LogLevel.Information: LogInformation(data); break;
-                case LogLevel.Minimal: LogMinimal(data); break;
-                case LogLevel.Verbose: LogVerbose(data); break;
-                case LogLevel.Warning: LogWarning(data); break;
+                case NuGetLogLevel.Debug: LogDebug(data); break;
+                case NuGetLogLevel.Error: LogError(data); break;
+                case NuGetLogLevel.Information: LogInformation(data); break;
+                case NuGetLogLevel.Minimal: LogMinimal(data); break;
+                case NuGetLogLevel.Verbose: LogVerbose(data); break;
+                case NuGetLogLevel.Warning: LogWarning(data); break;
             }
         }
 
@@ -38,7 +39,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             Log(message.Level, message.Message);
         }
 
-        public Task LogAsync(LogLevel level, string data)
+        public Task LogAsync(NuGetLogLevel level, string data)
         {
             Log(level, data);
             return Task.FromResult(0);
@@ -52,38 +53,38 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public void LogDebug(string data)
         {
-            _host.LogDiagnosticMessage(data, DebugLogCategory);
+            _baseLogger.LogDebug(data);
         }
 
         public void LogError(string data)
         {
-            _host.OnCriticalError(null, data, null, 0);
+            _baseLogger.LogError(data);
         }
 
         public void LogInformation(string data)
         {
             //TODO: NuGet is putting too much logs to info level, check if we want this data
-            _host.LogDiagnosticMessage(data, DebugLogCategory);
+            _baseLogger.LogDebug(data);
         }
 
         public void LogInformationSummary(string data)
         {
-            _host.LogMessage(data);
+            _baseLogger.LogInformation(data);
         }
 
         public void LogMinimal(string data)
         {
-            _host.LogMessage(data);
+            _baseLogger.LogInformation(data);
         }
 
         public void LogVerbose(string data)
         {
-            _host.LogDiagnosticMessage(data, DebugLogCategory);
+            _baseLogger.LogDebug(data);
         }
 
         public void LogWarning(string data)
         {
-            _host.OnNonCriticalError(null, data, null, 0);
+            _baseLogger.LogWarning(data);
         }
     }
 }

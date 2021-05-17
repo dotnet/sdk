@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
@@ -165,7 +166,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 CustomOperationModel opModel = opModelUntyped as CustomOperationModel;
                 if (opModel == null)
                 {
-                    host.LogMessage($"Operation type = [{opModelUntyped.Type}] could not be cast as a CustomOperationModel");
+                    host.Logger.LogWarning($"Operation type = [{opModelUntyped.Type}] could not be cast as a CustomOperationModel");
                     continue;
                 }
 
@@ -183,7 +184,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                     else
                     {
-                        host.LogMessage($"Operation type = [{opType}] from configuration is unknown.");
+                        host.Logger.LogWarning($"Operation type = [{opType}] from configuration is unknown.");
                     }
                 }
             }

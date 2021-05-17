@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
@@ -36,6 +37,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private TemplatePackageManager _templatePackagesManager;
         private volatile bool _disposed;
         private bool _loaded;
+        private ILogger _logger;
 
         public SettingsLoader(IEngineEnvironmentSettings environmentSettings, Action<IEngineEnvironmentSettings>? onFirstRun = null)
         {
@@ -44,6 +46,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _templatePackagesManager = new TemplatePackageManager(environmentSettings);
             _onFirstRun = onFirstRun;
             _installScanner = new Scanner(environmentSettings);
+            _logger = environmentSettings.Host.LoggerFactory.CreateLogger<SettingsLoader>();
         }
 
         public IComponentManager Components
@@ -169,7 +172,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             IFile? hostTemplateConfigFile = FindBestHostTemplateConfigFile(config);
 
             ITemplate template;
-            using (Timing.Over(_environmentSettings.Host, "Template from config"))
+            using (Timing.Over(_logger, $"Template from config {config.MountPoint.MountPointUri}{config.FullPath}"))
             {
                 if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile, baselineName))
                 {
@@ -310,8 +313,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                     catch (Exception ex)
                     {
-                        _environmentSettings.Host.OnCriticalError(null, "Failed to initialize the host, unable to complete first run actions", "null", 0);
-                        _environmentSettings.Host.LogDiagnosticMessage($"Details: {ex.ToString()}", "First run");
+                        _logger.LogError("Failed to initialize the host, unable to complete first run actions");
+                        _logger.LogDebug($"Details: {ex.ToString()}");
                         throw new EngineInitializationException("Failed to initialize the host, unable to complete first run actions", "First run", ex);
                     }
                 }
@@ -331,7 +334,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 string? userSettings = null;
-                using (Timing.Over(_environmentSettings.Host, "Read settings"))
+                using (Timing.Over(_logger, "Read settings"))
                 {
                     for (int i = 0; i < MaxLoadAttempts; ++i)
                     {
@@ -353,7 +356,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 JObject parsed;
-                using (Timing.Over(_environmentSettings.Host, "Parse settings"))
+                using (Timing.Over(_logger, "Parse settings"))
                 {
                     try
                     {
@@ -365,12 +368,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                 }
 
-                using (Timing.Over(_environmentSettings.Host, "Deserialize user settings"))
+                using (Timing.Over(_logger, "Deserialize user settings"))
                 {
                     _userSettings = new SettingsStore(parsed);
                 }
 
-                using (Timing.Over(_environmentSettings.Host, "Init probing paths"))
+                using (Timing.Over(_logger, "Init probing paths"))
                 {
                     if (_userSettings.ProbingPaths.Count == 0)
                     {
@@ -378,12 +381,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                 }
 
-                using (Timing.Over(_environmentSettings.Host, "Init Component manager"))
+                using (Timing.Over(_logger, "Init Component manager"))
                 {
                     _componentManager = new ComponentManager(this, _userSettings);
                 }
 
-                using (Timing.Over(_environmentSettings.Host, "Init MountPoint manager"))
+                using (Timing.Over(_logger, "Init MountPoint manager"))
                 {
                     _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
                 }
@@ -411,17 +414,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             if (!needsRebuild && cache.Version != TemplateInfo.CurrentVersion)
             {
-                _environmentSettings.Host.LogDiagnosticMessage(
-                        $"Template cache file version is {cache.Version}, but template engine is {TemplateInfo.CurrentVersion}, rebuilding cache.",
-                        "Debug");
+                _logger.LogDebug($"Template cache file version is {cache.Version}, but template engine is {TemplateInfo.CurrentVersion}, rebuilding cache.");
                 needsRebuild = true;
             }
 
             if (!needsRebuild && cache.Locale != CultureInfo.CurrentUICulture.Name)
             {
-                _environmentSettings.Host.LogDiagnosticMessage(
-                        $"Template cache locale is {cache.Locale}, but CurrentUICulture is {CultureInfo.CurrentUICulture.Name}, rebuilding cache.",
-                        "Debug");
+                _logger.LogDebug($"Template cache locale is {cache.Locale}, but CurrentUICulture is {CultureInfo.CurrentUICulture.Name}, rebuilding cache.");
                 needsRebuild = true;
             }
 
@@ -473,7 +472,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 catch (Exception ex)
                 {
                     scanResults[index] = ScanResult.Empty;
-                    _environmentSettings.Host.OnNonCriticalError(null, $"Failed to scan \"{allTemplatePackages[index].MountPointUri}\":{Environment.NewLine}{ex}", null, 0);
+                    _logger.LogWarning($"Failed to scan \"{allTemplatePackages[index].MountPointUri}\":{Environment.NewLine}{ex}");
                 }
             });
 

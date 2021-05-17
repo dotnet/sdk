@@ -3,38 +3,36 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.TemplateEngine.Utils
 {
-    public class Timing : IDisposable
+    public sealed class Timing : IDisposable
     {
-        private static int _depth = -1;
-        private readonly Action<TimeSpan, int> _result;
+        private readonly ILogger _logger;
+        private readonly string _label;
         private readonly Stopwatch _stopwatch;
+        private readonly IDisposable _disposable;
 
-        public Timing(Action<TimeSpan, int> result)
+        public Timing(ILogger logger, string label)
         {
-            ++_depth;
-            _result = result;
+            _logger = logger;
+            _label = label;
             _stopwatch = Stopwatch.StartNew();
+            _disposable = logger.BeginScope(_label);
+            _logger.LogDebug($"{_label} started");
         }
 
-        public static Timing Over(ITemplateEngineHost host, string label)
+        public static Timing Over(ILogger logger, string label)
         {
-            return new Timing((x, d) =>
-            {
-                host.LogTiming(label, x, d);
-                //string indent = string.Join("", Enumerable.Repeat("  ", d));
-                //Console.WriteLine($"{indent} {label} {x.TotalMilliseconds}");
-            });
+            return new Timing(logger, label);
         }
 
         public void Dispose()
         {
             _stopwatch.Stop();
-            _result(_stopwatch.Elapsed, _depth);
-            --_depth;
+            _logger.LogDebug($"{_label} finished, took {_stopwatch.ElapsedMilliseconds} ms");
+            _disposable.Dispose();
         }
     }
 }

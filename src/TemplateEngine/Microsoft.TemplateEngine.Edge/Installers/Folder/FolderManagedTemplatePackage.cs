@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
@@ -13,9 +14,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 {
     internal class FolderManagedTemplatePackage : IManagedTemplatePackage
     {
-        private const string DebugLogCategory = "Installer";
         private static readonly Dictionary<string, string> _emptyDictionary = new Dictionary<string, string>();
-        private IEngineEnvironmentSettings _settings;
+        private readonly IEngineEnvironmentSettings _settings;
+        private readonly ILogger _logger;
 
         public FolderManagedTemplatePackage(IEngineEnvironmentSettings settings, IInstaller installer, IManagedTemplatePackageProvider provider, string mountPointUri)
         {
@@ -27,6 +28,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             Installer = installer ?? throw new ArgumentNullException(nameof(installer));
             ManagedProvider = provider ?? throw new ArgumentNullException(nameof(provider));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _logger = settings.Host.LoggerFactory.CreateLogger<FolderManagedTemplatePackage>();
         }
 
         public string DisplayName => Identifier;
@@ -45,7 +47,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
                 }
                 catch (Exception e)
                 {
-                    _settings.Host.LogDiagnosticMessage($"Failed to get last changed time for {MountPointUri}, details: {e.ToString()}", DebugLogCategory);
+                    _logger.LogDebug($"Failed to get last changed time for {MountPointUri}, details: {e.ToString()}");
                     return default;
                 }
             }

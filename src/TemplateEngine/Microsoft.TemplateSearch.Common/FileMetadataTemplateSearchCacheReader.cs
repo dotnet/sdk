@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
@@ -79,7 +80,7 @@ namespace Microsoft.TemplateSearch.Common
                                 }
                                 catch (ArgumentException ex)
                                 {
-                                    environmentSettings.Host.LogDiagnosticMessage($"Failed to read template info entry, missing mandatory fields. Details: {ex}", "Search cache");
+                                    environmentSettings.Host.Logger.LogDebug($"Failed to read template info entry, missing mandatory fields. Details: {ex}");
                                 }
                             }
                         }
@@ -94,7 +95,7 @@ namespace Microsoft.TemplateSearch.Common
             }
             catch (Exception ex)
             {
-                environmentSettings.Host.LogDiagnosticMessage($"Failed to read template info entries. Details: {ex}", "Search cache");
+                environmentSettings.Host.Logger.LogDebug($"Failed to read template info entries. Details: {ex}");
                 templateList = null;
                 return false;
             }

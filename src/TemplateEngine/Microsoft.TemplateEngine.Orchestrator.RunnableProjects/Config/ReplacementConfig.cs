@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
@@ -71,7 +72,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             }
             else
             {
-                environmentSettings.Host.LogDiagnosticMessage($"Couldn't find a parameter called {tokens.VariableName}", "Initialization", "ReplacementConfig.Setup");
+                environmentSettings.Host.Logger.LogDebug($"Couldn't find a parameter called {tokens.VariableName}");
                 return null;
             }
         }
