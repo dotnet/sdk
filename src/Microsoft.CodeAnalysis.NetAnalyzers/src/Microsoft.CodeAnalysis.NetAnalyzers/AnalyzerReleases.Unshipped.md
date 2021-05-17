@@ -8,10 +8,6 @@ CA1840 | Performance | Info | UseEnvironmentMembers, [Documentation](https://doc
 CA1841 | Performance | Info | PreferDictionaryContainsMethods, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841)
 CA1842 | Performance | Info | DoNotUseWhenAllOrWaitAllWithSingleArgument, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842)
 CA1843 | Performance | Info | DoNotUseWhenAllOrWaitAllWithSingleArgument, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843)
-
-### New Rules
-Rule ID | Category | Severity | Notes
---------|----------|----------|-------
 CA1845 | Performance | Info | UseSpanBasedStringConcat, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1845)
 
 ### Removed Rules
