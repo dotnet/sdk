@@ -948,7 +948,7 @@ Public Class C
     End Sub
 End Class"
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]{Environment.NewLine}{editorConfigText}") }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]{Environment.NewLine}{editorConfigText}") },
                 },
             };
 
