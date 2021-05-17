@@ -64,8 +64,6 @@ Microsoft.TemplateEngine.Utils.RangeVersionSpecification
 Microsoft.TemplateEngine.Utils.RangeVersionSpecification.IsEndInclusive.get -> bool
 Microsoft.TemplateEngine.Utils.RangeVersionSpecification.IsStartInclusive.get -> bool
 Microsoft.TemplateEngine.Utils.RuntimeValueUtil
-Microsoft.TemplateEngine.Utils.SimpleConfigModifiers
-Microsoft.TemplateEngine.Utils.SimpleConfigModifiers.SimpleConfigModifiers() -> void
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException
 Microsoft.TemplateEngine.Utils.TemplateInfoExtensions
 Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions
@@ -189,8 +187,6 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.MaxVersion.get -> string
 ~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.MinVersion.get -> string
 ~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.RangeVersionSpecification(string min, string max, bool isStartInclusive, bool isEndInclusive) -> void
-~Microsoft.TemplateEngine.Utils.SimpleConfigModifiers.BaselineName.get -> string
-~Microsoft.TemplateEngine.Utils.SimpleConfigModifiers.BaselineName.set -> void
 ~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string
 ~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string message, string configItem) -> void
 ~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string message, string configItem, System.Exception innerException) -> void

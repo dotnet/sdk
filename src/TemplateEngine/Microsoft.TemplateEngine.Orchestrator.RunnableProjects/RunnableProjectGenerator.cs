@@ -181,10 +181,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     localeSourceObject = ReadJObjectFromIFile(localeFile);
                 }
 
-                ISimpleConfigModifiers configModifiers = new SimpleConfigModifiers()
-                {
-                    BaselineName = baselineName
-                };
+                ISimpleConfigModifiers configModifiers = new SimpleConfigModifiers(baselineName);
                 SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject, configModifiers, localeSourceObject);
 
                 if (!PerformTemplateValidation(templateModel, templateFile, host))
