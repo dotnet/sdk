@@ -11,7 +11,6 @@ using Microsoft.DotNet.Tools.Restore;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateEngine.Edge;
-using Microsoft.TemplateEngine.Utils;
 using System.Linq;
 
 namespace Microsoft.DotNet.Tools.New
