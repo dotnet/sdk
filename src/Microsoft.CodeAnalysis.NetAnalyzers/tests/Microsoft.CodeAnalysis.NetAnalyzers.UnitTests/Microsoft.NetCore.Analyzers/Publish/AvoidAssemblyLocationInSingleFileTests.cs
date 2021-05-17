@@ -154,7 +154,7 @@ class C
 
         private Task VerifyDiagnosticsAsync(string source, params DiagnosticResult[] expected)
         {
-            const string singleFilePublishConfig = @"[*]
+            const string singleFilePublishConfig = @"is_global = true
 build_property." + PublishSingleFile + " = true";
 
             var test = new VerifyCS.Test
