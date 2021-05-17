@@ -41,7 +41,7 @@ class C
                 TestState =
                 {
                     Sources = { source },
-                    AnalyzerConfigFiles = { ("/.editorconfig", analyzerConfig) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", analyzerConfig) },
                 }
             };
 
@@ -162,7 +162,7 @@ build_property." + PublishSingleFile + " = true";
                 TestState =
                 {
                     Sources = { source },
-                    AnalyzerConfigFiles = { ("/.editorconfig", singleFilePublishConfig) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", singleFilePublishConfig) },
                 }
             };
 
