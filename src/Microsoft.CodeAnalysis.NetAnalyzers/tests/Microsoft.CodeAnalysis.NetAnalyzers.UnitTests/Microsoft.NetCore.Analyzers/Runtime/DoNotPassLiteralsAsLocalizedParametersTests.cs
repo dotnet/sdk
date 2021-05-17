@@ -1874,7 +1874,7 @@ public class Test
                 TestState =
                 {
                     Sources = { csCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
                 }
             };
 
@@ -1909,7 +1909,7 @@ End Class
                 TestState =
                 {
                     Sources = { vbCode },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
                 }
             };
 
