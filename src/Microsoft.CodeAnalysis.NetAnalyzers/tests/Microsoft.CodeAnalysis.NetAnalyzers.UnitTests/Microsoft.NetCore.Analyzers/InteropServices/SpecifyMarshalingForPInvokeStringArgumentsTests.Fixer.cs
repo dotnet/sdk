@@ -144,7 +144,7 @@ Class C
     Private Shared Sub SomeMethod2(s As String)
     End Sub
 
-    <{|CA2101:DllImport(""user32.dll"", CharSet:=CharSet.Unicode)|}>
+    <DllImport(""user32.dll"", CharSet:=CharSet.Unicode)>
     Private Shared Sub SomeMethod3(s As String)
     End Sub
 End Class
