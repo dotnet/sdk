@@ -82,6 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 createChangedDocument = async token =>
                 {
                     var editor = await DocumentEditor.CreateAsync(context.Document, token).ConfigureAwait(false);
+
                     SyntaxNode expressionStatement = CreateThrowIfCancellationRequestedExpressionStatement(editor, conditional, propertyReference)
                         .WithAdditionalAnnotations(Formatter.Annotation);
                     editor.ReplaceNode(conditional.Syntax, expressionStatement);
@@ -95,8 +96,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         editor.InsertAfter(expressionStatement, conditional.WhenTrue.Syntax);
                     }
 
-                    //  Ensure if-blocks with multiple statements maintain correct indentation.
-                    return await Formatter.FormatAsync(editor.GetChangedDocument(), Formatter.Annotation, cancellationToken: token).ConfigureAwait(false);
+                    return editor.GetChangedDocument();
                 };
             }
             else
