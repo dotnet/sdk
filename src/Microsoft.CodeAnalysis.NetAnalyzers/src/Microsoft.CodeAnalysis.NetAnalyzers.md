@@ -1380,6 +1380,30 @@ Using 'WaitAll' with a single task may result in performance loss, await or retu
 |CodeFix|True|
 ---
 
+## [CA1844](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844): Provide memory-based overrides of async methods when subclassing 'Stream'
+
+To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
+## [CA1845](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1845): Use span-based 'string.Concat'
+
+It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
