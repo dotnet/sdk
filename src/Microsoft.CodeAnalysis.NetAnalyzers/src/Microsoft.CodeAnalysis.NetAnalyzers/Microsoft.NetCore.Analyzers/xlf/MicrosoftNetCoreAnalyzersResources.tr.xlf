@@ -2357,6 +2357,26 @@
         <target state="translated">Mümkünse Paylaşılan Erişim İmzası (SAS) yerine Azure'un rol tabanlı erişim denetimini kullanmayı düşünün. Yine de SAS kullanmanız gerekiyorsa, SharedAccessProtocol.HttpsOnly belirtin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatCodeFixTitle">
+        <source>Use 'AsSpan' with 'string.Concat'</source>
+        <target state="new">Use 'AsSpan' with 'string.Concat'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatDescription">
+        <source>It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</source>
+        <target state="new">It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatMessage">
+        <source>Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</source>
+        <target state="new">Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatTitle">
+        <source>Use span-based 'string.Concat'</source>
+        <target state="new">Use span-based 'string.Concat'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">
         <source>Platform compatibility analyzer requires a valid platform name and version.</source>
         <target state="new">Platform compatibility analyzer requires a valid platform name and version.</target>
