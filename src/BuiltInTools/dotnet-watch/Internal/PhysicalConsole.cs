@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Tools.Internal
@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Tools.Internal
     /// </summary>
     public class PhysicalConsole : IConsole
     {
-        private CancellationTokenSource _cancellationTokenSource;
+        private readonly List<Action<ConsoleKeyInfo>> _keyPressedListeners = new();
 
         private PhysicalConsole()
         {
@@ -24,23 +24,30 @@ namespace Microsoft.Extensions.Tools.Internal
             };
         }
 
-        public CancellationToken ListenForForceReloadRequest()
+        public event Action<ConsoleKeyInfo> KeyPressed
         {
-            _cancellationTokenSource ??= new CancellationTokenSource();
+            add
+            {
+                _keyPressedListeners.Add(value);
+                ListenToConsoleKeyPress();
+            }
 
+            remove => _keyPressedListeners.Remove(value);
+        }
+
+        private void ListenToConsoleKeyPress()
+        {
             Task.Run(() =>
             {
-                var key = Console.ReadKey(intercept: true);
-                if (key.Modifiers == ConsoleModifiers.Control && key.Key == ConsoleKey.R)
+                while (true)
                 {
-                    var cancellationTokenSource = Interlocked.Exchange(ref _cancellationTokenSource, new CancellationTokenSource());
-
-                    cancellationTokenSource.Cancel();
-                    cancellationTokenSource.Dispose();
+                    var key = Console.ReadKey(intercept: true);
+                    for (var i = 0; i < _keyPressedListeners.Count; i++)
+                    {
+                        _keyPressedListeners[i](key);
+                    }
                 }
             });
-
-            return _cancellationTokenSource.Token;
         }
 
         public static IConsole Singleton { get; } = new PhysicalConsole();
