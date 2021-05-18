@@ -1,52 +1,95 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.BuiltInManagedProvider;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    internal class TemplatePackageManager : ITemplatePackageManager, IDisposable
+    /// <summary>
+    /// Manages all <see cref="ITemplatePackageProvider"/>s available to the host.
+    /// </summary>
+    public class TemplatePackageManager : IDisposable
     {
         private readonly IEngineEnvironmentSettings environmentSettings;
-        private Dictionary<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>> cachedSources;
+        private readonly SettingsFilePaths _paths;
+        private readonly ILogger _logger;
+        private readonly Scanner _installScanner;
+        private volatile TemplateCache? _userTemplateCache;
+        private Dictionary<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>>? cachedSources;
 
         public TemplatePackageManager(IEngineEnvironmentSettings environmentSettings)
         {
             this.environmentSettings = environmentSettings;
+            _logger = environmentSettings.Host.LoggerFactory.CreateLogger<TemplatePackageManager>();
+            _paths = new SettingsFilePaths(environmentSettings);
+            _installScanner = new Scanner(environmentSettings);
         }
 
-        public event Action TemplatePackagesChanged;
+        /// <summary>
+        /// Triggered every time when the list of <see cref="ITemplatePackage"/>s changes, this is triggered by <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/>.
+        /// </summary>
+        public event Action? TemplatePackagesChanged;
 
+        /// <summary>
+        /// Returns <see cref="IManagedTemplatePackageProvider"/> with specified name.
+        /// </summary>
+        /// <param name="name">Name from <see cref="ITemplatePackageProviderFactory.DisplayName"/>.</param>
+        /// <returns></returns>
+        /// <remarks>For default built-in providers use <see cref="GetBuiltInManagedProvider"/> method instead.</remarks>
         public IManagedTemplatePackageProvider GetManagedProvider(string name)
         {
-            EnsureLoaded();
-            return cachedSources.Keys.OfType<IManagedTemplatePackageProvider>().FirstOrDefault(p => p.Factory.DisplayName == name);
+            EnsureProvidersLoaded();
+            return cachedSources!.Keys.OfType<IManagedTemplatePackageProvider>().FirstOrDefault(p => p.Factory.DisplayName == name);
         }
 
+        /// <summary>
+        /// Returns <see cref="IManagedTemplatePackageProvider"/> with specified <see cref="Guid"/>.
+        /// </summary>
+        /// <param name="id"><see cref="Guid"/> from <see cref="IIdentifiedComponent.Id"/> of <see cref="ITemplatePackageProviderFactory"/>.</param>
+        /// <returns></returns>
+        /// <remarks>For default built-in providers use <see cref="GetBuiltInManagedProvider"/> method instead.</remarks>
         public IManagedTemplatePackageProvider GetManagedProvider(Guid id)
         {
-            EnsureLoaded();
-            return cachedSources.Keys.OfType<IManagedTemplatePackageProvider>().FirstOrDefault(p => p.Factory.Id == id);
+            EnsureProvidersLoaded();
+            return cachedSources!.Keys.OfType<IManagedTemplatePackageProvider>().FirstOrDefault(p => p.Factory.Id == id);
         }
 
+        /// <summary>
+        /// Same as <see cref="GetTemplatePackagesAsync"/> but filters only <see cref="IManagedTemplatePackage"/> packages.
+        /// </summary>
+        /// <param name="invalidateCache">Useful when <see cref="IManagedTemplatePackage"/> doesn't trigger <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/> event.</param>
+        /// <returns>The list of <see cref="IManagedTemplatePackage"/>.</returns>
         public async Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackagesAsync(bool force = false)
         {
-            EnsureLoaded();
+            EnsureProvidersLoaded();
             return (await GetTemplatePackagesAsync(force).ConfigureAwait(false)).OfType<IManagedTemplatePackage>().ToList();
         }
 
-        public async Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(bool force)
+        /// <summary>
+        /// Returns combined list of <see cref="ITemplatePackage"/>s that all <see cref="ITemplatePackageProvider"/>s and <see cref="IManagedTemplatePackagesProvider"/>s return.
+        /// <see cref="ITemplatePackageManager"/> caches the responses from <see cref="ITemplatePackageProvider"/>s, to get non-cached response <paramref name="invalidateCache"/> should be set to true.
+        /// </summary>
+        /// <param name="invalidateCache">Useful when <see cref="ITemplatePackageProvider"/> doesn't trigger <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/> event.</param>
+        /// <returns>The list of <see cref="ITemplatePackage"/>s.</returns>
+        public async Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(bool force = false)
         {
-            EnsureLoaded();
+            EnsureProvidersLoaded();
             if (force)
             {
-                foreach (var provider in cachedSources.Keys)
+                foreach (var provider in cachedSources!.Keys)
                 {
                     cachedSources[provider] = Task.Run(() => provider.GetAllTemplatePackagesAsync(default));
                 }
@@ -73,6 +116,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
+        /// <summary>
+        /// Returns built-in <see cref="IManagedTemplatePackageProvider"/> of specified <see cref="InstallationScope"/>.
+        /// </summary>
+        /// <param name="scope">scope managed by built-in provider.</param>
+        /// <returns><see cref="IManagedTemplatePackageProvider"/> which manages packages of <paramref name="scope"/>.</returns>
         public IManagedTemplatePackageProvider GetBuiltInManagedProvider(InstallationScope scope = InstallationScope.Global)
         {
             switch (scope)
@@ -83,7 +131,47 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.FactoryId);
         }
 
-        private void EnsureLoaded()
+        /// <summary>
+        /// Gets all templates based on current settings.
+        /// </summary>
+        /// <remarks>
+        /// This call is cached. And can be invalidated by <see cref="RebuildTemplateCacheAsync"/>.
+        /// </remarks>
+        public async Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token)
+        {
+            var userTemplateCache = await UpdateTemplateCacheAsync(false).ConfigureAwait(false);
+            return userTemplateCache.TemplateInfo;
+        }
+
+        /// <summary>
+        /// Gets the templates filtered using <paramref name="filters"/> and <paramref name="matchCriteria"/>.
+        /// </summary>
+        /// <param name="matchCriteria">The criteria for <see cref="ITemplateMatchInfo"/> to be included to result collection.</param>
+        /// <param name="filters">The list of filters to be applied to templates.</param>
+        /// <returns>The filtered list of templates with match information.</returns>
+        /// <example>
+        /// <c>GetTemplatesAsync(WellKnownSearchFilters.MatchesAllCriteria, new [] { WellKnownSearchFilters.NameFilter("myname") }</c> - returns the templates which name or short name contains "myname". <br/>
+        /// <c>GetTemplatesAsync(TemplateListFilter.MatchesAtLeastOneCriteria, new [] { WellKnownSearchFilters.NameFilter("myname"), WellKnownSearchFilters.NameFilter("othername") })</c> - returns the templates which name or short name contains "myname" or "othername".<br/>
+        /// </example>
+        public async Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters, CancellationToken token = default)
+        {
+            IReadOnlyList<ITemplateInfo> templates = await GetTemplatesAsync(token).ConfigureAwait(false);
+            //TemplateListFilter.GetTemplateMatchInfo code should be moved to this method eventually, when no longer needed.
+#pragma warning disable CS0618 // Type or member is obsolete.
+            return TemplateListFilter.GetTemplateMatchInfo(templates, matchFilter, filters.ToArray()).ToList();
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        /// <summary>
+        /// Deletes templates cache and rebuilds it.
+        /// Useful if user suspects cache is corrupted and wants to rebuild it.
+        /// </summary>
+        public Task RebuildTemplateCacheAsync(CancellationToken token)
+        {
+            return UpdateTemplateCacheAsync(true);
+        }
+
+        private void EnsureProvidersLoaded()
         {
             if (cachedSources != null)
             {
@@ -91,7 +179,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             cachedSources = new Dictionary<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>>();
-            var providers = environmentSettings.SettingsLoader.Components.OfType<ITemplatePackageProviderFactory>().Select(f => f.CreateProvider(environmentSettings));
+            var providers = environmentSettings.Components.OfType<ITemplatePackageProviderFactory>().Select(f => f.CreateProvider(environmentSettings));
             foreach (var provider in providers)
             {
                 provider.TemplatePackagesChanged += () =>
@@ -101,6 +189,94 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 };
                 cachedSources[provider] = Task.Run(() => provider.GetAllTemplatePackagesAsync(default));
             }
+        }
+
+        private async Task<TemplateCache> UpdateTemplateCacheAsync(bool needsRebuild)
+        {
+            // Kick off gathering template packages, so parsing cache can happen in parallel.
+            Task<IReadOnlyList<ITemplatePackage>> getTemplatePackagesTask = GetTemplatePackagesAsync(needsRebuild);
+            if (!(_userTemplateCache is TemplateCache cache))
+            {
+            cache = new TemplateCache(JObject.Parse(_paths.ReadAllText(_paths.TemplateCacheFile, "{}")));
+            }
+
+            if (cache.Version == null)
+            {
+                // Null version means, parsing cache failed.
+                needsRebuild = true;
+            }
+
+            if (!needsRebuild && cache.Version != TemplateInfo.CurrentVersion)
+            {
+                _logger.LogDebug($"Template cache file version is {cache.Version}, but template engine is {TemplateInfo.CurrentVersion}, rebuilding cache.");
+                needsRebuild = true;
+            }
+
+            if (!needsRebuild && cache.Locale != CultureInfo.CurrentUICulture.Name)
+            {
+                _logger.LogDebug($"Template cache locale is {cache.Locale}, but CurrentUICulture is {CultureInfo.CurrentUICulture.Name}, rebuilding cache.");
+                needsRebuild = true;
+            }
+
+            var allTemplatePackages = await getTemplatePackagesTask.ConfigureAwait(false);
+
+            var mountPoints = new Dictionary<string, DateTime>();
+
+            foreach (var package in allTemplatePackages)
+            {
+                mountPoints[package.MountPointUri] = package.LastChangeTime;
+
+                // We can stop comparing, but we need to keep looping to fill mountPoints
+                if (!needsRebuild)
+                {
+                    if (cache.MountPointsInfo.TryGetValue(package.MountPointUri, out var cachedLastChangeTime))
+                    {
+                        if (package.LastChangeTime > cachedLastChangeTime)
+                        {
+                            needsRebuild = true;
+                        }
+                    }
+                    else
+                    {
+                        needsRebuild = true;
+                    }
+                }
+            }
+
+            // Check that some mountpoint wasn't removed...
+            if (!needsRebuild && mountPoints.Keys.Count != cache.MountPointsInfo.Count)
+            {
+                needsRebuild = true;
+            }
+
+            // Cool, looks like everything is up to date, exit
+            if (!needsRebuild)
+            {
+                return cache;
+            }
+
+            var scanResults = new ScanResult[allTemplatePackages.Count];
+            Parallel.For(0, allTemplatePackages.Count, (int index) =>
+            {
+                try
+                {
+                    var scanResult = _installScanner.Scan(allTemplatePackages[index].MountPointUri);
+                    scanResults[index] = scanResult;
+                }
+                catch (Exception ex)
+                {
+                    scanResults[index] = ScanResult.Empty;
+                    _logger.LogWarning($"Failed to scan \"{allTemplatePackages[index].MountPointUri}\":{Environment.NewLine}{ex}");
+                }
+            });
+
+            cache = new TemplateCache(
+                scanResults,
+                mountPoints
+                );
+            JObject serialized = JObject.FromObject(cache);
+_paths.WriteAllText(_paths.TemplateCacheFile, serialized.ToString());
+return _userTemplateCache = cache;
         }
     }
 }

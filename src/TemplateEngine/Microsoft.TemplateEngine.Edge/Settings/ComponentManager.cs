@@ -21,12 +21,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly Dictionary<Guid, string> _componentIdToAssemblyQualifiedTypeName = new Dictionary<Guid, string>();
         private readonly Dictionary<Type, HashSet<Guid>> _componentIdsByType;
         private readonly SettingsStore _settings;
-        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
         private readonly SettingsFilePaths _paths;
 
         public ComponentManager(IEngineEnvironmentSettings engineEnvironmentSettings)
         {
-            _engineEnvironmentSettings = engineEnvironmentSettings;
             _paths = new SettingsFilePaths(engineEnvironmentSettings);
             _settings = SettingsStore.Load(engineEnvironmentSettings, _paths);
             _loadLocations.AddRange(_settings.ProbingPaths);
@@ -191,6 +189,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 foreach (Type interfaceType in interfaceTypesToRegisterFor)
                 {
                     AddComponent(interfaceType, instance);
+                    AddProbingPath(Path.GetDirectoryName(type.Assembly.Location));
 
                     _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
                     _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;
@@ -224,9 +223,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-#pragma warning disable SA1202 // Elements should be ordered by access, disabled to make review easier
         internal void Save()
-#pragma warning restore SA1202 // Elements should be ordered by access
         {
             bool successfulWrite = false;
             const int maxAttempts = 10;
@@ -247,9 +244,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-#pragma warning disable SA1202 // Elements should be ordered by access, disabled to make review easier
         public void AddComponent(Type type, IIdentifiedComponent component)
-#pragma warning restore SA1202 // Elements should be ordered by access
         {
             if (!type.IsAssignableFrom(component.GetType()))
             {

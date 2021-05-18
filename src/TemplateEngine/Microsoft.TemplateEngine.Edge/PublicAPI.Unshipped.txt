@@ -12,9 +12,8 @@ Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.RegisterDiagnosticLogger
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Version.get -> string!
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.VirtualizeDirectory(string! path) -> void
 Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings
-Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Dispose() -> void
-Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.EngineEnvironmentSettings(Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost! host, bool virtualizeSettings = false, System.Action<Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings!>? onFirstRun = null, string? settingsLocation = null, Microsoft.TemplateEngine.Abstractions.IEnvironment? environment = null) -> void
-Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.EngineEnvironmentSettings(Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost! host, Microsoft.TemplateEngine.Abstractions.ISettingsLoader! settingsLoader, Microsoft.TemplateEngine.Abstractions.IPathInfo! pathInfo, Microsoft.TemplateEngine.Abstractions.IEnvironment? environment) -> void
+Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Components.get -> Microsoft.TemplateEngine.Abstractions.IComponentManager!
+Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.EngineEnvironmentSettings(Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost! host, bool virtualizeSettings = false, string? settingsLocation = null, Microsoft.TemplateEngine.Abstractions.IEnvironment? environment = null, Microsoft.TemplateEngine.Abstractions.IComponentManager? componentManager = null, Microsoft.TemplateEngine.Abstractions.IPathInfo? pathInfo = null) -> void
 Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Environment.get -> Microsoft.TemplateEngine.Abstractions.IEnvironment!
 Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Host.get -> Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost!
 Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Paths.get -> Microsoft.TemplateEngine.Abstractions.IPathInfo!
@@ -34,6 +33,8 @@ Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.HasParameterMismatch
 Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.IsMatch.get -> bool
 Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.IsParameterMatch.get -> bool
 Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.IsPartialMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Settings.InstallationScope
+Microsoft.TemplateEngine.Edge.Settings.InstallationScope.Global = 0 -> Microsoft.TemplateEngine.Edge.Settings.InstallationScope
 Microsoft.TemplateEngine.Edge.Settings.Scanner
 Microsoft.TemplateEngine.Edge.Settings.Scanner.Scan(string! mountPointUri) -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
 Microsoft.TemplateEngine.Edge.Settings.Scanner.Scanner(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> void
@@ -43,6 +44,18 @@ Microsoft.TemplateEngine.Edge.Settings.ScanResult.Localizations.get -> System.Co
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.MountPointUri.get -> string!
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.ScanResult(string! mountPointUri, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>! templates, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>! localizations, System.Collections.Generic.IReadOnlyList<(string! AssemblyPath, System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>! components) -> void
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.Templates.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.Dispose() -> void
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetBuiltInManagedProvider(Microsoft.TemplateEngine.Edge.Settings.InstallationScope scope = Microsoft.TemplateEngine.Edge.Settings.InstallationScope.Global) -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetManagedProvider(string! name) -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetManagedProvider(System.Guid id) -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetManagedTemplatePackagesAsync(bool force = false) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage!>!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetTemplatePackagesAsync(bool force = false) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage!>!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetTemplatesAsync(System.Func<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!, bool>! matchFilter, System.Collections.Generic.IEnumerable<System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!>! filters, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!>!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetTemplatesAsync(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.RebuildTemplateCacheAsync(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.TemplatePackageManager(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> void
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.TemplatePackagesChanged -> System.Action?
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.Cancelled = -2147467260 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.CreateFailed = -2147352567 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus

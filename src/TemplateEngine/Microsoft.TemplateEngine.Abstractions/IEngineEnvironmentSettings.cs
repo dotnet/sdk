@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using System;
+
 namespace Microsoft.TemplateEngine.Abstractions
 {
     /// <summary>
@@ -13,6 +15,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Manages template cache and template engine settings.
         /// </summary>
+        [Obsolete("ISettingsLoader is obsolete.")]
         ISettingsLoader SettingsLoader { get; }
 
         /// <summary>
@@ -29,5 +32,10 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Gets main file paths used by template engine.
         /// </summary>
         IPathInfo Paths { get; }
+
+        /// <summary>
+        /// Component manager for this instance of settings.
+        /// </summary>
+        IComponentManager Components { get; }
     }
 }

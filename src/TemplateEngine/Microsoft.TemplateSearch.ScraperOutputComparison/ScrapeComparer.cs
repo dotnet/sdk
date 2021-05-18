@@ -10,7 +10,7 @@ using Microsoft.TemplateSearch.Common;
 
 namespace Microsoft.TemplateSearch.ScraperOutputComparison
 {
-    internal class ScrapeComparer : IDisposable
+    internal class ScrapeComparer
     {
         private readonly ComparisonConfig _config;
 
@@ -45,8 +45,6 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
             result = new ScrapeComparisonResult(_config.ScraperOutputOneFile, _config.ScraperOutputTwoFile, scraperOnePacks.ToList(), scraperTwoPacks.ToList());
             return true;
         }
-
-        public void Dispose() => _environmentSettings.Dispose();
 
         private bool TryReadScraperOutput(string scrapeFilePath, out TemplateDiscoveryMetadata discoveryMetadata)
         {

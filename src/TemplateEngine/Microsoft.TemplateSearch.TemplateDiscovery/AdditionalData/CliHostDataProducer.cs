@@ -28,7 +28,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         public void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templateList, IEngineEnvironmentSettings environment)
         {
-            IHostSpecificDataLoader hostDataLoader = new HostSpecificDataLoader(environment.SettingsLoader);
+            IHostSpecificDataLoader hostDataLoader = new HostSpecificDataLoader(environment);
 
             foreach (ITemplateInfo template in templateList)
             {

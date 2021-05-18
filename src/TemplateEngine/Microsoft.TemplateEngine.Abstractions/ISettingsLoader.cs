@@ -1,107 +1,62 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
-    /// <summary>
-    /// Responsible for loading/storing settings, handling of template cache, mount points.
-    /// </summary>
     public interface ISettingsLoader
     {
-        /// <summary>
-        /// Component manager for this instance of settings.
-        /// </summary>
+        [Obsolete("Use IEngineEnvironmentSettings.Components")]
         IComponentManager Components { get; }
 
-        /// <summary>
-        /// Parent engine environment settings, used to create this settings loader.
-        /// </summary>
+        [Obsolete("Use IEngineEnvironmentSettings directly.")]
         IEngineEnvironmentSettings EnvironmentSettings { get; }
 
-        /// <summary>
-        /// Manages all <see cref="ITemplatePackageProvider"/> available to the host.
-        /// </summary>
-        ITemplatePackageManager TemplatePackagesManager { get; }
+        [Obsolete("Not possible anymore.")]
+        IEnumerable<object> MountPoints { get; }
 
-        /// <summary>
-        /// Adds path to be scanned by <see cref="IComponentManager"/> when looking up assemblies for components.
-        /// </summary>
-        /// <param name="probeIn">Absolute path to be probed.</param>
+        [Obsolete("Not possible anymore.")]
+        void AddMountPoint(IMountPoint mountPoint);
+
         [Obsolete("Probing paths need to be handled by ComponentManager itself.")]
         void AddProbingPath(string probeIn);
 
-        /// <summary>
-        /// Gets all templates based on current settings.
-        /// </summary>
-        /// <remarks>
-        /// This call is cached. And can be invalidated by <see cref="RebuildTemplateCacheAsync"/>.
-        /// </remarks>
-        Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token);
+        [Obsolete("Use new TemplatePackagesManager().GetTemplatesAsync.")]
+        void GetTemplates(HashSet<ITemplateInfo> templates);
 
-        /// <summary>
-        /// Gets the templates filtered using <paramref name="filters"/> and <paramref name="matchCriteria"/>.
-        /// </summary>
-        /// <param name="matchCriteria">The criteria for <see cref="ITemplateMatchInfo"/> to be included to result collection.</param>
-        /// <param name="filters">The list of filters to be applied to templates.</param>
-        /// <returns>The filtered list of templates with match information.</returns>
-        /// <example>
-        /// <c>GetTemplatesAsync(WellKnownSearchFilters.MatchesAllCriteria, new [] { WellKnownSearchFilters.NameFilter("myname") }</c> - returns the templates which name or short name contains "myname". <br/>
-        /// <c>GetTemplatesAsync(TemplateListFilter.MatchesAtLeastOneCriteria, new [] { WellKnownSearchFilters.NameFilter("myname"), WellKnownSearchFilters.NameFilter("othername") })</c> - returns the templates which name or short name contains "myname" or "othername".<br/>
-        /// </example>
-        Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchCriteria, IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters, CancellationToken token = default);
+        [Obsolete("Use Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.LoadTemplate extension.")]
+        ITemplate LoadTemplate(ITemplateInfo info, string baselineName);
 
-        /// <summary>
-        /// Fully load template from <see cref="ITemplateInfo"/>.
-        /// <see cref="ITemplateInfo"/> usually comes from cache and is missing some information.
-        /// Calling this methods returns full information about template needed to instantiate template.
-        /// </summary>
-        /// <param name="info">Information about template.</param>
-        /// <param name="baselineName">Defines which baseline of template to load.</param>
-        /// <returns>Fully loaded template or <c>null</c> if it fails to load template.</returns>
-        ITemplate? LoadTemplate(ITemplateInfo info, string? baselineName);
-
-        /// <summary>
-        /// Saves settings to file.
-        /// </summary>
-        [Obsolete("Saving of settings needs to be handled by ComponentManager itself.")]
+        [Obsolete("No need to call Save anymore.")]
         void Save();
 
-        /// <summary>
-        /// Loads <see cref="IMountPoint"/> via <see cref="IMountPointFactory"/> that are
-        /// loaded in <see cref="IComponentManager"/>.
-        /// </summary>
-        /// <param name="mountPointUri">Uri to load.</param>
-        /// <param name="mountPoint">Mountpoint to be returned.</param>
-        /// <returns><c>true</c> if mountpoint was loaded.</returns>
-        bool TryGetMountPoint(string mountPointUri, out IMountPoint mountPoint);
+        [Obsolete("Use Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint extension and then look for file inside mountpoint..")]
+        bool TryGetFileFromIdAndPath(Guid mountPointId, string place, out IFile file, out IMountPoint mountPoint);
 
-        /// <summary>
-        /// Finds best host file, based on <see cref="ITemplateEngineHost.FallbackHostTemplateConfigNames"/>.
-        /// </summary>
-        /// <param name="config">File that represents original template file.</param>
-        /// <returns>Host file if exists; otherwise <c>null</c>.</returns>
-        IFile? FindBestHostTemplateConfigFile(IFileSystemInfo config);
+        [Obsolete("Use Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint extension.")]
+        bool TryGetMountPointFromPlace(string mountPointPlace, out IMountPoint mountPoint);
 
-        /// <summary>
-        /// Deletes templates cache and rebuilds it.
-        /// Useful if user suspects cache is corrupted and wants to rebuild it.
-        /// </summary>
-        Task RebuildTemplateCacheAsync(CancellationToken token);
+        [Obsolete("Use Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint extension.")]
+        bool TryGetMountPointInfo(Guid mountPointId, out object info);
 
-        /// <summary>
-        /// Resets settings of host version.
-        /// Useful when the settings need to be reset to default and all caches to be reinitialized.
-        /// </summary>
-        void ResetHostSettings();
+        [Obsolete("Should be handled by TemplatePackageManager itself.")]
+        void WriteTemplateCache(IList<ITemplateInfo> templates, string locale);
+
+        [Obsolete("Should be handled by TemplatePackageManager itself.")]
+        void WriteTemplateCache(IList<ITemplateInfo> templates, string locale, bool hasContentChanges);
+
+        IFile FindBestHostTemplateConfigFile(IFileSystemInfo config);
+
+        [Obsolete("IMountPoint is IDisposable now.")]
+        void ReleaseMountPoint(IMountPoint mountPoint);
+
+        [Obsolete("Not possible anymore.")]
+        void RemoveMountPoints(IEnumerable<Guid> mountPoints);
+
+        [Obsolete("Not possible anymore.")]
+        void RemoveMountPoint(IMountPoint mountPoint);
     }
 }

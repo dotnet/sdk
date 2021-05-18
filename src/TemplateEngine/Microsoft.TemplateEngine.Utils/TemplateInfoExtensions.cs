@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Utils
@@ -37,15 +38,6 @@ namespace Microsoft.TemplateEngine.Utils
         public static string? GetTemplateType(this ITemplateInfo template)
         {
             return template.GetTagValue("type");
-        }
-
-        /// <summary>
-        /// Helper method that returns <see cref="ITemplatePackage"/> that contains <paramref name="template"/>.
-        /// </summary>
-        public static async Task<ITemplatePackage> GetTemplatePackageAsync(this ITemplateInfo template, IEngineEnvironmentSettings settings)
-        {
-            IReadOnlyList<ITemplatePackage> templatePackages = await settings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync().ConfigureAwait(false);
-            return templatePackages.Single(s => s.MountPointUri == template.MountPointUri);
         }
 
         /// <summary>
@@ -86,6 +78,37 @@ namespace Microsoft.TemplateEngine.Utils
             return template.Parameters.FirstOrDefault(
  param => param.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase)
                                   && param.DataType.Equals("choice", StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static ITemplate? LoadTemplate(this ITemplateInfo info, IEngineEnvironmentSettings engineEnvironment, string? baselineName)
+        {
+            IGenerator? generator;
+            if (!engineEnvironment.Components.TryGetComponent(info.GeneratorId, out generator))
+            {
+                return null;
+            }
+            IMountPoint mountPoint;
+            if (!engineEnvironment.TryGetMountPoint(info.MountPointUri, out mountPoint))
+            {
+                return null;
+            }
+            IFile config = mountPoint.FileInfo(info.ConfigPlace);
+            IFile? localeConfig = string.IsNullOrEmpty(info.LocaleConfigPlace) ? null : mountPoint.FileInfo(info.LocaleConfigPlace);
+            IFile? hostTemplateConfigFile = string.IsNullOrEmpty(info.HostConfigPlace) ? null : mountPoint.FileInfo(info.HostConfigPlace);
+            ITemplate template;
+            using (Timing.Over(engineEnvironment.Host.Logger, $"Template from config {config.MountPoint.MountPointUri}{config.FullPath}"))
+            {
+                if (generator!.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile, baselineName))
+                {
+                    return template;
+                }
+                else
+                {
+                    //TODO: Log the failure to read the template info
+                }
+            }
+
+            return null;
         }
     }
 }

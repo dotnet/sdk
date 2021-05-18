@@ -6,10 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+using Microsoft.TemplateEngine.Edge.Settings;
 
-namespace Microsoft.TemplateEngine.Utils
+namespace Microsoft.TemplateEngine.Cli
 {
-    public static class TemplatePackageExtensions
+    internal static class TemplatePackageExtensions
     {
         /// <summary>
         /// Returns all <see cref="ITemplateInfo"/> contained by <paramref name="templatePackage"/>.
@@ -17,9 +18,9 @@ namespace Microsoft.TemplateEngine.Utils
         /// <param name="templatePackage"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<ITemplateInfo>> GetTemplates(this ITemplatePackage templatePackage, IEngineEnvironmentSettings settings)
+        public static async Task<IEnumerable<ITemplateInfo>> GetTemplates(this ITemplatePackage templatePackage, TemplatePackageManager templatePackageManager)
         {
-            var allTemplates = await settings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false);
+            var allTemplates = await templatePackageManager.GetTemplatesAsync(default).ConfigureAwait(false);
             return allTemplates.Where(t => t.MountPointUri == templatePackage.MountPointUri);
         }
     }

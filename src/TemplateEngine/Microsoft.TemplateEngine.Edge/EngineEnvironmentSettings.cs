@@ -14,36 +14,34 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Edge
 {
-    public sealed class EngineEnvironmentSettings : IEngineEnvironmentSettings, IDisposable
+    public sealed class EngineEnvironmentSettings : IEngineEnvironmentSettings
     {
-        private volatile bool _disposed;
-
         public EngineEnvironmentSettings(
             ITemplateEngineHost host,
             bool virtualizeSettings = false,
-            Action<IEngineEnvironmentSettings>? onFirstRun = null,
             string? settingsLocation = null,
-            IEnvironment? environment = null)
+            IEnvironment? environment = null,
+            IComponentManager? componentManager = null,
+            IPathInfo? pathInfo = null)
         {
             Host = host ?? throw new ArgumentNullException(nameof(host));
             Environment = environment ?? new DefaultEnvironment();
-            SettingsLoader = new SettingsLoader(this, onFirstRun);
-            Paths = new DefaultPathInfo(this, settingsLocation);
+            Paths = pathInfo ?? new DefaultPathInfo(this, settingsLocation);
             if (virtualizeSettings)
             {
                 Host.VirtualizeDirectory(Paths.GlobalSettingsDir);
             }
+            Components = componentManager ?? new ComponentManager(this);
         }
 
-        public EngineEnvironmentSettings(ITemplateEngineHost host, ISettingsLoader settingsLoader, IPathInfo pathInfo, IEnvironment? environment)
+        [Obsolete("ISettingsLoader is obsolete, see ISettingsLoader obsolete description for details.")]
+        public ISettingsLoader SettingsLoader
         {
-            Host = host ?? throw new ArgumentNullException(nameof(host));
-            SettingsLoader = settingsLoader ?? throw new ArgumentNullException(nameof(settingsLoader));
-            Paths = pathInfo ?? throw new ArgumentNullException(nameof(pathInfo));
-            Environment = environment ?? new DefaultEnvironment();
+            get
+            {
+                throw new Exception("ISettingsLoader is no longer supported.");
+            }
         }
-
-        public ISettingsLoader SettingsLoader { get; }
 
         public ITemplateEngineHost Host { get; }
 
@@ -51,15 +49,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public IPathInfo Paths { get;  }
 
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-            _disposed = true;
-            (SettingsLoader as IDisposable)?.Dispose();
-        }
+        public IComponentManager Components { get; }
 
         private class DefaultPathInfo : IPathInfo
         {

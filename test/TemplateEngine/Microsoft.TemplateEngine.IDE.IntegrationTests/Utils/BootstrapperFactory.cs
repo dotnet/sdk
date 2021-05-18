@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
                     host.VirtualizeDirectory(virtualLocation);
                 }
             }
-            return new Bootstrapper(host, null, true);
+            return new Bootstrapper(host, true);
         }
 
         private static ITemplateEngineHost CreateHost(bool loadBuiltInTemplates = false)

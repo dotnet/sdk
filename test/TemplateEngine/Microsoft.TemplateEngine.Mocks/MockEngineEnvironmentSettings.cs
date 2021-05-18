@@ -9,6 +9,7 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockEngineEnvironmentSettings : IEngineEnvironmentSettings
     {
+        [Obsolete("ISettingsLoader is obsolete.")]
         public ISettingsLoader SettingsLoader { get { throw new NotImplementedException(); } }
 
         public ITemplateEngineHost Host { get; set; }
@@ -16,6 +17,8 @@ namespace Microsoft.TemplateEngine.Mocks
         public IEnvironment Environment { get; set; }
 
         public IPathInfo Paths { get { throw new NotImplementedException(); } }
+
+        public IComponentManager Components { get; set; }
     }
 
     public class MockEnvironment : IEnvironment

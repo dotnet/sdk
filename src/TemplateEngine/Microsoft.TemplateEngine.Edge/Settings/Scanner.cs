@@ -56,7 +56,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private MountPointScanSource GetOrCreateMountPointScanInfoForInstallSource(string sourceLocation)
         {
-            foreach (IMountPointFactory factory in _environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>().ToList())
+            foreach (IMountPointFactory factory in _environmentSettings.Components.OfType<IMountPointFactory>().ToList())
             {
                 if (factory.TryMount(_environmentSettings, null, sourceLocation, out IMountPoint mountPoint))
                 {
@@ -115,8 +115,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         // They need to be registered for dependent assemblies, not just when an assembly can be loaded.
                         // We'll need to figure out how to know when that is.
 #pragma warning disable CS0618 // Type or member is obsolete
-                        _environmentSettings.SettingsLoader.Components.RegisterMany(typeList);
-                        _environmentSettings.SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Key));
+                        _environmentSettings.Components.RegisterMany(typeList);
 #pragma warning restore CS0618 // Type or member is obsolete
                         source.FoundComponents = true;
                     }
@@ -178,7 +177,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             var templates = new List<ITemplate>();
             var localizationLocators = new List<ILocalizationLocator>();
 
-            foreach (IGenerator generator in _environmentSettings.SettingsLoader.Components.OfType<IGenerator>())
+            foreach (IGenerator generator in _environmentSettings.Components.OfType<IGenerator>())
             {
                 IList<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(source.MountPoint, out IList<ILocalizationLocator> localizationInfo);
 

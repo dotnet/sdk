@@ -36,6 +36,7 @@ Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.GetAllTemplatePack
 Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.TemplatePackagesChanged -> System.Action?
 Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.UpdatePackages(System.Collections.Generic.IEnumerable<string!>? nupkgs = null, System.Collections.Generic.IEnumerable<string!>? folders = null) -> void
 Microsoft.TemplateEngine.Utils.DictionaryExtensions
+Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions
 Microsoft.TemplateEngine.Utils.EngineInitializationException
 Microsoft.TemplateEngine.Utils.EqualityExtensions
 Microsoft.TemplateEngine.Utils.ExactVersionSpecification
@@ -105,7 +106,6 @@ Microsoft.TemplateEngine.Utils.RuntimeValueUtil
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException
 Microsoft.TemplateEngine.Utils.TemplateInfoExtensions
 Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions
-Microsoft.TemplateEngine.Utils.TemplatePackageExtensions
 Microsoft.TemplateEngine.Utils.TemplateParameter
 Microsoft.TemplateEngine.Utils.TemplateParameter.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>?
 Microsoft.TemplateEngine.Utils.TemplateParameter.DataType.get -> string!
@@ -133,8 +133,8 @@ static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetChoiceParameter(
 static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetLanguage(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template) -> string?
 static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetParameter(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter?
 static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTagValue(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! tagName) -> string?
-static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTemplatePackageAsync(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! settings) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage!>!
 static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTemplateType(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template) -> string?
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.LoadTemplate(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! info, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! engineEnvironment, string? baselineName) -> Microsoft.TemplateEngine.Abstractions.ITemplate?
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorExactMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
@@ -216,6 +216,7 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~Microsoft.TemplateEngine.Utils.Timing.Timing(Microsoft.Extensions.Logging.ILogger logger, string label) -> void
 ~static Microsoft.TemplateEngine.Utils.ArrayExtensions.CombineArrays<T>(params T[][] arrayList) -> T[]
 ~static Microsoft.TemplateEngine.Utils.DictionaryExtensions.CloneIfDifferentComparer<T>(this System.Collections.Generic.IReadOnlyDictionary<string, T> source, System.StringComparer comparer) -> System.Collections.Generic.IReadOnlyDictionary<string, T>
+~static Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint(this Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings engineEnvironment, string mountPointUri, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> bool
 ~static Microsoft.TemplateEngine.Utils.EqualityExtensions.AllAreTheSame<T, TValue>(this System.Collections.Generic.IEnumerable<T> items, System.Func<T, TValue> selector) -> bool
 ~static Microsoft.TemplateEngine.Utils.EqualityExtensions.AllAreTheSame<T, TValue>(this System.Collections.Generic.IEnumerable<T> items, System.Func<T, TValue> selector, System.Collections.Generic.IEqualityComparer<TValue> comparer) -> bool
 ~static Microsoft.TemplateEngine.Utils.EqualityExtensions.AllAreTheSame<T, TValue>(this System.Collections.Generic.IEnumerable<T> items, System.Func<T, TValue> selector, System.Func<TValue, TValue, bool> comparer) -> bool
@@ -235,7 +236,6 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~static Microsoft.TemplateEngine.Utils.ParserExtensions.DoubleTryParseСurrentOrInvariant(string stringValue, out double doubleValue) -> bool
 ~static Microsoft.TemplateEngine.Utils.RangeVersionSpecification.TryParse(string range, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool
 ~static Microsoft.TemplateEngine.Utils.RuntimeValueUtil.TryGetRuntimeValue(this Microsoft.TemplateEngine.Abstractions.IParameterSet parameters, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string name, out object value, bool skipEnvironmentVariableSearch = false) -> bool
-~static Microsoft.TemplateEngine.Utils.TemplatePackageExtensions.GetTemplates(this Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage templatePackage, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings settings) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateInfo>>
 ~static Microsoft.TemplateEngine.Utils.TemplateParamException.StandardizedMessage(string paramName, string inputValue = null, string dataType = null, string baseMessage = null) -> string
 ~static Microsoft.TemplateEngine.Utils.Timing.Over(Microsoft.Extensions.Logging.ILogger logger, string label) -> Microsoft.TemplateEngine.Utils.Timing
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.CompareVersions(string version1, string version2) -> int?

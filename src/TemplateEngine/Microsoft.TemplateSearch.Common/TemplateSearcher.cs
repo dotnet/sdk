@@ -32,7 +32,7 @@ namespace Microsoft.TemplateSearch.Common
             List<TemplateSourceSearchResult> matchesForAllSources = new List<TemplateSourceSearchResult>();
             bool anySearchersConfigured = false;
 
-            foreach (ITemplateSearchSource searchSource in _environmentSettings.SettingsLoader.Components.OfType<ITemplateSearchSource>())
+            foreach (ITemplateSearchSource searchSource in _environmentSettings.Components.OfType<ITemplateSearchSource>())
             {
                 if (!await searchSource.TryConfigure(_environmentSettings, existingTemplatePackages).ConfigureAwait(false))
                 {

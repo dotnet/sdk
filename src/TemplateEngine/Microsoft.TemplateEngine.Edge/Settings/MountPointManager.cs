@@ -9,6 +9,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
+    [System.Obsolete]
     internal class MountPointManager : IMountPointManager
     {
         private readonly IComponentManager _componentManager;

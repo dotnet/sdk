@@ -22,8 +22,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
         {
             Func<IDownloadedPackInfo, PreFilterResult> filter = (packInfo) =>
             {
-                using EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(_host, virtualizeSettings: true);
-                foreach (IMountPointFactory factory in environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>())
+                EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(_host, virtualizeSettings: true);
+                foreach (IMountPointFactory factory in environmentSettings.Components.OfType<IMountPointFactory>())
                 {
                     if (factory.TryMount(environmentSettings, null, packInfo.Path, out IMountPoint mountPoint))
                     {

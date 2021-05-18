@@ -59,7 +59,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 if (_sourceMountPoint == null)
                 {
-                    foreach (var factory in _environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>())
+                    foreach (var factory in _environmentSettings.Components.OfType<IMountPointFactory>())
                     {
                         if (factory.TryMount(_environmentSettings, null, _sourceBaseDir, out IMountPoint myMountPoint))
                         {

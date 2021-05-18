@@ -23,7 +23,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         public PackCheckResult TryGetTemplatesInPack(IDownloadedPackInfo packInfo, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, HashSet<string> alreadySeenTemplateIdentities)
         {
             ITemplateEngineHost host = CreateHost(packInfo);
-            using EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
+            EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
 
             PackCheckResult checkResult;
 

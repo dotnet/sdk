@@ -17,7 +17,7 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
                 return;
             }
 
-            using ScrapeComparer comparer = new ScrapeComparer(comparisonConfig);
+            ScrapeComparer comparer = new ScrapeComparer(comparisonConfig);
             if (!comparer.Compare(out ScrapeComparisonResult comparisonResult))
             {
                 Console.WriteLine("Unable to read one or both of the scraper outputs to compare");

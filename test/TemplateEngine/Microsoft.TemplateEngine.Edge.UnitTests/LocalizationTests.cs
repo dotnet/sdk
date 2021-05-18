@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
 using Xunit;
@@ -118,17 +119,17 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string expectedDescription,
             string expectedManualInstructions)
         {
-            _ = LoadHostWithLocalizationTemplates(locale, out ISettingsLoader settingsLoader, out ITemplateInfo localizationTemplate);
+            var environmentSettings = LoadHostWithLocalizationTemplates(locale, out var templatePackageManager, out ITemplateInfo localizationTemplate);
 
-            ITemplate template = settingsLoader.LoadTemplate(localizationTemplate, null);
+            ITemplate template = localizationTemplate.LoadTemplate(environmentSettings, null);
             Assert.NotNull(template);
             Assert.NotNull(template.Generator);
 
             ICreationEffects effects = template.Generator.GetCreationEffects(
-                settingsLoader.EnvironmentSettings,
+                environmentSettings,
                 template,
-                template.Generator.GetParametersForTemplate(settingsLoader.EnvironmentSettings, template),
-                settingsLoader.Components,
+                template.Generator.GetParametersForTemplate(environmentSettings, template),
+                environmentSettings.Components,
                 Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
                 );
 
@@ -154,19 +155,18 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         public void Dispose() => _helper.Dispose();
 
-        private ITemplateEngineHost LoadHostWithLocalizationTemplates(string locale, out ISettingsLoader settingsLoaderOut, out ITemplateInfo localizationTemplate)
+        private IEngineEnvironmentSettings LoadHostWithLocalizationTemplates(string locale, out TemplatePackageManager templatePackageManager, out ITemplateInfo localizationTemplate)
         {
             var env = _helper.CreateEnvironment(locale);
-            env.SettingsLoader.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new TemplatesFactory());
-            settingsLoaderOut = env.SettingsLoader;
-
-            IReadOnlyList<ITemplateInfo> localizedTemplates = settingsLoaderOut.GetTemplatesAsync(default).Result;
+            env.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new TemplatesFactory());
+            templatePackageManager = new Settings.TemplatePackageManager(env);
+            IReadOnlyList<ITemplateInfo> localizedTemplates = templatePackageManager.GetTemplatesAsync(default).Result;
 
             Assert.True(localizedTemplates.Count != 0, "Test template couldn't be loaded.");
             localizationTemplate = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
             Assert.NotNull(localizationTemplate);
 
-            return env.Host;
+            return env;
         }
 
         private class TemplatesFactory : ITemplatePackageProviderFactory

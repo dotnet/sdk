@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateSearch.Common
 {
@@ -15,9 +16,10 @@ namespace Microsoft.TemplateSearch.Common
     {
         private bool _isSearchPerformed;
 
-        public TemplateSearchCoordinator(IEngineEnvironmentSettings environmentSettings, string inputTemplateName, string defaultLanguage, Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> matchFilter)
+        public TemplateSearchCoordinator(IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, string inputTemplateName, string defaultLanguage, Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> matchFilter)
         {
             EnvironmentSettings = environmentSettings;
+            TemplatePackagesManager = templatePackageManager;
             InputTemplateName = inputTemplateName;
             DefaultLanguage = defaultLanguage;
             MatchFilter = matchFilter;
@@ -25,6 +27,8 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         protected IEngineEnvironmentSettings EnvironmentSettings { get; }
+
+        protected TemplatePackageManager TemplatePackagesManager { get; }
 
         protected string InputTemplateName { get; }
 
@@ -50,7 +54,7 @@ namespace Microsoft.TemplateSearch.Common
             TemplateSearcher searcher = new TemplateSearcher(EnvironmentSettings, DefaultLanguage, MatchFilter);
             IReadOnlyList<IManagedTemplatePackage> existingTemplatePackage;
 
-            existingTemplatePackage = (await EnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync(false).ConfigureAwait(false)).OfType<IManagedTemplatePackage>().ToList();
+            existingTemplatePackage = (await TemplatePackagesManager.GetTemplatePackagesAsync(false).ConfigureAwait(false)).OfType<IManagedTemplatePackage>().ToList();
 
             SearchResults = await searcher.SearchForTemplatesAsync(existingTemplatePackage, InputTemplateName).ConfigureAwait(false);
 

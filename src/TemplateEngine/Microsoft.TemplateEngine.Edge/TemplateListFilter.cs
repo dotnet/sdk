@@ -11,6 +11,7 @@ using System.Linq;
 #endif
 
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Edge.Template;
 
@@ -32,7 +33,7 @@ namespace Microsoft.TemplateEngine.Edge
         /// <seealso cref="GetTemplateMatchInfo"/>
         public static Func<ITemplateMatchInfo, bool> PartialMatchFilter => x => x.IsPartialMatch;
 
-        [Obsolete("Use " + nameof(ISettingsLoader.GetTemplatesAsync) + " instead")]
+        [Obsolete("Use " + nameof(TemplatePackageManager.GetTemplatesAsync) + " instead")]
         public static IReadOnlyCollection<IFilteredTemplateInfo> FilterTemplates(IReadOnlyList<ITemplateInfo> templateList, bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
         {
             HashSet<IFilteredTemplateInfo> matchingTemplates = new HashSet<IFilteredTemplateInfo>(FilteredTemplateEqualityComparer.Default);
@@ -77,7 +78,7 @@ namespace Microsoft.TemplateEngine.Edge
         /// <c>GetTemplateMatchInfo(templates, TemplateListFilter.ExactMatchFilter, WellKnownSearchFilters.NameFilter("myname")</c> - returns the templates which name or short name contains "myname". <br/>
         /// <c>GetTemplateMatchInfo(templates, TemplateListFilter.PartialMatchFilter, WellKnownSearchFilters.NameFilter("myname"), WellKnownSearchFilters.NameFilter("othername")</c> - returns the templates which name or short name contains "myname" or "othername".<br/>
         /// </example>
-        [Obsolete("Use " + nameof(ISettingsLoader.GetTemplatesAsync) + " instead")]
+        [Obsolete("Use " + nameof(TemplatePackageManager.GetTemplatesAsync) + " instead")]
         public static IReadOnlyCollection<ITemplateMatchInfo> GetTemplateMatchInfo(IReadOnlyList<ITemplateInfo> templateList, Func<ITemplateMatchInfo, bool> matchFilter, params Func<ITemplateInfo, MatchInfo?>[] filters)
         {
             HashSet<ITemplateMatchInfo> matchingTemplates = new HashSet<ITemplateMatchInfo>(Template.TemplateMatchInfoEqualityComparer.Default);
@@ -111,7 +112,7 @@ namespace Microsoft.TemplateEngine.Edge
         }
 
         //TODO: we cannot remove the method below as CLI needs it due to it changes ITemplateInfo before filtering. Once CLI is refactored, this method can be removed.
-        [Obsolete("Use " + nameof(ISettingsLoader.GetTemplatesAsync) + " instead")]
+        [Obsolete("Use " + nameof(TemplatePackageManager.GetTemplatesAsync) + " instead")]
         public static IReadOnlyCollection<Abstractions.TemplateFiltering.ITemplateMatchInfo> GetTemplateMatchInfo(IReadOnlyList<ITemplateInfo> templateList, Func<Abstractions.TemplateFiltering.ITemplateMatchInfo, bool> matchFilter, params Func<ITemplateInfo, Abstractions.TemplateFiltering.MatchInfo?>[] filters)
         {
             HashSet<Abstractions.TemplateFiltering.ITemplateMatchInfo> matchingTemplates = new HashSet<Abstractions.TemplateFiltering.ITemplateMatchInfo>(TemplateMatchInfoEqualityComparer.Default);

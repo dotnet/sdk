@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             {
                 settings.Host.FileSystem.CreateDirectory(_packagesFolder);
             }
-            foreach (var installerFactory in settings.SettingsLoader.Components.OfType<IInstallerFactory>())
+            foreach (var installerFactory in settings.Components.OfType<IInstallerFactory>())
             {
                 var installer = installerFactory.CreateInstaller(settings, _packagesFolder);
 

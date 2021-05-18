@@ -56,7 +56,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             inputParameters = inputParameters ?? new Dictionary<string, string?>();
             cancellationToken.ThrowIfCancellationRequested();
 
-            ITemplate? template = _environmentSettings.SettingsLoader.LoadTemplate(templateInfo, baselineName);
+            ITemplate? template = templateInfo.LoadTemplate(_environmentSettings, baselineName);
             if (template == null)
             {
                 return new TemplateCreationResult(CreationResultStatus.NotFound, templateInfo.Name, "Could not load template");
@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 {
                     _environmentSettings.Host.FileSystem.CreateDirectory(targetDir);
                 }
-                IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
+                IComponentManager componentManager = _environmentSettings.Components;
 
                 // setup separate sets of parameters to be used for GetCreationEffects() and by CreateAsync().
                 if (!TryCreateParameterSet(template, realName!, inputParameters, out IParameterSet? effectParams, out TemplateCreationResult? resultIfParameterCreationFailed))

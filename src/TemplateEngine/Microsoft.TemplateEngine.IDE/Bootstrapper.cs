@@ -14,6 +14,7 @@ using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge;
+using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
 using ITemplateCreationResult = Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult;
 using TemplateCreator = Microsoft.TemplateEngine.Edge.Template.TemplateCreator;
@@ -24,25 +25,27 @@ namespace Microsoft.TemplateEngine.IDE
     {
         private readonly ITemplateEngineHost _host;
         private readonly TemplateCreator _templateCreator;
+        private readonly Edge.Settings.TemplatePackageManager _templatePackagesManager;
         private readonly EngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public Bootstrapper(ITemplateEngineHost host, Action<IEngineEnvironmentSettings> onFirstRun, bool virtualizeConfiguration)
+        public Bootstrapper(ITemplateEngineHost host, bool virtualizeConfiguration)
         {
             _host = host ?? throw new ArgumentNullException(nameof(host));
-            _engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: virtualizeConfiguration, onFirstRun: onFirstRun);
+            _engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: virtualizeConfiguration);
             _templateCreator = new TemplateCreator(_engineEnvironmentSettings);
+            _templatePackagesManager = new Edge.Settings.TemplatePackageManager(_engineEnvironmentSettings);
         }
 
         [Obsolete("Use ITemplateEngineHost.BuiltInComponents or AddComponent to add components.")]
         public void Register(Type type)
         {
-            _engineEnvironmentSettings.SettingsLoader.Components.Register(type);
+            _engineEnvironmentSettings.Components.Register(type);
         }
 
         [Obsolete("Use ITemplateEngineHost.BuiltInComponents or AddComponent to add components.")]
         public void Register(Assembly assembly)
         {
-            _engineEnvironmentSettings.SettingsLoader.Components.RegisterMany(assembly.GetTypes());
+            _engineEnvironmentSettings.Components.RegisterMany(assembly.GetTypes());
         }
 
         /// <summary>
@@ -53,13 +56,13 @@ namespace Microsoft.TemplateEngine.IDE
         /// <param name="instance">Instance of type that implements <paramref name="interfaceType"/>.</param>
         public void AddComponent(Type interfaceType, IIdentifiedComponent component)
         {
-            _engineEnvironmentSettings.SettingsLoader.Components.AddComponent(interfaceType, component);
+            _engineEnvironmentSettings.Components.AddComponent(interfaceType, component);
         }
 
         [Obsolete("Use " + nameof(GetTemplatesAsync) + "instead")]
         public async Task<IReadOnlyCollection<Edge.Template.IFilteredTemplateInfo>> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, Edge.Template.MatchInfo?>[] filters)
         {
-            return TemplateListFilter.FilterTemplates(await _engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(default).ConfigureAwait(false), exactMatchesOnly, filters);
+            return TemplateListFilter.FilterTemplates(await _templatePackagesManager.GetTemplatesAsync(default).ConfigureAwait(false), exactMatchesOnly, filters);
         }
 
         /// <summary>
@@ -74,7 +77,7 @@ namespace Microsoft.TemplateEngine.IDE
         public Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(IEnumerable<Func<ITemplateInfo, MatchInfo?>>? filters = null, bool exactMatchesOnly = true, CancellationToken cancellationToken = default)
         {
             Func<ITemplateMatchInfo, bool> criteria = exactMatchesOnly ? WellKnownSearchFilters.MatchesAllCriteria : WellKnownSearchFilters.MatchesAtLeastOneCriteria;
-            return _engineEnvironmentSettings.SettingsLoader.GetTemplatesAsync(criteria, filters ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>(), cancellationToken);
+            return _templatePackagesManager.GetTemplatesAsync(criteria, filters ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>(), cancellationToken);
         }
 
         /// <summary>
@@ -147,7 +150,7 @@ namespace Microsoft.TemplateEngine.IDE
         public Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackages(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return _engineEnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetTemplatePackagesAsync();
+            return _templatePackagesManager.GetTemplatePackagesAsync(false);
         }
 
         /// <summary>
@@ -158,7 +161,7 @@ namespace Microsoft.TemplateEngine.IDE
         public Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackages(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return _engineEnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetManagedTemplatePackagesAsync();
+            return _templatePackagesManager.GetManagedTemplatePackagesAsync();
         }
 
         /// <summary>
@@ -188,7 +191,7 @@ namespace Microsoft.TemplateEngine.IDE
                 case InstallationScope.Global:
                 default:
                     {
-                        managedPackageProvider = _engineEnvironmentSettings.SettingsLoader.TemplatePackagesManager.GetBuiltInManagedProvider(InstallationScope.Global);
+                        managedPackageProvider = _templatePackagesManager.GetBuiltInManagedProvider(InstallationScope.Global);
                         break;
                     }
             }
@@ -264,7 +267,7 @@ namespace Microsoft.TemplateEngine.IDE
 
         #endregion Template Package Management
 
-        public void Dispose() => _engineEnvironmentSettings.Dispose();
+        public void Dispose() => _templatePackagesManager.Dispose();
 
         #region Obsolete
 

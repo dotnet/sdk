@@ -21,6 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class RunnableProjectGenerator : IGenerator
     {
+        internal const string HostTemplateFileConfigBaseName = ".host.json";
         internal const string TemplateConfigDirectoryName = ".template.config";
         internal const string TemplateConfigFileName = "template.json";
         internal const string LocalizationFilePrefix = "templatestrings.";
@@ -122,7 +123,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (IFile file in folder.EnumerateFiles(TemplateConfigFileName, SearchOption.AllDirectories))
             {
-                IFile hostConfigFile = file.MountPoint.EnvironmentSettings.SettingsLoader.FindBestHostTemplateConfigFile(file);
+                IFile hostConfigFile = FindBestHostTemplateConfigFile(source.EnvironmentSettings, file);
 
                 if (TryGetTemplateFromConfigInfo(file, out ITemplate template, hostTemplateConfigFile: hostConfigFile))
                 {
@@ -557,6 +558,34 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             return versionChecker.CheckIfVersionIsValid(GeneratorVersion);
+        }
+
+        private IFile FindBestHostTemplateConfigFile(IEngineEnvironmentSettings engineEnvironment, IFile config)
+        {
+            IDictionary<string, IFile> allHostFilesForTemplate = new Dictionary<string, IFile>();
+
+            foreach (IFile hostFile in config.Parent.EnumerateFiles($"*{HostTemplateFileConfigBaseName}", SearchOption.TopDirectoryOnly))
+            {
+                allHostFilesForTemplate.Add(hostFile.Name, hostFile);
+            }
+
+            string preferredHostFileName = string.Concat(engineEnvironment.Host.HostIdentifier, HostTemplateFileConfigBaseName);
+            if (allHostFilesForTemplate.TryGetValue(preferredHostFileName, out IFile preferredHostFile))
+            {
+                return preferredHostFile;
+            }
+
+            foreach (string fallbackHostName in engineEnvironment.Host.FallbackHostTemplateConfigNames)
+            {
+                string fallbackHostFileName = string.Concat(fallbackHostName, HostTemplateFileConfigBaseName);
+
+                if (allHostFilesForTemplate.TryGetValue(fallbackHostFileName, out IFile fallbackHostFile))
+                {
+                    return fallbackHostFile;
+                }
+            }
+
+            return null;
         }
 
         // Checks the primarySource for additional configuration files.
