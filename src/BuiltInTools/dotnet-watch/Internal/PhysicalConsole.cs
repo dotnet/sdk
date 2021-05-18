@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Tools.Internal
 
         private void ListenToConsoleKeyPress()
         {
-            Task.Run(() =>
+            Task.Factory.StartNew(() =>
             {
                 while (true)
                 {
@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.Tools.Internal
                         _keyPressedListeners[i](key);
                     }
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
         }
 
         public static IConsole Singleton { get; } = new PhysicalConsole();

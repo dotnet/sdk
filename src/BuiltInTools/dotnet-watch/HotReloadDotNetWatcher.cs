@@ -66,9 +66,7 @@ namespace Microsoft.DotNet.Watcher
                 if (key.Modifiers == ConsoleModifiers.Control && key.Key == ConsoleKey.R)
                 {
                     var cancellationTokenSource = Interlocked.Exchange(ref forceReload, new CancellationTokenSource());
-
                     cancellationTokenSource.Cancel();
-                    cancellationTokenSource.Dispose();
                 }
             };
 
