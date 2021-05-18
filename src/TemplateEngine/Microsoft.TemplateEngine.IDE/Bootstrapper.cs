@@ -44,18 +44,6 @@ namespace Microsoft.TemplateEngine.IDE
             }
         }
 
-        [Obsolete("Use ITemplateEngineHost.BuiltInComponents or AddComponent to add components.")]
-        public void Register(Type type)
-        {
-            _engineEnvironmentSettings.Components.Register(type);
-        }
-
-        [Obsolete("Use ITemplateEngineHost.BuiltInComponents or AddComponent to add components.")]
-        public void Register(Assembly assembly)
-        {
-            _engineEnvironmentSettings.Components.RegisterMany(assembly.GetTypes());
-        }
-
         /// <summary>
         /// Loads default components: template package providers and installers defined in Microsoft.TemplateEngine.Edge and default template generator defined in Microsoft.TemplateEngine.Orchestrator.RunnableProjects.
         /// </summary>
@@ -80,12 +68,6 @@ namespace Microsoft.TemplateEngine.IDE
         public void AddComponent(Type interfaceType, IIdentifiedComponent component)
         {
             _engineEnvironmentSettings.Components.AddComponent(interfaceType, component);
-        }
-
-        [Obsolete("Use " + nameof(GetTemplatesAsync) + "instead")]
-        public async Task<IReadOnlyCollection<Edge.Template.IFilteredTemplateInfo>> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, Edge.Template.MatchInfo?>[] filters)
-        {
-            return TemplateListFilter.FilterTemplates(await _templatePackagesManager.GetTemplatesAsync(default).ConfigureAwait(false), exactMatchesOnly, filters);
         }
 
         /// <summary>
@@ -173,7 +155,7 @@ namespace Microsoft.TemplateEngine.IDE
         public Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackages(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return _templatePackagesManager.GetTemplatePackagesAsync(false);
+            return _templatePackagesManager.GetTemplatePackagesAsync(false, cancellationToken);
         }
 
         /// <summary>
@@ -184,7 +166,7 @@ namespace Microsoft.TemplateEngine.IDE
         public Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackages(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return _templatePackagesManager.GetManagedTemplatePackagesAsync();
+            return _templatePackagesManager.GetManagedTemplatePackagesAsync(false, cancellationToken);
         }
 
         /// <summary>
@@ -293,6 +275,24 @@ namespace Microsoft.TemplateEngine.IDE
         public void Dispose() => _templatePackagesManager.Dispose();
 
         #region Obsolete
+
+        [Obsolete("Use " + nameof(GetTemplatesAsync) + "instead")]
+        public async Task<IReadOnlyCollection<Edge.Template.IFilteredTemplateInfo>> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, Edge.Template.MatchInfo?>[] filters)
+        {
+            return TemplateListFilter.FilterTemplates(await _templatePackagesManager.GetTemplatesAsync(default).ConfigureAwait(false), exactMatchesOnly, filters);
+        }
+
+        [Obsolete("Use ITemplateEngineHost.BuiltInComponents or AddComponent to add components.")]
+        public void Register(Type type)
+        {
+            _engineEnvironmentSettings.Components.Register(type);
+        }
+
+        [Obsolete("Use ITemplateEngineHost.BuiltInComponents or AddComponent to add components.")]
+        public void Register(Assembly assembly)
+        {
+            _engineEnvironmentSettings.Components.RegisterMany(assembly.GetTypes());
+        }
 
         [Obsolete("use Task<IReadOnlyList<InstallResult>> InstallTemplatePackagesAsync(IEnumerable<InstallRequest> installRequests, InstallationScope scope = InstallationScope.Global, CancellationToken cancellationToken = default) instead")]
         public void Install(string path)

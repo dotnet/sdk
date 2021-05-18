@@ -11,17 +11,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.BuiltInManagedProvider;
-using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
     /// <summary>
     /// Manages all <see cref="ITemplatePackageProvider"/>s available to the host.
+    /// Use this class to get all template packages and templates installed.
     /// </summary>
     public class TemplatePackageManager : IDisposable
     {
@@ -32,6 +31,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private volatile TemplateCache? _userTemplateCache;
         private Dictionary<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>>? cachedSources;
 
+        /// <summary>
+        /// Creates the instance.
+        /// </summary>
+        /// <param name="environmentSettings">template engine environment settings.</param>
         public TemplatePackageManager(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
@@ -74,10 +77,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// </summary>
         /// <param name="invalidateCache">Useful when <see cref="IManagedTemplatePackage"/> doesn't trigger <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/> event.</param>
         /// <returns>The list of <see cref="IManagedTemplatePackage"/>.</returns>
-        public async Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackagesAsync(bool force = false)
+        public async Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackagesAsync(bool force, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             EnsureProvidersLoaded();
-            return (await GetTemplatePackagesAsync(force).ConfigureAwait(false)).OfType<IManagedTemplatePackage>().ToList();
+            return (await GetTemplatePackagesAsync(force, cancellationToken).ConfigureAwait(false)).OfType<IManagedTemplatePackage>().ToList();
         }
 
         /// <summary>
@@ -86,8 +90,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// </summary>
         /// <param name="invalidateCache">Useful when <see cref="ITemplatePackageProvider"/> doesn't trigger <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/> event.</param>
         /// <returns>The list of <see cref="ITemplatePackage"/>s.</returns>
-        public async Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(bool force = false)
+        public async Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(bool force, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             EnsureProvidersLoaded();
             if (force)
             {
@@ -139,25 +144,27 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// <remarks>
         /// This call is cached. And can be invalidated by <see cref="RebuildTemplateCacheAsync"/>.
         /// </remarks>
-        public async Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken token)
+        public async Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken cancellationToken)
         {
-            var userTemplateCache = await UpdateTemplateCacheAsync(false).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            var userTemplateCache = await UpdateTemplateCacheAsync(false, cancellationToken).ConfigureAwait(false);
             return userTemplateCache.TemplateInfo;
         }
 
         /// <summary>
         /// Gets the templates filtered using <paramref name="filters"/> and <paramref name="matchCriteria"/>.
         /// </summary>
-        /// <param name="matchCriteria">The criteria for <see cref="ITemplateMatchInfo"/> to be included to result collection.</param>
+        /// <param name="matchFilter">The criteria for <see cref="ITemplateMatchInfo"/> to be included to result collection.</param>
         /// <param name="filters">The list of filters to be applied to templates.</param>
         /// <returns>The filtered list of templates with match information.</returns>
         /// <example>
         /// <c>GetTemplatesAsync(WellKnownSearchFilters.MatchesAllCriteria, new [] { WellKnownSearchFilters.NameFilter("myname") }</c> - returns the templates which name or short name contains "myname". <br/>
         /// <c>GetTemplatesAsync(TemplateListFilter.MatchesAtLeastOneCriteria, new [] { WellKnownSearchFilters.NameFilter("myname"), WellKnownSearchFilters.NameFilter("othername") })</c> - returns the templates which name or short name contains "myname" or "othername".<br/>
         /// </example>
-        public async Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters, CancellationToken token = default)
+        public async Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(Func<ITemplateMatchInfo, bool> matchFilter, IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters, CancellationToken cancellationToken)
         {
-            IReadOnlyList<ITemplateInfo> templates = await GetTemplatesAsync(token).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            IReadOnlyList<ITemplateInfo> templates = await GetTemplatesAsync(cancellationToken).ConfigureAwait(false);
             //TemplateListFilter.GetTemplateMatchInfo code should be moved to this method eventually, when no longer needed.
 #pragma warning disable CS0618 // Type or member is obsolete.
             return TemplateListFilter.GetTemplateMatchInfo(templates, matchFilter, filters.ToArray()).ToList();
@@ -170,15 +177,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// </summary>
         public Task RebuildTemplateCacheAsync(CancellationToken token)
         {
-            return UpdateTemplateCacheAsync(true);
+            token.ThrowIfCancellationRequested();
+            return UpdateTemplateCacheAsync(true, token);
         }
 
         /// <summary>
         /// Helper method that returns <see cref="ITemplatePackage"/> that contains <paramref name="template"/>.
         /// </summary>
-        public async Task<ITemplatePackage> GetTemplatePackageAsync(ITemplateInfo template, CancellationToken cancellationToken = default)
+        public async Task<ITemplatePackage> GetTemplatePackageAsync(ITemplateInfo template, CancellationToken cancellationToken)
         {
-            IReadOnlyList<ITemplatePackage> templatePackages = await GetTemplatePackagesAsync().ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            IReadOnlyList<ITemplatePackage> templatePackages = await GetTemplatePackagesAsync(false, cancellationToken).ConfigureAwait(false);
             return templatePackages.Single(s => s.MountPointUri == template.MountPointUri);
         }
 
@@ -188,8 +197,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// <param name="templatePackage"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<ITemplateInfo>> GetAllTemplatesForTemplatePackageAsync(ITemplatePackage templatePackage, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ITemplateInfo>> GetTemplatesAsync(ITemplatePackage templatePackage, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var allTemplates = await GetTemplatesAsync(cancellationToken).ConfigureAwait(false);
             return allTemplates.Where(t => t.MountPointUri == templatePackage.MountPointUri);
         }
@@ -214,13 +224,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        private async Task<TemplateCache> UpdateTemplateCacheAsync(bool needsRebuild)
+        private async Task<TemplateCache> UpdateTemplateCacheAsync(bool needsRebuild, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             // Kick off gathering template packages, so parsing cache can happen in parallel.
-            Task<IReadOnlyList<ITemplatePackage>> getTemplatePackagesTask = GetTemplatePackagesAsync(needsRebuild);
+            Task<IReadOnlyList<ITemplatePackage>> getTemplatePackagesTask = GetTemplatePackagesAsync(needsRebuild, cancellationToken);
             if (!(_userTemplateCache is TemplateCache cache))
             {
-            cache = new TemplateCache(JObject.Parse(_paths.ReadAllText(_paths.TemplateCacheFile, "{}")));
+                cache = new TemplateCache(JObject.Parse(_paths.ReadAllText(_paths.TemplateCacheFile, "{}")));
             }
 
             if (cache.Version == null)
@@ -265,6 +276,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                 }
             }
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Check that some mountpoint wasn't removed...
             if (!needsRebuild && mountPoints.Keys.Count != cache.MountPointsInfo.Count)
@@ -292,14 +304,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     _logger.LogWarning($"Failed to scan \"{allTemplatePackages[index].MountPointUri}\":{Environment.NewLine}{ex}");
                 }
             });
-
+            cancellationToken.ThrowIfCancellationRequested();
             cache = new TemplateCache(
                 scanResults,
                 mountPoints
                 );
             JObject serialized = JObject.FromObject(cache);
-_paths.WriteAllText(_paths.TemplateCacheFile, serialized.ToString());
-return _userTemplateCache = cache;
+            _paths.WriteAllText(_paths.TemplateCacheFile, serialized.ToString());
+            return _userTemplateCache = cache;
         }
     }
 }
