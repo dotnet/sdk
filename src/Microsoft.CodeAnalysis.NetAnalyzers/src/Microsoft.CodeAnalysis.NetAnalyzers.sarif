@@ -2546,7 +2546,7 @@
         "CA1846": {
           "id": "CA1846",
           "shortDescription": "Prefer 'AsSpan' over 'Substring'",
-          "fullDescription": "'Substring' performs an O(n) string copy, while 'AsSpan' does not.",
+          "fullDescription": "'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846",
           "properties": {
