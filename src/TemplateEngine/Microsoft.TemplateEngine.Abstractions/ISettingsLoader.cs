@@ -7,6 +7,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
+    [Obsolete("See obsolete messages on methods/properties for details on what to use as replacement.")]
     public interface ISettingsLoader
     {
         [Obsolete("Use IEngineEnvironmentSettings.Components")]
@@ -15,10 +16,10 @@ namespace Microsoft.TemplateEngine.Abstractions
         [Obsolete("Use IEngineEnvironmentSettings directly.")]
         IEngineEnvironmentSettings EnvironmentSettings { get; }
 
-        [Obsolete("Not possible anymore.")]
+        [Obsolete("Retrieving list of mount points is not possible anymore, to load mount point use Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint extension.")]
         IEnumerable<object> MountPoints { get; }
 
-        [Obsolete("Not possible anymore.")]
+        [Obsolete("Adding mount points is not possible anymore, to load mount point use Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint extension.")]
         void AddMountPoint(IMountPoint mountPoint);
 
         [Obsolete("Probing paths need to be handled by ComponentManager itself.")]
@@ -33,7 +34,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         [Obsolete("No need to call Save anymore.")]
         void Save();
 
-        [Obsolete("Use Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint extension and then look for file inside mountpoint..")]
+        [Obsolete("Use Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint extension and then look for file inside mountpoint.")]
         bool TryGetFileFromIdAndPath(Guid mountPointId, string place, out IFile file, out IMountPoint mountPoint);
 
         [Obsolete("Use Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint extension.")]
@@ -48,15 +49,16 @@ namespace Microsoft.TemplateEngine.Abstractions
         [Obsolete("Should be handled by TemplatePackageManager itself.")]
         void WriteTemplateCache(IList<ITemplateInfo> templates, string locale, bool hasContentChanges);
 
+        [Obsolete("Use ITemplateInfo.HostConfigPlace instead.")]
         IFile FindBestHostTemplateConfigFile(IFileSystemInfo config);
 
         [Obsolete("IMountPoint is IDisposable now.")]
         void ReleaseMountPoint(IMountPoint mountPoint);
 
-        [Obsolete("Not possible anymore.")]
+        [Obsolete("Removing mount points is not possible anymore, to load mount point use Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint extension.")]
         void RemoveMountPoints(IEnumerable<Guid> mountPoints);
 
-        [Obsolete("Not possible anymore.")]
+        [Obsolete("Removing mount points is not possible anymore, to load mount point use Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint extension.")]
         void RemoveMountPoint(IMountPoint mountPoint);
     }
 }

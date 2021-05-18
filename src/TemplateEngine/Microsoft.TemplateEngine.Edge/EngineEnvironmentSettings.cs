@@ -34,12 +34,12 @@ namespace Microsoft.TemplateEngine.Edge
             Components = componentManager ?? new ComponentManager(this);
         }
 
-        [Obsolete("ISettingsLoader is obsolete, see ISettingsLoader obsolete description for details.")]
+        [Obsolete("ISettingsLoader is obsolete, see obsolete messages for individual properties/methods of ISettingsLoader for details.")]
         public ISettingsLoader SettingsLoader
         {
             get
             {
-                throw new Exception("ISettingsLoader is no longer supported.");
+                throw new NotSupportedException("ISettingsLoader is no longer supported, see Obsolete message for details.");
             }
         }
 
