@@ -1546,6 +1546,28 @@
   <data name="PreferAsSpanOverSubstringCodefixTitle" xml:space="preserve">
     <value>Replace 'Substring' with 'AsSpan'</value>
   </data>
+  <data name="ProvideStreamMemoryBasedAsyncOverridesDescription" xml:space="preserve">
+    <value>To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.</value>
+  </data>
+  <data name="ProvideStreamMemoryBasedAsyncOverridesMessage" xml:space="preserve">
+    <value>'{0}' overrides array-based '{1}' but does not override memory-based '{2}'. Consider overriding memory-based '{2}' to improve performance.</value>
+    <comment>0 = type that subclasses Stream directly, 1 = array-based method, 2 = memory-based method</comment>
+  </data>
+  <data name="ProvideStreamMemoryBasedAsyncOverridesTitle" xml:space="preserve">
+    <value>Provide memory-based overrides of async methods when subclassing 'Stream'</value>
+  </data>
+  <data name="UseSpanBasedStringConcatDescription" xml:space="preserve">
+    <value>It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</value>
+  </data>
+  <data name="UseSpanBasedStringConcatMessage" xml:space="preserve">
+    <value>Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</value>
+  </data>
+  <data name="UseSpanBasedStringConcatTitle" xml:space="preserve">
+    <value>Use span-based 'string.Concat'</value>
+  </data>
+  <data name="UseSpanBasedStringConcatCodeFixTitle" xml:space="preserve">
+    <value>Use 'AsSpan' with 'string.Concat'</value>
+  </data>
   <data name="PreferDictionaryContainsKeyCodeFixTitle" xml:space="preserve">
     <value>Use 'ContainsKey'</value>
   </data>

@@ -20,7 +20,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
     public partial class PlatformCompatabilityAnalyzerTests
     {
-        private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser,macOS, ios;\nbuild_property.TargetFramework=net5.0";
+        private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser,macOS, ios, linux;\nbuild_property.TargetFramework=net5.0";
 
         [Fact(Skip = "TODO need to be fixed: Test for for wrong arguments, not sure how to report the Compiler error diagnostic")]
         public async Task TestOsPlatformAttributesWithNonStringArgument()
@@ -1671,14 +1671,14 @@ namespace ns
         [UnsupportedOSPlatform(""MacOS"")]
         public static void TestWithMacOsLinuxSupported()
         {
-            Target.UnsupportedOnOSXAndLinux();
+            [|Target.UnsupportedOnOSXAndLinux()|]; // This call site is reachable on all platforms. 'Target.UnsupportedOnOSXAndLinux()' is unsupported on: 'linux'.
             Target.UnsupportedOnOSX14();
         }
 
         [UnsupportedOSPlatform(""OSX"")]
         public static void TestWithOsxSupported()
         {
-            Target.UnsupportedOnOSXAndLinux();
+            [|Target.UnsupportedOnOSXAndLinux()|]; // This call site is reachable on all platforms. 'Target.UnsupportedOnOSXAndLinux()' is unsupported on: 'linux'.
             Target.UnsupportedOnOSX14();
         }
 
@@ -1691,14 +1691,14 @@ namespace ns
 
         public void CrossPlatform()
         {
-            {|#1:Target.UnsupportedOnOSXAndLinux()|}; // This call site is reachable on all platforms. 'Target.UnsupportedOnOSXAndLinux()' is unsupported on: 'macOS/OSX'.
+            [|Target.UnsupportedOnOSXAndLinux()|]; // This call site is reachable on all platforms. 'Target.UnsupportedOnOSXAndLinux()' is unsupported on: 'macOS/OSX'.
             [|Target.UnsupportedOnOSX14()|]; // This call site is reachable on all platforms. 'Target.UnsupportedOnOSX14()' is unsupported on: 'macOS/OSX' 14.0 and later.
         }
         
         [UnsupportedOSPlatform(""macOs13.0"")]
         public void TestWithSupportedOnBrowserWarns()
         {
-            {|#2:Target.UnsupportedOnOSXAndLinux()|}; // This call site is reachable on: 'macOS/OSX' 13.0 and before. 'Target.UnsupportedOnOSXAndLinux()' is unsupported on: 'macOS/OSX' all versions.
+            [|Target.UnsupportedOnOSXAndLinux()|]; // This call site is reachable on: 'macOS/OSX' 13.0 and before. 'Target.UnsupportedOnOSXAndLinux()' is unsupported on: 'macOS/OSX' all versions.
             Target.UnsupportedOnOSX14();
         }
     }
@@ -1711,11 +1711,7 @@ namespace ns
     }
 }";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
-                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("Target.UnsupportedOnOSXAndLinux()", "'macOS/OSX'", "'macOS/OSX'"),
-                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(1).WithArguments("Target.UnsupportedOnOSXAndLinux()", "'macOS/OSX'"),
-                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(2).WithArguments("Target.UnsupportedOnOSXAndLinux()",
-                    GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "macOS/OSX"),
-                    GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "macOS/OSX", "13.0")));
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("Target.UnsupportedOnOSXAndLinux()", "'macOS/OSX'", "'macOS/OSX'"));
         }
 
         [Fact]
