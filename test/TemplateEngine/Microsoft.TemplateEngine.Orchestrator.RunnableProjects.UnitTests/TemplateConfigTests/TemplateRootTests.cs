@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject);
             RunnableProjectTemplate runnableProjectTemplate = new RunnableProjectTemplate(srcObject, generator, templateFile, templateModel, null, null);
 
-            bool allPathsAreValid = generator.AreAllTemplatePathsValid(templateModel, runnableProjectTemplate);
+            bool allPathsAreValid = generator.AreAllTemplatePathsValid(_engineEnvironmentSettings, templateModel, runnableProjectTemplate);
             Assert.Equal(shouldAllPathsBeValid, allPathsAreValid);
         }
 
@@ -114,7 +114,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject);
             RunnableProjectTemplate runnableProjectTemplate = new RunnableProjectTemplate(srcObject, generator, templateFile, templateModel, null, null);
 
-            bool allPathsAreValid = generator.AreAllTemplatePathsValid(templateModel, runnableProjectTemplate);
+            bool allPathsAreValid = generator.AreAllTemplatePathsValid(_engineEnvironmentSettings, templateModel, runnableProjectTemplate);
             Assert.Equal(shouldAllPathsBeValid, allPathsAreValid);
         }
 
@@ -158,7 +158,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject);
             RunnableProjectTemplate runnableProjectTemplate = new RunnableProjectTemplate(srcObject, generator, templateFile, templateModel, null, null);
 
-            bool allPathsAreValid = generator.AreAllTemplatePathsValid(templateModel, runnableProjectTemplate);
+            bool allPathsAreValid = generator.AreAllTemplatePathsValid(_engineEnvironmentSettings, templateModel, runnableProjectTemplate);
             Assert.Equal(shouldAllPathsBeValid, allPathsAreValid);
         }
     }

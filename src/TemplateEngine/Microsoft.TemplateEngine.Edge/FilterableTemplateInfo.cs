@@ -56,6 +56,8 @@ namespace Microsoft.TemplateEngine.Edge
 
         public DateTime? ConfigTimestampUtc { get; set; }
 
+        public IReadOnlyDictionary<string, string> TagsCollection => throw new NotImplementedException();
+
         public static FilterableTemplateInfo FromITemplateInfo(ITemplateInfo source)
         {
             FilterableTemplateInfo filterableTemplate = new FilterableTemplateInfo()

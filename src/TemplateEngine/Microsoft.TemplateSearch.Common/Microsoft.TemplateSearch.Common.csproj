@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Shared\JExtensions.cs" Link="JExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
   </ItemGroup>

@@ -47,9 +47,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
-            KeyValuePair<string, ICacheParameter>? symbol = localizationTemplate.CacheParameters?.FirstOrDefault(p => p.Key == symbolName);
+            ITemplateParameter symbol = localizationTemplate.Parameters?.FirstOrDefault(p => p.Name == symbolName);
             Assert.NotNull(symbol);
-            Assert.Equal(expectedDisplayName, symbol.Value.Value?.DisplayName);
+            Assert.Equal(expectedDisplayName, symbol.DisplayName);
         }
 
         [Theory]
@@ -60,9 +60,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
-            KeyValuePair<string, ICacheTag>? symbol = localizationTemplate.Tags?.FirstOrDefault(p => p.Key == symbolName);
+            ITemplateParameter symbol = localizationTemplate.Parameters?.FirstOrDefault(p => p.Name == symbolName);
             Assert.NotNull(symbol);
-            Assert.Equal(expectedDisplayName, symbol.Value.Value?.DisplayName);
+            Assert.Equal(expectedDisplayName, symbol.DisplayName);
         }
 
         [Theory]
@@ -73,9 +73,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
-            KeyValuePair<string, ICacheParameter>? symbol = localizationTemplate.CacheParameters?.FirstOrDefault(p => p.Key == "someSymbol");
+            ITemplateParameter symbol = localizationTemplate.Parameters?.FirstOrDefault(p => p.Name == "someSymbol");
             Assert.NotNull(symbol);
-            Assert.Equal(expectedDescription, symbol.Value.Value?.Description);
+            Assert.Equal(expectedDescription, symbol.Description);
         }
 
         [Theory]
@@ -91,13 +91,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
-            KeyValuePair<string, ICacheTag>? tag = localizationTemplate.Tags?.FirstOrDefault(p => p.Key == "someChoice");
-            Assert.NotNull(tag);
-            Assert.True(tag.HasValue);
-            Assert.NotNull(tag.Value.Value);
-            Assert.Equal(symbolDesc, tag.Value.Value.Description);
+            ITemplateParameter symbol = localizationTemplate.Parameters?.FirstOrDefault(p => p.Name == "someChoice");
+            Assert.NotNull(symbol);
+            Assert.Equal(symbolDesc, symbol.Description);
 
-            var choices = tag.Value.Value.Choices;
+            var choices = symbol.Choices;
             Assert.NotNull(choices);
             Assert.True(choices.TryGetValue("choice0", out ParameterChoice choice0), "Template symbol should contain a choice with name 'choice0'.");
             Assert.Equal(choice0Desc, choice0.Description);

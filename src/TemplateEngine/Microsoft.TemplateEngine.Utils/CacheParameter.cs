@@ -3,10 +3,12 @@
 
 #nullable enable
 
+using System;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
 {
+    [Obsolete("Use ITemplateParameter / TemplateParameter instead.")]
     public class CacheParameter : ICacheParameter, IAllowDefaultIfOptionWithoutValue
     {
         public string? DataType { get; set; }

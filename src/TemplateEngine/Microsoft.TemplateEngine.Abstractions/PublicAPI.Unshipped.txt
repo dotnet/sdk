@@ -176,10 +176,20 @@ Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Precedence.get -> int
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.ShortName.get -> string!
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Tags.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ICacheTag!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.TagsCollection.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.ThirdPartyNotices.get -> string?
 Microsoft.TemplateEngine.Abstractions.ITemplateParameter
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DataType.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DefaultIfOptionWithoutValue.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DefaultValue.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DisplayName.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Documentation.get -> string?
 Microsoft.TemplateEngine.Abstractions.ITemplateParameter.IsName.get -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Name.get -> string!
 Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Priority.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Type.get -> string!
 Microsoft.TemplateEngine.Abstractions.IVersionSpecification
 Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind
 Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind.Directory = 1 -> Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind
@@ -322,12 +332,6 @@ Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Suggested = 1 ->
 ~Microsoft.TemplateEngine.Abstractions.ITemplate.Generator.get -> Microsoft.TemplateEngine.Abstractions.IGenerator
 ~Microsoft.TemplateEngine.Abstractions.ITemplate.LocaleConfiguration.get -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo
 ~Microsoft.TemplateEngine.Abstractions.ITemplate.TemplateSourceRoot.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory
-~Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateEngine.Abstractions.ParameterChoice>
-~Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DataType.get -> string
-~Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DefaultValue.get -> string
-~Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Documentation.get -> string
-~Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Name.get -> string
-~Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Type.get -> string
 ~Microsoft.TemplateEngine.Abstractions.IVersionSpecification.CheckIfVersionIsValid(string versionToCheck) -> bool
 ~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateDirectories(string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IDirectory>
 ~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFiles(string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFile>

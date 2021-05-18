@@ -107,17 +107,34 @@ Microsoft.TemplateEngine.Utils.TemplateInfoExtensions
 Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions
 Microsoft.TemplateEngine.Utils.TemplatePackageExtensions
 Microsoft.TemplateEngine.Utils.TemplateParameter
+Microsoft.TemplateEngine.Utils.TemplateParameter.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>?
+Microsoft.TemplateEngine.Utils.TemplateParameter.DataType.get -> string!
+Microsoft.TemplateEngine.Utils.TemplateParameter.DataType.set -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultIfOptionWithoutValue.get -> string?
+Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultIfOptionWithoutValue.set -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultValue.get -> string?
+Microsoft.TemplateEngine.Utils.TemplateParameter.Description.get -> string?
+Microsoft.TemplateEngine.Utils.TemplateParameter.DisplayName.get -> string?
+Microsoft.TemplateEngine.Utils.TemplateParameter.Documentation.get -> string?
 Microsoft.TemplateEngine.Utils.TemplateParameter.IsName.get -> bool
-Microsoft.TemplateEngine.Utils.TemplateParameter.IsName.set -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.Name.get -> string!
 Microsoft.TemplateEngine.Utils.TemplateParameter.Priority.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
-Microsoft.TemplateEngine.Utils.TemplateParameter.Priority.set -> void
-Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter() -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(Newtonsoft.Json.Linq.JObject! jObject) -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(string! name, string! type, string! datatype, Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority priority = Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Required, bool isName = false, string? defaultValue = null, string? defaultIfOptionWithoutValue = null, string? description = null, string? displayName = null, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>? choices = null) -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.Type.get -> string!
+Microsoft.TemplateEngine.Utils.TemplateParameterExtensions
 Microsoft.TemplateEngine.Utils.TemplateParamException
 Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException() -> void
 Microsoft.TemplateEngine.Utils.Timing
 Microsoft.TemplateEngine.Utils.Timing.Dispose() -> void
 Microsoft.TemplateEngine.Utils.VersionStringHelpers
 Microsoft.TemplateEngine.Utils.WellKnownSearchFilters
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetChoiceParameter(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter?
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetLanguage(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template) -> string?
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetParameter(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter?
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTagValue(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! tagName) -> string?
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTemplatePackageAsync(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! settings) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage!>!
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTemplateType(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template) -> string?
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorExactMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
@@ -138,6 +155,7 @@ static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasShortNameMi
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasShortNamePartialMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasTypeMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasTypeMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.IsChoice(this Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter) -> bool
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.AuthorFilter(string! author) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.BaselineFilter(string! baselineName) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.ClassificationFilter(string! classification) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
@@ -187,20 +205,6 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string
 ~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string message, string configItem) -> void
 ~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string message, string configItem, System.Exception innerException) -> void
-~Microsoft.TemplateEngine.Utils.TemplateParameter.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateEngine.Abstractions.ParameterChoice>
-~Microsoft.TemplateEngine.Utils.TemplateParameter.Choices.set -> void
-~Microsoft.TemplateEngine.Utils.TemplateParameter.DataType.get -> string
-~Microsoft.TemplateEngine.Utils.TemplateParameter.DataType.set -> void
-~Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultIfOptionWithoutValue.get -> string
-~Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultIfOptionWithoutValue.set -> void
-~Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultValue.get -> string
-~Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultValue.set -> void
-~Microsoft.TemplateEngine.Utils.TemplateParameter.Documentation.get -> string
-~Microsoft.TemplateEngine.Utils.TemplateParameter.Documentation.set -> void
-~Microsoft.TemplateEngine.Utils.TemplateParameter.Name.get -> string
-~Microsoft.TemplateEngine.Utils.TemplateParameter.Name.set -> void
-~Microsoft.TemplateEngine.Utils.TemplateParameter.Type.get -> string
-~Microsoft.TemplateEngine.Utils.TemplateParameter.Type.set -> void
 ~Microsoft.TemplateEngine.Utils.TemplateParamException.DataType.get -> string
 ~Microsoft.TemplateEngine.Utils.TemplateParamException.InputValue.get -> string
 ~Microsoft.TemplateEngine.Utils.TemplateParamException.ParamName.get -> string
@@ -231,10 +235,6 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~static Microsoft.TemplateEngine.Utils.ParserExtensions.DoubleTryParseСurrentOrInvariant(string stringValue, out double doubleValue) -> bool
 ~static Microsoft.TemplateEngine.Utils.RangeVersionSpecification.TryParse(string range, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool
 ~static Microsoft.TemplateEngine.Utils.RuntimeValueUtil.TryGetRuntimeValue(this Microsoft.TemplateEngine.Abstractions.IParameterSet parameters, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string name, out object value, bool skipEnvironmentVariableSearch = false) -> bool
-~static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetLanguage(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo template) -> string
-~static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTagValues(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo template, string tagName) -> System.Collections.Generic.IEnumerable<string>
-~static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTemplatePackageAsync(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo template, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings settings) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage>
-~static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTemplateType(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo template) -> string
 ~static Microsoft.TemplateEngine.Utils.TemplatePackageExtensions.GetTemplates(this Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage templatePackage, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings settings) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateInfo>>
 ~static Microsoft.TemplateEngine.Utils.TemplateParamException.StandardizedMessage(string paramName, string inputValue = null, string dataType = null, string baseMessage = null) -> string
 ~static Microsoft.TemplateEngine.Utils.Timing.Over(Microsoft.Extensions.Logging.ILogger logger, string label) -> Microsoft.TemplateEngine.Utils.Timing

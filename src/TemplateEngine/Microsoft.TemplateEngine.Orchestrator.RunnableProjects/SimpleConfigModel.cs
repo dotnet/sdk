@@ -46,10 +46,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private IReadOnlyList<FileSourceMatchInfo> _sources;
         private IGlobalRunConfig _operationConfig;
         private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> _specialOperationConfig;
-        private Parameter _nameParameter;
-        private IReadOnlyDictionary<string, string> _tagsDeprecated;
-        private IReadOnlyDictionary<string, ParameterSymbol> _tagDetails;
-        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
+        private ITemplateParameter _nameParameter;
+        private IReadOnlyDictionary<string, string> _tags;
         private string _placeholderValue;
         private IReadOnlyList<string> _ignoreFileNames;
         private bool _isPlaceholderFileNameCustomized;
@@ -79,6 +77,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Name { get; set; }
 
+        public IReadOnlyDictionary<string, string> Tags => _tags;
+
         public IReadOnlyList<string> ShortNameList { get; set; }
 
         public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
@@ -88,56 +88,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string GeneratorVersions { get; set; }
 
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
-
-        public IReadOnlyDictionary<string, ICacheTag> Tags
-        {
-            get
-            {
-                Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
-
-                foreach (KeyValuePair<string, ParameterSymbol> tagParameter in TagDetails)
-                {
-                    ParameterSymbol tag = tagParameter.Value;
-                    string defaultValue = tag.DefaultValue;
-
-                    if (string.IsNullOrEmpty(defaultValue)
-                        && (tagParameter.Value.Choices.Count == 1))
-                    {
-                        defaultValue = tagParameter.Value.Choices.Keys.First();
-                    }
-
-                    ICacheTag cacheTag = new CacheTag(tag.DisplayName, tag.Description, tag.Choices, defaultValue, tag.DefaultIfOptionWithoutValue);
-                    tags.Add(tagParameter.Key, cacheTag);
-                }
-
-                return tags;
-            }
-        }
-
-        // Converts non-choice parameter symbols to cache parameters
-        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
-        {
-            get
-            {
-                if (_cacheParameters == null)
-                {
-                    Dictionary<string, ICacheParameter> cacheParameters = new Dictionary<string, ICacheParameter>();
-
-                    foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
-                    {
-                        if (symbol.Value is ParameterSymbol param && param.DataType != "choice")
-                        {
-                            ICacheParameter cacheParam = new CacheParameter(param.DataType, param.DefaultValue, param.DisplayName, param.Description, param.DefaultIfOptionWithoutValue);
-                            cacheParameters.Add(symbol.Key, cacheParam);
-                        }
-                    }
-
-                    _cacheParameters = cacheParameters;
-                }
-
-                return _cacheParameters;
-            }
-        }
 
         public string Identity { get; set; }
 
@@ -235,10 +185,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         IsName = isName,
                         IsVariable = true,
                         Name = symbol.Key,
-#pragma warning disable 612,618
-                        FileRename = baseSymbol.FileRename,
-#pragma warning restore 612,618
-                        Requirement = baseSymbol.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
+                        Priority = baseSymbol.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
                         Type = baseSymbol.Type,
                         DataType = baseSymbol.DataType
                     };
@@ -246,9 +193,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) &&
                             symbol.Value is ParameterSymbol parameterSymbol)
                     {
+                        parameter.Priority = parameterSymbol.IsTag ? TemplateParameterPriority.Implicit : parameter.Priority;
                         parameter.Description = parameterSymbol.Description;
                         parameter.Choices = parameterSymbol.Choices;
                         parameter.DefaultIfOptionWithoutValue = parameterSymbol.DefaultIfOptionWithoutValue;
+                        parameter.DisplayName = parameterSymbol.DisplayName;
                     }
 
                     parameters[symbol.Key] = parameter;
@@ -428,32 +377,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal DateTime? ConfigTimestampUtc { get; set; }
 
-        // Converts "choice" datatype parameter symbols to tags
-        internal IReadOnlyDictionary<string, ParameterSymbol> TagDetails
-        {
-            get
-            {
-                if (_tagDetails == null)
-                {
-                    Dictionary<string, ParameterSymbol> tempTagDetails = new Dictionary<string, ParameterSymbol>();
-
-                    foreach (KeyValuePair<string, ISymbolModel> symbolInfo in Symbols)
-                    {
-                        ParameterSymbol tagSymbol = symbolInfo.Value as ParameterSymbol;
-
-                        if (tagSymbol != null && tagSymbol.DataType == "choice")
-                        {
-                            tempTagDetails.Add(symbolInfo.Key, tagSymbol);
-                        }
-                    }
-
-                    _tagDetails = tempTagDetails;
-                }
-
-                return _tagDetails;
-            }
-        }
-
         internal IReadOnlyDictionary<string, IValueForm> Forms { get; private set; }
 
         internal string PlaceholderFilename
@@ -476,14 +399,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal IEngineEnvironmentSettings EnvironmentSettings { get; private set; }
 
-        private Parameter NameParameter
+        private ITemplateParameter NameParameter
         {
             get
             {
                 if (_nameParameter == null)
                 {
                     IRunnableProjectConfig cfg = this;
-                    foreach (Parameter p in cfg.Parameters.Values)
+                    foreach (ITemplateParameter p in cfg.Parameters.Values)
                     {
                         if (p.IsName)
                         {
@@ -627,8 +550,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
             // They're turned into symbols here, which eventually become tags.
-            config._tagsDeprecated = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
-            IReadOnlyDictionary<string, ISymbolModel> symbolsFromTags = ConvertDeprecatedTagsToParameterSymbols(config._tagsDeprecated);
+            config._tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "tags");
+            IReadOnlyDictionary<string, ISymbolModel> symbolsFromTags = ConvertDeprecatedTagsToParameterSymbols(config._tags);
 
             foreach (KeyValuePair<string, ISymbolModel> tagSymbol in symbolsFromTags)
             {

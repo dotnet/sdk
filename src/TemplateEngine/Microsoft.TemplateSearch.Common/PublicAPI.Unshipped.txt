@@ -2,16 +2,16 @@
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Author.get -> string?
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.BaselineInfo.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IBaselineInfo!>!
-Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.CacheParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ICacheParameter!>!
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Classifications.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.DefaultName.get -> string?
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Description.get -> string?
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.GroupIdentity.get -> string?
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Identity.get -> string!
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Name.get -> string!
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Parameters.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Precedence.get -> int
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string!>!
-Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.Tags.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ICacheTag!>!
+Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.TagsCollection.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
 Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.ThirdPartyNotices.get -> string?
 Microsoft.TemplateSearch.Common.FileMetadataSearchSource
 Microsoft.TemplateSearch.Common.FileMetadataSearchSource.FileMetadataSearchSource() -> void

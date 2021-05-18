@@ -3,12 +3,15 @@
 
 #nullable enable
 
+using System;
+
 namespace Microsoft.TemplateEngine.Abstractions
 {
     /// <summary>
     /// Defines the representation of a parameter in template cache.
     /// This doesn't include parameters with choices which are represented by <see cref="ICacheTag"/>.
     /// </summary>
+    [Obsolete("Deprecated. Template cache now uses ITemplateParameter instead.")]
     public interface ICacheParameter
     {
         /// <summary>

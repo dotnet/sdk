@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Abstractions
@@ -10,6 +11,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     /// <summary>
     /// Represents a tag or a parameter symbol with choices in template cache file.
     /// </summary>
+    [Obsolete("Deprecated. Template cache now uses ITemplateParameter instead for choice parameters.")]
     public interface ICacheTag
     {
         /// <summary>

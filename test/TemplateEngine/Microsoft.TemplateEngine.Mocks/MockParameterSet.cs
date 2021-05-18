@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public bool TryGetParameterDefinition(string name, out ITemplateParameter parameter)
         {
-            parameter = new TemplateParameter();
+            parameter = new TemplateParameter(name, "parameter", "string");
             return true;
         }
     }

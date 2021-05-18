@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -12,208 +14,148 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     internal class RunnableProjectTemplate : ITemplate
     {
         private readonly JObject _raw;
+        private readonly IRunnableProjectConfig _config;
+        private readonly IFile _configFile;
+        private readonly IGenerator _generator;
+        private readonly IFile _localeConfigFile;
+        private readonly IFile _hostConfigFile;
 
-        private IReadOnlyDictionary<string, ICacheTag> _tags;
-
-        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
-
-        private IReadOnlyList<ITemplateParameter> _parameters;
-
-        internal RunnableProjectTemplate(JObject raw, IGenerator generator, IFile configFile, IRunnableProjectConfig config, IFile localeConfigFile, IFile hostConfigFile)
+        internal RunnableProjectTemplate(
+            JObject raw,
+            IGenerator generator,
+            IFile configFile,
+            IRunnableProjectConfig config,
+            IFile localeConfigFile,
+            IFile hostConfigFile)
         {
-            config.SourceFile = configFile;
-            ConfigFile = configFile;
-            Generator = generator;
-            Source = configFile.MountPoint;
-            Config = config;
-            DefaultName = config.DefaultName;
-            Name = config.Name;
-            Identity = config.Identity ?? config.Name;
-
-            ShortNameList = config.ShortNameList ?? new List<string>();
-
-            Author = config.Author;
-            Tags = config.Tags ?? new Dictionary<string, ICacheTag>(StringComparer.OrdinalIgnoreCase);
-            CacheParameters = config.CacheParameters ?? new Dictionary<string, ICacheParameter>(StringComparer.OrdinalIgnoreCase);
-            Description = config.Description;
-            Classifications = config.Classifications;
-            GroupIdentity = config.GroupIdentity;
-            Precedence = config.Precedence;
-            LocaleConfigFile = localeConfigFile;
-            IsNameAgreementWithFolderPreferred = raw.ToBool("preferNameDirectory", false);
-            HostConfigPlace = hostConfigFile?.FullPath;
-            ThirdPartyNotices = raw.ToString("thirdPartyNotices");
+            _config = config;
+            _configFile = configFile;
+            _generator = generator;
+            _localeConfigFile = localeConfigFile;
+            _hostConfigFile = hostConfigFile;
             _raw = raw;
-            BaselineInfo = config.BaselineInfo;
+            config.SourceFile = configFile;
         }
 
-        public IDirectory TemplateSourceRoot
+        IDirectory ITemplate.TemplateSourceRoot
         {
             get
             {
-                return ConfigFile?.Parent?.Parent;
+                return _configFile?.Parent?.Parent;
             }
         }
 
-        public string Identity { get; }
+        string ITemplateInfo.Identity => _config.Identity ?? _config.Name;
 
-        public Guid GeneratorId => Generator.Id;
+        Guid ITemplateInfo.GeneratorId => _generator.Id;
 
-        public string Author { get; }
+        string ITemplateInfo.Author => _config.Author;
 
-        public string Description { get; }
+        string ITemplateInfo.Description => _config.Description;
 
-        public IReadOnlyList<string> Classifications { get; }
+        IReadOnlyList<string> ITemplateInfo.Classifications => _config.Classifications;
 
-        public string DefaultName { get; }
+        string ITemplateInfo.DefaultName => _config.DefaultName;
 
-        public IGenerator Generator { get; }
+        IGenerator ITemplate.Generator => _generator;
 
-        public string GroupIdentity { get; }
+        string ITemplateInfo.GroupIdentity => _config.GroupIdentity;
 
-        public int Precedence { get; set; }
+        int ITemplateInfo.Precedence => _config.Precedence;
 
-        public string Name { get; }
+        string ITemplateInfo.Name => _config.Name;
 
-        public string ShortName
+        [Obsolete]
+        string ITemplateInfo.ShortName
         {
             get
             {
-                if (ShortNameList.Count > 0)
+                if (((ITemplateInfo)this).ShortNameList.Count > 0)
                 {
-                    return ShortNameList[0];
+                    return ((ITemplateInfo)this).ShortNameList[0];
                 }
 
                 return string.Empty;
             }
+        }
 
-            set
+        IReadOnlyList<string> ITemplateInfo.ShortNameList => _config.ShortNameList ?? new List<string>();
+
+        [Obsolete]
+        IReadOnlyDictionary<string, ICacheTag> ITemplateInfo.Tags
+        {
+            get
             {
-                if (ShortNameList.Count > 0)
+                Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
+                foreach (KeyValuePair<string, string> tag in ((ITemplateInfo)this).TagsCollection)
                 {
-                    throw new Exception("Can't set the short name when the ShortNameList already has entries.");
+                    tags[tag.Key] = new CacheTag(null, null, new Dictionary<string, ParameterChoice> { { tag.Value, new ParameterChoice(null, null) } }, tag.Value);
                 }
-
-                ShortNameList = new List<string>() { value };
-            }
-        }
-
-        public IReadOnlyList<string> ShortNameList { get; private set; }
-
-        public IReadOnlyDictionary<string, ICacheTag> Tags
-        {
-            get
-            {
-                return _tags;
-            }
-
-            set
-            {
-                _tags = value;
-                _parameters = null;
-            }
-        }
-
-        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
-        {
-            get
-            {
-                return _cacheParameters;
-            }
-
-            set
-            {
-                _cacheParameters = value;
-                _parameters = null;
-            }
-        }
-
-        public IReadOnlyList<ITemplateParameter> Parameters
-        {
-            get
-            {
-                if (_parameters == null)
+                foreach (ITemplateParameter parameter in ((ITemplateInfo)this).Parameters.Where(p => p.DataType.Equals("choice", StringComparison.OrdinalIgnoreCase)))
                 {
-                    List<ITemplateParameter> parameters = new List<ITemplateParameter>();
-
-                    foreach (KeyValuePair<string, ICacheTag> tagInfo in Tags)
-                    {
-                        ITemplateParameter param = new Parameter
-                        {
-                            Name = tagInfo.Key,
-                            Documentation = tagInfo.Value.Description,
-                            DefaultValue = tagInfo.Value.DefaultValue,
-                            Choices = tagInfo.Value.Choices,
-                            DataType = "choice"
-                        };
-
-                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
-                            && tagInfo.Value is IAllowDefaultIfOptionWithoutValue tagValueWithNoValueDefault)
-                        {
-                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = tagValueWithNoValueDefault.DefaultIfOptionWithoutValue;
-                            parameters.Add(paramWithNoValueDefault as Parameter);
-                        }
-                        else
-                        {
-                            parameters.Add(param);
-                        }
-                    }
-
-                    foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
-                    {
-                        ITemplateParameter param = new Parameter
-                        {
-                            Name = paramInfo.Key,
-                            Documentation = paramInfo.Value.Description,
-                            DataType = paramInfo.Value.DataType,
-                            DefaultValue = paramInfo.Value.DefaultValue,
-                        };
-
-                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
-                            && paramInfo.Value is IAllowDefaultIfOptionWithoutValue infoWithNoValueDefault)
-                        {
-                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = infoWithNoValueDefault.DefaultIfOptionWithoutValue;
-                            parameters.Add(paramWithNoValueDefault as Parameter);
-                        }
-                        else
-                        {
-                            parameters.Add(param);
-                        }
-                    }
-
-                    _parameters = parameters;
+                    tags[parameter.Name] = new CacheTag(parameter.DisplayName, parameter.Description, parameter.Choices, parameter.DefaultValue);
                 }
-
-                return _parameters;
+                return tags;
             }
         }
 
-        public IFileSystemInfo Configuration => ConfigFile;
+        [Obsolete]
+        IReadOnlyDictionary<string, ICacheParameter> ITemplateInfo.CacheParameters
+        {
+            get
+            {
+                Dictionary<string, ICacheParameter> cacheParameters = new Dictionary<string, ICacheParameter>();
+                foreach (ITemplateParameter parameter in ((ITemplateInfo)this).Parameters.Where(p => !p.DataType.Equals("choice", StringComparison.OrdinalIgnoreCase)))
+                {
+                    cacheParameters[parameter.Name] = new CacheParameter()
+                    {
+                        DataType = parameter.DataType,
+                        DefaultValue = parameter.DefaultValue,
+                        Description = parameter.Documentation,
+                        DefaultIfOptionWithoutValue = parameter.DefaultIfOptionWithoutValue,
+                        DisplayName = parameter.DisplayName
 
-        public string MountPointUri => Configuration.MountPoint.MountPointUri;
+                    };
+                }
+                return cacheParameters;
+            }
+        }
 
-        public string ConfigPlace => Configuration.FullPath;
+        IReadOnlyList<ITemplateParameter> ITemplateInfo.Parameters
+        {
+            get
+            {
+                return _config.Parameters.Values
+                    .Where(param => param.Type.Equals("parameter", StringComparison.OrdinalIgnoreCase)
+                        && param.Priority != TemplateParameterPriority.Implicit)
+                    .ToList();
+            }
+        }
 
-        public IFileSystemInfo LocaleConfiguration => LocaleConfigFile;
+        IFileSystemInfo ITemplate.Configuration => _configFile;
 
-        public string LocaleConfigPlace => LocaleConfiguration.FullPath;
+        string ITemplateInfo.MountPointUri => _configFile.MountPoint.MountPointUri;
 
-        public bool IsNameAgreementWithFolderPreferred { get; }
+        string ITemplateInfo.ConfigPlace => _configFile.FullPath;
 
-        public string HostConfigPlace { get; }
+        IFileSystemInfo ITemplate.LocaleConfiguration => _localeConfigFile;
 
-        public string ThirdPartyNotices { get; }
+        string ITemplateInfo.LocaleConfigPlace => _localeConfigFile.FullPath;
 
-        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
+        bool ITemplate.IsNameAgreementWithFolderPreferred => _raw.ToBool("preferNameDirectory", false);
+
+        string ITemplateInfo.HostConfigPlace => _hostConfigFile?.FullPath;
+
+        string ITemplateInfo.ThirdPartyNotices => _raw.ToString("thirdPartyNotices");
+
+        IReadOnlyDictionary<string, IBaselineInfo> ITemplateInfo.BaselineInfo => _config.BaselineInfo;
+
+        IReadOnlyDictionary<string, string> ITemplateInfo.TagsCollection => _config.Tags;
 
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
-        internal IRunnableProjectConfig Config { get; private set; }
+        internal IRunnableProjectConfig Config => _config;
 
-        internal IMountPoint Source { get; }
-
-        internal IFile ConfigFile { get; }
-
-        internal IFile LocaleConfigFile { get; }
+        internal IFile ConfigFile => _configFile;
     }
 }

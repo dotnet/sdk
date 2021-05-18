@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockTemplateInfo : ITemplateInfo, IXunitSerializable
     {
-        private string[] _cacheParameters = Array.Empty<string>();
+        private string[] _parameters = Array.Empty<string>();
 
         private string[] _baselineInfo = Array.Empty<string>();
 
@@ -22,9 +22,9 @@ namespace Microsoft.TemplateEngine.Mocks
 
         private string[] _shortNameList = Array.Empty<string>();
 
-        private Dictionary<string, string[]> _tags = new Dictionary<string, string[]>();
+        private Dictionary<string, string> _tags = new Dictionary<string, string>();
 
-        private IReadOnlyList<ITemplateParameter> _parameters;
+        private Dictionary<string, string[]> _choiceParameters = new Dictionary<string, string[]>();
 
         public MockTemplateInfo()
         {
@@ -100,40 +100,32 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IReadOnlyList<string> ShortNameList => _shortNameList;
 
-        public IReadOnlyDictionary<string, ICacheTag> Tags
-        {
-            get
-            {
-                return _tags.ToDictionary(kvp => kvp.Key, kvp => CreateTestCacheTag(kvp.Value));
-            }
-        }
+        [Obsolete("Use Parameters instead.")]
+        IReadOnlyDictionary<string, ICacheTag> ITemplateInfo.Tags => throw new NotImplementedException();
 
-        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
-        {
-            get
-            {
-                return _cacheParameters.ToDictionary(param => param, kvp => (ICacheParameter)new CacheParameter());
-            }
-        }
+        [Obsolete("Use Parameters instead.")]
+        IReadOnlyDictionary<string, ICacheParameter> ITemplateInfo.CacheParameters => throw new NotImplementedException();
 
         public IReadOnlyList<ITemplateParameter> Parameters
         {
             get
             {
-                if (_parameters == null)
+                List<ITemplateParameter> parameters = new List<ITemplateParameter>();
+                foreach (var param in _parameters)
                 {
-                    List<ITemplateParameter> parameters = new List<ITemplateParameter>();
-                    PopulateParametersFromTags(parameters);
-                    PopulateParametersFromCacheParameters(parameters);
-                    _parameters = parameters;
+                    parameters.Add(new TemplateParameter(param, "parameter", "string"));
                 }
-                return _parameters;
-            }
+                foreach (var param in _choiceParameters)
+                {
+                    parameters.Add(new TemplateParameter(
+                        param.Key,
+                        type: "parameter",
+                        datatype: "choice",
+                        choices: param.Value.ToDictionary(v => v, v => new ParameterChoice(null, null))));
 
-            set
-            {
-                _parameters = value;
-            }
+                }
+                return parameters;
+            }            
         }
 
         public string MountPointUri { get; }
@@ -158,22 +150,30 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public DateTime? ConfigTimestampUtc { get; }
 
+        public IReadOnlyDictionary<string, string> TagsCollection => _tags;
+
         public MockTemplateInfo WithParameters(params string[] parameters)
         {
-            if (_cacheParameters.Length == 0)
+            if (_parameters.Length == 0)
             {
-                _cacheParameters = parameters;
+                _parameters = parameters;
             }
             else
             {
-                _cacheParameters = _cacheParameters.Concat(parameters).ToArray();
+                _parameters = _parameters.Concat(parameters).ToArray();
             }
             return this;
         }
 
-        public MockTemplateInfo WithTag(string tagName, params string[] values)
+        public MockTemplateInfo WithTag(string tagName,  string value)
         {
-            _tags.Add(tagName, values);
+            _tags.Add(tagName, value);
+            return this;
+        }
+
+        public MockTemplateInfo WithChoiceParameter(string name, params string[] values)
+        {
+            _choiceParameters.Add(name, values);
             return this;
         }
 
@@ -209,67 +209,6 @@ namespace Microsoft.TemplateEngine.Mocks
             return this;
         }
 
-        private static ICacheTag CreateTestCacheTag(IReadOnlyList<string> choiceList, string tagDescription = null, string defaultValue = null, string defaultIfOptionWithoutValue = null)
-        {
-            Dictionary<string, ParameterChoice> choicesDict = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
-            foreach (string choice in choiceList)
-            {
-                choicesDict.Add(choice, new ParameterChoice(string.Empty, string.Empty));
-            }
-            return new CacheTag(string.Empty, tagDescription, choicesDict, defaultValue, defaultIfOptionWithoutValue);
-        }
-
-        private void PopulateParametersFromTags(List<ITemplateParameter> parameters)
-        {
-            foreach (KeyValuePair<string, ICacheTag> tagInfo in Tags)
-            {
-                ITemplateParameter param = new TemplateParameter
-                {
-                    Name = tagInfo.Key,
-                    Documentation = tagInfo.Value.Description,
-                    DefaultValue = tagInfo.Value.DefaultValue,
-                    Choices = tagInfo.Value.Choices,
-                    DataType = "choice"
-                };
-
-                if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
-                    && tagInfo.Value is IAllowDefaultIfOptionWithoutValue tagWithNoValueDefault)
-                {
-                    paramWithNoValueDefault.DefaultIfOptionWithoutValue = tagWithNoValueDefault.DefaultIfOptionWithoutValue;
-                    parameters.Add(paramWithNoValueDefault as TemplateParameter);
-                }
-                else
-                {
-                    parameters.Add(param);
-                }
-            }
-        }
-
-        private void PopulateParametersFromCacheParameters(List<ITemplateParameter> parameters)
-        {
-            foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
-            {
-                ITemplateParameter param = new TemplateParameter
-                {
-                    Name = paramInfo.Key,
-                    Documentation = paramInfo.Value.Description,
-                    DataType = paramInfo.Value.DataType,
-                    DefaultValue = paramInfo.Value.DefaultValue,
-                };
-
-                if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
-                    && paramInfo.Value is IAllowDefaultIfOptionWithoutValue infoWithNoValueDefault)
-                {
-                    paramWithNoValueDefault.DefaultIfOptionWithoutValue = infoWithNoValueDefault.DefaultIfOptionWithoutValue;
-                    parameters.Add(paramWithNoValueDefault as TemplateParameter);
-                }
-                else
-                {
-                    parameters.Add(param);
-                }
-            }
-        }
-
         #region XUnitSerializable implementation
 
         public void Deserialize(IXunitSerializationInfo info)
@@ -281,8 +220,9 @@ namespace Microsoft.TemplateEngine.Mocks
             Description = info.GetValue<string>("template_description");
             Author = info.GetValue<string>("template_author");
 
-            _tags = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(info.GetValue<string>("template_tags"));
-            _cacheParameters = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_params"));
+            _choiceParameters = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(info.GetValue<string>("template_choices"));
+            _tags = JsonConvert.DeserializeObject<Dictionary<string, string>>(info.GetValue<string>("template_tags"));
+            _parameters = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_params"));
             _baselineInfo = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_baseline"));
             _classifications = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_classifications"));
             _shortNameList = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_shortname"));
@@ -298,8 +238,9 @@ namespace Microsoft.TemplateEngine.Mocks
             info.AddValue("template_description", Description, typeof(string));
             info.AddValue("template_author", Author, typeof(string));
 
+            info.AddValue("template_choices", JsonConvert.SerializeObject(_choiceParameters), typeof(string));
             info.AddValue("template_tags", JsonConvert.SerializeObject(_tags), typeof(string));
-            info.AddValue("template_params", JsonConvert.SerializeObject(_cacheParameters), typeof(string));
+            info.AddValue("template_params", JsonConvert.SerializeObject(_parameters), typeof(string));
             info.AddValue("template_baseline", JsonConvert.SerializeObject(_baselineInfo), typeof(string));
             info.AddValue("template_classifications", JsonConvert.SerializeObject(_classifications), typeof(string));
         }
@@ -330,9 +271,9 @@ namespace Microsoft.TemplateEngine.Mocks
             {
                 _ = sb.Append("Classifications:" + string.Join(",", _classifications) + ";");
             }
-            if (_cacheParameters.Any())
+            if (_parameters.Any())
             {
-                _ = sb.Append("Parameters:" + string.Join(",", _cacheParameters) + ";");
+                _ = sb.Append("Parameters:" + string.Join(",", _parameters) + ";");
             }
             if (_baselineInfo.Any())
             {
@@ -340,7 +281,11 @@ namespace Microsoft.TemplateEngine.Mocks
             }
             if (_tags.Any())
             {
-                _ = sb.Append("Tags:" + string.Join(",", _tags.Select(t => t.Key + "(" + string.Join("|", t.Value) + ")")) + ";");
+                _ = sb.Append("Tags:" + string.Join(",", _tags.Select(t => t.Key + "(" + t.Value + ")")) + ";");
+            }
+            if (_choiceParameters.Any())
+            {
+                _ = sb.Append("Choice parameters:" + string.Join(",", _choiceParameters.Select(t => t.Key + "(" + string.Join("|", t.Value) + ")")) + ";");
             }
 
             return sb.ToString();

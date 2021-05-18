@@ -261,10 +261,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 {
                     if (inputParam.Value == null)
                     {
-                        if (paramFromTemplate is IAllowDefaultIfOptionWithoutValue paramFromTemplateWithNoValueDefault
-                            && !string.IsNullOrEmpty(paramFromTemplateWithNoValueDefault.DefaultIfOptionWithoutValue))
+                        if (!string.IsNullOrEmpty(paramFromTemplate.DefaultIfOptionWithoutValue))
                         {
-                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, paramFromTemplateWithNoValueDefault.DefaultIfOptionWithoutValue, out bool valueResolutionError);
+                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, paramFromTemplate.DefaultIfOptionWithoutValue, out bool valueResolutionError);
                             // don't fail on value resolution errors, but report them as authoring problems.
                             if (valueResolutionError)
                             {

@@ -182,14 +182,14 @@ namespace Microsoft.TemplateEngine.Core
 
                 if (!parameters.ResolvedValues.TryGetValue(param, out object value))
                 {
-                    if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
+                    if (param.Priority != TemplateParameterPriority.Optional)
                     {
                         parameters.ResolvedValues[param] = value;
                     }
                 }
                 else if (value == null)
                 {
-                    if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
+                    if (param.Priority != TemplateParameterPriority.Optional)
                     {
                         parameters.ResolvedValues[param] = value;
                     }

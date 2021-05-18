@@ -9,6 +9,7 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
 {
+    [Obsolete("Use ITemplateParameter / TemplateParameter for parameters instead.")]
     public class CacheTag : ICacheTag, IAllowDefaultIfOptionWithoutValue
     {
         public CacheTag(string? displayName, string? description, IReadOnlyDictionary<string, ParameterChoice> choices, string? defaultValue)

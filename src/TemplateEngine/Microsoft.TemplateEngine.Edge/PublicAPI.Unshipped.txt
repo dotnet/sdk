@@ -151,6 +151,7 @@ virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.TryGetHostParamD
 ~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ShortNameList.set -> void
 ~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Tags.get -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateEngine.Abstractions.ICacheTag>
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.TagsCollection.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
 ~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ThirdPartyNotices.get -> string
 ~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.FilteredTemplateInfo(Microsoft.TemplateEngine.Abstractions.ITemplateInfo info, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Edge.Template.MatchInfo> matchDisposition) -> void
 ~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.Info.get -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo

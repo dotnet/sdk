@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 
             if (symbol.DataType == "choice")
             {
-                symbol.IsTag = jObject.ToBool(nameof(IsTag), true);
+                symbol.IsTag = false;
                 symbol.TagName = jObject.ToString(nameof(TagName));
 
                 foreach (JObject choiceObject in jObject.Items<JObject>(nameof(Choices)))

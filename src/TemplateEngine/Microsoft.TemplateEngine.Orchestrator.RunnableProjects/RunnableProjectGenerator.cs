@@ -52,13 +52,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            GlobalRunSpec runSpec = new GlobalRunSpec(template.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.IgnoreFileNames);
+            GlobalRunSpec runSpec = new GlobalRunSpec(templateData.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.IgnoreFileNames);
 
             foreach (FileSourceMatchInfo source in template.Config.Sources)
             {
                 runSpec.SetupFileSource(source);
                 string target = Path.Combine(targetDirectory, source.Target);
-                orchestrator.Run(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target);
+                orchestrator.Run(runSpec, templateData.TemplateSourceRoot.DirectoryInfo(source.Source), target);
             }
 
             return Task.FromResult(GetCreationResult(environmentSettings, template, variables));
@@ -84,14 +84,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            GlobalRunSpec runSpec = new GlobalRunSpec(template.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.IgnoreFileNames);
+            GlobalRunSpec runSpec = new GlobalRunSpec(templateData.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.IgnoreFileNames);
             List<IFileChange2> changes = new List<IFileChange2>();
 
             foreach (FileSourceMatchInfo source in template.Config.Sources)
             {
                 runSpec.SetupFileSource(source);
                 string target = Path.Combine(targetDirectory, source.Target);
-                IReadOnlyList<IFileChange2> fileChanges = orchestrator.GetFileChanges(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target);
+                IReadOnlyList<IFileChange2> fileChanges = orchestrator.GetFileChanges(runSpec, templateData.TemplateSourceRoot.DirectoryInfo(source.Source), target);
 
                 //source and target paths in the file changes are returned relative to source passed
                 //GetCreationEffects method should return the source paths relative to template source root (location of .template.config folder) and target paths relative to output path and not relative to certain source
@@ -195,7 +195,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 RunnableProjectTemplate runnableProjectTemplate = new RunnableProjectTemplate(srcObject, this, templateFile, templateModel, null, hostTemplateConfigFile);
-                if (!AreAllTemplatePathsValid(templateModel, runnableProjectTemplate))
+                if (!AreAllTemplatePathsValid(templateFile.MountPoint.EnvironmentSettings, templateModel, runnableProjectTemplate))
                 {
                     template = null;
                     return false;
@@ -416,9 +416,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         // TODO: localize the diagnostic strings
         // checks that all the template sources are under the template root, and they exist.
-        internal bool AreAllTemplatePathsValid(IRunnableProjectConfig templateConfig, RunnableProjectTemplate runnableTemplate)
+        internal bool AreAllTemplatePathsValid(IEngineEnvironmentSettings environmentSettings, IRunnableProjectConfig templateConfig, ITemplate runnableTemplate)
         {
-            ILogger logger = runnableTemplate.Source.EnvironmentSettings.Host.Logger;
+            ILogger logger = environmentSettings.Host.Logger;
 
             if (runnableTemplate.TemplateSourceRoot == null)
             {
@@ -728,7 +728,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 parameter = new Parameter
                 {
                     Name = name,
-                    Requirement = TemplateParameterPriority.Optional,
+                    Priority = TemplateParameterPriority.Optional,
                     IsVariable = true,
                     Type = "string"
                 };
