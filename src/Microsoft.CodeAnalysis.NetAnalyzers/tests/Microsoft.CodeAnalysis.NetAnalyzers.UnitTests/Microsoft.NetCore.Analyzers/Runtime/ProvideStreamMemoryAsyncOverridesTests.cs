@@ -1419,15 +1419,15 @@ Imports System.Threading.Tasks";
             Throw New NotImplementedException()
         End Function";
 
-        private const string CSDisplayReadAsyncArray = @"Task<int> Stream.ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)";
-        private const string CSDisplayReadAsyncMemory = @"ValueTask<int> Stream.ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string CSDisplayWriteAsyncArray = @"Task Stream.WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)";
-        private const string CSDisplayWriteAsyncMemory = @"ValueTask Stream.WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string CSDisplayReadAsyncArray = @"ReadAsync";
+        private const string CSDisplayReadAsyncMemory = @"ReadAsync";
+        private const string CSDisplayWriteAsyncArray = @"WriteAsync";
+        private const string CSDisplayWriteAsyncMemory = @"WriteAsync";
 
-        private const string VBDisplayReadAsyncArray = @"Function Stream.ReadAsync(buffer As Byte(), offset As Integer, count As Integer, cancellationToken As CancellationToken) As Task(Of Integer)";
-        private const string VBDisplayReadAsyncMemory = @"Function Stream.ReadAsync(buffer As Memory(Of Byte), cancellationToken As CancellationToken = Nothing) As ValueTask(Of Integer)";
-        private const string VBDisplayWriteAsyncArray = @"Function Stream.WriteAsync(buffer As Byte(), offset As Integer, count As Integer, cancellationToken As CancellationToken) As Task";
-        private const string VBDisplayWriteAsyncMemory = @"Function Stream.WriteAsync(buffer As ReadOnlyMemory(Of Byte), cancellationToken As CancellationToken = Nothing) As ValueTask";
+        private const string VBDisplayReadAsyncArray = @"ReadAsync";
+        private const string VBDisplayReadAsyncMemory = @"ReadAsync";
+        private const string VBDisplayWriteAsyncArray = @"WriteAsync";
+        private const string VBDisplayWriteAsyncMemory = @"WriteAsync";
 
         private const string CSHideReadAsyncArray = @"public Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw null;";
         private const string CSHideReadAsyncMemory = @"public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => throw null;";

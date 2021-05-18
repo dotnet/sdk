@@ -103,9 +103,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 return violatingType.CreateDiagnostic(
                     Rule,
-                    violatingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                    arrayBasedOverride.OverriddenMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                    memoryBasedMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
+                    violatingType.Name,
+                    arrayBasedOverride.Name,
+                    memoryBasedMethod.Name);
             }
         }
 
