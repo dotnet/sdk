@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 
             foreach (string language in languages)
             {
-                string locFilePath = Path.Combine(targetDirectory, language + ".templatestrings.json");
+                string locFilePath = Path.Combine(targetDirectory, "templatestrings." + language + ".json");
                 Dictionary<string, string>? existingStrings = null;
 
                 // Check existing strings only if this is not the original language the template was created in.

@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
             await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
-            string expectedFilename = Path.Combine(_workingDirectory, "tr.templatestrings.json");
+            string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.tr.json");
             Assert.True(File.Exists(expectedFilename));
 
             // Only the specified language file should be generated (no more than 1 file in the directory).
@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
             await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
-            string expectedFilename = Path.Combine(_workingDirectory, "tr.templatestrings.json");
+            string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.tr.json");
             Assert.True(File.Exists(expectedFilename));
 
             using FileStream locFileStream = File.OpenRead(expectedFilename);
@@ -136,7 +136,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         public async Task ExistingValuesOfAuthoringLanguageShouldBeRemoved()
         {
             CancellationTokenSource cts = new CancellationTokenSource(10000);
-            string expectedFilename = Path.Combine(_workingDirectory, "en.templatestrings.json");
+            string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.en.json");
 
             await File.WriteAllTextAsync(
                 expectedFilename,

@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         internal const string TemplateConfigDirectoryName = ".template.config";
         internal const string TemplateConfigFileName = "template.json";
-        internal const string LocalizationFileName = "templatestrings.";
+        internal const string LocalizationFilePrefix = "templatestrings.";
         internal const string LocalizationFileExtension = ".json";
         private const string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
         private const string GeneratorVersion = "1.0.0.0";
@@ -131,9 +131,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     IDirectory localizeFolder = file.Parent.DirectoryInfo("localize");
                     if (localizeFolder != null && localizeFolder.Exists)
                     {
-                        foreach (IFile locFile in localizeFolder.EnumerateFiles(LocalizationFileName + "*" + LocalizationFileExtension, SearchOption.AllDirectories))
+                        foreach (IFile locFile in localizeFolder.EnumerateFiles(LocalizationFilePrefix + "*" + LocalizationFileExtension, SearchOption.AllDirectories))
                         {
-                            string locale = locFile.Name.Substring(LocalizationFileName.Length, locFile.Name.Length - LocalizationFileName.Length - LocalizationFileExtension.Length);
+                            string locale = locFile.Name.Substring(LocalizationFilePrefix.Length, locFile.Name.Length - LocalizationFilePrefix.Length - LocalizationFileExtension.Length);
 
                             if (TryGetLangPackFromFile(locFile, out ILocalizationModel locModel))
                             {

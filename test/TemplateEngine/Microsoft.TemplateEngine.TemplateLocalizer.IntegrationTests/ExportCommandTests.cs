@@ -33,7 +33,11 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
                 .ConfigureAwait(false);
 
             Assert.True(exportedFiles.Length > 0);
-            Assert.All(exportedFiles, p => Assert.EndsWith(".templatestrings.json", p));
+            Assert.All(exportedFiles, p =>
+            {
+                Assert.StartsWith("templatestrings.", Path.GetFileName(p));
+                Assert.EndsWith(".json", p);
+            });
         }
 
         [Fact]
@@ -58,8 +62,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
                 .ConfigureAwait(false);
 
             Assert.Single(exportedFiles);
-            Assert.True(File.Exists(Path.Combine(_workingDirectory, "localize", "tr.templatestrings.json")));
-            Assert.False(File.Exists(Path.Combine(_workingDirectory, "localize", "es.templatestrings.json")));
+            Assert.True(File.Exists(Path.Combine(_workingDirectory, "localize", "templatestrings.tr.json")));
+            Assert.False(File.Exists(Path.Combine(_workingDirectory, "localize", "templatestrings.es.json")));
         }
 
         [Fact]
@@ -93,8 +97,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
             int runResult = await Program.Main(new string[] { "export", _workingDirectory, "--language", "es", "--recursive" }).ConfigureAwait(false);
             Assert.Equal(0, runResult);
 
-            Assert.True(File.Exists(Path.Combine(_workingDirectory, "subdir", ".template.config", "localize", "es.templatestrings.json")));
-            Assert.True(File.Exists(Path.Combine(_workingDirectory, ".template.config", "localize", "es.templatestrings.json")));
+            Assert.True(File.Exists(Path.Combine(_workingDirectory, "subdir", ".template.config", "localize", "templatestrings.es.json")));
+            Assert.True(File.Exists(Path.Combine(_workingDirectory, ".template.config", "localize", "templatestrings.es.json")));
         }
 
         [Fact]
