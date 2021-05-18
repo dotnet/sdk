@@ -60,16 +60,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 return;
             }
 
-            if (argument.Parameter == null)
-            {
-                return;
-            }
-
             var stringText = (string)argument.Value.ConstantValue.Value;
 
-            var matchingParameter = argument.Parameter;
-
-            switch (matchingParameter.Name)
+            // argument.Parameter will not be null here. The only case for it to be null is an __arglist argument, for which
+            // the argument type will not be of SpecialType.System_String.
+            switch (argument.Parameter.Name)
             {
                 case ParamName:
                     var parametersInScope = GetParametersInScope(context);

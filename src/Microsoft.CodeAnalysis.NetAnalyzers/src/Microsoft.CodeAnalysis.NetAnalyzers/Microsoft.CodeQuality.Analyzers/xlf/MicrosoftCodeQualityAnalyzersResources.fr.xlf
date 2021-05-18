@@ -244,7 +244,7 @@
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesCodeFixTitle">
         <source>Add operator overload named alternate</source>
-        <target state="translated">Ajouter une surcharge d'opérateur nommée alternative</target>
+        <target state="translated">Ajouter une surcharge d'opérateur nommée alternate</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
@@ -269,7 +269,7 @@
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
         <source>Add 'System.Uri' overloads</source>
-        <target state="new">Add 'System.Uri' overloads</target>
+        <target state="translated">Ajouter une surcharge « System.Uri »</target>
         <note>{Locked="System.Uri"}</note>
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">

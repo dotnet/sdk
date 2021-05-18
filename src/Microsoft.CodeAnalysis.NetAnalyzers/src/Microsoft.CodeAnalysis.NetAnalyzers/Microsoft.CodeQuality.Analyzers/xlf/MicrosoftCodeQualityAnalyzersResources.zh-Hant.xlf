@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
-  <file datatype="xml" source-language="en" target-language="zh-HANT" original="../MicrosoftCodeQualityAnalyzersResources.resx">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../MicrosoftCodeQualityAnalyzersResources.resx">
     <body>
       <trans-unit id="AppendConfigureAwaitTrue">
         <source>Append .ConfigureAwait(true)</source>
@@ -269,7 +269,7 @@
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
         <source>Add 'System.Uri' overloads</source>
-        <target state="new">Add 'System.Uri' overloads</target>
+        <target state="translated">新增 'System.Uri' 多載</target>
         <note>{Locked="System.Uri"}</note>
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
