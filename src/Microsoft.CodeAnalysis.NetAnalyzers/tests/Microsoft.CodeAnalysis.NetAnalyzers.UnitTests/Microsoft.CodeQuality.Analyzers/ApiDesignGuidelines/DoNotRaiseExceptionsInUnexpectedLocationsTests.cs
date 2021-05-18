@@ -622,6 +622,68 @@ End Class
         }
 
         [Fact]
+        [WorkItem(5021, "https://github.com/dotnet/roslyn-analyzers/issues/5021")]
+        public async Task CSharpComparisonOperatorWithExceptions()
+        {
+            var code = @"
+using System;
+
+public class C
+{
+    public static bool operator <=(C left, C right)
+    {
+        {|#0:throw new Exception();|}
+    }
+    public static bool operator >=(C left, C right)
+    {
+        {|#1:throw new Exception();|}
+    }
+    public static bool operator <(C left, C right)
+    {
+        {|#2:throw new Exception();|}
+    }
+    public static bool operator >(C left, C right)
+    {
+        {|#3:throw new Exception();|}
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(
+                code,
+                GetCSharpNoExceptionsResultAt(0, "op_LessThanOrEqual", "Exception"),
+                GetCSharpNoExceptionsResultAt(1, "op_GreaterThanOrEqual", "Exception"),
+                GetCSharpNoExceptionsResultAt(2, "op_LessThan", "Exception"),
+                GetCSharpNoExceptionsResultAt(3, "op_GreaterThan", "Exception"));
+        }
+
+        [Fact]
+        public async Task BasicComparisonOperatorWithExceptions()
+        {
+            var code = @"
+Imports System
+
+Public Class C
+    Public Shared Operator <=(left As C, right As C) As Boolean
+        {|#0:Throw New Exception()|}
+    End Operator
+    Public Shared Operator >=(left As C, right As C) As Boolean
+        {|#1:Throw New Exception()|}
+    End Operator
+    Public Shared Operator <(left As C, right As C) As Boolean
+        {|#2:Throw New Exception()|}
+    End Operator
+    Public Shared Operator >(left As C, right As C) As Boolean
+        {|#3:Throw New Exception()|}
+    End Operator
+End Class";
+            await VerifyVB.VerifyAnalyzerAsync(
+                code,
+                GetBasicNoExceptionsResultAt(0, "op_LessThanOrEqual", "Exception"),
+                GetBasicNoExceptionsResultAt(1, "op_GreaterThanOrEqual", "Exception"),
+                GetBasicNoExceptionsResultAt(2, "op_LessThan", "Exception"),
+                GetBasicNoExceptionsResultAt(3, "op_GreaterThan", "Exception"));
+        }
+
+        [Fact]
         public async Task CSharpImplicitOperatorWithExceptions()
         {
             var code = @"
@@ -677,6 +739,12 @@ End Class
         {
             return GetCSharpResultAt(line, column, DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.NoAllowedExceptionsRule, methodName, exceptionName);
         }
+        private static DiagnosticResult GetCSharpNoExceptionsResultAt(int markupKey, string methodName, string exceptionName)
+        {
+            return VerifyCS.Diagnostic(DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.NoAllowedExceptionsRule)
+                .WithLocation(markupKey)
+                .WithArguments(methodName, exceptionName);
+        }
 
         private static DiagnosticResult GetBasicPropertyResultAt(int line, int column, string methodName, string exceptionName)
         {
@@ -689,6 +757,12 @@ End Class
         private static DiagnosticResult GetBasicNoExceptionsResultAt(int line, int column, string methodName, string exceptionName)
         {
             return GetBasicResultAt(line, column, DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.NoAllowedExceptionsRule, methodName, exceptionName);
+        }
+        private static DiagnosticResult GetBasicNoExceptionsResultAt(int markupKey, string methodName, string exceptionName)
+        {
+            return VerifyVB.Diagnostic(DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.NoAllowedExceptionsRule)
+                .WithLocation(markupKey)
+                .WithArguments(methodName, exceptionName);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
