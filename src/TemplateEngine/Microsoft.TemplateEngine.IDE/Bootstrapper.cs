@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,12 +26,22 @@ namespace Microsoft.TemplateEngine.IDE
         private readonly Edge.Settings.TemplatePackageManager _templatePackagesManager;
         private readonly EngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public Bootstrapper(ITemplateEngineHost host, bool virtualizeConfiguration)
+        /// <summary>
+        /// Creates the instance.
+        /// </summary>
+        /// <param name="host">caller <see cref="ITemplateEngineHost"/>.</param>
+        /// <param name="virtualizeConfiguration">if true, settings will be stored in memory and will be disposed with instance.</param>
+        /// <param name="loadDefaultComponents">if true, the default components (providers, installers, generator) will be loaded. Same as calling <see cref="LoadDefaultComponents()"/> after instance is created.</param>
+        public Bootstrapper(ITemplateEngineHost host, bool virtualizeConfiguration, bool loadDefaultComponents = true)
         {
             _host = host ?? throw new ArgumentNullException(nameof(host));
             _engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: virtualizeConfiguration);
             _templateCreator = new TemplateCreator(_engineEnvironmentSettings);
             _templatePackagesManager = new Edge.Settings.TemplatePackageManager(_engineEnvironmentSettings);
+            if (loadDefaultComponents)
+            {
+                LoadDefaultComponents();
+            }
         }
 
         [Obsolete("Use ITemplateEngineHost.BuiltInComponents or AddComponent to add components.")]
@@ -46,6 +54,21 @@ namespace Microsoft.TemplateEngine.IDE
         public void Register(Assembly assembly)
         {
             _engineEnvironmentSettings.Components.RegisterMany(assembly.GetTypes());
+        }
+
+        /// <summary>
+        /// Loads default components: template package providers and installers defined in Microsoft.TemplateEngine.Edge and default template generator defined in Microsoft.TemplateEngine.Orchestrator.RunnableProjects.
+        /// </summary>
+        public void LoadDefaultComponents()
+        {
+            foreach ((Type Type, IIdentifiedComponent Instance) component in Orchestrator.RunnableProjects.Components.AllComponents)
+            {
+                AddComponent(component.Type, component.Instance);
+            }
+            foreach ((Type Type, IIdentifiedComponent Instance) component in Edge.Components.AllComponents)
+            {
+                AddComponent(component.Type, component.Instance);
+            }
         }
 
         /// <summary>

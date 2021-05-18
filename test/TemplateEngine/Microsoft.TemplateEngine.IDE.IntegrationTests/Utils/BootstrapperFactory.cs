@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge;
@@ -25,7 +24,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
                     host.VirtualizeDirectory(virtualLocation);
                 }
             }
-            return new Bootstrapper(host, true);
+            return new Bootstrapper(host, virtualizeConfiguration: true, loadDefaultComponents: true);
         }
 
         private static ITemplateEngineHost CreateHost(bool loadBuiltInTemplates = false)
@@ -36,9 +35,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             };
 
             var builtIns = new List<(Type, IIdentifiedComponent)>();
-            builtIns.AddRange(Edge.Components.AllComponents);
-            builtIns.AddRange(Orchestrator.RunnableProjects.Components.AllComponents);
-
             if (loadBuiltInTemplates)
             {
                 builtIns.Add((typeof(ITemplatePackageProviderFactory), new BuiltInTemplatePackagesProviderFactory()));
