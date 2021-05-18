@@ -1,1 +1,388 @@
 ﻿#nullable enable
+const Microsoft.TemplateEngine.Abstractions.Installer.InstallerConstants.NuGetSourcesSeparator = ';' -> char
+const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Author = "Author" -> string!
+const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Baseline = "Baseline" -> string!
+const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Classification = "Classification" -> string!
+const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Language = "Language" -> string!
+const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Name = "Name" -> string!
+const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.ShortName = "ShortName" -> string!
+const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Type = "Type" -> string!
+Microsoft.TemplateEngine.Abstractions.ChangeKind
+Microsoft.TemplateEngine.Abstractions.ChangeKind.Change = 3 -> Microsoft.TemplateEngine.Abstractions.ChangeKind
+Microsoft.TemplateEngine.Abstractions.ChangeKind.Create = 0 -> Microsoft.TemplateEngine.Abstractions.ChangeKind
+Microsoft.TemplateEngine.Abstractions.ChangeKind.Delete = 1 -> Microsoft.TemplateEngine.Abstractions.ChangeKind
+Microsoft.TemplateEngine.Abstractions.ChangeKind.Overwrite = 2 -> Microsoft.TemplateEngine.Abstractions.ChangeKind
+Microsoft.TemplateEngine.Abstractions.IAllowDefaultIfOptionWithoutValue
+Microsoft.TemplateEngine.Abstractions.IBaselineInfo
+Microsoft.TemplateEngine.Abstractions.ICacheParameter
+Microsoft.TemplateEngine.Abstractions.ICacheParameter.DataType.get -> string?
+Microsoft.TemplateEngine.Abstractions.ICacheParameter.DefaultValue.get -> string?
+Microsoft.TemplateEngine.Abstractions.ICacheParameter.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.ICacheParameter.DisplayName.get -> string?
+Microsoft.TemplateEngine.Abstractions.ICacheTag
+Microsoft.TemplateEngine.Abstractions.ICacheTag.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>!
+Microsoft.TemplateEngine.Abstractions.ICacheTag.DefaultValue.get -> string?
+Microsoft.TemplateEngine.Abstractions.ICacheTag.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.ICacheTag.DisplayName.get -> string?
+Microsoft.TemplateEngine.Abstractions.IComponentManager
+Microsoft.TemplateEngine.Abstractions.IComponentManager.AddComponent(System.Type! interfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! instance) -> void
+Microsoft.TemplateEngine.Abstractions.ICreationEffects
+Microsoft.TemplateEngine.Abstractions.ICreationEffects.CreationResult.get -> Microsoft.TemplateEngine.Abstractions.ICreationResult!
+Microsoft.TemplateEngine.Abstractions.ICreationEffects.FileChanges.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>!
+Microsoft.TemplateEngine.Abstractions.ICreationEffects2
+Microsoft.TemplateEngine.Abstractions.ICreationEffects2.CreationResult.get -> Microsoft.TemplateEngine.Abstractions.ICreationResult!
+Microsoft.TemplateEngine.Abstractions.ICreationEffects2.FileChanges.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2!>!
+Microsoft.TemplateEngine.Abstractions.ICreationPath
+Microsoft.TemplateEngine.Abstractions.ICreationPath.Path.get -> string!
+Microsoft.TemplateEngine.Abstractions.ICreationResult
+Microsoft.TemplateEngine.Abstractions.ICreationResult.PostActions.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IPostAction!>!
+Microsoft.TemplateEngine.Abstractions.ICreationResult.PrimaryOutputs.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ICreationPath!>!
+Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings
+Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.Components.get -> Microsoft.TemplateEngine.Abstractions.IComponentManager!
+Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.Environment.get -> Microsoft.TemplateEngine.Abstractions.IEnvironment!
+Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.Host.get -> Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost!
+Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.Paths.get -> Microsoft.TemplateEngine.Abstractions.IPathInfo!
+Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings.SettingsLoader.get -> Microsoft.TemplateEngine.Abstractions.ISettingsLoader!
+Microsoft.TemplateEngine.Abstractions.IEnvironment
+Microsoft.TemplateEngine.Abstractions.IEnvironment.ConsoleBufferWidth.get -> int
+Microsoft.TemplateEngine.Abstractions.IEnvironment.ExpandEnvironmentVariables(string! name) -> string!
+Microsoft.TemplateEngine.Abstractions.IEnvironment.GetEnvironmentVariable(string! name) -> string?
+Microsoft.TemplateEngine.Abstractions.IEnvironment.GetEnvironmentVariables() -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Abstractions.IEnvironment.NewLine.get -> string!
+Microsoft.TemplateEngine.Abstractions.IFileChange
+Microsoft.TemplateEngine.Abstractions.IFileChange.ChangeKind.get -> Microsoft.TemplateEngine.Abstractions.ChangeKind
+Microsoft.TemplateEngine.Abstractions.IFileChange.Contents.get -> byte[]!
+Microsoft.TemplateEngine.Abstractions.IFileChange.TargetRelativePath.get -> string!
+Microsoft.TemplateEngine.Abstractions.IFileChange2
+Microsoft.TemplateEngine.Abstractions.IFileChange2.SourceRelativePath.get -> string!
+Microsoft.TemplateEngine.Abstractions.IGenerator
+Microsoft.TemplateEngine.Abstractions.IHostTemplateModel
+Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent
+Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent.Id.get -> System.Guid
+Microsoft.TemplateEngine.Abstractions.ILocalizationLocator
+Microsoft.TemplateEngine.Abstractions.ILocalizationModel
+Microsoft.TemplateEngine.Abstractions.ILocalizationModel.Author.get -> string?
+Microsoft.TemplateEngine.Abstractions.ILocalizationModel.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.ILocalizationModel.Name.get -> string?
+Microsoft.TemplateEngine.Abstractions.ILocalizationModel.ParameterSymbols.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel!>!
+Microsoft.TemplateEngine.Abstractions.ILocalizationModel.PostActions.get -> System.Collections.Generic.IReadOnlyDictionary<int, Microsoft.TemplateEngine.Abstractions.IPostActionLocalizationModel!>!
+Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult
+Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.IsLatestVersion.get -> bool
+Microsoft.TemplateEngine.Abstractions.Installer.IInstaller
+Microsoft.TemplateEngine.Abstractions.Installer.IInstallerFactory
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerConstants
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.AlreadyInstalled = 6 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.DownloadFailed = 3 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.GenericError = 5 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.InvalidPackage = 8 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.InvalidSource = 2 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.PackageNotFound = 1 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.Success = 0 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.UnsupportedRequest = 4 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.UpdateUninstallFailed = 7 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.Error.get -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.Error.set -> void
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.InstallerOperationResult() -> void
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.Success.get -> bool
+Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest
+Microsoft.TemplateEngine.Abstractions.Installer.InstallResult
+Microsoft.TemplateEngine.Abstractions.Installer.ISerializableInstaller
+Microsoft.TemplateEngine.Abstractions.Installer.TemplatePackageData
+Microsoft.TemplateEngine.Abstractions.Installer.TemplatePackageData.Details.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Microsoft.TemplateEngine.Abstractions.Installer.TemplatePackageData.InstallerId.get -> System.Guid
+Microsoft.TemplateEngine.Abstractions.Installer.TemplatePackageData.LastChangeTime.get -> System.DateTime
+Microsoft.TemplateEngine.Abstractions.Installer.TemplatePackageData.MountPointUri.get -> string!
+Microsoft.TemplateEngine.Abstractions.Installer.TemplatePackageData.TemplatePackageData(System.Guid installerId, string! mountPointUri, System.DateTime lastChangeTime, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? details) -> void
+Microsoft.TemplateEngine.Abstractions.Installer.UninstallResult
+Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest
+Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult
+Microsoft.TemplateEngine.Abstractions.IParameterSet
+Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel
+Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoiceLocalizationModel!>!
+Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel.DisplayName.get -> string?
+Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel.Name.get -> string!
+Microsoft.TemplateEngine.Abstractions.IPathInfo
+Microsoft.TemplateEngine.Abstractions.IPathInfo.GlobalSettingsDir.get -> string!
+Microsoft.TemplateEngine.Abstractions.IPathInfo.HostSettingsDir.get -> string!
+Microsoft.TemplateEngine.Abstractions.IPathInfo.HostVersionSettingsDir.get -> string!
+Microsoft.TemplateEngine.Abstractions.IPathInfo.UserProfileDir.get -> string!
+Microsoft.TemplateEngine.Abstractions.IPostAction
+Microsoft.TemplateEngine.Abstractions.IPostAction.ActionId.get -> System.Guid
+Microsoft.TemplateEngine.Abstractions.IPostAction.Args.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Abstractions.IPostAction.ContinueOnError.get -> bool
+Microsoft.TemplateEngine.Abstractions.IPostAction.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.IPostAction.ManualInstructions.get -> string?
+Microsoft.TemplateEngine.Abstractions.IPostActionLocalizationModel
+Microsoft.TemplateEngine.Abstractions.IPostActionLocalizationModel.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.IPostActionLocalizationModel.Instructions.get -> System.Collections.Generic.IReadOnlyDictionary<int, string!>!
+Microsoft.TemplateEngine.Abstractions.IPrioritizedComponent
+Microsoft.TemplateEngine.Abstractions.IPrioritizedComponent.Priority.get -> int
+Microsoft.TemplateEngine.Abstractions.ISearchPackFilter
+Microsoft.TemplateEngine.Abstractions.ISettingsLoader
+Microsoft.TemplateEngine.Abstractions.ISettingsLoader.Save() -> void
+Microsoft.TemplateEngine.Abstractions.IShortNameList
+Microsoft.TemplateEngine.Abstractions.ISimpleConfigModifiers
+Microsoft.TemplateEngine.Abstractions.ITemplate
+Microsoft.TemplateEngine.Abstractions.ITemplate.IsNameAgreementWithFolderPreferred.get -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.FallbackHostTemplateConfigNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.FileSystem.get -> Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.HostIdentifier.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogDiagnosticMessage(string! message, string! category, params string![]! details) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogMessage(string! message) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogTiming(string! label, System.TimeSpan duration, int depth) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnConfirmPartialMatch(string! name) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnCriticalError(string! code, string! message, string! currentFile, long currentPosition) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnNonCriticalError(string! code, string! message, string! currentFile, long currentPosition) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnParameterError(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter, string! receivedValue, string! message, out string! newValue) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnPotentiallyDestructiveChangesDetected(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>! changes, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>! destructiveChanges) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnSymbolUsed(string! symbol, object! value) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.TryGetHostParamDefault(string! paramName, out string? value) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.Version.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.VirtualizeDirectory(string! path) -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Author.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.BaselineInfo.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IBaselineInfo!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.CacheParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ICacheParameter!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Classifications.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.ConfigPlace.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.DefaultName.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.GeneratorId.get -> System.Guid
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.GroupIdentity.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.HasScriptRunningPostActions.get -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.HasScriptRunningPostActions.set -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.HostConfigPlace.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Identity.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.LocaleConfigPlace.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.MountPointUri.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Name.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Parameters.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Precedence.get -> int
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.ShortName.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Tags.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ICacheTag!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.TagsCollection.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.ThirdPartyNotices.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DataType.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DefaultIfOptionWithoutValue.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DefaultValue.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.DisplayName.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Documentation.get -> string?
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.IsName.get -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Name.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Priority.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Type.get -> string!
+Microsoft.TemplateEngine.Abstractions.IVersionSpecification
+Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind
+Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind.Directory = 1 -> Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind
+Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind.File = 0 -> Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind
+Microsoft.TemplateEngine.Abstractions.Mount.IDirectory
+Microsoft.TemplateEngine.Abstractions.Mount.IFile
+Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo
+Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo.Exists.get -> bool
+Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo.Kind.get -> Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind
+Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint
+Microsoft.TemplateEngine.Abstractions.Mount.IMountPointFactory
+Microsoft.TemplateEngine.Abstractions.Mount.IMountPointManager
+Microsoft.TemplateEngine.Abstractions.ParameterChoice
+Microsoft.TemplateEngine.Abstractions.ParameterChoice.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.ParameterChoice.Description.set -> void
+Microsoft.TemplateEngine.Abstractions.ParameterChoice.DisplayName.get -> string?
+Microsoft.TemplateEngine.Abstractions.ParameterChoice.DisplayName.set -> void
+Microsoft.TemplateEngine.Abstractions.ParameterChoice.Localize(Microsoft.TemplateEngine.Abstractions.ParameterChoiceLocalizationModel! localizationModel) -> void
+Microsoft.TemplateEngine.Abstractions.ParameterChoice.ParameterChoice(string? displayName, string? description) -> void
+Microsoft.TemplateEngine.Abstractions.ParameterChoiceLocalizationModel
+Microsoft.TemplateEngine.Abstractions.ParameterChoiceLocalizationModel.Description.get -> string?
+Microsoft.TemplateEngine.Abstractions.ParameterChoiceLocalizationModel.DisplayName.get -> string?
+Microsoft.TemplateEngine.Abstractions.ParameterChoiceLocalizationModel.ParameterChoiceLocalizationModel(string? displayName, string? description) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IFileLastWriteTimeSource
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.CreateDirectory(string! path) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.CreateFile(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.DirectoryDelete(string! path, bool recursive) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.DirectoryExists(string! directory) -> bool
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.EnumerateDirectories(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.EnumerateFiles(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.EnumerateFileSystemEntries(string! directoryName, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.FileCopy(string! sourcePath, string! targetPath, bool overwrite) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.FileDelete(string! path) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.FileExists(string! file) -> bool
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.GetCurrentDirectory() -> string!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.GetFileAttributes(string! file) -> System.IO.FileAttributes
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.GetLastWriteTimeUtc(string! file) -> System.DateTime
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.OpenRead(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.ReadAllBytes(string! path) -> byte[]!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.ReadAllText(string! path) -> string!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.SetFileAttributes(string! file, System.IO.FileAttributes attributes) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.WatchFileChanges(string! filepath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.WriteAllText(string! path, string! value) -> void
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo.AddMatchDisposition(Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo! newDisposition) -> void
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo.Info.get -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo!
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo.MatchDisposition.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo!>!
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.Kind.get -> Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.MatchInfo(string! name, string? value, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind kind) -> void
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.Name.get -> string!
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.Value.get -> string?
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind.AmbiguousValue = 5 -> Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind.Exact = 0 -> Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind.InvalidName = 3 -> Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind.InvalidValue = 4 -> Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind.Mismatch = 2 -> Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind.Partial = 1 -> Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind
+Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind.SingleStartsWith = 6 -> Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchKind
+Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage
+Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider
+Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage
+Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage.LastChangeTime.get -> System.DateTime
+Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider
+Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider.TemplatePackagesChanged -> System.Action
+Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProviderFactory
+Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage
+Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage.LastChangeTime.get -> System.DateTime
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Implicit = 3 -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Optional = 2 -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Required = 0 -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Suggested = 1 -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
+~const Microsoft.TemplateEngine.Abstractions.Installer.InstallerConstants.InteractiveModeKey = "Interactive" -> string
+~const Microsoft.TemplateEngine.Abstractions.Installer.InstallerConstants.NuGetSourcesKey = "NuGetSources" -> string
+~Microsoft.TemplateEngine.Abstractions.IAllowDefaultIfOptionWithoutValue.DefaultIfOptionWithoutValue.get -> string
+~Microsoft.TemplateEngine.Abstractions.IAllowDefaultIfOptionWithoutValue.DefaultIfOptionWithoutValue.set -> void
+~Microsoft.TemplateEngine.Abstractions.IBaselineInfo.DefaultOverrides.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
+~Microsoft.TemplateEngine.Abstractions.IBaselineInfo.Description.get -> string
+Microsoft.TemplateEngine.Abstractions.IComponentManager.OfType<T>() -> System.Collections.Generic.IEnumerable<T!>!
+Microsoft.TemplateEngine.Abstractions.IComponentManager.Register(System.Type! type) -> void
+Microsoft.TemplateEngine.Abstractions.IComponentManager.RegisterMany(System.Collections.Generic.IEnumerable<System.Type!>! typeList) -> void
+Microsoft.TemplateEngine.Abstractions.IComponentManager.TryGetComponent<T>(System.Guid id, out T? component) -> bool
+~Microsoft.TemplateEngine.Abstractions.IGenerator.ConvertParameterValueToType(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplateParameter parameter, string untypedValue, out bool valueResolutionError) -> object
+~Microsoft.TemplateEngine.Abstractions.IGenerator.CreateAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplate template, Microsoft.TemplateEngine.Abstractions.IParameterSet parameters, Microsoft.TemplateEngine.Abstractions.IComponentManager componentManager, string targetDirectory) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.ICreationResult>
+~Microsoft.TemplateEngine.Abstractions.IGenerator.GetCreationEffects(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplate template, Microsoft.TemplateEngine.Abstractions.IParameterSet parameters, Microsoft.TemplateEngine.Abstractions.IComponentManager componentManager, string targetDirectory) -> Microsoft.TemplateEngine.Abstractions.ICreationEffects
+~Microsoft.TemplateEngine.Abstractions.IGenerator.GetParametersForTemplate(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplate template) -> Microsoft.TemplateEngine.Abstractions.IParameterSet
+~Microsoft.TemplateEngine.Abstractions.IGenerator.GetTemplatesAndLangpacksFromDir(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint source, out System.Collections.Generic.IList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator> localizations) -> System.Collections.Generic.IList<Microsoft.TemplateEngine.Abstractions.ITemplate>
+~Microsoft.TemplateEngine.Abstractions.IGenerator.TryGetTemplateFromConfigInfo(Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo config, out Microsoft.TemplateEngine.Abstractions.ITemplate template, Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo localeConfig, Microsoft.TemplateEngine.Abstractions.Mount.IFile hostTemplateConfigFile, string baselineName = null) -> bool
+~Microsoft.TemplateEngine.Abstractions.IHostTemplateModel.ParameterMap.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
+~Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Author.get -> string
+~Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.ConfigPlace.get -> string
+~Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Description.get -> string
+~Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Identity.get -> string
+~Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Locale.get -> string
+~Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Name.get -> string
+~Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.ParameterSymbols.get -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel>
+~Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.LatestVersion.get -> string
+~Microsoft.TemplateEngine.Abstractions.Installer.IInstaller.CanInstallAsync(Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest installationRequest, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>
+~Microsoft.TemplateEngine.Abstractions.Installer.IInstaller.Factory.get -> Microsoft.TemplateEngine.Abstractions.Installer.IInstallerFactory
+~Microsoft.TemplateEngine.Abstractions.Installer.IInstaller.GetLatestVersionAsync(System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage> templatePackages, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider provider, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult>>
+~Microsoft.TemplateEngine.Abstractions.Installer.IInstaller.InstallAsync(Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest installRequest, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider provider, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.Installer.InstallResult>
+~Microsoft.TemplateEngine.Abstractions.Installer.IInstaller.UninstallAsync(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider provider, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.Installer.UninstallResult>
+~Microsoft.TemplateEngine.Abstractions.Installer.IInstaller.UpdateAsync(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest updateRequest, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider provider, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult>
+~Microsoft.TemplateEngine.Abstractions.Installer.IInstallerFactory.CreateInstaller(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings settings, string installPath) -> Microsoft.TemplateEngine.Abstractions.Installer.IInstaller
+~Microsoft.TemplateEngine.Abstractions.Installer.IInstallerFactory.Name.get -> string
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.ErrorMessage.get -> string
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.ErrorMessage.set -> void
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.TemplatePackage.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.TemplatePackage.set -> void
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.Details.get -> System.Collections.Generic.Dictionary<string, string>
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.DisplayName.get -> string
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.InstallerName.get -> string
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.InstallRequest(string identifier, string version = null, string installerName = null, System.Collections.Generic.Dictionary<string, string> details = null) -> void
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.PackageIdentifier.get -> string
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.Version.get -> string
+~Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.InstallRequest.get -> Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest
+~Microsoft.TemplateEngine.Abstractions.Installer.ISerializableInstaller.Deserialize(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider provider, Microsoft.TemplateEngine.Abstractions.Installer.TemplatePackageData data) -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage
+~Microsoft.TemplateEngine.Abstractions.Installer.ISerializableInstaller.Serialize(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage) -> Microsoft.TemplateEngine.Abstractions.Installer.TemplatePackageData
+~Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest.TemplatePackage.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage
+~Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest.UpdateRequest(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage, string targetVersion) -> void
+~Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest.Version.get -> string
+~Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.UpdateRequest.get -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest
+~Microsoft.TemplateEngine.Abstractions.IParameterSet.ParameterDefinitions.get -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateParameter>
+~Microsoft.TemplateEngine.Abstractions.IParameterSet.RequiredBrokerCapabilities.get -> System.Collections.Generic.IEnumerable<string>
+~Microsoft.TemplateEngine.Abstractions.IParameterSet.ResolvedValues.get -> System.Collections.Generic.IDictionary<Microsoft.TemplateEngine.Abstractions.ITemplateParameter, object>
+~Microsoft.TemplateEngine.Abstractions.IParameterSet.TryGetParameterDefinition(string name, out Microsoft.TemplateEngine.Abstractions.ITemplateParameter parameter) -> bool
+~Microsoft.TemplateEngine.Abstractions.ISearchPackFilter.ShouldPackBeFiltered(string candidatePackName, string candidatePackVersion) -> bool
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.AddMountPoint(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> void
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.AddProbingPath(string probeIn) -> void
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.Components.get -> Microsoft.TemplateEngine.Abstractions.IComponentManager
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.EnvironmentSettings.get -> Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.FindBestHostTemplateConfigFile(Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo config) -> Microsoft.TemplateEngine.Abstractions.Mount.IFile
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.GetTemplates(System.Collections.Generic.HashSet<Microsoft.TemplateEngine.Abstractions.ITemplateInfo> templates) -> void
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.LoadTemplate(Microsoft.TemplateEngine.Abstractions.ITemplateInfo info, string baselineName) -> Microsoft.TemplateEngine.Abstractions.ITemplate
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.MountPoints.get -> System.Collections.Generic.IEnumerable<object>
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.ReleaseMountPoint(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> void
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.RemoveMountPoint(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> void
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.RemoveMountPoints(System.Collections.Generic.IEnumerable<System.Guid> mountPoints) -> void
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.TryGetFileFromIdAndPath(System.Guid mountPointId, string place, out Microsoft.TemplateEngine.Abstractions.Mount.IFile file, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> bool
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.TryGetMountPointFromPlace(string mountPointPlace, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> bool
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.TryGetMountPointInfo(System.Guid mountPointId, out object info) -> bool
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.WriteTemplateCache(System.Collections.Generic.IList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo> templates, string locale) -> void
+~Microsoft.TemplateEngine.Abstractions.ISettingsLoader.WriteTemplateCache(System.Collections.Generic.IList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo> templates, string locale, bool hasContentChanges) -> void
+~Microsoft.TemplateEngine.Abstractions.IShortNameList.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string>
+~Microsoft.TemplateEngine.Abstractions.ISimpleConfigModifiers.BaselineName.get -> string
+~Microsoft.TemplateEngine.Abstractions.ITemplate.Configuration.get -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo
+~Microsoft.TemplateEngine.Abstractions.ITemplate.Generator.get -> Microsoft.TemplateEngine.Abstractions.IGenerator
+~Microsoft.TemplateEngine.Abstractions.ITemplate.LocaleConfiguration.get -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo
+~Microsoft.TemplateEngine.Abstractions.ITemplate.TemplateSourceRoot.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory
+~Microsoft.TemplateEngine.Abstractions.IVersionSpecification.CheckIfVersionIsValid(string versionToCheck) -> bool
+~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateDirectories(string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IDirectory>
+~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFiles(string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFile>
+~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFileSystemInfos(string patten, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo>
+~Microsoft.TemplateEngine.Abstractions.Mount.IFile.OpenRead() -> System.IO.Stream
+~Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo.FullPath.get -> string
+~Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo.MountPoint.get -> Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint
+~Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo.Name.get -> string
+~Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo.Parent.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory
+~Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint.DirectoryInfo(string path) -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory
+~Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint.EnvironmentSettings.get -> Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings
+~Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint.FileInfo(string path) -> Microsoft.TemplateEngine.Abstractions.Mount.IFile
+~Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint.FileSystemInfo(string path) -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo
+~Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint.MountPointUri.get -> string
+~Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint.Root.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory
+~Microsoft.TemplateEngine.Abstractions.Mount.IMountPointFactory.TryMount(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint parent, string mountPointUri, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> bool
+~Microsoft.TemplateEngine.Abstractions.Mount.IMountPointManager.EnvironmentSettings.get -> Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings
+~Microsoft.TemplateEngine.Abstractions.Mount.IMountPointManager.TryDemandMountPoint(string mountPointUri, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> bool
+~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IFileLastWriteTimeSource.GetLastWriteTimeUtc(string file) -> System.DateTime
+~Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IFileLastWriteTimeSource.SetLastWriteTimeUtc(string file, System.DateTime lastWriteTimeUtc) -> void
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.DisplayName.get -> string
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.GetDetails() -> System.Collections.Generic.IReadOnlyDictionary<string, string>
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.Identifier.get -> string
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.Installer.get -> Microsoft.TemplateEngine.Abstractions.Installer.IInstaller
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.ManagedProvider.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.Version.get -> string
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider.GetLatestVersionsAsync(System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage> templatePackages, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult>>
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider.InstallAsync(System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest> installRequests, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.InstallResult>>
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider.UninstallAsync(System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage> templatePackages, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.UninstallResult>>
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider.UpdateAsync(System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest> updateRequests, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult>>
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage.MountPointUri.get -> string
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage.Provider.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider.Factory.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProviderFactory
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider.GetAllTemplatePackagesAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage>>
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProviderFactory.CreateProvider(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings settings) -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProviderFactory.DisplayName.get -> string
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage.MountPointUri.get -> string
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage.Provider.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider
+~Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage.TemplatePackage(Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider provider, string mountPointUri, System.DateTime lastChangeTime) -> void
+~override Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.ToString() -> string
+~static Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string localizedFailureMessage) -> Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult
+~static Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage, string version, bool isLatest) -> Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult
+~static Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest request, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string localizedFailureMessage) -> Microsoft.TemplateEngine.Abstractions.Installer.InstallResult
+~static Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest request, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage) -> Microsoft.TemplateEngine.Abstractions.Installer.InstallResult
+~static Microsoft.TemplateEngine.Abstractions.Installer.UninstallResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string localizedFailureMessage) -> Microsoft.TemplateEngine.Abstractions.Installer.UninstallResult
+~static Microsoft.TemplateEngine.Abstractions.Installer.UninstallResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage) -> Microsoft.TemplateEngine.Abstractions.Installer.UninstallResult
+~static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest request, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string localizedFailureMessage) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult
+~static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest request, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult
+~static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.FromInstallResult(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest request, Microsoft.TemplateEngine.Abstractions.Installer.InstallResult installResult) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult
+

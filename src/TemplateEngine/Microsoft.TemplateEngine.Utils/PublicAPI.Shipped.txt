@@ -1,1 +1,251 @@
 ﻿#nullable enable
+Microsoft.TemplateEngine.Utils.ArrayExtensions
+Microsoft.TemplateEngine.Utils.BaselineCacheInfo
+Microsoft.TemplateEngine.Utils.BaselineCacheInfo.BaselineCacheInfo() -> void
+Microsoft.TemplateEngine.Utils.CacheParameter
+Microsoft.TemplateEngine.Utils.CacheParameter.CacheParameter() -> void
+Microsoft.TemplateEngine.Utils.CacheParameter.DataType.get -> string?
+Microsoft.TemplateEngine.Utils.CacheParameter.DataType.set -> void
+Microsoft.TemplateEngine.Utils.CacheParameter.DefaultIfOptionWithoutValue.get -> string?
+Microsoft.TemplateEngine.Utils.CacheParameter.DefaultIfOptionWithoutValue.set -> void
+Microsoft.TemplateEngine.Utils.CacheParameter.DefaultValue.get -> string?
+Microsoft.TemplateEngine.Utils.CacheParameter.DefaultValue.set -> void
+Microsoft.TemplateEngine.Utils.CacheParameter.Description.get -> string?
+Microsoft.TemplateEngine.Utils.CacheParameter.Description.set -> void
+Microsoft.TemplateEngine.Utils.CacheParameter.DisplayName.get -> string?
+Microsoft.TemplateEngine.Utils.CacheParameter.DisplayName.set -> void
+Microsoft.TemplateEngine.Utils.CacheParameter.ShouldSerializeDefaultIfOptionWithoutValue() -> bool
+Microsoft.TemplateEngine.Utils.CacheTag
+Microsoft.TemplateEngine.Utils.CacheTag.CacheTag(string? displayName, string? description, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>! choices, string? defaultValue) -> void
+Microsoft.TemplateEngine.Utils.CacheTag.CacheTag(string? displayName, string? description, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>! choices, string? defaultValue, string? defaultIfOptionWithoutValue) -> void
+Microsoft.TemplateEngine.Utils.CacheTag.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>!
+Microsoft.TemplateEngine.Utils.CacheTag.DefaultIfOptionWithoutValue.get -> string?
+Microsoft.TemplateEngine.Utils.CacheTag.DefaultIfOptionWithoutValue.set -> void
+Microsoft.TemplateEngine.Utils.CacheTag.DefaultValue.get -> string?
+Microsoft.TemplateEngine.Utils.CacheTag.Description.get -> string?
+Microsoft.TemplateEngine.Utils.CacheTag.DisplayName.get -> string?
+Microsoft.TemplateEngine.Utils.CacheTag.ShouldSerializeDefaultIfOptionWithoutValue() -> bool
+Microsoft.TemplateEngine.Utils.CombinedList<T>
+Microsoft.TemplateEngine.Utils.CombinedList<T>.Count.get -> int
+Microsoft.TemplateEngine.Utils.CombinedList<T>.this[int index].get -> T
+Microsoft.TemplateEngine.Utils.ContentGenerationException
+Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost
+Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider
+Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.DefaultTemplatePackageProvider(Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProviderFactory! factory, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, System.Collections.Generic.IEnumerable<string!>? nupkgs = null, System.Collections.Generic.IEnumerable<string!>? folders = null) -> void
+Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.Factory.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProviderFactory!
+Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.GetAllTemplatePackagesAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage!>!>!
+Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.TemplatePackagesChanged -> System.Action?
+Microsoft.TemplateEngine.Utils.DefaultTemplatePackageProvider.UpdatePackages(System.Collections.Generic.IEnumerable<string!>? nupkgs = null, System.Collections.Generic.IEnumerable<string!>? folders = null) -> void
+Microsoft.TemplateEngine.Utils.DictionaryExtensions
+Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions
+Microsoft.TemplateEngine.Utils.EngineInitializationException
+Microsoft.TemplateEngine.Utils.EqualityExtensions
+Microsoft.TemplateEngine.Utils.ExactVersionSpecification
+Microsoft.TemplateEngine.Utils.FileFindHelpers
+Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions
+Microsoft.TemplateEngine.Utils.Glob
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.CreateDirectory(string! path) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.CreateFile(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.DirectoryDelete(string! path, bool recursive) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.DirectoryExists(string! directory) -> bool
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateDirectories(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateFiles(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateFileSystemEntries(string! directoryName, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.FileCopy(string! sourcePath, string! targetPath, bool overwrite) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.FileDelete(string! path) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.FileExists(string! file) -> bool
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.GetCurrentDirectory() -> string!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.GetFileAttributes(string! file) -> System.IO.FileAttributes
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.GetLastWriteTimeUtc(string! file) -> System.DateTime
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.InMemoryFileSystem(string! root, Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem! basis) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.OpenRead(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.ReadAllBytes(string! path) -> byte[]!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.ReadAllText(string! path) -> string!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.SetFileAttributes(string! file, System.IO.FileAttributes attributes) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.WatchFileChanges(string! filepath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.WriteAllText(string! path, string! value) -> void
+Microsoft.TemplateEngine.Utils.InstallRequestPathResolution
+Microsoft.TemplateEngine.Utils.ListExtensions
+Microsoft.TemplateEngine.Utils.LocalizationLocator
+Microsoft.TemplateEngine.Utils.LocalizationLocator.Author.get -> string!
+Microsoft.TemplateEngine.Utils.LocalizationLocator.ConfigPlace.get -> string!
+Microsoft.TemplateEngine.Utils.LocalizationLocator.Description.get -> string!
+Microsoft.TemplateEngine.Utils.LocalizationLocator.Identity.get -> string!
+Microsoft.TemplateEngine.Utils.LocalizationLocator.Locale.get -> string!
+Microsoft.TemplateEngine.Utils.LocalizationLocator.LocalizationLocator(string! locale, string! configPlace, string! identity, string! author, string! name, string! description, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel!>! parameterSymbols) -> void
+Microsoft.TemplateEngine.Utils.LocalizationLocator.Name.get -> string!
+Microsoft.TemplateEngine.Utils.LocalizationLocator.ParameterSymbols.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel!>!
+Microsoft.TemplateEngine.Utils.ParserExtensions
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.CreateDirectory(string! path) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.CreateFile(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.DirectoryDelete(string! path, bool recursive) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.DirectoryExists(string! directory) -> bool
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.EnumerateDirectories(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.EnumerateFiles(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.EnumerateFileSystemEntries(string! directoryName, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.FileCopy(string! source, string! target, bool overwrite) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.FileDelete(string! path) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.FileExists(string! file) -> bool
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.GetCurrentDirectory() -> string!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.GetFileAttributes(string! file) -> System.IO.FileAttributes
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.GetLastWriteTimeUtc(string! file) -> System.DateTime
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.OpenRead(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.PhysicalFileSystem() -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.ReadAllBytes(string! path) -> byte[]!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.ReadAllText(string! path) -> string!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.SetFileAttributes(string! file, System.IO.FileAttributes attributes) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.WatchFileChanges(string! filepath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.WriteAllText(string! path, string! value) -> void
+Microsoft.TemplateEngine.Utils.RangeVersionSpecification
+Microsoft.TemplateEngine.Utils.RangeVersionSpecification.IsEndInclusive.get -> bool
+Microsoft.TemplateEngine.Utils.RangeVersionSpecification.IsStartInclusive.get -> bool
+Microsoft.TemplateEngine.Utils.RuntimeValueUtil
+Microsoft.TemplateEngine.Utils.TemplateAuthoringException
+Microsoft.TemplateEngine.Utils.TemplateInfoExtensions
+Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions
+Microsoft.TemplateEngine.Utils.TemplateParameter
+Microsoft.TemplateEngine.Utils.TemplateParameter.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>?
+Microsoft.TemplateEngine.Utils.TemplateParameter.DataType.get -> string!
+Microsoft.TemplateEngine.Utils.TemplateParameter.DataType.set -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultIfOptionWithoutValue.get -> string?
+Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultIfOptionWithoutValue.set -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultValue.get -> string?
+Microsoft.TemplateEngine.Utils.TemplateParameter.Description.get -> string?
+Microsoft.TemplateEngine.Utils.TemplateParameter.DisplayName.get -> string?
+Microsoft.TemplateEngine.Utils.TemplateParameter.Documentation.get -> string?
+Microsoft.TemplateEngine.Utils.TemplateParameter.IsName.get -> bool
+Microsoft.TemplateEngine.Utils.TemplateParameter.Name.get -> string!
+Microsoft.TemplateEngine.Utils.TemplateParameter.Priority.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
+Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(Newtonsoft.Json.Linq.JObject! jObject) -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(string! name, string! type, string! datatype, Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority priority = Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Required, bool isName = false, string? defaultValue = null, string? defaultIfOptionWithoutValue = null, string? description = null, string? displayName = null, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>? choices = null) -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.Type.get -> string!
+Microsoft.TemplateEngine.Utils.TemplateParameterExtensions
+Microsoft.TemplateEngine.Utils.TemplateParamException
+Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException() -> void
+Microsoft.TemplateEngine.Utils.Timing
+Microsoft.TemplateEngine.Utils.Timing.Dispose() -> void
+Microsoft.TemplateEngine.Utils.VersionStringHelpers
+Microsoft.TemplateEngine.Utils.WellKnownSearchFilters
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetChoiceParameter(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter?
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetLanguage(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template) -> string?
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetParameter(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter?
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTagValue(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! tagName) -> string?
+static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTemplateType(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template) -> string?
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorExactMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorPartialMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasBaselineMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasBaselineMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasClassificationMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasClassificationMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasLanguageMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasLanguageMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasNameExactMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasNameMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasNameMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasNamePartialMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasShortNameExactMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasShortNameMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasShortNameMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasShortNamePartialMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasTypeMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasTypeMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
+static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.IsChoice(this Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter) -> bool
+static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.AuthorFilter(string! author) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
+static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.BaselineFilter(string! baselineName) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
+static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.ClassificationFilter(string! classification) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
+static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.LanguageFilter(string! language) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
+static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.MatchesAllCriteria.get -> System.Func<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!, bool>!
+static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.MatchesAtLeastOneCriteria.get -> System.Func<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!, bool>!
+static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.NameFilter(string! name) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
+static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? inputType) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
+~Microsoft.TemplateEngine.Utils.BaselineCacheInfo.DefaultOverrides.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
+~Microsoft.TemplateEngine.Utils.BaselineCacheInfo.DefaultOverrides.set -> void
+~Microsoft.TemplateEngine.Utils.BaselineCacheInfo.Description.get -> string
+~Microsoft.TemplateEngine.Utils.BaselineCacheInfo.Description.set -> void
+~Microsoft.TemplateEngine.Utils.CombinedList<T>.CombinedList(System.Collections.Generic.IReadOnlyList<T> first, System.Collections.Generic.IReadOnlyList<T> second) -> void
+~Microsoft.TemplateEngine.Utils.CombinedList<T>.GetEnumerator() -> System.Collections.Generic.IEnumerator<T>
+~Microsoft.TemplateEngine.Utils.ContentGenerationException.ContentGenerationException(string message) -> void
+~Microsoft.TemplateEngine.Utils.ContentGenerationException.ContentGenerationException(string message, System.Exception innerException) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version, System.Collections.Generic.Dictionary<string, string> defaults) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version, System.Collections.Generic.Dictionary<string, string> defaults, System.Collections.Generic.IReadOnlyList<(System.Type InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent Instance)> builtIns) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version, System.Collections.Generic.Dictionary<string, string> defaults, System.Collections.Generic.IReadOnlyList<(System.Type InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent Instance)> builtIns, System.Collections.Generic.IReadOnlyList<string> fallbackHostTemplateConfigNames) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string hostIdentifier, string version, System.Collections.Generic.Dictionary<string, string> defaults, System.Collections.Generic.IReadOnlyList<string> fallbackHostTemplateConfigNames) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.FallbackHostTemplateConfigNames.get -> System.Collections.Generic.IReadOnlyList<string>
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.FileSystem.get -> Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.HostIdentifier.get -> string
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.LogDiagnosticMessage(string message, string category, params string[] details) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.Logger.get -> Microsoft.Extensions.Logging.ILogger
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.LogTiming(string label, System.TimeSpan duration, int depth) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnConfirmPartialMatch(string name) -> bool
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnLogTiming.get -> System.Action<string, System.TimeSpan, int>
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnLogTiming.set -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnPotentiallyDestructiveChangesDetected(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange> changes, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange> destructiveChanges) -> bool
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.RegisterDiagnosticLogger(string category, System.Action<string, string[]> messageHandler) -> void
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.Version.get -> string
+~Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.VirtualizeDirectory(string path) -> void
+~Microsoft.TemplateEngine.Utils.EngineInitializationException.EngineInitializationException(string message, string settingsItem) -> void
+~Microsoft.TemplateEngine.Utils.EngineInitializationException.EngineInitializationException(string message, string settingsItem, System.Exception innerException) -> void
+~Microsoft.TemplateEngine.Utils.EngineInitializationException.SettingsItem.get -> string
+~Microsoft.TemplateEngine.Utils.ExactVersionSpecification.CheckIfVersionIsValid(string versionToCheck) -> bool
+~Microsoft.TemplateEngine.Utils.ExactVersionSpecification.ExactVersionSpecification(string version) -> void
+~Microsoft.TemplateEngine.Utils.ExactVersionSpecification.RequiredVersion.get -> string
+~Microsoft.TemplateEngine.Utils.Glob.IsMatch(string test) -> bool
+~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.CheckIfVersionIsValid(string versionToCheck) -> bool
+~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.MaxVersion.get -> string
+~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.MinVersion.get -> string
+~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.RangeVersionSpecification(string min, string max, bool isStartInclusive, bool isEndInclusive) -> void
+~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string
+~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string message, string configItem) -> void
+~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string message, string configItem, System.Exception innerException) -> void
+~Microsoft.TemplateEngine.Utils.TemplateParamException.DataType.get -> string
+~Microsoft.TemplateEngine.Utils.TemplateParamException.InputValue.get -> string
+~Microsoft.TemplateEngine.Utils.TemplateParamException.ParamName.get -> string
+~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string message) -> void
+~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string message, string paramName, string inputValue, string dataType) -> void
+~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string message, System.Exception inner) -> void
+~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string message, System.Exception inner, string paramName, string inputValue, string dataType) -> void
+~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string paramName, string inputValue, string dataType) -> void
+~Microsoft.TemplateEngine.Utils.Timing.Timing(Microsoft.Extensions.Logging.ILogger logger, string label) -> void
+~static Microsoft.TemplateEngine.Utils.ArrayExtensions.CombineArrays<T>(params T[][] arrayList) -> T[]
+~static Microsoft.TemplateEngine.Utils.DictionaryExtensions.CloneIfDifferentComparer<T>(this System.Collections.Generic.IReadOnlyDictionary<string, T> source, System.StringComparer comparer) -> System.Collections.Generic.IReadOnlyDictionary<string, T>
+~static Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint(this Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings engineEnvironment, string mountPointUri, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> bool
+~static Microsoft.TemplateEngine.Utils.EqualityExtensions.AllAreTheSame<T, TValue>(this System.Collections.Generic.IEnumerable<T> items, System.Func<T, TValue> selector) -> bool
+~static Microsoft.TemplateEngine.Utils.EqualityExtensions.AllAreTheSame<T, TValue>(this System.Collections.Generic.IEnumerable<T> items, System.Func<T, TValue> selector, System.Collections.Generic.IEqualityComparer<TValue> comparer) -> bool
+~static Microsoft.TemplateEngine.Utils.EqualityExtensions.AllAreTheSame<T, TValue>(this System.Collections.Generic.IEnumerable<T> items, System.Func<T, TValue> selector, System.Func<TValue, TValue, bool> comparer) -> bool
+~static Microsoft.TemplateEngine.Utils.ExactVersionSpecification.TryParse(string version, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool
+~static Microsoft.TemplateEngine.Utils.FileFindHelpers.FindFilesAtOrAbovePath(Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem fileSystem, string startPath, string matchPattern, System.Func<string, bool> secondaryFilter = null) -> System.Collections.Generic.IReadOnlyList<string>
+~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.CombinePaths(this string basePath, params string[] paths) -> string
+~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.CopyTo(this Microsoft.TemplateEngine.Abstractions.Mount.IDirectory source, string target) -> void
+~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.DirectoryInfo(this Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo info, string path) -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory
+~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.FileInfo(this Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo info, string path) -> Microsoft.TemplateEngine.Abstractions.Mount.IFile
+~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.FileSystemInfo(this Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo info, string path) -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo
+~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.NormalizePath(this string path) -> string
+~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.PathRelativeTo(this Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo info, Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo relativeTo) -> string
+~static Microsoft.TemplateEngine.Utils.Glob.Parse(string pattern, bool canBeNameOnlyMatch = true) -> Microsoft.TemplateEngine.Utils.Glob
+~static Microsoft.TemplateEngine.Utils.InstallRequestPathResolution.ExpandMaskedPath(string maskedPath, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings) -> System.Collections.Generic.IEnumerable<string>
+~static Microsoft.TemplateEngine.Utils.ListExtensions.GroupBy<TElement, TKey>(this System.Collections.Generic.IEnumerable<TElement> elements, System.Func<TElement, TKey> grouper, System.Func<TElement, bool> hasGroupKey, System.Collections.Generic.IEqualityComparer<TKey> comparer = null) -> System.Collections.Generic.IEnumerable<System.Linq.IGrouping<TKey, TElement>>
+~static Microsoft.TemplateEngine.Utils.ParserExtensions.ConvertToDoubleCurrentOrInvariant(object value) -> double
+~static Microsoft.TemplateEngine.Utils.ParserExtensions.DoubleTryParseСurrentOrInvariant(string stringValue, out double doubleValue) -> bool
+~static Microsoft.TemplateEngine.Utils.RangeVersionSpecification.TryParse(string range, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool
+~static Microsoft.TemplateEngine.Utils.RuntimeValueUtil.TryGetRuntimeValue(this Microsoft.TemplateEngine.Abstractions.IParameterSet parameters, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string name, out object value, bool skipEnvironmentVariableSearch = false) -> bool
+~static Microsoft.TemplateEngine.Utils.TemplateParamException.StandardizedMessage(string paramName, string inputValue = null, string dataType = null, string baseMessage = null) -> string
+~static Microsoft.TemplateEngine.Utils.Timing.Over(Microsoft.Extensions.Logging.ILogger logger, string label) -> Microsoft.TemplateEngine.Utils.Timing
+~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.CompareVersions(string version1, string version2) -> int?
+~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.IsVersionWellFormed(string version) -> bool
+~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.TryParseVersionSpecification(string versionString, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool
+~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent Instance)>
+~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.LogMessage(string message) -> void
+~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnCriticalError(string code, string message, string currentFile, long currentPosition) -> void
+~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnNonCriticalError(string code, string message, string currentFile, long currentPosition) -> bool
+~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnParameterError(Microsoft.TemplateEngine.Abstractions.ITemplateParameter parameter, string receivedValue, string message, out string newValue) -> bool
+~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnSymbolUsed(string symbol, object value) -> void
+~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.TryGetHostParamDefault(string paramName, out string value) -> bool
+

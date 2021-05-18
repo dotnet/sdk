@@ -1,1 +1,194 @@
 ﻿#nullable enable
+Microsoft.TemplateEngine.Edge.Components
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string! hostIdentifier, string! version, System.Collections.Generic.Dictionary<string!, string!>? defaults = null, System.Collections.Generic.IReadOnlyList<(System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>? builtIns = null, System.Collections.Generic.IReadOnlyList<string!>? fallbackHostTemplateConfigNames = null, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null) -> void
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.FallbackHostTemplateConfigNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.FileSystem.get -> Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem!
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.HostIdentifier.get -> string!
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory!
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnLogTiming.get -> System.Action<string!, System.TimeSpan, int>?
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnLogTiming.set -> void
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.RegisterDiagnosticLogger(string! category, System.Action<string!, string![]!>! messageHandler) -> void
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Version.get -> string!
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.VirtualizeDirectory(string! path) -> void
+Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings
+Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Components.get -> Microsoft.TemplateEngine.Abstractions.IComponentManager!
+Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.EngineEnvironmentSettings(Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost! host, bool virtualizeSettings = false, string? settingsLocation = null, Microsoft.TemplateEngine.Abstractions.IEnvironment? environment = null, Microsoft.TemplateEngine.Abstractions.IComponentManager? componentManager = null, Microsoft.TemplateEngine.Abstractions.IPathInfo? pathInfo = null) -> void
+Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Environment.get -> Microsoft.TemplateEngine.Abstractions.IEnvironment!
+Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Host.get -> Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost!
+Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Paths.get -> Microsoft.TemplateEngine.Abstractions.IPathInfo!
+Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.SettingsLoader.get -> Microsoft.TemplateEngine.Abstractions.ISettingsLoader!
+Microsoft.TemplateEngine.Edge.FilterableTemplateInfo
+Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ConfigTimestampUtc.get -> System.DateTime?
+Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ConfigTimestampUtc.set -> void
+Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.FilterableTemplateInfo() -> void
+Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.GeneratorId.get -> System.Guid
+Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.HasScriptRunningPostActions.get -> bool
+Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.HasScriptRunningPostActions.set -> void
+Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Precedence.get -> int
+Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo
+Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.HasAmbiguousParameterMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.HasInvalidParameterValue.get -> bool
+Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.HasParameterMismatch.get -> bool
+Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.IsMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.IsParameterMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.IsPartialMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Settings.InstallationScope
+Microsoft.TemplateEngine.Edge.Settings.InstallationScope.Global = 0 -> Microsoft.TemplateEngine.Edge.Settings.InstallationScope
+Microsoft.TemplateEngine.Edge.Settings.Scanner
+Microsoft.TemplateEngine.Edge.Settings.Scanner.Scan(string! mountPointUri) -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
+Microsoft.TemplateEngine.Edge.Settings.Scanner.Scanner(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> void
+Microsoft.TemplateEngine.Edge.Settings.ScanResult
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.Components.get -> System.Collections.Generic.IReadOnlyList<(string! AssemblyPath, System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.Localizations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>!
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.MountPointUri.get -> string!
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.ScanResult(string! mountPointUri, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>! templates, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>! localizations, System.Collections.Generic.IReadOnlyList<(string! AssemblyPath, System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>! components) -> void
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.Templates.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.Dispose() -> void
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetBuiltInManagedProvider(Microsoft.TemplateEngine.Edge.Settings.InstallationScope scope = Microsoft.TemplateEngine.Edge.Settings.InstallationScope.Global) -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetManagedProvider(string! name) -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetManagedProvider(System.Guid id) -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetManagedTemplatePackagesAsync(bool force, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage!>!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetTemplatePackageAsync(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetTemplatePackagesAsync(bool force, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage!>!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetTemplatesAsync(Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackage! templatePackage, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetTemplatesAsync(System.Func<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!, bool>! matchFilter, System.Collections.Generic.IEnumerable<System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!>! filters, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!>!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetTemplatesAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>!>!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.RebuildTemplateCacheAsync(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.TemplatePackageManager(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> void
+Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.TemplatePackagesChanged -> System.Action?
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.Cancelled = -2147467260 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.CreateFailed = -2147352567 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.DestructiveChangesDetected = -2147352563 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.InvalidParamValues = -2147352571 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.MissingMandatoryParam = -2147352561 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.NotFound = -2147352570 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.OperationNotSpecified = -2147352562 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.Success = 0 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.FilteredTemplateEqualityComparer
+Microsoft.TemplateEngine.Edge.Template.FilteredTemplateEqualityComparer.FilteredTemplateEqualityComparer() -> void
+Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo
+Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.HasAmbiguousParameterMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.HasInvalidParameterValue.get -> bool
+Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.HasParameterMismatch.get -> bool
+Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.IsMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.IsParameterMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.IsPartialMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.CreationEffects.get -> Microsoft.TemplateEngine.Abstractions.ICreationEffects?
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.CreationResult.get -> Microsoft.TemplateEngine.Abstractions.ICreationResult?
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.ErrorMessage.get -> string?
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.OutputBaseDirectory.get -> string?
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.Status.get -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
+Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult.TemplateFullName.get -> string!
+Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo
+Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo.AddDisposition(Microsoft.TemplateEngine.Edge.Template.MatchInfo newDisposition) -> void
+Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo.IsMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo.IsPartialMatch.get -> bool
+Microsoft.TemplateEngine.Edge.Template.MatchInfo
+Microsoft.TemplateEngine.Edge.Template.MatchInfo.Kind -> Microsoft.TemplateEngine.Edge.Template.MatchKind
+Microsoft.TemplateEngine.Edge.Template.MatchInfo.Location -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchInfo.MatchInfo() -> void
+Microsoft.TemplateEngine.Edge.Template.MatchKind
+Microsoft.TemplateEngine.Edge.Template.MatchKind.AmbiguousParameterValue = 3 -> Microsoft.TemplateEngine.Edge.Template.MatchKind
+Microsoft.TemplateEngine.Edge.Template.MatchKind.Exact = 1 -> Microsoft.TemplateEngine.Edge.Template.MatchKind
+Microsoft.TemplateEngine.Edge.Template.MatchKind.InvalidParameterName = 4 -> Microsoft.TemplateEngine.Edge.Template.MatchKind
+Microsoft.TemplateEngine.Edge.Template.MatchKind.InvalidParameterValue = 5 -> Microsoft.TemplateEngine.Edge.Template.MatchKind
+Microsoft.TemplateEngine.Edge.Template.MatchKind.Mismatch = 6 -> Microsoft.TemplateEngine.Edge.Template.MatchKind
+Microsoft.TemplateEngine.Edge.Template.MatchKind.Partial = 2 -> Microsoft.TemplateEngine.Edge.Template.MatchKind
+Microsoft.TemplateEngine.Edge.Template.MatchKind.SingleStartsWith = 7 -> Microsoft.TemplateEngine.Edge.Template.MatchKind
+Microsoft.TemplateEngine.Edge.Template.MatchKind.Unspecified = 0 -> Microsoft.TemplateEngine.Edge.Template.MatchKind
+Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.Alias = 3 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.Author = 10 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.Baseline = 8 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.Classification = 4 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.Context = 6 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.DefaultLanguage = 9 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.Language = 5 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.Name = 1 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.OtherParameter = 7 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.ShortName = 2 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.MatchLocation.Unspecified = 0 -> Microsoft.TemplateEngine.Edge.Template.MatchLocation
+Microsoft.TemplateEngine.Edge.Template.OrdinalIgnoreCaseMatchInfoComparer
+Microsoft.TemplateEngine.Edge.Template.OrdinalIgnoreCaseMatchInfoComparer.Equals(Microsoft.TemplateEngine.Edge.Template.MatchInfo x, Microsoft.TemplateEngine.Edge.Template.MatchInfo y) -> bool
+Microsoft.TemplateEngine.Edge.Template.OrdinalIgnoreCaseMatchInfoComparer.GetHashCode(Microsoft.TemplateEngine.Edge.Template.MatchInfo obj) -> int
+Microsoft.TemplateEngine.Edge.Template.OrdinalIgnoreCaseMatchInfoComparer.OrdinalIgnoreCaseMatchInfoComparer() -> void
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.AnyParametersWithInvalidDefaultsUnresolved(System.Collections.Generic.IReadOnlyList<string!>! defaultParamsWithInvalidValues, System.Collections.Generic.IReadOnlyList<string!>! userParamsWithInvalidValues, System.Collections.Generic.IReadOnlyDictionary<string!, string?>! inputParameters, out System.Collections.Generic.IReadOnlyList<string!>! invalidDefaultParameters) -> bool
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.InstantiateAsync(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! templateInfo, string? name, string? fallbackName, string? outputPath, System.Collections.Generic.IReadOnlyDictionary<string!, string?>! inputParameters, bool forceCreation = false, string? baselineName = null, bool dryRun = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult!>!
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.LoadTemplate(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! info, string? baselineName) -> Microsoft.TemplateEngine.Abstractions.ITemplate?
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.ReleaseMountPoints(Microsoft.TemplateEngine.Abstractions.ITemplate! template) -> void
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.ResolveUserParameters(Microsoft.TemplateEngine.Abstractions.ITemplate! template, Microsoft.TemplateEngine.Abstractions.IParameterSet! templateParams, System.Collections.Generic.IReadOnlyDictionary<string!, string?>! inputParameters, out System.Collections.Generic.IReadOnlyList<string!>! paramsWithInvalidValues) -> void
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.SetupDefaultParamValuesFromTemplateAndHost(Microsoft.TemplateEngine.Abstractions.ITemplate! templateInfo, string! realName, out System.Collections.Generic.IReadOnlyList<string!>! paramsWithInvalidValues) -> Microsoft.TemplateEngine.Abstractions.IParameterSet!
+Microsoft.TemplateEngine.Edge.Template.TemplateCreator.TemplateCreator(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> void
+Microsoft.TemplateEngine.Edge.Template.TemplateEqualityComparer
+Microsoft.TemplateEngine.Edge.Template.TemplateEqualityComparer.TemplateEqualityComparer() -> void
+Microsoft.TemplateEngine.Edge.Template.TemplateMatchInfoEqualityComparer
+Microsoft.TemplateEngine.Edge.Template.TemplateMatchInfoEqualityComparer.TemplateMatchInfoEqualityComparer() -> void
+Microsoft.TemplateEngine.Edge.Template.WellKnownSearchFilters
+Microsoft.TemplateEngine.Edge.TemplateListFilter
+static Microsoft.TemplateEngine.Edge.Components.AllComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type! Type, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!
+static Microsoft.TemplateEngine.Edge.Template.WellKnownSearchFilters.AuthorFilter(string! author) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Edge.Template.MatchInfo?>!
+static Microsoft.TemplateEngine.Edge.Template.WellKnownSearchFilters.BaselineFilter(string! baselineName) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Edge.Template.MatchInfo?>!
+static Microsoft.TemplateEngine.Edge.Template.WellKnownSearchFilters.ClassificationsFilter(string! name) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Edge.Template.MatchInfo?>!
+static Microsoft.TemplateEngine.Edge.Template.WellKnownSearchFilters.ContextFilter(string! inputContext) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Edge.Template.MatchInfo?>!
+static Microsoft.TemplateEngine.Edge.Template.WellKnownSearchFilters.LanguageFilter(string! language) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Edge.Template.MatchInfo?>!
+static Microsoft.TemplateEngine.Edge.Template.WellKnownSearchFilters.NameFilter(string! name) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Edge.Template.MatchInfo?>!
+static Microsoft.TemplateEngine.Edge.Template.WellKnownSearchFilters.TagFilter(string! tagFilter) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Edge.Template.MatchInfo?>!
+static Microsoft.TemplateEngine.Edge.TemplateListFilter.ExactMatchFilter.get -> System.Func<Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo!, bool>!
+static Microsoft.TemplateEngine.Edge.TemplateListFilter.FilterTemplates(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>! templateList, bool exactMatchesOnly, params System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Edge.Template.MatchInfo?>![]! filters) -> System.Collections.Generic.IReadOnlyCollection<Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo!>!
+static Microsoft.TemplateEngine.Edge.TemplateListFilter.GetTemplateMatchInfo(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>! templateList, System.Func<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!, bool>! matchFilter, params System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>![]! filters) -> System.Collections.Generic.IReadOnlyCollection<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!>!
+static Microsoft.TemplateEngine.Edge.TemplateListFilter.GetTemplateMatchInfo(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>! templateList, System.Func<Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo!, bool>! matchFilter, params System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Edge.Template.MatchInfo?>![]! filters) -> System.Collections.Generic.IReadOnlyCollection<Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo!>!
+static Microsoft.TemplateEngine.Edge.TemplateListFilter.PartialMatchFilter.get -> System.Func<Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo!, bool>!
+static readonly Microsoft.TemplateEngine.Edge.Settings.ScanResult.Empty -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
+virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!
+virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.TryGetHostParamDefault(string! paramName, out string? value) -> bool
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Author.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.BaselineInfo.get -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateEngine.Abstractions.IBaselineInfo>
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.CacheParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateEngine.Abstractions.ICacheParameter>
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Classifications.get -> System.Collections.Generic.IReadOnlyList<string>
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ConfigPlace.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.DefaultName.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Description.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.GroupIdentity.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.GroupShortNameList.get -> System.Collections.Generic.IReadOnlyList<string>
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.GroupShortNameList.set -> void
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.HostConfigPlace.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Identity.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.LocaleConfigPlace.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.MountPointUri.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Name.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Parameters.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateParameter>
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ShortName.get -> string
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string>
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ShortNameList.set -> void
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Tags.get -> System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.TemplateEngine.Abstractions.ICacheTag>
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.TagsCollection.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
+~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ThirdPartyNotices.get -> string
+~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.FilteredTemplateInfo(Microsoft.TemplateEngine.Abstractions.ITemplateInfo info, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Edge.Template.MatchInfo> matchDisposition) -> void
+~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.Info.get -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo
+~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.MatchDisposition.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Edge.Template.MatchInfo>
+~Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.MatchDisposition.set -> void
+~Microsoft.TemplateEngine.Edge.Template.FilteredTemplateEqualityComparer.Equals(Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo x, Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo y) -> bool
+~Microsoft.TemplateEngine.Edge.Template.FilteredTemplateEqualityComparer.GetHashCode(Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo obj) -> int
+~Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.Info.get -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo
+~Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo.MatchDisposition.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Edge.Template.MatchInfo>
+~Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo.DispositionOfDefaults.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Edge.Template.MatchInfo>
+~Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo.Info.get -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo
+~Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo.MatchDisposition.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Edge.Template.MatchInfo>
+~Microsoft.TemplateEngine.Edge.Template.MatchInfo.AdditionalInformation -> string
+~Microsoft.TemplateEngine.Edge.Template.MatchInfo.InputParameterFormat -> string
+~Microsoft.TemplateEngine.Edge.Template.MatchInfo.InputParameterName -> string
+~Microsoft.TemplateEngine.Edge.Template.MatchInfo.ParameterValue -> string
+~Microsoft.TemplateEngine.Edge.Template.TemplateEqualityComparer.Equals(Microsoft.TemplateEngine.Abstractions.ITemplateInfo x, Microsoft.TemplateEngine.Abstractions.ITemplateInfo y) -> bool
+~Microsoft.TemplateEngine.Edge.Template.TemplateEqualityComparer.GetHashCode(Microsoft.TemplateEngine.Abstractions.ITemplateInfo obj) -> int
+~Microsoft.TemplateEngine.Edge.Template.TemplateMatchInfoEqualityComparer.Equals(Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo x, Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo y) -> bool
+~Microsoft.TemplateEngine.Edge.Template.TemplateMatchInfoEqualityComparer.GetHashCode(Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo obj) -> int
+~static Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.FromITemplateInfo(Microsoft.TemplateEngine.Abstractions.ITemplateInfo source) -> Microsoft.TemplateEngine.Edge.FilterableTemplateInfo
+~static Microsoft.TemplateEngine.Edge.Template.FilteredTemplateEqualityComparer.Default.get -> System.Collections.Generic.IEqualityComparer<Microsoft.TemplateEngine.Edge.Template.IFilteredTemplateInfo>
+~static Microsoft.TemplateEngine.Edge.Template.TemplateEqualityComparer.Default.get -> System.Collections.Generic.IEqualityComparer<Microsoft.TemplateEngine.Abstractions.ITemplateInfo>
+~static Microsoft.TemplateEngine.Edge.Template.TemplateMatchInfoEqualityComparer.Default.get -> System.Collections.Generic.IEqualityComparer<Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo>
