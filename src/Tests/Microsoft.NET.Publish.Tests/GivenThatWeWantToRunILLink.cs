@@ -387,11 +387,7 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}")
                 .Should().Pass()
                 // trim analysis warnings are disabled
-                .And.NotHaveStdOutContaining("warning IL2075")
-                .And.NotHaveStdOutContaining("warning IL2026")
-                .And.NotHaveStdOutContaining("warning IL2043")
-                .And.NotHaveStdOutContaining("warning IL2046")
-                .And.NotHaveStdOutContaining("warning IL2093");
+                .And.NotHaveStdOutMatching(@"warning IL\d\d\d\d");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
@@ -453,11 +449,7 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}")
                 .Should().Pass()
-                .And.NotHaveStdOutContaining("warning IL2075")
-                .And.NotHaveStdOutContaining("warning IL2026")
-                .And.NotHaveStdOutContaining("warning IL2043")
-                .And.NotHaveStdOutContaining("warning IL2046")
-                .And.NotHaveStdOutContaining("warning IL2093");
+                .And.NotHaveStdOutMatching(@"warning IL\d\d\d\d");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
@@ -603,7 +595,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:TrimMode=copyused");
+            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:TrimMode=copyused", "/p:TrimmerSingleWarn=false");
             result.Should().Pass();
             ValidateWarningsOnHelloWorldApp(publishCommand, result, expectedOutput, targetFramework, rid);
         }
@@ -619,7 +611,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true");
+            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:TrimmerSingleWarn=false");
             result.Should().Pass();
             ValidateWarningsOnHelloWorldApp(publishCommand, result, Array.Empty<string>(), targetFramework, rid);
         }
@@ -627,7 +619,7 @@ namespace Microsoft.NET.Publish.Tests
         private void ValidateWarningsOnHelloWorldApp (PublishCommand publishCommand, CommandResult result, string[] expectedOutput, string targetFramework, string rid)
         {
             // This checks that there are no unexpected warnings, but does not cause failures for missing expected warnings.
-            var warnings = result.StdOut.Split('\n', '\r', ')').Where(line => line.StartsWith("ILLink :"));
+            var warnings = result.StdOut.Split('\n', '\r', ')').Where(line => line.StartsWith("warning IL"));
             var extraWarnings = warnings.Except(expectedOutput);
 
             StringBuilder errorMessage = new StringBuilder();
