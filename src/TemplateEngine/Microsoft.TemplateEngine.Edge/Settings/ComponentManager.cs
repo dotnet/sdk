@@ -223,7 +223,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
+#pragma warning disable SA1202 // Elements should be ordered by access
         internal void Save()
+#pragma warning restore SA1202 // Elements should be ordered by access
         {
             bool successfulWrite = false;
             const int maxAttempts = 10;
@@ -244,7 +246,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
+#pragma warning disable SA1202 // Elements should be ordered by access
         public void AddComponent(Type type, IIdentifiedComponent component)
+#pragma warning restore SA1202 // Elements should be ordered by access
         {
             if (!type.IsAssignableFrom(component.GetType()))
             {
