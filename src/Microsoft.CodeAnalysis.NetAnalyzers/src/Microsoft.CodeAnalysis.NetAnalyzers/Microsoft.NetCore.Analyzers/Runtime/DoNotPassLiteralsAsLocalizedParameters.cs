@@ -8,13 +8,14 @@ using System.Linq;
 using System.Text;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ValueContentAnalysis;
-using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -27,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     ///   3. The name of the string parameter that is passed to a Console.Write or Console.WriteLine method is either "value" or "format".
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class DoNotPassLiteralsAsLocalizedParameters : DiagnosticAnalyzer
+    public sealed class DoNotPassLiteralsAsLocalizedParameters : AbstractGlobalizationDiagnosticAnalyzer
     {
         internal const string RuleId = "CA1303";
 
@@ -46,132 +47,129 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext context)
+        protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
-            context.EnableConcurrentExecution();
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            INamedTypeSymbol? localizableStateAttributeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelLocalizableAttribute);
+            INamedTypeSymbol? conditionalAttributeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute);
+            INamedTypeSymbol? systemConsoleSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConsole);
+            ImmutableHashSet<INamedTypeSymbol> typesToIgnore = GetTypesToIgnore(context.Compilation);
 
-            context.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterOperationBlockStartAction(operationBlockStartContext =>
             {
-                INamedTypeSymbol? localizableStateAttributeSymbol = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelLocalizableAttribute);
-                INamedTypeSymbol? conditionalAttributeSymbol = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute);
-                INamedTypeSymbol? systemConsoleSymbol = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConsole);
-                ImmutableHashSet<INamedTypeSymbol> typesToIgnore = GetTypesToIgnore(compilationContext.Compilation);
-
-                compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
+                if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod ||
+                    operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
                 {
-                    if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod ||
-                        containingMethod.IsConfiguredToSkipAnalysis(operationBlockStartContext.Options,
-                            Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
+                    return;
+                }
+
+                Lazy<DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>?> lazyValueContentResult = new Lazy<DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>?>(
+                    valueFactory: ComputeValueContentAnalysisResult, isThreadSafe: false);
+
+                operationBlockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var argument = (IArgumentOperation)operationContext.Operation;
+                    IMethodSymbol? targetMethod = null;
+                    switch (argument.Parent)
                     {
-                        return;
+                        case IInvocationOperation invocation:
+                            targetMethod = invocation.TargetMethod;
+                            break;
+
+                        case IObjectCreationOperation objectCreation:
+                            targetMethod = objectCreation.Constructor;
+                            break;
                     }
 
-                    Lazy<DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>?> lazyValueContentResult = new Lazy<DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>?>(
-                        valueFactory: ComputeValueContentAnalysisResult, isThreadSafe: false);
-
-                    operationBlockStartContext.RegisterOperationAction(operationContext =>
+                    if (ShouldAnalyze(targetMethod))
                     {
-                        var argument = (IArgumentOperation)operationContext.Operation;
-                        IMethodSymbol? targetMethod = null;
-                        switch (argument.Parent)
-                        {
-                            case IInvocationOperation invocation:
-                                targetMethod = invocation.TargetMethod;
-                                break;
+                        AnalyzeArgument(argument.Parameter, containingPropertySymbol: null, operation: argument, reportDiagnostic: operationContext.ReportDiagnostic, GetUseNamingHeuristicOption(operationContext));
+                    }
+                }, OperationKind.Argument);
 
-                            case IObjectCreationOperation objectCreation:
-                                targetMethod = objectCreation.Constructor;
-                                break;
-                        }
-
-                        if (ShouldAnalyze(targetMethod))
-                        {
-                            AnalyzeArgument(argument.Parameter, containingPropertySymbolOpt: null, operation: argument, reportDiagnostic: operationContext.ReportDiagnostic);
-                        }
-                    }, OperationKind.Argument);
-
-                    operationBlockStartContext.RegisterOperationAction(operationContext =>
+                operationBlockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var propertyReference = (IPropertyReferenceOperation)operationContext.Operation;
+                    if (propertyReference.Parent is IAssignmentOperation assignment &&
+                        assignment.Target == propertyReference &&
+                        !propertyReference.Property.IsIndexer &&
+                        propertyReference.Property.SetMethod?.Parameters.Length == 1 &&
+                        ShouldAnalyze(propertyReference.Property))
                     {
-                        var propertyReference = (IPropertyReferenceOperation)operationContext.Operation;
-                        if (propertyReference.Parent is IAssignmentOperation assignment &&
-                            assignment.Target == propertyReference &&
-                            !propertyReference.Property.IsIndexer &&
-                            propertyReference.Property.SetMethod?.Parameters.Length == 1 &&
-                            ShouldAnalyze(propertyReference.Property))
-                        {
-                            IParameterSymbol valueSetterParam = propertyReference.Property.SetMethod.Parameters[0];
-                            AnalyzeArgument(valueSetterParam, propertyReference.Property, assignment, operationContext.ReportDiagnostic);
-                        }
-                    }, OperationKind.PropertyReference);
+                        IParameterSymbol valueSetterParam = propertyReference.Property.SetMethod.Parameters[0];
+                        AnalyzeArgument(valueSetterParam, propertyReference.Property, assignment, operationContext.ReportDiagnostic, GetUseNamingHeuristicOption(operationContext));
+                    }
+                }, OperationKind.PropertyReference);
 
-                    return;
+                return;
 
-                    // Local functions
-                    bool ShouldAnalyze(ISymbol? symbol)
-                        => symbol != null && !symbol.IsConfiguredToSkipAnalysis(operationBlockStartContext.Options, Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
+                // Local functions
+                bool ShouldAnalyze(ISymbol? symbol)
+                    => symbol != null && !operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, symbol, operationBlockStartContext.OwningSymbol, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
 
-                    void AnalyzeArgument(IParameterSymbol parameter, IPropertySymbol? containingPropertySymbolOpt, IOperation operation, Action<Diagnostic> reportDiagnostic)
+                static bool GetUseNamingHeuristicOption(OperationAnalysisContext operationContext)
+                    => operationContext.Options.GetBoolOptionValue(EditorConfigOptionNames.UseNamingHeuristic, Rule,
+                        operationContext.Operation.Syntax.SyntaxTree, operationContext.Compilation, defaultValue: false, operationContext.CancellationToken);
+
+                void AnalyzeArgument(IParameterSymbol parameter, IPropertySymbol? containingPropertySymbol, IOperation operation, Action<Diagnostic> reportDiagnostic, bool useNamingHeuristic)
+                {
+                    if (ShouldBeLocalized(parameter.OriginalDefinition, containingPropertySymbol?.OriginalDefinition, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore, useNamingHeuristic) &&
+                        lazyValueContentResult.Value != null)
                     {
-                        if (ShouldBeLocalized(parameter.OriginalDefinition, containingPropertySymbolOpt?.OriginalDefinition, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore) &&
-                            lazyValueContentResult.Value != null)
+                        ValueContentAbstractValue stringContentValue = lazyValueContentResult.Value[operation.Kind, operation.Syntax];
+                        if (stringContentValue.IsLiteralState)
                         {
-                            ValueContentAbstractValue stringContentValue = lazyValueContentResult.Value[operation.Kind, operation.Syntax];
-                            if (stringContentValue.IsLiteralState)
+                            Debug.Assert(!stringContentValue.LiteralValues.IsEmpty);
+
+                            if (stringContentValue.LiteralValues.Any(l => l is not string))
                             {
-                                Debug.Assert(!stringContentValue.LiteralValues.IsEmpty);
+                                return;
+                            }
 
-                                if (stringContentValue.LiteralValues.Any(l => l is not string))
-                                {
-                                    return;
-                                }
+                            var stringLiteralValues = stringContentValue.LiteralValues.Cast<string?>();
 
-                                var stringLiteralValues = stringContentValue.LiteralValues.Cast<string?>();
+                            // FxCop compat: Do not fire if the literal value came from a default parameter value
+                            if (stringContentValue.LiteralValues.Count == 1 &&
+                                parameter.IsOptional &&
+                                parameter.ExplicitDefaultValue is string defaultValue &&
+                                defaultValue == stringLiteralValues.Single())
+                            {
+                                return;
+                            }
 
-                                // FxCop compat: Do not fire if the literal value came from a default parameter value
-                                if (stringContentValue.LiteralValues.Count == 1 &&
-                                    parameter.IsOptional &&
-                                    parameter.ExplicitDefaultValue is string defaultValue &&
-                                    defaultValue == stringLiteralValues.Single())
-                                {
-                                    return;
-                                }
+                            // FxCop compat: Do not fire if none of the string literals have any non-control character.
+                            if (!LiteralValuesHaveNonControlCharacters(stringLiteralValues))
+                            {
+                                return;
+                            }
 
-                                // FxCop compat: Do not fire if none of the string literals have any non-control character.
-                                if (!LiteralValuesHaveNonControlCharacters(stringLiteralValues))
-                                {
-                                    return;
-                                }
-
-                                // FxCop compat: Filter out xml string literals.
-                                IEnumerable<string> filteredStrings = stringLiteralValues.Where(literal => literal != null && !LooksLikeXmlTag(literal))!;
-                                if (filteredStrings.Any())
-                                {
-                                    // Method '{0}' passes a literal string as parameter '{1}' of a call to '{2}'. Retrieve the following string(s) from a resource table instead: "{3}".
-                                    var arg1 = containingMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-                                    var arg2 = parameter.Name;
-                                    var arg3 = parameter.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-                                    var arg4 = FormatLiteralValues(filteredStrings);
-                                    var diagnostic = operation.CreateDiagnostic(Rule, arg1, arg2, arg3, arg4);
-                                    reportDiagnostic(diagnostic);
-                                }
+                            // FxCop compat: Filter out xml string literals.
+                            IEnumerable<string> filteredStrings = stringLiteralValues.Where(literal => literal != null && !LooksLikeXmlTag(literal))!;
+                            if (filteredStrings.Any())
+                            {
+                                // Method '{0}' passes a literal string as parameter '{1}' of a call to '{2}'. Retrieve the following string(s) from a resource table instead: "{3}".
+                                var arg1 = containingMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+                                var arg2 = parameter.Name;
+                                var arg3 = parameter.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+                                var arg4 = FormatLiteralValues(filteredStrings);
+                                var diagnostic = operation.CreateDiagnostic(Rule, arg1, arg2, arg3, arg4);
+                                reportDiagnostic(diagnostic);
                             }
                         }
                     }
+                }
 
-                    DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>? ComputeValueContentAnalysisResult()
+                DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>? ComputeValueContentAnalysisResult()
+                {
+                    var cfg = operationBlockStartContext.OperationBlocks.GetControlFlowGraph();
+                    if (cfg != null)
                     {
-                        var cfg = operationBlockStartContext.OperationBlocks.GetControlFlowGraph();
-                        if (cfg != null)
-                        {
-                            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartContext.Compilation);
-                            return ValueContentAnalysis.TryGetOrComputeResult(cfg, containingMethod, wellKnownTypeProvider,
-                                operationBlockStartContext.Options, Rule, PointsToAnalysisKind.Complete, operationBlockStartContext.CancellationToken);
-                        }
-
-                        return null;
+                        var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartContext.Compilation);
+                        return ValueContentAnalysis.TryGetOrComputeResult(cfg, containingMethod, wellKnownTypeProvider,
+                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, operationBlockStartContext.CancellationToken);
                     }
-                });
+
+                    return null;
+                }
             });
         }
 
@@ -214,11 +212,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool ShouldBeLocalized(
             IParameterSymbol parameterSymbol,
-            IPropertySymbol? containingPropertySymbolOpt,
+            IPropertySymbol? containingPropertySymbol,
             INamedTypeSymbol? localizableStateAttributeSymbol,
             INamedTypeSymbol? conditionalAttributeSymbol,
             INamedTypeSymbol? systemConsoleSymbol,
-            ImmutableHashSet<INamedTypeSymbol> typesToIgnore)
+            ImmutableHashSet<INamedTypeSymbol> typesToIgnore,
+            bool useNamingHeuristic)
         {
             Debug.Assert(parameterSymbol.ContainingSymbol.Kind == SymbolKind.Method);
 
@@ -260,14 +259,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 IParameterSymbol overridenParameter = method.OverriddenMethod.Parameters[parameterIndex];
                 if (Equals(overridenParameter.Type, parameterSymbol.Type))
                 {
-                    return ShouldBeLocalized(overridenParameter, containingPropertySymbolOpt, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore);
+                    return ShouldBeLocalized(overridenParameter, containingPropertySymbol, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore, useNamingHeuristic);
                 }
             }
 
-            if (IsLocalizableByNameHeuristic(parameterSymbol) ||
-                containingPropertySymbolOpt != null && IsLocalizableByNameHeuristic(containingPropertySymbolOpt))
+            if (useNamingHeuristic)
             {
-                return true;
+                if (IsLocalizableByNameHeuristic(parameterSymbol) ||
+                    containingPropertySymbol != null && IsLocalizableByNameHeuristic(containingPropertySymbol))
+                {
+                    return true;
+                }
             }
 
             if (method.ContainingType.Equals(systemConsoleSymbol) &&
@@ -326,10 +328,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var literals = new StringBuilder();
             foreach (string literal in literalValues.Order())
             {
-                // sanitize the literal to ensure it's not multiline
+                // sanitize the literal to ensure it's not multi-line
                 // replace any newline characters with a space
-                var sanitizedLiteral = literal.Replace(Environment.NewLine, " ");
-                sanitizedLiteral = sanitizedLiteral.Replace((char)13, ' ');
+                var sanitizedLiteral = literal.Replace((char)13, ' ');
                 sanitizedLiteral = sanitizedLiteral.Replace((char)10, ' ');
 
                 if (literals.Length > 0)
@@ -351,7 +352,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // Call the trim function to remove any spaces around the beginning and end of the string so we can more accurately detect
             // XML strings
             string trimmedLiteral = literal.Trim();
-            return trimmedLiteral.Length > 2 && trimmedLiteral[0] == '<' && trimmedLiteral[trimmedLiteral.Length - 1] == '>';
+            return trimmedLiteral.Length > 2 && trimmedLiteral[0] == '<' && trimmedLiteral[^1] == '>';
         }
 
         /// <summary>

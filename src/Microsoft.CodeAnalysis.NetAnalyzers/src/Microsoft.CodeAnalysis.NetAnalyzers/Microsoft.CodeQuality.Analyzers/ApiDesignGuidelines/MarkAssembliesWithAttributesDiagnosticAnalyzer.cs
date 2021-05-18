@@ -25,7 +25,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          RuleLevel.IdeSuggestion,
                                                                          description: s_localizableDescriptionCA1016,
                                                                          isPortedFxCopRule: true,
-                                                                         isDataflowRule: false);
+                                                                         isDataflowRule: false,
+                                                                         isReportedAtCompilationEnd: true);
 
         private static readonly LocalizableString s_localizabletitleCA1014 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithClsCompliantTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageCA1014 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithClsCompliantMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
@@ -38,17 +39,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          description: s_localizableDescriptionCA1014,
                                                                          isPortedFxCopRule: true,
                                                                          isDataflowRule: false,
-                                                                         isEnabledByDefaultInFxCopAnalyzers: false,
                                                                          isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1016Rule, CA1014Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationAction(AnalyzeCompilation);
+            context.RegisterCompilationAction(AnalyzeCompilation);
         }
 
         private static void AnalyzeCompilation(CompilationAnalysisContext context)

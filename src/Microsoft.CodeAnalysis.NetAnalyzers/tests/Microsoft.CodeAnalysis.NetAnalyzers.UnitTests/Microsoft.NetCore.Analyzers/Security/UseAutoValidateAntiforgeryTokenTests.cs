@@ -14,8 +14,10 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class UseAutoValidateAntiforgeryTokenTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic(rule)
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(arguments);
 
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
@@ -431,7 +433,10 @@ class TestClass : ControllerBase
     }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = false") }
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = false") }
                 },
             };
 
@@ -887,7 +892,7 @@ class FilterClass : IAsyncAuthorizationFilter
 {
     public MyAntiforgery myAntiforgery;
 
-    public Task OnAuthorizationAsync (AuthorizationFilterContext context)
+    public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
         HttpContext httpContext = null;
         return myAntiforgery.ValidateRequestAsync(httpContext);
@@ -906,7 +911,7 @@ class MyAntiforgery : IAntiforgery
 class TestClass : ControllerBase
 {
     [HttpDelete]
-    public AcceptedAtActionResult CustomizedActionMethod (string actionName)
+    public AcceptedAtActionResult CustomizedActionMethod(string actionName)
     {
         return null;
     }
@@ -1598,7 +1603,11 @@ class TestClass : ControllerBase
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             }.RunAsync();
         }

@@ -2,6 +2,7 @@
 
 using System.Collections.Immutable;
 using System.Composition;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -23,7 +24,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
-            // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
             return WellKnownFixAllProviders.BatchFixer;
         }
 
@@ -45,9 +46,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 string newName = diagnostic.Properties[ParameterNamesShouldMatchBaseDeclarationAnalyzer.NewNamePropertyName];
                 context.RegisterCodeFix(
                     CodeAction.Create(
-                        string.Format(MicrosoftCodeQualityAnalyzersResources.RenameToTitle, newName),
+                        string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.RenameToTitle, newName),
                         cancellationToken => GetUpdatedDocumentForParameterRenameAsync(context.Document, declaredSymbol, newName, cancellationToken),
-                        nameof(ParameterNamesShouldMatchBaseDeclarationFixer) + newName),
+                        nameof(ParameterNamesShouldMatchBaseDeclarationFixer)),
                     diagnostic);
             }
         }
@@ -55,7 +56,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static async Task<Document> GetUpdatedDocumentForParameterRenameAsync(Document document, ISymbol parameter, string newName, CancellationToken cancellationToken)
         {
             Solution newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, parameter, newName, null, cancellationToken).ConfigureAwait(false);
-            return newSolution.GetDocument(document.Id);
+            return newSolution.GetDocument(document.Id)!;
         }
     }
 }

@@ -35,15 +35,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
             // this is stateless analyzer, can run concurrently
-            analysisContext.EnableConcurrentExecution();
+            context.EnableConcurrentExecution();
 
             // this has no meaning on running on generated code which user can't control
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(c =>
+            context.RegisterCompilationStartAction(c =>
             {
                 INamedTypeSymbol? @string = c.Compilation.GetSpecialType(SpecialType.System_String);
                 INamedTypeSymbol? uri = c.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemUri);
@@ -94,7 +94,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                if (!method.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(Rule, method, context.ContainingSymbol, context.Compilation, context.CancellationToken))
                 {
                     // only apply to methods that are exposed outside by default
                     return;
@@ -149,7 +149,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         continue;
                     }
 
-                    // original FxCop implementation doesnt account for case where original method call contains
+                    // original FxCop implementation doesn't account for case where original method call contains
                     // 2+ string uri parameters that has overload with matching uri parameters. original implementation works
                     // when there is exactly 1 parameter having matching uri overload. this implementation follow that.
                     foreach (int index in indicesSet)

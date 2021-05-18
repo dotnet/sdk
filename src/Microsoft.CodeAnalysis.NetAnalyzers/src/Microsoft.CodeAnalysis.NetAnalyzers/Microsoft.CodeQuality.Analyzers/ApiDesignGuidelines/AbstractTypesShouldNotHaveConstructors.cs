@@ -27,8 +27,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                     RuleLevel.Disabled,
                                                                                     description: s_localizableDescription,
                                                                                     isPortedFxCopRule: true,
-                                                                                    isDataflowRule: false,
-                                                                                    isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                                    isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -44,7 +43,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             var symbol = (INamedTypeSymbol)context.Symbol;
             if (symbol.IsAbstract &&
-                symbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+                context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
             {
                 bool hasAnyPublicConstructors =
                     symbol.InstanceConstructors.Any(

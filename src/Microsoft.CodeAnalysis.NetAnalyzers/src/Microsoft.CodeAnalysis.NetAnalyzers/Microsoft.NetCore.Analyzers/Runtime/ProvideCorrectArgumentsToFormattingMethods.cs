@@ -29,19 +29,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessage,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(compilationContext =>
             {
                 var formatInfo = new StringFormatInfo(compilationContext.Compilation);
 
@@ -67,7 +67,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var stringFormat = (string)formatStringArgument.Value.ConstantValue.Value;
                     int expectedStringFormatArgumentCount = GetFormattingArguments(stringFormat);
 
-                    // explict parameter case
+                    // explicit parameter case
                     if (info.ExpectedStringFormatArgumentCount >= 0)
                     {
                         // __arglist is not supported here
@@ -261,7 +261,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     pos++;
                 }
 
-                // searching for embeded format string
+                // searching for embedded format string
                 if (ch == ':')
                 {
                     pos++;
@@ -348,9 +348,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 // Check if this the underlying method is user configured string formatting method.
-                var additionalStringFormatMethodsOption = context.Options.GetAdditionalStringFormattingMethodsOption(Rule, context.Compilation, context.CancellationToken);
+                var additionalStringFormatMethodsOption = context.Options.GetAdditionalStringFormattingMethodsOption(Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, context.CancellationToken);
                 if (additionalStringFormatMethodsOption.Contains(method.OriginalDefinition) &&
                     TryGetFormatInfo(method, out info))
+                {
+                    return info;
+                }
+
+                // Check if the user configured automatic determination of formatting methods.
+                // If so, check if the method called has a 'string format' parameter followed by an params array.
+                var determineAdditionalStringFormattingMethodsAutomatically = context.Options.GetBoolOptionValue(EditorConfigOptionNames.TryDetermineAdditionalStringFormattingMethodsAutomatically,
+                        Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, defaultValue: false, context.CancellationToken);
+                if (determineAdditionalStringFormattingMethodsAutomatically &&
+                    TryGetFormatInfo(method, out info) &&
+                    info.ExpectedStringFormatArgumentCount == -1)
                 {
                     return info;
                 }
@@ -380,6 +391,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 int formatIndex = FindParameterIndexOfName(method.Parameters, Format);
                 if (formatIndex < 0 || formatIndex == method.Parameters.Length - 1)
+                {
+                    // no valid format string
+                    return false;
+                }
+
+                if (method.Parameters[formatIndex].Type.SpecialType != SpecialType.System_String)
                 {
                     // no valid format string
                     return false;

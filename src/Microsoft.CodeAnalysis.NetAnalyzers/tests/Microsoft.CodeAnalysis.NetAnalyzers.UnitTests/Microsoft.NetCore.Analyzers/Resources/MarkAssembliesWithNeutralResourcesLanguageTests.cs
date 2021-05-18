@@ -1,26 +1,19 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.NetCore.CSharp.Analyzers.Resources;
-using Microsoft.NetCore.VisualBasic.Analyzers.Resources;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Test.Utilities;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.CSharp.Analyzers.Resources.CSharpMarkAssembliesWithNeutralResourcesLanguageAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.VisualBasic.Analyzers.Resources.BasicMarkAssembliesWithNeutralResourcesLanguageAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Resources.UnitTests
 {
-    public class MarkAssembliesWithNeutralResourcesLanguageTests : DiagnosticAnalyzerTestBase
+    public class MarkAssembliesWithNeutralResourcesLanguageTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new BasicMarkAssembliesWithNeutralResourcesLanguageAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CSharpMarkAssembliesWithNeutralResourcesLanguageAnalyzer();
-        }
-
         private const string CSharpDesignerFile = @"
 namespace DesignerFile {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute(""System.Resources.Tools.StronglyTypedResourceBuilder"", ""4.0.0.0"")]
@@ -35,79 +28,111 @@ Namespace My.Resources
 End Namespace";
 
         [Fact]
-        public void TestCSharpNoResourceFile()
+        public async Task TestCSharpNoResourceFile()
         {
-            VerifyCSharp(@"class C {}");
+            await VerifyCS.VerifyAnalyzerAsync(@"class C {}");
         }
 
         [Fact]
-        public void TestBasicNoResourceFile()
+        public async Task TestBasicNoResourceFile()
         {
-            VerifyBasic(@"Class C
+            await VerifyVB.VerifyAnalyzerAsync(@"Class C
 End Class");
         }
 
         [Fact]
-        public void TestCSharpResourceFile()
+        public async Task TestCSharpResourceFile()
         {
-            VerifyCSharp(GetSources(@"class C {}", LanguageNames.CSharp), GetGlobalResult(MarkAssembliesWithNeutralResourcesLanguageAnalyzer.Rule));
+            await VerifyCSharpWithDependenciesAsync(@"class C {}", VerifyCS.Diagnostic());
         }
 
         [Fact]
-        public void TestBasicResourceFile()
+        public async Task TestBasicResourceFile()
         {
-            VerifyBasic(GetSources(@"Class C
-End Class", LanguageNames.VisualBasic), GetGlobalResult(MarkAssembliesWithNeutralResourcesLanguageAnalyzer.Rule));
+            await VerifyBasicWithDependenciesAsync(@"Class C
+End Class", VerifyVB.Diagnostic());
         }
 
         [Fact]
-        public void TestCSharpInvalidAttribute1()
+        public async Task TestCSharpInvalidAttribute1()
         {
-            VerifyCSharp(GetSources(@"[assembly: System.Resources.NeutralResourcesLanguage("""")]", LanguageNames.CSharp), GetCSharpResultAt(1, 12, MarkAssembliesWithNeutralResourcesLanguageAnalyzer.Rule));
+#pragma warning disable RS0030 // Do not used banned APIs
+            await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage("""")]", VerifyCS.Diagnostic().WithLocation(1, 12));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]
-        public void TestCSharpInvalidAttribute2()
+        public async Task TestCSharpInvalidAttribute2()
         {
-            VerifyCSharp(GetSources(@"[assembly: System.Resources.NeutralResourcesLanguage(null)]", LanguageNames.CSharp), GetCSharpResultAt(1, 12, MarkAssembliesWithNeutralResourcesLanguageAnalyzer.Rule));
+#pragma warning disable RS0030 // Do not used banned APIs
+            await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage(null)]", VerifyCS.Diagnostic().WithLocation(1, 12));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]
-        public void TestBasicInvalidAttribute1()
+        public async Task TestBasicInvalidAttribute1()
         {
-            VerifyBasic(GetSources(@"<Assembly: System.Resources.NeutralResourcesLanguage("""")>", LanguageNames.VisualBasic), GetBasicResultAt(1, 2, MarkAssembliesWithNeutralResourcesLanguageAnalyzer.Rule));
+#pragma warning disable RS0030 // Do not used banned APIs
+            await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage("""")>", VerifyVB.Diagnostic().WithLocation(1, 2));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]
-        public void TestBasicInvalidAttribute2()
+        public async Task TestBasicInvalidAttribute2()
         {
-            VerifyBasic(GetSources(@"<Assembly: System.Resources.NeutralResourcesLanguage(Nothing)>", LanguageNames.VisualBasic), GetBasicResultAt(1, 2, MarkAssembliesWithNeutralResourcesLanguageAnalyzer.Rule));
+#pragma warning disable RS0030 // Do not used banned APIs
+            await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage(Nothing)>", VerifyVB.Diagnostic().WithLocation(1, 2));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]
-        public void TestCSharpvalidAttribute()
+        public async Task TestCSharpvalidAttribute()
         {
-            VerifyCSharp(GetSources(@"[assembly: System.Resources.NeutralResourcesLanguage(""en"")]", LanguageNames.CSharp));
+            await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage(""en"")]");
         }
 
         [Fact]
-        public void TestBasicvalidAttribute()
+        public async Task TestBasicvalidAttribute()
         {
-            VerifyBasic(GetSources(@"<Assembly: System.Resources.NeutralResourcesLanguage(""en"")>", LanguageNames.VisualBasic));
+            await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage(""en"")>");
         }
 
-        private FileAndSource[] GetSources(string code, string language)
+        private async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
         {
-            return new[] { GetDesignerFile(language), new FileAndSource { FilePath = null, Source = code } };
-        }
-
-        private FileAndSource GetDesignerFile(string language)
-        {
-            return new FileAndSource
+            var csharpTest = new VerifyCS.Test
             {
-                FilePath = "Test.Designer" + (language == LanguageNames.CSharp ? ".cs" : ".vb"),
-                Source = language == LanguageNames.CSharp ? CSharpDesignerFile : BasicDesignerFile
+                TestState =
+                {
+                    Sources =
+                    {
+                        source,
+                        ("Test.Designer.cs", CSharpDesignerFile),
+                    },
+                },
             };
+
+            csharpTest.ExpectedDiagnostics.AddRange(expected);
+
+            await csharpTest.RunAsync();
+        }
+
+        private async Task VerifyBasicWithDependenciesAsync(string source, params DiagnosticResult[] expected)
+        {
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        source,
+                        ("Test.Designer.vb", BasicDesignerFile),
+                    },
+                },
+            };
+
+            vbTest.ExpectedDiagnostics.AddRange(expected);
+
+            await vbTest.RunAsync();
         }
     }
 }

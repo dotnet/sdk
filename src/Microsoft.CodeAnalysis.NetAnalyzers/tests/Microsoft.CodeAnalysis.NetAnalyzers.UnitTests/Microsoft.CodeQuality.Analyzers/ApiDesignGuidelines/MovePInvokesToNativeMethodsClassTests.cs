@@ -1,112 +1,107 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MovePInvokesToNativeMethodsClassAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpMovePInvokesToNativeMethodsClassFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MovePInvokesToNativeMethodsClassAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicMovePInvokesToNativeMethodsClassFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class MovePInvokesToNativeMethodsClassTests : DiagnosticAnalyzerTestBase
+    public class MovePInvokesToNativeMethodsClassTests
     {
         #region Verifiers
 
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new MovePInvokesToNativeMethodsClassAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new MovePInvokesToNativeMethodsClassAnalyzer();
-        }
-
         private static DiagnosticResult CSharpResult(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, MovePInvokesToNativeMethodsClassAnalyzer.Rule.Id, MovePInvokesToNativeMethodsClassAnalyzer.Rule.MessageFormat.ToString());
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic().WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult BasicResult(int line, int column)
-        {
-            return GetBasicResultAt(line, column, MovePInvokesToNativeMethodsClassAnalyzer.Rule.Id, MovePInvokesToNativeMethodsClassAnalyzer.Rule.MessageFormat.ToString());
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic().WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         #endregion
 
         [Fact]
-        public void CA1060ProperlyNamedClassCSharp()
+        public async Task CA1060ProperlyNamedClassCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
 class NativeMethods
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 
 class SafeNativeMethods
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 
 class UnsafeNativeMethods
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 ");
         }
 
         [Fact]
-        public void CA1060ProperlyNamedClassBasic()
+        public async Task CA1060ProperlyNamedClassBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
 Class NativeMethods
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 
 Class SafeNativeMethods
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 
 Class UnsafeNativeMethods
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 ");
         }
 
         [Fact]
-        public void CA1060ImproperlyNamedClassCSharp()
+        public async Task CA1060ImproperlyNamedClassCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
-class FooClass
+class FirstClass
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 
-class BarClass
+class SecondClass
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 
-class BazClass
+class ThirdClass
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 ",
             CSharpResult(4, 7),
@@ -115,53 +110,52 @@ class BazClass
         }
 
         [Fact]
-        public void CA1060ImproperlyNamedClassCSharpWithScope()
+        public async Task CA1060ImproperlyNamedClassCSharpWithScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
-class FooClass
+class [|FirstClass|]
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 
-[|class BarClass
+class [|SecondClass|]
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
-}|]
-
-class BazClass
-{
-    [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
-",
-            CSharpResult(10, 7));
+
+class [|ThirdClass|]
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
+");
         }
 
         [Fact]
-        public void CA1060ImproperlyNamedClassBasic()
+        public async Task CA1060ImproperlyNamedClassBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
-Class FooClass
+Class FirstClass
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 
-Class BarClass
+Class SecondClass
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 
-Class BazClass
+Class ThirdClass
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 ",
@@ -171,36 +165,35 @@ End Class
         }
 
         [Fact]
-        public void CA1060ImproperlyNamedClassBasicWithScope()
+        public async Task CA1060ImproperlyNamedClassBasicWithScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
-Class FooClass
+Class [|FirstClass|]
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 
-[|Class BarClass
+Class [|SecondClass|]
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
-    End Sub
-End Class|]
-
-Class BazClass
-    <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
-",
-            BasicResult(10, 7));
+
+Class [|ThirdClass|]
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
+");
         }
 
         [Fact]
-        public void CA1060ClassesInNamespaceCSharp()
+        public async Task CA1060ClassesInNamespaceCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
 namespace MyNamespace
@@ -208,13 +201,13 @@ namespace MyNamespace
     class NativeMethods
     {
         [DllImport(""user32.dll"")]
-        private static extern void Foo();
+        private static extern void SomeExternMethod();
     }
 
-    class BarClass
+    class SomeClass
     {
         [DllImport(""user32.dll"")]
-        private static extern void Foo();
+        private static extern void SomeExternMethod();
     }
 }
 ",
@@ -222,21 +215,21 @@ namespace MyNamespace
         }
 
         [Fact]
-        public void CA1060ClassesInNamespaceBasic()
+        public async Task CA1060ClassesInNamespaceBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
 Namespace MyNamespace
     Class NativeMethods
         <DllImport(""user32.dll"")>
-        Private Shared Sub Foo()
+        Private Shared Sub SomeExternMethod()
         End Sub
     End Class
 
-    Class BarClass
+    Class SomeClass
         <DllImport(""user32.dll"")>
-        Private Shared Sub Foo()
+        Private Shared Sub SomeExternMethod()
         End Sub
     End Class
 End Namespace
@@ -245,17 +238,17 @@ End Namespace
         }
 
         [Fact]
-        public void CA1060NestedClassesCSharp()
+        public async Task CA1060NestedClassesCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
 class Outer
 {
-    class BarClass
+    class SomeClass
     {
         [DllImport(""user32.dll"")]
-        private static extern void Foo();
+        private static extern void SomeExternMethod();
     }
 }
 ",
@@ -263,15 +256,15 @@ class Outer
         }
 
         [Fact]
-        public void CA1060NestedClassesBasic()
+        public async Task CA1060NestedClassesBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
 Class Outer
-    Class BarClass
+    Class SomeClass
         <DllImport(""user32.dll"")>
-        Private Shared Sub Foo()
+        Private Shared Sub SomeExternMethod()
         End Sub
     End Class
 End Class

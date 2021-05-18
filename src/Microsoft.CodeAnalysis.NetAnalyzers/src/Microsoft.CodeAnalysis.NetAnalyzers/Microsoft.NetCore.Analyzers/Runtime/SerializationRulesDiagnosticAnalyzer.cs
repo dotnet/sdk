@@ -20,17 +20,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         private static readonly LocalizableString s_localizableDescriptionCA2229 =
-            new LocalizableResourceString(
-                nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsDescription),
+            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsDescription),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor RuleCA2229 = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
+        internal static DiagnosticDescriptor RuleCA2229Default = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
                                                                         s_localizableTitleCA2229,
-                                                                        "{0}",
+                                                                        MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageCreateMagicConstructor,
                                                                         DiagnosticCategory.Usage,
                                                                         RuleLevel.IdeHidden_BulkConfigurable,
                                                                         description: s_localizableDescriptionCA2229,
                                                                         isPortedFxCopRule: true,
+                                                                        isDataflowRule: false);
+
+        internal static DiagnosticDescriptor RuleCA2229Sealed = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
+                                                                            s_localizableTitleCA2229,
+                                                                            MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate,
+                                                                            DiagnosticCategory.Usage,
+                                                                            RuleLevel.IdeHidden_BulkConfigurable,
+                                                                            description: s_localizableDescriptionCA2229,
+                                                                            isPortedFxCopRule: true,
+                                                                        isDataflowRule: false);
+
+        internal static DiagnosticDescriptor RuleCA2229Unsealed = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
+                                                                                s_localizableTitleCA2229,
+                                                                                MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily,
+                                                                                DiagnosticCategory.Usage,
+                                                                                RuleLevel.IdeHidden_BulkConfigurable,
+                                                                                description: s_localizableDescriptionCA2229,
+                                                                                isPortedFxCopRule: true,
                                                                         isDataflowRule: false);
 
         // Mark ISerializable types with SerializableAttribute
@@ -45,8 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         private static readonly LocalizableString s_localizableDescriptionCA2237 =
-            new LocalizableResourceString(
-                nameof(MicrosoftNetCoreAnalyzersResources.MarkISerializableTypesWithSerializableDescription),
+            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkISerializableTypesWithSerializableDescription),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor RuleCA2237 = DiagnosticDescriptorHelper.Create(RuleCA2237Id,
@@ -83,14 +99,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                         isPortedFxCopRule: true,
                                                                         isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA2229, RuleCA2235, RuleCA2237);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA2229Default, RuleCA2229Sealed, RuleCA2229Unsealed, RuleCA2235, RuleCA2237);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 (context) =>
                 {
                     INamedTypeSymbol? iserializableTypeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationISerializable);
@@ -123,8 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    var systemObjectSymbol = context.Compilation.GetSpecialType(SpecialType.System_Object);
-                    var isNetStandardAssembly = systemObjectSymbol.ContainingAssembly.Name != "mscorlib";
+                    var isNetStandardAssembly = !context.Compilation.TargetsDotNetFramework();
 
                     var symbolAnalyzer = new SymbolAnalyzer(iserializableTypeSymbol, serializationInfoTypeSymbol, streamingContextTypeSymbol, serializableAttributeTypeSymbol, nonSerializedAttributeTypeSymbol, isNetStandardAssembly);
                     context.RegisterSymbolAction(symbolAnalyzer.AnalyzeSymbol, SymbolKind.NamedType);
@@ -184,17 +199,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         // Look for a serialization constructor.
                         // A serialization constructor takes two params of type SerializationInfo and StreamingContext.
                         IMethodSymbol serializationCtor = namedTypeSymbol.Constructors
-                            .FirstOrDefault(
-                                c => c.Parameters.Length == 2 &&
-                                     c.Parameters[0].Type.Equals(_serializationInfoTypeSymbol) &&
-                                     c.Parameters[1].Type.Equals(_streamingContextTypeSymbol));
+                            .FirstOrDefault(c => c.IsSerializationConstructor(_serializationInfoTypeSymbol, _streamingContextTypeSymbol));
 
                         // There is no serialization ctor - issue a diagnostic.
                         if (serializationCtor == null)
                         {
-                            context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(RuleCA2229,
-                                string.Format(MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageCreateMagicConstructor,
-                                    namedTypeSymbol.Name)));
+                            context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(RuleCA2229Default, namedTypeSymbol.Name));
                         }
                         else
                         {
@@ -203,19 +213,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             if (namedTypeSymbol.IsSealed &&
                                 serializationCtor.DeclaredAccessibility != Accessibility.Private)
                             {
-                                context.ReportDiagnostic(serializationCtor.CreateDiagnostic(RuleCA2229,
-                                    string.Format(
-                                        MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate,
-                                        namedTypeSymbol.Name)));
+                                context.ReportDiagnostic(serializationCtor.CreateDiagnostic(RuleCA2229Sealed, namedTypeSymbol.Name));
                             }
 
                             if (!namedTypeSymbol.IsSealed &&
                                 serializationCtor.DeclaredAccessibility != Accessibility.Protected)
                             {
-                                context.ReportDiagnostic(serializationCtor.CreateDiagnostic(RuleCA2229,
-                                    string.Format(
-                                        MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily,
-                                        namedTypeSymbol.Name)));
+                                context.ReportDiagnostic(serializationCtor.CreateDiagnostic(RuleCA2229Unsealed, namedTypeSymbol.Name));
                             }
                         }
                     }
@@ -252,7 +256,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         }
 
                         // Check for [NonSerialized]
-                        if (field.GetAttributes().Any(x => x.AttributeClass.Equals(_nonSerializedAttributeTypeSymbol)))
+                        if (field.HasAttribute(_nonSerializedAttributeTypeSymbol))
                         {
                             continue;
                         }
@@ -289,7 +293,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     TypeKind.Class or TypeKind.Struct => ((INamedTypeSymbol)type).IsSerializable,// Check SerializableAttribute or Serializable flag from metadata.
                     TypeKind.Delegate => true,// delegates are always serializable, even if
                                               // they aren't actually marked [Serializable]
-                    _ => type.GetAttributes().Any(a => a.AttributeClass.Equals(_serializableAttributeTypeSymbol)),
+                    _ => type.HasAttribute(_serializableAttributeTypeSymbol),
                 };
             }
         }

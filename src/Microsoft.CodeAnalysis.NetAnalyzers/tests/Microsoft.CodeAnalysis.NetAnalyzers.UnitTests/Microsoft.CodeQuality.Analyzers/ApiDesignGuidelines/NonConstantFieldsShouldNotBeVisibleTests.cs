@@ -1,27 +1,24 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.NonConstantFieldsShouldNotBeVisibleAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.NonConstantFieldsShouldNotBeVisibleAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class NonConstantFieldsShouldNotBeVisibleTests : DiagnosticAnalyzerTestBase
+    public class NonConstantFieldsShouldNotBeVisibleTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new NonConstantFieldsShouldNotBeVisibleAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new NonConstantFieldsShouldNotBeVisibleAnalyzer();
-        }
-
         [Fact]
-        public void DefaultVisibilityCS()
+        public async Task DefaultVisibilityCS()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     string field; 
@@ -29,18 +26,18 @@ public class A
         }
 
         [Fact]
-        public void DefaultVisibilityVB()
+        public async Task DefaultVisibilityVB()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Dim field As System.String
 End Class");
         }
 
         [Fact]
-        public void PublicVariableCS()
+        public async Task PublicVariableCS()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     public string field; 
@@ -48,28 +45,28 @@ public class A
         }
 
         [Fact]
-        public void PublicVariableVB()
+        public async Task PublicVariableVB()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Public field As System.String
 End Class");
         }
 
         [Fact]
-        public void ExternallyVisibleStaticVariableCS()
+        public async Task ExternallyVisibleStaticVariableCS()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     public static string field; 
-}", GetCSharpResultAt(4, 26, NonConstantFieldsShouldNotBeVisibleAnalyzer.Rule));
+}", GetCSharpResultAt(4, 26));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void PublicNotExternallyVisibleStaticVariableCS()
+        public async Task PublicNotExternallyVisibleStaticVariableCS()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class A
 {
     public static string field;
@@ -86,18 +83,18 @@ public class B
         }
 
         [Fact]
-        public void ExternallyVisibleStaticVariableVB()
+        public async Task ExternallyVisibleStaticVariableVB()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Public Shared field as System.String
-End Class", GetBasicResultAt(3, 19, NonConstantFieldsShouldNotBeVisibleAnalyzer.Rule));
+End Class", GetBasicResultAt(3, 19));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void PublicNotExternallyVisibleStaticVariableVB()
+        public async Task PublicNotExternallyVisibleStaticVariableVB()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class A
     Public Shared field as System.String
 End Class
@@ -111,9 +108,9 @@ End Class
         }
 
         [Fact]
-        public void PublicStaticReadonlyVariableCS()
+        public async Task PublicStaticReadonlyVariableCS()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     public static readonly string field; 
@@ -121,31 +118,41 @@ public class A
         }
 
         [Fact]
-        public void PublicStaticReadonlyVariableVB()
+        public async Task PublicStaticReadonlyVariableVB()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Public Shared ReadOnly field as System.String
 End Class");
         }
 
         [Fact]
-        public void PublicConstVariableCS()
+        public async Task PublicConstVariableCS()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
-    public const string field = ""X""; 
+    public const string field = ""X"";
 }");
         }
 
         [Fact]
-        public void PublicConstVariableVB()
+        public async Task PublicConstVariableVB()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Public Const field as System.String = ""X""
 End Class");
         }
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic().WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic().WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

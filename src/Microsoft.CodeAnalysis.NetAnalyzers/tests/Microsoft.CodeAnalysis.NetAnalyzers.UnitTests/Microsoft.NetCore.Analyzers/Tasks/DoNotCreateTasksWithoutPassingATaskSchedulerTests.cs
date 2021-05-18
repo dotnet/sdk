@@ -1,30 +1,23 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Tasks.DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Tasks.CSharpDoNotCreateTasksWithoutPassingATaskSchedulerFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Tasks.DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer,
+    Microsoft.NetCore.VisualBasic.Analyzers.Tasks.BasicDoNotCreateTasksWithoutPassingATaskSchedulerFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 {
-    public class DoNotCreateTasksWithoutPassingATaskSchedulerTests : DiagnosticAnalyzerTestBase
+    public class DoNotCreateTasksWithoutPassingATaskSchedulerTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer();
-        }
-
-        #region No Diagnostic Tests
-
         [Fact]
-        public void NoDiagnosticCases()
+        public async Task NoDiagnosticCases()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,7 +57,7 @@ class C
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading
 Imports System.Threading.Tasks
@@ -98,14 +91,10 @@ End Class
 ");
         }
 
-        #endregion
-
-        #region Diagnostic Tests
-
         [Fact]
-        public void DiagnosticCases()
+        public async Task DiagnosticCases()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -175,7 +164,7 @@ class C
     // Test0.cs(22,9): warning RS0018: Do not create tasks without passing a TaskScheduler
     GetCSharpResultAt(22, 9));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading
 Imports System.Threading.Tasks
@@ -239,16 +228,16 @@ End Class
     GetBasicResultAt(20, 3));
         }
 
-        #endregion
-
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.DoNotCreateTasksWithoutPassingATaskSchedulerMessage);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic(DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer.Rule)
+                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
-        {
-            return GetBasicResultAt(line, column, DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.DoNotCreateTasksWithoutPassingATaskSchedulerMessage);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic(DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer.Rule)
+                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

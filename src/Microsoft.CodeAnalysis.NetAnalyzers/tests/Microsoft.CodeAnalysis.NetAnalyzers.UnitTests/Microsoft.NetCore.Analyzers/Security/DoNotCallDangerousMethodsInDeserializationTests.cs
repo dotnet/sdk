@@ -14,6 +14,12 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
     public class DoNotCallDangerousMethodsInDeserializationTests
     {
+#if NETCOREAPP
+        private const string NullableSuffixOnNetCoreApp = "?";
+#else
+        private const string NullableSuffixOnNetCoreApp = "";
+#endif
+
         [Fact]
         public async Task TestOnDeserializingDiagnostic()
         {
@@ -1398,7 +1404,7 @@ public class TestClass : IDeserializationCallback
                 "TestClass",
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "LoadModule",
-                "void TestClass.OnDeserialization(object sender) -> Module Assembly.LoadModule(string moduleName, byte[] rawModule)"));
+                $"void TestClass.OnDeserialization(object sender) -> Module Assembly.LoadModule(string moduleName, byte[]{NullableSuffixOnNetCoreApp} rawModule)"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1456,7 +1462,7 @@ public class TestClass : IDeserializationCallback
                 35,
                 "TestClass", "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "LoadWithPartialName",
-                "void TestClass.OnDeserialization(object sender) -> Assembly Assembly.LoadWithPartialName(string partialName)"));
+                $"void TestClass.OnDeserialization(object sender) -> Assembly{NullableSuffixOnNetCoreApp} Assembly.LoadWithPartialName(string partialName)"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2980,13 +2986,17 @@ public class TestClass
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
     }
 }

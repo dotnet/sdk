@@ -1,31 +1,25 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines;
-using Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpImplementStandardExceptionConstructorsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ImplementStandardExceptionConstructorsFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicImplementStandardExceptionConstructorsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ImplementStandardExceptionConstructorsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class ImplementStandardExceptionConstructorsTests : DiagnosticAnalyzerTestBase
+    public class ImplementStandardExceptionConstructorsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new BasicImplementStandardExceptionConstructorsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CSharpImplementStandardExceptionConstructorsAnalyzer();
-        }
         #region CSharp Unit Tests
 
         [Fact]
-        public void CSharp_CA1032_NoDiagnostic_NotDerivingFromException()
+        public async Task CSharp_CA1032_NoDiagnostic_NotDerivingFromException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 //example of a class that doesn't derive from Exception type
 public class NotDerivingFromException
 {
@@ -35,9 +29,9 @@ public class NotDerivingFromException
         }
 
         [Fact]
-        public void CSharp_CA1032_NoDiagnostic_GoodException1()
+        public async Task CSharp_CA1032_NoDiagnostic_GoodException1()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 //example of a class that derives from Exception type with all the minimum needed constructors
 public class GoodException1 : Exception
@@ -57,9 +51,9 @@ public class GoodException1 : Exception
         }
 
         [Fact]
-        public void CSharp_CA1032_NoDiagnostic_GoodException2()
+        public async Task CSharp_CA1032_NoDiagnostic_GoodException2()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 //example of a class that derives from Exception type with all the minimum needed constructors plus an extra constructor
 public class GoodException2 : Exception
@@ -82,9 +76,9 @@ public class GoodException2 : Exception
         }
 
         [Fact]
-        public void CSharp_CA1032_Diagnostic_MissingAllConstructors()
+        public async Task CSharp_CA1032_Diagnostic_MissingAllConstructors()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 //example of a class that derives from Exception type and missing all minimum required constructors - in this case system creates a default parameterless constructor
 public class BadException1 : Exception
@@ -96,9 +90,9 @@ public class BadException1 : Exception
         }
 
         [Fact]
-        public void CSharp_CA1032_Diagnostic_MissingTwoConstructors()
+        public async Task CSharp_CA1032_Diagnostic_MissingTwoConstructors()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 //example of a class that derives from Exception type and missing 2 minimum required constructors 
 public class BadException2 : Exception
@@ -113,9 +107,9 @@ public class BadException2 : Exception
         }
 
         [Fact]
-        public void CSharp_CA1032_Diagnostic_MissingDefaultConstructor()
+        public async Task CSharp_CA1032_Diagnostic_MissingDefaultConstructor()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 //example of a class that derives from Exception type with missing default constructor 
 public class BadException3 : Exception
@@ -132,9 +126,9 @@ public class BadException3 : Exception
         }
 
         [Fact]
-        public void CSharp_CA1032_Diagnostic_MissingConstructor2()
+        public async Task CSharp_CA1032_Diagnostic_MissingConstructor2()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 //example of a class that derives from Exception type with missing constructor containing string type parameter
 public class BadException4 : Exception
@@ -151,9 +145,9 @@ public class BadException4 : Exception
         }
 
         [Fact]
-        public void CSharp_CA1032_Diagnostic_MissingConstructor3()
+        public async Task CSharp_CA1032_Diagnostic_MissingConstructor3()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 //example of a class that derives from Exception type with missing constructor containing string type and exception type parameter
 public class BadException5 : Exception
@@ -170,9 +164,9 @@ public class BadException5 : Exception
         }
 
         [Fact]
-        public void CSharp_CA1032_Diagnostic_SurplusButMissingConstructor3()
+        public async Task CSharp_CA1032_Diagnostic_SurplusButMissingConstructor3()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 //example of a class that derives from Exception type, and has 3 constructors but missing constructor containing string type parameter only
 public class BadException6 : Exception
@@ -196,9 +190,9 @@ public class BadException6 : Exception
         #region VB Unit Test
 
         [Fact]
-        public void Basic_CA1032_NoDiagnostic_NotDerivingFromException()
+        public async Task Basic_CA1032_NoDiagnostic_NotDerivingFromException()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 'example of a class that doesn't derive from Exception type
 Public Class NotDerivingFromException
 End Class
@@ -207,9 +201,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1032_NoDiagnostic_GoodException1()
+        public async Task Basic_CA1032_NoDiagnostic_GoodException1()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 'example of a class that derives from Exception type with all the minimum needed constructors
 Public Class GoodException1 : Inherits Exception
@@ -225,9 +219,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1032_NoDiagnostic_GoodException2()
+        public async Task Basic_CA1032_NoDiagnostic_GoodException2()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 'example of a class that derives from Exception type with all the minimum needed constructors plus an extra constructor
 Public Class GoodException2 : Inherits Exception
@@ -245,9 +239,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1032_Diagnostic_MissingAllConstructors()
+        public async Task Basic_CA1032_Diagnostic_MissingAllConstructors()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 'example of a class that derives from Exception type and missing all minimum required constructors - in this case system creates a default parameterless constructor
 Public Class BadException1 : Inherits Exception
@@ -258,9 +252,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1032_Diagnostic_MissingTwoConstructors()
+        public async Task Basic_CA1032_Diagnostic_MissingTwoConstructors()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 'example of a class that derives from Exception type and missing 2 minimum required constructors 
 Public Class BadException2 : Inherits Exception
@@ -273,9 +267,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1032_Diagnostic_MissingDefaultConstructor()
+        public async Task Basic_CA1032_Diagnostic_MissingDefaultConstructor()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 'example of a class that derives from Exception type with missing default constructor 
 Public Class BadException3 : Inherits Exception
@@ -289,9 +283,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1032_Diagnostic_MissingConstructor2()
+        public async Task Basic_CA1032_Diagnostic_MissingConstructor2()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 'example of a class that derives from Exception type with missing constructor containing string type parameter
 Public Class BadException4 : Inherits Exception
@@ -305,9 +299,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1032_Diagnostic_MissingConstructor3()
+        public async Task Basic_CA1032_Diagnostic_MissingConstructor3()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 'example of a class that derives from Exception type with missing constructor containing string type and exception type parameter
 Public Class BadException5 : Inherits Exception
@@ -321,9 +315,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1032_Diagnostic_SurplusButMissingConstructor3()
+        public async Task Basic_CA1032_Diagnostic_SurplusButMissingConstructor3()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 'example of a class that derives from Exception type, and has 3 constructors but missing constructor containing string type parameter only
 Public Class BadException6 : Inherits Exception
@@ -342,18 +336,19 @@ End Class
         #region Helpers
 
         private static DiagnosticResult GetCA1032CSharpMissingConstructorResultAt(int line, int column, string typeName, string constructor)
-        {
-            // Add a public read-only property accessor for positional argument '{0}' of attribute '{1}'.
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementStandardExceptionConstructorsMessageMissingConstructor, typeName, constructor);
-            return GetCSharpResultAt(line, column, ImplementStandardExceptionConstructorsAnalyzer.RuleId, message);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(typeName, constructor);
 
         private static DiagnosticResult GetCA1032BasicMissingConstructorResultAt(int line, int column, string typeName, string constructor)
-        {
-            // Add a public read-only property accessor for positional argument '{0}' of attribute '{1}'.
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementStandardExceptionConstructorsMessageMissingConstructor, typeName, constructor);
-            return GetBasicResultAt(line, column, ImplementStandardExceptionConstructorsAnalyzer.RuleId, message);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(typeName, constructor);
+
         #endregion
     }
 }

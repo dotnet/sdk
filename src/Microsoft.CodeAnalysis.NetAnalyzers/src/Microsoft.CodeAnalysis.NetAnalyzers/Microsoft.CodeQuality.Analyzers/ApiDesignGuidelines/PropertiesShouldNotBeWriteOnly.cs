@@ -41,12 +41,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AddGetterRule, MakeMoreAccessibleRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
         }
 
         /// <summary>
@@ -59,22 +59,22 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            // not raising a violation for when: 
-            //     property is overridden because the issue can only be fixed in the base type 
-            //     property is the implementaton of any interface member 
+            // not raising a violation for when:
+            //     property is overridden because the issue can only be fixed in the base type
+            //     property is the implementation of any interface member
             if (property.IsOverride || property.IsImplementationOfAnyInterfaceMember())
             {
                 return;
             }
 
             // Only analyze externally visible properties by default
-            if (!property.MatchesConfiguredVisibility(context.Options, AddGetterRule, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation, context.CancellationToken))
             {
-                Debug.Assert(!property.MatchesConfiguredVisibility(context.Options, MakeMoreAccessibleRule, context.CancellationToken));
+                Debug.Assert(!context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation, context.CancellationToken));
                 return;
             }
 
-            Debug.Assert(property.MatchesConfiguredVisibility(context.Options, MakeMoreAccessibleRule, context.CancellationToken));
+            Debug.Assert(context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation, context.CancellationToken));
 
             // We handled the non-CA1044 cases earlier.  Now, we handle CA1044 cases
             // If there is no getter then it is not accessible

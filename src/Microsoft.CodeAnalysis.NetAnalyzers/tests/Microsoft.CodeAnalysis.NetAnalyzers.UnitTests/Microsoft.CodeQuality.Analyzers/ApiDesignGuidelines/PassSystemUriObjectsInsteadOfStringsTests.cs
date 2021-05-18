@@ -1,30 +1,24 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines;
-using Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpPassSystemUriObjectsInsteadOfStringsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicPassSystemUriObjectsInsteadOfStringsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class PassSystemUriObjectsInsteadOfStringsTests : DiagnosticAnalyzerTestBase
+    public class PassSystemUriObjectsInsteadOfStringsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new BasicPassSystemUriObjectsInsteadOfStringsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CSharpPassSystemUriObjectsInsteadOfStringsAnalyzer();
-        }
-
         [Fact]
-        public void CA2234NoWarningWithUrl()
+        public async Task CA2234NoWarningWithUrl()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -42,9 +36,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningWithUri()
+        public async Task CA2234NoWarningWithUri()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -62,9 +56,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningWithUrn()
+        public async Task CA2234NoWarningWithUrn()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -82,9 +76,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningWithUriButNoString()
+        public async Task CA2234NoWarningWithUriButNoString()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -103,9 +97,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningWithStringButNoUri()
+        public async Task CA2234NoWarningWithStringButNoUri()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -123,9 +117,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningWithStringButNoUrl()
+        public async Task CA2234NoWarningWithStringButNoUrl()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -143,9 +137,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningWithStringButNoUrn()
+        public async Task CA2234NoWarningWithStringButNoUrn()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -163,9 +157,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234WarningWithUri()
+        public async Task CA2234WarningWithUri()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -184,9 +178,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234WarningWithUrl()
+        public async Task CA2234WarningWithUrl()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -205,9 +199,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234WarningWithUrn()
+        public async Task CA2234WarningWithUrn()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -226,9 +220,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234WarningWithCompoundUri()
+        public async Task CA2234WarningWithCompoundUri()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -247,9 +241,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningWithSubstring()
+        public async Task CA2234NoWarningWithSubstring()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -268,9 +262,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234WarningWithMultipleParameter1()
+        public async Task CA2234WarningWithMultipleParameter1()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -289,9 +283,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234WarningWithMultipleParameter2()
+        public async Task CA2234WarningWithMultipleParameter2()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -310,9 +304,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningForSelf()
+        public async Task CA2234NoWarningForSelf()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -330,9 +324,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningForSelf2()
+        public async Task CA2234NoWarningForSelf2()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -351,9 +345,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234WarningWithMultipleUri()
+        public async Task CA2234WarningWithMultipleUri()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -372,9 +366,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234WarningWithMultipleOverload()
+        public async Task CA2234WarningWithMultipleOverload()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -396,9 +390,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningSignatureMismatchingNumberOfParameter()
+        public async Task CA2234NoWarningSignatureMismatchingNumberOfParameter()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -417,9 +411,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningSignatureMismatchingParameterType()
+        public async Task CA2234NoWarningSignatureMismatchingParameterType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -438,9 +432,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234NoWarningNotPublic()
+        public async Task CA2234NoWarningNotPublic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     internal class A : IComparable
@@ -459,21 +453,21 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2234WarningVB()
+        public async Task CA2234WarningVB()
         {
             // since VB and C# shares almost all code except to get method overload group expression
             // we only need to test that part
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
     Imports System
     
     Public Module A
         Public Sub Method()
             Method(""test"", 0, ""test"")
         End Sub
-    
+
         Public Sub Method(firstUri As String, i As Integer, lastUrl As String)
         End Sub
-    
+
         Public Sub Method(Uri As Uri, i As Integer, lastUrl As String)
         End Sub
     End Module
@@ -481,9 +475,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(2688, "https://github.com/dotnet/roslyn-analyzers/issues/2688")]
-        public void CA2234NoWarningInvocationInUriOverload()
+        public async Task CA2234NoWarningInvocationInUriOverload()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A : IComparable
@@ -497,13 +491,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult GetCA2234CSharpResultAt(int line, int column, params string[] args)
-        {
-            return GetCSharpResultAt(line, column, PassSystemUriObjectsInsteadOfStringsAnalyzer.Rule, args);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(args);
 
         private static DiagnosticResult GetCA2234BasicResultAt(int line, int column, params string[] args)
-        {
-            return GetBasicResultAt(line, column, PassSystemUriObjectsInsteadOfStringsAnalyzer.Rule, args);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(args);
     }
 }

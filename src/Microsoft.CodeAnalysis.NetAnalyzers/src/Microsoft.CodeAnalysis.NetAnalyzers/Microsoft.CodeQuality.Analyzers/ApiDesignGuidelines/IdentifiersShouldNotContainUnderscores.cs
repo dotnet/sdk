@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Analyzer.Utilities;
-using System.Collections.Generic;
-using Analyzer.Utilities.Extensions;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -16,6 +16,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     public sealed class IdentifiersShouldNotContainUnderscoresAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1707";
+
+        private static readonly IImmutableSet<string> s_GlobalAsaxSpecialMethodNames =
+            ImmutableHashSet.Create(
+                "Application_AuthenticateRequest",
+                "Application_BeginRequest",
+                "Application_End",
+                "Application_EndRequest",
+                "Application_Error",
+                "Application_Init",
+                "Application_Start",
+                "Session_End",
+                "Session_Start");
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
@@ -96,19 +108,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AssemblyRule, NamespaceRule, TypeRule, MemberRule, TypeTypeParameterRule, MethodTypeParameterRule, MemberParameterRule, DelegateParameterRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(symbolAnalysisContext =>
+            context.RegisterSymbolAction(symbolAnalysisContext =>
             {
                 var symbol = symbolAnalysisContext.Symbol;
 
                 // FxCop compat: only analyze externally visible symbols by default
                 // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                 // will always have identical configured visibility.
-                if (!symbol.MatchesConfiguredVisibility(symbolAnalysisContext.Options, AssemblyRule, symbolAnalysisContext.CancellationToken))
+                if (!symbolAnalysisContext.Options.MatchesConfiguredVisibility(AssemblyRule, symbol, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
                 {
                     return;
                 }
@@ -175,6 +187,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                                 AnalyzeParameters(symbolAnalysisContext, methodSymbol.Parameters);
                                 AnalyzeTypeParameters(symbolAnalysisContext, methodSymbol.TypeParameters);
+
+                                if (s_GlobalAsaxSpecialMethodNames.Contains(methodSymbol.Name) &&
+                                    methodSymbol.ContainingType.Inherits(symbolAnalysisContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebHttpApplication)))
+                                {
+                                    // Do not flag the convention based web methods.
+                                    return;
+                                }
                             }
 
                             if (symbol is IPropertySymbol propertySymbol)
@@ -197,7 +216,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             SymbolKind.Method, SymbolKind.Property, SymbolKind.Field, SymbolKind.Event // Members
             );
 
-            analysisContext.RegisterCompilationAction(compilationAnalysisContext =>
+            context.RegisterCompilationAction(compilationAnalysisContext =>
             {
                 var compilation = compilationAnalysisContext.Compilation;
                 if (ContainsUnderScore(compilation.AssemblyName))
@@ -211,7 +230,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
             // will always have identical configured visibility.
-            var matchesConfiguration = symbol.MatchesConfiguredVisibility(context.Options, AssemblyRule, context.CancellationToken);
+            var matchesConfiguration = context.Options.MatchesConfiguredVisibility(AssemblyRule, symbol, context.Compilation, context.CancellationToken);
 
             return (!(matchesConfiguration && !symbol.IsOverride)) ||
                 symbol.IsAccessorMethod() || symbol.IsImplementationOfAnyInterfaceMember();
@@ -221,7 +240,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             foreach (var parameter in parameters)
             {
-                if (ContainsUnderScore(parameter.Name))
+                if (ContainsUnderScore(parameter.Name) && !parameter.IsSymbolWithSpecialDiscardName())
                 {
                     var containingType = parameter.ContainingType;
 

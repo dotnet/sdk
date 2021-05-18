@@ -37,7 +37,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             };
 
@@ -77,9 +81,8 @@ using Microsoft.WindowsAzure.Storage.File;
 class TestClass
 {
     public string SAS { get; } = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOrHttp, null);
-}"
-            /* , GetCSharpResultAt(8, 34)    // Can't get CFG in 2.9.x => don't warn */
-            );
+}",
+            GetCSharpResultAt(8, 34));
         }
 
         [Fact]
@@ -93,9 +96,8 @@ using Microsoft.WindowsAzure.Storage.File;
 class TestClass
 {
     public string SAS = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOrHttp, null);
-}"
-            /* , GetCSharpResultAt(8, 25)    // Can't get CFG in 2.9.x => don't warn */
-            );
+}",
+            GetCSharpResultAt(8, 25));
         }
 
         [Fact]
@@ -241,9 +243,10 @@ class TestClass
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
-        [InlineData("dotnet_code_quality." + UseSharedAccessProtocolHttpsOnly.DiagnosticId + ".excluded_symbol_names = TestMethod")]
+        [InlineData("dotnet_code_quality.CA5376.excluded_symbol_names = TestMethod")]
+        [InlineData("dotnet_code_quality.CA5376.excluded_symbol_names = TestMet*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
@@ -271,7 +274,9 @@ class TestClass
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic()
                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override FixAllProvider GetFixAllProvider()
         {
-            // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
             return WellKnownFixAllProviders.BatchFixer;
         }
 
@@ -44,7 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             SemanticModel model =
                 await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            if (model.GetDeclaredSymbol(declaration) is not INamedTypeSymbol type || type.TypeKind != TypeKind.Class && type.TypeKind != TypeKind.Struct)
+            if (model.GetDeclaredSymbol(declaration, context.CancellationToken) is not INamedTypeSymbol type || type.TypeKind != TypeKind.Class && type.TypeKind != TypeKind.Struct)
             {
                 return;
             }

@@ -1,28 +1,23 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotHideBaseClassMethodsAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpDoNotHideBaseClassMethodsFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotHideBaseClassMethodsAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicDoNotHideBaseClassMethodsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class DoNotHideBaseClassMethodsTests : DiagnosticAnalyzerTestBase
+    public class DoNotHideBaseClassMethodsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotHideBaseClassMethodsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotHideBaseClassMethodsAnalyzer();
-        }
-
         [Fact]
-        public void CA1061_DerivedMethodMatchesBaseMethod_NoDiagnostic()
+        public async Task CA1061_DerivedMethodMatchesBaseMethod_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
     public void Method(string input)
@@ -37,7 +32,7 @@ class Derived : Base
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base
     Public Sub Method(input As String)
     End Sub
@@ -52,9 +47,9 @@ End Class");
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasMoreDerivedParameter_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasMoreDerivedParameter_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
     public void Method(object input)
@@ -69,7 +64,7 @@ class Derived : Base
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base
     Public Sub Method(input As Object)
     End Sub
@@ -84,9 +79,9 @@ End Class");
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_Diagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
     public void Method(string input)
@@ -102,7 +97,7 @@ class Derived : Base
 }",
                 GetCA1061CSharpResultAt(11, 17, "Derived.Method(object)", "Base.Method(string)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base
     Public Sub Method(input As String)
     End Sub
@@ -118,9 +113,9 @@ End Class",
         }
 
         [Fact]
-        public void CA1061_ConstructorCallsBaseConstructorWithDifferentParameterType_NoDiagnostic()
+        public async Task CA1061_ConstructorCallsBaseConstructorWithDifferentParameterType_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
     public Base(string input)
@@ -138,9 +133,9 @@ class Derived : Base
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_MultipleMethodsHidden_Diagnostics()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_MultipleMethodsHidden_Diagnostics()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Parent
 {
     public void Method(string input)
@@ -164,7 +159,7 @@ class Grandchild : Child
                 GetCA1061CSharpResultAt(18, 17, "Grandchild.Method(object)", "Child.Method(string)"),
                 GetCA1061CSharpResultAt(18, 17, "Grandchild.Method(object)", "Parent.Method(string)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Parent
     Public Sub Method(input As String)
     End Sub
@@ -188,54 +183,51 @@ End Class",
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_ImplementsInterface_CompileError()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ImplementsInterface_CompileError()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 interface IFace
 {
     void Method(string input);
 }
 
-class Derived : IFace
+class Derived : {|CS0535:IFace|}
 {
     public void Method(object input)
     {
     }
-}",
-                TestValidationMode.AllowCompileErrors);
+}");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Interface IFace
     Sub Method(input As String)
 End Interface
 
 Class Derived
-    Implements IFace
+    Implements {|BC30149:IFace|}
 
-    Public Sub Method(input As Object) Implements IFace.Method
+    Public Sub Method(input As Object) Implements {|BC30401:IFace.Method|}
     End Sub
-End Class",
-                TestValidationMode.AllowCompileErrors);
+End Class");
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_OverridesVirtualBaseMethod_CompileError()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_OverridesVirtualBaseMethod_CompileError()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
-    public virtual void Method(string input);
+    public virtual void {|CS0501:Method|}(string input);
 }
 
 class Derived : Base
 {
-    public override void Method(object input)
+    public override void {|CS0115:Method|}(object input)
     {
     }
-}",
-                TestValidationMode.AllowCompileErrors);
+}");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base
     Public Overridable Sub Method(input As String)
     End Sub
@@ -244,49 +236,45 @@ End Class
 Class Derived
     Inherits Base
     
-    Public Overrides Sub Method(input As Object)
+    Public Overrides Sub {|BC30284:Method|}(input As Object)
     End Sub
-End Class",
-                TestValidationMode.AllowCompileErrors);
+End Class");
         }
 
-
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_OverridesAbstractBaseMethod_CompileError()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_OverridesAbstractBaseMethod_CompileError()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 abstract class Base
 {
     public abstract void Method(string input);
 }
 
-class Derived : Base
+class {|CS0534:Derived|} : Base
 {
-    public override void Method(object input)
+    public override void {|CS0115:Method|}(object input)
     {
     }
-}",
-                TestValidationMode.AllowCompileErrors);
+}");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class Base
     Public MustOverride Sub Method(input As String)
-    End Sub
+    {|BC30429:End Sub|}
 End Class
 
-Class Derived
+Class {|BC30610:Derived|}
     Inherits Base
     
-    Public Overrides Sub Method(input As Object)
+    Public Overrides Sub {|BC30284:Method|}(input As Object)
     End Sub
-End Class",
-                TestValidationMode.AllowCompileErrors);
+End Class");
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_DerivedMethodPrivate_Diagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_DerivedMethodPrivate_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
     public void Method(string input)
@@ -302,7 +290,7 @@ class Derived : Base
 }",
                 GetCA1061CSharpResultAt(11, 18, "Derived.Method(object)", "Base.Method(string)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base
     Public Sub Method(input As String)
     End Sub
@@ -319,10 +307,10 @@ End Class
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_BaseMethodPrivate_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_BaseMethodPrivate_NoDiagnostic()
         {
             // Note: This behavior differs from FxCop's CA1061
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
     private void Method(string input)
@@ -337,7 +325,7 @@ class Derived : Base
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base
     Private Sub Method(input As String)
     End Sub
@@ -353,9 +341,9 @@ End Class
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_ArityMismatch_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ArityMismatch_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
     public void Method(string input, string input2)
@@ -370,7 +358,7 @@ class Derived : Base
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base
     Private Sub Method(input As String, input2 As String)
     End Sub
@@ -386,9 +374,9 @@ End Class
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_ReturnTypeMismatch_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ReturnTypeMismatch_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
     public void Method(string input)
@@ -404,7 +392,7 @@ class Derived : Base
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base
     Private Sub Method(input As String)
     End Sub
@@ -421,9 +409,9 @@ End Class
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_ParameterTypeMismatchAtStart_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ParameterTypeMismatchAtStart_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
     public void Method(int input, string input2)
@@ -438,7 +426,7 @@ class Derived : Base
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base
     Private Sub Method(input As Integer, input2 As String)
     End Sub
@@ -454,9 +442,9 @@ End Class
         }
 
         [Fact]
-        public void CA1061_DerivedMethodHasLessDerivedParameter_ParameterTypeMismatchAtEnd_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ParameterTypeMismatchAtEnd_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
 {
     public void Method(string input, int input2)
@@ -471,7 +459,7 @@ class Derived : Base
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base
     Private Sub Method(input As String, input2 As Integer)
     End Sub
@@ -486,14 +474,18 @@ End Class
 ");
         }
 
-        private DiagnosticResult GetCA1061CSharpResultAt(int line, int column, string derivedMethod, string baseMethod)
-        {
-            return GetCSharpResultAt(line, column, DoNotHideBaseClassMethodsAnalyzer.Rule, derivedMethod, baseMethod);
-        }
+        private static DiagnosticResult GetCA1061CSharpResultAt(int line, int column, string derivedMethod, string baseMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(derivedMethod, baseMethod);
 
-        private DiagnosticResult GetCA1061BasicResultAt(int line, int column, string derivedMethod, string baseMethod)
-        {
-            return GetBasicResultAt(line, column, DoNotHideBaseClassMethodsAnalyzer.Rule, derivedMethod, baseMethod);
-        }
+        private static DiagnosticResult GetCA1061BasicResultAt(int line, int column, string derivedMethod, string baseMethod)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(derivedMethod, baseMethod);
     }
 }

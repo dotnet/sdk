@@ -8,7 +8,7 @@ We recommend that you provide reference documentation for each of your analyzers
 
     The rationale for this suggestion is that you might have other documents you want to put in your `docs` directory. Keeping the reference pages together in their own subdirectory makes them easier to distinguish from your other documentation. The more analyzer project authors that follow this convention, the easier it will be for analyzer users to find the documentation they need. It will also make it easier for tools that want to search,  aggregate, or otherwise process the documentation pages from multiple analyzer projects.  
 
-3. Make a copy of the [Rule reference page template](https://github.com/Microsoft/sarif-sdk/blob/master/docs/Rule%20reference%20page%20template.md) in your `docs/reference` directory, and name it according to the following convention:
+3. Make a copy of the [Rule reference page template](https://github.com/Microsoft/sarif-sdk/blob/main/docs/Rule%20reference%20page%20template.md) in your `docs/reference` directory, and name it according to the following convention:
 
     `<MessageId>_<Name>.md`
 
@@ -33,13 +33,13 @@ but you can use any source for the stable URI, including (for example)
 any facility your company might provide for registering URIs.
 
 6. In your analyzers, set the value of the `HelpLinkUri` property of
-your `DiagnosticDescriptor`  to the (preferably stable) URI you provided. 
+your `DiagnosticDescriptor`  to the (preferably stable) URI you provided.
 
 **Note** Some analyzers produce diagnostics with more than one rule id.
-For example, the [`EquatableAnalyzer`](https://github.com/dotnet/roslyn-analyzers/blob/master/src/Microsoft.ApiDesignGuidelines.Analyzers/Core/EquatableAnalyzer.cs) in [`Microsoft.ApiDesignGuidelines.Analyzers`](https://github.com/dotnet/roslyn-analyzers/tree/master/src/Microsoft.ApiDesignGuidelines.Analyzers)
+For example, the [`EquatableAnalyzer`](https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.ApiDesignGuidelines.Analyzers/Core/EquatableAnalyzer.cs) in [`Microsoft.ApiDesignGuidelines.Analyzers`](https://github.com/dotnet/roslyn-analyzers/tree/main/src/Microsoft.ApiDesignGuidelines.Analyzers)
 produces diagnostics with two rule ids:
-`CA1066` ("Implement IEquatable<T> when overriding Object.Equals")
-and `CA1067` ("Override Object.Equals when implementing IEquatable<T>").
+`CA1066` ("Implement IEquatable\<T> when overriding Object.Equals")
+and `CA1067` ("Override Object.Equals when implementing IEquatable\<T>").
 In such a case, create a separate reference page for each rule id.
 In this case, we would have `CA1066_ImplementIEquatableOfTWhenOverridingObjectEquals.md`
 and `CA1067_OverrideObjectEqualsWhenImplementingIEquatableOfT.md`.

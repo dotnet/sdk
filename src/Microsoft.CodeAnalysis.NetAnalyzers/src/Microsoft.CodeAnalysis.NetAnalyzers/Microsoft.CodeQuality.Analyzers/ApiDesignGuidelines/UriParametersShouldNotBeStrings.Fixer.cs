@@ -25,13 +25,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
-            // Fixes all occurrences within within Document, Project, or Solution
+            // Fixes all occurrences within Document, Project, or Solution
             return WellKnownFixAllProviders.BatchFixer;
         }
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var title = MicrosoftCodeQualityAnalyzersResources.UriParametersShouldNotBeStringsTitle;
+            var title = MicrosoftCodeQualityAnalyzersResources.UriParametersShouldNotBeStringsCodeFixTitle;
 
             var document = context.Document;
             var cancellationToken = context.CancellationToken;
