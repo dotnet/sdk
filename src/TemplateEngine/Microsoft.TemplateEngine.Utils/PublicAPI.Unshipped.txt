@@ -134,7 +134,6 @@ static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetLanguage(this Mi
 static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetParameter(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter?
 static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTagValue(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! tagName) -> string?
 static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetTemplateType(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template) -> string?
-static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.LoadTemplate(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! info, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! engineEnvironment, string? baselineName) -> Microsoft.TemplateEngine.Abstractions.ITemplate?
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorExactMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasAuthorMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool

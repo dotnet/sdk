@@ -8,6 +8,14 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public static class EngineEnvironmentSettingsExtensions
     {
+        /// <summary>
+        /// Tries to mount a <see cref="IMountPoint"/> from specified <see cref="System.Uri"/>.
+        /// Using all <see cref="IMountPointFactory"/> in <see cref="IEngineEnvironmentSettings.Components"/>.
+        /// </summary>
+        /// <param name="engineEnvironment"></param>
+        /// <param name="mountPointUri"></param>
+        /// <param name="mountPoint"></param>
+        /// <returns></returns>
         public static bool TryGetMountPoint(this IEngineEnvironmentSettings engineEnvironment, string mountPointUri, out IMountPoint mountPoint)
         {
             foreach (var factory in engineEnvironment.Components.OfType<IMountPointFactory>())

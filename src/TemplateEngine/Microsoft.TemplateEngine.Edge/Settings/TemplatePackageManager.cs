@@ -11,9 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.BuiltInManagedProvider;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
@@ -23,7 +25,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     /// </summary>
     public class TemplatePackageManager : IDisposable
     {
-        private readonly IEngineEnvironmentSettings environmentSettings;
+        private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly SettingsFilePaths _paths;
         private readonly ILogger _logger;
         private readonly Scanner _installScanner;
@@ -32,7 +34,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public TemplatePackageManager(IEngineEnvironmentSettings environmentSettings)
         {
-            this.environmentSettings = environmentSettings;
+            _environmentSettings = environmentSettings;
             _logger = environmentSettings.Host.LoggerFactory.CreateLogger<TemplatePackageManager>();
             _paths = new SettingsFilePaths(environmentSettings);
             _installScanner = new Scanner(environmentSettings);
@@ -171,6 +173,27 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return UpdateTemplateCacheAsync(true);
         }
 
+        /// <summary>
+        /// Helper method that returns <see cref="ITemplatePackage"/> that contains <paramref name="template"/>.
+        /// </summary>
+        public async Task<ITemplatePackage> GetTemplatePackageAsync(ITemplateInfo template, CancellationToken cancellationToken = default)
+        {
+            IReadOnlyList<ITemplatePackage> templatePackages = await GetTemplatePackagesAsync().ConfigureAwait(false);
+            return templatePackages.Single(s => s.MountPointUri == template.MountPointUri);
+        }
+
+        /// <summary>
+        /// Returns all <see cref="ITemplateInfo"/> contained by <paramref name="templatePackage"/>.
+        /// </summary>
+        /// <param name="templatePackage"></param>
+        /// <param name="settings"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<ITemplateInfo>> GetAllTemplatesForTemplatePackageAsync(ITemplatePackage templatePackage, CancellationToken cancellationToken = default)
+        {
+            var allTemplates = await GetTemplatesAsync(cancellationToken).ConfigureAwait(false);
+            return allTemplates.Where(t => t.MountPointUri == templatePackage.MountPointUri);
+        }
+
         private void EnsureProvidersLoaded()
         {
             if (cachedSources != null)
@@ -179,7 +202,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             cachedSources = new Dictionary<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>>();
-            var providers = environmentSettings.Components.OfType<ITemplatePackageProviderFactory>().Select(f => f.CreateProvider(environmentSettings));
+            var providers = _environmentSettings.Components.OfType<ITemplatePackageProviderFactory>().Select(f => f.CreateProvider(_environmentSettings));
             foreach (var provider in providers)
             {
                 provider.TemplatePackagesChanged += () =>

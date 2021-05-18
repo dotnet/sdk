@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Settings;
+using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
 using Xunit;
@@ -120,8 +121,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string expectedManualInstructions)
         {
             var environmentSettings = LoadHostWithLocalizationTemplates(locale, out var templatePackageManager, out ITemplateInfo localizationTemplate);
-
-            ITemplate template = localizationTemplate.LoadTemplate(environmentSettings, null);
+            var templateCreator = new TemplateCreator(environmentSettings);
+            ITemplate template = templateCreator.LoadTemplate(localizationTemplate, null);
             Assert.NotNull(template);
             Assert.NotNull(template.Generator);
 
