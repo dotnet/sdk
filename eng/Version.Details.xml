@@ -125,15 +125,15 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>65bdceb4d47075964bb9d3878c994d020d594068</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.0-preview.5.21268.3">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.0-preview.5.21268.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>d30f1e40ac60d9cacda7e9bcbbbaf42f6df31646</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.6.0" Version="6.0.0-preview.5.21268.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.6.0" Version="6.0.0-preview.5.21268.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>d30f1e40ac60d9cacda7e9bcbbbaf42f6df31646</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="6.0.0-preview.5.21268.3">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="6.0.0-preview.5.21268.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>d30f1e40ac60d9cacda7e9bcbbbaf42f6df31646</Sha>
     </Dependency>
