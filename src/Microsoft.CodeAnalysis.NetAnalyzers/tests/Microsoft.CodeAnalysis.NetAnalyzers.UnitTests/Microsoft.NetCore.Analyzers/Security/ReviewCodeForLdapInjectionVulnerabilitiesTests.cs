@@ -184,5 +184,25 @@ public partial class WebForm : System.Web.UI.Page
     }
 }");
         }
+
+        [Fact]
+        public async Task AspNetCoreHttpRequest_DirectoryEntry_Path_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.DirectoryServices;
+using Microsoft.AspNetCore.Mvc;
+
+public class HomeController : Controller
+{
+    public IActionResult Index()
+    {
+        string input = Request.Form[""in""];
+        new DirectoryEntry(input);
+
+        return View();
+    }
+}",
+                GetCSharpResultAt(10, 9, 9, 24, "DirectoryEntry.DirectoryEntry(string path)", "IActionResult HomeController.Index()", "IFormCollection HttpRequest.Form", "IActionResult HomeController.Index()"));
+        }
     }
 }
