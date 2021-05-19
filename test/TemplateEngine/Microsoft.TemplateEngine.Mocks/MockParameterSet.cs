@@ -17,14 +17,6 @@ namespace Microsoft.TemplateEngine.Mocks
             }
         }
 
-        public IEnumerable<string> RequiredBrokerCapabilities
-        {
-            get
-            {
-                return new List<string>();
-            }
-        }
-
         public IDictionary<ITemplateParameter, object> ResolvedValues
         {
             get

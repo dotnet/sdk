@@ -303,12 +303,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 return null;
             }
-            IMountPoint mountPoint;
+            IMountPoint? mountPoint;
             if (!_environmentSettings.TryGetMountPoint(info.MountPointUri, out mountPoint))
             {
                 return null;
             }
-            IFile config = mountPoint.FileInfo(info.ConfigPlace);
+            IFile config = mountPoint!.FileInfo(info.ConfigPlace);
             IFile? localeConfig = string.IsNullOrEmpty(info.LocaleConfigPlace) ? null : mountPoint.FileInfo(info.LocaleConfigPlace);
             IFile? hostTemplateConfigFile = string.IsNullOrEmpty(info.HostConfigPlace) ? null : mountPoint.FileInfo(info.HostConfigPlace);
             ITemplate template;

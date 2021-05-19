@@ -743,8 +743,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IEnumerable<ITemplateParameter> ParameterDefinitions => _parameters.Values;
 
-            public IEnumerable<string> RequiredBrokerCapabilities => Enumerable.Empty<string>();
-
             public IDictionary<ITemplateParameter, object> ResolvedValues { get; } = new Dictionary<ITemplateParameter, object>();
 
             public bool TryGetParameterDefinition(string name, out ITemplateParameter parameter)

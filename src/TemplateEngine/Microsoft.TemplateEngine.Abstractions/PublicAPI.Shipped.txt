@@ -56,7 +56,6 @@ Microsoft.TemplateEngine.Abstractions.IFileChange.TargetRelativePath.get -> stri
 Microsoft.TemplateEngine.Abstractions.IFileChange2
 Microsoft.TemplateEngine.Abstractions.IFileChange2.SourceRelativePath.get -> string!
 Microsoft.TemplateEngine.Abstractions.IGenerator
-Microsoft.TemplateEngine.Abstractions.IHostTemplateModel
 Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent
 Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent.Id.get -> System.Guid
 Microsoft.TemplateEngine.Abstractions.ILocalizationLocator
@@ -182,7 +181,6 @@ Microsoft.TemplateEngine.Abstractions.ITemplateParameter.IsName.get -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Name.get -> string!
 Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Priority.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
 Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Type.get -> string!
-Microsoft.TemplateEngine.Abstractions.IVersionSpecification
 Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind
 Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind.Directory = 1 -> Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind
 Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind.File = 0 -> Microsoft.TemplateEngine.Abstractions.Mount.FileSystemInfoKind
@@ -275,7 +273,6 @@ Microsoft.TemplateEngine.Abstractions.IComponentManager.TryGetComponent<T>(Syste
 ~Microsoft.TemplateEngine.Abstractions.IGenerator.GetParametersForTemplate(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplate template) -> Microsoft.TemplateEngine.Abstractions.IParameterSet
 ~Microsoft.TemplateEngine.Abstractions.IGenerator.GetTemplatesAndLangpacksFromDir(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint source, out System.Collections.Generic.IList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator> localizations) -> System.Collections.Generic.IList<Microsoft.TemplateEngine.Abstractions.ITemplate>
 ~Microsoft.TemplateEngine.Abstractions.IGenerator.TryGetTemplateFromConfigInfo(Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo config, out Microsoft.TemplateEngine.Abstractions.ITemplate template, Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo localeConfig, Microsoft.TemplateEngine.Abstractions.Mount.IFile hostTemplateConfigFile, string baselineName = null) -> bool
-~Microsoft.TemplateEngine.Abstractions.IHostTemplateModel.ParameterMap.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
 ~Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Author.get -> string
 ~Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.ConfigPlace.get -> string
 ~Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Description.get -> string
@@ -310,7 +307,6 @@ Microsoft.TemplateEngine.Abstractions.IComponentManager.TryGetComponent<T>(Syste
 ~Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest.Version.get -> string
 ~Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.UpdateRequest.get -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest
 ~Microsoft.TemplateEngine.Abstractions.IParameterSet.ParameterDefinitions.get -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateParameter>
-~Microsoft.TemplateEngine.Abstractions.IParameterSet.RequiredBrokerCapabilities.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.TemplateEngine.Abstractions.IParameterSet.ResolvedValues.get -> System.Collections.Generic.IDictionary<Microsoft.TemplateEngine.Abstractions.ITemplateParameter, object>
 ~Microsoft.TemplateEngine.Abstractions.IParameterSet.TryGetParameterDefinition(string name, out Microsoft.TemplateEngine.Abstractions.ITemplateParameter parameter) -> bool
 ~Microsoft.TemplateEngine.Abstractions.ISearchPackFilter.ShouldPackBeFiltered(string candidatePackName, string candidatePackVersion) -> bool
@@ -336,7 +332,6 @@ Microsoft.TemplateEngine.Abstractions.IComponentManager.TryGetComponent<T>(Syste
 ~Microsoft.TemplateEngine.Abstractions.ITemplate.Generator.get -> Microsoft.TemplateEngine.Abstractions.IGenerator
 ~Microsoft.TemplateEngine.Abstractions.ITemplate.LocaleConfiguration.get -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo
 ~Microsoft.TemplateEngine.Abstractions.ITemplate.TemplateSourceRoot.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory
-~Microsoft.TemplateEngine.Abstractions.IVersionSpecification.CheckIfVersionIsValid(string versionToCheck) -> bool
 ~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateDirectories(string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IDirectory>
 ~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFiles(string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFile>
 ~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFileSystemInfos(string patten, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo>

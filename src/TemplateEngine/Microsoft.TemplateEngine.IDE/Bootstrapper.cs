@@ -355,7 +355,9 @@ namespace Microsoft.TemplateEngine.IDE
 
             Task<IReadOnlyList<UninstallResult>> uninstallTask = UninstallTemplatePackagesAsync(packagesToUninstall);
             uninstallTask.Wait();
-            return uninstallTask.Result.Select(result => result.TemplatePackage.Identifier);
+            return uninstallTask.Result
+                .Where(result => result.Success)
+                .Select(result => result.TemplatePackage!.Identifier);
         }
 
         [Obsolete("Use Task<TemplateCreationResult> CreateAsync(ITemplateInfo info, string? name, string outputPath, IReadOnlyDictionary<string, string> parameters, string? baselineName = null, CancellationToken cancellationToken = default) instead.")]

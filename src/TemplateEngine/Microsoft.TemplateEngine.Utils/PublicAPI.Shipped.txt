@@ -44,6 +44,8 @@ Microsoft.TemplateEngine.Utils.ExactVersionSpecification
 Microsoft.TemplateEngine.Utils.FileFindHelpers
 Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions
 Microsoft.TemplateEngine.Utils.Glob
+Microsoft.TemplateEngine.Utils.IVersionSpecification
+Microsoft.TemplateEngine.Utils.IVersionSpecification.CheckIfVersionIsValid(string! versionToCheck) -> bool
 Microsoft.TemplateEngine.Utils.InMemoryFileSystem
 Microsoft.TemplateEngine.Utils.InMemoryFileSystem.CreateDirectory(string! path) -> void
 Microsoft.TemplateEngine.Utils.InMemoryFileSystem.CreateFile(string! path) -> System.IO.Stream!
@@ -124,12 +126,12 @@ Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(Newtonsoft.Js
 Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(string! name, string! type, string! datatype, Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority priority = Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Required, bool isName = false, string? defaultValue = null, string? defaultIfOptionWithoutValue = null, string? description = null, string? displayName = null, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>? choices = null) -> void
 Microsoft.TemplateEngine.Utils.TemplateParameter.Type.get -> string!
 Microsoft.TemplateEngine.Utils.TemplateParameterExtensions
-Microsoft.TemplateEngine.Utils.TemplateParamException
-Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException() -> void
 Microsoft.TemplateEngine.Utils.Timing
 Microsoft.TemplateEngine.Utils.Timing.Dispose() -> void
 Microsoft.TemplateEngine.Utils.VersionStringHelpers
 Microsoft.TemplateEngine.Utils.WellKnownSearchFilters
+static Microsoft.TemplateEngine.Utils.ExactVersionSpecification.TryParse(string! version, out Microsoft.TemplateEngine.Utils.IVersionSpecification? specification) -> bool
+static Microsoft.TemplateEngine.Utils.RangeVersionSpecification.TryParse(string! range, out Microsoft.TemplateEngine.Utils.IVersionSpecification? specification) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetChoiceParameter(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter?
 static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetLanguage(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template) -> string?
 static Microsoft.TemplateEngine.Utils.TemplateInfoExtensions.GetParameter(this Microsoft.TemplateEngine.Abstractions.ITemplateInfo! template, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter?
@@ -194,33 +196,24 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~Microsoft.TemplateEngine.Utils.EngineInitializationException.EngineInitializationException(string message, string settingsItem) -> void
 ~Microsoft.TemplateEngine.Utils.EngineInitializationException.EngineInitializationException(string message, string settingsItem, System.Exception innerException) -> void
 ~Microsoft.TemplateEngine.Utils.EngineInitializationException.SettingsItem.get -> string
-~Microsoft.TemplateEngine.Utils.ExactVersionSpecification.CheckIfVersionIsValid(string versionToCheck) -> bool
-~Microsoft.TemplateEngine.Utils.ExactVersionSpecification.ExactVersionSpecification(string version) -> void
-~Microsoft.TemplateEngine.Utils.ExactVersionSpecification.RequiredVersion.get -> string
+Microsoft.TemplateEngine.Utils.ExactVersionSpecification.CheckIfVersionIsValid(string! versionToCheck) -> bool
+Microsoft.TemplateEngine.Utils.ExactVersionSpecification.ExactVersionSpecification(string! version) -> void
+Microsoft.TemplateEngine.Utils.ExactVersionSpecification.RequiredVersion.get -> string!
 ~Microsoft.TemplateEngine.Utils.Glob.IsMatch(string test) -> bool
-~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.CheckIfVersionIsValid(string versionToCheck) -> bool
-~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.MaxVersion.get -> string
-~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.MinVersion.get -> string
-~Microsoft.TemplateEngine.Utils.RangeVersionSpecification.RangeVersionSpecification(string min, string max, bool isStartInclusive, bool isEndInclusive) -> void
+Microsoft.TemplateEngine.Utils.RangeVersionSpecification.CheckIfVersionIsValid(string! versionToCheck) -> bool
+Microsoft.TemplateEngine.Utils.RangeVersionSpecification.MaxVersion.get -> string!
+Microsoft.TemplateEngine.Utils.RangeVersionSpecification.MinVersion.get -> string!
+Microsoft.TemplateEngine.Utils.RangeVersionSpecification.RangeVersionSpecification(string! min, string! max, bool isStartInclusive, bool isEndInclusive) -> void
 ~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string
 ~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string message, string configItem) -> void
 ~Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string message, string configItem, System.Exception innerException) -> void
-~Microsoft.TemplateEngine.Utils.TemplateParamException.DataType.get -> string
-~Microsoft.TemplateEngine.Utils.TemplateParamException.InputValue.get -> string
-~Microsoft.TemplateEngine.Utils.TemplateParamException.ParamName.get -> string
-~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string message) -> void
-~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string message, string paramName, string inputValue, string dataType) -> void
-~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string message, System.Exception inner) -> void
-~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string message, System.Exception inner, string paramName, string inputValue, string dataType) -> void
-~Microsoft.TemplateEngine.Utils.TemplateParamException.TemplateParamException(string paramName, string inputValue, string dataType) -> void
 ~Microsoft.TemplateEngine.Utils.Timing.Timing(Microsoft.Extensions.Logging.ILogger logger, string label) -> void
 ~static Microsoft.TemplateEngine.Utils.ArrayExtensions.CombineArrays<T>(params T[][] arrayList) -> T[]
 ~static Microsoft.TemplateEngine.Utils.DictionaryExtensions.CloneIfDifferentComparer<T>(this System.Collections.Generic.IReadOnlyDictionary<string, T> source, System.StringComparer comparer) -> System.Collections.Generic.IReadOnlyDictionary<string, T>
-~static Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint(this Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings engineEnvironment, string mountPointUri, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint mountPoint) -> bool
+static Microsoft.TemplateEngine.Utils.EngineEnvironmentSettingsExtensions.TryGetMountPoint(this Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! engineEnvironment, string! mountPointUri, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint? mountPoint) -> bool
 ~static Microsoft.TemplateEngine.Utils.EqualityExtensions.AllAreTheSame<T, TValue>(this System.Collections.Generic.IEnumerable<T> items, System.Func<T, TValue> selector) -> bool
 ~static Microsoft.TemplateEngine.Utils.EqualityExtensions.AllAreTheSame<T, TValue>(this System.Collections.Generic.IEnumerable<T> items, System.Func<T, TValue> selector, System.Collections.Generic.IEqualityComparer<TValue> comparer) -> bool
 ~static Microsoft.TemplateEngine.Utils.EqualityExtensions.AllAreTheSame<T, TValue>(this System.Collections.Generic.IEnumerable<T> items, System.Func<T, TValue> selector, System.Func<TValue, TValue, bool> comparer) -> bool
-~static Microsoft.TemplateEngine.Utils.ExactVersionSpecification.TryParse(string version, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool
 ~static Microsoft.TemplateEngine.Utils.FileFindHelpers.FindFilesAtOrAbovePath(Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem fileSystem, string startPath, string matchPattern, System.Func<string, bool> secondaryFilter = null) -> System.Collections.Generic.IReadOnlyList<string>
 ~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.CombinePaths(this string basePath, params string[] paths) -> string
 ~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.CopyTo(this Microsoft.TemplateEngine.Abstractions.Mount.IDirectory source, string target) -> void
@@ -230,17 +223,15 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.NormalizePath(this string path) -> string
 ~static Microsoft.TemplateEngine.Utils.FileSystemInfoExtensions.PathRelativeTo(this Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo info, Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo relativeTo) -> string
 ~static Microsoft.TemplateEngine.Utils.Glob.Parse(string pattern, bool canBeNameOnlyMatch = true) -> Microsoft.TemplateEngine.Utils.Glob
-~static Microsoft.TemplateEngine.Utils.InstallRequestPathResolution.ExpandMaskedPath(string maskedPath, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings) -> System.Collections.Generic.IEnumerable<string>
+static Microsoft.TemplateEngine.Utils.InstallRequestPathResolution.ExpandMaskedPath(string! maskedPath, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> System.Collections.Generic.IEnumerable<string!>!
 ~static Microsoft.TemplateEngine.Utils.ListExtensions.GroupBy<TElement, TKey>(this System.Collections.Generic.IEnumerable<TElement> elements, System.Func<TElement, TKey> grouper, System.Func<TElement, bool> hasGroupKey, System.Collections.Generic.IEqualityComparer<TKey> comparer = null) -> System.Collections.Generic.IEnumerable<System.Linq.IGrouping<TKey, TElement>>
 ~static Microsoft.TemplateEngine.Utils.ParserExtensions.ConvertToDoubleCurrentOrInvariant(object value) -> double
 ~static Microsoft.TemplateEngine.Utils.ParserExtensions.DoubleTryParseСurrentOrInvariant(string stringValue, out double doubleValue) -> bool
-~static Microsoft.TemplateEngine.Utils.RangeVersionSpecification.TryParse(string range, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool
 ~static Microsoft.TemplateEngine.Utils.RuntimeValueUtil.TryGetRuntimeValue(this Microsoft.TemplateEngine.Abstractions.IParameterSet parameters, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string name, out object value, bool skipEnvironmentVariableSearch = false) -> bool
-~static Microsoft.TemplateEngine.Utils.TemplateParamException.StandardizedMessage(string paramName, string inputValue = null, string dataType = null, string baseMessage = null) -> string
 ~static Microsoft.TemplateEngine.Utils.Timing.Over(Microsoft.Extensions.Logging.ILogger logger, string label) -> Microsoft.TemplateEngine.Utils.Timing
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.CompareVersions(string version1, string version2) -> int?
 ~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.IsVersionWellFormed(string version) -> bool
-~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.TryParseVersionSpecification(string versionString, out Microsoft.TemplateEngine.Abstractions.IVersionSpecification specification) -> bool
+~static Microsoft.TemplateEngine.Utils.VersionStringHelpers.TryParseVersionSpecification(string versionString, out Microsoft.TemplateEngine.Utils.IVersionSpecification specification) -> bool
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent Instance)>
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.LogMessage(string message) -> void
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnCriticalError(string code, string message, string currentFile, long currentPosition) -> void
@@ -248,4 +239,3 @@ static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.TypeFilter(string? 
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnParameterError(Microsoft.TemplateEngine.Abstractions.ITemplateParameter parameter, string receivedValue, string message, out string newValue) -> bool
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnSymbolUsed(string symbol, object value) -> void
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.TryGetHostParamDefault(string paramName, out string value) -> bool
-
