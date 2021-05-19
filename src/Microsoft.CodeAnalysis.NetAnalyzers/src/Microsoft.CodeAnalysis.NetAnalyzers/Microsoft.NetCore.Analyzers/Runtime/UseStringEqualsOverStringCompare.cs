@@ -226,7 +226,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             [DoesNotReturn]
+#pragma warning disable CS8763 // A method marked [DoesNotReturn] should not return.
             protected static void Fail() => Debug.Fail($"'{nameof(GetReplacementExpression)}' must only be called when '{nameof(IsMatch)}' is 'true'.");
+#pragma warning restore CS8763 // A method marked [DoesNotReturn] should not return.
 
             protected SyntaxNode CreateStringEqualsMemberAccessExpression(SyntaxGenerator generator)
             {

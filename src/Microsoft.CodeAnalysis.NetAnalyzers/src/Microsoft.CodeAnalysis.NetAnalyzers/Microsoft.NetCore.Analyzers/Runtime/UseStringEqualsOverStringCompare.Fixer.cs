@@ -52,5 +52,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         }
 
         public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseStringEqualsOverStringCompare.RuleId);
+
+        public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
     }
 }
