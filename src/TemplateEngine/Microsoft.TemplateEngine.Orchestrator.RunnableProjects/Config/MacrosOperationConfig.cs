@@ -17,10 +17,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         // Warning: if there are unknown macro "types", they are quietly ignored here.
         // This applies to both the regular and deferred macros.
-        internal IEnumerable<IOperationProvider> ProcessMacros(IEngineEnvironmentSettings environmentSettings, IComponentManager componentManager, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables, IParameterSet parameters)
+        internal IEnumerable<IOperationProvider> ProcessMacros(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables, IParameterSet parameters)
         {
-            EnsureMacros(componentManager);
-            EnsureDeferredMacros(componentManager);
+            EnsureMacros(environmentSettings.Components);
+            EnsureDeferredMacros(environmentSettings.Components);
 
             ParameterSetter setter = (p, value) =>
             {

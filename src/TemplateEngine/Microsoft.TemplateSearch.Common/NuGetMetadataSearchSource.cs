@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
@@ -19,8 +20,9 @@ namespace Microsoft.TemplateSearch.Common
 
         public override string DisplayName => "NuGet.org";
 
-        public async override Task<bool> TryConfigure(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IManagedTemplatePackage> existingTemplatePackages)
+        public async override Task<bool> TryConfigureAsync(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IManagedTemplatePackage> existingTemplatePackages, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             string searchMetadataFileLocation = Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, _templateDiscoveryMetadataFile);
 
             if (!await _searchInfoFileProvider.TryEnsureSearchFileAsync(environmentSettings, searchMetadataFileLocation).ConfigureAwait(false))

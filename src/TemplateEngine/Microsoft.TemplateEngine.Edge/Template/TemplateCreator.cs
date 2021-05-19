@@ -90,7 +90,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     return resultIfParameterCreationFailed!;
                 }
 
-                ICreationEffects creationEffects = template.Generator.GetCreationEffects(_environmentSettings, template, effectParams, componentManager, targetDir);
+                ICreationEffects creationEffects = await template.Generator.GetCreationEffectsAsync(
+                    _environmentSettings,
+                    template,
+                    effectParams,
+                    targetDir,
+                    cancellationToken).ConfigureAwait(false);
                 IReadOnlyList<IFileChange> changes = creationEffects.FileChanges;
                 IReadOnlyList<IFileChange> destructiveChanges = changes.Where(x => x.ChangeKind != ChangeKind.Create).ToList();
 
@@ -117,7 +122,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
                 if (!dryRun)
                 {
-                    creationResult = await template.Generator.CreateAsync(_environmentSettings, template, creationParams, componentManager, targetDir).ConfigureAwait(false);
+                    creationResult = await template.Generator.CreateAsync(
+                        _environmentSettings,
+                        template,
+                        creationParams,
+                        targetDir,
+                        cancellationToken).ConfigureAwait(false);
                 }
                 return new TemplateCreationResult(
                     status: CreationResultStatus.Success,

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
@@ -22,14 +23,15 @@ namespace Microsoft.TemplateSearch.Common
 
         protected IFileMetadataTemplateSearchCache SearchCache { get; set; }
 
-        public abstract Task<bool> TryConfigure(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IManagedTemplatePackage> existingTemplatePackage);
+        public abstract Task<bool> TryConfigureAsync(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IManagedTemplatePackage> existingTemplatePackages, CancellationToken cancellationToken);
 
-        public Task<IReadOnlyList<ITemplateNameSearchResult>> CheckForTemplateNameMatchesAsync(string searchName)
+        public Task<IReadOnlyList<ITemplateNameSearchResult>> CheckForTemplateNameMatchesAsync(string searchName, CancellationToken cancellationToken)
         {
             if (SearchCache == null)
             {
                 throw new Exception("Search Source is not configured");
             }
+            cancellationToken.ThrowIfCancellationRequested();
 
             IReadOnlyList<ITemplateInfo> templateMatches = SearchCache.GetNameMatchedTemplates(searchName);
             IReadOnlyList<string> templateIdentities = templateMatches.Select(t => t.Identity).ToList();
@@ -60,12 +62,13 @@ namespace Microsoft.TemplateSearch.Common
             return Task.FromResult((IReadOnlyList<ITemplateNameSearchResult>)resultList);
         }
 
-        public Task<IReadOnlyDictionary<string, PackToTemplateEntry>> CheckForTemplatePackMatchesAsync(IReadOnlyList<string> packNameList)
+        public Task<IReadOnlyDictionary<string, PackToTemplateEntry>> CheckForTemplatePackMatchesAsync(IReadOnlyList<string> packNameList, CancellationToken cancellationToken)
         {
             if (SearchCache == null)
             {
                 throw new Exception("Search Source is not configured");
             }
+            cancellationToken.ThrowIfCancellationRequested();
 
             IReadOnlyDictionary<string, PackToTemplateEntry> matchedPacks = SearchCache.GetInfoForNamedPacks(packNameList)
                                     .Where(packInfo => !_packFilter.ShouldPackBeFiltered(packInfo.Key, packInfo.Value.Version))

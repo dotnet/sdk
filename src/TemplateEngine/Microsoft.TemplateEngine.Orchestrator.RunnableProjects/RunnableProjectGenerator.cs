@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -42,10 +43,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return InternalConvertParameterValueToType(environmentSettings, parameter, untypedValue, out valueResolutionError);
         }
 
-        public Task<ICreationResult> CreateAsync(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
+        public Task<ICreationResult> CreateAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            ITemplate templateData,
+            IParameterSet parameters,
+            string targetDirectory,
+            CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
-            ProcessMacros(environmentSettings, componentManager, template.Config.OperationConfig, parameters);
+            ProcessMacros(environmentSettings, template.Config.OperationConfig, parameters);
 
             IVariableCollection variables = VariableCollection.SetupVariables(environmentSettings, parameters, template.Config.OperationConfig.VariableSetup);
             template.Config.Evaluate(parameters, variables, template.ConfigFile);
@@ -53,7 +60,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            GlobalRunSpec runSpec = new GlobalRunSpec(templateData.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.IgnoreFileNames);
+            GlobalRunSpec runSpec = new GlobalRunSpec(templateData.TemplateSourceRoot, environmentSettings.Components, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.IgnoreFileNames);
 
             foreach (FileSourceMatchInfo source in template.Config.Sources)
             {
@@ -71,13 +78,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <param name="environmentSettings">environment settings.</param>
         /// <param name="templateData">the template to be executed.</param>
         /// <param name="parameters">the parameters to be used on template execution.</param>
-        /// <param name="componentManager">the instance of component manager.</param>
         /// <param name="targetDirectory">the output path for the template.</param>
+        /// <param name="cancellationToken">cancellationToken.</param>
         /// <returns>the primary outputs, post actions and file changes that will be made when executing the template with specified parameters.</returns>
-        public ICreationEffects GetCreationEffects(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
+        public Task<ICreationEffects> GetCreationEffectsAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            ITemplate templateData,
+            IParameterSet parameters,
+            string targetDirectory,
+            CancellationToken cancellationToken)
         {
             RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
-            ProcessMacros(environmentSettings, componentManager, template.Config.OperationConfig, parameters);
+            ProcessMacros(environmentSettings, template.Config.OperationConfig, parameters);
 
             IVariableCollection variables = VariableCollection.SetupVariables(environmentSettings, parameters, template.Config.OperationConfig.VariableSetup);
             template.Config.Evaluate(parameters, variables, template.ConfigFile);
@@ -85,7 +97,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            GlobalRunSpec runSpec = new GlobalRunSpec(templateData.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.IgnoreFileNames);
+            GlobalRunSpec runSpec = new GlobalRunSpec(templateData.TemplateSourceRoot, environmentSettings.Components, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.IgnoreFileNames);
             List<IFileChange2> changes = new List<IFileChange2>();
 
             foreach (FileSourceMatchInfo source in template.Config.Sources)
@@ -106,7 +118,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             fileChange.Contents)));
             }
 
-            return new CreationEffects2(changes, GetCreationResult(environmentSettings, template, variables));
+            return Task.FromResult((ICreationEffects)new CreationEffects2(changes, GetCreationResult(environmentSettings, template, variables)));
         }
 
         public IParameterSet GetParametersForTemplate(IEngineEnvironmentSettings environmentSettings, ITemplate template)
@@ -491,20 +503,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // Note the deferred-config macros (generated) are part of the runConfig.Macros
         //      and not in the ComputedMacros.
         //  Possibly make a separate property for the deferred-config macros
-        private static void ProcessMacros(IEngineEnvironmentSettings environmentSettings, IComponentManager componentManager, IGlobalRunConfig runConfig, IParameterSet parameters)
+        private static void ProcessMacros(IEngineEnvironmentSettings environmentSettings, IGlobalRunConfig runConfig, IParameterSet parameters)
         {
             if (runConfig.Macros != null)
             {
                 IVariableCollection varsForMacros = VariableCollection.SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
                 MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
-                macroProcessor.ProcessMacros(environmentSettings, componentManager, runConfig.Macros, varsForMacros, parameters);
+                macroProcessor.ProcessMacros(environmentSettings, runConfig.Macros, varsForMacros, parameters);
             }
 
             if (runConfig.ComputedMacros != null)
             {
                 IVariableCollection varsForMacros = VariableCollection.SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
                 MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
-                macroProcessor.ProcessMacros(environmentSettings, componentManager, runConfig.ComputedMacros, varsForMacros, parameters);
+                macroProcessor.ProcessMacros(environmentSettings, runConfig.ComputedMacros, varsForMacros, parameters);
             }
         }
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
@@ -27,21 +28,22 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         // Search all of the registered sources.
-        public async Task<SearchResults> SearchForTemplatesAsync(IReadOnlyList<IManagedTemplatePackage> existingTemplatePackages, string inputTemplateName)
+        public async Task<SearchResults> SearchForTemplatesAsync(IReadOnlyList<IManagedTemplatePackage> existingTemplatePackages, string inputTemplateName, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             List<TemplateSourceSearchResult> matchesForAllSources = new List<TemplateSourceSearchResult>();
             bool anySearchersConfigured = false;
 
             foreach (ITemplateSearchSource searchSource in _environmentSettings.Components.OfType<ITemplateSearchSource>())
             {
-                if (!await searchSource.TryConfigure(_environmentSettings, existingTemplatePackages).ConfigureAwait(false))
+                if (!await searchSource.TryConfigureAsync(_environmentSettings, existingTemplatePackages, cancellationToken).ConfigureAwait(false))
                 {
                     continue;
                 }
 
                 anySearchersConfigured = true;
 
-                TemplateSourceSearchResult matchesForSource = await GetBestMatchesForSourceAsync(searchSource, inputTemplateName).ConfigureAwait(false);
+                TemplateSourceSearchResult matchesForSource = await GetBestMatchesForSourceAsync(searchSource, inputTemplateName, cancellationToken).ConfigureAwait(false);
 
                 if (matchesForSource.PacksWithMatches.Count > 0)
                 {
@@ -53,9 +55,9 @@ namespace Microsoft.TemplateSearch.Common
         }
 
         // If needed, tweak the return logic - we may want fewer, or different constraints on what is considered a "match" than is used for installed templates.
-        private async Task<TemplateSourceSearchResult> GetBestMatchesForSourceAsync(ITemplateSearchSource searchSource, string templateName)
+        private async Task<TemplateSourceSearchResult> GetBestMatchesForSourceAsync(ITemplateSearchSource searchSource, string templateName, CancellationToken cancellationToken)
         {
-            IReadOnlyList<ITemplateNameSearchResult> nameMatches = await searchSource.CheckForTemplateNameMatchesAsync(templateName).ConfigureAwait(false);
+            IReadOnlyList<ITemplateNameSearchResult> nameMatches = await searchSource.CheckForTemplateNameMatchesAsync(templateName, cancellationToken).ConfigureAwait(false);
 
             IReadOnlyList<ITemplateMatchInfo> templateMatches = _matchFilter(nameMatches);
 

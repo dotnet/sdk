@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Settings;
@@ -114,7 +115,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData(1, null, "pa1_desc", "pa1_manualInstructions0")]
         [InlineData(1, "de-DE", "pa1_desc_de-DE:äÄßöÖüÜ", "pa1_manualInstructions0")]
         [InlineData(1, "tr-TR", "pa1_desc_tr-TR:çÇğĞıIİöÖşŞüÜ", "pa1_manualInstructions0_tr-TR:çÇğĞıIİöÖşŞüÜ")]
-        public void TestLocalizedPostActionFields(
+        public async Task TestLocalizedPostActionFields(
             int postActionIndex,
             string locale,
             string expectedDescription,
@@ -126,13 +127,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.NotNull(template);
             Assert.NotNull(template.Generator);
 
-            ICreationEffects effects = template.Generator.GetCreationEffects(
+            ICreationEffects effects = await template.Generator.GetCreationEffectsAsync(
                 environmentSettings,
                 template,
                 template.Generator.GetParametersForTemplate(environmentSettings, template),
-                environmentSettings.Components,
-                Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
-                );
+                Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()),
+                default);
 
             Assert.NotNull(effects);
             Assert.NotNull(effects.CreationResult);

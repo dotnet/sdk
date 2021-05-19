@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
@@ -34,13 +35,14 @@ namespace Microsoft.TemplateSearch.Common
 
         protected SearchResults SearchResults { get; set; }
 
-        public async Task<SearchResults> SearchAsync(IReadOnlyList<ITemplatePackage> existingTemplatePackage)
+        public async Task<SearchResults> SearchAsync(IReadOnlyList<ITemplatePackage> existingTemplatePackages, CancellationToken cancellationToken)
         {
-            await EnsureSearchResultsAsync(existingTemplatePackage.OfType<IManagedTemplatePackage>().ToArray()).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            await EnsureSearchResultsAsync(existingTemplatePackages.OfType<IManagedTemplatePackage>().ToArray(), cancellationToken).ConfigureAwait(false);
             return SearchResults;
         }
 
-        protected async Task EnsureSearchResultsAsync(IReadOnlyList<IManagedTemplatePackage> existingTemplatePackage)
+        protected async Task EnsureSearchResultsAsync(IReadOnlyList<IManagedTemplatePackage> existingTemplatePackages, CancellationToken cancellationToken)
         {
             if (_isSearchPerformed)
             {
@@ -49,7 +51,7 @@ namespace Microsoft.TemplateSearch.Common
 
             TemplateSearcher searcher = new TemplateSearcher(EnvironmentSettings, DefaultLanguage, MatchFilter);
 
-            SearchResults = await searcher.SearchForTemplatesAsync(existingTemplatePackage, InputTemplateName).ConfigureAwait(false);
+            SearchResults = await searcher.SearchForTemplatesAsync(existingTemplatePackages, InputTemplateName, cancellationToken).ConfigureAwait(false);
 
             _isSearchPerformed = true;
         }
