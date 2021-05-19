@@ -180,13 +180,13 @@ public class Testopolis
         [MemberData(nameof(VB_StringCompareExpressionsTestData))]
         public Task StringCompareResult_CompareToNonLiteralZero_NoDiagnostic_VB(string expression)
         {
-            string code = $@"
+            var code = $@"
 Imports System
 
 Public Class Testopolis
     Private Const Zero As Integer = 0
 
-    Public Sub Method(x As String, y As String) As Boolean
+    Public Sub Method(x As String, y As String)
         Dim a = {expression} = Zero
         Dim b = {expression} <> Zero
         Dim c = Zero = {expression}
