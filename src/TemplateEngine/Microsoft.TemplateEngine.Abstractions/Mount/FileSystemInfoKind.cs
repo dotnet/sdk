@@ -3,9 +3,19 @@
 
 namespace Microsoft.TemplateEngine.Abstractions.Mount
 {
+    /// <summary>
+    /// Defines the kind of a <see cref="IFileSystemInfo"/> entry.
+    /// </summary>
     public enum FileSystemInfoKind
     {
+        /// <summary>
+        /// Entry is a file.
+        /// </summary>
         File,
+
+        /// <summary>
+        /// Entry is a directory.
+        /// </summary>
         Directory
     }
 }

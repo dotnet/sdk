@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using System;
+
 namespace Microsoft.TemplateEngine.Abstractions
 {
     /// <summary>
@@ -24,6 +26,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Gets the file content.
         /// </summary>
+        [Obsolete("File contents are no longer available, the property always returns an empty byte array.")]
         byte[] Contents { get; }
     }
 

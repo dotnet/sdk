@@ -8,6 +8,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
+    /// <summary>
+    /// Defines post action supported by the template.
+    /// </summary>
     public interface IPostAction
     {
         /// <summary>
@@ -22,7 +25,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         Guid ActionId { get; }
 
         /// <summary>
-        /// Gets a value indicating wheather the template instantiation should continue
+        /// Gets a value indicating whether the template instantiation should continue
         /// in case of an error with this post action.
         /// </summary>
         bool ContinueOnError { get; }

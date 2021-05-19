@@ -7,6 +7,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
+    /// <summary>
+    /// Defines <see cref="IPostAction"/> localization model.
+    /// </summary>
     public interface IPostActionLocalizationModel
     {
         /// <summary>

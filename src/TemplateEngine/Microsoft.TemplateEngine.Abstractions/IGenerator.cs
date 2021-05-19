@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     public interface IGenerator : IIdentifiedComponent
     {
         /// <summary>
-        /// Generates <paramref name="template"/> with given parameters.
+        /// Generates the <paramref name="template"/> with given parameters.
         /// </summary>
         /// <param name="environmentSettings">template engine environment settings.</param>
         /// <param name="template">template to generate.</param>
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Abstractions
             CancellationToken cancellationToken);
 
         /// <summary>
-        /// Dry runs <paramref name="template"/> with given parameters.
+        /// Dry runs the <paramref name="template"/> with given parameters.
         /// </summary>
         /// <param name="environmentSettings">template engine environment settings.</param>
         /// <param name="template">template to dry run.</param>
@@ -47,7 +47,10 @@ namespace Microsoft.TemplateEngine.Abstractions
             CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns <see cref="IParameterSet"/> for <paramref name="template"/>.
+        /// Returns a <see cref="IParameterSet"/> for the given <paramref name="template"/>.
+        /// This method returns the list of input parameters that can be set by the host / Edge before running the template.
+        /// After setting the values the host should pass <see cref="IParameterSet"/> to <see cref="GetCreationEffectsAsync(IEngineEnvironmentSettings, ITemplate, IParameterSet, string, CancellationToken)"/> or <see cref="CreateAsync(IEngineEnvironmentSettings, ITemplate, IParameterSet, string, CancellationToken)"/> methods.
+        /// Host may use <see cref="ConvertParameterValueToType(IEngineEnvironmentSettings, ITemplateParameter, string, out bool)"/> to convert input value to required parameter type.
         /// </summary>
         /// <param name="environmentSettings">template engine environment settings.</param>
         /// <param name="template">template to get parameters from.</param>
@@ -55,7 +58,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         IParameterSet GetParametersForTemplate(IEngineEnvironmentSettings environmentSettings, ITemplate template);
 
         /// <summary>
-        /// Gets <see cref="ITemplate"/> from  given <see cref="IFileSystemInfo" /> configuration entry.
+        /// Gets an <see cref="ITemplate"/> from the given <see cref="IFileSystemInfo" /> configuration entry.
         /// </summary>
         /// <param name="config">configuration file.</param>
         /// <param name="template">loaded template.</param>
@@ -66,7 +69,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig, IFile hostTemplateConfigFile, string baselineName = null);
 
         /// <summary>
-        /// Gets <see cref="ITemplate"/>s from given <see cref="IFileSystemInfo" /> from given mount point <paramref name="source"/>.
+        /// Scans the given mount point <paramref name="source"/> for templates and returns the list of <see cref="ITemplate"/>s that are found.
         /// </summary>
         /// <param name="source">the mount point to load templates from.</param>
         /// <param name="localizations">localization information for templates.</param>
@@ -74,13 +77,13 @@ namespace Microsoft.TemplateEngine.Abstractions
         IList<ITemplate> GetTemplatesAndLangpacksFromDir(IMountPoint source, out IList<ILocalizationLocator> localizations);
 
         /// <summary>
-        /// Converts <paramref name="untypedValue"/> to type defined for <paramref name="parameter"/>.
+        /// Converts the given <paramref name="untypedValue"/> to the type of <paramref name="parameter"/>.
         /// </summary>
         /// <param name="environmentSettings">template engine environment settings.</param>
         /// <param name="parameter">template parameter defining the type.</param>
         /// <param name="untypedValue">the value to be converted to parameter type.</param>
         /// <param name="valueResolutionError">true if value could not be converted, false otherwise.</param>
-        /// <returns>the converted value to type of <paramref name="parameter"/> or null if value cannot be converted.</returns>
+        /// <returns>the converted <paramref name="untypedValue"/> value to the type of <paramref name="parameter"/> or null if the value cannot be converted.</returns>
         object ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError);
     }
 }

@@ -8,6 +8,10 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Abstractions.Installer
 {
+    /// <summary>
+    /// Template package installer interface.
+    /// To implement installer compatible with built-in template package providers, implement this interface.
+    /// </summary>
     public interface IInstaller
     {
         /// <summary>

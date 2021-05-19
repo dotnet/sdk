@@ -115,7 +115,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             Path.Combine(source.Source, fileChange.SourceRelativePath),
                             Path.Combine(source.Target, fileChange.TargetRelativePath),
                             fileChange.ChangeKind,
+#pragma warning disable CS0618 // Type or member is obsolete
                             fileChange.Contents)));
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             return Task.FromResult((ICreationEffects)new CreationEffects2(changes, GetCreationResult(environmentSettings, template, variables)));

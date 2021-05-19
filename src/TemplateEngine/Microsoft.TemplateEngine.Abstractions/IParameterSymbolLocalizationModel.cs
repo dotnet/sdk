@@ -7,8 +7,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
+    /// <summary>
+    /// Defines a parameter localization model.
+    /// </summary>
     public interface IParameterSymbolLocalizationModel
     {
+        /// <summary>
+        /// Gets the parameter name.
+        /// </summary>
         string Name { get; }
 
         /// <summary>

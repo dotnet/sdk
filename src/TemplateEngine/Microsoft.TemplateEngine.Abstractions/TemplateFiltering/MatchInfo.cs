@@ -12,6 +12,12 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateFiltering
     /// </summary>
     public class MatchInfo
     {
+        /// <summary>
+        /// Creates <see cref="MatchInfo"/> instance.
+        /// </summary>
+        /// <param name="name">the name for the match. See default names in <see cref="BuiltIn"/>.</param>
+        /// <param name="value">the value matched for.</param>
+        /// <param name="kind">the match kind between <see cref="ITemplateInfo"/> value and <paramref name="value"/>.</param>
         public MatchInfo(string name, string? value, MatchKind kind)
         {
             _ = string.IsNullOrWhiteSpace(name) ? throw new ArgumentException($"{nameof(name)} should not be null or empty") : false;

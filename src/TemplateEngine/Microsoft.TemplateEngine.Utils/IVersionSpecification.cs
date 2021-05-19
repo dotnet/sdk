@@ -6,12 +6,12 @@
 namespace Microsoft.TemplateEngine.Utils
 {
     /// <summary>
-    /// Defines version specification used in template definition.
+    /// Defines a version specification used in a template definition.
     /// </summary>
     public interface IVersionSpecification
     {
         /// <summary>
-        /// Checks is version is valid.
+        /// Checks if the specified version is valid.
         /// </summary>
         /// <param name="versionToCheck">the version to check.</param>
         /// <returns></returns>

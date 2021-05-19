@@ -24,6 +24,7 @@ namespace Microsoft.TemplateEngine.Core
 
         public ChangeKind ChangeKind { get; }
 
+        //this property is always empty now - never set.
         public byte[] Contents { get; }
     }
 }

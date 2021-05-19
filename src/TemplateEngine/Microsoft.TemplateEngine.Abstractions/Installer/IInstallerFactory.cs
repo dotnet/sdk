@@ -3,6 +3,10 @@
 
 namespace Microsoft.TemplateEngine.Abstractions.Installer
 {
+    /// <summary>
+    /// Template package installer factory interface.
+    /// Implement this interface to register installer supported by built-in providers.
+    /// </summary>
     public interface IInstallerFactory : IIdentifiedComponent
     {
         /// <summary>

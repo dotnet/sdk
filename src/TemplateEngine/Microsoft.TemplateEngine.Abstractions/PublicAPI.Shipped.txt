@@ -261,8 +261,8 @@ Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Suggested = 1 ->
 ~const Microsoft.TemplateEngine.Abstractions.Installer.InstallerConstants.NuGetSourcesKey = "NuGetSources" -> string
 ~Microsoft.TemplateEngine.Abstractions.IAllowDefaultIfOptionWithoutValue.DefaultIfOptionWithoutValue.get -> string
 ~Microsoft.TemplateEngine.Abstractions.IAllowDefaultIfOptionWithoutValue.DefaultIfOptionWithoutValue.set -> void
-~Microsoft.TemplateEngine.Abstractions.IBaselineInfo.DefaultOverrides.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
-~Microsoft.TemplateEngine.Abstractions.IBaselineInfo.Description.get -> string
+Microsoft.TemplateEngine.Abstractions.IBaselineInfo.DefaultOverrides.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Abstractions.IBaselineInfo.Description.get -> string?
 Microsoft.TemplateEngine.Abstractions.IComponentManager.OfType<T>() -> System.Collections.Generic.IEnumerable<T!>!
 Microsoft.TemplateEngine.Abstractions.IComponentManager.Register(System.Type! type) -> void
 Microsoft.TemplateEngine.Abstractions.IComponentManager.RegisterMany(System.Collections.Generic.IEnumerable<System.Type!>! typeList) -> void
@@ -334,7 +334,7 @@ Microsoft.TemplateEngine.Abstractions.IComponentManager.TryGetComponent<T>(Syste
 ~Microsoft.TemplateEngine.Abstractions.ITemplate.TemplateSourceRoot.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory
 ~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateDirectories(string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IDirectory>
 ~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFiles(string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFile>
-~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFileSystemInfos(string patten, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo>
+~Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFileSystemInfos(string pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo>
 ~Microsoft.TemplateEngine.Abstractions.Mount.IFile.OpenRead() -> System.IO.Stream
 ~Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo.FullPath.get -> string
 ~Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo.MountPoint.get -> Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint
@@ -380,4 +380,3 @@ Microsoft.TemplateEngine.Abstractions.IComponentManager.TryGetComponent<T>(Syste
 ~static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest request, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string localizedFailureMessage) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult
 ~static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest request, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult
 ~static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.FromInstallResult(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest request, Microsoft.TemplateEngine.Abstractions.Installer.InstallResult installResult) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult
-
