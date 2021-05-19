@@ -4,6 +4,7 @@ using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -15,8 +16,6 @@ using Microsoft.CodeAnalysis.Operations;
 
 using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 using RequiredSymbols = Microsoft.NetCore.Analyzers.Runtime.UseStringEqualsOverStringCompare.RequiredSymbols;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -34,27 +33,31 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             var root = await document.GetSyntaxRootAsync(token).ConfigureAwait(false);
 
-            if (semanticModel.GetOperation(root.FindNode(context.Span, getInnermostNodeForTie: true), token) is not IBinaryOperation operation)
+            if (semanticModel.GetOperation(root.FindNode(context.Span, getInnermostNodeForTie: true), token) is not IBinaryOperation violation)
                 return;
 
-            var selectors = GetSelectors(symbols);
+            //  Get the replacer that applies to the reported violation. Bail out if no replacer 
+            //  matches the reported violation.
+            var replacer = GetOperationReplacers(symbols).FirstOrDefault(x => x.IsMatch(violation));
+            if (replacer is null)
+                return;
 
-            foreach (var selector in selectors)
+            var codeAction = CodeAction.Create(
+                Resx.UseStringEqualsOverStringCompareCodeFixTitle,
+                CreateChangedDocument,
+                nameof(Resx.UseStringEqualsOverStringCompareCodeFixTitle));
+            context.RegisterCodeFix(codeAction, context.Diagnostics);
+            return;
+
+            //  Local functions
+
+            async Task<Document> CreateChangedDocument(CancellationToken token)
             {
-                if (selector.IsMatch(operation))
-                {
-                    var codeAction = CodeAction.Create(
-                        Resx.UseStringEqualsOverStringCompareCodeFixTitle,
-                        async token =>
-                        {
-                            var editor = await DocumentEditor.CreateAsync(document, token).ConfigureAwait(false);
-                            var replacementNode = selector.GetReplacementExpression(operation, editor.Generator);
-                            editor.ReplaceNode(operation.Syntax, replacementNode);
-                            return editor.GetChangedDocument();
-                        }, Resx.UseStringEqualsOverStringCompareCodeFixTitle);
-                    context.RegisterCodeFix(codeAction, context.Diagnostics);
-                    break;
-                }
+                var editor = await DocumentEditor.CreateAsync(document, token).ConfigureAwait(false);
+                var replacementNode = replacer.CreateReplacementExpression(violation, editor.Generator);
+                editor.ReplaceNode(violation.Syntax, replacementNode);
+
+                return editor.GetChangedDocument();
             }
         }
 
@@ -62,45 +65,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
-        private static ImmutableArray<OperationSelector> GetSelectors(RequiredSymbols symbols)
+        private static ImmutableArray<OperationReplacer> GetOperationReplacers(RequiredSymbols symbols)
         {
-            return ImmutableArray.Create<OperationSelector>(
-                new StringStringSelector(symbols),
-                new StringStringBoolSelector(symbols),
-                new StringStringStringComparisonSelector(symbols));
+            return ImmutableArray.Create<OperationReplacer>(
+                new StringStringCaseReplacer(symbols),
+                new StringStringBoolReplacer(symbols),
+                new StringStringStringComparisonReplacer(symbols));
         }
 
         /// <summary>
-        /// Gets a function that selects an operation that should have a diagnostic reported for it.
-        /// We have to use this round-about way of implementing the analyzer because <see cref="OperationSelector"/> has a method
-        /// that takes a <see cref="SyntaxGenerator"/>, and analyzers aren't allowed to reference that type in any way. Having the
-        /// analyzer use the <see cref="OperationSelector"/>s indirectly via this method avoids having duplicated logic in the analyzer and fixer.
+        /// Base class for an object that generate the replacement code for a reported violation.
         /// </summary>
-        /// <param name="symbols"></param>
-        /// <returns></returns>
-        internal static Func<IOperation, bool> GetOperationSelector(RequiredSymbols symbols)
+        private abstract class OperationReplacer
         {
-            var selectors = GetSelectors(symbols);
-
-            return operation =>
-            {
-                foreach (var selector in selectors)
-                {
-                    if (selector.IsMatch(operation))
-                        return true;
-                }
-
-                return false;
-            };
-        }
-
-        /// <summary>
-        /// Selects an equals or not-equals operation where one argument is a literal zero, and the other argument
-        /// is an eligible <c>string.Compare</c> invocation.
-        /// </summary>
-        private abstract class OperationSelector
-        {
-            protected OperationSelector(RequiredSymbols symbols)
+            protected OperationReplacer(RequiredSymbols symbols)
             {
                 Symbols = symbols;
             }
@@ -108,214 +86,132 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             protected RequiredSymbols Symbols { get; }
 
             /// <summary>
-            /// Indicates whether the specified <see cref="IOperation"/> matches the current <see cref="OperationSelector"/>
+            /// Indicates whether the current <see cref="OperationReplacer"/> applies to the specified violation.
             /// </summary>
-            /// <param name="compareResultToLiteralZero"></param>
+            /// <param name="violation">The <see cref="IBinaryOperation"/> at the location reported by the analyzer.</param>
+            /// <returns>True if the current <see cref="OperationReplacer"/> applies to the specified violation.</returns>
+            public abstract bool IsMatch(IBinaryOperation violation);
+
+            /// <summary>
+            /// Creates a replacement node for a violation that the current <see cref="OperationReplacer"/> applies to.
+            /// Asserts if the current <see cref="OperationReplacer"/> does not apply to the specified violation.
+            /// </summary>
+            /// <param name="violation">The <see cref="IBinaryOperation"/> obtained at the location reported by the analyzer.
+            /// <see cref="IsMatch(IBinaryOperation)"/> must return <see langword="true"/> for this operation.</param>
+            /// <param name="generator"></param>
             /// <returns></returns>
-            public abstract bool IsMatch(IOperation compareResultToLiteralZero);
+            public abstract SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator);
 
-            /// <summary>
-            /// Creates a replacement expression for the specified matching <see cref="IOperation"/>. Asserts if
-            /// <see cref="IsMatch(IOperation)"/> returns <see langword="false" /> for the specified <see cref="IOperation"/>.
-            /// </summary>
-            /// <param name="compareResultToLiteralZero">An <see cref="IOperation"/> that is matched by the current <see cref="OperationSelector"/></param>
-            /// <param name="generator">The <see cref="SyntaxGenerator"/> to use.</param>
-            /// <returns>The replacement expression to be used by the code fixer.</returns>
-            public abstract SyntaxNode GetReplacementExpression(IOperation compareResultToLiteralZero, SyntaxGenerator generator);
-
-            /// <summary>
-            /// Tries to get an invocation operation that is being compared to a literal zero.
-            /// </summary>
-            /// <param name="compareResultToLiteralZero">An operation that is potentially a comparison of an invocation with a literal zero.</param>
-            /// <param name="invocation">The invocation operation.</param>
-            /// <returns>True if the specified operation is an equals or not-equals operation that compares a literal zero to 
-            /// any invocation operation.</returns>
-            protected static bool TryGetInvocationFromComparisonWithLiteralZero(IOperation compareResultToLiteralZero, [NotNullWhen(true)] out IInvocationOperation? invocation)
-            {
-                if (compareResultToLiteralZero is IBinaryOperation binaryOperation &&
-                    binaryOperation.OperatorKind is BinaryOperatorKind.Equals or BinaryOperatorKind.NotEquals)
-                {
-                    if (TryConvertOperands(binaryOperation.LeftOperand, binaryOperation.RightOperand, out invocation) ||
-                        TryConvertOperands(binaryOperation.RightOperand, binaryOperation.LeftOperand, out invocation))
-                    {
-                        return true;
-                    }
-                }
-
-                invocation = default;
-                return false;
-
-                //  Local functions
-
-                static bool TryConvertOperands(IOperation first, IOperation second, [NotNullWhen(true)] out IInvocationOperation? result)
-                {
-                    if (first is IInvocationOperation invocation &&
-                        second is ILiteralOperation literal &&
-                        literal.ConstantValue.HasValue &&
-                        literal.ConstantValue.Value is int integer &&
-                        integer is 0)
-                    {
-                        result = invocation;
-                        return true;
-                    }
-
-                    result = default;
-                    return false;
-                }
-            }
-
-            protected static IInvocationOperation GetInvocationFromComparisonWithLiteralZero(IOperation compareResultToLiteralZero)
-            {
-                if (!TryGetInvocationFromComparisonWithLiteralZero(compareResultToLiteralZero, out var invocation))
-                    Fail();
-
-                return invocation;
-            }
-
-            protected static bool IsNotEqualsOperation(IOperation operation)
-            {
-                return operation is IBinaryOperation binaryOperation &&
-                    binaryOperation.OperatorKind is BinaryOperatorKind.NotEquals;
-            }
-
-            [DoesNotReturn]
-#pragma warning disable CS8763 // A method marked [DoesNotReturn] should not return.
-            protected static void Fail() => Debug.Fail($"'{nameof(GetReplacementExpression)}' must only be called when '{nameof(IsMatch)}' is 'true'.");
-#pragma warning restore CS8763 // A method marked [DoesNotReturn] should not return.
-
-            protected SyntaxNode CreateStringEqualsMemberAccessExpression(SyntaxGenerator generator)
+            protected SyntaxNode CreateEqualsMemberAccess(SyntaxGenerator generator)
             {
                 var stringTypeExpression = generator.TypeExpressionForStaticMemberAccess(Symbols.StringType);
                 return generator.MemberAccessExpression(stringTypeExpression, nameof(string.Equals));
             }
-        }
 
-        /// <summary>
-        /// Selects <see cref="IOperation"/>s that satisfy all of the following:
-        /// <list type="bullet">
-        /// <item>Is an equals or not-equals operation</item>
-        /// <item>One operand is a literal zero</item>
-        /// <item>The other operand is an invocation of <see cref="string.Compare(string, string)"/></item>
-        /// </list>
-        /// </summary>
-        private sealed class StringStringSelector : OperationSelector
-        {
-            public StringStringSelector(RequiredSymbols symbols)
-                : base(symbols)
-            { }
-
-            public override bool IsMatch(IOperation compareResultToLiteralZero)
+            protected static IInvocationOperation GetInvocation(IBinaryOperation violation)
             {
-                return TryGetInvocationFromComparisonWithLiteralZero(compareResultToLiteralZero, out var invocation) &&
-                    invocation.TargetMethod.Equals(Symbols.CompareStringString, SymbolEqualityComparer.Default);
+                var result = UseStringEqualsOverStringCompare.GetInvocationFromEqualityCheckWithLiteralZero(violation);
+
+                RoslynDebug.Assert(result is not null);
+
+                return result;
             }
 
-            public override SyntaxNode GetReplacementExpression(IOperation compareResultToLiteralZero, SyntaxGenerator generator)
+            protected static SyntaxNode InvertIfNotEquals(SyntaxNode stringEqualsInvocationExpression, IBinaryOperation equalsOrNotEqualsOperation, SyntaxGenerator generator)
             {
-                RoslynDebug.Assert(IsMatch(compareResultToLiteralZero));
-
-                var invocation = GetInvocationFromComparisonWithLiteralZero(compareResultToLiteralZero);
-                var equalsMemberAccessExpression = CreateStringEqualsMemberAccessExpression(generator);
-                var equalsInvocationExpression = generator.InvocationExpression(
-                    equalsMemberAccessExpression,
-                    invocation.Arguments.GetArgumentsInParameterOrder().Select(x => x.Value.Syntax));
-
-                return IsNotEqualsOperation(compareResultToLiteralZero) ?
-                    generator.LogicalNotExpression(equalsInvocationExpression) :
-                    equalsInvocationExpression;
+                return equalsOrNotEqualsOperation.OperatorKind is BinaryOperatorKind.NotEquals ?
+                    generator.LogicalNotExpression(stringEqualsInvocationExpression) :
+                    stringEqualsInvocationExpression;
             }
         }
 
         /// <summary>
-        /// Selects <see cref="IOperation"/>s that satisfy all of the following:
-        /// <list type="bullet">
-        /// <item>Is an equals or not-equals operation</item>
-        /// <item>One operand is a literal zero</item>
-        /// <item>The other operand is an invocation of <see cref="string.Compare(string, string, bool)"/></item>
-        /// <item>The <see langword="bool"/> argument is a literal</item>
-        /// </list>
+        /// Replaces <see cref="string.Compare(string, string)"/> violations.
         /// </summary>
-        private sealed class StringStringBoolSelector : OperationSelector
+        private sealed class StringStringCaseReplacer : OperationReplacer
         {
-            public StringStringBoolSelector(RequiredSymbols symbols)
+            public StringStringCaseReplacer(RequiredSymbols symbols)
                 : base(symbols)
             { }
 
-            public override bool IsMatch(IOperation compareResultToLiteralZero)
+            public override bool IsMatch(IBinaryOperation violation) => UseStringEqualsOverStringCompare.IsStringStringCase(violation, Symbols);
+
+            public override SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator)
             {
-                //  The 'ignoreCase' bool argument of string.Compare must be a literal.
-                return TryGetInvocationFromComparisonWithLiteralZero(compareResultToLiteralZero, out var invocation) &&
-                    invocation.TargetMethod.Equals(Symbols.CompareStringStringBool, SymbolEqualityComparer.Default) &&
-                    invocation.Arguments.GetArgumentForParameterAtIndex(2).Value is ILiteralOperation boolLiteral &&
-                    boolLiteral.ConstantValue.HasValue &&
-                    boolLiteral.ConstantValue.Value is bool;
+                RoslynDebug.Assert(IsMatch(violation));
+
+                var compareInvocation = GetInvocation(violation);
+                var equalsInvocationSyntax = generator.InvocationExpression(
+                    CreateEqualsMemberAccess(generator),
+                    compareInvocation.Arguments.GetArgumentsInParameterOrder().Select(x => x.Value.Syntax));
+
+                return InvertIfNotEquals(equalsInvocationSyntax, violation, generator);
             }
+        }
 
-            public override SyntaxNode GetReplacementExpression(IOperation compareResultToLiteralZero, SyntaxGenerator generator)
+        /// <summary>
+        /// Replaces <see cref="string.Compare(string, string, bool)"/> violations.
+        /// </summary>
+        private sealed class StringStringBoolReplacer : OperationReplacer
+        {
+            public StringStringBoolReplacer(RequiredSymbols symbols)
+                : base(symbols)
+            { }
+
+            public override bool IsMatch(IBinaryOperation violation) => UseStringEqualsOverStringCompare.IsStringStringBoolCase(violation, Symbols);
+
+            public override SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator)
             {
-                RoslynDebug.Assert(IsMatch(compareResultToLiteralZero));
+                RoslynDebug.Assert(IsMatch(violation));
 
-                var invocation = GetInvocationFromComparisonWithLiteralZero(compareResultToLiteralZero);
+                var compareInvocation = GetInvocation(violation);
 
-                //  'IsMatch' rejects operations where the 'ignoreCase' argument is not a literal.
-                var ignoreCaseLiteral = (ILiteralOperation)invocation.Arguments.GetArgumentForParameterAtIndex(2).Value;
+                //  We know that the 'ignoreCase' argument in 'string.Compare(string, string, bool)' is a boolean literal
+                //  because we've asserted that 'IsMatch' returns true.
+                var ignoreCaseLiteral = (ILiteralOperation)compareInvocation.Arguments.GetArgumentForParameterAtIndex(2).Value;
 
-                var equalsMemberAccessExpression = CreateStringEqualsMemberAccessExpression(generator);
-                var stringComparisonTypeExpression = generator.TypeExpressionForStaticMemberAccess(Symbols.StringComparisonType);
-
-                //  Convert 'ignoreCase' boolean argument to equivalent StringComparison value.
+                //  If the violation contains a call to 'string.Compare(x, y, true)' then we
+                //  replace it with a call to 'string.Equals(x, y, StringComparison.CurrentCultureIgnoreCase)'.
+                //  If the violation contains a call to 'string.Compare(x, y, false)' then we
+                //  replace it with a call to 'string.Equals(x, y, StringComparison.CurrentCulture)'. 
                 var stringComparisonEnumMemberName = (bool)ignoreCaseLiteral.ConstantValue.Value ?
                     nameof(StringComparison.CurrentCultureIgnoreCase) :
                     nameof(StringComparison.CurrentCulture);
-                var stringComparisonEnumMemberAccessExpression = generator.MemberAccessExpression(stringComparisonTypeExpression, stringComparisonEnumMemberName);
+                var stringComparisonMemberAccessSyntax = generator.MemberAccessExpression(
+                    generator.TypeExpressionForStaticMemberAccess(Symbols.StringComparisonType),
+                    stringComparisonEnumMemberName);
 
-                var equalsInvocationExpression = generator.InvocationExpression(
-                    equalsMemberAccessExpression,
-                    invocation.Arguments.GetArgumentForParameterAtIndex(0).Value.Syntax,
-                    invocation.Arguments.GetArgumentForParameterAtIndex(1).Value.Syntax,
-                    stringComparisonEnumMemberAccessExpression);
+                var equalsInvocationSyntax = generator.InvocationExpression(
+                    CreateEqualsMemberAccess(generator),
+                    compareInvocation.Arguments.GetArgumentForParameterAtIndex(0).Value.Syntax,
+                    compareInvocation.Arguments.GetArgumentForParameterAtIndex(1).Value.Syntax,
+                    stringComparisonMemberAccessSyntax);
 
-                return IsNotEqualsOperation(compareResultToLiteralZero) ?
-                    generator.LogicalNotExpression(equalsInvocationExpression) :
-                    equalsInvocationExpression;
+                return InvertIfNotEquals(equalsInvocationSyntax, violation, generator);
             }
         }
 
         /// <summary>
-        /// Selects <see cref="IOperation"/>s that satisfy all of the following:
-        /// <list type="bullet">
-        /// <item>Is an equals or not-equals operation</item>
-        /// <item>One operand is a literal zero</item>
-        /// <item>The other operand is an invocation of <see cref="string.Compare(string, string, StringComparison)"/></item>
-        /// </list>
+        /// Replaces <see cref="string.Compare(string, string, StringComparison)"/> violations.
         /// </summary>
-        private sealed class StringStringStringComparisonSelector : OperationSelector
+        private sealed class StringStringStringComparisonReplacer : OperationReplacer
         {
-            public StringStringStringComparisonSelector(RequiredSymbols symbols)
+            public StringStringStringComparisonReplacer(RequiredSymbols symbols)
                 : base(symbols)
             { }
 
-            public override bool IsMatch(IOperation compareResultToLiteralZero)
+            public override bool IsMatch(IBinaryOperation violation) => UseStringEqualsOverStringCompare.IsStringStringStringComparisonCase(violation, Symbols);
+
+            public override SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator)
             {
-                return TryGetInvocationFromComparisonWithLiteralZero(compareResultToLiteralZero, out var invocation) &&
-                    invocation.TargetMethod.Equals(Symbols.CompareStringStringStringComparison, SymbolEqualityComparer.Default);
-            }
+                RoslynDebug.Assert(IsMatch(violation));
 
-            public override SyntaxNode GetReplacementExpression(IOperation compareResultToLiteralZero, SyntaxGenerator generator)
-            {
-                RoslynDebug.Assert(IsMatch(compareResultToLiteralZero));
-
-                var invocation = GetInvocationFromComparisonWithLiteralZero(compareResultToLiteralZero);
-
-                var equalsMemberAccessExpression = CreateStringEqualsMemberAccessExpression(generator);
-
-                var equalsInvocationExpression = generator.InvocationExpression(
-                    equalsMemberAccessExpression,
+                var invocation = GetInvocation(violation);
+                var equalsInvocationSyntax = generator.InvocationExpression(
+                    CreateEqualsMemberAccess(generator),
                     invocation.Arguments.GetArgumentsInParameterOrder().Select(x => x.Value.Syntax));
 
-                return IsNotEqualsOperation(compareResultToLiteralZero) ?
-                    generator.LogicalNotExpression(equalsInvocationExpression) :
-                    equalsInvocationExpression;
+                return InvertIfNotEquals(equalsInvocationSyntax, violation, generator);
             }
         }
     }
