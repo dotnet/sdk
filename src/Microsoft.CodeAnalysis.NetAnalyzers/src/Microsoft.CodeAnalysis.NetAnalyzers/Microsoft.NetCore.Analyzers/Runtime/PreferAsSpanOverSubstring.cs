@@ -52,6 +52,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
 
             context.RegisterOperationBlockStartAction(OnOperationBlockStart);
+            return;
+
+            //  Local functions
 
             void OnOperationBlockStart(OperationBlockStartAnalysisContext context)
             {
@@ -79,6 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             context.ReportDiagnostic(diagnostic);
                         }
                     }
+
                     invocations.Free(context.CancellationToken);
                 });
             }
@@ -114,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             //  "better" if it allows more Substring calls to be replaced with AsSpan calls.
             var bestCandidates = ImmutableArray.CreateBuilder<IMethodSymbol>();
             int resultQuality = 0;
-            var candidates = GetAllAccessibleOverloadsIncludingSelf(invocation, cancellationToken);
+            var candidates = GetAllAccessibleOverloadsAtInvocationCallSite(invocation, cancellationToken);
             foreach (var candidate in candidates)
             {
                 int quality = EvaluateCandidateQuality(symbols, isSubstringLookup, invocation, candidate);
@@ -168,7 +172,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private static IEnumerable<IMethodSymbol> GetAllAccessibleOverloadsIncludingSelf(IInvocationOperation invocation, CancellationToken cancellationToken)
+        private static IEnumerable<IMethodSymbol> GetAllAccessibleOverloadsAtInvocationCallSite(IInvocationOperation invocation, CancellationToken cancellationToken)
         {
             var method = invocation.TargetMethod;
             var model = invocation.SemanticModel;
