@@ -29,32 +29,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             return mountPoint.FileInfo(configFile);
         }
 
-        public static IComponentManager SetupMockComponentManager()
-        {
-            MockComponentManager components = new MockComponentManager();
-
-            components.Register(typeof(CaseChangeMacro));
-            components.Register(typeof(ConstantMacro));
-            components.Register(typeof(EvaluateMacro));
-            components.Register(typeof(GuidMacro));
-            components.Register(typeof(NowMacro));
-            components.Register(typeof(RandomMacro));
-            components.Register(typeof(RegexMacro));
-            components.Register(typeof(SwitchMacro));
-            components.Register(typeof(BalancedNestingConfig));
-            components.Register(typeof(ConditionalConfig));
-            components.Register(typeof(FlagsConfig));
-            components.Register(typeof(IncludeConfig));
-            components.Register(typeof(RegionConfig));
-            components.Register(typeof(ReplacementConfig));
-
-            // would need the CLI project (or other implementer)
-            //components.Register(typeof(DotnetRestorePostActionProcessor));
-            //components.Register(typeof(InstructionDisplayPostActionProcessor));
-
-            return components;
-        }
-
         // Note: this does not deal with configs split into multiple files.
         internal static IRunnableProjectConfig ConfigFromSource(IEngineEnvironmentSettings environment, IMountPoint mountPoint, string configFile = null)
         {
