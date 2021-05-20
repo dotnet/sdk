@@ -26,7 +26,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseStringEqualsOverStringCompare : DiagnosticAnalyzer
     {
-        internal const string RuleId = "CA2250";
+        internal const string RuleId = "CA2251";
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.UseStringEqualsOverStringCompareTitle), Resx.ResourceManager, typeof(Resx));
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(Resx.UseStringEqualsOverStringCompareMessage), Resx.ResourceManager, typeof(Resx));

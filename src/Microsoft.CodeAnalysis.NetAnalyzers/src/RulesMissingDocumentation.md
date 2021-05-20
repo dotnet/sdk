@@ -8,4 +8,4 @@ CA1840 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-r
 CA1842 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842> | Do not use 'WhenAll' with a single task |
 CA1843 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843> | Do not use 'WaitAll' with a single task |
 CA1844 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844> | Provide memory-based overrides of async methods when subclassing 'Stream' |
-CA2250 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250> | Use 'string.Equals' |
+CA2251 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251> | Use 'string.Equals' |
