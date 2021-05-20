@@ -184,9 +184,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 allOverloads = model.LookupStaticMembers(location, method.ContainingType, method.Name).OfType<IMethodSymbol>();
             }
-            //  Ensure protected members can only be invoked on instances that are known to be instances of the accessing class.
             else if (instance is not null)
             {
+                //  Ensure protected members can only be invoked on instances that are known to be instances of the accessing class.
                 var enclosingType = GetEnclosingType(model, location, cancellationToken);
                 allOverloads = model.LookupSymbols(location, instance.Type, method.Name).OfType<IMethodSymbol>();
                 if (instance.Type.DerivesFrom(enclosingType, baseTypesOnly: true) || instance is IInstanceReferenceOperation)
@@ -194,9 +194,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     allOverloads = allOverloads.Union(model.LookupBaseMembers(location, method.Name).OfType<IMethodSymbol>());
                 }
             }
-            //  This can happen when compiling invalid code.
             else
             {
+                //  This can happen when compiling invalid code.
                 return Enumerable.Empty<IMethodSymbol>();
             }
 

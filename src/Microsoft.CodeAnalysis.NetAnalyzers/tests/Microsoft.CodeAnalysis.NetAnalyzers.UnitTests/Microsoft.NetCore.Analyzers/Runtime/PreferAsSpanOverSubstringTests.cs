@@ -671,7 +671,7 @@ public class C
                     @"{|#0:C.Consume({|#1:C.Fwd(foo.Substring(1))|}.Substring(2))|}",
                     @"C.Consume(C.Fwd(foo.AsSpan(1)).AsSpan(2))",
                     new[] { 0, 1 },
-                    2, 1, 1
+                    2
                 };
                 yield return new object[]
                 {
@@ -679,7 +679,7 @@ public class C
                     @"{|#0:C.Consume({|#1:C.Fwd(foo.Substring(1), foo.Substring(2))|}.Substring(3), foo.Substring(4))|}",
                     @"C.Consume(C.Fwd(foo.AsSpan(1), foo.AsSpan(2)).AsSpan(3), foo.AsSpan(4))",
                     new[] { 0, 1 },
-                    2, 1, 1
+                    2
                 };
                 yield return new object[]
                 {
@@ -687,7 +687,7 @@ public class C
                     @"{|#0:C.Consume({|#1:C.Fwd(foo.Substring(1), {|#2:C.Fwd(foo.Substring(2))|}.Substring(3))|}.Substring(4))|}",
                     @"C.Consume(C.Fwd(foo.AsSpan(1), C.Fwd(foo.AsSpan(2)).AsSpan(3)).AsSpan(4))",
                     new[] { 0, 1, 2 },
-                    3, 1, 1
+                    3
                 };
             }
         }
@@ -696,7 +696,7 @@ public class C
         [MemberData(nameof(Data_NestedViolations))]
         public Task NestedViolations_AreAllReportedAndFixed_CS(
             string receiverClass, string testExpression, string fixedExpression, int[] locations,
-            int? incrementalIterations = null, int? fixAllInDocumentIterations = null, int? fixAllIterations = null)
+            int? incrementalIterations)
         {
             string testCode = CS.WithBody(testExpression + ';');
             string fixedCode = CS.WithBody(fixedExpression + ';');
@@ -713,8 +713,6 @@ public class C
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 NumberOfIncrementalIterations = incrementalIterations,
-                NumberOfFixAllInDocumentIterations = fixAllInDocumentIterations,
-                NumberOfFixAllIterations = fixAllIterations
             };
             test.TestState.ExpectedDiagnostics.AddRange(locations.Select(x => CS.DiagnosticAt(x)));
             return test.RunAsync();
@@ -724,7 +722,7 @@ public class C
         [MemberData(nameof(Data_NestedViolations))]
         public Task NestedViolations_AreAllReportedAndFixed_VB(
             string receiverClass, string testExpression, string fixedExpression, int[] locations,
-            int? incrementalIterations = null, int? fixAllInDocumentIterations = null, int? fixAllIterations = null)
+            int? incrementalIterations)
         {
             string testCode = VB.WithBody(testExpression);
             string fixedCode = VB.WithBody(fixedExpression);
@@ -749,8 +747,6 @@ public class C
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 NumberOfIncrementalIterations = incrementalIterations,
-                NumberOfFixAllInDocumentIterations = fixAllInDocumentIterations,
-                NumberOfFixAllIterations = fixAllIterations
             };
             test.TestState.ExpectedDiagnostics.AddRange(locations.Select(x => VB.DiagnosticAt(x)));
             return test.RunAsync();

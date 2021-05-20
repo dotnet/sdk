@@ -34,10 +34,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SemanticModel model = await document.GetSemanticModelAsync(token).ConfigureAwait(false);
             var compilation = model.Compilation;
 
-            if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode reportedNode || model.GetOperation(reportedNode, token) is not IInvocationOperation reportedInvocation)
+            if (!RequiredSymbols.TryGetSymbols(compilation, out RequiredSymbols symbols) ||
+                root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode reportedNode ||
+                model.GetOperation(reportedNode, token) is not IInvocationOperation reportedInvocation)
+            {
                 return;
-            if (!RequiredSymbols.TryGetSymbols(compilation, out RequiredSymbols symbols))
-                return;
+            }
 
             var bestCandidates = PreferAsSpanOverSubstring.GetBestSpanBasedOverloads(symbols, reportedInvocation, context.CancellationToken);
 
