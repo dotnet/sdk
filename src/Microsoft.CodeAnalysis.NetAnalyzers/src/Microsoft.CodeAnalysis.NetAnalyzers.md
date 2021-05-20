@@ -1944,6 +1944,18 @@ Calls to 'string.IndexOf' where the result is used to check for the presence/abs
 |CodeFix|True|
 ---
 
+## [CA2250](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250): Use 'ThrowIfCancellationRequested'
+
+'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2251](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251): Use 'string.Equals'
 
 It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.

@@ -1534,6 +1534,18 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="UseCancellationTokenThrowIfCancellationRequestedDescription" xml:space="preserve">
+    <value>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</value>
+  </data>
+  <data name="UseCancellationTokenThrowIfCancellationRequestedMessage" xml:space="preserve">
+    <value>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</value>
+  </data>
+  <data name="UseCancellationTokenThrowIfCancellationRequestedTitle" xml:space="preserve">
+    <value>Use 'ThrowIfCancellationRequested'</value>
+  </data>
+  <data name="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle" xml:space="preserve">
+    <value>Replace with 'CancellationToken.ThrowIfCancellationRequested'</value>
+  </data>
   <data name="ProvideStreamMemoryBasedAsyncOverridesDescription" xml:space="preserve">
     <value>To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.</value>
   </data>

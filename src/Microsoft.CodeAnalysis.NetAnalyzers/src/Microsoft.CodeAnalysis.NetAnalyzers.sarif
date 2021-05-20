@@ -3430,6 +3430,26 @@
             ]
           }
         },
+        "CA2250": {
+          "id": "CA2250",
+          "shortDescription": "Use 'ThrowIfCancellationRequested'",
+          "fullDescription": "'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "UseCancellationTokenThrowIfCancellationRequested",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2251": {
           "id": "CA2251",
           "shortDescription": "Use 'string.Equals'",
