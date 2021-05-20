@@ -259,10 +259,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                                     foreach (var (DangerousMethod, IntermediateMethods) in entry.Value)
                                     {
-                                        if (IntermediateMethods != null)
-                                        {
-                                            IntermediateMethods.Dispose();
-                                        }
+                                        IntermediateMethods?.Dispose();
                                     }
                                 }
                             }
