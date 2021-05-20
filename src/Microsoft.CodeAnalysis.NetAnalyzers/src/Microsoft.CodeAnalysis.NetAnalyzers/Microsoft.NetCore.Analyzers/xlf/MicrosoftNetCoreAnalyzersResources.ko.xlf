@@ -2197,6 +2197,26 @@
         <target state="translated">{0} 메서드는 위조 방지 토큰 유효성 검사를 수행하지 않고 {1} 요청을 처리합니다. 또한 HTML 양식이 위조 방지 토큰을 보내는지 확인해야 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle">
+        <source>Replace with 'CancellationToken.ThrowIfCancellationRequested'</source>
+        <target state="new">Replace with 'CancellationToken.ThrowIfCancellationRequested'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
+        <source>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</source>
+        <target state="new">'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
+        <source>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</source>
+        <target state="new">Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
+        <source>Use 'ThrowIfCancellationRequested'</source>
+        <target state="new">Use 'ThrowIfCancellationRequested'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
         <source>Use Container Level Access Policy</source>
         <target state="translated">컨테이너 수준 액세스 정책 사용</target>

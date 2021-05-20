@@ -2197,6 +2197,26 @@
         <target state="translated">Die Methode "{0}" verarbeitet eine {1}-Anforderung ohne Überprüfung eines Fälschungssicherheitstokens. Sie müssen außerdem sicherstellen, dass Ihr HTML-Formular ein Fälschungssicherheitstoken sendet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle">
+        <source>Replace with 'CancellationToken.ThrowIfCancellationRequested'</source>
+        <target state="new">Replace with 'CancellationToken.ThrowIfCancellationRequested'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
+        <source>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</source>
+        <target state="new">'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
+        <source>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</source>
+        <target state="new">Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
+        <source>Use 'ThrowIfCancellationRequested'</source>
+        <target state="new">Use 'ThrowIfCancellationRequested'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
         <source>Use Container Level Access Policy</source>
         <target state="translated">Zugriffsrichtlinie auf Containerebene verwenden</target>
