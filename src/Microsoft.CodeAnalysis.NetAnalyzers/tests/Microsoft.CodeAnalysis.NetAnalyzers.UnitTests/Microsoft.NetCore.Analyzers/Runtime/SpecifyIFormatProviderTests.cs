@@ -945,6 +945,36 @@ End Class
 ");
         }
 
+        [Fact]
+        public async Task CA1305_NullableInvariantTypes_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+public class SomeClass
+{
+    private char? _char;
+    private bool? _bool;
+    private Guid? _guid;
+
+    public string SomeMethod()
+    {
+        return _char.ToString() + _bool.ToString() + _guid.ToString();
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Public Class SomeClass
+    Private _char As Char?
+    Private _bool As Boolean?
+    Private _guid As Guid?
+
+    Public Function SomeMethod() As String
+        Return _char.ToString() & _bool.ToString() & _guid.ToString()
+    End Function
+End Class");
+        }
+
         [Theory, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
         [InlineData("DateTime")]
         [InlineData("DateTimeOffset")]
