@@ -3852,5 +3852,30 @@ public class MyController
         {
             await VerifyVisualBasicWithDependenciesAsync(@"<Assembly: System.Reflection.AssemblyTitle(""Title"")>");
         }
+
+        [Fact]
+        public async Task AspNetCoreHttpRequest_Form_Direct_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data;
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class HomeController : Controller
+{
+    public IActionResult Index()
+    {
+        string input = Request.Form[""in""];
+        var sqlCommand = new SqlCommand()
+        {
+            CommandText = input,
+            CommandType = CommandType.Text,
+        };
+
+        return View();
+    }
+}",
+                GetCSharpResultAt(13, 13, 10, 24, "string SqlCommand.CommandText", "IActionResult HomeController.Index()", "IFormCollection HttpRequest.Form", "IActionResult HomeController.Index()"));
+        }
     }
 }
