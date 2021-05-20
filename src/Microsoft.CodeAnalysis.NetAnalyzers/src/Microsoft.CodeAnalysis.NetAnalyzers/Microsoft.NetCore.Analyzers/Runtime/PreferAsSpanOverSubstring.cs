@@ -197,7 +197,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             //  This can happen when compiling invalid code.
             else
             {
-                allOverloads = Enumerable.Empty<IMethodSymbol>();
+                return Enumerable.Empty<IMethodSymbol>();
             }
 
             return allOverloads.Where(x => x.IsStatic == method.IsStatic && SymbolEqualityComparer.Default.Equals(x.ReturnType, method.ReturnType));

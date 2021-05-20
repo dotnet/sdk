@@ -40,6 +40,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
 
             var bestCandidates = PreferAsSpanOverSubstring.GetBestSpanBasedOverloads(symbols, reportedInvocation, context.CancellationToken);
+
             //  We only apply the fix if there is an unambiguous best overload.
             if (bestCandidates.Length != 1)
                 return;
@@ -48,6 +49,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             string title = MicrosoftNetCoreAnalyzersResources.PreferAsSpanOverSubstringCodefixTitle;
             var codeAction = CodeAction.Create(title, CreateChangedDocument, title);
             context.RegisterCodeFix(codeAction, context.Diagnostics);
+            return;
 
             async Task<Document> CreateChangedDocument(CancellationToken token)
             {
