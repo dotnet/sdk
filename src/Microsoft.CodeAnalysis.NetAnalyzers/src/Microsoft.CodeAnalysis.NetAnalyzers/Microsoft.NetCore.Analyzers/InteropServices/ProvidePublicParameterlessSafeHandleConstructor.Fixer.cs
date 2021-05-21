@@ -36,12 +36,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
 
-            SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-
-            ISymbol symbol = model.GetDeclaredSymbol(declaration, context.CancellationToken);
-            if (symbol.Kind == SymbolKind.Method)
+            Diagnostic diagnostic = context.Diagnostics.First();
+            if (diagnostic.Properties.ContainsKey(ProvidePublicParameterlessSafeHandleConstructorAnalyzer.DiagnosticPropertyConstructorExists))
             {
-                Diagnostic diagnostic = context.Diagnostics.First();
                 context.RegisterCodeFix(
                     new MyCodeAction(
                         MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic,
@@ -49,35 +46,21 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic)),
                     diagnostic);
             }
-            else if (symbol is INamedTypeSymbol type)
+            else if (diagnostic.Properties.ContainsKey(ProvidePublicParameterlessSafeHandleConstructorAnalyzer.DiagnosticPropertyBaseConstructorAccessible))
             {
-                bool baseTypeHasAccessibleParameterlessConstructor = false;
-                foreach (var constructor in type.BaseType.InstanceConstructors)
-                {
-                    if (constructor.Parameters.Length == 0 &&
-                        model.Compilation.IsSymbolAccessibleWithin(constructor, type))
-                    {
-                        baseTypeHasAccessibleParameterlessConstructor = true;
-                        break;
-                    }
-                }
-
-                if (baseTypeHasAccessibleParameterlessConstructor)
-                {
-                    Diagnostic diagnostic = context.Diagnostics.First();
-                    context.RegisterCodeFix(
-                        new MyCodeAction(
-                            MicrosoftNetCoreAnalyzersResources.AddPublicParameterlessConstructor,
-                            async ct => await AddParameterlessConstructor(declaration, type, context.Document, context.CancellationToken).ConfigureAwait(false),
-                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.AddPublicParameterlessConstructor)),
-                        diagnostic);
-                }
+                context.RegisterCodeFix(
+                    new MyCodeAction(
+                        MicrosoftNetCoreAnalyzersResources.AddPublicParameterlessConstructor,
+                        async ct => await AddParameterlessConstructor(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                        equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.AddPublicParameterlessConstructor)),
+                    diagnostic);
             }
         }
 
-        private static async Task<Document> AddParameterlessConstructor(SyntaxNode declaration, INamedTypeSymbol type, Document document, CancellationToken ct)
+        private static async Task<Document> AddParameterlessConstructor(SyntaxNode declaration, Document document, CancellationToken ct)
         {
             var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
+            INamedTypeSymbol type = (INamedTypeSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
             var generator = editor.Generator;
 
             var parameterlessConstructor = generator.ConstructorDeclaration(type.Name, accessibility: Accessibility.Public);

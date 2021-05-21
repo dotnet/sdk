@@ -13,6 +13,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     {
         internal const string RuleId = "CA1419";
 
+        internal const string DiagnosticPropertyConstructorExists = "ConstructorExists";
+        internal const string DiagnosticPropertyBaseConstructorAccessible = "BaseConstructorAccessible";
+
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvidePublicParameterlessSafeHandleConstructorTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvidePublicParameterlessSafeHandleConstructorMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvidePublicParameterlessSafeHandleConstructorDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
@@ -58,6 +61,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
 
+            ImmutableDictionary<string, string?> diagnosticPropertyBag = ImmutableDictionary<string, string?>.Empty;
             ISymbol targetWarningSymbol = type;
             foreach (var constructor in type.InstanceConstructors)
             {
@@ -71,11 +75,22 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                     // If a parameterless constructor has been defined, emit the diagnostic on the constructor instead of on the type.
                     targetWarningSymbol = constructor;
+                    diagnosticPropertyBag = diagnosticPropertyBag.Add(DiagnosticPropertyConstructorExists, null);
                     break;
                 }
             }
 
-            context.ReportDiagnostic(targetWarningSymbol.CreateDiagnostic(Rule, type.Name));
+            foreach (var constructor in type.BaseType.InstanceConstructors)
+            {
+                if (constructor.Parameters.Length == 0 &&
+                    context.Compilation.IsSymbolAccessibleWithin(constructor, type))
+                {
+                    diagnosticPropertyBag = diagnosticPropertyBag.Add(DiagnosticPropertyBaseConstructorAccessible, null);
+                    break;
+                }
+            }
+
+            context.ReportDiagnostic(targetWarningSymbol.CreateDiagnostic(Rule, diagnosticPropertyBag, type.Name));
         }
     }
 }
