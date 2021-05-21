@@ -30,8 +30,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var token = context.CancellationToken;
             var semanticModel = await document.GetSemanticModelAsync(token).ConfigureAwait(false);
 
-            if (!RequiredSymbols.TryGetSymbols(semanticModel.Compilation, out var symbols))
-                return;
+            _ = RequiredSymbols.TryGetSymbols(semanticModel.Compilation, out var symbols);
+            RoslynDebug.Assert(symbols is not null);
 
             var root = await document.GetSyntaxRootAsync(token).ConfigureAwait(false);
             var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
