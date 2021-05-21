@@ -232,6 +232,11 @@
         <target state="translated">Non usare il prefisso 'Before' o 'After' negli eventi</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
+        <source>Remove underscores</source>
+        <target state="new">Remove underscores</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">Rimuovere il finalizzatore dal tipo '{0}', eseguire l'override di Dispose(bool disposing) e inserire la logica di finalizzazione nel percorso del codice in cui 'disposing' è false. In caso contrario, potrebbero verificarsi chiamate duplicate a Dispose perché il tipo di base '{1}' fornisce anche un finalizzatore.</target>
