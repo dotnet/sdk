@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
