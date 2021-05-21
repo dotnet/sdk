@@ -400,7 +400,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_ReadyToRunPgoFiles Include="@(PublishReadyToRunPgoFiles)" />
       <_ReadyToRunPgoFiles Include="@(RuntimePackAsset)"
-                          Condition="'%(RuntimePackAsset.AssetType)' == 'pgodata' and '%(RuntimePackAsset.Extension)' == '.mibc' and '$(PublishReadyToRunDisableRuntimePackOptimizationData)' != 'true'" />
+                          Condition="'%(RuntimePackAsset.AssetType)' == 'pgodata' and '%(RuntimePackAsset.Extension)' == '.mibc' and ('$(PublishReadyToRunUseRuntimePackOptimizationData)' == 'true' or '$(PublishReadyToRunUseRuntimePackOptimizationData)' == '')" />
     </ItemGroup>
 
     <PrepareForReadyToRunCompilation CrossgenTool="@(CrossgenTool)"
