@@ -13,32 +13,32 @@
 
 /norestart: Unterdrückt alle Neustartversuche. Standardmäßig fordert die Benutzeroberfläche zum Bestätigen eines Neustarts auf.
 /log [\[]"log.txt"[\]]: Erstellt das Protokoll in einer bestimmten Datei. Standardmäßig wird die Protokolldatei in %TEMP% erstellt.</String>
-  <String Id="HelpCloseButton">S&amp;chließen</String>
+  <String Id="HelpCloseButton">&amp;Schließen</String>
   <String Id="InstallAcceptCheckbox">Ich &amp;stimme den Lizenzbedingungen zu.</String>
   <String Id="InstallOptionsButton">&amp;Optionen</String>
   <String Id="InstallInstallButton">&amp;Installieren</String>
-  <String Id="InstallCloseButton">S&amp;chließen</String>
+  <String Id="InstallCloseButton">&amp;Schließen</String>
   <String Id="ProgressHeader">Setupstatus</String>
-  <String Id="ProgressLabel">Wird verarbeitet:</String>
+  <String Id="ProgressLabel">Verarbeitung:</String>
   <String Id="OverallProgressPackageText">Initialisierung...</String>
   <String Id="ProgressCancelButton">&amp;Abbrechen</String>
   <String Id="ModifyHeader">Setup ändern</String>
   <String Id="ModifyRepairButton">&amp;Reparieren</String>
   <String Id="ModifyUninstallButton">&amp;Deinstallieren</String>
-  <String Id="ModifyCloseButton">S&amp;chließen</String>
+  <String Id="ModifyCloseButton">&amp;Schließen</String>
   <String Id="SuccessRepairHeader">Die Reparatur wurde erfolgreich abgeschlossen.</String>
   <String Id="SuccessUninstallHeader">Die Deinstallation wurde erfolgreich abgeschlossen.</String>
   <String Id="SuccessHeader">Setup wurde erfolgreich abgeschlossen</String>
   <String Id="SuccessLaunchButton">&amp;Starten</String>
   <String Id="SuccessRestartText">Sie müssen den Computer neu starten, um die Installation der Software abzuschließen.</String>
   <String Id="SuccessRestartButton">&amp;Neu starten</String>
-  <String Id="SuccessCloseButton">S&amp;chließen</String>
+  <String Id="SuccessCloseButton">&amp;Schließen</String>
   <String Id="FailureHeader">Setupfehler</String>
   <String Id="FailureInstallHeader">Setupfehler</String>
   <String Id="FailureUninstallHeader">Deinstallationsfehler</String>
   <String Id="FailureRepairHeader">Reparaturfehler</String>
   <String Id="FailureHyperlinkLogText">Setup ist aufgrund eines oder mehrerer Probleme fehlgeschlagen. Beheben Sie die Probleme, und führen Sie das Setup erneut aus. Weitere Informationen finden Sie in der &lt;a href="#"&gt;Protokolldatei&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Sie müssen den Computer neu starten, um das Zurücksetzen der Software abzuschließen.</String>
+  <String Id="FailureRestartText">Sie müssen Ihren Computer neu starten, um den Rollback der Software abzuschließen.</String>
   <String Id="FailureRestartButton">&amp;Neu starten</String>
   <String Id="FailureCloseButton">&amp;Schließen</String>
   <String Id="FilesInUseHeader">Verwendete Dateien</String>
@@ -51,9 +51,9 @@
 
 Folgende Komponenten wurden unter [DOTNETHOME] installiert:
     • .NET SDK [DOTNETSDKVERSION]
-    • .NET-Runtime [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core-Runtime [ASPNETCOREVERSION]
-    • .NET Windows Desktop-Runtime [WINFORMSANDWPFVERSION]
+    • .NET Runtime [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
 Dieses Produkt erfasst Nutzungsdaten.
     • Weitere Informationen und Deaktivieren der Erfassung: https://aka.ms/dotnet-cli-telemetry
@@ -70,7 +70,7 @@ Folgende Komponenten wurden unter [DOTNETHOME] installiert:
     • .NET-Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core-Runtime [ASPNETCOREVERSION]
 
-Dieses Produkt erfasst Nutzungsdaten.
+Dieses Produkt sammelt Nutzungsdaten.
     • Weitere Informationen und Deaktivieren der Erfassung: https://aka.ms/dotnet-cli-telemetry
 
 Ressourcen
@@ -87,11 +87,11 @@ Ressourcen
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK-Dokumentation&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Datenschutzerklärung&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Lizenzierungsinformationen für .NET&lt;/A&gt;</String>
-  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;Sammlung von Telemetriedaten und Deaktivieren der Telemetriefunktion&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Installationshinweis</String>
   <String Id="InstallationNote">Während des Installationsvorgangs wird ein Befehl ausgeführt, durch den die Geschwindigkeit der Projektwiederherstellung verbessert und der Offlinezugriff aktiviert wird. Der Vorgang dauert bis zu einer Minute.
   </String>
-  <String Id="VisualStudioWarning">Wenn Sie .NET 5.0 mit Visual Studio verwenden möchten, ist Visual Studio 2019 16.8 oder höher erforderlich. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Erfahren Sie mehr&lt;/A&gt;.
-</String>
+  <String Id="VisualStudioWarning">Wenn Sie .NET 5.0 mit Visual Studio verwenden möchten, ist Visual Studio 2019 16.8 oder höher erforderlich. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Weitere Informationen&lt;/A&gt;
+  </String>
   <String Id="LicenseAssent">Durch Klicken auf "Installieren" stimmen Sie den nachstehenden Bedingungen zu.</String>
 </WixLocalization>
