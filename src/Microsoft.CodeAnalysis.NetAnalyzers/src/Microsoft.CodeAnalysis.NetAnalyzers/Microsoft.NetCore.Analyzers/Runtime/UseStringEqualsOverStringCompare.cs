@@ -76,10 +76,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal sealed class RequiredSymbols
         {
-            //  Named-constructor 'TryGetSymbols' inits all properties or doesn't construct an instance.
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-            private RequiredSymbols() { }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+            private RequiredSymbols(
+                INamedTypeSymbol stringType,
+                INamedTypeSymbol boolType,
+                INamedTypeSymbol stringComparisonType,
+                IMethodSymbol? compareStringString,
+                IMethodSymbol? compareStringStringBool,
+                IMethodSymbol? compareStringStringStringComparison,
+                IMethodSymbol? equalsStringString,
+                IMethodSymbol? equalsStringStringStringComparison)
+            {
+                StringType = stringType;
+                BoolType = boolType;
+                StringComparisonType = stringComparisonType;
+                CompareStringString = compareStringString;
+                CompareStringStringBool = compareStringStringBool;
+                CompareStringStringStringComparison = compareStringStringStringComparison;
+                EqualsStringString = equalsStringString;
+                EqualsStringStringStringComparison = equalsStringStringStringComparison;
+            }
 
             public static bool TryGetSymbols(Compilation compilation, [NotNullWhen(true)] out RequiredSymbols? symbols)
             {
@@ -107,28 +122,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var equalsStringString = equalsMethods.GetFirstOrDefaultMemberWithParameterTypes(stringType, stringType);
                 var equalsStringStringStringComparison = equalsMethods.GetFirstOrDefaultMemberWithParameterTypes(stringType, stringType, stringComparisonType);
 
-                symbols = new RequiredSymbols
+                // Bail if we do not have at least one complete pair of Compare-Equals methods in the compilation.
+                if ((compareStringString is null || equalsStringString is null) &&
+                    (compareStringStringBool is null || equalsStringStringStringComparison is null) &&
+                    (compareStringStringStringComparison is null || equalsStringStringStringComparison is null))
                 {
-                    StringType = stringType,
-                    BoolType = boolType,
-                    StringComparisonType = stringComparisonType,
-                    CompareStringString = compareStringString,
-                    CompareStringStringBool = compareStringStringBool,
-                    CompareStringStringStringComparison = compareStringStringStringComparison,
-                    EqualsStringString = equalsStringString,
-                    EqualsStringStringStringComparison = equalsStringStringStringComparison
-                };
+                    return false;
+                }
+
+                symbols = new RequiredSymbols(
+                    stringType, boolType, stringComparisonType,
+                    compareStringString, compareStringStringBool, compareStringStringStringComparison,
+                    equalsStringString, equalsStringStringStringComparison);
                 return true;
             }
 
-            public INamedTypeSymbol StringType { get; init; }
-            public INamedTypeSymbol BoolType { get; init; }
-            public INamedTypeSymbol StringComparisonType { get; init; }
-            public IMethodSymbol? CompareStringString { get; init; }
-            public IMethodSymbol? CompareStringStringBool { get; init; }
-            public IMethodSymbol? CompareStringStringStringComparison { get; init; }
-            public IMethodSymbol? EqualsStringString { get; init; }
-            public IMethodSymbol? EqualsStringStringStringComparison { get; init; }
+            public INamedTypeSymbol StringType { get; }
+            public INamedTypeSymbol BoolType { get; }
+            public INamedTypeSymbol StringComparisonType { get; }
+            public IMethodSymbol? CompareStringString { get; }
+            public IMethodSymbol? CompareStringStringBool { get; }
+            public IMethodSymbol? CompareStringStringStringComparison { get; }
+            public IMethodSymbol? EqualsStringString { get; }
+            public IMethodSymbol? EqualsStringStringStringComparison { get; }
         }
 
         /// <summary>
@@ -176,13 +192,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <returns></returns>
         internal static bool IsStringStringCase(IBinaryOperation binaryOperation, RequiredSymbols symbols)
         {
+            //  Don't report a diagnostic if either the string.Compare overload or the
+            //  corrasponding string.Equals overload is missing.
+            if (symbols.CompareStringString is null ||
+                symbols.EqualsStringString is null)
+            {
+                return false;
+            }
+
             var invocation = GetInvocationFromEqualityCheckWithLiteralZero(binaryOperation);
 
             return invocation is not null &&
-                //  Don't report a diagnostic if either the string.Compare overload or the
-                //  corrasponding string.Equals overload is missing.
-                symbols.CompareStringString is not null &&
-                symbols.EqualsStringString is not null &&
                 invocation.TargetMethod.Equals(symbols.CompareStringString, SymbolEqualityComparer.Default);
         }
 
@@ -200,15 +220,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <returns></returns>
         internal static bool IsStringStringBoolCase(IBinaryOperation binaryOperation, RequiredSymbols symbols)
         {
+            //  Don't report a diagnostic if either the string.Compare overload or the
+            //  corrasponding string.Equals overload is missing.
+            if (symbols.CompareStringStringBool is null ||
+                symbols.EqualsStringStringStringComparison is null)
+            {
+                return false;
+            }
+
             var invocation = GetInvocationFromEqualityCheckWithLiteralZero(binaryOperation);
 
+            //  Only report a diagnostic if the 'ignoreCase' argument is a boolean literal.
             return invocation is not null &&
-                //  Don't report a diagnostic if either the string.Compare overload or the
-                //  corrasponding string.Equals overload is missing.
-                symbols.CompareStringStringBool is not null &&
-                symbols.EqualsStringStringStringComparison is not null &&
-                invocation.TargetMethod.Equals(symbols.CompareStringStringBool) &&
-                //  Only report a diagnostic if the 'ignoreCase' argument is a boolean literal.
+                invocation.TargetMethod.Equals(symbols.CompareStringStringBool, SymbolEqualityComparer.Default) &&
                 invocation.Arguments.GetArgumentForParameterAtIndex(2).Value is ILiteralOperation literal &&
                 literal.ConstantValue.Value is bool;
         }
@@ -226,13 +250,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <returns></returns>
         internal static bool IsStringStringStringComparisonCase(IBinaryOperation binaryOperation, RequiredSymbols symbols)
         {
+            //  Don't report a diagnostic if either the string.Compare overload or the
+            //  corrasponding string.Equals overload is missing.
+            if (symbols.CompareStringStringStringComparison is null ||
+                symbols.EqualsStringStringStringComparison is null)
+            {
+                return false;
+            }
+
             var invocation = GetInvocationFromEqualityCheckWithLiteralZero(binaryOperation);
 
             return invocation is not null &&
-                //  Don't report a diagnostic if either the string.Compare overload or the
-                //  corrasponding string.Equals overload is missing.
-                symbols.CompareStringStringStringComparison is not null &&
-                symbols.EqualsStringStringStringComparison is not null &&
                 invocation.TargetMethod.Equals(symbols.CompareStringStringStringComparison, SymbolEqualityComparer.Default);
         }
 

@@ -22,6 +22,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class UseStringEqualsOverStringCompareFixer : CodeFixProvider
     {
+        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseStringEqualsOverStringCompare.RuleId);
+
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var document = context.Document;
@@ -32,15 +34,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
 
             var root = await document.GetSyntaxRootAsync(token).ConfigureAwait(false);
-
-            if (semanticModel.GetOperation(root.FindNode(context.Span, getInnermostNodeForTie: true), token) is not IBinaryOperation violation)
+            var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
+            if (semanticModel.GetOperation(node, token) is not IBinaryOperation violation)
                 return;
 
-            //  Get the replacer that applies to the reported violation. Bail out if no replacer 
-            //  matches the reported violation.
-            var replacer = GetOperationReplacers(symbols).FirstOrDefault(x => x.IsMatch(violation));
-            if (replacer is null)
-                return;
+            //  Get the replacer that applies to the reported violation.
+            var replacer = GetOperationReplacers(symbols).First(x => x.IsMatch(violation));
 
             var codeAction = CodeAction.Create(
                 Resx.UseStringEqualsOverStringCompareCodeFixTitle,
@@ -60,8 +59,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return editor.GetChangedDocument();
             }
         }
-
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseStringEqualsOverStringCompare.RuleId);
 
         public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
