@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -12,16 +11,16 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal class DynamicInterfaceCastableImplementationAnalyzer : DiagnosticAnalyzer
     {
-        internal const string DynamicInterfaceCastableImplementationUnsupportedRuleId = "CA2251";
+        internal const string DynamicInterfaceCastableImplementationUnsupportedRuleId = "CA2250";
 
         private static readonly DiagnosticDescriptor DynamicInterfaceCastableImplementationUnsupported =
             DiagnosticDescriptorHelper.Create(
                 DynamicInterfaceCastableImplementationUnsupportedRuleId,
-                "",
-                "",
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DynamicInterfaceCastableImplementationUnsupportedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DynamicInterfaceCastableImplementationUnsupportedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 DiagnosticCategory.Usage,
                 RuleLevel.BuildWarning,
-                "",
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DynamicInterfaceCastableImplementationUnsupportedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
@@ -30,28 +29,31 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private static readonly DiagnosticDescriptor InterfaceMethodsMissingImplementation =
             DiagnosticDescriptorHelper.Create(
                 InterfaceMethodsMissingImplementationRuleId,
-                "",
-                "",
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMethodsMissingImplementationTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMethodsMissingImplementationMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 DiagnosticCategory.Usage,
                 RuleLevel.BuildWarning,
-                "",
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMethodsMissingImplementationDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
         internal const string MethodsDeclaredOnImplementationTypeMustBeSealedRuleId = "CA2252";
 
-        private static readonly DiagnosticDescriptor MethodsDeclaredOnImplementationTypeMustBeVirtual =
+        private static readonly DiagnosticDescriptor MethodsDeclaredOnImplementationTypeMustBeSealed =
             DiagnosticDescriptorHelper.Create(
                 MethodsDeclaredOnImplementationTypeMustBeSealedRuleId,
-                "",
-                "",
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MethodsDeclaredOnImplementationTypeMustBeSealedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MethodsDeclaredOnImplementationTypeMustBeSealedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 DiagnosticCategory.Usage,
                 RuleLevel.BuildWarning,
-                "",
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MethodsDeclaredOnImplementationTypeMustBeSealedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => throw new NotImplementedException();
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+            DynamicInterfaceCastableImplementationUnsupported,
+            InterfaceMethodsMissingImplementation,
+            MethodsDeclaredOnImplementationTypeMustBeSealed);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -109,15 +111,15 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             if (missingMethodImplementations)
             {
-                context.ReportDiagnostic(targetType.CreateDiagnostic(InterfaceMethodsMissingImplementation));
+                context.ReportDiagnostic(targetType.CreateDiagnostic(InterfaceMethodsMissingImplementation, targetType.ToDisplayString()));
             }
 
             foreach (var member in targetType.GetMembers())
             {
-                if (member.IsVirtual)
+                if (member.IsVirtual || member.IsAbstract)
                 {
                     // Emit diagnostic for non-concrete method on implementation interface
-                    context.ReportDiagnostic(member.CreateDiagnostic(MethodsDeclaredOnImplementationTypeMustBeVirtual, member.ToDisplayString()));
+                    context.ReportDiagnostic(member.CreateDiagnostic(MethodsDeclaredOnImplementationTypeMustBeSealed, member.ToDisplayString(), targetType.ToDisplayString()));
                 }
             }
         }

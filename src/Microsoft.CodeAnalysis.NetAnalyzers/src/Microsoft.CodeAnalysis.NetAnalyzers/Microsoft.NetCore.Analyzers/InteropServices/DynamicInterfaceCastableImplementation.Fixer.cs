@@ -60,7 +60,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             }
         }
 
-
         private static async Task<Document> ImplementInterfacesOnDynamicCastableImplementation(
             SyntaxNode declaration,
             Document document,
@@ -71,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             INamedTypeSymbol type = (INamedTypeSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
             var generator = editor.Generator;
 
-            var defaultMethodBodyStatements = generator.DefaultMethodBody(editor.SemanticModel.Compilation);
+            var defaultMethodBodyStatements = generator.DefaultMethodBody(editor.SemanticModel.Compilation).ToArray();
             List<SyntaxNode> generatedMembers = new List<SyntaxNode>();
             foreach (var iface in type.AllInterfaces)
             {
@@ -98,7 +97,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             SyntaxNode GenerateMethodImplementation(IMethodSymbol method)
             {
-                return generator.MethodDeclaration(method, defaultMethodBodyStatements);
+                SyntaxNode methodDecl = generator.MethodDeclaration(method);
+                methodDecl = generator.WithModifiers(methodDecl, generator.GetModifiers(declaration).WithIsAbstract(false));
+                return generator.WithStatements(methodDecl, defaultMethodBodyStatements);
             }
 
             SyntaxNode GeneratePropertyImplementation(IPropertySymbol property)
@@ -124,7 +125,17 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             CancellationToken ct)
         {
             var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
-            editor.SetModifiers(declaration, editor.Generator.GetModifiers(declaration).WithIsSealed(true));
+            IMethodSymbol method = (IMethodSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
+            var generator = editor.Generator;
+            DeclarationModifiers modifiers = generator.GetModifiers(declaration)
+                .WithIsAbstract(false)
+                .WithIsVirtual(false)
+                .WithIsSealed(true);
+            if (method.IsAbstract)
+            {
+                editor.SetStatements(declaration, generator.DefaultMethodBody(editor.SemanticModel.Compilation));
+            }
+            editor.SetModifiers(declaration, modifiers);
             return editor.GetChangedDocument();
         }
 

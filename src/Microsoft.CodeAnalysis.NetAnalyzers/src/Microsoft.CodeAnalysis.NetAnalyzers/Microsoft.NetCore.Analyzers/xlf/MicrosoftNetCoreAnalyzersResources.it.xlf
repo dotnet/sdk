@@ -1017,6 +1017,21 @@
         <target state="translated">Non usare XslTransform. Non limita i riferimenti esterni potenzialmente pericolosi.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedDescription">
+        <source>Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</source>
+        <target state="new">Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedMessage">
+        <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
+        <target state="new">Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedTitle">
+        <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
+        <target state="new">Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
         <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
         <target state="translated">La finalizzazione deve essere propagata tramite la gerarchia di ereditarietà. A tale scopo, i tipi devono chiamare il metodo Finalize della classe di base nel proprio metodo Finalize.</target>
@@ -1095,6 +1110,11 @@
       <trans-unit id="ImplementISerializableCorrectlyTitle">
         <source>Implement ISerializable correctly</source>
         <target state="translated">Implementare ISerializable in modo corretto</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
+        <source>Implement inherited interfaces</source>
+        <target state="new">Implement inherited interfaces</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
@@ -1220,6 +1240,21 @@
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
         <source>Instantiate argument exceptions correctly</source>
         <target state="translated">Creare istanze di eccezioni di argomento in modo corretto</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsMissingImplementationDescription">
+        <source>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the methods defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</source>
+        <target state="new">Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the methods defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsMissingImplementationMessage">
+        <source>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface methods defined in inherited interfaces</source>
+        <target state="new">Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface methods defined in inherited interfaces</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsMissingImplementationTitle">
+        <source>All methods declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</source>
+        <target state="new">All methods declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
@@ -1420,6 +1455,21 @@
       <trans-unit id="MaybeUseWeakKDFInsufficientIterationCountMessage">
         <source>Ensure that the iteration count is at least {0} when deriving a cryptographic key from a password. By default, Rfc2898DeriveByte's IterationCount is only 1000</source>
         <target state="translated">Assicurarsi che il numero delle iterazioni sia almeno {0} durante la derivazione di una chiave crittografica da una password. Per impostazione predefinita, il valore di IterationCount per Rfc2898DeriveByte è solo 1000</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodsDeclaredOnImplementationTypeMustBeSealedDescription">
+        <source>Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all methods on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</source>
+        <target state="new">Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all methods on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodsDeclaredOnImplementationTypeMustBeSealedMessage">
+        <source>The '{0}' method on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
+        <target state="new">The '{0}' method on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodsDeclaredOnImplementationTypeMustBeSealedTitle">
+        <source>Methods defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</source>
+        <target state="new">Methods defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -1955,6 +2005,11 @@
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
         <source>Review SQL queries for security vulnerabilities</source>
         <target state="translated">Controllare l'eventuale vulnerabilità di sicurezza delle query SQL</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealMethodDeclaredOnImplementationType">
+        <source>Mark method as sealed</source>
+        <target state="new">Mark method as sealed</target>
         <note />
       </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">

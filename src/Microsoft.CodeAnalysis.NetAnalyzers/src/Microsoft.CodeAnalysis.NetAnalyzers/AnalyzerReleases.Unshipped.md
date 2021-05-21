@@ -12,6 +12,9 @@ CA1842 | Performance | Info | DoNotUseWhenAllOrWaitAllWithSingleArgument, [Docum
 CA1843 | Performance | Info | DoNotUseWhenAllOrWaitAllWithSingleArgument, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843)
 CA1844 | Performance | Info | ProvideStreamMemoryBasedAsyncOverrides, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844)
 CA1845 | Performance | Info | UseSpanBasedStringConcat, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1845)
+CA2250 | Usage | Warning | DynamicInterfaceCastableImplementationUnsupported, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250)
+CA2251 | Usage | Warning | InterfaceMethodsMissingImplementation, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251)
+CA2252 | Usage | Warning | MethodsDeclaredOnImplementationTypeMustBeSealed, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252)
 
 ### Removed Rules
 
