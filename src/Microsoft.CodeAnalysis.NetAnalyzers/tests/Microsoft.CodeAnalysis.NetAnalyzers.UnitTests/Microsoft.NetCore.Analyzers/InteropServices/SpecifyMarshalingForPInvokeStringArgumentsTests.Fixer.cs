@@ -126,6 +126,10 @@ Class C
     <{|CA2101:DllImport(""user32.dll"", CharSet:=CharSet.Ansi)|}>
     Private Shared Sub SomeMethod2(s As String)
     End Sub
+
+    <{|CA2101:DllImport(""user32.dll"", CHARSET:=CharSet.Ansi)|}>
+    Private Shared Sub SomeMethod3(s As String)
+    End Sub
 End Class
 ", @"
 Imports System.Runtime.InteropServices
@@ -138,6 +142,10 @@ Class C
 
     <DllImport(""user32.dll"", CharSet:=CharSet.Unicode)>
     Private Shared Sub SomeMethod2(s As String)
+    End Sub
+
+    <DllImport(""user32.dll"", CharSet:=CharSet.Unicode)>
+    Private Shared Sub SomeMethod3(s As String)
     End Sub
 End Class
 ");
