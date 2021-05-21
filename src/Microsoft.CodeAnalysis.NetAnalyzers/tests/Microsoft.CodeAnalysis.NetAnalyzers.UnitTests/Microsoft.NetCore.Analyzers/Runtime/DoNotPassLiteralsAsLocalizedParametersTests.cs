@@ -1871,8 +1871,11 @@ public class Test
 ".NormalizeLineEndings();
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = editorConfig
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
+                }
             };
 
             if (pointsToAnalysisKind == PointsToAnalysisKind.Complete)
@@ -1903,8 +1906,11 @@ End Class
 ".NormalizeLineEndings();
             var vbTest = new VerifyVB.Test()
             {
-                TestCode = vbCode,
-                AnalyzerConfigDocument = editorConfig
+                TestState =
+                {
+                    Sources = { vbCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
+                }
             };
 
             if (pointsToAnalysisKind == PointsToAnalysisKind.Complete)

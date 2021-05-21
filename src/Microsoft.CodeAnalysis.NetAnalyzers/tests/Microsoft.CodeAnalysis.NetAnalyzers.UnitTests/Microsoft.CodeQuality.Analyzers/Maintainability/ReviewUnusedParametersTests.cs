@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Text;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -870,7 +868,7 @@ public class C
 
 [*]
 {editorConfigText}
-") }
+") },
                 }
             }.RunAsync();
 
@@ -926,14 +924,14 @@ public class C
     {{
     }}
 }}"
-                    }
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]{Environment.NewLine}{editorConfigText}") },
                 },
-                SolutionTransforms = { WithAnalyzerConfigDocument }
             };
 
             if (expectDiagnostic)
             {
-                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"/Test0.cs", 4, 23, 4, 29).WithArguments("unused", "M"));
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(4, 23, 4, 29).WithArguments("unused", "M"));
             }
 
             await csTest.RunAsync();
@@ -950,35 +948,16 @@ Public Class C
     End Sub
 End Class"
                     },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]{Environment.NewLine}{editorConfigText}") },
                 },
-                SolutionTransforms = { WithAnalyzerConfigDocument }
             };
 
             if (expectDiagnostic)
             {
-                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"/Test0.vb", 3, 18, 3, 24).WithArguments("unused", "M"));
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(3, 18, 3, 24).WithArguments("unused", "M"));
             }
 
             await vbTest.RunAsync();
-            return;
-
-            Solution WithAnalyzerConfigDocument(Solution solution, ProjectId projectId)
-            {
-                var project = solution.GetProject(projectId)!;
-                var projectFilePath = project.Language == LanguageNames.CSharp ? @"/Test.csproj" : @"/Test.vbproj";
-                solution = solution.WithProjectFilePath(projectId, projectFilePath);
-
-                var documentId = project.DocumentIds.Single();
-                var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
-                solution = solution.WithDocumentFilePath(documentId, $@"/Test0.{documentExtension}");
-
-                return solution.GetProject(projectId)!
-                    .AddAnalyzerConfigDocument(
-                        ".editorconfig",
-                        SourceText.From($"[*.{documentExtension}]" + Environment.NewLine + editorConfigText),
-                         filePath: @"/.editorconfig")
-                    .Project.Solution;
-            }
         }
 
         [Theory]
@@ -1019,12 +998,11 @@ public class C
 {editorConfigText}
 ") }
                 },
-                SolutionTransforms = { WithAnalyzerConfigDocument }
             };
 
             if (expectDiagnostic)
             {
-                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"/Test0.cs", 4, 23, 4, 29).WithArguments("unused", "M"));
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(4, 23, 4, 29).WithArguments("unused", "M"));
             }
 
             await csTest.RunAsync();
@@ -1047,34 +1025,14 @@ End Class"
 {editorConfigText}
 ") }
                 },
-                SolutionTransforms = { WithAnalyzerConfigDocument }
             };
 
             if (expectDiagnostic)
             {
-                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"/Test0.vb", 3, 18, 3, 24).WithArguments("unused", "M"));
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(3, 18, 3, 24).WithArguments("unused", "M"));
             }
 
             await vbTest.RunAsync();
-            return;
-
-            Solution WithAnalyzerConfigDocument(Solution solution, ProjectId projectId)
-            {
-                var project = solution.GetProject(projectId)!;
-                var projectFilePath = project.Language == LanguageNames.CSharp ? @"/Test.csproj" : @"/Test.vbproj";
-                solution = solution.WithProjectFilePath(projectId, projectFilePath);
-
-                var documentId = project.DocumentIds.Single();
-                var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
-                solution = solution.WithDocumentFilePath(documentId, $@"/Test0.{documentExtension}");
-
-                return solution.GetProject(projectId)!
-                    .AddAnalyzerConfigDocument(
-                        ".editorconfig",
-                        SourceText.From($"[*.{documentExtension}]" + Environment.NewLine + editorConfigText),
-                        filePath: @"/.editorconfig")
-                    .Project.Solution;
-            }
         }
 
         [Fact, WorkItem(3106, "https://github.com/dotnet/roslyn-analyzers/issues/3106")]

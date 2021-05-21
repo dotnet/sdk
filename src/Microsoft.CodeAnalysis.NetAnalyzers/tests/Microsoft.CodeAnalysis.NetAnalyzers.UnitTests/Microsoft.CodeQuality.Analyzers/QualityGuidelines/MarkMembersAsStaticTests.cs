@@ -860,8 +860,11 @@ public class C : System.Web.HttpApplication
 
             await new VerifyCS.Test()
             {
-                TestCode = csSource,
-                AnalyzerConfigDocument = editorConfigText,
+                TestState =
+                {
+                    Sources = { csSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
+                }
             }.RunAsync();
 
             var vbSource = @"
@@ -911,8 +914,11 @@ End Class
 ";
             await new VerifyVB.Test()
             {
-                TestCode = vbSource,
-                AnalyzerConfigDocument = editorConfigText,
+                TestState =
+                {
+                    Sources = { vbSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
+                }
             }.RunAsync();
         }
 
@@ -1157,8 +1163,11 @@ public class Test
 }";
             await new VerifyCS.Test()
             {
-                TestCode = csSource,
-                AnalyzerConfigDocument = editorConfigText,
+                TestState =
+                {
+                    Sources = { csSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
+                }
             }.RunAsync();
 
             var vbSource = @"
@@ -1181,8 +1190,11 @@ Public Class Test
 End Class";
             await new VerifyVB.Test()
             {
-                TestCode = vbSource,
-                AnalyzerConfigDocument = editorConfigText,
+                TestState =
+                {
+                    Sources = { vbSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
+                }
             }.RunAsync();
         }
 

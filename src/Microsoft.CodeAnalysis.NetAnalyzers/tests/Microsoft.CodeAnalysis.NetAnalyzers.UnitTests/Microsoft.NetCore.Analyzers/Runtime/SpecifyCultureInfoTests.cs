@@ -21,9 +21,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("build_property.InvariantGlobalization = true", @"""aaa"".ToLower()")]
         public async Task CA1304_PlainString_CSharp_InvariantGlobalization(string property, string returnExpression)
         {
-            await new VerifyCS.Test
-            {
-                TestCode = $@"
+            var source = $@"
 using System;
 using System.Globalization;
 
@@ -33,8 +31,14 @@ public class CultureInfoTestClass0
     {{
         return {returnExpression};
     }}
-}}",
-                AnalyzerConfigDocument = property,
+}}";
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{property}") },
+                }
             }.RunAsync();
         }
 

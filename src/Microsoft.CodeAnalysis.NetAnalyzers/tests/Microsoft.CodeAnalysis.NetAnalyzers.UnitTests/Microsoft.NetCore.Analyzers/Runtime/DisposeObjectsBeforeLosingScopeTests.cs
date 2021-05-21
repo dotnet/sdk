@@ -59,17 +59,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         private string GetEditorConfigContentToDisableInterproceduralAnalysis(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var text = $@"dotnet_code_quality.interprocedural_analysis_kind = None
+            var text = $@"[*]
+                          dotnet_code_quality.interprocedural_analysis_kind = None
                           dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
             return text;
         }
 
         private string GetEditorConfigContent(DisposeAnalysisKind disposeAnalysisKind)
-            => $@"dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
+            => $@"[*]
+                  dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
 
         private string GetEditorConfigContent(PointsToAnalysisKind? pointsToAnalysisKind)
             => pointsToAnalysisKind.HasValue ?
-                $"dotnet_code_quality.CA2000.points_to_analysis_kind = {pointsToAnalysisKind}" :
+                $@"[*]
+                   dotnet_code_quality.CA2000.points_to_analysis_kind = {pointsToAnalysisKind}" :
                 string.Empty;
 
         [Fact]
@@ -8196,10 +8199,7 @@ End Class");
         [InlineData(PointsToAnalysisKind.Complete)]
         public async Task MemberReferenceInQueryFromClause_Disposed_NoDiagnostic(PointsToAnalysisKind? analysisKind)
         {
-            await new VerifyCS.Test()
-            {
-                AnalyzerConfigDocument = GetEditorConfigContent(analysisKind),
-                TestCode = @"
+            var source = @"
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -8237,7 +8237,14 @@ class Test
         y.Dispose();
     }
 }
-",
+";
+            await new VerifyCS.Test()
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(analysisKind)) },
+                }
             }.RunAsync();
         }
 
@@ -8877,8 +8884,11 @@ public class Test
 ";
             var test = new VerifyCS.Test()
             {
-                TestCode = source,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
@@ -9015,8 +9025,11 @@ public class Test
 
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
@@ -9077,8 +9090,11 @@ public class Test
 }";
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
@@ -9120,8 +9136,11 @@ End Class
 ";
             var vbTest = new VerifyVB.Test()
             {
-                TestCode = vbCode,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { vbCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
