@@ -75,7 +75,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                     // If a parameterless constructor has been defined, emit the diagnostic on the constructor instead of on the type.
                     targetWarningSymbol = constructor;
-                    diagnosticPropertyBag = diagnosticPropertyBag.Add(DiagnosticPropertyConstructorExists, null);
+                    diagnosticPropertyBag = diagnosticPropertyBag.Add(DiagnosticPropertyConstructorExists, string.Empty);
                     break;
                 }
             }
@@ -85,7 +85,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if (constructor.Parameters.Length == 0 &&
                     context.Compilation.IsSymbolAccessibleWithin(constructor, type))
                 {
-                    diagnosticPropertyBag = diagnosticPropertyBag.Add(DiagnosticPropertyBaseConstructorAccessible, null);
+                    diagnosticPropertyBag = diagnosticPropertyBag.Add(DiagnosticPropertyBaseConstructorAccessible, string.Empty);
                     break;
                 }
             }
