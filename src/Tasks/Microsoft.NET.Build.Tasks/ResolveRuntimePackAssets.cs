@@ -91,13 +91,6 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     throw new BuildErrorException(string.Format(Strings.RuntimeListNotFound, runtimeListPath));
                 }
-
-                foreach (var mibcFile in Directory.GetFiles(Path.Combine(runtimePackRoot, "tools"), "*.mibc")
-                {
-                    var assetItem = CreateAssetItem(mibcFile.FullPath, "pgodatafile", runtimePack, null);
-                    assetItem.SetMetadata("DropFromSingleFile", true);
-                    runtimePackAssets.Add(assetItem);
-                }
             }
 
             RuntimePackAssets = runtimePackAssets.ToArray();
@@ -124,6 +117,10 @@ namespace Microsoft.NET.Build.Tasks
                 else if (typeAttributeValue.Equals("Native", StringComparison.OrdinalIgnoreCase))
                 {
                     assetType = "native";
+                }
+                else if (typeAttributeValue.Equals("PgoData", StringComparison.OrdinalIgnoreCase))
+                {
+                    assetType = "pgodata";
                 }
                 else if (typeAttributeValue.Equals("Resources", StringComparison.OrdinalIgnoreCase))
                 {
@@ -173,7 +170,9 @@ namespace Microsoft.NET.Build.Tasks
 
             var assetItem = new TaskItem(assetPath);
 
-            assetItem.SetMetadata(MetadataKeys.CopyLocal, "true");
+            if (assetType != "pgodata")
+                assetItem.SetMetadata(MetadataKeys.CopyLocal, "true");
+
             if (string.IsNullOrEmpty(culture))
             {
                 assetItem.SetMetadata(MetadataKeys.DestinationSubPath, Path.GetFileName(assetPath));

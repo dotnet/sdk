@@ -330,9 +330,12 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            foreach (var mibc in Crossgen2PgoFiles)
+            if (Crossgen2PgoFiles != null)
             {
-                result.AppendLine($"-m:\"{mibc.ItemSpec}\"");
+                foreach (var mibc in Crossgen2PgoFiles)
+                {
+                    result.AppendLine($"-m:\"{mibc.ItemSpec}\"");
+                }
             }
 
             if (!string.IsNullOrEmpty(Crossgen2ExtraCommandLineArgs))
