@@ -16,25 +16,20 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     internal class SettingsStore
     {
-        internal SettingsStore()
+        internal SettingsStore(JObject? obj)
         {
-            ComponentGuidToAssemblyQualifiedName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            ComponentTypeToGuidList = new Dictionary<string, HashSet<Guid>>();
-            ProbingPaths = new HashSet<string>();
-        }
-
-        internal SettingsStore(JObject obj)
-            : this()
-        {
-            JToken componentGuidToAssemblyQualifiedNameToken;
-            if (obj.TryGetValue(nameof(ComponentGuidToAssemblyQualifiedName), StringComparison.OrdinalIgnoreCase, out componentGuidToAssemblyQualifiedNameToken))
+            if (obj == null)
             {
-                JObject? componentGuidToAssemblyQualifiedNameObject = componentGuidToAssemblyQualifiedNameToken as JObject;
-                if (componentGuidToAssemblyQualifiedNameObject != null)
+                return;
+            }
+
+            if (obj.TryGetValue(nameof(ComponentGuidToAssemblyQualifiedName), StringComparison.OrdinalIgnoreCase, out JToken componentGuidToAssemblyQualifiedNameToken))
+            {
+                if (componentGuidToAssemblyQualifiedNameToken is JObject componentGuidToAssemblyQualifiedNameObject)
                 {
                     foreach (JProperty entry in componentGuidToAssemblyQualifiedNameObject.Properties())
                     {
-                        if (entry.Value != null && entry.Value.Type == JTokenType.String)
+                        if (entry.Value is { Type: JTokenType.String })
                         {
                             ComponentGuidToAssemblyQualifiedName[entry.Name] = entry.Value.ToString();
                         }
@@ -42,15 +37,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            JToken probingPathsToken;
-            if (obj.TryGetValue(nameof(ProbingPaths), StringComparison.OrdinalIgnoreCase, out probingPathsToken))
+            if (obj.TryGetValue(nameof(ProbingPaths), StringComparison.OrdinalIgnoreCase, out JToken probingPathsToken))
             {
-                JArray? probingPathsArray = probingPathsToken as JArray;
-                if (probingPathsArray != null)
+                if (probingPathsToken is JArray probingPathsArray)
                 {
                     foreach (JToken path in probingPathsArray)
                     {
-                        if (path != null && path.Type == JTokenType.String)
+                        if (path is { Type: JTokenType.String })
                         {
                             ProbingPaths.Add(path.ToString());
                         }
@@ -58,27 +51,22 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            JToken componentTypeToGuidListToken;
-            if (obj.TryGetValue(nameof(ComponentTypeToGuidList), StringComparison.OrdinalIgnoreCase, out componentTypeToGuidListToken))
+            if (obj.TryGetValue(nameof(ComponentTypeToGuidList), StringComparison.OrdinalIgnoreCase, out JToken componentTypeToGuidListToken))
             {
-                JObject? componentTypeToGuidListObject = componentTypeToGuidListToken as JObject;
-                if (componentTypeToGuidListObject != null)
+                if (componentTypeToGuidListToken is JObject componentTypeToGuidListObject)
                 {
                     foreach (JProperty entry in componentTypeToGuidListObject.Properties())
                     {
-                        JArray? values = entry.Value as JArray;
-
-                        if (values != null)
+                        if (entry.Value is JArray values)
                         {
                             HashSet<Guid> set = new HashSet<Guid>();
                             ComponentTypeToGuidList[entry.Name] = set;
 
                             foreach (JToken value in values)
                             {
-                                if (value != null && value.Type == JTokenType.String)
+                                if (value is { Type: JTokenType.String })
                                 {
-                                    Guid id;
-                                    if (Guid.TryParse(value.ToString(), out id))
+                                    if (Guid.TryParse(value.ToString(), out Guid id))
                                     {
                                         set.Add(id);
                                     }
@@ -91,16 +79,21 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         [JsonProperty]
-        internal Dictionary<string, string> ComponentGuidToAssemblyQualifiedName { get; }
+        internal Dictionary<string, string> ComponentGuidToAssemblyQualifiedName { get; } = new();
 
         [JsonProperty]
-        internal HashSet<string> ProbingPaths { get; }
+        internal HashSet<string> ProbingPaths { get; } = new();
 
         [JsonProperty]
-        internal Dictionary<string, HashSet<Guid>> ComponentTypeToGuidList { get; }
+        internal Dictionary<string, HashSet<Guid>> ComponentTypeToGuidList { get; } = new();
 
-        internal static SettingsStore Load(IEngineEnvironmentSettings engineEnvironmentSettings, SettingsFilePaths paths)
+        internal static SettingsStore? Load(IEngineEnvironmentSettings engineEnvironmentSettings, SettingsFilePaths paths)
         {
+            if (!paths.Exists(paths.SettingsFile))
+            {
+                return new SettingsStore(null);
+            }
+
             const int MaxLoadAttempts = 20;
             string? userSettings = null;
             using (Timing.Over(engineEnvironmentSettings.Host.Logger, "Read settings"))

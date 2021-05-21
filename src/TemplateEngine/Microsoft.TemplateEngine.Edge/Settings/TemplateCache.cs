@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 foreach (var entry in dict)
                 {
-                    mountPointInfo.Add(entry.Key, entry.Value.ToObject<DateTime>());
+                    mountPointInfo.Add(entry.Key, entry.Value.Value<DateTime>());
                 }
             }
 

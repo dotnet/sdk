@@ -6,12 +6,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
@@ -85,8 +87,20 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 try
                 {
                     string? textFileContent = _paths.ReadAllText(_globalSettingsFile, "{}");
-                    GlobalSettingsData? data = JsonConvert.DeserializeObject<GlobalSettingsData>(textFileContent);
-                    return data.Packages ?? Array.Empty<TemplatePackageData>();
+                    var jObject = JObject.Parse(textFileContent);
+                    var packages = new List<TemplatePackageData>();
+
+                    foreach (var package in jObject.Get<JArray>(nameof(GlobalSettingsData.Packages)) ?? new JArray())
+                    {
+                        packages.Add(new TemplatePackageData(
+                            package.ToGuid(nameof(TemplatePackageData.InstallerId)),
+                            package.Value<string>(nameof(TemplatePackageData.MountPointUri)),
+                            (DateTime)package[nameof(TemplatePackageData.LastChangeTime)],
+                            package.ToStringDictionary(propertyName: nameof(TemplatePackageData.Details))
+                        ));
+                    }
+
+                    return packages;
                 }
                 catch (Exception)
                 {

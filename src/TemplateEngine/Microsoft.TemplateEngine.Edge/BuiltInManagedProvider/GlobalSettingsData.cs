@@ -13,13 +13,5 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
     internal sealed class GlobalSettingsData
     {
         public IReadOnlyList<TemplatePackageData> Packages { get; set; }
-
-        /// <summary>
-        /// If older TemplateEngine loads this file and saves it back
-        /// it will include new settings that new TemplateEngine depends on,
-        /// without this field, data would be lost in process of loading and saving.
-        /// </summary>
-        [JsonExtensionData]
-        public IDictionary<string, Newtonsoft.Json.Linq.JToken> AdditionalData { get; set; }
     }
 }
