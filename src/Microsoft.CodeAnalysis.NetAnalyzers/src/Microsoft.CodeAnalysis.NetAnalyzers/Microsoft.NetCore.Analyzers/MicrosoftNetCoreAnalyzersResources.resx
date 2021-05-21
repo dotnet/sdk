@@ -1534,6 +1534,18 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="PreferAsSpanOverSubstringDescription" xml:space="preserve">
+    <value>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</value>
+  </data>
+  <data name="PreferAsSpanOverSubstringMessage" xml:space="preserve">
+    <value>Prefer 'AsSpan' over 'Substring' when span-based overloads are available</value>
+  </data>
+  <data name="PreferAsSpanOverSubstringTitle" xml:space="preserve">
+    <value>Prefer 'AsSpan' over 'Substring'</value>
+  </data>
+  <data name="PreferAsSpanOverSubstringCodefixTitle" xml:space="preserve">
+    <value>Replace 'Substring' with 'AsSpan'</value>
+  </data>
   <data name="UseCancellationTokenThrowIfCancellationRequestedDescription" xml:space="preserve">
     <value>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</value>
   </data>
