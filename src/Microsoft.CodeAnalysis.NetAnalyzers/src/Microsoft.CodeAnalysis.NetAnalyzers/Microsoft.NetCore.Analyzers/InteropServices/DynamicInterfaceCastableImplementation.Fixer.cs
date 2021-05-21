@@ -15,9 +15,12 @@ using Microsoft.CodeAnalysis.Editing;
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-    public class ImplementInterfacesOnDynamicCastableImplementationFixer : CodeFixProvider
+    public class DynamicInterfaceCastableImplementationFixer : CodeFixProvider
     {
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DynamicInterfaceCastableImplementationAnalyzer.InterfaceMethodsMissingImplementationRuleId);
+        public override ImmutableArray<string> FixableDiagnosticIds =>
+            ImmutableArray.Create(
+                DynamicInterfaceCastableImplementationAnalyzer.InterfaceMethodsMissingImplementationRuleId,
+                DynamicInterfaceCastableImplementationAnalyzer.MethodsDeclaredOnImplementationTypeMustBeSealedRuleId);
 
         public override FixAllProvider GetFixAllProvider()
         {
@@ -37,13 +40,26 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
             Diagnostic diagnostic = context.Diagnostics.First();
-            context.RegisterCodeFix(
-                new MyCodeAction(
-                    MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,
-                    async ct => await ImplementInterfacesOnDynamicCastableImplementation(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
-                    equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
-                diagnostic);
+            if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMethodsMissingImplementationRuleId)
+            {
+                context.RegisterCodeFix(
+                    new MyCodeAction(
+                        MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,
+                        async ct => await ImplementInterfacesOnDynamicCastableImplementation(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                        equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
+                    diagnostic);
+            }
+            else if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MethodsDeclaredOnImplementationTypeMustBeSealedRuleId)
+            {
+                context.RegisterCodeFix(
+                    new MyCodeAction(
+                        MicrosoftNetCoreAnalyzersResources.SealMethodDeclaredOnImplementationType,
+                        async ct => await SealMethodDeclaredOnImplementationType(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                        equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.SealMethodDeclaredOnImplementationType)),
+                    diagnostic);
+            }
         }
+
 
         private static async Task<Document> ImplementInterfacesOnDynamicCastableImplementation(
             SyntaxNode declaration,
@@ -100,6 +116,16 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     addAccessorStatements: defaultMethodBodyStatements,
                     removeAccessorStatements: defaultMethodBodyStatements);
             }
+        }
+
+        private static async Task<Document> SealMethodDeclaredOnImplementationType(
+            SyntaxNode declaration,
+            Document document,
+            CancellationToken ct)
+        {
+            var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
+            editor.SetModifiers(declaration, editor.Generator.GetModifiers(declaration).WithIsSealed(true));
+            return editor.GetChangedDocument();
         }
 
         private class MyCodeAction : DocumentChangeAction

@@ -12,7 +12,20 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal class DynamicInterfaceCastableImplementationAnalyzer : DiagnosticAnalyzer
     {
-        internal const string InterfaceMethodsMissingImplementationRuleId = "CA2250";
+        internal const string DynamicInterfaceCastableImplementationUnsupportedRuleId = "CA2251";
+
+        private static readonly DiagnosticDescriptor DynamicInterfaceCastableImplementationUnsupported =
+            DiagnosticDescriptorHelper.Create(
+                DynamicInterfaceCastableImplementationUnsupportedRuleId,
+                "",
+                "",
+                DiagnosticCategory.Usage,
+                RuleLevel.BuildWarning,
+                "",
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
+
+        internal const string InterfaceMethodsMissingImplementationRuleId = "CA2251";
 
         private static readonly DiagnosticDescriptor InterfaceMethodsMissingImplementation =
             DiagnosticDescriptorHelper.Create(
@@ -25,11 +38,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        internal const string MethodsDeclaredOnImplementationTypeMustBeVirtualRuleId = "CA2251";
+        internal const string MethodsDeclaredOnImplementationTypeMustBeSealedRuleId = "CA2252";
 
         private static readonly DiagnosticDescriptor MethodsDeclaredOnImplementationTypeMustBeVirtual =
             DiagnosticDescriptorHelper.Create(
-                MethodsDeclaredOnImplementationTypeMustBeVirtualRuleId,
+                MethodsDeclaredOnImplementationTypeMustBeSealedRuleId,
                 "",
                 "",
                 DiagnosticCategory.Usage,
@@ -47,7 +60,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             context.RegisterSymbolAction(context => AnalyzeType(context), SymbolKind.NamedType);
         }
 
-        private const string DynamicCastableImplementationAttributeTypeName = "System.Runtime.InteropServices.DynamicInterfaceCastableImplementationAttribute";
+        private const string DynamicInterfaceCastableImplementationAttributeTypeName = "System.Runtime.InteropServices.DynamicInterfaceCastableImplementationAttribute";
 
         private static void AnalyzeType(SymbolAnalysisContext context)
         {
@@ -61,7 +74,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             bool isDynamicInterfaceImplementation = false;
             foreach (var attribute in targetType.GetAttributes())
             {
-                if (attribute.AttributeClass.ToDisplayString(SymbolDisplayFormats.QualifiedTypeAndNamespaceSymbolDisplayFormat) == DynamicCastableImplementationAttributeTypeName)
+                if (attribute.AttributeClass.ToDisplayString(SymbolDisplayFormats.QualifiedTypeAndNamespaceSymbolDisplayFormat) == DynamicInterfaceCastableImplementationAttributeTypeName)
                 {
                     isDynamicInterfaceImplementation = true;
                     break;
@@ -70,6 +83,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             if (!isDynamicInterfaceImplementation)
             {
+                return;
+            }
+
+            // Default Interface Methods are required to provide an IDynamicInterfaceCastable implementation type.
+            // Since Visual Basic does not support DIMs, an implementation type cannot be correctly provided in VB.
+            if (context.Compilation.Language == LanguageNames.VisualBasic)
+            {
+                context.ReportDiagnostic(targetType.CreateDiagnostic(DynamicInterfaceCastableImplementationUnsupported));
                 return;
             }
 
