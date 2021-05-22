@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.DynamicInterfaceCastableImplementationAnalyzer,
-    Microsoft.NetCore.Analyzers.InteropServices.DynamicInterfaceCastableImplementationFixer>;
+    Microsoft.NetCore.CSharp.Analyzers.InteropServices.CSharpDynamicInterfaceCastableImplementationFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.DynamicInterfaceCastableImplementationAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -202,7 +202,7 @@ interface I2
 [DynamicInterfaceCastableImplementation]
 interface I3 : I, I2
 {
-    void I.Method() 
+    void I.Method()
     {
         throw new NotImplementedException();
     }

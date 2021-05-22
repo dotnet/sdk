@@ -1,0 +1,99 @@
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Composition;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Analyzer.Utilities;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Editing;
+using Microsoft.NetCore.Analyzers.InteropServices;
+
+namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
+{
+    [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
+    public sealed class CSharpDynamicInterfaceCastableImplementationFixer : DynamicInterfaceCastableImplementationFixer
+    {
+        protected override async Task<Document> ImplementInterfacesOnDynamicCastableImplementation(
+            SyntaxNode declaration,
+            Document document,
+            CancellationToken ct)
+        {
+            var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
+
+            INamedTypeSymbol type = (INamedTypeSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
+            var generator = editor.Generator;
+
+            var defaultMethodBodyStatements = generator.DefaultMethodBody(editor.SemanticModel.Compilation).ToArray();
+            List<SyntaxNode> generatedMembers = new List<SyntaxNode>();
+            foreach (var iface in type.AllInterfaces)
+            {
+                foreach (var member in iface.GetMembers())
+                {
+                    if (!member.IsStatic && type.FindImplementationForInterfaceMember(member) is null)
+                    {
+                        generatedMembers.Add(generator.AsPrivateInterfaceImplementation(
+                            member.Kind switch
+                            {
+                                SymbolKind.Method => GenerateMethodImplementation((IMethodSymbol)member),
+                                SymbolKind.Property => GeneratePropertyImplementation((IPropertySymbol)member),
+                                SymbolKind.Event => GenerateEventImplementation((IEventSymbol)member),
+                                _ => throw new InvalidOperationException()
+                            },
+                            generator.NameExpression(member.ContainingType)));
+                    }
+                }
+            }
+
+            // Explicitly use the C# syntax APIs to work around https://github.com/dotnet/roslyn/issues/53605
+            TypeDeclarationSyntax typeDeclaration = (TypeDeclarationSyntax)declaration;
+            typeDeclaration = typeDeclaration.AddMembers(generatedMembers.Cast<MemberDeclarationSyntax>().ToArray());
+
+            editor.ReplaceNode(declaration, typeDeclaration);
+
+            return editor.GetChangedDocument();
+
+            SyntaxNode GenerateMethodImplementation(IMethodSymbol method)
+            {
+                SyntaxNode methodDecl = generator.MethodDeclaration(method);
+                methodDecl = generator.WithModifiers(methodDecl, generator.GetModifiers(declaration).WithIsAbstract(false));
+                return generator.WithStatements(methodDecl, defaultMethodBodyStatements);
+            }
+
+            SyntaxNode GeneratePropertyImplementation(IPropertySymbol property)
+            {
+                SyntaxNode propertyDecl = generator.PropertyDeclaration(property);
+                propertyDecl = generator.WithModifiers(propertyDecl, generator.GetModifiers(declaration).WithIsAbstract(false));
+
+                if (editor.SemanticModel.Compilation.IsSymbolAccessibleWithin(property.GetMethod, type))
+                {
+                    propertyDecl = generator.WithGetAccessorStatements(propertyDecl, defaultMethodBodyStatements);
+                }
+                if (editor.SemanticModel.Compilation.IsSymbolAccessibleWithin(property.SetMethod, type))
+                {
+                    propertyDecl = generator.WithSetAccessorStatements(propertyDecl, defaultMethodBodyStatements);
+                }
+
+                return propertyDecl;
+            }
+
+            SyntaxNode GenerateEventImplementation(IEventSymbol evt)
+            {
+                SyntaxNode eventDecl = generator.CustomEventDeclaration(evt);
+                eventDecl = generator.WithModifiers(eventDecl, generator.GetModifiers(declaration).WithIsAbstract(false));
+
+                return generator.AddAccessors(
+                    eventDecl,
+                    new[]
+                    {
+                        generator.WithStatements(generator.GetAccessor(eventDecl, DeclarationKind.AddAccessor), defaultMethodBodyStatements),
+                        generator.WithStatements(generator.GetAccessor(eventDecl, DeclarationKind.RemoveAccessor), defaultMethodBodyStatements),
+                    });
+            }
+        }
+    }
+}
