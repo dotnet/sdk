@@ -24,7 +24,8 @@ namespace Microsoft.DotNet.ApiCompatibility
                 IPropertySymbol => symbol.ToComparisonDisplayString(),
                 IEventSymbol => symbol.ToComparisonDisplayString(),
                 ITypeSymbol => symbol.ToComparisonDisplayString(),
-                _ => symbol.Name,
+                INamespaceSymbol => symbol.ToComparisonDisplayString(),
+                _ => symbol.ToComparisonDisplayString(),
             };
     }
 }
