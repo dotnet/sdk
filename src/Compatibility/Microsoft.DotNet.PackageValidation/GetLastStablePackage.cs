@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.PackageValidation
             
             if (version == null)
             {
-                Log.LogNonSdkWarning(DiagnosticIds.NoBaselinePackageFound, string.Format(Resources.BaselinePackageNotFound, PackageId, Environment.NewLine + string.Join(Environment.NewLine + " - ", NugetFeeds), PackageVersion));
+                Log.LogNonSdkWarning(DiagnosticIds.NoBaselinePackageFound, string.Format(Resources.BaselinePackageNotFound, PackageId, string.Join(" ;", NugetFeeds), PackageVersion));
                 return;
             }
 

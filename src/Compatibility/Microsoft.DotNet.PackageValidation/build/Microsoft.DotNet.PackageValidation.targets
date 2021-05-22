@@ -81,9 +81,11 @@
       <_PackageValidationIntermediateBaselineFile>$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).packagevalidation.g.targets</_PackageValidationIntermediateBaselineFile>
       <_PackageValidationIntermediateBaselineFileContent>
 <![CDATA[<Project>
-  <PropertyGroup>
-    <EnablePackageBaselineValidation>false</EnablePackageBaselineValidation>
-  </PropertyGroup>
+  <Target Name="ResetEnablePackageValidation" BeforeTargets="RunPackageValidation">
+    <PropertyGroup>
+     <EnablePackageBaselineValidation>false</EnablePackageBaselineValidation>
+    </PropertyGroup>
+  </Target>
 </Project>]]>
       </_PackageValidationIntermediateBaselineFileContent>
     </PropertyGroup>
