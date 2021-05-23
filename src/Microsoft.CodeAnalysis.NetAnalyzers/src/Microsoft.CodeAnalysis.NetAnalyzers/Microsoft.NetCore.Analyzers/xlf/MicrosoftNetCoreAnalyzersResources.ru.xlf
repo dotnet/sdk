@@ -2417,6 +2417,26 @@
         <target state="new">Use span-based 'string.Concat'</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
+        <source>Use 'string.Equals'</source>
+        <target state="new">Use 'string.Equals'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringEqualsOverStringCompareDescription">
+        <source>It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</source>
+        <target state="new">It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringEqualsOverStringCompareMessage">
+        <source>Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</source>
+        <target state="new">Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringEqualsOverStringCompareTitle">
+        <source>Use 'string.Equals'</source>
+        <target state="new">Use 'string.Equals'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">
         <source>Platform compatibility analyzer requires a valid platform name and version.</source>
         <target state="new">Platform compatibility analyzer requires a valid platform name and version.</target>

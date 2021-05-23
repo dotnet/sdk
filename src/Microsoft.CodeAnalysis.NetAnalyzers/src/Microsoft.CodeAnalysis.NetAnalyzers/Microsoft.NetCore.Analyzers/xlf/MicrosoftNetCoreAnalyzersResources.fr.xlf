@@ -2397,6 +2397,26 @@
         <target state="translated">Si possible, utilisez le contrôle d'accès en fonction du rôle d'Azure à la place d'une signature d'accès partagé. Si vous devez quand même utiliser une signature d'accès partagé, spécifiez SharedAccessProtocol.HttpsOnly.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
+        <source>Use 'string.Equals'</source>
+        <target state="new">Use 'string.Equals'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringEqualsOverStringCompareDescription">
+        <source>It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</source>
+        <target state="new">It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringEqualsOverStringCompareMessage">
+        <source>Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</source>
+        <target state="new">Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringEqualsOverStringCompareTitle">
+        <source>Use 'string.Equals'</source>
+        <target state="new">Use 'string.Equals'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatCodeFixTitle">
         <source>Use 'AsSpan' with 'string.Concat'</source>
         <target state="new">Use 'AsSpan' with 'string.Concat'</target>

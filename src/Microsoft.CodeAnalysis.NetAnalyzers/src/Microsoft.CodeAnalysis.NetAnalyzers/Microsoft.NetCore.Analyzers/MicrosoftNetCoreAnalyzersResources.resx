@@ -1635,4 +1635,16 @@
   <data name="DoNotUseWhenAllWithSingleTaskFix" xml:space="preserve">
     <value>Replace 'WhenAll' call with argument</value>
   </data>
+  <data name="UseStringEqualsOverStringCompareCodeFixTitle" xml:space="preserve">
+    <value>Use 'string.Equals'</value>
+  </data>
+  <data name="UseStringEqualsOverStringCompareDescription" xml:space="preserve">
+    <value>It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</value>
+  </data>
+  <data name="UseStringEqualsOverStringCompareMessage" xml:space="preserve">
+    <value>Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</value>
+  </data>
+  <data name="UseStringEqualsOverStringCompareTitle" xml:space="preserve">
+    <value>Use 'string.Equals'</value>
+  </data>
 </root>

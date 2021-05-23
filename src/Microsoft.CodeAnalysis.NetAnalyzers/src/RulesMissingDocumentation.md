@@ -11,3 +11,4 @@ CA1843 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-r
 CA1844 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844> | Provide memory-based overrides of async methods when subclassing 'Stream' |
 CA1845 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1845> | Use span-based 'string.Concat' |
 CA1846 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846> | Prefer 'AsSpan' over 'Substring' |
+CA2251 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251> | Use 'string.Equals' |
