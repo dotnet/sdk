@@ -38,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Resources
                                                                              isDataflowRule: false,
                                                                              isReportedAtCompilationEnd: true);
 
-        protected abstract void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound);
+        protected abstract void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound, INamedTypeSymbol generatedCode);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -53,9 +53,14 @@ namespace Microsoft.NetCore.Analyzers.Resources
 
             context.RegisterCompilationStartAction(cc =>
             {
-                var hasResource = false;
+                INamedTypeSymbol? generatedCode = cc.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCodeDomCompilerGeneratedCodeAttribute);
+                if (generatedCode is null)
+                {
+                    return;
+                }
 
-                RegisterAttributeAnalyzer(cc, () => hasResource = true);
+                var hasResource = false;
+                RegisterAttributeAnalyzer(cc, () => hasResource = true, generatedCode);
 
                 cc.RegisterCompilationEndAction(ce =>
                 {
@@ -89,14 +94,13 @@ namespace Microsoft.NetCore.Analyzers.Resources
             return tree.FilePath?.IndexOf(Designer, StringComparison.OrdinalIgnoreCase) > 0;
         }
 
-        protected static bool CheckResxGeneratedFile(SemanticModel model, SyntaxNode attribute, SyntaxNode argument, CancellationToken cancellationToken)
+        protected static bool CheckResxGeneratedFile(SemanticModel model, SyntaxNode attribute, SyntaxNode argument, INamedTypeSymbol generatedCode, CancellationToken cancellationToken)
         {
             if (!CheckDesignerFile(model.SyntaxTree))
             {
                 return false;
             }
 
-            INamedTypeSymbol? generatedCode = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCodeDomCompilerGeneratedCodeAttribute);
             if (model.GetSymbolInfo(attribute, cancellationToken).Symbol?.ContainingType?.Equals(generatedCode) != true)
             {
                 return false;
