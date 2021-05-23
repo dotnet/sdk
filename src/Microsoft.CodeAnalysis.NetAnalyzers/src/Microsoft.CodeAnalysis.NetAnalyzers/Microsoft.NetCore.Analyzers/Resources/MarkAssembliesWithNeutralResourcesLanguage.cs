@@ -59,6 +59,18 @@ namespace Microsoft.NetCore.Analyzers.Resources
                     return;
                 }
 
+                INamedTypeSymbol? attribute = cc.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemResourcesNeutralResourcesLanguageAttribute);
+                if (attribute is null)
+                {
+                    return;
+                }
+
+                if (TryCheckNeutralResourcesLanguageAttribute(cc.Compilation, attribute, out var data))
+                {
+                    // attribute already exist
+                    return;
+                }
+
                 var hasResource = false;
                 RegisterAttributeAnalyzer(cc, () => hasResource = true, generatedCode);
 
@@ -70,11 +82,6 @@ namespace Microsoft.NetCore.Analyzers.Resources
                         return;
                     }
 
-                    if (TryCheckNeutralResourcesLanguageAttribute(ce, out AttributeData data))
-                    {
-                        // attribute already exist
-                        return;
-                    }
 
                     if (data != null)
                     {
@@ -125,15 +132,12 @@ namespace Microsoft.NetCore.Analyzers.Resources
             return true;
         }
 
-        private static bool TryCheckNeutralResourcesLanguageAttribute(CompilationAnalysisContext context, out AttributeData attributeData)
+        private static bool TryCheckNeutralResourcesLanguageAttribute(Compilation compilation, INamedTypeSymbol attribute, out AttributeData? attributeData)
         {
-            INamedTypeSymbol? attribute = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemResourcesNeutralResourcesLanguageAttribute);
-            INamedTypeSymbol? @string = context.Compilation.GetSpecialType(SpecialType.System_String);
-
-            IEnumerable<AttributeData> attributes = context.Compilation.Assembly.GetAttributes().Where(d => d.AttributeClass?.Equals(attribute) == true);
+            IEnumerable<AttributeData> attributes = compilation.Assembly.GetAttributes().Where(d => SymbolEqualityComparer.Default.Equals(attribute, d.AttributeClass));
             foreach (AttributeData data in attributes)
             {
-                if (data.ConstructorArguments.Any(c => c.Type?.Equals(@string) == true && !string.IsNullOrWhiteSpace((string)c.Value)))
+                if (data.ConstructorArguments.Any(c => c.Value is string constantValue && !string.IsNullOrWhiteSpace(constantValue)))
                 {
                     // found one that already does right thing.
                     attributeData = data;
