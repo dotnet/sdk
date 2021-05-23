@@ -82,7 +82,6 @@ namespace Microsoft.NetCore.Analyzers.Resources
                         return;
                     }
 
-
                     if (data != null)
                     {
                         // we have the attribute but its doing it wrong.
