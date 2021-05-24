@@ -192,3 +192,9 @@ Rohan quickly realizes his mistake and add ```A.B.Open(string)``` to the unix ru
     }
 #endif
 ```
+
+## Whats Next For Package Validation
+
+- Error Suppression for Package Validation Errors eg Intentional breaking changes between versions.
+- More Compatibilty Rules eg compatible assembly versions, nullability.
+- Validating Package Dependencies.
