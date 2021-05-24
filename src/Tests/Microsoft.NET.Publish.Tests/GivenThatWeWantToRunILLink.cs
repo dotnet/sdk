@@ -590,7 +590,8 @@ namespace Microsoft.NET.Publish.Tests
                 "ILLink : Trim analysis warning IL2026: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
                 "ILLink : Trim analysis warning IL2026: System.StartupHookProvider.ProcessStartupHooks(",
                 "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr,IntPtr,IntPtr,IntPtr,IntPtr,IntPtr",
-                "warning IL2009: Could not find method 'System.Boolean get_IsBuiltInComSupported()' on type 'System.Runtime.InteropServices.Marshal'"
+                "warning IL2009: Could not find method 'System.Boolean get_IsBuiltInComSupported()' on type 'System.Runtime.InteropServices.Marshal'",
+                "warning IL2009: Could not find method 'System.Boolean get_IsSupported()' on type 'Internal.Runtime.InteropServices.InMemoryAssemblyLoader'",
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
@@ -610,8 +611,8 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var expectedOutput = new string[] {
-                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr,IntPtr,IntPtr,IntPtr,IntPtr,IntPtr",
-                "warning IL2009: Could not find method 'System.Boolean get_IsBuiltInComSupported()' on type 'System.Runtime.InteropServices.Marshal'"
+                "warning IL2009: Could not find method 'System.Boolean get_IsBuiltInComSupported()' on type 'System.Runtime.InteropServices.Marshal'",
+                "warning IL2009: Could not find method 'System.Boolean get_IsSupported()' on type 'Internal.Runtime.InteropServices.InMemoryAssemblyLoader'",
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
