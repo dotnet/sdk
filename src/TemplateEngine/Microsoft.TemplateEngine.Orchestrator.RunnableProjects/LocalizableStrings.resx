@@ -171,7 +171,8 @@
     <value>Template: '{0}'</value>
   </data>
   <data name="Authoring_TemplateNotInstalled" xml:space="preserve">
-    <value>'{0}' was not loaded</value>
+    <value>Failed to load template from {0}:</value>
+    <comment>{0} is uri of template location.</comment>
   </data>
   <data name="Authoring_TemplateRootOutsideInstallSource" xml:space="preserve">
     <value>Template: '{0}' - Template root is outside the specified install source location.</value>
