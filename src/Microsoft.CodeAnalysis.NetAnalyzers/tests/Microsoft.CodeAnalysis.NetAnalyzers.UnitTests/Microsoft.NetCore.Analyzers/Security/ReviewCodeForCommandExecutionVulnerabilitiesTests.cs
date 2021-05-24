@@ -148,5 +148,25 @@ public partial class WebForm : System.Web.UI.Page
 }",
                 GetCSharpResultAt(14, 13, 11, 24, "string ProcessStartInfo.Arguments", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
+
+        [Fact]
+        public async Task AspNetCoreHttpRequest_Process_Start_fileName_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+
+public class HomeController : Controller
+{
+    public IActionResult Index()
+    {
+        string input = Request.Form[""in""];
+        Process p = Process.Start(input);
+
+        return View();
+    }
+}",
+                GetCSharpResultAt(10, 21, 9, 24, "Process Process.Start(string fileName)", "IActionResult HomeController.Index()", "IFormCollection HttpRequest.Form", "IActionResult HomeController.Index()"));
+        }
     }
 }

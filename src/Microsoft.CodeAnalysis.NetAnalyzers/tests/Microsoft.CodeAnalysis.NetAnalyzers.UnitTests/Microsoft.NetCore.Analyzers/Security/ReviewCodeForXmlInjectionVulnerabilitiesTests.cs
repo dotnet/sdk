@@ -311,5 +311,28 @@ public partial class WebForm : System.Web.UI.Page
     }
 }");
         }
+
+        [Fact]
+        public async Task AspNetCoreHttpRequest_XmlTextWriter_WriteRaw_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.IO;
+using System.Text;
+using System.Xml;
+using Microsoft.AspNetCore.Mvc;
+
+public class HomeController : Controller
+{
+    public IActionResult Index()
+    {
+        string input = Request.Form[""in""];
+        var xtw = new XmlTextWriter(new MemoryStream(), Encoding.UTF8);
+        xtw.WriteRaw(input);
+
+        return View();
+    }
+}",
+                GetCSharpResultAt(13, 9, 11, 24, "void XmlTextWriter.WriteRaw(string data)", "IActionResult HomeController.Index()", "IFormCollection HttpRequest.Form", "IActionResult HomeController.Index()"));
+        }
     }
 }

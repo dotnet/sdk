@@ -5,6 +5,7 @@
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 CA1418 | Interoperability | Warning | UseValidPlatformString, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1418)
+CA1419 | Interoperability | Info | ProvidePublicParameterlessSafeHandleConstructor, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419)
 CA1839 | Performance | Info | UseEnvironmentMembers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839)
 CA1840 | Performance | Info | UseEnvironmentMembers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840)
 CA1841 | Performance | Info | PreferDictionaryContainsMethods, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841)
@@ -12,9 +13,12 @@ CA1842 | Performance | Info | DoNotUseWhenAllOrWaitAllWithSingleArgument, [Docum
 CA1843 | Performance | Info | DoNotUseWhenAllOrWaitAllWithSingleArgument, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843)
 CA1844 | Performance | Info | ProvideStreamMemoryBasedAsyncOverrides, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844)
 CA1845 | Performance | Info | UseSpanBasedStringConcat, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1845)
-CA2250 | Usage | Warning | DynamicInterfaceCastableImplementationUnsupported, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250)
-CA2251 | Usage | Warning | InterfaceMethodsMissingImplementation, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251)
-CA2252 | Usage | Warning | MethodsDeclaredOnImplementationTypeMustBeSealed, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252)
+CA1846 | Performance | Info | PreferAsSpanOverSubstring, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846)
+CA2250 | Usage | Info | UseCancellationTokenThrowIfCancellationRequested, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250)
+CA2251 | Usage | Hidden | UseStringEqualsOverStringCompare, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251)
+CA2252 | Usage | Warning | DynamicInterfaceCastableImplementationUnsupported, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250)
+CA2253 | Usage | Warning | InterfaceMethodsMissingImplementation, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251)
+CA2254 | Usage | Warning | MethodsDeclaredOnImplementationTypeMustBeSealed, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252)
 
 ### Removed Rules
 

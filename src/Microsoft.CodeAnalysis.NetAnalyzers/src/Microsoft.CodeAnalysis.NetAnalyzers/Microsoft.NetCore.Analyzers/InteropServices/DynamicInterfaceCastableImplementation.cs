@@ -11,7 +11,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal class DynamicInterfaceCastableImplementationAnalyzer : DiagnosticAnalyzer
     {
-        internal const string DynamicInterfaceCastableImplementationUnsupportedRuleId = "CA2250";
+        internal const string DynamicInterfaceCastableImplementationUnsupportedRuleId = "CA2252";
 
         private static readonly DiagnosticDescriptor DynamicInterfaceCastableImplementationUnsupported =
             DiagnosticDescriptorHelper.Create(
@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        internal const string InterfaceMethodsMissingImplementationRuleId = "CA2251";
+        internal const string InterfaceMethodsMissingImplementationRuleId = "CA2253";
 
         private static readonly DiagnosticDescriptor InterfaceMethodsMissingImplementation =
             DiagnosticDescriptorHelper.Create(
@@ -37,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        internal const string MethodsDeclaredOnImplementationTypeMustBeSealedRuleId = "CA2252";
+        internal const string MethodsDeclaredOnImplementationTypeMustBeSealedRuleId = "CA2254";
 
         private static readonly DiagnosticDescriptor MethodsDeclaredOnImplementationTypeMustBeSealed =
             DiagnosticDescriptorHelper.Create(
