@@ -20,7 +20,8 @@
                               '$(PackageValidationBaselinePath)' == ''">
       <PackageValidationBaselineName Condition="'$(PackageValidationBaselineName)' == ''">$(_PackageValidationBaselineName)</PackageValidationBaselineName>
       <PackageValidationBaselineVersion Condition="'$(PackageValidationBaselineVersion)' == ''">$(_PackageValidationBaselineVersion)</PackageValidationBaselineVersion>
-      <PackageValidationBaselinePath>$([MSBuild]::NormalizePath('$(NuGetPackageRoot)', '$(PackageValidationBaselineName)', '$(PackageValidationBaselineVersion)', '$(PackageValidationBaselineName).$(PackageValidationBaselineVersion).nupkg'))</PackageValidationBaselinePath>
+      <PackageValidationBaselinePath Condition="'$(PackageValidationBaselineVersion)' != ''">$([MSBuild]::NormalizePath('$(NuGetPackageRoot)', '$(PackageValidationBaselineName)', '$(PackageValidationBaselineVersion)', '$(PackageValidationBaselineName).$(PackageValidationBaselineVersion).nupkg'))</PackageValidationBaselinePath>
+      <EnablePackageBaselineValidation Condition="'$(PackageValidationBaselinePath)' == ''">false</EnablePackageBaselineValidation>
     </PropertyGroup>
 
     <!-- PackageTargetPath isn't exposed by NuGet: https://github.com/NuGet/Home/issues/6671. -->
@@ -65,7 +66,7 @@
                        Version="[$(PackageValidationBaselineVersion)]" />
     </ItemGroup>
 
-    <PropertyGroup Condition="'$(PackageValidationBaselineVersion)' != ''">
+    <PropertyGroup>
       <_PackageValidationIntermediateBaselineFile>$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).packagevalidation.g.props</_PackageValidationIntermediateBaselineFile>
       <_PackageValidationIntermediateBaselineFileContent>
 <![CDATA[<Project>
@@ -73,19 +74,6 @@
     <_PackageValidationBaselineName>$(PackageValidationBaselineName)</_PackageValidationBaselineName>
     <_PackageValidationBaselineVersion>$(PackageValidationBaselineVersion)</_PackageValidationBaselineVersion>
   </PropertyGroup>
-</Project>]]>
-      </_PackageValidationIntermediateBaselineFileContent>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(PackageValidationBaselineVersion)' == ''">
-      <_PackageValidationIntermediateBaselineFile>$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).packagevalidation.g.targets</_PackageValidationIntermediateBaselineFile>
-      <_PackageValidationIntermediateBaselineFileContent>
-<![CDATA[<Project>
-  <Target Name="ResetEnablePackageValidation" BeforeTargets="RunPackageValidation">
-    <PropertyGroup>
-     <EnablePackageBaselineValidation>false</EnablePackageBaselineValidation>
-    </PropertyGroup>
-  </Target>
 </Project>]]>
       </_PackageValidationIntermediateBaselineFileContent>
     </PropertyGroup>
