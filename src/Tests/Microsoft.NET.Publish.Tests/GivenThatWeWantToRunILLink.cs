@@ -449,7 +449,11 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}")
                 .Should().Pass()
-                .And.NotHaveStdOutMatching(@"warning IL\d\d\d\d");
+                .And.NotHaveStdOutContaining("warning IL2075")
+                .And.NotHaveStdOutContaining("warning IL2026")
+                .And.NotHaveStdOutContaining("warning IL2043")
+                .And.NotHaveStdOutContaining("warning IL2046")
+                .And.NotHaveStdOutContaining("warning IL2093");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
