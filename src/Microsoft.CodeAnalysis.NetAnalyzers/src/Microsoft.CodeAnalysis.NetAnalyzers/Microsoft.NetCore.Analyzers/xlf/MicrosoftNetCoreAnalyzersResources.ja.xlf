@@ -7,6 +7,11 @@
         <target state="translated">このフィールドに、'NonSerialized' 属性を追加します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="AddPublicParameterlessConstructor">
+        <source>Add a public constructor that takes zero parameters</source>
+        <target state="new">Add a public constructor that takes zero parameters</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
         <source>Add Serializable attribute</source>
         <target state="translated">Serializable 属性を追加する</target>
@@ -1307,6 +1312,11 @@
         <target state="translated">安全でないデシリアライザー LosFormatter を使用しない</target>
         <note />
       </trans-unit>
+      <trans-unit id="MakeParameterlessConstructorPublic">
+        <source>Make the constructor that takes zero parameters 'public'</source>
+        <target state="new">Make the constructor that takes zero parameters 'public'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
         <source>An instance field of a type that is not serializable is declared in a type that is serializable.</source>
         <target state="translated">シリアル化可能ではない型のインスタンス フィールドが、シリアル化可能な型で宣言されています。</target>
@@ -1805,6 +1815,21 @@
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
         <source>Provide deserialization methods for optional fields</source>
         <target state="translated">省略可能なフィールドに、逆シリアル化メソッドを指定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
+        <source>Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
+        <target state="new">Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorMessage">
+        <source>Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</source>
+        <target state="new">Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorTitle">
+        <source>Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</source>
+        <target state="new">Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesDescription">

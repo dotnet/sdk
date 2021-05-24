@@ -720,6 +720,18 @@ Platform compatibility analyzer requires a valid platform name and version.
 |CodeFix|False|
 ---
 
+## [CA1419](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419): Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'
+
+Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.
+
+|Item|Value|
+|-|-|
+|Category|Interoperability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA1501](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1501): Avoid excessive inheritance
 
 Deeply nested type hierarchies can be difficult to follow, understand, and maintain. This rule limits analysis to hierarchies in the same module. To fix a violation of this rule, derive the type from a base type that is less deep in the inheritance hierarchy or eliminate some of the intermediate base types.

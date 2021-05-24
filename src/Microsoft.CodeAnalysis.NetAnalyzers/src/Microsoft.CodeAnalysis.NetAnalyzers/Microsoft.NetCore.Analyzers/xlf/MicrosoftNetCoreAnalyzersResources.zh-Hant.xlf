@@ -7,6 +7,11 @@
         <target state="translated">將 'NonSerialized' 屬性新增至此欄位。</target>
         <note />
       </trans-unit>
+      <trans-unit id="AddPublicParameterlessConstructor">
+        <source>Add a public constructor that takes zero parameters</source>
+        <target state="new">Add a public constructor that takes zero parameters</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
         <source>Add Serializable attribute</source>
         <target state="translated">新增可序列化屬性</target>
@@ -1307,6 +1312,11 @@
         <target state="translated">請勿使用不安全的還原序列化程式 LosFormatter</target>
         <note />
       </trans-unit>
+      <trans-unit id="MakeParameterlessConstructorPublic">
+        <source>Make the constructor that takes zero parameters 'public'</source>
+        <target state="new">Make the constructor that takes zero parameters 'public'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
         <source>An instance field of a type that is not serializable is declared in a type that is serializable.</source>
         <target state="translated">非可序列化類型的執行個體欄位，被宣告為可序列化的類型。</target>
@@ -1805,6 +1815,21 @@
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
         <source>Provide deserialization methods for optional fields</source>
         <target state="translated">必須為選擇性欄位提供還原序列化方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
+        <source>Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
+        <target state="new">Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorMessage">
+        <source>Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</source>
+        <target state="new">Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorTitle">
+        <source>Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</source>
+        <target state="new">Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesDescription">
