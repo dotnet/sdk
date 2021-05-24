@@ -101,7 +101,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 foreach (var member in iface.GetMembers())
                 {
-                    if (!member.IsStatic && targetType.FindImplementationForInterfaceMember(member) is null)
+                    if (!member.IsStatic
+                        && context.Compilation.IsSymbolAccessibleWithin(member, targetType)
+                        && targetType.FindImplementationForInterfaceMember(member) is null)
                     {
                         missingMethodImplementations = true;
                         break;
@@ -118,8 +120,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 if (member.IsVirtual || member.IsAbstract)
                 {
-                    // Emit diagnostic for non-concrete method on implementation interface
-                    context.ReportDiagnostic(member.CreateDiagnostic(MethodsDeclaredOnImplementationTypeMustBeSealed, member.ToDisplayString(), targetType.ToDisplayString()));
+                    // We don't want to emit diagnostics when the member is an accessor method.
+                    if (member is not IMethodSymbol { AssociatedSymbol: ISymbol })
+                    {
+                        // Emit diagnostic for non-concrete method on implementation interface
+                        context.ReportDiagnostic(member.CreateDiagnostic(MethodsDeclaredOnImplementationTypeMustBeSealed, member.ToDisplayString(), targetType.ToDisplayString()));
+                    }
                 }
             }
         }

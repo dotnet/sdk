@@ -30,9 +30,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
             SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            SyntaxNode enclosingNode = root.FindNode(context.Span);
+            SyntaxNode enclosingNode = root.FindNode(context.Span, getInnermostNodeForTie: true);
             SyntaxNode declaration = generator.GetDeclaration(enclosingNode);
-            if (declaration == null)
+            if (declaration == null || !CodeFixSupportsDeclaration(declaration))
             {
                 return;
             }
@@ -51,36 +51,23 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 context.RegisterCodeFix(
                     new MyCodeAction(
                         MicrosoftNetCoreAnalyzersResources.SealMethodDeclaredOnImplementationType,
-                        async ct => await SealMethodDeclaredOnImplementationType(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                        async ct => await SealMemberDeclaredOnImplementationType(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
                         equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.SealMethodDeclaredOnImplementationType)),
                     diagnostic);
             }
         }
+
+        protected abstract bool CodeFixSupportsDeclaration(SyntaxNode declaration);
 
         protected abstract Task<Document> ImplementInterfacesOnDynamicCastableImplementation(
             SyntaxNode declaration,
             Document document,
             CancellationToken ct);
 
-        private static async Task<Document> SealMethodDeclaredOnImplementationType(
+        protected abstract Task<Document> SealMemberDeclaredOnImplementationType(
             SyntaxNode declaration,
             Document document,
-            CancellationToken ct)
-        {
-            var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
-            IMethodSymbol method = (IMethodSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
-            var generator = editor.Generator;
-            DeclarationModifiers modifiers = generator.GetModifiers(declaration)
-                .WithIsAbstract(false)
-                .WithIsVirtual(false)
-                .WithIsSealed(true);
-            if (method.IsAbstract)
-            {
-                editor.SetStatements(declaration, generator.DefaultMethodBody(editor.SemanticModel.Compilation));
-            }
-            editor.SetModifiers(declaration, modifiers);
-            return editor.GetChangedDocument();
-        }
+            CancellationToken ct);
 
         private class MyCodeAction : DocumentChangeAction
         {
