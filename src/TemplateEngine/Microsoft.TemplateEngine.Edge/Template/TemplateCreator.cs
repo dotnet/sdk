@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             ITemplate? template = LoadTemplate(templateInfo, baselineName);
             if (template == null)
             {
-                return new TemplateCreationResult(CreationResultStatus.NotFound, templateInfo.Name, "Could not load template");
+                return new TemplateCreationResult(CreationResultStatus.NotFound, templateInfo.Name, LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate);
             }
 
             string? realName = name ?? fallbackName ?? template.DefaultName;
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         return new TemplateCreationResult(
                             CreationResultStatus.DestructiveChangesDetected,
                             template.Name,
-                            "Destructive changes detected",
+                            LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_DestructiveChanges,
                             null,
                             null,
                             creationEffects);
@@ -146,7 +146,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return new TemplateCreationResult(
                     status: CreationResultStatus.CreateFailed,
                     templateName: template.Name,
-                    localizedErrorMessage: message,
+                    localizedErrorMessage: string.Format(LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_CreationFailed, message),
                     outputBaseDir: targetDir);
             }
             catch (Exception ex)
@@ -154,7 +154,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return new TemplateCreationResult(
                     status: CreationResultStatus.CreateFailed,
                     templateName: template.Name,
-                    localizedErrorMessage: ex.Message,
+                    localizedErrorMessage: string.Format(LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_CreationFailed, ex.Message),
                     outputBaseDir: targetDir);
             }
             finally

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -61,7 +63,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             }
             else
             {
-                return Task.FromResult(InstallResult.CreateFailure(installRequest, InstallerErrorCode.PackageNotFound, $"The folder {installRequest.PackageIdentifier} doesn't exist"));
+                return Task.FromResult(InstallResult.CreateFailure(
+                    installRequest,
+                    InstallerErrorCode.PackageNotFound,
+                    string.Format(LocalizableStrings.FolderInstaller_InstallResult_Error_FolderDoesNotExist, installRequest.PackageIdentifier)));
             }
         }
 

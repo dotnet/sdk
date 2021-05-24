@@ -301,7 +301,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 catch (Exception ex)
                 {
                     scanResults[index] = ScanResult.Empty;
-                    _logger.LogWarning($"Failed to scan \"{allTemplatePackages[index].MountPointUri}\":{Environment.NewLine}{ex}");
+                    _logger.LogWarning(LocalizableStrings.TemplatePackageManager_Error_FailedToScan, allTemplatePackages[index].MountPointUri, ex);
                 }
             });
             cancellationToken.ThrowIfCancellationRequested();

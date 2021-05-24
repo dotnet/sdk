@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -107,6 +109,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 throw new ArgumentException($"{nameof(NuGetInstaller)} can only deserialize packages with {nameof(data.InstallerId)} {Factory.Id}", nameof(data));
             }
+            _ = data.Details ?? throw new ArgumentException($"{nameof(data)} should contain {nameof(data.Details)} with package identifier.", nameof(data));
             return NuGetManagedTemplatePackage.Deserialize(_environmentSettings, this, provider, data.MountPointUri, data.Details);
         }
 
@@ -124,25 +127,44 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         }
                         catch (PackageNotFoundException e)
                         {
-                            return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.PackageNotFound, e.Message);
+                            return CheckUpdateResult.CreateFailure(
+                                package,
+                                InstallerErrorCode.PackageNotFound,
+                                string.Format(LocalizableStrings.NuGetInstaller_Error_FailedToReadPackage, e.PackageIdentifier, string.Join(", ", e.SourcesList)));
                         }
                         catch (InvalidNuGetSourceException e)
                         {
-                            return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.InvalidSource, e.Message);
+                            string message = e.SourcesList == null || !e.SourcesList.Any()
+                                ? LocalizableStrings.NuGetInstaller_InstallResut_Error_InvalidSources_None
+                                : string.Format(LocalizableStrings.NuGetInstaller_InstallResut_Error_InvalidSources, string.Join(", ", e.SourcesList));
+
+                            return CheckUpdateResult.CreateFailure(
+                                package,
+                                InstallerErrorCode.InvalidSource,
+                                message);
                         }
                         catch (OperationCanceledException)
                         {
-                            return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.GenericError, "Operation canceled");
+                            return CheckUpdateResult.CreateFailure(
+                                package,
+                                InstallerErrorCode.GenericError,
+                                LocalizableStrings.NuGetInstaller_InstallResut_Error_OperationCancelled);
                         }
                         catch (Exception e)
                         {
                             _logger.LogDebug($"Retrieving latest version for package {package.DisplayName} failed. Details: {e}.");
-                            return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.GenericError, $"Failed to check the update for the package {package.Identifier}, reason: {e.Message}");
+                            return CheckUpdateResult.CreateFailure(
+                                package,
+                                InstallerErrorCode.GenericError,
+                                string.Format(LocalizableStrings.NuGetInstaller_InstallResut_Error_UpdateCheckGeneric, package.DisplayName, e.Message));
                         }
                     }
                     else
                     {
-                        return CheckUpdateResult.CreateFailure(package, InstallerErrorCode.UnsupportedRequest, $"package {package.Identifier} is not supported by installer {Factory.Name}");
+                        return CheckUpdateResult.CreateFailure(
+                            package,
+                            InstallerErrorCode.UnsupportedRequest,
+                            string.Format(LocalizableStrings.NuGetInstaller_InstallResut_Error_PackageNotSupported, package.DisplayName, Factory.Name));
                     }
                 })).ConfigureAwait(false);
         }
@@ -154,7 +176,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             if (!await CanInstallAsync(installRequest, cancellationToken).ConfigureAwait(false))
             {
-                return InstallResult.CreateFailure(installRequest, InstallerErrorCode.UnsupportedRequest, $"The install request {installRequest} cannot be processed by installer {Factory.Name}");
+                return InstallResult.CreateFailure(
+                    installRequest,
+                    InstallerErrorCode.UnsupportedRequest,
+                    string.Format(LocalizableStrings.NuGetInstaller_InstallResut_Error_PackageNotSupported, installRequest.DisplayName, Factory.Name));
             }
 
             try
@@ -199,24 +224,54 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
             catch (DownloadException e)
             {
-                return InstallResult.CreateFailure(installRequest, InstallerErrorCode.DownloadFailed, e.Message);
+                string packageLocation = e.SourcesList == null
+                    ? e.PackageLocation
+                    : string.Join(", ", e.SourcesList);
+
+                return InstallResult.CreateFailure(
+                    installRequest,
+                    InstallerErrorCode.DownloadFailed,
+                    string.Format(LocalizableStrings.NuGetInstaller_InstallResut_Error_DownloadFailed, installRequest.DisplayName, packageLocation));
             }
             catch (PackageNotFoundException e)
             {
-                return InstallResult.CreateFailure(installRequest, InstallerErrorCode.PackageNotFound, e.Message);
+                return InstallResult.CreateFailure(
+                    installRequest,
+                    InstallerErrorCode.PackageNotFound,
+                    string.Format(LocalizableStrings.NuGetInstaller_Error_FailedToReadPackage, e.PackageIdentifier, string.Join(", ", e.SourcesList)));
             }
             catch (InvalidNuGetSourceException e)
             {
-                return InstallResult.CreateFailure(installRequest, InstallerErrorCode.InvalidSource, e.Message);
+                string message = e.SourcesList == null || !e.SourcesList.Any()
+                    ? LocalizableStrings.NuGetInstaller_InstallResut_Error_InvalidSources_None
+                    : string.Format(LocalizableStrings.NuGetInstaller_InstallResut_Error_InvalidSources, string.Join(", ", e.SourcesList));
+
+                return InstallResult.CreateFailure(
+                        installRequest,
+                        InstallerErrorCode.InvalidSource,
+                        message);
             }
             catch (InvalidNuGetPackageException e)
             {
-                return InstallResult.CreateFailure(installRequest, InstallerErrorCode.InvalidPackage, e.Message);
+                return InstallResult.CreateFailure(
+                    installRequest,
+                    InstallerErrorCode.InvalidPackage,
+                    string.Format(LocalizableStrings.NuGetInstaller_InstallResut_Error_InvalidPackage, e.PackageLocation));
+            }
+            catch (OperationCanceledException)
+            {
+                return InstallResult.CreateFailure(
+                    installRequest,
+                    InstallerErrorCode.GenericError,
+                    LocalizableStrings.NuGetInstaller_InstallResut_Error_OperationCancelled);
             }
             catch (Exception e)
             {
                 _logger.LogDebug($"Installing {installRequest.DisplayName} failed. Details:{e.ToString()}");
-                return InstallResult.CreateFailure(installRequest, InstallerErrorCode.GenericError, $"Failed to install the package {installRequest.DisplayName}, reason: {e.Message}");
+                return InstallResult.CreateFailure(
+                    installRequest,
+                    InstallerErrorCode.GenericError,
+                    string.Format(LocalizableStrings.NuGetInstaller_InstallResut_Error_InstallGeneric, installRequest.DisplayName, e.Message));
             }
         }
 
@@ -238,17 +293,23 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _ = templatePackage ?? throw new ArgumentNullException(nameof(templatePackage));
             if (!(templatePackage is NuGetManagedTemplatePackage))
             {
-                return Task.FromResult(UninstallResult.CreateFailure(templatePackage, InstallerErrorCode.UnsupportedRequest, $"{templatePackage.Identifier} is not supported by {Factory.Name}"));
+                return Task.FromResult(UninstallResult.CreateFailure(
+                    templatePackage,
+                    InstallerErrorCode.UnsupportedRequest,
+                    string.Format(LocalizableStrings.NuGetInstaller_InstallResut_Error_PackageNotSupported, templatePackage.DisplayName, Factory.Name)));
             }
             try
             {
                 _environmentSettings.Host.FileSystem.FileDelete(templatePackage.MountPointUri);
                 return Task.FromResult(UninstallResult.CreateSuccess(templatePackage));
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                _logger.LogDebug($"Uninstalling {templatePackage.DisplayName} failed. Details:{ex.ToString()}");
-                return Task.FromResult(UninstallResult.CreateFailure(templatePackage, InstallerErrorCode.GenericError, $"Failed to uninstall {templatePackage.DisplayName}, reason: {ex.Message}"));
+                _logger.LogDebug("Uninstalling {0} failed. Details:{1}", templatePackage.DisplayName, e);
+                return Task.FromResult(UninstallResult.CreateFailure(
+                    templatePackage,
+                    InstallerErrorCode.GenericError,
+                    string.Format(LocalizableStrings.NuGetInstaller_InstallResut_Error_UninstallGeneric, templatePackage.DisplayName, e.Message)));
             }
         }
 
@@ -273,7 +334,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             Dictionary<string, string> installationDetails = new Dictionary<string, string>();
             if (nuGetManagedSource != null && !string.IsNullOrWhiteSpace(nuGetManagedSource.NuGetSource))
             {
-                installationDetails.Add(InstallerConstants.NuGetSourcesKey, nuGetManagedSource.NuGetSource);
+                installationDetails.Add(InstallerConstants.NuGetSourcesKey, nuGetManagedSource.NuGetSource!);
             }
             InstallRequest installRequest = new InstallRequest(updateRequest.TemplatePackage.Identifier, updateRequest.Version, details: installationDetails);
             return UpdateResult.FromInstallResult(updateRequest, await InstallAsync(installRequest, provider, cancellationToken).ConfigureAwait(false));

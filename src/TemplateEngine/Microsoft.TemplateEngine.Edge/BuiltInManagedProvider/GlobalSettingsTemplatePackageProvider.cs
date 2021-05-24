@@ -142,11 +142,17 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
                 if (installersThatCanInstall.Count == 0)
                 {
-                    return InstallResult.CreateFailure(installRequest, InstallerErrorCode.UnsupportedRequest, $"{installRequest.PackageIdentifier} cannot be installed.");
+                    return InstallResult.CreateFailure(
+                        installRequest,
+                        InstallerErrorCode.UnsupportedRequest,
+                        string.Format(LocalizableStrings.GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageCannotBeInstalled, installRequest.PackageIdentifier));
                 }
                 if (installersThatCanInstall.Count > 1)
                 {
-                    return InstallResult.CreateFailure(installRequest, InstallerErrorCode.UnsupportedRequest, $"{installRequest.PackageIdentifier} can be installed by several installers, specify the installer name to use.");
+                    return InstallResult.CreateFailure(
+                        installRequest,
+                        InstallerErrorCode.UnsupportedRequest,
+                               string.Format(LocalizableStrings.GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed, installRequest.PackageIdentifier));
                 }
 
                 IInstaller installer = installersThatCanInstall[0];
@@ -231,7 +237,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 //if same version is already installed - return
                 if (packageToBeUpdated.Version == version)
                 {
-                    return (InstallerErrorCode.AlreadyInstalled, $"{packageToBeUpdated.DisplayName} is already installed.");
+                    return (InstallerErrorCode.AlreadyInstalled, string.Format(LocalizableStrings.GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageAlreadyInstalled, packageToBeUpdated.DisplayName));
                 }
                 if (!update)
                 {
