@@ -10,8 +10,9 @@ Package Validation tooling will allow library developers to validate that their 
 
 # How To Add Package Validation To Your Projects
 
-Package Validation is currently being shipped as a msbuild sdk package which can be consumed in the csproj. It is set of tasks and targets that run after the dotnet pack
-The csproj will look like
+Package Validation is currently being shipped as a msbuild sdk package which can be consumed by a project. It is a set of tasks and targets that run after generating the package when calling dotnet pack.
+
+The project should look like the following:
 
 ```C#
 <Project Sdk="Microsoft.NET.Sdk">
@@ -26,13 +27,13 @@ The csproj will look like
 
 ## Scenarios and User Experience
 
-The first preview version of the package validation covers the basic scenarios for package validation. They are as follows:-
+The first preview version of package validation covers the following basic scenarios:
 
-## Validation Among Compatible Frameworks
+### Validation Among Compatible Frameworks
 
-Package containing compatible frameworks need to ensure that code compiled against one can run against other. Examples of compatible pairs will be .NET Standard2.0 and .NET 6.0, .NET 5.0 and .NET 6.0 . In both of these cases, the users can compile against .NET Standard 2.0 or NET 5.0 and try to run on .NET 6.0, if the binaries are not compatible the users might end up with runtime errors.
+Packages containing compatible frameworks need to ensure that code compiled against one can run against another. Examples of compatible framework pairs are: .NET Standard2.0 and .NET 6.0, .NET 5.0 and .NET 6.0 . In both of these cases, the users can compile against .NET Standard 2.0 or NET 5.0 and try to run on .NET 6.0, if the binaries are not compatible, users could end up with runtime errors.
 
-Package Validation will catch these errors at pack time. eg.
+Package Validation will catch these errors at pack time. Here is an example scenario:
 
 Finley is working on a game which do a lot of string manipulation. They need to support both .NET Framework and .NET Core customers. They started with just targeting .NET Standard 2.0 but now they realize they want to take advantage of the spans in .NET Core 3.0 and above to avoid unnecessary string allocations. In order to do that, they are multi-targeting for NET Standard2.0 and .NET 6.0,.
 
@@ -74,13 +75,13 @@ Finley understands that they shouldn't exclude ```DoStringManipulation(string)``
     }
 ```
 
-## Validation Against Baseline Package Version
+### Validation Against Baseline Package Version
 
-Package Validation helps to validate the latest version of the package with a previous released stable version of the package. This is an opt in feature. The user will need to add the ```EnablePackageBaselineValidation``` to the csproj.
+Package Validation can also help validating a user's library project against a previous released stable version of the package. In order to use this feature, the user will need to add the ```EnablePackageBaselineValidation``` to their project.
 
 Package validation will detect any breaking changes on any of the shipped target frameworks and will also detect if any target framework support has been dropped.
 
-eg Tom works on the AdventureWorks.Client NuGet package. They want to make sure that they don't accidentally make breaking changes so they configure their project to instruct the package validation tooling to run API compatibility on the previous version of the package.
+For example consider the following scenario: Tom works on the AdventureWorks.Client NuGet package. They want to make sure that they don't accidentally make breaking changes so they configure their project to instruct package validation tooling to run API compatibility against the previous version of the package.
 
 ```csproj
 <Project Sdk="Microsoft.NET.Sdk">
@@ -104,7 +105,7 @@ public static HttpClient Connect(string url)
 }
 ```
 
-Since a connection timeout is an advanced configuration setting they reckon they can just add an optional parameter:
+Since a connection timeout is an advanced configuration setting, they reckon they can just add an optional parameter:
 
 ```c#
 public static HttpClient Connect(string url, TimeSpan? timeout = default)
@@ -113,7 +114,7 @@ public static HttpClient Connect(string url, TimeSpan? timeout = default)
 }
 ```
 
-However, when they rebuild the package they are getting an error:
+However, when they rebuild the package they are getting the following validation error:
 ```c#
 error : There are breaking changes between the versions. Please add or modify the apis in the recent version or suppress the intentional breaking changes. 
 error : API compatibility errors in between lib/net6.0/A.dll (left) and lib/net6.0/A.dll (right) for versions 1.0.0 and 2.0.0 respectively:
@@ -135,9 +136,9 @@ public static HttpClient Connect(string url, TimeSpan timeout)
 
 ## Validation Against Different Runtimes
 
-.Net Packages can contain different implementation assemblies for different runtimes. The developer needs to make sure that these assemblies are compatible with the compile time assemblies.
+.Net Packages may choose to have different implementation assemblies for different runtimes. In that case, developers need to make sure that these assemblies are compatible with the compile-time assemblies.
 
-Rohan is working on a library involving some interop calls to unix and windows api respectively. The source code looks like
+For example, consider the following scenario: Rohan is working on a library involving some interop calls to unix and windows API respectively. The source code looks like the following:
 
 ```c#
 #if Unix
@@ -160,7 +161,7 @@ lib -> net6.0 -> A.dll
 runtimes -> unix -> lib -> net6.0 -> A.dll
 ```
 
-```lib\net6.0\A.dll``` will always be used at compile time irrespective of the underlying operating system. ```lib\net6.0\A.dll``` will be used at runtime for Non-Unix systems and ```runtimes\unix\lib\net6.0\A.dll``` will be used at runtime for Unix system.
+```lib\net6.0\A.dll``` will always be used at compile time irrespective of the underlying operating system. ```lib\net6.0\A.dll``` will also be used at runtime for Non-Unix systems, but ```runtimes\unix\lib\net6.0\A.dll``` will be used at runtime for Unix systems.
 
 When Rohan tries to pack this project, he gets an error:
 
@@ -170,7 +171,7 @@ error : API Compatibility errors between lib/net6.0/A.dll (left) and runtimes/un
 error CP0002: Member 'A.B.Open(string)' exists on the left but not on the right.
 ```
 
-Rohan quickly realizes his mistake and add ```A.B.Open(string)``` to the unix runtime as well.
+Rohan quickly realizes his mistake and adds ```A.B.Open(string)``` to the unix runtime as well.
 
 ```c#
 #if Unix
@@ -193,6 +194,6 @@ Rohan quickly realizes his mistake and add ```A.B.Open(string)``` to the unix ru
 
 ## Whats Next For Package Validation
 
-- Error Suppression for Package Validation Errors eg Intentional breaking changes between versions.
-- More Compatibilty Rules eg compatible assembly versions, nullability.
+- Error suppression for package validation errors like intentional breaking changes between versions.
+- More API compatibilty rules like compatible assembly versions, nullability, attributes.
 - Validating Package Dependencies.
