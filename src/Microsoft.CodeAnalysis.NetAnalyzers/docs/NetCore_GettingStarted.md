@@ -60,7 +60,7 @@
 8. In case no any failure introduce an error somewhere to prove that the rule ran.
     - Be careful about in which project you are producing an error, choose an API not having reference from other APIs, else all dependent API's will fail.
 9. If failures found, repeat step 4-5 to evaluate and address all warnings.
-    - In case you want to [debug some failures](#Debugging-analyzer-with-runtiem-repo-projects).
+    - In case you want to [debug some failures](#debugging-analyzer-with-runtime-repo-projects).
 
 ## Testing against the Roslyn repo
 
@@ -75,7 +75,7 @@ The diagnostics reported by the analyzer will be listed in Output.txt.
 
 ## Debugging analyzer with runtime repo projects
 
-1. Copy over debug build of analyzer assemblies on top of NetAnalyzers nuget package in your packages folder. (Instructions are same as the step 1 and 2 of [Testing against the Runtime repo step](#Testing-against-the-Runtime-and-Roslyn-analyzers-repo))
+1. Copy over debug build of analyzer assemblies on top of NetAnalyzers nuget package in your packages folder. (Instructions are same as the step 1 and 2 of [Testing against the Runtime repo step](#testing-against-the-runtime-and-roslyn-analyzers-repo))
 2. Start VS and open a project you want to debug
 3. Note the process ID for `ServiceHub.RoslynCodeAnalysisService.exe` corresponding to that VS instance
     - If you are using `Visual Studio` older than version `16.8 Preview2` then analyzers run in `devenv.exe`, you will need to attach that process instead

@@ -184,7 +184,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 new MethodCategory(IsEqualsOverrideOrInterfaceImplementation, true,
                     NoAllowedExceptionsRule),
 
-                new MethodCategory(IsEqualityOperator, true,
+                new MethodCategory(IsComparisonOperator, true,
                     NoAllowedExceptionsRule),
 
                 new MethodCategory(IsGetHashCodeOverride, true,
@@ -316,7 +316,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return method.IsFinalizer();
         }
 
-        private static bool IsEqualityOperator(IMethodSymbol method, Compilation compilation)
+        private static bool IsComparisonOperator(IMethodSymbol method, Compilation compilation)
         {
             if (!method.IsStatic || !method.IsPublic())
                 return false;
@@ -324,7 +324,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return method.Name switch
             {
                 WellKnownMemberNames.EqualityOperatorName
-                or WellKnownMemberNames.InequalityOperatorName => true,
+                or WellKnownMemberNames.InequalityOperatorName
+                or WellKnownMemberNames.LessThanOperatorName
+                or WellKnownMemberNames.GreaterThanOperatorName
+                or WellKnownMemberNames.LessThanOrEqualOperatorName
+                or WellKnownMemberNames.GreaterThanOrEqualOperatorName => true,
                 _ => false,
             };
         }
