@@ -178,14 +178,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             try
             {
                 TransactionalAction.Run(
-                   action: () =>
-                   {
+                    action: () =>
+                    {
                        packagePath = _nugetPackageDownloader.DownloadPackageAsync(WorkloadManifestUpdater.GetManifestPackageId(sdkFeatureBand, manifestId), new NuGetVersion(manifestVersion.ToString())).Result;
                        tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{manifestId}-{manifestVersion}-extracted");
                        Directory.CreateDirectory(tempExtractionDir);
                        var manifestFiles = _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(tempExtractionDir)).Result;
 
-                       if (Directory.Exists(manifestPath) && Directory.GetFileSystemEntries(manifestPath).Any())
+                       var caseSensitiveManifestPath = GetCaseSensitiveManifestDir(Path.GetDirectoryName(manifestPath), manifestId);
+                       if (caseSensitiveManifestPath != null)
                        {
                            // Backup existing manifest data for roll back purposes
                            tempBackupDir = Path.Combine(_tempPackagesDir.Value, $"{manifestId}-{manifestVersion}-backup");
@@ -193,11 +194,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                            {
                                Directory.Delete(tempBackupDir, true);
                            }
-                           FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(manifestPath, tempBackupDir));
+                            FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(caseSensitiveManifestPath, tempBackupDir));
                        }
                        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath));
                        FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(Path.Combine(tempExtractionDir, "data"), manifestPath));
-                   },
+                    },
                     rollback: () => {
                         if (!string.IsNullOrEmpty(tempBackupDir) && Directory.Exists(tempBackupDir))
                         {
@@ -236,6 +237,20 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 throw new Exception(string.Format(LocalizableStrings.FailedToInstallWorkloadManifest, manifestId, manifestVersion, e.Message));
             }
+        }
+
+        private string GetCaseSensitiveManifestDir(string manifestPath, ManifestId manifestId)
+        {
+            if (!Directory.Exists(manifestPath))
+            {
+                return null;
+            }
+
+            var manifestIdDir = Directory.GetDirectories(manifestPath)
+                .Where(manifestPath => Directory.GetFileSystemEntries(manifestPath).Any())
+                .Select(path => Path.GetFileName(path))
+                .FirstOrDefault(manifestIdDir => manifestId.ToString().Equals(manifestIdDir, StringComparison.OrdinalIgnoreCase));
+            return Path.Combine(manifestPath, manifestIdDir);
         }
 
         public void DownloadToOfflineCache(PackInfo packInfo, string cachePath)

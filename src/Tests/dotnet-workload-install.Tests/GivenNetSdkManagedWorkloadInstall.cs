@@ -342,8 +342,30 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             mockNugetInstaller.DownloadCallParams.Count.Should().Be(1);
             mockNugetInstaller.DownloadCallParams[0].ShouldBeEquivalentTo((new PackageId($"{manifestId}.manifest-{featureBand}"), new NuGetVersion(manifestVersion.ToString()), null as DirectoryPath?));
         }
-		
-	    [Fact]
+
+        [Fact]
+        public void GivenManagedInstallManifestUpdateItCanUpdateRegardlessOfCase()
+        {
+            var (dotnetRoot, installer, _) = GetTestInstaller(manifestDownload: true);
+            var featureBand = new SdkFeatureBand("6.0.100");
+            var manifestId = new ManifestId("test-manifest-1");
+            var manifestVersion = new ManifestVersion("5.0.0");
+
+            // Lay down "baseline manifest" with different casing
+            var upperCaseManifestPath = Path.Combine(dotnetRoot, "sdk-manifests", featureBand.ToString(), manifestId.ToString().ToUpperInvariant());
+            Directory.CreateDirectory(upperCaseManifestPath);
+            File.WriteAllText(Path.Combine(upperCaseManifestPath, "WorkloadManifest.json"), string.Empty);
+
+            installer.InstallWorkloadManifest(manifestId, manifestVersion, featureBand);
+
+            var manifestIdDirs = Directory.GetDirectories(Path.Combine(dotnetRoot, "sdk-manifests", featureBand.ToString()))
+                .Select(manifestPath => Path.GetFileName(manifestPath));
+
+            manifestIdDirs.Count().Should().Be(1);
+            manifestIdDirs.First().Should().Be(manifestId.ToString().ToLowerInvariant());
+        }
+
+        [Fact]
         public void GivenManagedInstallItCanDownloadToOfflineCache()
         {
             var (dotnetRoot, installer, nugetInstaller) = GetTestInstaller();
