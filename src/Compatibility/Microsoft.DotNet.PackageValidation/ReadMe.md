@@ -17,11 +17,12 @@ The project should look like the following:
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Sdk Name="Microsoft.DotNet.PackageValidation" Version="1.0.0-preview4.21121.3" />
+
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
   </PropertyGroup>
 
-  <Sdk Name="Microsoft.DotNet.PackageValidation" Version="1.0.0-preview4.21121.3" />
 </Project>
 ```
 
@@ -35,7 +36,7 @@ Packages containing compatible frameworks need to ensure that code compiled agai
 
 Package Validation will catch these errors at pack time. Here is an example scenario:
 
-Finley is working on a game which does a lot of string manipulation. They need to support both .NET Framework and .NET Core customers. They started with just targeting .NET Standard 2.0 but now they realize they want to take advantage of spans in .NET Core 3.0 and above to avoid unnecessary string allocations. In order to do that, they now want to multi-target for NET Standard2.0 and .NET 6.0.
+Finley is working on a game which does a lot of string manipulation. They need to support both .NET Framework and .NET Core customers. They started with just targeting .NET Standard 2.0 but now they realize they want to take advantage of spans in .NET 6.0 to avoid unnecessary string allocations. In order to do that, they now want to multi-target for NET Standard2.0 and .NET 6.0.
 
 Finley has written the following code:
 ```c#
@@ -52,7 +53,7 @@ Finley has written the following code:
 #endif
 ```
 
-When Finley packs the project it fails with the following error:
+When Finley packs the project (using dotnet pack cmd) it fails with the following error:
 
 ```cmd
 error : .NETStandard,Version=v2.0 assembly api surface area should be compatible with net6.0 assembly surface area so we can compile against .NETStandard,Version=v2.0 and run on net6.0 .framework.
@@ -83,8 +84,10 @@ Package validation will detect any breaking changes on any of the shipped target
 
 For example consider the following scenario: Tom works on the AdventureWorks.Client NuGet package. They want to make sure that they don't accidentally make breaking changes so they configure their project to instruct package validation tooling to run API compatibility against the previous version of the package.
 
-```csproj
+```xml
 <Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Microsoft.DotNet.PackageValidation" Version="1.0.0-preview4.21111.2" />
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -92,7 +95,6 @@ For example consider the following scenario: Tom works on the AdventureWorks.Cli
     <EnablePackageBaselineValidation>true</EnablePackageBaselineValidation>
   </PropertyGroup>
 
-  <Sdk Name="Microsoft.DotNet.PackageValidation" Version="1.0.0-preview4.21111.2" />
 </Project>
 ```
 
@@ -121,7 +123,8 @@ error : API compatibility errors in between lib/net6.0/A.dll (left) and lib/net6
 error CP0002: Member 'A.B.Connect(string)' exists on the left but not on the right 
 ```
 
-Tom realizes that while this is not a source breaking change, it's a binary breaking change. They solve this problem by adding an overload instead:
+Tom realizes that while this is not a [source breaking change](https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes#source-breaking-change), it's a binary [breaking change](https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes#binary-breaking-change). They solve this problem by adding an overload instead:
+
 ```c#
 public static HttpClient Connect(string url)
 {
