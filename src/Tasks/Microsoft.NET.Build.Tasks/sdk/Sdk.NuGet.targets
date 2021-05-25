@@ -21,7 +21,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="..\targets\Microsoft.NET.Sdk.FrameworkReferenceResolution.targets" />
   <Import Project="..\targets\Microsoft.NET.Sdk.Shared.targets" />
 
-
   <Import Project="..\targets\Microsoft.NET.GenerateSupportedRuntime.targets" />
   <Import Project="..\targets\Microsoft.NET.ObsoleteReferences.targets" />
 
