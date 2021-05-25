@@ -1683,14 +1683,14 @@
   <data name="InterfaceMembersMissingImplementationTitle" xml:space="preserve">
     <value>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</value>
   </data>
-  <data name="MethodsDeclaredOnImplementationTypeMustBeSealedDescription" xml:space="preserve">
-    <value>Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all methods on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</value>
+  <data name="MembersDeclaredOnImplementationTypeMustBeSealedDescription" xml:space="preserve">
+    <value>Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all members on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</value>
   </data>
-  <data name="MethodsDeclaredOnImplementationTypeMustBeSealedMessage" xml:space="preserve">
-    <value>The '{0}' method on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</value>
+  <data name="MembersDeclaredOnImplementationTypeMustBeSealedMessage" xml:space="preserve">
+    <value>The '{0}' member on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</value>
   </data>
-  <data name="MethodsDeclaredOnImplementationTypeMustBeSealedTitle" xml:space="preserve">
-    <value>Methods defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</value>
+  <data name="MembersDeclaredOnImplementationTypeMustBeSealedTitle" xml:space="preserve">
+    <value>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</value>
   </data>
   <data name="SealMethodDeclaredOnImplementationType" xml:space="preserve">
     <value>Mark method as sealed</value>

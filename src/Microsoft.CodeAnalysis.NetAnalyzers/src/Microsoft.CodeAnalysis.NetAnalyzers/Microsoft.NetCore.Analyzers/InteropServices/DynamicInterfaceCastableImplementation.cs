@@ -37,23 +37,23 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        internal const string MethodsDeclaredOnImplementationTypeMustBeSealedRuleId = "CA2254";
+        internal const string MeembersDeclaredOnImplementationTypeMustBeSealedRuleId = "CA2254";
 
-        private static readonly DiagnosticDescriptor MethodsDeclaredOnImplementationTypeMustBeSealed =
+        private static readonly DiagnosticDescriptor MembersDeclaredOnImplementationTypeMustBeSealed =
             DiagnosticDescriptorHelper.Create(
-                MethodsDeclaredOnImplementationTypeMustBeSealedRuleId,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MethodsDeclaredOnImplementationTypeMustBeSealedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MethodsDeclaredOnImplementationTypeMustBeSealedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                MeembersDeclaredOnImplementationTypeMustBeSealedRuleId,
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeSealedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeSealedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 DiagnosticCategory.Usage,
                 RuleLevel.BuildWarning,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MethodsDeclaredOnImplementationTypeMustBeSealedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeSealedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
             DynamicInterfaceCastableImplementationUnsupported,
             InterfaceMembersMissingImplementation,
-            MethodsDeclaredOnImplementationTypeMustBeSealed);
+            MembersDeclaredOnImplementationTypeMustBeSealed);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -118,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     if (member is not IMethodSymbol { AssociatedSymbol: ISymbol })
                     {
                         // Emit diagnostic for non-concrete method on implementation interface
-                        context.ReportDiagnostic(member.CreateDiagnostic(MethodsDeclaredOnImplementationTypeMustBeSealed, member.ToDisplayString(), targetType.ToDisplayString()));
+                        context.ReportDiagnostic(member.CreateDiagnostic(MembersDeclaredOnImplementationTypeMustBeSealed, member.ToDisplayString(), targetType.ToDisplayString()));
                     }
                 }
             }

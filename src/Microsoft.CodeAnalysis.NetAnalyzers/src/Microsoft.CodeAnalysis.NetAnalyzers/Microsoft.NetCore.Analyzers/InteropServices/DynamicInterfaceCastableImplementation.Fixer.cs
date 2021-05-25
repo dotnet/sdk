@@ -17,7 +17,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         public override ImmutableArray<string> FixableDiagnosticIds =>
             ImmutableArray.Create(
                 DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId,
-                DynamicInterfaceCastableImplementationAnalyzer.MethodsDeclaredOnImplementationTypeMustBeSealedRuleId);
+                DynamicInterfaceCastableImplementationAnalyzer.MeembersDeclaredOnImplementationTypeMustBeSealedRuleId);
 
         public override FixAllProvider GetFixAllProvider()
         {
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
                     diagnostic);
             }
-            else if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MethodsDeclaredOnImplementationTypeMustBeSealedRuleId)
+            else if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MeembersDeclaredOnImplementationTypeMustBeSealedRuleId)
             {
                 context.RegisterCodeFix(
                     new MyCodeAction(

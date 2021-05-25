@@ -1467,19 +1467,19 @@
         <target state="translated">Verifique se a contagem de iteração é de pelo menos {0} ao derivar uma chave de criptografia de uma senha. Por padrão, a IterationCount de Rfc2898DeriveByte é de apenas 1000</target>
         <note />
       </trans-unit>
-      <trans-unit id="MethodsDeclaredOnImplementationTypeMustBeSealedDescription">
-        <source>Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all methods on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</source>
-        <target state="new">Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all methods on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</target>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeSealedDescription">
+        <source>Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all members on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</source>
+        <target state="new">Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all members on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MethodsDeclaredOnImplementationTypeMustBeSealedMessage">
-        <source>The '{0}' method on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
-        <target state="new">The '{0}' method on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</target>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeSealedMessage">
+        <source>The '{0}' member on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
+        <target state="new">The '{0}' member on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</target>
         <note />
       </trans-unit>
-      <trans-unit id="MethodsDeclaredOnImplementationTypeMustBeSealedTitle">
-        <source>Methods defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</source>
-        <target state="new">Methods defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</target>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeSealedTitle">
+        <source>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</source>
+        <target state="new">Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
