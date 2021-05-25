@@ -1,12 +1,12 @@
 ## Package Validation
 
-With .NET Core & Xamarin we have made cross-platform a mainstream requirement for library authors. However, we lack validation tooling which can result in packages that don't work well which in turn hurts our ecosystem. This is especially problematic for emerging platforms where adoption isn't high enough to warrant special attention by library authors.
+With .NET Core & Xamarin we have made cross-platform a mainstream requirement for library authors. However, we lack validation tooling for cross targeting packages, which can result in packages that don't work well, which in turn hurts our ecosystem. This is especially problematic for emerging platforms where adoption isn't high enough to warrant special attention by library authors.
 
-The tooling we provide as part of the SDK has close to zero validation that multi-targeted packages are well-formed. For example, a package that multi-targets for .NET 6.0 and .NET Standard 2.0 needs to ensure that code compiled against the .NET Standard 2.0 binary can run against the binary that is produced for .NET 6.0. We have seen this issue in the wild, even with 1st parties, for example, the Azure AD libraries.
+The tooling we provide as part of the SDK has close to zero validation that multi-targeted packages are well-formed. For example, a package that multi-targets for .NET 6.0 and .NET Standard 2.0 needs to ensure that code compiled against the .NET Standard 2.0 binary can run against the .NET 6.0 binary. We have seen this issue in the wild, even with 1st parties, for example, the Azure AD libraries.
 
-Another common issue in the .NET ecosystem is that binary breaking changes aren't well understood. Developers tend to think of "does the source still compile" as the bar to determine whether an API is compatible. However, at the API level certain changes that are fine in C# aren't compatible at the level of IL, for example, adding a defaulted parameter or changing the value of a constant.
+It's easy to think that a change is safe and compatible if source consuming that change continues to compile without changes. However, certain changes may work fine in C# but can cause problems at runtime if the consumer wasn't recompiled, for example, adding a defaulted parameter or changing the value of a constant.
 
-Package Validation tooling will allow library developers to validate that their packages are well-formed and they they didn't make unintentional breaking changes.
+Package Validation tooling will allow library developers to validate that their packages are well-formed and have no breaking changes.
 
 # How To Add Package Validation To Your Projects
 
@@ -14,7 +14,7 @@ Package Validation is currently being shipped as a msbuild sdk package which can
 
 The project should look like the following:
 
-```C#
+```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
@@ -35,7 +35,7 @@ Packages containing compatible frameworks need to ensure that code compiled agai
 
 Package Validation will catch these errors at pack time. Here is an example scenario:
 
-Finley is working on a game which do a lot of string manipulation. They need to support both .NET Framework and .NET Core customers. They started with just targeting .NET Standard 2.0 but now they realize they want to take advantage of the spans in .NET Core 3.0 and above to avoid unnecessary string allocations. In order to do that, they are multi-targeting for NET Standard2.0 and .NET 6.0,.
+Finley is working on a game which does a lot of string manipulation. They need to support both .NET Framework and .NET Core customers. They started with just targeting .NET Standard 2.0 but now they realize they want to take advantage of spans in .NET Core 3.0 and above to avoid unnecessary string allocations. In order to do that, they now want to multi-target for NET Standard2.0 and .NET 6.0.
 
 Finley has written the following code:
 ```c#
@@ -54,7 +54,7 @@ Finley has written the following code:
 
 When Finley packs the project it fails with the following error:
 
-```c#
+```cmd
 error : .NETStandard,Version=v2.0 assembly api surface area should be compatible with net6.0 assembly surface area so we can compile against .NETStandard,Version=v2.0 and run on net6.0 .framework.
 error : API Compatibility errors between lib/netstandard2.0/A.dll (left) and lib/net6.0/A.dll (right):
 error CP0002: Member 'A.B.DoStringManipulation(string)' exists on the left but not on the right.
@@ -96,7 +96,7 @@ For example consider the following scenario: Tom works on the AdventureWorks.Cli
 </Project>
 ```
 
-A few weeks later, Tom is tasked with adding support for a connection timeout to their library. The Connect method looks like this right now:
+A few weeks later, Tom is tasked with adding support for a connection timeout to their library. The Connect method currently looks like this:
 
 ```C#
 public static HttpClient Connect(string url)
@@ -115,14 +115,14 @@ public static HttpClient Connect(string url, TimeSpan? timeout = default)
 ```
 
 However, when they rebuild the package they are getting the following validation error:
-```c#
+```cmd
 error : There are breaking changes between the versions. Please add or modify the apis in the recent version or suppress the intentional breaking changes. 
 error : API compatibility errors in between lib/net6.0/A.dll (left) and lib/net6.0/A.dll (right) for versions 1.0.0 and 2.0.0 respectively:
 error CP0002: Member 'A.B.Connect(string)' exists on the left but not on the right 
 ```
 
 Tom realizes that while this is not a source breaking change, it's a binary breaking change. They solve this problem by adding an overload instead:
-```
+```c#
 public static HttpClient Connect(string url)
 {
     return HttpClient(url, Timeout.InfiniteTimeSpan);
@@ -154,11 +154,11 @@ For example, consider the following scenario: Rohan is working on a library invo
 #endif
 ```
 
-The resuting package structure looks like
+The resulting package structure looks like
 
 ```
-lib -> net6.0 -> A.dll 
-runtimes -> unix -> lib -> net6.0 -> A.dll
+lib/net6.0/A.dll 
+runtimes/unix/lib/net6.0/A.dll
 ```
 
 ```lib\net6.0\A.dll``` will always be used at compile time irrespective of the underlying operating system. ```lib\net6.0\A.dll``` will also be used at runtime for Non-Unix systems, but ```runtimes\unix\lib\net6.0\A.dll``` will be used at runtime for Unix systems.
@@ -195,5 +195,5 @@ Rohan quickly realizes his mistake and adds ```A.B.Open(string)``` to the unix r
 ## Whats Next For Package Validation
 
 - Error suppression for package validation errors like intentional breaking changes between versions.
-- More API compatibilty rules like compatible assembly versions, nullability, attributes.
+- More API compatibility rules like compatible assembly versions, nullability, attributes.
 - Validating Package Dependencies.
