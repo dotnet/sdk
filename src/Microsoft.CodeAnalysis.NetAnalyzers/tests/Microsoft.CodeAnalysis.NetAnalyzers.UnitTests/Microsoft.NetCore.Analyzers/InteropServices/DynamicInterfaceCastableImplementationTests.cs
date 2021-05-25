@@ -406,6 +406,46 @@ interface I2 : I
         }
 
         [Fact]
+        public async Task DynamicInterfaceCastableImplementation_NoPropertiesImplementated_InitAccessor_CS_Diagnostic()
+        {
+            string source = @"
+using System;
+using System.Runtime.InteropServices;
+
+interface I
+{
+    int Property { init; }
+}
+
+[DynamicInterfaceCastableImplementation]
+interface {|CA2253:I2|} : I
+{
+}";
+            string codeFix = @"
+using System;
+using System.Runtime.InteropServices;
+
+interface I
+{
+    int Property { init; }
+}
+
+[DynamicInterfaceCastableImplementation]
+interface I2 : I
+{
+    int I.Property
+    {
+        init
+        {
+            throw new NotImplementedException();
+        }
+    }
+}";
+
+            await VerifyCSCodeFixAsync(source, codeFix);
+        }
+
+        [Fact]
         public async Task DynamicInterfaceCastableImplementation_NoEventsImplemented_CS_Diagnostic()
         {
             string source = @"
@@ -866,6 +906,53 @@ interface I2 : I
     sealed int Property
     {
         set
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+}";
+
+            await VerifyCSCodeFixAsync(source, codeFix);
+        }
+
+        [Fact]
+        public async Task DynamicInterfaceCastableImplementation_DefinedProperties_NoBody_InitOnly_CS_Diagnostic()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+
+interface I
+{
+    void Method();
+}
+
+[DynamicInterfaceCastableImplementation]
+interface I2 : I
+{
+    void I.Method() {}
+
+    int {|CA2254:Property|}
+    {
+        init;
+    }
+}";
+
+            string codeFix = @"
+using System.Runtime.InteropServices;
+
+interface I
+{
+    void Method();
+}
+
+[DynamicInterfaceCastableImplementation]
+interface I2 : I
+{
+    void I.Method() {}
+
+    sealed int Property
+    {
+        init
         {
             throw new System.NotImplementedException();
         }

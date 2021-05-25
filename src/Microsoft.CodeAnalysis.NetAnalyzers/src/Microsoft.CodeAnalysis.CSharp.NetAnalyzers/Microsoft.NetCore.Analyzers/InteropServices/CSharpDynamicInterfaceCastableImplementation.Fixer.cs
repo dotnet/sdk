@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,6 +19,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpDynamicInterfaceCastableImplementationFixer : DynamicInterfaceCastableImplementationFixer
     {
+        // Manually define the InitKeyword and InitAccessorDeclaration values since we compile against too old of a Roslyn to use it directly.
+        // We only generate init accessors if they already exist, so we don't need to worry about these being unrecognized.
+        private const SyntaxKind InitKeyword = (SyntaxKind)8443;
+        private const SyntaxKind InitAccessorDeclaration = (SyntaxKind)9060;
+
         protected override async Task<Document> ImplementInterfacesOnDynamicCastableImplementation(
             SyntaxNode declaration,
             Document document,
@@ -92,11 +98,58 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 if (property.SetMethod is not null
                     && editor.SemanticModel.Compilation.IsSymbolAccessibleWithin(property.SetMethod, type))
                 {
-                    propertyDecl = generator.WithSetAccessorStatements(propertyDecl, defaultMethodBodyStatements);
+                    propertyDecl = AddSetAccessor(property, propertyDecl, generator, defaultMethodBodyStatements, includeAccessibility: false);
                 }
 
                 return propertyDecl;
             }
+        }
+
+        private static SyntaxNode AddSetAccessor(
+            IPropertySymbol property,
+            SyntaxNode declaration,
+            SyntaxGenerator generator,
+            SyntaxNode[] defaultMethodBodyStatements,
+            bool includeAccessibility)
+        {
+            if (!property.SetMethod.IsInitOnly())
+            {
+                return generator.WithSetAccessorStatements(declaration, defaultMethodBodyStatements);
+            }
+
+            Accessibility setAccessorAccessibility = includeAccessibility && property.DeclaredAccessibility != property.SetMethod.DeclaredAccessibility
+                ? property.SetMethod.DeclaredAccessibility
+                : Accessibility.NotApplicable;
+
+            var setAccessor = (AccessorDeclarationSyntax)generator.SetAccessorDeclaration(setAccessorAccessibility, defaultMethodBodyStatements);
+
+            PropertyDeclarationSyntax propDecl = (PropertyDeclarationSyntax)declaration;
+
+            SyntaxNode? oldInitAccessor = null;
+
+            foreach (var accessor in propDecl.AccessorList.Accessors)
+            {
+                if (accessor.IsKind(InitAccessorDeclaration))
+                {
+                    oldInitAccessor = accessor;
+                    break;
+                }
+            }
+
+            if (oldInitAccessor is not null)
+            {
+                propDecl = propDecl.WithAccessorList(propDecl.AccessorList.RemoveNode(oldInitAccessor, SyntaxRemoveOptions.KeepNoTrivia));
+            }
+
+            return propDecl.WithAccessorList(propDecl.AccessorList.AddAccessors(
+                SyntaxFactory.AccessorDeclaration(
+                        InitAccessorDeclaration,
+                        setAccessor.AttributeLists,
+                        setAccessor.Modifiers,
+                        SyntaxFactory.Token(InitKeyword),
+                        setAccessor.Body,
+                        setAccessor.ExpressionBody,
+                        setAccessor.SemicolonToken)));
         }
 
         private static SyntaxNode GenerateEventImplementation(
@@ -166,7 +219,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                                 }
                                 if (prop.SetMethod is not null)
                                 {
-                                    declaration = generator.WithSetAccessorStatements(declaration, defaultMethodBodyStatements);
+                                    declaration = AddSetAccessor(prop, declaration, generator, defaultMethodBodyStatements, includeAccessibility: true);
                                 }
                             }
                             return generator.WithModifiers(declaration, modifiers);
