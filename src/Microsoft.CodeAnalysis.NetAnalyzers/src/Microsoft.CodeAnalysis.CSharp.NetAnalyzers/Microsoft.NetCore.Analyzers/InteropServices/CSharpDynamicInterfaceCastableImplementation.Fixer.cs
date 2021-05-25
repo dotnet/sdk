@@ -147,10 +147,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 {
                     case SymbolKind.Method:
                         {
-                            DeclarationModifiers modifiers = generator.GetModifiers(declaration)
-                               .WithIsAbstract(false)
-                               .WithIsVirtual(false)
-                               .WithIsSealed(true);
+                            var modifiers = GetModifiers(generator, declaration);
                             if (symbol.IsAbstract)
                             {
                                 declaration = generator.WithStatements(declaration, defaultMethodBodyStatements);
@@ -159,10 +156,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                         }
                     case SymbolKind.Property:
                         {
-                            DeclarationModifiers modifiers = generator.GetModifiers(declaration)
-                               .WithIsAbstract(false)
-                               .WithIsVirtual(false)
-                               .WithIsSealed(true);
+                            DeclarationModifiers modifiers = GetModifiers(generator, declaration);
                             if (symbol.IsAbstract)
                             {
                                 IPropertySymbol prop = (IPropertySymbol)symbol;
@@ -179,10 +173,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                         }
                     case SymbolKind.Event:
                         {
-                            DeclarationModifiers modifiers = generator.GetModifiers(declaration)
-                               .WithIsAbstract(false)
-                               .WithIsVirtual(false)
-                               .WithIsSealed(true);
+                            DeclarationModifiers modifiers = GetModifiers(generator, declaration);
                             if (symbol.IsAbstract)
                             {
                                 declaration = GenerateEventImplementation((IEventSymbol)symbol, declaration, generator, defaultMethodBodyStatements);
@@ -192,6 +183,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 }
 
                 return declaration;
+
+                static DeclarationModifiers GetModifiers(SyntaxGenerator generator, SyntaxNode declaration)
+                {
+                    return generator.GetModifiers(declaration)
+                                                   .WithIsAbstract(false)
+                                                   .WithIsVirtual(false)
+                                                   .WithIsSealed(true);
+                }
             }
         }
 

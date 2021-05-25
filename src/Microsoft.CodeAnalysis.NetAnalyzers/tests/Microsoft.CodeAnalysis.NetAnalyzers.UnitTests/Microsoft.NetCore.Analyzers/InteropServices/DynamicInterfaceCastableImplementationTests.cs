@@ -984,7 +984,7 @@ interface I2 : I
     event Action {|CA2254:Event|}, {|CA2254:Event2|};
 }";
 
-            await VerifyCSCodeFixAsync(source, source);
+            await VerifyCSAnalyzerAsync(source);
         }
 
         [Fact]
@@ -1043,14 +1043,9 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        private static async Task VerifyCSAnalyzerAsync(string source)
+        private static Task VerifyCSAnalyzerAsync(string source)
         {
-            await new VerifyCS.Test
-            {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = source
-            }.RunAsync();
+            return VerifyCSCodeFixAsync(source, source);
         }
 
         private static async Task VerifyVBAnalyzerAsync(string source)
@@ -1066,7 +1061,7 @@ interface I2 : I
         {
             await new VerifyCS.Test
             {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                LanguageVersion = CSharp.LanguageVersion.CSharp9,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = source,
                 FixedCode = codeFix

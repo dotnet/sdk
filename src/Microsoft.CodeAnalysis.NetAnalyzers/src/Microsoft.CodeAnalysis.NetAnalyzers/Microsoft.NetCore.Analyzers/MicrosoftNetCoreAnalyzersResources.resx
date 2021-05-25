@@ -1674,14 +1674,14 @@
   <data name="ImplementInterfacesOnDynamicCastableImplementation" xml:space="preserve">
     <value>Implement inherited interfaces</value>
   </data>
-  <data name="InterfaceMethodsMissingImplementationDescription" xml:space="preserve">
-    <value>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the methods defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</value>
+  <data name="InterfaceMembersMissingImplementationDescription" xml:space="preserve">
+    <value>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</value>
   </data>
-  <data name="InterfaceMethodsMissingImplementationMessage" xml:space="preserve">
-    <value>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface methods defined in inherited interfaces</value>
+  <data name="InterfaceMembersMissingImplementationMessage" xml:space="preserve">
+    <value>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</value>
   </data>
-  <data name="InterfaceMethodsMissingImplementationTitle" xml:space="preserve">
-    <value>All methods declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</value>
+  <data name="InterfaceMembersMissingImplementationTitle" xml:space="preserve">
+    <value>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</value>
   </data>
   <data name="MethodsDeclaredOnImplementationTypeMustBeSealedDescription" xml:space="preserve">
     <value>Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all methods on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</value>

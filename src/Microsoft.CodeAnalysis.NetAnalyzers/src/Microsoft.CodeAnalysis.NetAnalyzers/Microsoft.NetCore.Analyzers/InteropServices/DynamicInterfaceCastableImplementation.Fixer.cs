@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     {
         public override ImmutableArray<string> FixableDiagnosticIds =>
             ImmutableArray.Create(
-                DynamicInterfaceCastableImplementationAnalyzer.InterfaceMethodsMissingImplementationRuleId,
+                DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId,
                 DynamicInterfaceCastableImplementationAnalyzer.MethodsDeclaredOnImplementationTypeMustBeSealedRuleId);
 
         public override FixAllProvider GetFixAllProvider()
@@ -37,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
             Diagnostic diagnostic = context.Diagnostics.First();
-            if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMethodsMissingImplementationRuleId)
+            if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId)
             {
                 context.RegisterCodeFix(
                     new MyCodeAction(

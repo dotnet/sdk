@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    internal class DynamicInterfaceCastableImplementationAnalyzer : DiagnosticAnalyzer
+    internal sealed class DynamicInterfaceCastableImplementationAnalyzer : DiagnosticAnalyzer
     {
         internal const string DynamicInterfaceCastableImplementationUnsupportedRuleId = "CA2252";
 
@@ -24,16 +24,16 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        internal const string InterfaceMethodsMissingImplementationRuleId = "CA2253";
+        internal const string InterfaceMembersMissingImplementationRuleId = "CA2253";
 
-        private static readonly DiagnosticDescriptor InterfaceMethodsMissingImplementation =
+        private static readonly DiagnosticDescriptor InterfaceMembersMissingImplementation =
             DiagnosticDescriptorHelper.Create(
-                InterfaceMethodsMissingImplementationRuleId,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMethodsMissingImplementationTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMethodsMissingImplementationMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                InterfaceMembersMissingImplementationRuleId,
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMembersMissingImplementationTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMembersMissingImplementationMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 DiagnosticCategory.Usage,
                 RuleLevel.BuildWarning,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMethodsMissingImplementationDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMembersMissingImplementationDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
@@ -52,19 +52,23 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
             DynamicInterfaceCastableImplementationUnsupported,
-            InterfaceMethodsMissingImplementation,
+            InterfaceMembersMissingImplementation,
             MethodsDeclaredOnImplementationTypeMustBeSealed);
 
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-            context.RegisterSymbolAction(context => AnalyzeType(context), SymbolKind.NamedType);
+            context.RegisterCompilationStartAction(context =>
+            {
+                if (context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDynamicInterfaceCastableImplementationAttribute, out INamedTypeSymbol? dynamicInterfaceCastableImplementationAttribute))
+                {
+                    context.RegisterSymbolAction(context => AnalyzeType(context, dynamicInterfaceCastableImplementationAttribute), SymbolKind.NamedType);
+                }
+            });
         }
 
-        private const string DynamicInterfaceCastableImplementationAttributeTypeName = "System.Runtime.InteropServices.DynamicInterfaceCastableImplementationAttribute";
-
-        private static void AnalyzeType(SymbolAnalysisContext context)
+        private static void AnalyzeType(SymbolAnalysisContext context, INamedTypeSymbol dynamicInterfaceCastableImplementationAttribute)
         {
             INamedTypeSymbol targetType = (INamedTypeSymbol)context.Symbol;
 
@@ -73,17 +77,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
 
-            bool isDynamicInterfaceImplementation = false;
-            foreach (var attribute in targetType.GetAttributes())
-            {
-                if (attribute.AttributeClass.ToDisplayString(SymbolDisplayFormats.QualifiedTypeAndNamespaceSymbolDisplayFormat) == DynamicInterfaceCastableImplementationAttributeTypeName)
-                {
-                    isDynamicInterfaceImplementation = true;
-                    break;
-                }
-            }
-
-            if (!isDynamicInterfaceImplementation)
+            if (!targetType.HasAttribute(dynamicInterfaceCastableImplementationAttribute))
             {
                 return;
             }
@@ -113,7 +107,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             if (missingMethodImplementations)
             {
-                context.ReportDiagnostic(targetType.CreateDiagnostic(InterfaceMethodsMissingImplementation, targetType.ToDisplayString()));
+                context.ReportDiagnostic(targetType.CreateDiagnostic(InterfaceMembersMissingImplementation, targetType.ToDisplayString()));
             }
 
             foreach (var member in targetType.GetMembers())

@@ -1247,19 +1247,19 @@
         <target state="translated">Правильно создавайте экземпляры исключений аргументов</target>
         <note />
       </trans-unit>
-      <trans-unit id="InterfaceMethodsMissingImplementationDescription">
-        <source>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the methods defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</source>
-        <target state="new">Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the methods defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</target>
+      <trans-unit id="InterfaceMembersMissingImplementationDescription">
+        <source>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</source>
+        <target state="new">Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InterfaceMethodsMissingImplementationMessage">
-        <source>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface methods defined in inherited interfaces</source>
-        <target state="new">Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface methods defined in inherited interfaces</target>
+      <trans-unit id="InterfaceMembersMissingImplementationMessage">
+        <source>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</source>
+        <target state="new">Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</target>
         <note />
       </trans-unit>
-      <trans-unit id="InterfaceMethodsMissingImplementationTitle">
-        <source>All methods declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</source>
-        <target state="new">All methods declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</target>
+      <trans-unit id="InterfaceMembersMissingImplementationTitle">
+        <source>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</source>
+        <target state="new">All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
