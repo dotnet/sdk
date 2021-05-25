@@ -22,8 +22,6 @@
 
     <WorkloadIntermediateOutputPath>$(ArtifactsObjDir)workloads\</WorkloadIntermediateOutputPath>
     <WorkloadOutputPath>$(ArtifactsBinDir)workloads\</WorkloadOutputPath>
-    <VisualStudioManifestOutputPath>$(ArtifactsDir)VSSetup\$(Configuration)\Insertion\</VisualStudioManifestOutputPath>
-
     <PackageSource>$(WorkloadIntermediateOutputPath)packages\</PackageSource>
 
     <!-- Project generated from the workload manfiests to download all the workload pack packages -->
@@ -110,7 +108,7 @@
     </GenerateVisualStudioWorkload>
 
     <!-- Build all the SWIX projects. This requires full framework MSBuild-->
-    <MSBuild Projects="@(SwixProjects)" Properties="SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=$(VisualStudioManifestOutputPath)" />
+    <MSBuild Projects="@(SwixProjects)" Properties="SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=$(VisualStudioSetupInsertionPath)" />
 
     <!-- Gather .wixobj files for post-build signing. We'll have to batch since we generated multiple MSIs in the previous step. -->
     <MSBuild Projects="$(MSBuildProjectFile)" Properties="_WixObjDir=%(Msis.WixObj);_Msi=%(Msis.Identity)" Targets="CreateWixPack" />
@@ -120,7 +118,7 @@
       <VisualStudioManifestProjects Include="OptionalWorkloads.vsmanproj" />
     </ItemGroup>
 
-    <MSBuild Projects="@(VisualStudioManifestProjects)" Properties="SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=$(VisualStudioManifestOutputPath);OutputPath=$(VisualStudioManifestOutputPath)" />
+    <MSBuild Projects="@(VisualStudioManifestProjects)" Properties="SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=$(VisualStudioSetupInsertionPath);OutputPath=$(VisualStudioSetupInsertionPath)" />
  
     <!-- Build all the MSI payload packages for NuGet. -->
     <ItemGroup>
@@ -154,7 +152,7 @@
       <SwixProjects Include="$(WorkloadIntermediateOutputPath)**\*.swixproj" />
     </ItemGroup>
 
-    <MSBuild Projects="@(SwixProjects)" BuildInParallel="true" Properties="SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=$(VisualStudioManifestOutputPath)" />
+    <MSBuild Projects="@(SwixProjects)" BuildInParallel="true" Properties="SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=$(VisualStudioSetupInsertionPath)" />
   </Target>
 
   <Target Name="BuildVisualStudioManifest">
@@ -162,7 +160,7 @@
       <VisualStudioManifestProjects Include="Microsoft.NET.vsmanproj" />
     </ItemGroup>
 
-    <MSBuild Projects="@(VisualStudioManifestProjects)" BuildInParallel="true" Properties="SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=$(VisualStudioManifestOutputPath);OutputPath=$(VisualStudioManifestOutputPath)" />
+    <MSBuild Projects="@(VisualStudioManifestProjects)" BuildInParallel="true" Properties="SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=$(VisualStudioSetupInsertionPath);OutputPath=$(VisualStudioSetupInsertionPath)" />
   </Target>  
 
   <Target Name="GenerateVersions">
