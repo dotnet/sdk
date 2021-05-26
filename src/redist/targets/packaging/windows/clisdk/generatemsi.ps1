@@ -28,7 +28,7 @@ function RunHeat
     # -t $StableFileIdForApphostTransform to avoid sign check baseline apphost.exe name changes every build. Sign check uses File Id in MSI as exception list name.
     # Template apphost.exe get a new "File Id" in msi different every time (since File Id is generated according to file
     # path, and file path has version number)
-    # use XSLT tranform to match the file path contains "AppHostTemplate\apphost.exe" and give it the same ID all the time.
+    # use XSLT transform to match the file path contains "AppHostTemplate\apphost.exe" and give it the same ID all the time.
 
     $heatOutput = .\heat.exe dir `"$inputDir`" -template fragment  `
         -sreg -ag `
