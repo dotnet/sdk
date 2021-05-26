@@ -614,7 +614,7 @@ End Namespace
                 {
                     Sources =
                     {
-                        $@"
+                        @"
 public class Test
 {{
     [CustomNUnit.MyTestBuilder]
@@ -649,7 +649,7 @@ namespace CustomNUnit
                 {
                     Sources =
                     {
-                        $@"
+                        @"
 Public Class Test
     <CustomNUnit.MyTestBuilder>
     Public Sub Method1()
