@@ -2,8 +2,12 @@
 <Project>
   <UsingTask TaskName="Microsoft.DotNet.PackageValidation.ValidatePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
 
+  <PropertyGroup>
+    <PackageValidationBaselineName>$([MSBuild]::ValueOrDefault('$(PackageValidationBaselineName)', '$(PackageId)'))</PackageValidationBaselineName>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(PackageValidationBaselinePath)' == '' and '$(PackageValidationBaselineVersion)' != ''">
-    <PackageDownload Include="$(PackageId)" Version="[$(PackageValidationBaselineVersion)]" />
+    <PackageDownload Include="$(PackageValidationBaselineName)" Version="[$(PackageValidationBaselineVersion)]" />
   </ItemGroup>
 
   <Target Name="RunPackageValidation"
@@ -11,8 +15,10 @@
           Condition="$(IsPackable) == 'true'">
 
     <PropertyGroup >
-      <PackageValidationBaselinePath Condition="'$(PackageValidationBaselinePath)' == '' and '$(PackageValidationBaselineVersion)' != ''">$([MSBuild]::NormalizePath('$(NuGetPackageRoot)', '$(PackageId.ToLower())', '$(PackageValidationBaselineVersion)', '$(PackageId.ToLower()).$(PackageValidationBaselineVersion).nupkg'))</PackageValidationBaselinePath>
+      <PackageValidationBaselinePath Condition="'$(PackageValidationBaselinePath)' == '' and '$(PackageValidationBaselineVersion)' != ''">$([MSBuild]::NormalizePath('$(NuGetPackageRoot)', '$(PackageValidationBaselineName.ToLower())', '$(PackageValidationBaselineVersion)', '$(PackageValidationBaselineName.ToLower()).$(PackageValidationBaselineVersion).nupkg'))</PackageValidationBaselinePath>
     </PropertyGroup>
+
+    <Error Condition="!Exists('$(PackageValidationBaselinePath)')" Text="$(PackageValidationBaselinePath) does not exist. Please check the PackageValidationBaselinePath or PackageValidationBaselineVersion." />
 
     <!-- PackageTargetPath isn't exposed by NuGet: https://github.com/NuGet/Home/issues/6671. -->
     <Microsoft.DotNet.PackageValidation.ValidatePackage
