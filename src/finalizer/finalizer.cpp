@@ -79,7 +79,7 @@ extern "C" HRESULT RemoveDependent(LPWSTR sczDependent, BOOL* pbRestartRequired)
 		hr = RegOpen(hkProviderKey, L"Dependents", KEY_READ | KEY_WRITE, &hkDependentsKey);
 		if (E_FILENOTFOUND == hr)
 		{
-			// Providers can sometimes become orphaned duirng uninstalls. If there's no Dependents subkey, we just
+			// Providers can sometimes become orphaned during uninstalls. If there's no Dependents subkey, we just
 			// release the handle and continue to the next provider key.
 			hr = S_OK;
 			ReleaseRegKey(hkProviderKey);
