@@ -292,7 +292,7 @@
   <Target Name="RuntimeImplementationProjectOutputGroup" />
   <!-- Group always attempts resolve runtime, regardless of <CopyNuGetImplementations>-->
   <Target Name="GetReferenceAssemblyPaths" />
-  <!-- Don't go looking for framewoek reference assemblies-->
+  <!-- Don't go looking for framework reference assemblies-->
   <Target Name="GetFrameworkPaths"  />
   <!-- ^ -->
 
