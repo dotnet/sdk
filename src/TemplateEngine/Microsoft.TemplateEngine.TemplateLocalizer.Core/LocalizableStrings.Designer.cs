@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class LocalizableStrings {
@@ -61,56 +61,65 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The following element in the template.json will not be included in the localizations because it does not match any of the rules for localizable elements: {0}.
+        ///   Looks up a localized string similar to Adding into localizable strings: {0}.
         /// </summary>
-        internal static string stringExtractor_log_commandDebugElementExcluded {
+        internal static string stringExtractor_log_jsonElementAdded {
             get {
-                return ResourceManager.GetString("stringExtractor_log_commandDebugElementExcluded", resourceCulture);
+                return ResourceManager.GetString("stringExtractor_log_jsonElementAdded", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Adding into localizable strings: {0}.
+        ///   Looks up a localized string similar to The following element in the template.json will not be included in the localizations because it does not match any of the rules for localizable elements: {0}.
         /// </summary>
-        internal static string stringExtractor_log_commandElementAdded {
+        internal static string stringExtractor_log_jsonElementExcluded {
             get {
-                return ResourceManager.GetString("stringExtractor_log_commandElementAdded", resourceCulture);
+                return ResourceManager.GetString("stringExtractor_log_jsonElementExcluded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Each child of &quot;{0}&quot; should have a unique id. Currently, the id &quot;{1}&quot; is shared by multiple children..
+        /// </summary>
+        internal static string stringExtractor_log_jsonKeyIsNotUnique {
+            get {
+                return ResourceManager.GetString("stringExtractor_log_jsonKeyIsNotUnique", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}.
         /// </summary>
-        internal static string stringExtractor_log_commandElementAlreadyAdded {
+        internal static string stringExtractor_log_skippingAlreadyAddedElement {
             get {
-                return ResourceManager.GetString("stringExtractor_log_commandElementAlreadyAdded", resourceCulture);
+                return ResourceManager.GetString("stringExtractor_log_skippingAlreadyAddedElement", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to &quot;Failed to read the existing strings from &quot;{0}&quot;.
         /// </summary>
-        internal static string stringUpdater_log_commandFailedToReadLocFile {
+        internal static string stringUpdater_log_failedToReadLocFile {
             get {
-                return ResourceManager.GetString("stringUpdater_log_commandFailedToReadLocFile", resourceCulture);
+                return ResourceManager.GetString("stringUpdater_log_failedToReadLocFile", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Loading existing localizations from file &quot;{0}&quot;.
         /// </summary>
-        internal static string stringUpdater_log_commandLoadingLocFile {
+        internal static string stringUpdater_log_loadingLocFile {
             get {
-                return ResourceManager.GetString("stringUpdater_log_commandLoadingLocFile", resourceCulture);
+                return ResourceManager.GetString("stringUpdater_log_loadingLocFile", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to &quot;Opening the following templatestrings.json file for writing: &quot;{0}&quot;.
         /// </summary>
-        internal static string stringUpdater_log_commandOpeningTemplatesJson {
+        internal static string stringUpdater_log_openingTemplatesJson {
             get {
-                return ResourceManager.GetString("stringUpdater_log_commandOpeningTemplatesJson", resourceCulture);
+                return ResourceManager.GetString("stringUpdater_log_openingTemplatesJson", resourceCulture);
             }
         }
     }

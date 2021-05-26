@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         {
             try
             {
-                logger.LogDebug(LocalizableStrings.stringUpdater_log_commandLoadingLocFile, locFilePath);
+                logger.LogDebug(LocalizableStrings.stringUpdater_log_loadingLocFile, locFilePath);
                 using FileStream openStream = File.OpenRead(locFilePath);
 
                 JsonSerializerOptions serializerOptions = new()
@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
             }
             catch (Exception)
             {
-                logger.LogError(LocalizableStrings.stringUpdater_log_commandFailedToReadLocFile, locFilePath);
+                logger.LogError(LocalizableStrings.stringUpdater_log_failedToReadLocFile, locFilePath);
                 throw;
             }
         }
@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
                 Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 Indented = true,
             };
-            logger.LogDebug(LocalizableStrings.stringUpdater_log_commandOpeningTemplatesJson, filePath);
+            logger.LogDebug(LocalizableStrings.stringUpdater_log_openingTemplatesJson, filePath);
             using FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
             using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(fileStream, writerOptions);
 

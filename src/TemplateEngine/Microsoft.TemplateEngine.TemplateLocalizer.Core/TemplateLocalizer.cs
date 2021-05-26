@@ -60,10 +60,11 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 
                 return new ExportResult(templateJsonPath);
             }
-            catch (JsonMemberMissingException jsonMemberMissingException)
+            catch (Exception exception)
+                when (exception is JsonMemberMissingException || exception is LocalizationKeyIsNotUniqueException)
             {
                 // Output a more friendly text without stack trace for known errors.
-                return new ExportResult(templateJsonPath, jsonMemberMissingException.Message);
+                return new ExportResult(templateJsonPath, exception.Message);
             }
             catch (Exception exception)
             {

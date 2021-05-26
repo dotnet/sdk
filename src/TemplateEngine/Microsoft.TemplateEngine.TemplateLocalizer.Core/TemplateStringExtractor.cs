@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.TemplateEngine.TemplateLocalizer.Core.Exceptions;
 using Microsoft.TemplateEngine.TemplateLocalizer.Core.KeyCreators;
 using Microsoft.TemplateEngine.TemplateLocalizer.Core.TraversalRules;
 
@@ -81,6 +82,10 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         /// </summary>
         /// <param name="language">The language of the extracted strings.</param>
         /// <returns>The list of localizable strings.</returns>
+        /// <exception cref="JsonMemberMissingException">thrown if a required the json document does not contain
+        /// one of the necessary fields to extract localizable strings.</exception>
+        /// <exception cref="LocalizationKeyIsNotUniqueException">thrown if any two json elements under the same
+        /// parent has the same identifier.</exception>
         public IReadOnlyList<TemplateString> ExtractStrings(out string language)
         {
             List<TemplateString> extractedStrings = new();
@@ -127,7 +132,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
             if (complyingRules.Count == 0)
             {
                 // This identifier was filtered out.
-                _logger.LogDebug(LocalizableStrings.stringExtractor_log_commandDebugElementExcluded, args.IdentifierPrefix + _keySeparator + elementName);
+                _logger.LogDebug(LocalizableStrings.stringExtractor_log_jsonElementExcluded, args.IdentifierPrefix + _keySeparator + elementName);
                 return;
             }
 
@@ -165,7 +170,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
             if (data.ExtractedStringIds.Contains(identifier))
             {
                 // This string was already included by an earlier rule, possibly with a different key. Skip.
-                _logger.LogDebug(LocalizableStrings.stringExtractor_log_commandElementAlreadyAdded, identifier);
+                _logger.LogDebug(LocalizableStrings.stringExtractor_log_skippingAlreadyAddedElement, identifier);
                 return;
             }
 
@@ -179,19 +184,27 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 
             data.ExtractedStringIds.Add(identifier);
             data.ExtractedStrings.Add(new TemplateString(identifier, finalKey, element.GetString() ?? string.Empty));
-            _logger.LogTrace(LocalizableStrings.stringExtractor_log_commandElementAdded, identifier);
+            _logger.LogTrace(LocalizableStrings.stringExtractor_log_jsonElementAdded, identifier);
         }
 
         private void ProcessArrayElement(JsonElement element, string elementName, TraversalArgs args)
         {
+            HashSet<string> childKeys = new();
             int childrenCount = element.GetArrayLength();
             foreach (TraversalRule rule in args.Rules)
             {
                 int childIndex = 0;
+                childKeys.Clear();
                 foreach (var child in element.EnumerateArray())
                 {
                     string childElementName = childIndex.ToString();
                     string? childKey = (rule.KeyCreator ?? _defaultArrayKeyExtractor).CreateKey(child, childElementName, elementName, childIndex, childrenCount);
+
+                    if (!childKeys.Add(childKey))
+                    {
+                        // Child key was already used before. Keys should be unique.
+                        throw new LocalizationKeyIsNotUniqueException(childKey, args.IdentifierPrefix);
+                    }
 
                     TraversalArgs nextArgs = args;
                     nextArgs.Rules = rule.ChildRules;
@@ -205,14 +218,23 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 
         private void ProcessObjectElement(JsonElement element, string elementName, TraversalArgs args)
         {
+            HashSet<string> childKeys = new();
             int childrenCount = element.EnumerateObject().Count();
+
             foreach (TraversalRule rule in args.Rules)
             {
                 int childIndex = 0;
+                childKeys.Clear();
                 foreach (JsonProperty child in element.EnumerateObject())
                 {
                     string childElementName = child.Name;
                     string childKey = (rule.KeyCreator ?? _defaultObjectKeyExtractor).CreateKey(child.Value, childElementName, elementName, childIndex, childrenCount);
+
+                    if (!childKeys.Add(childKey))
+                    {
+                        // Child key was already used before. Keys should be unique.
+                        throw new LocalizationKeyIsNotUniqueException(childKey, args.IdentifierPrefix);
+                    }
 
                     TraversalArgs nextArgs = args;
                     nextArgs.Rules = rule.ChildRules;
