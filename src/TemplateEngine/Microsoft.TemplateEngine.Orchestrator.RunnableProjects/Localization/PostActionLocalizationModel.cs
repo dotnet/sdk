@@ -4,7 +4,6 @@
 #nullable enable
 
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
@@ -16,14 +15,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
         public string? Description { get; set; }
 
         /// <summary>
-        /// Contains the localized manual instructions of the post action.
-        /// Order of the items here matches the order of the manual instructions defined
-        /// in the culture-neutral template config file.
+        /// Gets or sets the localized manual instructions of the post action.
+        /// The keys represent the manual instruction ids.
         /// </summary>
-        /// <returns>
-        /// The list of localized instructions. A null value means that a localization
-        /// was not provided for that instruction and the culture-neutral text should be used.
-        /// </returns>
-        public IReadOnlyDictionary<int, string> Instructions { get; set; } = new Dictionary<int, string>();
+        public IReadOnlyDictionary<string, string> Instructions { get; set; } = new Dictionary<string, string>();
     }
 }

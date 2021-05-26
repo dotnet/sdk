@@ -19,12 +19,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         private const char KeySeparator = '/';
 
-        private const string PostActionIndexPrefix = "postActions[";
-        private const string PostActionIndexSuffix = "]";
-
-        private const string ManualInstructionIndexPrefix = "manualInstructions[";
-        private const string ManualInstructionIndexSuffix = "]";
-
         public static ILocalizationModel Deserialize(JObject data)
         {
             var parameterLocalizations = new Dictionary<string, ParameterSymbolLocalizationModel>();
@@ -51,7 +45,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             var results = new Dictionary<string, IParameterSymbolLocalizationModel>();
 
-            // Property names are in format: symbols/framework/choices[0]/description
+            // Property names are in format: symbols/framework/choices/net5.0/description
             // Split them using '/' and store together with the localized string.
             IEnumerable<(IEnumerable<string> NameParts, string LocalizedString)> strings = localizedStrings
                 .Where(s => s.Key.StartsWith("symbols" + KeySeparator))
@@ -120,31 +114,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <summary>
         /// Generates post action localization models from the given localized strings.
         /// </summary>
-        private static IReadOnlyDictionary<int, IPostActionLocalizationModel> LoadPostActionModels(List<(string Key, string Value)> localizedStrings)
+        private static IReadOnlyDictionary<string, IPostActionLocalizationModel> LoadPostActionModels(List<(string Key, string Value)> localizedStrings)
         {
-            var results = new Dictionary<int, IPostActionLocalizationModel>();
+            var results = new Dictionary<string, IPostActionLocalizationModel>();
 
-            // Property names are in format: postActions[2]/manualInstructions[0]/description
+            // Property names are in format: postActions/actionId/manualInstructions/instructionId/description
             // Split them using '/' and store together with the localized string.
             IEnumerable<(IEnumerable<string> NameParts, string LocalizedString)> strings = localizedStrings
-                .Where(s => s.Key.StartsWith(PostActionIndexPrefix))
-                .Select(s => (s.Key.Split(KeySeparator).AsEnumerable(), s.Value))
+                .Where(s => s.Key.StartsWith("postActions" + KeySeparator))
+                .Select(s => (s.Key.Split(KeySeparator).AsEnumerable().Skip(1), s.Value))
                 .ToList();
 
             foreach (var postActionParts in strings.GroupBy(p => p.NameParts.FirstOrDefault()))
             {
-                if (!GetIndexFromString(postActionParts.Key, PostActionIndexPrefix, PostActionIndexSuffix, out int postActionIndex))
-                {
-                    // Invalid index.
-                    continue;
-                }
-
+                string postActionId = postActionParts.Key;
                 string? description = postActionParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "description").LocalizedString;
                 var instructions = LoadManualInstructionModels(postActionParts
-                    .Where(s => s.NameParts.Skip(1).FirstOrDefault().StartsWith(ManualInstructionIndexPrefix))
-                    .Select(s => (s.NameParts.Skip(1), s.LocalizedString)));
+                    .Where(s => s.NameParts.Skip(1).FirstOrDefault().StartsWith("manualInstructions"))
+                    .Select(s => (s.NameParts.Skip(2), s.LocalizedString)));
 
-                results[postActionIndex] = new PostActionLocalizationModel()
+                results[postActionId] = new PostActionLocalizationModel()
                 {
                     Description = description,
                     Instructions = instructions,
@@ -155,56 +144,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         /// <summary>
-        /// Generates manual instruction localization models. The given parts should begin with the index string
-        /// as shown below and shouldn't include "postActions[x]".
+        /// Generates manual instruction localization models.
+        /// The given parts should begin with the manual instruction id.
         /// <list type="table">
-        /// <item>manualInstructions[0]/text</item>
-        /// <item>manualInstructions[1]/text</item>
+        /// <item>instructionToRestore/text</item>
+        /// <item>instructionToRestart/text</item>
         /// </list>
         /// </summary>
-        private static IReadOnlyDictionary<int, string> LoadManualInstructionModels(IEnumerable<(IEnumerable<string> NameParts, string LocalizedString)> strings)
+        /// <returns>The localized manual instructions where each key represents the instruction id.</returns>
+        private static IReadOnlyDictionary<string, string> LoadManualInstructionModels(IEnumerable<(IEnumerable<string> NameParts, string LocalizedString)> strings)
         {
-            var results = new Dictionary<int, string>();
+            var results = new Dictionary<string, string>();
 
             foreach (var instructionParts in strings.GroupBy(p => p.NameParts.FirstOrDefault()))
             {
-                if (!GetIndexFromString(instructionParts.Key, ManualInstructionIndexPrefix, ManualInstructionIndexSuffix, out int instructionIndex))
-                {
-                    // Invalid index.
-                    continue;
-                }
-
+                string id = instructionParts.Key;
                 string? text = instructionParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "text").LocalizedString;
-                results[instructionIndex] = text;
+                results[id] = text;
             }
 
             return results;
-        }
-
-        /// <summary>
-        /// Parses the index from string of format &lt;prefix&gt;index&lt;suffix&gt;.
-        /// </summary>
-        /// <param name="value">The string to be parsed.</param>
-        /// <param name="prefix">The prefix that the string should begin with. Index starts after the prefix.</param>
-        /// <param name="suffix">The suffix that the string should end with. Index ends with the suffix.</param>
-        /// <returns>True if parsing succeeded. False if the string was incorrectly formatted or the index
-        /// string cannot be converted to an integer.</returns>
-        private static bool GetIndexFromString(string value, string prefix, string suffix, out int index)
-        {
-            index = 0;
-
-            if (!value.StartsWith(prefix) || !value.EndsWith(suffix))
-            {
-                return false;
-            }
-
-            if (value.Length <= prefix.Length + suffix.Length)
-            {
-                return false;
-            }
-
-            string indexString = value.Substring(prefix.Length, value.Length - prefix.Length - suffix.Length);
-            return int.TryParse(indexString, out index);
         }
     }
 }

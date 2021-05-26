@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         /// <summary>
         /// Creates an instance of <see cref="ExportResult"/>.
         /// </summary>
-        public ExportResult(string? templateJsonPath, string? errorMessage) : this(templateJsonPath, templateJsonPath, null) { }
+        public ExportResult(string? templateJsonPath, string? errorMessage) : this(templateJsonPath, errorMessage, null) { }
 
         /// <summary>
         /// Creates an instance of <see cref="ExportResult"/>.

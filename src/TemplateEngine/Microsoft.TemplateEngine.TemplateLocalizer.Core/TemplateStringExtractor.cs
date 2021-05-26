@@ -57,13 +57,13 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
                                 // Include "description" of each choice.
                                 new StringFilteredTraversalRule("description"))))),
                 // Include "postActions" under the root, if they also comply with child rules.
-                new StringFilteredTraversalRule("postActions").WithChild(
+                new StringFilteredTraversalRule("postActions", new ChildValueKeyCreator("id")).WithChild(
                     // Any post action in "postActions" array should be included. Skip none.
                     new AllInclusiveTraversalRule().WithChildren(
                         // Include "description" of the post action.
                         new StringFilteredTraversalRule("description"),
                         // Include "manualInstructions" of the post action, if they also comply with child rules.
-                        new RegexFilteredTraversalRule("manualInstructions").WithChild(
+                        new RegexFilteredTraversalRule("manualInstructions", new ChildValueKeyCreator("id", onlyChildDefaultValue: "default")).WithChild(
                             // Include all the manual instructions in the array. Skip none.
                             new AllInclusiveTraversalRule().WithChild(
                                 // Include "text" of the post action.
@@ -184,13 +184,14 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 
         private void ProcessArrayElement(JsonElement element, string elementName, TraversalArgs args)
         {
+            int childrenCount = element.GetArrayLength();
             foreach (TraversalRule rule in args.Rules)
             {
                 int childIndex = 0;
                 foreach (var child in element.EnumerateArray())
                 {
                     string childElementName = childIndex.ToString();
-                    string? childKey = (rule.KeyCreator ?? _defaultArrayKeyExtractor).CreateKey(child, childElementName, elementName, childIndex);
+                    string? childKey = (rule.KeyCreator ?? _defaultArrayKeyExtractor).CreateKey(child, childElementName, elementName, childIndex, childrenCount);
 
                     TraversalArgs nextArgs = args;
                     nextArgs.Rules = rule.ChildRules;
@@ -204,13 +205,14 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 
         private void ProcessObjectElement(JsonElement element, string elementName, TraversalArgs args)
         {
+            int childrenCount = element.EnumerateObject().Count();
             foreach (TraversalRule rule in args.Rules)
             {
                 int childIndex = 0;
                 foreach (JsonProperty child in element.EnumerateObject())
                 {
                     string childElementName = child.Name;
-                    string childKey = (rule.KeyCreator ?? _defaultObjectKeyExtractor).CreateKey(child.Value, childElementName, elementName, childIndex);
+                    string childKey = (rule.KeyCreator ?? _defaultObjectKeyExtractor).CreateKey(child.Value, childElementName, elementName, childIndex, childrenCount);
 
                     TraversalArgs nextArgs = args;
                     nextArgs.Rules = rule.ChildRules;

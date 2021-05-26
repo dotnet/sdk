@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
             string? description,
             string? author,
             IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> parameterSymbols,
-            IReadOnlyDictionary<int, IPostActionLocalizationModel> postActions)
+            IReadOnlyDictionary<string, IPostActionLocalizationModel> postActions)
         {
             Name = name;
             Description = description;
@@ -38,6 +38,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
         public IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> ParameterSymbols { get; }
 
         /// <inheritdoc/>
-        public IReadOnlyDictionary<int, IPostActionLocalizationModel> PostActions { get; }
+        public IReadOnlyDictionary<string, IPostActionLocalizationModel> PostActions { get; }
     }
 }

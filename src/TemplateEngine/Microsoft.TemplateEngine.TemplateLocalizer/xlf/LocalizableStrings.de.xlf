@@ -38,9 +38,15 @@
         <note>{0} is the number of files. Do not localize "--export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithError">
-        <source>Generating localization files for the following template.json file has failed: "{0}". Error message: "{1}".</source>
-        <target state="new">Generating localization files for the following template.json file has failed: "{0}". Error message: "{1}".</target>
-        <note />
+        <source>Generating localization files for a template.json has failed.
+Reason: {0}.
+File Path: {1}.</source>
+        <target state="new">Generating localization files for a template.json has failed.
+Reason: {0}.
+File Path: {1}.</target>
+        <note>{0} is a sentence such as "Json property should contain a field 'ID'"
+{1} is a file path such as: C:\temp\template.json
+Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithException">
         <source>Generating localization files for the following template.json file has failed: "{0}".</source>

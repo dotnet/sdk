@@ -18,7 +18,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.KeyCreators
         /// <param name="elementName">Name of the element that the key is being created for.</param>
         /// <param name="parentElementName">Name of the parent element.</param>
         /// <param name="indexInParent">Index of this element with respect to its siblings under the same parent.</param>
+        /// <param name="parentChildCount">The number of children that the parent element has.</param>
         /// <returns>The key string.</returns>
-        string CreateKey(JsonElement element, string? elementName, string? parentElementName, int indexInParent);
+        string CreateKey(JsonElement element, string? elementName, string? parentElementName, int indexInParent, int parentChildCount);
     }
 }

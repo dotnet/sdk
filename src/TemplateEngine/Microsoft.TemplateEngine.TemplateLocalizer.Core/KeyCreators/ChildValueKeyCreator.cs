@@ -12,9 +12,18 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.KeyCreators
     /// </summary>
     internal sealed class ChildValueKeyCreator : IJsonKeyCreator
     {
-        public ChildValueKeyCreator(string memberPropertyName)
+        /// <summary>
+        /// Creates an instance of <see cref="ChildValueKeyCreator"/>.
+        /// </summary>
+        /// <param name="memberPropertyName">Name of the member containing the value of the key.</param>
+        /// <param name="onlyChildDefaultValue">Default value to be used if the element does not have
+        /// a property with name specified in <paramref name="memberPropertyName"/> and it is the only
+        /// child of the parent element. If the value is null and the specified member doesn't exist,
+        /// <see cref="JsonMemberMissingException"/> will be thrown.</param>
+        public ChildValueKeyCreator(string memberPropertyName, string? onlyChildDefaultValue = default)
         {
             MemberPropertyName = memberPropertyName;
+            OnlyChildDefaultValue = onlyChildDefaultValue;
         }
 
         /// <summary>
@@ -23,16 +32,31 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.KeyCreators
         /// </summary>
         public string MemberPropertyName { get; }
 
+        /// <summary>
+        /// Gets the default value to be used in the case that the element doesn't have a member with
+        /// the specified name and it is the only child of its parent.
+        /// </summary>
+        public string? OnlyChildDefaultValue { get; }
+
         /// <inheritdoc/>
-        public string CreateKey(JsonElement element, string? elementName, string? parentElementName, int indexInParent)
+        public string CreateKey(JsonElement element, string? elementName, string? parentElementName, int indexInParent, int parentChildCount)
         {
-            if (!element.TryGetProperty(MemberPropertyName, out JsonElement keyProperty) || keyProperty.ValueKind != JsonValueKind.String)
+            string key = string.Empty;
+
+            if (element.TryGetProperty(MemberPropertyName, out JsonElement keyProperty) && keyProperty.ValueKind == JsonValueKind.String)
+            {
+                key = keyProperty.GetString() ?? string.Empty;
+            }
+            else if (OnlyChildDefaultValue != null && parentChildCount == 1)
+            {
+                key = OnlyChildDefaultValue;
+            }
+            else
             {
                 string owningElementName = (parentElementName == null ? elementName : (parentElementName + TemplateStringExtractor._keySeparator + elementName)) ?? string.Empty;
                 throw new JsonMemberMissingException(owningElementName, MemberPropertyName);
             }
 
-            string key = keyProperty.GetString() ?? string.Empty;
             return parentElementName == null ? key : string.Concat(parentElementName, TemplateStringExtractor._keySeparator, key);
         }
     }

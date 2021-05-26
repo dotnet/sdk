@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.TemplateEngine.TemplateLocalizer.Core.Exceptions;
 
 namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 {
@@ -58,6 +59,11 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
                     cancellationToken).ConfigureAwait(false);
 
                 return new ExportResult(templateJsonPath);
+            }
+            catch (JsonMemberMissingException jsonMemberMissingException)
+            {
+                // Output a more friendly text without stack trace for known errors.
+                return new ExportResult(templateJsonPath, jsonMemberMissingException.Message);
             }
             catch (Exception exception)
             {

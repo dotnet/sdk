@@ -120,7 +120,9 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
                 else
                 {
                     // Tasks is known to have already completed. We can get the result without await.
-                    exportResults.Add(pathTaskPair.Task.Result);
+                    ExportResult result = pathTaskPair.Task.Result;
+                    exportResults.Add(result);
+                    failed |= !result.Succeeded;
                 }
             }
 
@@ -209,7 +211,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
                     }
                     else
                     {
-                        Logger.LogError(LocalizableStrings.command_export_log_templateExportFailedWithError, result.TemplateJsonPath, result.ErrorMessage);
+                        Logger.LogError(LocalizableStrings.command_export_log_templateExportFailedWithError, result.ErrorMessage, result.TemplateJsonPath);
                     }
                 }
             }

@@ -121,13 +121,13 @@
     <value>"templatestrings.json" file should only contain elements with type "string". Remove elements that are not strings.</value>
   </data>
   <data name="Authoring_InvalidManualInstructionLocalizationIndex" xml:space="preserve">
-    <value>In templatestrings.json file under the post action with index {1}, there are localized strings for manual instruction(s) {0}. These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file.</value>
-    <comment>{0} is a list of indices separated by comma. Such as "3, 7, 22".
-{1} is a whole number. Such as "5".</comment>
+    <value>In templatestrings.json file under the post action with "id" "{1}", there are localized strings for manual instruction(s) with ids "{0}". These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file.</value>
+    <comment>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".
+{1} is a single-word identifier string. Such as "myPostAction".</comment>
   </data>
   <data name="Authoring_InvalidPostActionLocalizationIndex" xml:space="preserve">
-    <value>Post action(s) with index(es) {0} specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file.</value>
-    <comment>{0} is a list of indices separated by comma. Such as "3, 7, 22".</comment>
+    <value>Post action(s) with id(s) "{0}" specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file.</value>
+    <comment>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".</comment>
   </data>
   <data name="Authoring_InvalidRegex" xml:space="preserve">
     <value>'{0}' could not be parsed as a regular expression</value>
@@ -135,11 +135,22 @@
   <data name="Authoring_MalformedPostActionManualInstructions" xml:space="preserve">
     <value>One or more postActions have a malformed or missing manualInstructions value in '{0}'</value>
   </data>
+  <data name="Authoring_ManualInstructionIdIsNotUnique" xml:space="preserve">
+    <value>Id of the manual instruction "{0}" at index {1} under post action "{2}" is not unique. Only the first manual instruction that uses this Id will be localized.</value>
+    <comment>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
+{1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".
+{2} is any identifier string that user provided in the file or a whole number. Such as: myPostAction, firstPostAction, postAction1, 5, 0 etc.</comment>
+  </data>
   <data name="Authoring_MissingValue" xml:space="preserve">
     <value>Missing '{0}' in '{1}'</value>
   </data>
   <data name="Authoring_NonBoolDataTypeForRegexMatch" xml:space="preserve">
     <value>A non-bool DataType was specified for a regexMatch type symbol</value>
+  </data>
+  <data name="Authoring_PostActionIdIsNotUnique" xml:space="preserve">
+    <value>Id of the post action "{0}" at index {1} is not unique. Only the first post action that uses this Id will be localized.</value>
+    <comment>{0} is any identifier string that user provided in the file. Such as "myPostAction", "firstPostAction", "postAction1" etc.
+{1} is a number representing the zero-based index of the post action. Such as "5", or "0".</comment>
   </data>
   <data name="Authoring_SourceDoesNotExist" xml:space="preserve">
     <value>    Source '{0}' in template does not exist.</value>

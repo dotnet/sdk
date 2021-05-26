@@ -124,7 +124,9 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Generating localization files for the following template.json file has failed: &quot;{0}&quot;. Error message: &quot;{1}&quot;..
+        ///   Looks up a localized string similar to Generating localization files for a template.json has failed.
+        ///Reason: {0}.
+        ///File Path: {1}..
         /// </summary>
         internal static string command_export_log_templateExportFailedWithError {
             get {

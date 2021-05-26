@@ -4,13 +4,14 @@
 #nullable enable
 
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
 
-namespace Microsoft.TemplateEngine.Abstractions
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     /// <summary>
     /// Represents the data model that contains the localized strings for a template.
     /// </summary>
-    public interface ILocalizationModel
+    internal interface ILocalizationModel
     {
         /// <summary>
         /// Gets the localized author name.
@@ -34,8 +35,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         /// <summary>
         /// Gets the localization models for the post actions defined in this template.
-        /// The keys represend the indices of the post actions as they appear in the template config file.
+        /// The keys represent the id of the post actions.
         /// </summary>
-        IReadOnlyDictionary<int, IPostActionLocalizationModel> PostActions { get; }
+        IReadOnlyDictionary<string, IPostActionLocalizationModel> PostActions { get; }
     }
 }

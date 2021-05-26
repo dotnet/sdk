@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class LocalizableStrings {
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to In templatestrings.json file under the post action with index {1}, there are localized strings for manual instruction(s) {0}. These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file..
+        ///   Looks up a localized string similar to In templatestrings.json file under the post action with &quot;id&quot; &quot;{1}&quot;, there are localized strings for manual instruction(s) with ids &quot;{0}&quot;. These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file..
         /// </summary>
         internal static string Authoring_InvalidManualInstructionLocalizationIndex {
             get {
@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Post action(s) with index(es) {0} specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file..
+        ///   Looks up a localized string similar to Post action(s) with id(s) &quot;{0}&quot; specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file..
         /// </summary>
         internal static string Authoring_InvalidPostActionLocalizationIndex {
             get {
@@ -106,6 +106,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Id of the manual instruction &quot;{0}&quot; at index {1} under post action &quot;{2}&quot; is not unique. Only the first manual instruction that uses this Id will be localized..
+        /// </summary>
+        internal static string Authoring_ManualInstructionIdIsNotUnique {
+            get {
+                return ResourceManager.GetString("Authoring_ManualInstructionIdIsNotUnique", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Missing &apos;{0}&apos; in &apos;{1}&apos;.
         /// </summary>
         internal static string Authoring_MissingValue {
@@ -120,6 +129,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         internal static string Authoring_NonBoolDataTypeForRegexMatch {
             get {
                 return ResourceManager.GetString("Authoring_NonBoolDataTypeForRegexMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Id of the post action &quot;{0}&quot; at index {1} is not unique. Only the first post action that uses this Id will be localized..
+        /// </summary>
+        internal static string Authoring_PostActionIdIsNotUnique {
+            get {
+                return ResourceManager.GetString("Authoring_PostActionIdIsNotUnique", resourceCulture);
             }
         }
         

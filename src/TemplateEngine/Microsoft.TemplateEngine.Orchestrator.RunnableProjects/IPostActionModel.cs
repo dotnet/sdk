@@ -12,6 +12,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     internal interface IPostActionModel : IConditionedConfigurationElement
     {
         /// <summary>
+        /// Gets a string that uniquely identifies this post action within a template.
+        /// </summary>
+        string? Id { get; }
+
+        /// <summary>
         /// Gets the description of the post action.
         /// </summary>
         string? Description { get; }

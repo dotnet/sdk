@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -64,8 +67,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "//postactions/0/description" && s.LocalizationKey == "postActions[0]/description" && s.Value == "pa0_desc");
-            Assert.Contains(strings, s => s.Identifier == "//postactions/1/description" && s.LocalizationKey == "postActions[1]/description" && s.Value == "pa1_desc");
+            Assert.Contains(strings, s => s.Identifier == "//postactions/0/description" && s.LocalizationKey == "postActions/pa0/description" && s.Value == "pa0_desc");
+            Assert.Contains(strings, s => s.Identifier == "//postactions/1/description" && s.LocalizationKey == "postActions/pa1/description" && s.Value == "pa1_desc");
         }
 
         [Fact]
@@ -73,7 +76,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "//postactions/0/manualinstructions/0/text" && s.LocalizationKey == "postActions[0]/manualInstructions[0]/text" && s.Value == "pa0_manualInstructions");
+            Assert.Contains(strings, s => s.Identifier == "//postactions/0/manualinstructions/0/text" && s.LocalizationKey == "postActions/pa0/manualInstructions/first_instruction/text" && s.Value == "pa0_manualInstructions");
+            Assert.Contains(strings, s => s.Identifier == "//postactions/2/manualinstructions/0/text" && s.LocalizationKey == "postActions/pa2/manualInstructions/default/text" && s.Value == "pa2_manualInstructions");
         }
 
         private static IReadOnlyList<TemplateString> ExtractStrings(string json, out string language)
@@ -90,7 +94,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 
         private static string GetTestTemplateJsonContent()
         {
-            string thisDir = Path.GetDirectoryName(typeof(StringExtractorTests).Assembly.Location);
+            string thisDir = Path.GetDirectoryName(typeof(StringExtractorTests).Assembly.Location)
+                ?? throw new Exception("Failed to get assembly location, which is required to access test templates.");
             string templateJsonPath = Path.GetFullPath(Path.Combine(
                 thisDir,
                 "..",

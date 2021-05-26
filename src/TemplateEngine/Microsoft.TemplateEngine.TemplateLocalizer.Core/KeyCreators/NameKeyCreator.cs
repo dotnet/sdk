@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.KeyCreators
     internal sealed class NameKeyCreator : IJsonKeyCreator
     {
         /// <inheritdoc/>
-        public string CreateKey(JsonElement element, string? elementName, string? parentElementName, int indexInParent)
+        public string CreateKey(JsonElement element, string? elementName, string? parentElementName, int indexInParent, int parentChildCount)
         {
             return elementName ?? string.Empty;
         }

@@ -59,12 +59,6 @@ Microsoft.TemplateEngine.Abstractions.IGenerator
 Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent
 Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent.Id.get -> System.Guid
 Microsoft.TemplateEngine.Abstractions.ILocalizationLocator
-Microsoft.TemplateEngine.Abstractions.ILocalizationModel
-Microsoft.TemplateEngine.Abstractions.ILocalizationModel.Author.get -> string?
-Microsoft.TemplateEngine.Abstractions.ILocalizationModel.Description.get -> string?
-Microsoft.TemplateEngine.Abstractions.ILocalizationModel.Name.get -> string?
-Microsoft.TemplateEngine.Abstractions.ILocalizationModel.ParameterSymbols.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel!>!
-Microsoft.TemplateEngine.Abstractions.ILocalizationModel.PostActions.get -> System.Collections.Generic.IReadOnlyDictionary<int, Microsoft.TemplateEngine.Abstractions.IPostActionLocalizationModel!>!
 Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult
 Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.IsLatestVersion.get -> bool
 Microsoft.TemplateEngine.Abstractions.Installer.IInstaller
@@ -114,9 +108,6 @@ Microsoft.TemplateEngine.Abstractions.IPostAction.Args.get -> System.Collections
 Microsoft.TemplateEngine.Abstractions.IPostAction.ContinueOnError.get -> bool
 Microsoft.TemplateEngine.Abstractions.IPostAction.Description.get -> string?
 Microsoft.TemplateEngine.Abstractions.IPostAction.ManualInstructions.get -> string?
-Microsoft.TemplateEngine.Abstractions.IPostActionLocalizationModel
-Microsoft.TemplateEngine.Abstractions.IPostActionLocalizationModel.Description.get -> string?
-Microsoft.TemplateEngine.Abstractions.IPostActionLocalizationModel.Instructions.get -> System.Collections.Generic.IReadOnlyDictionary<int, string!>!
 Microsoft.TemplateEngine.Abstractions.IPrioritizedComponent
 Microsoft.TemplateEngine.Abstractions.IPrioritizedComponent.Priority.get -> int
 Microsoft.TemplateEngine.Abstractions.ISearchPackFilter
