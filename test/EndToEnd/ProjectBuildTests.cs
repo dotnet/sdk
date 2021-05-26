@@ -261,7 +261,6 @@ namespace EndToEnd.Tests
         [Theory]
         [InlineData("angular")]
         [InlineData("react")]
-        [InlineData("reactredux")]
         public void ItCanCreateTemplateWithDefaultFramework(string templateName)
         {
             string framework = DetectExpectedDefaultFramework();
