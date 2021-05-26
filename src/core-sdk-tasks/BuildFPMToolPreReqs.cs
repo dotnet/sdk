@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
             // Build the full list of parameters 
             FPMParameters = BuildCmdParameters(configJson, PackageVersion);
-            Log.LogMessage(MessageImportance.Normal, "Generated RPM paramters:  " + FPMParameters);
+            Log.LogMessage(MessageImportance.Normal, "Generated RPM parameters:  " + FPMParameters);
 
             return !Log.HasLoggedErrors;
         }
