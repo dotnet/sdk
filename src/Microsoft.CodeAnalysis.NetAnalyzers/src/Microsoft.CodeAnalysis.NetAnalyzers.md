@@ -2004,9 +2004,9 @@ Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attribu
 |CodeFix|False|
 ---
 
-## [CA2253](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253): All methods declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface
+## [CA2253](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253): All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface
 
-Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the methods defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.
+Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.
 
 |Item|Value|
 |-|-|
@@ -2016,9 +2016,9 @@ Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as a
 |CodeFix|True|
 ---
 
-## [CA2254](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254): Methods defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'
+## [CA2254](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254): Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'
 
-Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all methods on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.
+Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all members on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.
 
 |Item|Value|
 |-|-|

@@ -13,5 +13,5 @@ CA1846 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-r
 CA2250 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250> | Use 'ThrowIfCancellationRequested' |
 CA2251 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251> | Use 'string.Equals' |
 CA2252 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252> | Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported |
-CA2253 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253> | All methods declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface |
-CA2254 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254> | Methods defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed' |
+CA2253 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253> | All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface |
+CA2254 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254> | Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed' |
