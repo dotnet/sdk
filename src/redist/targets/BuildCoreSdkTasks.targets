@@ -33,7 +33,6 @@
   <UsingTask TaskName="GenerateDefaultRuntimeFrameworkVersion" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="AddMetadataIsPE" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="Crossgen" AssemblyFile="$(CoreSdkTaskDll)"/>
-  <UsingTask TaskName="CopyBlobsToLatest" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GetRuntimePackRids" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GenerateMSBuildExtensionsSWR" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GetLinuxNativeInstallerDependencyVersions" AssemblyFile="$(CoreSdkTaskDll)"/>
