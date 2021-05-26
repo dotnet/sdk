@@ -600,6 +600,84 @@ End Namespace
             }.RunAsync();
         }
 
+        [Fact]
+        [WorkItem(4995, "https://github.com/dotnet/roslyn-analyzers/issues/4995")]
+        [WorkItem(5110, "https://github.com/dotnet/roslyn-analyzers/issues/5110")]
+        public async Task AttributeImplementingNUnitITestBuilder_NoDiagnostic()
+        {
+            var referenceAssemblies = AdditionalMetadataReferences.DefaultWithNUnit;
+
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = referenceAssemblies,
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+public class Test
+{{
+    [CustomNUnit.MyTestBuilder]
+    public void Method1() {{}}
+}}
+",
+@"
+namespace CustomNUnit
+{
+    using System;
+    using System.Collections.Generic;
+    using NUnit.Framework.Interfaces;
+    using NUnit.Framework.Internal;
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class MyTestBuilderAttribute : Attribute, ITestBuilder
+    {
+        public IEnumerable<TestMethod> BuildFrom(IMethodInfo method, Test suite)
+        {
+            return Array.Empty<TestMethod>();
+        }
+    }
+}",
+                    },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = referenceAssemblies,
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Public Class Test
+    <CustomNUnit.MyTestBuilder>
+    Public Sub Method1()
+    End Sub
+End Class
+",
+@"
+Imports System
+Imports System.Collections.Generic
+Imports NUnit.Framework.Interfaces
+Imports NUnit.Framework.Internal
+
+Namespace CustomNUnit
+    <AttributeUsage(AttributeTargets.Method, AllowMultiple:=False)>
+    Public Class MyTestBuilderAttribute
+        Inherits Attribute
+        Implements ITestBuilder
+        Public Function BuildFrom(method As IMethodInfo, suite As NUnit.Framework.Internal.Test) As IEnumerable(Of TestMethod) Implements ITestBuilder.BuildFrom
+            Return Array.Empty(Of TestMethod)()
+        End Function
+    End Class
+End Namespace
+",
+                    },
+                },
+            }.RunAsync();
+        }
+
         [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
         public async Task PrivateMethodOnlyCalledByASkippedMethod_Diagnostic()
         {
