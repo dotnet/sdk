@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using Microsoft.TemplateEngine.TemplateLocalizer.Core.Exceptions;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
@@ -78,6 +79,103 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 
             Assert.Contains(strings, s => s.Identifier == "//postactions/0/manualinstructions/0/text" && s.LocalizationKey == "postActions/pa0/manualInstructions/first_instruction/text" && s.Value == "pa0_manualInstructions");
             Assert.Contains(strings, s => s.Identifier == "//postactions/2/manualinstructions/0/text" && s.LocalizationKey == "postActions/pa2/manualInstructions/default/text" && s.Value == "pa2_manualInstructions");
+        }
+
+        [Fact]
+        public void PostActionsShouldHaveIds()
+        {
+            string json = @"{
+    ""postActions"": [
+        {
+        },
+    ]
+}";
+            var ex = Assert.Throws<JsonMemberMissingException>(() => ExtractStrings(json, out _));
+            Assert.Contains("postActions", ex.Message);
+            Assert.Contains("id", ex.Message);
+        }
+
+        [Fact]
+        public void PostActionIdsAreUnique()
+        {
+            string json = @"{
+    ""postActions"": [
+        {
+            ""id"": ""postAction1""
+        },
+        {
+            ""id"": ""postAction1""
+        }
+    ]
+}";
+            var ex = Assert.Throws<LocalizationKeyIsNotUniqueException>(() => ExtractStrings(json, out _));
+            Assert.Contains("postAction1", ex.Message);
+            Assert.Contains("postActions", ex.Message);
+        }
+
+        [Fact]
+        public void SingleManualInstructionDoesntNeedId()
+        {
+            string json = @"{
+    ""postActions"": [
+        {
+            ""id"": ""postActionId"",
+            ""manualInstructions"": [
+                {
+                    ""text"": ""some text""
+                }
+            ]
+        }
+    ]
+}";
+            var results = ExtractStrings(json, out _);
+            Assert.Contains(results, r => r.LocalizationKey == "postActions/postActionId/manualInstructions/default/text");
+        }
+
+        [Fact]
+        public void MultipleManualInstructionShouldHaveIds()
+        {
+            string json = @"{
+    ""postActions"": [
+        {
+            ""id"": ""postActionId"",
+            ""manualInstructions"": [
+                {
+                    ""text"": ""some text""
+                },
+                {
+                    ""text"": ""some other text""
+                }
+            ]
+        }
+    ]
+}";
+            var ex = Assert.Throws<JsonMemberMissingException>(() => ExtractStrings(json, out _));
+            Assert.Contains("id", ex.Message);
+            Assert.Contains("manualInstructions", ex.Message);
+        }
+
+        [Fact]
+        public void ManualInstructionIdsAreUnique()
+        {
+            string json = @"{
+    ""postActions"": [
+        {
+            ""id"": ""postActionId"",
+            ""manualInstructions"": [
+                {
+                    ""id"": ""mi""
+                },
+                {
+                    ""id"": ""mi""
+                },
+            ]
+        }
+    ]
+}";
+            var ex = Assert.Throws<LocalizationKeyIsNotUniqueException>(() => ExtractStrings(json, out _));
+            Assert.Contains("mi", ex.Message);
+            Assert.Contains("manualInstructions", ex.Message);
         }
 
         private static IReadOnlyList<TemplateString> ExtractStrings(string json, out string language)

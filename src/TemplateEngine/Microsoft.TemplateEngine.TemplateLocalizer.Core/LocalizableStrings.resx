@@ -130,6 +130,10 @@
     <comment>{0} is an identifier string similar to "postActions/0/manualInstructions/2/text"
 {1} is a user-defined string such as "myPostAction", "pa0", "postActionFirst" etc.</comment>
   </data>
+  <data name="stringExtractor_log_jsonMemberIsMissing" xml:space="preserve">
+    <value>Json element "{0}" must have a member "{1}".</value>
+    <comment>{0} and {1} are strings such as "postActions", "manualInstructions", "id" etc.</comment>
+  </data>
   <data name="stringExtractor_log_skippingAlreadyAddedElement" xml:space="preserve">
     <value>The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}</value>
     <comment>{0} is a string similar to "postActions/0/manualInstructions/2/text"</comment>

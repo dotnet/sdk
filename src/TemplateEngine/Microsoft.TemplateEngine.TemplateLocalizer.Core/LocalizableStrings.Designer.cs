@@ -88,6 +88,15 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Json element &quot;{0}&quot; must have a member &quot;{1}&quot;..
+        /// </summary>
+        internal static string stringExtractor_log_jsonMemberIsMissing {
+            get {
+                return ResourceManager.GetString("stringExtractor_log_jsonMemberIsMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}.
         /// </summary>
         internal static string stringExtractor_log_skippingAlreadyAddedElement {

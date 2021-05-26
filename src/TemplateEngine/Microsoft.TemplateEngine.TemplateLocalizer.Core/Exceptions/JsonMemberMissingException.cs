@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.Exceptions
         /// a member with the given name.</param>
         /// <param name="memberName">Name of the missing member.</param>
         public JsonMemberMissingException(string owningElementName, string memberName)
-            : base($"Json element \"{owningElementName}\" must have a member \"{memberName}\"")
+            : base(string.Format(LocalizableStrings.stringExtractor_log_jsonMemberIsMissing, owningElementName, memberName))
         {
             OwningElementName = owningElementName;
             MemberName = memberName;

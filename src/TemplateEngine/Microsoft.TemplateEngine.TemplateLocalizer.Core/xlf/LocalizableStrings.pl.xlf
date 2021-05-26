@@ -18,6 +18,11 @@
         <note>{0} is an identifier string similar to "postActions/0/manualInstructions/2/text"
 {1} is a user-defined string such as "myPostAction", "pa0", "postActionFirst" etc.</note>
       </trans-unit>
+      <trans-unit id="stringExtractor_log_jsonMemberIsMissing">
+        <source>Json element "{0}" must have a member "{1}".</source>
+        <target state="new">Json element "{0}" must have a member "{1}".</target>
+        <note>{0} and {1} are strings such as "postActions", "manualInstructions", "id" etc.</note>
+      </trans-unit>
       <trans-unit id="stringExtractor_log_skippingAlreadyAddedElement">
         <source>The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}</source>
         <target state="new">The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}</target>
