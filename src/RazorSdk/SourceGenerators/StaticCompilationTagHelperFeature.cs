@@ -10,16 +10,12 @@ using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
-    internal sealed class StaticCompilationTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
+    public sealed class StaticCompilationTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
     {
         private ITagHelperDescriptorProvider[]? _providers;
 
-        private GeneratorExecutionContext _generatorExecutionContext;
+        public StaticCompilationTagHelperFeature() {}
 
-        public StaticCompilationTagHelperFeature(GeneratorExecutionContext context)
-        {
-            _generatorExecutionContext = context;
-        }
 
         public IReadOnlyList<TagHelperDescriptor> GetDescriptors()
         {
