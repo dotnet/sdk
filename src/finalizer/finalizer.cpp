@@ -79,7 +79,7 @@ extern "C" HRESULT RemoveDependent(LPWSTR sczDependent, BOOL* pbRestartRequired)
 		hr = RegOpen(hkProviderKey, L"Dependents", KEY_READ | KEY_WRITE, &hkDependentsKey);
 		if (E_FILENOTFOUND == hr)
 		{
-			// Providers can sometimes become orphaned duirng uninstalls. If there's no Dependents subkey, we just
+			// Providers can sometimes become orphaned during uninstalls. If there's no Dependents subkey, we just
 			// release the handle and continue to the next provider key.
 			hr = S_OK;
 			ReleaseRegKey(hkProviderKey);
@@ -90,9 +90,9 @@ extern "C" HRESULT RemoveDependent(LPWSTR sczDependent, BOOL* pbRestartRequired)
 		ExitOnFailure(hr, "Unable to open dependents key.");
 
 		// Enumerate over all the dependent keys
-		for (DWORD dwDepdentsKeyIndex = 0;; ++dwDepdentsKeyIndex)
+		for (DWORD dwDependentsKeyIndex = 0;; ++dwDependentsKeyIndex)
 		{
-			hr = RegKeyEnum(hkDependentsKey, dwDepdentsKeyIndex, &sczDependentsKey);
+			hr = RegKeyEnum(hkDependentsKey, dwDependentsKeyIndex, &sczDependentsKey);
 
 			if (E_NOMOREITEMS == hr)
 			{
@@ -110,7 +110,7 @@ extern "C" HRESULT RemoveDependent(LPWSTR sczDependent, BOOL* pbRestartRequired)
 				ExitOnFailure(hr, "Failed to delete dependent \"%ls\"", sczDependent);
 				LogStringLine(REPORT_STANDARD, "  Dependent deleted");
 				// Reset the index since we're deleting keys while enumerating
-				dwDepdentsKeyIndex = dwDepdentsKeyIndex > 1 ? dwDepdentsKeyIndex-- : 0;
+				dwDependentsKeyIndex = dwDependentsKeyIndex > 1 ? dwDependentsKeyIndex-- : 0;
 
 				// Check if there are any subkeys remaining under the dependents key. If not, we
 				// can uninstall the MSI. We'll recheck the key again in case the MSI fails to clean up the 

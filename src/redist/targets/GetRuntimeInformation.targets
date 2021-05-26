@@ -33,7 +33,7 @@
       <ArtifactNameWithVersionMSBuildExtensions>dotnet-standard-support-vs2015-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionMSBuildExtensions>
       <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
       <!-- Warning: changing the value "ProductBandCombinedHostHostFxrFrameworkSdkName" can only occur on a product-band boundary [CliProductBandVersion],
-               Changing "ProductBandCombinedHostHostFxrFrameworkSdkName" mid-product-band will break the upgradablilty of the SDK bundle installer. -->
+               Changing "ProductBandCombinedHostHostFxrFrameworkSdkName" mid-product-band will break the upgradability of the SDK bundle installer. -->
       <ProductBandCombinedHostHostFxrFrameworkSdkName>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</ProductBandCombinedHostHostFxrFrameworkSdkName>
       <DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(Architecture)</DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
     </PropertyGroup>

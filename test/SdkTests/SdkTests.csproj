@@ -121,7 +121,7 @@
       <RuntimeTargetDirectory>$(DotnetToTestPath)shared\Microsoft.NETCore.App\$(RuntimeVersionToInstall)</RuntimeTargetDirectory>
     </PropertyGroup>
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-      <!-- Set TLS1.2 explicitly before running this. If TLS1.2 isnt' enbabled by default this command may fail in some
+      <!-- Set TLS1.2 explicitly before running this. If TLS1.2 isnt' enabled by default this command may fail in some
            scenarios.  Waiting on a fix to dotnet-install.ps1 to fix this in the right place. -->
       <InstallRuntimeCommand>powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -Command "&amp; {</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) [Net.ServicePointManager]::SecurityProtocol = 'Tls12, Tls13';</InstallRuntimeCommand>
@@ -292,7 +292,7 @@
   <Target Name="RuntimeImplementationProjectOutputGroup" />
   <!-- Group always attempts resolve runtime, regardless of <CopyNuGetImplementations>-->
   <Target Name="GetReferenceAssemblyPaths" />
-  <!-- Don't go looking for framewoek reference assemblies-->
+  <!-- Don't go looking for framework reference assemblies-->
   <Target Name="GetFrameworkPaths"  />
   <!-- ^ -->
 
