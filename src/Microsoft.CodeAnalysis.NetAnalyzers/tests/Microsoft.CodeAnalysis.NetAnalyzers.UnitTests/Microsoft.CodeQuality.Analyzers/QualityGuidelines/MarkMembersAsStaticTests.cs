@@ -616,10 +616,10 @@ End Namespace
                     {
                         @"
 public class Test
-{{
+{
     [CustomNUnit.MyTestBuilder]
-    public void Method1() {{}}
-}}
+    public void Method1() {}
+}
 ",
 @"
 namespace CustomNUnit
