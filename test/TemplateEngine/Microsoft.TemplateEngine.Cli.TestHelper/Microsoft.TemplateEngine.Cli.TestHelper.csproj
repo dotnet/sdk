@@ -1,0 +1,13 @@
+<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.abstractions" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.DotNet.Cli.Utils" />
+  </ItemGroup>
+  
+</Project>

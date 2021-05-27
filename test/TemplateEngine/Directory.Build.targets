@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Project="..\Directory.Build.targets" />
+  
+  <ItemGroup>
+    <PackageReference Update="FakeItEasy" Version="6.2.1" />
+    <PackageReference Update="FluentAssertions" Version="5.10.3" />
+    <PackageReference Update="Microsoft.DotNet.Cli.Utils" Version="5.0.200-preview.20609.15" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Update="xunit.abstractions" Version="2.0.3" />
+  </ItemGroup>
+</Project>
