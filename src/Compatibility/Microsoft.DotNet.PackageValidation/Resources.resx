@@ -127,10 +127,10 @@
     <value>API compatibility errors between '{0}' (left) and '{1}' (right):</value>
   </data>
   <data name="MissingTargetFramework" xml:space="preserve">
-    <value>TargetFramework {0} is no longer supported in the latest version.</value>
+    <value>Target framework {0} is no longer supported in the latest version.</value>
   </data>
   <data name="MissingTargetFrameworkAndRid" xml:space="preserve">
-    <value>TargetFramework {0} and runtime identifier (RID) {1} is no longer supported in the latest version.</value>
+    <value>Target framework {0} and runtime identifier (RID) {1} is no longer supported in the latest version.</value>
   </data>
   <data name="NoCompatibleCompileTimeAsset" xml:space="preserve">
     <value>Target framework {0} does not have a compatible compile time asset in the package.</value>
