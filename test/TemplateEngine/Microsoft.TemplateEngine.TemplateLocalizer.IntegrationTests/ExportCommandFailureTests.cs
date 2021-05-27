@@ -151,7 +151,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
         {
             string filePath = Path.Combine(_workingDirectory, Path.GetRandomFileName() + ".json");
             await File.WriteAllTextAsync(filePath, templateJsonContent);
-            return new BasicCommand(_log, "Microsoft.TemplateEngine.TemplateLocalizer.exe", "export", filePath);
+            return new BasicCommand(_log, "dotnet", Path.GetFullPath("Microsoft.TemplateEngine.TemplateLocalizer.dll"), "export", filePath);
         }
     }
 }
