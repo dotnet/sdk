@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         public void TagFilterTests_TemplateWithTags(string templateTags, string testTag, MatchKind? kind)
         {
             const string separator = "||";
-            string[] templateTagsArray = templateTags.Split(separator);
+            var templateTagsArray = templateTags.Split(new[] { separator }, System.StringSplitOptions.None);
 
             MockTemplateInfo template = new MockTemplateInfo("console", name: "Long name for Console App", identity: "Console.App.T1", groupIdentity: "Console.App.Test")
                     .WithTag("language", "L1")

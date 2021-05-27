@@ -11,16 +11,54 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockFileChange : IFileChange, IFileChange2, IXunitSerializable
     {
+        private string? _sourcePath;
+        private string? _targetPath;
+
+        /// <summary>
+        /// This is deserialization constructor only, do not use it. Requirement of <see cref="IXunitSerializable"/>.
+        /// </summary>
+        public MockFileChange()
+        {
+        }
+
         public MockFileChange(string source, string target, ChangeKind kind)
         {
-            SourceRelativePath = source;
-            TargetRelativePath = target;
+            _sourcePath = source;
+            _targetPath = target;
             ChangeKind = kind;
         }
 
-        public string SourceRelativePath { get; private set; }
+        /// <summary>
+        /// Should be set prior to use.
+        /// </summary>
+        public string SourceRelativePath
+        {
+            get
+            {
+                return _sourcePath ?? throw new Exception($"{nameof(SourceRelativePath)} was not set.");
+            }
 
-        public string TargetRelativePath { get; private set; }
+            set
+            {
+                _sourcePath = value;
+            }
+        }
+
+        /// <summary>
+        /// Should be set prior to use.
+        /// </summary>
+        public string TargetRelativePath
+        {
+            get
+            {
+                return _targetPath ?? throw new Exception($"{nameof(TargetRelativePath)} was not set.");
+            }
+
+            set
+            {
+                _targetPath = value;
+            }
+        }
 
         public ChangeKind ChangeKind { get; private set; }
 
@@ -28,8 +66,8 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public void Deserialize(IXunitSerializationInfo info)
         {
-            SourceRelativePath = info.GetValue<string>("sourcePath");
-            TargetRelativePath = info.GetValue<string>("targetPath");
+            _sourcePath = info.GetValue<string>("sourcePath");
+            _targetPath = info.GetValue<string>("targetPath");
             ChangeKind = (ChangeKind)info.GetValue<int>("kind");
         }
 

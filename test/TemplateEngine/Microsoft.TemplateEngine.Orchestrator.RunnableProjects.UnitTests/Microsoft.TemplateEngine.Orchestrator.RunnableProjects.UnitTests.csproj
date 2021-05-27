@@ -1,6 +1,7 @@
 <Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
+      <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETCoreTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
+      <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworks>
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.13" />
