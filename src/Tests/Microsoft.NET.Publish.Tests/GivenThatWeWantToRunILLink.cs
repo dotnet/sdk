@@ -595,8 +595,6 @@ namespace Microsoft.NET.Publish.Tests
                 "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized(",
                 "ILLink : Trim analysis warning IL2026: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
                 "ILLink : Trim analysis warning IL2026: System.StartupHookProvider.ProcessStartupHooks(",
-                "warning IL2009: Could not find method 'System.Boolean get_IsBuiltInComSupported()' on type 'System.Runtime.InteropServices.Marshal'",
-                "warning IL2009: Could not find method 'System.Boolean get_IsSupported()' on type 'Internal.Runtime.InteropServices.InMemoryAssemblyLoader'",
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
@@ -615,18 +613,13 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "AnalysisWarningsOnHelloWorldApp";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-            var expectedOutput = new string[] {
-                "warning IL2009: Could not find method 'System.Boolean get_IsBuiltInComSupported()' on type 'System.Runtime.InteropServices.Marshal'",
-                "warning IL2009: Could not find method 'System.Boolean get_IsSupported()' on type 'Internal.Runtime.InteropServices.InMemoryAssemblyLoader'",
-            };
-
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:TrimmerSingleWarn=false");
             result.Should().Pass();
-            ValidateWarningsOnHelloWorldApp(publishCommand, result, expectedOutput, targetFramework, rid);
+            ValidateWarningsOnHelloWorldApp(publishCommand, result, Array.Empty<string>(), targetFramework, rid);
         }
 
         private void ValidateWarningsOnHelloWorldApp (PublishCommand publishCommand, CommandResult result, string[] expectedOutput, string targetFramework, string rid)
