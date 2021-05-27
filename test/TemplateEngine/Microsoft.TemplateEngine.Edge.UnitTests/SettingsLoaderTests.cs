@@ -15,14 +15,19 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class SettingsLoaderTests : IDisposable
+    public class SettingsLoaderTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper helper = new EnvironmentSettingsHelper();
+        private EnvironmentSettingsHelper _environmentSettingsHelper;
+
+        public SettingsLoaderTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _environmentSettingsHelper = environmentSettingsHelper;
+        }
 
         [Fact]
         public async Task OrderOfScanningIsCorrect()
         {
-            var engineEnvironmentSettings = helper.CreateEnvironment();
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
             var workingDir = TestUtils.CreateTemporaryFolder("workingDir");
             var folders = new List<string>();
 
@@ -48,7 +53,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [Fact]
         public async Task OrderOfScanningIsCorrectWithPriority()
         {
-            var engineEnvironmentSettings = helper.CreateEnvironment();
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
             var workingDir = TestUtils.CreateTemporaryFolder("workingDir");
             var folders = new List<string>();
 
@@ -79,7 +84,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [Fact]
         public async Task RebuildCacheIfNotCurrentScansAll()
         {
-            var engineEnvironmentSettings = helper.CreateEnvironment();
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
 
             var nupkgFolder = GetNupkgsFolder();
             var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
@@ -96,7 +101,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [Fact]
         public async Task RebuildCacheSkipsNonAccessibleMounts()
         {
-            var engineEnvironmentSettings = helper.CreateEnvironment();
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
             string nupkgFolder = GetNupkgsFolder();
             var validAndInvalidNuPkg = new[] { Directory.GetFiles(nupkgFolder, "*.nupkg")[0], Path.Combine(nupkgFolder, $"{default(Guid)}.nupkg") };
 
@@ -114,7 +119,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public async Task RebuildCacheIfForceRebuildScansAll()
         {
-            var engineEnvironmentSettings = helper.CreateEnvironment();
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
 
             var nupkgFolder = GetNupkgsFolder();
             var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
@@ -149,7 +154,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [Fact]
         public async Task EnsureCacheRoundtripPreservesTemplateWithLocaleTimestamp()
         {
-            var engineEnvironmentSettings = helper.CreateEnvironment("en-GB");
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment("en-GB");
 
             var nupkgFolder = GetNupkgsFolder();
             var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
@@ -176,7 +181,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [Fact]
         public async Task RemoveMountpointRemovesTemplates()
         {
-            var engineEnvironmentSettings = helper.CreateEnvironment();
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
 
             var nupkgFolder = GetNupkgsFolder();
             var allNupkgs = Directory.GetFiles(nupkgFolder).Select(Path.GetFullPath).ToList();
@@ -205,8 +210,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             // Make sure that templates return only have MountPointUri of our remaining nupkg
             Assert.Equal(allNupkgs, templatesOnly1.Select(t => t.MountPointUri).Distinct().OrderBy(m => m));
         }
-
-        public void Dispose() => helper.Dispose();
 
         private static string GetNupkgsFolder()
         {

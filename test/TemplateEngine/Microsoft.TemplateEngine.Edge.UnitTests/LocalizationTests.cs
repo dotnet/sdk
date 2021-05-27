@@ -16,9 +16,14 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class LocalizationTests : IDisposable
+    public class LocalizationTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _helper = new EnvironmentSettingsHelper();
+        private EnvironmentSettingsHelper _environmentSettingsHelper;
+
+        public LocalizationTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        {
+            _environmentSettingsHelper = environmentSettingsHelper;
+        }
 
         [Theory]
         [InlineData(null, "name")]
@@ -154,11 +159,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(expectedName, localizationTemplate.Name);
         }
 
-        public void Dispose() => _helper.Dispose();
-
         private IEngineEnvironmentSettings LoadHostWithLocalizationTemplates(string locale, out TemplatePackageManager templatePackageManager, out ITemplateInfo localizationTemplate)
         {
-            var env = _helper.CreateEnvironment(locale);
+            var env = _environmentSettingsHelper.CreateEnvironment(locale);
             env.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new TemplatesFactory());
             templatePackageManager = new Settings.TemplatePackageManager(env);
             IReadOnlyList<ITemplateInfo> localizedTemplates = templatePackageManager.GetTemplatesAsync(default).Result;
