@@ -100,6 +100,8 @@ namespace Microsoft.DotNet.Cli.Utils
 
             if (value == string.Empty || value == "\0")
             {
+                // Do not allow MSBuild NOIPROCNODE as null env vars are not properly transferred to build nodes
+                _msbuildRequiredEnvironmentVariables["MSBUILDNOINPROCNODE"] = "0";
                 // Unlike ProcessStartInfo.EnvironmentVariables, Environment.SetEnvironmentVariable can't set a variable
                 // to an empty value, so we just fall back to calling MSBuild out-of-proc if we encounter this case.
                 // https://github.com/dotnet/runtime/issues/50554
