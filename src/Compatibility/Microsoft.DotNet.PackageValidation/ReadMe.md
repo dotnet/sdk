@@ -78,7 +78,7 @@ Finley understands that they shouldn't exclude ```DoStringManipulation(string)``
 
 ### Validation Against Baseline Package Version
 
-Package Validation can also help validating a user's library project against a previous released stable version of the package. In order to use this feature, the user will need to add the ```EnablePackageBaselineValidation``` to their project.
+Package Validation can also help validating a user's library project against a previous released stable version of the package. In order to use this feature, the user will need to add the ```PackageValidationBaselineVersion``` or ```PackageValidationBaselinePath``` to their project.
 
 Package validation will detect any breaking changes on any of the shipped target frameworks and will also detect if any target framework support has been dropped.
 
@@ -92,7 +92,7 @@ For example consider the following scenario: Tom works on the AdventureWorks.Cli
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <PackageVersion>2.0.0</PackageVersion>
-    <EnablePackageBaselineValidation>true</EnablePackageBaselineValidation>
+    <PackageValidationBaselineVersion>1.0.0</PackageValidationBaselineVersion>
   </PropertyGroup>
 
 </Project>
