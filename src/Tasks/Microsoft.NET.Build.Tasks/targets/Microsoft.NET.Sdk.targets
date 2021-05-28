@@ -292,7 +292,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="AddDepsJsonAndRuntimeConfigToCopyItemsForReferencingProjects"
           BeforeTargets="GetCopyToOutputDirectoryItems;_GetCopyToOutputDirectoryItemsFromThisProject"
-          Condition="'$(HasRuntimeOutput)' == 'true'">
+          Condition="'$(HasRuntimeOutput)' == 'true' and '$(_UseBuildDependencyFile)' == 'true'">
 
     <ItemGroup Condition="'$(GenerateDependencyFile)' == 'true'">
       <AllItemsFullPathWithTargetPath Include="$(ProjectDepsFilePath)"
