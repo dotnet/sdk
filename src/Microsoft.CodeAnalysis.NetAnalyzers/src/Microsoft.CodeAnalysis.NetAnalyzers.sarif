@@ -2622,6 +2622,26 @@
             ]
           }
         },
+        "CA1847": {
+          "id": "CA1847",
+          "shortDescription": "Use char literal for a single character lookup",
+          "fullDescription": "'string.Contains(char)' is available as a better performing overload for single char lookup.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1847",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseStringContainsCharOverloadWithSingleCharactersAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
