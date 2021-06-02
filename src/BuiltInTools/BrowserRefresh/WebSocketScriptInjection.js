@@ -170,23 +170,38 @@ setTimeout(async function () {
   function getWebSocket(url) {
     return new Promise((resolve, reject) => {
       const webSocket = new WebSocket(url);
+      let opened = false;
+
       function onOpen() {
+        opened = true;
         clearEventListeners();
         resolve(webSocket);
       }
 
-      function onError(error) {
+      function onClose(event) {
+        if (opened) {
+          // Open completed successfully. Nothing to do here.
+          return;
+        }
+
+        let error = 'WebSocket failed to connect.';
+        if (event instanceof ErrorEvent) {
+          error = event.error;
+        }
+
         clearEventListeners();
         reject(error);
       }
 
       function clearEventListeners() {
         webSocket.removeEventListener('open', onOpen);
-        webSocket.removeEventListener('error', onError);
+        // The error event isn't as reliable, but close is always called even during failures.
+        // If close is called without a corresponding open, we can reject the promise.
+        webSocket.removeEventListener('close', onClose);
       }
 
       webSocket.addEventListener('open', onOpen);
-      webSocket.addEventListener('error', onError);
+      webSocket.addEventListener('close', onClose);
     });
   }
 }, 500);
