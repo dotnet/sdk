@@ -1,1 +1,13 @@
-﻿
+﻿Microsoft.TemplateEngine.Edge.DefaultEnvironment
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.ConsoleBufferWidth.get -> int
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.DefaultEnvironment() -> void
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.ExpandEnvironmentVariables(string! name) -> string!
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.GetEnvironmentVariable(string! name) -> string?
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.GetEnvironmentVariables() -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.NewLine.get -> string!
+Microsoft.TemplateEngine.Edge.DefaultPathInfo
+Microsoft.TemplateEngine.Edge.DefaultPathInfo.DefaultPathInfo(Microsoft.TemplateEngine.Abstractions.IEnvironment! environment, Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost! host, string? globalSettingsDir = null, string? hostSettingsDir = null, string? hostVersionSettingsDir = null) -> void
+Microsoft.TemplateEngine.Edge.DefaultPathInfo.GlobalSettingsDir.get -> string!
+Microsoft.TemplateEngine.Edge.DefaultPathInfo.HostSettingsDir.get -> string!
+Microsoft.TemplateEngine.Edge.DefaultPathInfo.HostVersionSettingsDir.get -> string!
+Microsoft.TemplateEngine.Edge.DefaultPathInfo.UserProfileDir.get -> string!

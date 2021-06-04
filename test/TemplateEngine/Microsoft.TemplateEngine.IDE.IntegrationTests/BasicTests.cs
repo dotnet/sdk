@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.IDE.IntegrationTests.Utils;
 using Microsoft.TemplateEngine.TestHelper;
@@ -109,6 +111,18 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             Assert.True(File.Exists(Path.Combine(output, "Program.cs")));
             Assert.True(File.Exists(Path.Combine(output, "test.csproj")));
+        }
+
+        [Fact]
+        internal async Task GetTemplates_BasicTest()
+        {
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper(loadBuiltInTemplates: true);
+
+            var result1 = await bootstrapper.GetTemplatesAsync(default).ConfigureAwait(false);
+            var result2 = await bootstrapper.GetTemplatesAsync(Array.Empty<Func<ITemplateInfo, MatchInfo>>(), cancellationToken: default).ConfigureAwait(false);
+
+            Assert.NotEmpty(result1);
+            Assert.Equal(result1.Count, result2.Count);
         }
     }
 }

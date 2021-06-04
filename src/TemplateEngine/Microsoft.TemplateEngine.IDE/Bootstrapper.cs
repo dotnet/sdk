@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -32,10 +33,29 @@ namespace Microsoft.TemplateEngine.IDE
         /// <param name="host">caller <see cref="ITemplateEngineHost"/>.</param>
         /// <param name="virtualizeConfiguration">if true, settings will be stored in memory and will be disposed with instance.</param>
         /// <param name="loadDefaultComponents">if true, the default components (providers, installers, generator) will be loaded. Same as calling <see cref="LoadDefaultComponents()"/> after instance is created.</param>
-        public Bootstrapper(ITemplateEngineHost host, bool virtualizeConfiguration, bool loadDefaultComponents = true)
+        /// <param name="hostSettingsLocation">the file path to store host specific settings. Use null for default location.
+        /// Note: this parameter changes only directory of host and host version specific settings. Global settings path remains unchanged.</param>
+        public Bootstrapper(ITemplateEngineHost host, bool virtualizeConfiguration, bool loadDefaultComponents = true, string? hostSettingsLocation = null)
         {
             _host = host ?? throw new ArgumentNullException(nameof(host));
-            _engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: virtualizeConfiguration);
+
+            if (string.IsNullOrWhiteSpace(hostSettingsLocation))
+            {
+                _engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: virtualizeConfiguration);
+            }
+            else
+            {
+                string hostSettingsDir = Path.Combine(hostSettingsLocation, host.HostIdentifier);
+                string hostVersionSettingsDir = Path.Combine(hostSettingsLocation, host.HostIdentifier, host.Version);
+                IEnvironment environment = new DefaultEnvironment();
+                IPathInfo pathInfo = new DefaultPathInfo(environment, host, hostSettingsDir: hostSettingsDir, hostVersionSettingsDir: hostVersionSettingsDir);
+                _engineEnvironmentSettings = new EngineEnvironmentSettings(
+                    host,
+                    virtualizeSettings: virtualizeConfiguration,
+                    environment: environment,
+                    pathInfo: pathInfo);
+            }
+
             _templateCreator = new TemplateCreator(_engineEnvironmentSettings);
             _templatePackagesManager = new Edge.Settings.TemplatePackageManager(_engineEnvironmentSettings);
             if (loadDefaultComponents)
@@ -71,7 +91,17 @@ namespace Microsoft.TemplateEngine.IDE
         }
 
         /// <summary>
-        /// Gets list of available templates, if <paramref name="filters"/> are provided returns only matching templates.
+        /// Gets list of all available templates.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>The list of all available templates.</returns>
+        public Task<IReadOnlyList<ITemplateInfo>> GetTemplatesAsync(CancellationToken cancellationToken)
+        {
+            return _templatePackagesManager.GetTemplatesAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets list of available templates, if <paramref name="filters"/> is provided returns only matching templates.
         /// </summary>
         /// <param name="filters">List of filters to apply. See <see cref="WellKnownSearchFilters"/> for predefined filters.</param>
         /// <param name="exactMatchesOnly">
@@ -79,10 +109,21 @@ namespace Microsoft.TemplateEngine.IDE
         /// </param>
         /// <param name="cancellationToken"></param>
         /// <returns>Filtered list of available templates with details on the applied filters matches.</returns>
-        public Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(IEnumerable<Func<ITemplateInfo, MatchInfo?>>? filters = null, bool exactMatchesOnly = true, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITemplateMatchInfo>> GetTemplatesAsync(IEnumerable<Func<ITemplateInfo, MatchInfo?>> filters, bool exactMatchesOnly = true, CancellationToken cancellationToken = default)
         {
-            Func<ITemplateMatchInfo, bool> criteria = exactMatchesOnly ? WellKnownSearchFilters.MatchesAllCriteria : WellKnownSearchFilters.MatchesAtLeastOneCriteria;
-            return _templatePackagesManager.GetTemplatesAsync(criteria, filters ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>(), cancellationToken);
+            Func<ITemplateMatchInfo, bool> criteria;
+            if (filters == null || !filters.Any())
+            {
+                // returns all templates
+                criteria = (t) => true;
+                filters = filters ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>();
+            }
+            else
+            {
+                criteria = exactMatchesOnly ? WellKnownSearchFilters.MatchesAllCriteria : WellKnownSearchFilters.MatchesAtLeastOneCriteria;
+            }
+
+            return _templatePackagesManager.GetTemplatesAsync(criteria, filters, cancellationToken);
         }
 
         /// <summary>
