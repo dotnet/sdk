@@ -1695,4 +1695,16 @@
   <data name="SealMethodDeclaredOnImplementationType" xml:space="preserve">
     <value>Mark method as sealed</value>
   </data>
+  <data name="UseStringContainsCharOverloadWithSingleCharactersDescription" xml:space="preserve">
+    <value>'string.Contains(char)' is available as a better performing overload for single char lookup.</value>
+  </data>
+  <data name="UseStringContainsCharOverloadWithSingleCharactersMessage" xml:space="preserve">
+    <value>Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</value>
+  </data>
+  <data name="UseStringContainsCharOverloadWithSingleCharactersTitle" xml:space="preserve">
+    <value>Use char literal for a single character lookup</value>
+  </data>
+  <data name="ReplaceStringLiteralWithCharLiteralCodeActionTitle" xml:space="preserve">
+    <value>Replace string literal with char literal</value>
+  </data>
 </root>
