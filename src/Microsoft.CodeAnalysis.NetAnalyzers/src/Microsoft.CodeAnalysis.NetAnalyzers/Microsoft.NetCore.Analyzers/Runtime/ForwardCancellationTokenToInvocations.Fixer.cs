@@ -126,7 +126,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             ImmutableArray<SyntaxNode> newArguments;
             if (paramsArrayType is not null)
             {
-                // current callsite is a params array, we need to wrap all these arguments to preserve sematnics
+                // current callsite is a params array, we need to wrap all these arguments to preserve semantics
                 var typeSyntax = GetTypeSyntaxForArray(paramsArrayType);
                 var expressions = GetExpressions(currentArguments);
                 newArguments = ImmutableArray.Create(GetArrayCreationExpression(generator, typeSyntax, expressions));
