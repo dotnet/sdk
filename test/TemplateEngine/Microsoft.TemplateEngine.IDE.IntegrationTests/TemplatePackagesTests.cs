@@ -47,12 +47,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.Equal("Microsoft", source.GetDetails()["Author"]);
             source.Version.Should().NotBeNullOrEmpty();
 
-            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
             managedTemplatesPackages[0].Should().BeEquivalentTo(source);
 
-            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, templatePackages.Count);
             Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages[0]);
@@ -87,12 +87,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.Equal("https://api.nuget.org/v3/index.json", source.GetDetails()["NuGetSource"]);
             Assert.Equal("0.5.135", source.Version);
 
-            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
             managedTemplatesPackages[0].Should().BeEquivalentTo(source);
 
-            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, templatePackages.Count);
             Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages[0]);
@@ -121,12 +121,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.Equal("Folder", source.Installer.Factory.Name);
             source.Version.Should().BeNullOrEmpty();
 
-            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
             managedTemplatesPackages[0].Should().BeEquivalentTo(source);
 
-            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, templatePackages.Count);
             Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages[0]);
@@ -207,12 +207,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.Equal("NuGet", updatedSource.Installer.Factory.Name);
             Assert.Equal("5.0.1", updatedSource.Version);
 
-            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
             managedTemplatesPackages[0].Should().BeEquivalentTo(updatedSource);
 
-            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, templatePackages.Count);
             Assert.IsAssignableFrom<IManagedTemplatePackage>(templatePackages[0]);
@@ -231,7 +231,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.True(result[0].Success);
             IManagedTemplatePackage source = result[0].TemplatePackage;
 
-            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
             managedTemplatesPackages[0].Should().BeEquivalentTo(source);
@@ -244,7 +244,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             uninstallResults[0].ErrorMessage.Should().BeNullOrEmpty();
             Assert.Equal(source, uninstallResults[0].TemplatePackage);
 
-            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(0, templatePackages.Count);
         }
@@ -264,7 +264,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             IManagedTemplatePackage source = result[0].TemplatePackage;
             Assert.Equal(templateLocation, source.MountPointUri);
 
-            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(1, managedTemplatesPackages.Count);
             managedTemplatesPackages[0].Should().BeEquivalentTo(source);
@@ -277,7 +277,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             uninstallResults[0].ErrorMessage.Should().BeNullOrEmpty();
             Assert.Equal(source, uninstallResults[0].TemplatePackage);
 
-            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackages(CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<ITemplatePackage> templatePackages = await bootstrapper.GetTemplatePackagesAsync(CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(0, templatePackages.Count);
 

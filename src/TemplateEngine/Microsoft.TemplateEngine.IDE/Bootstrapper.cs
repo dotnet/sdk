@@ -195,7 +195,7 @@ namespace Microsoft.TemplateEngine.IDE
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns>the list of the template packages.</returns>
-        public Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackages(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return _templatePackagesManager.GetTemplatePackagesAsync(false, cancellationToken);
@@ -206,7 +206,7 @@ namespace Microsoft.TemplateEngine.IDE
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns>the list of managed template packages.</returns>
-        public Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackages(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackagesAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return _templatePackagesManager.GetManagedTemplatePackagesAsync(false, cancellationToken);
@@ -386,7 +386,7 @@ namespace Microsoft.TemplateEngine.IDE
                 return Array.Empty<string>();
             }
 
-            var task = GetManagedTemplatePackages();
+            var task = GetManagedTemplatePackagesAsync();
             task.Wait();
             var templatePackages = task.Result;
 
