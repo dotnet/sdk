@@ -20,7 +20,7 @@ jobs:
     parameters:
       CreatePr: true
       MirrorRepo: sdk
-      MirrorBranch: LocPRsOne
+      MirrorBranch: LocPRsOn
       LclSource: lclFilesfromPackage
       LclPackageId: 'LCL-JUNO-PROD-DOTNETSDK'
 
