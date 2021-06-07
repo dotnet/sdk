@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="AppFullName">
         <source>.NET SDK Check Command</source>
-        <target state="needs-review-translation">.NET-Befehl "Clean"</target>
+        <target state="new">.NET SDK Check Command</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Check for SDK updates.</source>
-        <target state="needs-review-translation">Befehl zum Bereinigen zuvor generierter Buildausgaben.</target>
+        <target state="new">Check for SDK updates.</target>
         <note />
       </trans-unit>
       <trans-unit id="BundleUpToDateMessage">

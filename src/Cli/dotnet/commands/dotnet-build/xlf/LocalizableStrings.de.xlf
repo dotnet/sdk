@@ -4,52 +4,52 @@
     <body>
       <trans-unit id="AppDescription">
         <source>Builder for the .NET Platform. Delegates to the MSBuild 'Build' target in the project file.</source>
-        <target state="translated">Generator für die .NET-Plattform. Delegiert an das MSBuild-Ziel "Build" in der Projektdatei.</target>
+        <target state="new">Builder for the .NET Platform. Delegates to the MSBuild 'Build' target in the project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="AppFullName">
         <source>.NET Builder</source>
-        <target state="translated">.NET-Generator</target>
+        <target state="new">.NET Builder</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Zeigt kein Startbanner und keine Copyrightmeldung an.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoDependenciesOptionDescription">
         <source>Do not build project-to-project references and only build the specified project.</source>
-        <target state="translated">Hiermit werden keine Projekt-zu-Projekt-Verweise erstellt, sondern nur das angegebene Projekt wird erstellt.</target>
+        <target state="new">Do not build project-to-project references and only build the specified project.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoIncrementalOptionDescription">
         <source>Do not use incremental building.</source>
-        <target state="translated">Hiermit wird keine inkrementelle Erstellung durchgeführt.</target>
+        <target state="new">Do not use incremental building.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
         <source>The output directory to place built artifacts in.</source>
-        <target state="translated">Das Ausgabeverzeichnis, in dem erstellte Artefakte abgelegt werden.</target>
+        <target state="new">The output directory to place built artifacts in.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionName">
         <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
+        <target state="new">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to build for. The target framework must also be specified in the project file.</source>
-        <target state="translated">Das Zielframework für die Erstellung. Das Zielframework muss auch in der Projektdatei angegeben werden.</target>
+        <target state="new">The target framework to build for. The target framework must also be specified in the project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeOptionDescription">
         <source>The target runtime to build for.</source>
-        <target state="translated">Die Zielruntime für die Erstellung.</target>
+        <target state="new">The target runtime to build for.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">
         <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
-        <target state="translated">Die für die Projekterstellung zu verwendende Konfiguration. Standard für die meisten Projekte ist "Debug".</target>
+        <target state="new">The configuration to use for building the project. The default for most projects is 'Debug'.</target>
         <note />
       </trans-unit>
     </body>

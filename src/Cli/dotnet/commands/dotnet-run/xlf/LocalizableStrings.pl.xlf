@@ -4,59 +4,59 @@
     <body>
       <trans-unit id="AppFullName">
         <source>.NET Run Command</source>
-        <target state="translated">Polecenie run platformy .NET</target>
+        <target state="new">.NET Run Command</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Command used to run .NET apps</source>
-        <target state="translated">Polecenie służące do uruchamiania aplikacji .NET</target>
+        <target state="new">Command used to run .NET apps</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionFrameworkDescription">
         <source>Build and run the app using the specified framework. The framework has to be specified in the project file. </source>
-        <target state="translated">Skompiluj i uruchom aplikację przy użyciu określonej platformy. Platforma musi być określona w pliku projektu. </target>
+        <target state="new">Build and run the app using the specified framework. The framework has to be specified in the project file. </target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">Ścieżka do pliku projektu, który ma zostać uruchomiony (w przypadku tylko jednego projektu wartością domyślną jest bieżący katalog).</target>
+        <target state="new">The path to the project file to run (defaults to the current directory if there is only one project).</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotConvertToBoolean">
         <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">Nie można przekonwertować wartości właściwości „{0}” na wartość logiczną.</target>
+        <target state="new">Could not convert the value of property '{0}' to a boolean.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotConvertToString">
         <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">Nie można przekonwertować wartości właściwości „{0}” na ciąg.</target>
+        <target state="new">Could not convert the value of property '{0}' to a string.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
-        <target state="translated">Trwa kompilowanie...</target>
+        <target state="new">Building...</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
-        <target state="translated">Kompilacja nie powiodła się. Napraw błędy kompilacji i uruchom ją ponownie.</target>
+        <target state="new">The build failed. Fix the build errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandAdditionalArgsHelpText">
         <source>Arguments passed to the application that is being run.</source>
-        <target state="translated">Argumenty przekazywane do uruchamianej aplikacji.</target>
+        <target state="new">Arguments passed to the application that is being run.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="translated">Nie kompiluj tego projektu przed uruchomieniem. Powoduje przyjęcie, że podano parametr --no-restore.</target>
+        <target state="new">Do not build the project before running. Implies --no-restore.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</source>
-        <target state="translated">Nie można uruchomić projektu
-Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy użyciu elementu „{0}”.</target>
+        <target state="new">Unable to run your project
+Your project targets multiple frameworks. Specify which framework to run using '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRun">
@@ -64,111 +64,111 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
 Ensure you have a runnable project type and ensure '{0}' supports this project.
 A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
 The current {1} is '{2}'.</source>
-        <target state="translated">Nie można uruchomić projektu.
-Upewnij się, że używany typ projektu umożliwia uruchamianie oraz że element „{0}” obsługuje ten projekt.
-Projekt z możliwością uruchamiania musi mieć moniker TFM z możliwością uruchomienia (np. net5.0) i typ OutputType „Exe”.
-Bieżący element {1}: „{2}”.</target>
+        <target state="new">Unable to run your project.
+Ensure you have a runnable project type and ensure '{0}' supports this project.
+A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
+The current {1} is '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionNoProjects">
         <source>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</source>
-        <target state="translated">Nie można odnaleźć projektu do uruchomienia. Upewnij się, że projekt istnieje w lokalizacji {0}, przekaż ścieżkę do projektu przy użyciu elementu {1}.</target>
+        <target state="new">Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionMultipleProjects">
         <source>Specify which project file to use because {0} contains more than one project file.</source>
-        <target state="translated">Określ, który plik projektu ma zostać użyty, ponieważ element {0} zawiera więcej niż jeden plik projektu.</target>
+        <target state="new">Specify which project file to use because {0} contains more than one project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileDescription">
         <source>The name of the launch profile (if any) to use when launching the application.</source>
-        <target state="translated">Nazwa profilu uruchamiania (jeśli istnieje), który ma być używany podczas uruchamiania aplikacji.</target>
+        <target state="new">The name of the launch profile (if any) to use when launching the application.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
         <source>Do not attempt to use launchSettings.json to configure the application.</source>
-        <target state="translated">Nie próbuj konfigurować aplikacji za pomocą pliku launchSettings.json.</target>
+        <target state="new">Do not attempt to use launchSettings.json to configure the application.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>The specified launch profile could not be located.</source>
-        <target state="translated">Nie można odnaleźć określonego profilu uruchamiania.</target>
+        <target state="new">The specified launch profile could not be located.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionCouldNotApplyLaunchSettings">
         <source>The launch profile "{0}" could not be applied.
 {1}</source>
-        <target state="translated">Nie można zastosować profilu uruchamiania „{0}”.
+        <target state="new">The launch profile "{0}" could not be applied.
 {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="DefaultLaunchProfileDisplayName">
         <source>(Default)</source>
-        <target state="translated">(Domyślne)</target>
+        <target state="new">(Default)</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">
         <source>Using launch settings from {0}...</source>
-        <target state="translated">Używanie ustawień uruchamiania z profilu {0}...</target>
+        <target state="new">Using launch settings from {0}...</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfileIsNotAJsonObject">
         <source>A profile with the specified name could not be found or is not a valid JSON object.</source>
-        <target state="translated">Nie można znaleźć profilu o określonej nazwie lub nie jest to prawidłowy obiekt JSON.</target>
+        <target state="new">A profile with the specified name could not be found or is not a valid JSON object.</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfileHandlerCannotBeLocated">
         <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Typ profilu uruchamiania „{0}” nie jest obsługiwany.</target>
+        <target state="new">The launch profile type '{0}' is not supported.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsableLaunchProfileCannotBeLocated">
         <source>A usable launch profile could not be located.</source>
-        <target state="translated">Nie można odnaleźć nadającego się do użytku profilu uruchamiania.</target>
+        <target state="new">A usable launch profile could not be located.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedExceptionProcessingLaunchSettings">
         <source>An unexpected exception occurred while processing launch settings:
 {0}</source>
-        <target state="translated">Wystąpił nieoczekiwany wyjątek podczas przetwarzania ustawień uruchamiania:
+        <target state="new">An unexpected exception occurred while processing launch settings:
 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
         <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">Właściwość „profiles” dokumentu ustawień uruchamiania nie jest obiektem JSON.</target>
+        <target state="new">The 'profiles' property of the launch settings document is not a JSON object.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
         <source>An error was encountered when reading launchSettings.json.
 {0}</source>
-        <target state="translated">Wystąpił błąd podczas odczytywania pliku launchSettings.json.
+        <target state="new">An error was encountered when reading launchSettings.json.
 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiecFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
-        <target state="translated">„{0}” nie jest prawidłowym plikiem projektu.</target>
+        <target state="new">'{0}' is not a valid project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
-        <target state="translated">Konfiguracja, którą należy uruchomić. W przypadku większości projektów ustawienie domyślne to „Debugowanie”.</target>
+        <target state="new">The configuration to run for. The default for most projects is 'Debug'.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to run for. The target framework must also be specified in the project file.</source>
-        <target state="translated">Platforma docelowa uruchomienia. Platforma docelowa musi być również określona w pliku projektu.</target>
+        <target state="new">The target framework to run for. The target framework must also be specified in the project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeOptionDescription">
         <source>The target runtime to run for.</source>
-        <target state="translated">Docelowe środowisko uruchomieniowe na potrzeby przebiegu.</target>
+        <target state="new">The target runtime to run for.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">Właściwość „{0}” musi być obiektem, jeśli jest określona.</target>
+        <target state="new">The property '{0}' must be an object if it is specified.</target>
         <note />
       </trans-unit>
     </body>

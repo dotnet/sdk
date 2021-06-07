@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
-        <target state="translated">復原為架構版本 (LatestPatch、Minor、LatestMinor、Major、LatestMajor、Disable)。</target>
+        <target state="new">Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkDefinition">
@@ -14,287 +14,287 @@
       </trans-unit>
       <trans-unit id="Usage">
         <source>Usage</source>
-        <target state="translated">使用方式</target>
+        <target state="new">Usage</target>
         <note />
       </trans-unit>
       <trans-unit id="Arguments">
         <source>Arguments</source>
-        <target state="translated">引數</target>
+        <target state="new">Arguments</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDefinition">
         <source>The command to execute</source>
-        <target state="translated">要執行的命令</target>
+        <target state="new">The command to execute</target>
         <note />
       </trans-unit>
       <trans-unit id="ArgumentsDefinition">
         <source>Arguments to pass to the command</source>
-        <target state="translated">要傳遞到命令的引數</target>
+        <target state="new">Arguments to pass to the command</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptionsDefinition">
         <source>Options specific to dotnet (host)</source>
-        <target state="translated">dotnet (host) 專用選項</target>
+        <target state="new">Options specific to dotnet (host)</target>
         <note />
       </trans-unit>
       <trans-unit id="OptionsDescription">
         <source>Options common to all commands</source>
-        <target state="translated">所有命令通用的選項</target>
+        <target state="new">Options common to all commands</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Show command line help.</source>
-        <target state="translated">顯示命令列說明。</target>
+        <target state="new">Show command line help.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptions">
         <source>Host options (passed before the command)</source>
-        <target state="translated">裝載選項 (在命令之前傳遞)</target>
+        <target state="new">Host options (passed before the command)</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionDescription">
         <source>Display the version of the .NET SDK, including the effects of any global.json</source>
-        <target state="translated">顯示 .NET SDK 的版本，包括任何 global.json 的影響</target>
+        <target state="new">Display the version of the .NET SDK, including the effects of any global.json</target>
         <note />
       </trans-unit>
       <trans-unit id="InfoDescription">
         <source>Display .NET CLI Info</source>
-        <target state="translated">顯示 .NET CLI 資訊</target>
+        <target state="new">Display .NET CLI Info</target>
         <note />
       </trans-unit>
       <trans-unit id="Commands">
         <source>SDK commands</source>
-        <target state="translated">SDK 命令</target>
+        <target state="new">SDK commands</target>
         <note />
       </trans-unit>
       <trans-unit id="NewDefinition">
         <source>Create a new .NET project or file.</source>
-        <target state="translated">建立新的 .NET 專案或檔案。</target>
+        <target state="new">Create a new .NET project or file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreDefinition">
         <source>Restore dependencies specified in a .NET project.</source>
-        <target state="translated">還原 .NET 專案中指定的相依性。</target>
+        <target state="new">Restore dependencies specified in a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildDefinition">
         <source>Build a .NET project.</source>
-        <target state="translated">建置 .NET 專案。</target>
+        <target state="new">Build a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDefinition">
         <source>Publish a .NET project for deployment.</source>
-        <target state="translated">為部署發佈 .NET 專案。</target>
+        <target state="new">Publish a .NET project for deployment.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunDefinition">
         <source>Build and run a .NET project output.</source>
-        <target state="translated">建置並執行 .NET 專案輸出。</target>
+        <target state="new">Build and run a .NET project output.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestDefinition">
         <source>Run unit tests using the test runner specified in a .NET project.</source>
-        <target state="translated">使用 .NET 專案中指定的測試執行器，執行單元測試。</target>
+        <target state="new">Run unit tests using the test runner specified in a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackDefinition">
         <source>Create a NuGet package.</source>
-        <target state="translated">建立 NuGet 套件。</target>
+        <target state="new">Create a NuGet package.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectModificationCommands">
         <source>Project modification commands</source>
-        <target state="translated">專案修改命令</target>
+        <target state="new">Project modification commands</target>
         <note />
       </trans-unit>
       <trans-unit id="AddDefinition">
         <source>Add a package or reference to a .NET project.</source>
-        <target state="translated">對 .NET 專案新增套件或參考。</target>
+        <target state="new">Add a package or reference to a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveDefinition">
         <source>Remove a package or reference from a .NET project.</source>
-        <target state="translated">從 .NET 專案移除套件或參考。</target>
+        <target state="new">Remove a package or reference from a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdvancedCommands">
         <source>Advanced Commands</source>
-        <target state="translated">進階命令</target>
+        <target state="new">Advanced Commands</target>
         <note />
       </trans-unit>
       <trans-unit id="NugetDefinition">
         <source>Provides additional NuGet commands.</source>
-        <target state="translated">提供其他 NuGet 命令。</target>
+        <target state="new">Provides additional NuGet commands.</target>
         <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
         <source>Run Microsoft Build Engine (MSBuild) commands.</source>
-        <target state="translated">執行 Microsoft Build Engine (MSBuild) 命令。</target>
+        <target state="new">Run Microsoft Build Engine (MSBuild) commands.</target>
         <note />
       </trans-unit>
       <trans-unit id="VsTestDefinition">
         <source>Run Microsoft Test Engine (VSTest) commands.</source>
-        <target state="translated">執行 Microsoft Test Engine (VSTest) 命令。</target>
+        <target state="new">Run Microsoft Test Engine (VSTest) commands.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticsDefinition">
         <source>Enable diagnostic output</source>
-        <target state="translated">啟用診斷輸出</target>
+        <target state="new">Enable diagnostic output</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanDefinition">
         <source>Clean build outputs of a .NET project.</source>
-        <target state="translated">清除 .NET 專案的組建輸出。</target>
+        <target state="new">Clean build outputs of a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="SlnDefinition">
         <source>Modify Visual Studio solution files.</source>
-        <target state="translated">修改 Visual Studio 解決方案檔。</target>
+        <target state="new">Modify Visual Studio solution files.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListDefinition">
         <source>List project references of a .NET project.</source>
-        <target state="translated">列出 .NET 專案的專案參考。</target>
+        <target state="new">List project references of a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">
         <source>Specified command '{0}' is not a valid SDK command. Specify a valid SDK command. For more information, run dotnet help.</source>
-        <target state="translated">指定的命令 '{0}' 並非有效的 SDK 命令。請指定有效的 SDK 命令。如需詳細資訊，請執行 dotnet help。</target>
+        <target state="new">Specified command '{0}' is not a valid SDK command. Specify a valid SDK command. For more information, run dotnet help.</target>
         <note />
       </trans-unit>
       <trans-unit id="AppFullName">
         <source>.NET CLI help utility</source>
-        <target state="translated">.NET CLI 說明公用程式</target>
+        <target state="new">.NET CLI help utility</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Utility to get more detailed help about each of the SDK commands.</source>
-        <target state="translated">取得每個 SDK 命令相關詳細說明的公用程式。</target>
+        <target state="new">Utility to get more detailed help about each of the SDK commands.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandArgumentName">
         <source>COMMAND_NAME</source>
-        <target state="translated">COMMAND_NAME</target>
+        <target state="new">COMMAND_NAME</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandArgumentDescription">
         <source>The SDK command to launch online help for.</source>
-        <target state="translated">啟動其線上說明的 SDK 命令。</target>
+        <target state="new">The SDK command to launch online help for.</target>
         <note />
       </trans-unit>
       <trans-unit id="PathToApplicationDefinition">
         <source>The path to an application .dll file to execute.</source>
-        <target state="translated">要執行的應用程式 .dll 檔案之路徑。</target>
+        <target state="new">The path to an application .dll file to execute.</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKVersionCommandDefinition">
         <source>Display .NET SDK version in use.</source>
-        <target state="translated">顯示使用中的 .NET SDK 版本。</target>
+        <target state="new">Display .NET SDK version in use.</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKInfoCommandDefinition">
         <source>Display .NET information.</source>
-        <target state="translated">顯示 .NET 資訊。</target>
+        <target state="new">Display .NET information.</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKListSdksCommandDefinition">
         <source>Display the installed SDKs.</source>
-        <target state="translated">顯示已安裝的 SDK。</target>
+        <target state="new">Display the installed SDKs.</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKListRuntimesCommandDefinition">
         <source>Display the installed runtimes.</source>
-        <target state="translated">顯示已安裝的執行階段。</target>
+        <target state="new">Display the installed runtimes.</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKDiagnosticsCommandDefinition">
         <source>Enable diagnostic output.</source>
-        <target state="translated">啟用診斷輸出。</target>
+        <target state="new">Enable diagnostic output.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunDotnetCommandHelpForMore">
         <source>Run 'dotnet [command] --help' for more information on a command.</source>
-        <target state="translated">如需命令的詳細資訊，請執行 'dotnet [command] --help'。</target>
+        <target state="new">Run 'dotnet [command] --help' for more information on a command.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdditionalProbingPathDefinition">
         <source>Path containing probing policy and assemblies to probe for.</source>
-        <target state="translated">包含探查原則及要探查之組件的路徑。</target>
+        <target state="new">Path containing probing policy and assemblies to probe for.</target>
         <note />
       </trans-unit>
       <trans-unit id="DepsFileDefinition">
         <source>Path to &lt;application&gt;.deps.json file.</source>
-        <target state="translated">&lt;application&gt;.deps.json 檔案的路徑。</target>
+        <target state="new">Path to &lt;application&gt;.deps.json file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeConfigDefinition">
         <source>Path to &lt;application&gt;.runtimeconfig.json file.</source>
-        <target state="translated">&lt;application&gt;.runtimeconfig.json 檔案的路徑。</target>
+        <target state="new">Path to &lt;application&gt;.runtimeconfig.json file.</target>
         <note />
       </trans-unit>
       <trans-unit id="FxVersionDefinition">
         <source>Version of the installed Shared Framework to use to run the application.</source>
-        <target state="translated">用於執行應用程式的已安裝之共用架構的版本。</target>
+        <target state="new">Version of the installed Shared Framework to use to run the application.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdditionalDeps">
         <source>Path to additional deps.json file.</source>
-        <target state="translated">其他 deps.json 檔案的路徑。</target>
+        <target state="new">Path to additional deps.json file.</target>
         <note />
       </trans-unit>
       <trans-unit id="StoreDefinition">
         <source>Store the specified assemblies in the runtime package store.</source>
-        <target state="translated">將指定的組件儲存到執行階段套件存放區中。</target>
+        <target state="new">Store the specified assemblies in the runtime package store.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolDefinition">
         <source>Install or manage tools that extend the .NET experience.</source>
-        <target state="translated">安裝或管理可擴充 .NET 體驗的工具。</target>
+        <target state="new">Install or manage tools that extend the .NET experience.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildServerDefinition">
         <source>Interact with servers started by a build.</source>
-        <target state="translated">與組建啟動的伺服器互動。</target>
+        <target state="new">Interact with servers started by a build.</target>
         <note />
       </trans-unit>
       <trans-unit id="DevCertsDefinition">
         <source>Create and manage development certificates.</source>
-        <target state="translated">建立及管理開發憑證。</target>
+        <target state="new">Create and manage development certificates.</target>
         <note />
       </trans-unit>
       <trans-unit id="SqlCacheDefinition">
         <source>SQL Server cache command-line tools.</source>
-        <target state="translated">SQL Server 快取命令列工具。</target>
+        <target state="new">SQL Server cache command-line tools.</target>
         <note />
       </trans-unit>
       <trans-unit id="UserSecretsDefinition">
         <source>Manage development user secrets.</source>
-        <target state="translated">管理開發使用者祕密。</target>
+        <target state="new">Manage development user secrets.</target>
         <note />
       </trans-unit>
       <trans-unit id="WatchDefinition">
         <source>Start a file watcher that runs a command when files change.</source>
-        <target state="translated">啟動會在檔案變更時執行命令的檔案監看員。</target>
+        <target state="new">Start a file watcher that runs a command when files change.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdditionalTools">
         <source>Additional commands from bundled tools:</source>
-        <target state="translated">來自配套工具的其他命令:</target>
+        <target state="new">Additional commands from bundled tools:</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKCommandUsageDescription">
         <source>Execute a .NET SDK command.</source>
-        <target state="translated">執行 .NET SDK 命令。</target>
+        <target state="new">Execute a .NET SDK command.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExecutionUsageDescription">
         <source>Execute a .NET application.</source>
-        <target state="translated">執行 .NET 應用程式。</target>
+        <target state="new">Execute a .NET application.</target>
         <note />
       </trans-unit>
       <trans-unit id="FsiDefinition">
         <source>Start F# Interactive / execute F# scripts.</source>
-        <target state="translated">啟動 F# Interactive/執行 F# 指令碼。</target>
+        <target state="new">Start F# Interactive / execute F# scripts.</target>
         <note />
       </trans-unit>
     </body>

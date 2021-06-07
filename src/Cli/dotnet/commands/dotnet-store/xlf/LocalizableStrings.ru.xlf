@@ -4,82 +4,82 @@
     <body>
       <trans-unit id="AppDescription">
         <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
-        <target state="translated">Хранит указанные сборки для платформы .NET. По умолчанию они оптимизируются для целевой среды выполнения и платформы.</target>
+        <target state="new">Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</target>
         <note />
       </trans-unit>
       <trans-unit id="CurrentRuntimeOptionDescription">
         <source>Use current runtime as the target runtime.</source>
-        <target state="translated">Использовать текущую среду выполнения в качестве целевой среды выполнения.</target>
+        <target state="new">Use current runtime as the target runtime.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOption">
         <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
+        <target state="new">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
         <source>The output directory to store the given assemblies in.</source>
-        <target state="translated">Выходной каталог, в котором хранятся указанные сборки.</target>
+        <target state="new">The output directory to store the given assemblies in.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkVersionOption">
         <source>FRAMEWORK_VERSION</source>
-        <target state="translated">FRAMEWORK_VERSION</target>
+        <target state="new">FRAMEWORK_VERSION</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkVersionOptionDescription">
         <source>The Microsoft.NETCore.App package version that will be used to run the assemblies.</source>
-        <target state="translated">Версия пакета Microsoft.NETCore.App, которая будет использоваться для выполнения сборок.</target>
+        <target state="new">The Microsoft.NETCore.App package version that will be used to run the assemblies.</target>
         <note />
       </trans-unit>
       <trans-unit id="IntermediateWorkingDirOption">
         <source>WORKING_DIR</source>
-        <target state="translated">WORKING_DIR</target>
+        <target state="new">WORKING_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="IntermediateWorkingDirOptionDescription">
         <source>The working directory used by the command to execute.</source>
-        <target state="translated">Рабочий каталог для выполняемой команды.</target>
+        <target state="new">The working directory used by the command to execute.</target>
         <note />
       </trans-unit>
       <trans-unit id="IntermediateDirExists">
         <source>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</source>
-        <target state="translated">Промежуточный рабочий каталог {0} существует. Удалите {0} или укажите другой каталог с помощью -w.</target>
+        <target state="new">Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipOptimizationOptionDescription">
         <source>Skip the optimization phase.</source>
-        <target state="translated">Пропуск этапа оптимизации.</target>
+        <target state="new">Skip the optimization phase.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>
-        <target state="translated">PROJECT_MANIFEST</target>
+        <target state="new">PROJECT_MANIFEST</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectManifestDescription">
         <source>The XML file that contains the list of packages to be stored.</source>
-        <target state="translated">Файл XML со списком сохраняемых пакетов.</target>
+        <target state="new">The XML file that contains the list of packages to be stored.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipSymbolsOptionDescription">
         <source>Skip creating symbol files which can be used for profiling the optimized assemblies.</source>
-        <target state="translated">Пропуск создания файлов символов, которые можно использовать для профилирования оптимизированных сборок.</target>
+        <target state="new">Skip creating symbol files which can be used for profiling the optimized assemblies.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyManifests">
         <source>Specify at least one manifest with --manifest.</source>
-        <target state="translated">Укажите по крайней мере один манифест с помощью --manifest.</target>
+        <target state="new">Specify at least one manifest with --manifest.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to store packages for. The target framework has to be specified in the project file.</source>
-        <target state="translated">Целевая платформа для хранения пакетов. Целевая платформа должна быть указана в файле проекта.</target>
+        <target state="new">The target framework to store packages for. The target framework has to be specified in the project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeOptionDescription">
         <source>The target runtime to store packages for.</source>
-        <target state="translated">Целевая среда выполнения, для которой хранятся пакеты.</target>
+        <target state="new">The target runtime to store packages for.</target>
         <note />
       </trans-unit>
     </body>

@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="AppFullName">
         <source>.NET SDK Check Command</source>
-        <target state="needs-review-translation">Příkaz rozhraní .NET pro vyčištění</target>
+        <target state="new">.NET SDK Check Command</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Check for SDK updates.</source>
-        <target state="needs-review-translation">Příkaz slouží k vyčištění vygenerovaných výstupů buildů.</target>
+        <target state="new">Check for SDK updates.</target>
         <note />
       </trans-unit>
       <trans-unit id="BundleUpToDateMessage">

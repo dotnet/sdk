@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="NetRemoveCommand">
         <source>.NET Remove Command</source>
-        <target state="translated">Příkaz rozhraní .NET pro odebrání</target>
+        <target state="new">.NET Remove Command</target>
         <note />
       </trans-unit>
     </body>

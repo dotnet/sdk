@@ -4,62 +4,62 @@
     <body>
       <trans-unit id="AppFullName">
         <source>.NET Core NuGet Package Packer</source>
-        <target state="translated">Strumento di creazione pacchetti NuGet di .NET Core</target>
+        <target state="new">.NET Core NuGet Package Packer</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>pack for msbuild</source>
-        <target state="translated">pack per MSBuild</target>
+        <target state="new">pack for msbuild</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutputDir">
         <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
+        <target state="new">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutputDirDescription">
         <source>The output directory to place built packages in.</source>
-        <target state="translated">Directory di output in cui inserire i pacchetti compilati.</target>
+        <target state="new">The output directory to place built packages in.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildOptionDescription">
         <source>Do not build the project before packing. Implies --no-restore.</source>
-        <target state="translated">Non compila il progetto prima della creazione del pacchetto. Implica --no-restore.</target>
+        <target state="new">Do not build the project before packing. Implies --no-restore.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdIncludeSymbolsDescription">
         <source>Include packages with symbols in addition to regular packages in output directory.</source>
-        <target state="translated">Include i pacchetti con simboli in aggiunta a quelli normali nella directory di output.</target>
+        <target state="new">Include packages with symbols in addition to regular packages in output directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdIncludeSourceDescription">
         <source>Include PDBs and source files. Source files go into the 'src' folder in the resulting nuget package.</source>
-        <target state="translated">Include i PDB e i file di origine. I file di origine vengono inseriti nella cartella 'src' nel pacchetto NuGet risultante.</target>
+        <target state="new">Include PDBs and source files. Source files go into the 'src' folder in the resulting nuget package.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdServiceableDescription">
         <source>Set the serviceable flag in the package. See https://aka.ms/nupkgservicing for more information.</source>
-        <target state="translated">Imposta il flag serviceable nel pacchetto. Per altre informazioni, vedere https://aka.ms/nupkgservicing.</target>
+        <target state="new">Set the serviceable flag in the package. See https://aka.ms/nupkgservicing for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArgumentProject">
         <source>PROJECT</source>
-        <target state="translated">PROJECT</target>
+        <target state="new">PROJECT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArgumentDescription">
         <source>The project to pack, defaults to the project file in the current directory. Can be a path to any project file</source>
-        <target state="translated">Progetto di cui creare il pacchetto. Per impostazione predefinita, verrà usato il file di progetto nella directory corrente. Può essere un percorso di qualsiasi file di progetto</target>
+        <target state="new">The project to pack, defaults to the project file in the current directory. Can be a path to any project file</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">
         <source>The configuration to use for building the package. The default for most projects is 'Debug'.</source>
-        <target state="translated">Configurazione da usare per compilare il pacchetto. L'impostazione predefinita per la maggior parte dei progetti è 'Debug'.</target>
+        <target state="new">The configuration to use for building the package. The default for most projects is 'Debug'.</target>
         <note />
       </trans-unit>
     </body>

@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Interact with servers started from a build.</source>
-        <target state="translated">서버와 상호 작용이 빌드에서 시작되었습니다.</target>
+        <target state="new">Interact with servers started from a build.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildServerCommandName">
         <source>.NET Build Server Command</source>
-        <target state="translated">.NET 빌드 서버 명령</target>
+        <target state="new">.NET Build Server Command</target>
         <note />
       </trans-unit>
     </body>

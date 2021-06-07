@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="FailedToDetermineUserHomeDirectory">
         <source>The user's home directory could not be determined. Set the '{0}' environment variable to specify the directory to use.</source>
-        <target state="translated">Non è stato possibile determinare la home directory dell'utente. Impostare la variabile di ambiente '{0}' per specificare la directory da usare.</target>
+        <target state="new">The user's home directory could not be determined. Set the '{0}' environment variable to specify the directory to use.</target>
         <note />
       </trans-unit>
       <trans-unit id="FirstTimeMessageMoreInformation">
@@ -19,16 +19,16 @@ Explore documentation: https://aka.ms/dotnet-docs
 Report issues and find source on GitHub: https://github.com/dotnet/core
 Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
 --------------------------------------------------------------------------------------</source>
-        <target state="translated">----------------
-È stato installato un certificato di sviluppo HTTPS ASP.NET Core.
-Per considerare attendibile il certificato, eseguire 'dotnet dev-certs https --trust' (solo Windows e macOS).
-Altre informazioni su HTTPS: https://aka.ms/dotnet-https
+        <target state="new">----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate run 'dotnet dev-certs https --trust' (Windows and macOS only).
+Learn about HTTPS: https://aka.ms/dotnet-https
 ----------------
-Istruzioni per la creazione della prima app: https://aka.ms/dotnet-hello-world
-Novità: https://aka.ms/dotnet-whats-new
-Documentazione: https://aka.ms/dotnet-docs
-Segnalazione di problemi e ricerca del codice sorgente in GitHub: https://github.com/dotnet/core
-Usare 'dotnet --help' per visualizzare i comandi disponibili oppure visitare: https://aka.ms/dotnet-cli
+Write your first app: https://aka.ms/dotnet-hello-world
+Find out what's new: https://aka.ms/dotnet-whats-new
+Explore documentation: https://aka.ms/dotnet-docs
+Report issues and find source on GitHub: https://github.com/dotnet/core
+Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
 --------------------------------------------------------------------------------------</target>
         <note />
       </trans-unit>
@@ -36,9 +36,9 @@ Usare 'dotnet --help' per visualizzare i comandi disponibili oppure visitare: ht
         <source>Welcome to .NET {0}!
 ---------------------
 SDK Version: {1}</source>
-        <target state="translated">Benvenuti a .NET {0}
+        <target state="new">Welcome to .NET {0}!
 ---------------------
-Versione SDK: {1}</target>
+SDK Version: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="TelemetryMessage">
@@ -47,11 +47,11 @@ Versione SDK: {1}</target>
 The .NET tools collect usage data in order to help us improve your experience. It is collected by Microsoft and shared with the community. You can opt-out of telemetry by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1' or 'true' using your favorite shell.
 
 Read more about .NET CLI Tools telemetry: https://aka.ms/dotnet-cli-telemetry</source>
-        <target state="translated">Telemetria
+        <target state="new">Telemetry
 ---------
-Gli strumenti .NET consentono di raccogliere i dati sull'utilizzo consentendo a Microsoft di migliorare l'esperienza. I dati vengono raccolti da Microsoft e condivisi con la community. È possibile rifiutare esplicitamente la telemetria impostando la variabile di ambiente DOTNET_CLI_TELEMETRY_OPTOUT su '1' o 'true' nella shell preferita.
+The .NET tools collect usage data in order to help us improve your experience. It is collected by Microsoft and shared with the community. You can opt-out of telemetry by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1' or 'true' using your favorite shell.
 
-Altre informazioni sulla telemetria degli strumenti dell'interfaccia della riga di comando di .NET: https://aka.ms/dotnet-cli-telemetry</target>
+Read more about .NET CLI Tools telemetry: https://aka.ms/dotnet-cli-telemetry</target>
         <note />
       </trans-unit>
     </body>

@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>List workloads available.</source>
-        <target state="needs-review-translation">Genel veya yerel olarak yüklü araçları listeleyin.</target>
+        <target state="new">List workloads available.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdColumn">

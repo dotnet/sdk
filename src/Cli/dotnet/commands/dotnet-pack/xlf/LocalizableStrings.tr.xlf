@@ -4,62 +4,62 @@
     <body>
       <trans-unit id="AppFullName">
         <source>.NET Core NuGet Package Packer</source>
-        <target state="translated">.NET Core NuGet Paketi Paketleyicisi</target>
+        <target state="new">.NET Core NuGet Package Packer</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>pack for msbuild</source>
-        <target state="translated">msbuild paketi</target>
+        <target state="new">pack for msbuild</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Başlangıç bandını veya telif hakkı iletisini görüntüleme.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutputDir">
         <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
+        <target state="new">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutputDirDescription">
         <source>The output directory to place built packages in.</source>
-        <target state="translated">Derlenen paketlerin yerleştirileceği çıkış dizini.</target>
+        <target state="new">The output directory to place built packages in.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildOptionDescription">
         <source>Do not build the project before packing. Implies --no-restore.</source>
-        <target state="translated">Paketlemeden önce projeyi derlemeyin. --no-restore anlamına gelir.</target>
+        <target state="new">Do not build the project before packing. Implies --no-restore.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdIncludeSymbolsDescription">
         <source>Include packages with symbols in addition to regular packages in output directory.</source>
-        <target state="translated">Çıkış dizinine, normal paketlere ek olarak sembol içeren paketler ekleyin.</target>
+        <target state="new">Include packages with symbols in addition to regular packages in output directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdIncludeSourceDescription">
         <source>Include PDBs and source files. Source files go into the 'src' folder in the resulting nuget package.</source>
-        <target state="translated">PDB’leri ve kaynak dosyaları ekler. Elde edilen nuget paketinde kaynak dosyaları, ‘src’ klasöründe yer alır.</target>
+        <target state="new">Include PDBs and source files. Source files go into the 'src' folder in the resulting nuget package.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdServiceableDescription">
         <source>Set the serviceable flag in the package. See https://aka.ms/nupkgservicing for more information.</source>
-        <target state="translated">Pakette serviceable bayrağını ayarlar. Daha fazla bilgi için bkz. https://aka.ms/nupkgservicing.</target>
+        <target state="new">Set the serviceable flag in the package. See https://aka.ms/nupkgservicing for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArgumentProject">
         <source>PROJECT</source>
-        <target state="translated">PROJECT</target>
+        <target state="new">PROJECT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArgumentDescription">
         <source>The project to pack, defaults to the project file in the current directory. Can be a path to any project file</source>
-        <target state="translated">Paketlenecek proje; varsayılan olarak, geçerli dizindeki proje dosyasıdır. Herhangi bir proje dosyasının yolu olabilir</target>
+        <target state="new">The project to pack, defaults to the project file in the current directory. Can be a path to any project file</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">
         <source>The configuration to use for building the package. The default for most projects is 'Debug'.</source>
-        <target state="translated">Paketi derlemek için kullanılacak yapılandırma. Çoğu proje için varsayılan, ‘Hata Ayıklama’ seçeneğidir.</target>
+        <target state="new">The configuration to use for building the package. The default for most projects is 'Debug'.</target>
         <note />
       </trans-unit>
     </body>

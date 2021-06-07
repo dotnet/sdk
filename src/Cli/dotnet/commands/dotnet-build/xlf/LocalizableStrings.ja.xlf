@@ -4,52 +4,52 @@
     <body>
       <trans-unit id="AppDescription">
         <source>Builder for the .NET Platform. Delegates to the MSBuild 'Build' target in the project file.</source>
-        <target state="translated">.NET Platform 用ビルダープロジェクト ファイル内の MSBuild 'Build' ターゲットへのデリゲート。</target>
+        <target state="new">Builder for the .NET Platform. Delegates to the MSBuild 'Build' target in the project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="AppFullName">
         <source>.NET Builder</source>
-        <target state="translated">.NET ビルダー</target>
+        <target state="new">.NET Builder</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">著作権情報を表示しません。</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoDependenciesOptionDescription">
         <source>Do not build project-to-project references and only build the specified project.</source>
-        <target state="translated">プロジェクト間参照をビルドせず、指定したプロジェクトだけをビルドします。</target>
+        <target state="new">Do not build project-to-project references and only build the specified project.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoIncrementalOptionDescription">
         <source>Do not use incremental building.</source>
-        <target state="translated">インクリメンタル ビルドを使用しません。</target>
+        <target state="new">Do not use incremental building.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
         <source>The output directory to place built artifacts in.</source>
-        <target state="translated">ビルド成果物を配置する出力ディレクトリ。</target>
+        <target state="new">The output directory to place built artifacts in.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionName">
         <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
+        <target state="new">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to build for. The target framework must also be specified in the project file.</source>
-        <target state="translated">ビルドする対象のターゲット フレームワーク。ターゲット フレームワークはプロジェクト ファイルでも指定する必要があります。</target>
+        <target state="new">The target framework to build for. The target framework must also be specified in the project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeOptionDescription">
         <source>The target runtime to build for.</source>
-        <target state="translated">ビルドする対象のターゲット ランタイム。</target>
+        <target state="new">The target runtime to build for.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">
         <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
-        <target state="translated">プロジェクトのビルドに使用する構成。ほとんどのプロジェクトで、既定値は 'Debug' です。</target>
+        <target state="new">The configuration to use for building the project. The default for most projects is 'Debug'.</target>
         <note />
       </trans-unit>
     </body>

@@ -4,64 +4,64 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>List tools installed globally or locally.</source>
-        <target state="translated">Ferramentas de lista instaladas de forma global ou local.</target>
+        <target state="new">List tools installed globally or locally.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalOptionDescription">
         <source>List tools installed for the current user.</source>
-        <target state="translated">Ferramentas de lista instaladas para o usuário atual.</target>
+        <target state="new">List tools installed for the current user.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListToolCommandInvalidGlobalAndLocalAndToolPath">
         <source>The local option(--local), the global option (--global), the tool path option (--tool-path), can only have one at a time. Specify only one of the options: {0}.</source>
-        <target state="translated">As opções local (--local), global (--global) e do caminho da ferramenta (--tool-path) só podem ocorrer uma por vez. Especifique apenas uma das opções: {0}.</target>
+        <target state="new">The local option(--local), the global option (--global), the tool path option (--tool-path), can only have one at a time. Specify only one of the options: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalOptionDescription">
         <source>List the tools installed in the local tool manifest.</source>
-        <target state="translated">Liste as ferramentas instaladas no manifesto de ferramenta local.</target>
+        <target state="new">List the tools installed in the local tool manifest.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestFileColumn">
         <source>Manifest</source>
-        <target state="translated">Manifesto</target>
+        <target state="new">Manifest</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionColumn">
         <source>Version</source>
-        <target state="translated">Versão</target>
+        <target state="new">Version</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandsColumn">
         <source>Commands</source>
-        <target state="translated">Comandos</target>
+        <target state="new">Commands</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdColumn">
         <source>Package Id</source>
-        <target state="translated">ID do Pacote</target>
+        <target state="new">Package Id</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageWarning">
         <source>Warning: tool package '{0}' is invalid, contact tool author:
 {1}</source>
-        <target state="translated">Aviso: o pacote de ferramentas '{0}' é inválido. Entre em contato com o autor da ferramenta:
+        <target state="new">Warning: tool package '{0}' is invalid, contact tool author:
 {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidToolPathOption">
         <source>Tool path '{0}' does not exist.</source>
-        <target state="translated">O caminho da ferramenta '{0}' não existe.</target>
+        <target state="new">Tool path '{0}' does not exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolPathOptionName">
         <source>PATH</source>
-        <target state="translated">PATH</target>
+        <target state="new">PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolPathOptionDescription">
         <source>The directory containing the tools to list.</source>
-        <target state="translated">O diretório que contém as ferramentas a serem listadas.</target>
+        <target state="new">The directory containing the tools to list.</target>
         <note />
       </trans-unit>
     </body>

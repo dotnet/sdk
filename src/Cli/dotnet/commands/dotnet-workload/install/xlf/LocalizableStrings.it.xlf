@@ -99,17 +99,17 @@
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Install a workload.</source>
-        <target state="needs-review-translation">Installa lo strumento globale o locale. Gli strumenti locali vengono aggiunti al manifesto e ripristinati.</target>
+        <target state="new">Install a workload.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
-        <target state="translated">File di configurazione NuGet da usare.</target>
+        <target state="new">The NuGet configuration file to use.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to install the workload for.</source>
-        <target state="needs-review-translation">Framework di destinazione per cui installare lo strumento.</target>
+        <target state="new">The target framework to install the workload for.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestDoesNotExist">
@@ -179,42 +179,42 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the SDK.</source>
-        <target state="needs-review-translation">Versione del pacchetto dello strumento da installare.</target>
+        <target state="new">The version of the SDK.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallFullCommandNameLocalized">
         <source>.NET Install Command</source>
-        <target state="translated">Comando di installazione .NET</target>
+        <target state="new">.NET Install Command</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetConfigurationFileDoesNotExist">
         <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="translated">Il file di configurazione NuGet '{0}' non esiste.</target>
+        <target state="new">NuGet configuration file '{0}' does not exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidNuGetVersionRange">
         <source>Specified version '{0}' is not a valid NuGet version range.</source>
-        <target state="translated">La versione specificata '{0}' non è un intervallo di versioni NuGet valido.</target>
+        <target state="new">Specified version '{0}' is not a valid NuGet version range.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionDescription">
         <source>Add an additional NuGet package source to use during installation.</source>
-        <target state="translated">Aggiunge un'altra origine pacchetto NuGet da usare durante l'installazione.</target>
+        <target state="new">Add an additional NuGet package source to use during installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <target state="new">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
         <source>VERSION</source>
-        <target state="translated">VERSION</target>
+        <target state="new">VERSION</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionName">
         <source>FILE</source>
-        <target state="translated">FILE</target>
+        <target state="new">FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadAlreadyInstalled">

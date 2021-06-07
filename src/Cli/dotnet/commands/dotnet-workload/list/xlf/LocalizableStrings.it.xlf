@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>List workloads available.</source>
-        <target state="needs-review-translation">Elenca gli strumenti installati a livello globale o locale.</target>
+        <target state="new">List workloads available.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdColumn">

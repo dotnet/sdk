@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="InstallFullCommandNameLocalized">
         <source>.NET Install Command</source>
-        <target state="translated">Příkaz Instalovat rozhraní .NET</target>
+        <target state="new">.NET Install Command</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Install or work with tools that extend the .NET experience.</source>
-        <target state="translated">Instaluje nástroje, které rozšiřují prostředí .NET, nebo s nimi pracuje.</target>
+        <target state="new">Install or work with tools that extend the .NET experience.</target>
         <note />
       </trans-unit>
     </body>

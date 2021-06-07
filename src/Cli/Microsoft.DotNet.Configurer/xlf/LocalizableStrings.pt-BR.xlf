@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="FailedToDetermineUserHomeDirectory">
         <source>The user's home directory could not be determined. Set the '{0}' environment variable to specify the directory to use.</source>
-        <target state="translated">O diretório inicial do usuário não pôde ser definido. Configure a variável de ambiente '{0}' para especificar o diretório a ser utilizado.</target>
+        <target state="new">The user's home directory could not be determined. Set the '{0}' environment variable to specify the directory to use.</target>
         <note />
       </trans-unit>
       <trans-unit id="FirstTimeMessageMoreInformation">
@@ -19,16 +19,16 @@ Explore documentation: https://aka.ms/dotnet-docs
 Report issues and find source on GitHub: https://github.com/dotnet/core
 Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
 --------------------------------------------------------------------------------------</source>
-        <target state="translated">----------------
-Um certificado de desenvolvimento HTTPS ASP.NET Core foi instalado.
-Para confiar no certificado, execute 'dotnet dev-certs https --trust' (somente Windows e macOS).
-Saiba mais sobre HTTPS: https://aka.ms/dotnet-https
+        <target state="new">----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate run 'dotnet dev-certs https --trust' (Windows and macOS only).
+Learn about HTTPS: https://aka.ms/dotnet-https
 ----------------
-Escreva seu primeiro aplicativo: https://aka.ms/dotnet-hello-world
-Descubra o que há de novo: https://aka.ms/dotnet-whats-new
-Explore a documentação: https://aka.ms/dotnet-docs
-Relate problemas e encontre a fonte no GitHub: https://github.com/dotnet/core
-Use 'dotnet --help' para ver os comandos disponíveis ou visite: https://aka.ms/dotnet-cli
+Write your first app: https://aka.ms/dotnet-hello-world
+Find out what's new: https://aka.ms/dotnet-whats-new
+Explore documentation: https://aka.ms/dotnet-docs
+Report issues and find source on GitHub: https://github.com/dotnet/core
+Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
 --------------------------------------------------------------------------------------</target>
         <note />
       </trans-unit>
@@ -36,9 +36,9 @@ Use 'dotnet --help' para ver os comandos disponíveis ou visite: https://aka.ms/
         <source>Welcome to .NET {0}!
 ---------------------
 SDK Version: {1}</source>
-        <target state="translated">Bem-vindo(a) ao .NET {0}.
+        <target state="new">Welcome to .NET {0}!
 ---------------------
-Versão do SDK: {1}</target>
+SDK Version: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="TelemetryMessage">
@@ -47,11 +47,11 @@ Versão do SDK: {1}</target>
 The .NET tools collect usage data in order to help us improve your experience. It is collected by Microsoft and shared with the community. You can opt-out of telemetry by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1' or 'true' using your favorite shell.
 
 Read more about .NET CLI Tools telemetry: https://aka.ms/dotnet-cli-telemetry</source>
-        <target state="translated">Telemetria
+        <target state="new">Telemetry
 ---------
-As ferramentas do .NET coletam dados de uso para ajudar-nos a aprimorar sua experiência. Eles são coletados pela Microsoft e compartilhados com a comunidade. Você pode recusar a telemetria definindo a variável de ambiente DOTNET_CLI_TELEMETRY_OPTOUT como '1' ou 'true' usando seu shell favorito.
+The .NET tools collect usage data in order to help us improve your experience. It is collected by Microsoft and shared with the community. You can opt-out of telemetry by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1' or 'true' using your favorite shell.
 
-Leia mais sobre a telemetria das Ferramentas da CLI do .NET: https://aka.ms/dotnet-cli-telemetry</target>
+Read more about .NET CLI Tools telemetry: https://aka.ms/dotnet-cli-telemetry</target>
         <note />
       </trans-unit>
     </body>

@@ -1,20 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
-  <file datatype="xml" source-language="en" target-language="zh-HANT" original="../LocalizableStrings.resx">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to uninstall.</source>
-        <target state="translated">要解除安裝之工具的 NuGet 套件識別碼。</target>
+        <target state="new">The NuGet Package Id of the workload to uninstall.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Uninstall a workload.</source>
-        <target state="needs-review-translation">解除安裝全域工具或本機工具。</target>
+        <target state="new">Uninstall a workload.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
+        <target state="new">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="RemovingWorkloadInstallationRecord">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Specify one workload Package Id to uninstall.</source>
-        <target state="translated">請指定一個要解除安裝的工具套件識別碼。</target>
+        <target state="new">Specify one workload Package Id to uninstall.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallSucceeded">
@@ -34,12 +34,7 @@
       </trans-unit>
       <trans-unit id="WorkloadNotInstalled">
         <source>Could not find workloads with id(s): {0}</source>
-        <target state="needs-review-translation">找不到套件識別碼為 '{0}' 的工具。
-
-必須使用工具的套件識別碼才能將其解除安裝，
-而該識別碼可能與您在呼叫工具時的工具名稱不同。您可以使用命令
-'dotnet workload list' 來針對已安裝工具尋找工具名稱
-和對應的套件識別碼。</target>
+        <target state="new">Could not find workloads with id(s): {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUninstallFailed">

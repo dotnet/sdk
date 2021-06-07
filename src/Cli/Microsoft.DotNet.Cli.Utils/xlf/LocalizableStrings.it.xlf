@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="MalformedText">
         <source>Malformed command text '{0}'</source>
-        <target state="translated">Il testo del comando '{0}' non è corretto</target>
+        <target state="new">Malformed command text '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
         <source>Unable to locate dotnet multiplexer</source>
-        <target state="translated">Il multiplexer dotnet non è stato trovato</target>
+        <target state="new">Unable to locate dotnet multiplexer</target>
         <note />
       </trans-unit>
       <trans-unit id="FileNotFound">
         <source>File not found `{0}`.</source>
-        <target state="translated">Il file `{0}` non è stato trovato.</target>
+        <target state="new">File not found `{0}`.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotRestoredOrRestoreFailed">
         <source>The project may not have been restored or restore failed - run `dotnet restore`</source>
-        <target state="translated">È possibile che il progetto non sia stato ripristinato o che il ripristino non sia riuscito. Eseguire `dotnet restore`</target>
+        <target state="new">The project may not have been restored or restore failed - run `dotnet restore`</target>
         <note />
       </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommand">
@@ -28,90 +28,90 @@ Possible reasons for this include:
   * You misspelled a built-in dotnet command.
   * You intended to execute a .NET program, but {0} does not exist.
   * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</source>
-        <target state="translated">Non è stato possibile completare l'esecuzione perché il comando o il file specificato non è stato trovato.
-Motivi possibili:
-  * Il nome di un comando dotnet predefinito non è stato digitato correttamente.
-  * Si intendeva eseguire un programma .NET, ma {0} non esiste.
-  * Si intendeva eseguire uno strumento globale, ma in PATH non è stato trovato alcun eseguibile con questo nome e prefisso dotnet.</target>
+        <target state="new">Could not execute because the specified command or file was not found.
+Possible reasons for this include:
+  * You misspelled a built-in dotnet command.
+  * You intended to execute a .NET program, but {0} does not exist.
+  * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</target>
         <note />
       </trans-unit>
       <trans-unit id="WaitingForDebuggerToAttach">
         <source>Waiting for debugger to attach. Press ENTER to continue</source>
-        <target state="translated">In attesa del collegamento del debugger. Premere INVIO per continuare</target>
+        <target state="new">Waiting for debugger to attach. Press ENTER to continue</target>
         <note />
       </trans-unit>
       <trans-unit id="ProcessId">
         <source>Process ID: {0}</source>
-        <target state="translated">ID processo: {0}</target>
+        <target state="new">Process ID: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotAccessAssetsFile">
         <source>Could not access assets file.</source>
-        <target state="translated">Non è stato possibile accedere al file di risorse.</target>
+        <target state="new">Could not access assets file.</target>
         <note />
       </trans-unit>
       <trans-unit id="WriteLineForwarderSetPreviously">
         <source>WriteLine forwarder set previously</source>
-        <target state="translated">Il forwarder WriteLine è stato impostato in precedenza</target>
+        <target state="new">WriteLine forwarder set previously</target>
         <note />
       </trans-unit>
       <trans-unit id="AlreadyCapturingStream">
         <source>Already capturing stream!</source>
-        <target state="translated">L'acquisizione del flusso è già in corso.</target>
+        <target state="new">Already capturing stream!</target>
         <note />
       </trans-unit>
       <trans-unit id="RunningFileNameArguments">
         <source>Running {0} {1}</source>
-        <target state="translated">{0} in esecuzione: {1}</target>
+        <target state="new">Running {0} {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="ProcessExitedWithCode">
         <source>&lt; {0} exited with {1} in {2} ms.</source>
-        <target state="translated">&lt; {0} è stato terminato con {1} in {2} ms.</target>
+        <target state="new">&lt; {0} exited with {1} in {2} ms.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToInvokeMemberNameAfterCommand">
         <source>Unable to invoke {0} after the command has been run</source>
-        <target state="translated">Non è possibile richiamare {0} dopo l'esecuzione del comando</target>
+        <target state="new">Unable to invoke {0} after the command has been run</target>
         <note />
       </trans-unit>
       <trans-unit id="DotNetSdkInfoLabel">
         <source>.NET SDK (reflecting any global.json):</source>
-        <target state="translated">.NET SDK (che rispecchia un qualsiasi file global.json):</target>
+        <target state="new">.NET SDK (reflecting any global.json):</target>
         <note />
       </trans-unit>
       <trans-unit id="DotNetRuntimeInfoLabel">
         <source>Runtime Environment:</source>
-        <target state="translated">Ambiente di runtime:</target>
+        <target state="new">Runtime Environment:</target>
         <note />
       </trans-unit>
       <trans-unit id="EmbedAppNameInHostAppHostHasBeenModified">
         <source>Unable to use '{0}' as application host executable as it does not contain the expected placeholder byte sequence '{1}' that would mark where the application name would be written.</source>
-        <target state="translated">Non è possibile usare '{0}' come eseguibile host dell'applicazione perché non contiene la sequenza di byte segnaposto prevista '{1}' che indica dove verrà scritto il nome dell'applicazione.</target>
+        <target state="new">Unable to use '{0}' as application host executable as it does not contain the expected placeholder byte sequence '{1}' that would mark where the application name would be written.</target>
         <note />
       </trans-unit>
       <trans-unit id="EmbedAppNameInHostFileNameIsTooLong">
         <source>Given file name '{0}' is longer than 1024 bytes</source>
-        <target state="translated">Il nome file specificato '{0}' supera 1024 byte</target>
+        <target state="new">Given file name '{0}' is longer than 1024 bytes</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotFindCommandAvailableAsTool">
         <source>Cannot find command 'dotnet {0}', run the following command to install
 
 dotnet tool install --global {1}</source>
-        <target state="translated">Il comando 'dotnet {0}' non è stato trovato. Per installare, eseguire il comando seguente:
+        <target state="new">Cannot find command 'dotnet {0}', run the following command to install
 
 dotnet tool install --global {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetCliHomeUsed">
         <source>Using home directory '{0}' set by the '{1}' environment variable.</source>
-        <target state="translated">Verrà usata la home directory '{0}' impostata dalla variabile di ambiente '{1}'.</target>
+        <target state="new">Using home directory '{0}' set by the '{1}' environment variable.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotNetSdkInfo">
         <source>.NET SDK</source>
-        <target state="translated">.NET SDK</target>
+        <target state="new">.NET SDK</target>
         <note />
       </trans-unit>
     </body>

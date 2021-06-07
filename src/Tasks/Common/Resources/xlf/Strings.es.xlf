@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../Strings.resx">
     <body>
@@ -82,11 +82,6 @@
         <target state="new">NETSDK1001: At least one possible target framework must be specified.</target>
         <note>{StrBegin="NETSDK1001: "}</note>
       </trans-unit>
-      <trans-unit id="CanOnlyHaveSingleFileWithNetCoreApp">
-        <source>NETSDK1125: Publishing to a single-file is only supported for netcoreapp target.</source>
-        <target state="new">NETSDK1125: Publishing to a single-file is only supported for netcoreapp target.</target>
-        <note>{StrBegin="NETSDK1125: "}</note>
-      </trans-unit>
       <trans-unit id="CannotEmbedClsidMapIntoComhost">
         <source>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
         <target state="new">NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</target>
@@ -122,6 +117,11 @@
         <target state="new">NETSDK1031: It is not supported to build or publish a self-contained application without specifying a RuntimeIdentifier. You must either specify a RuntimeIdentifier or set SelfContained to false.</target>
         <note>{StrBegin="NETSDK1031: "}</note>
       </trans-unit>
+      <trans-unit id="CannotHaveSingleFileWithoutRuntimeIdentifier">
+        <source>NETSDK1097: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. You must either specify a RuntimeIdentifier or set PublishSingleFile to false.</source>
+        <target state="new">NETSDK1097: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. You must either specify a RuntimeIdentifier or set PublishSingleFile to false.</target>
+        <note>{StrBegin="NETSDK1097: "}</note>
+      </trans-unit>
       <trans-unit id="CannotHaveSingleFileWithoutAppHost">
         <source>NETSDK1098: Applications published to a single-file are required to use the application host. You must either set PublishSingleFile to false or set UseAppHost to true.</source>
         <target state="new">NETSDK1098: Applications published to a single-file are required to use the application host. You must either set PublishSingleFile to false or set UseAppHost to true.</target>
@@ -131,11 +131,6 @@
         <source>NETSDK1099: Publishing to a single-file is only supported for executable applications.</source>
         <target state="new">NETSDK1099: Publishing to a single-file is only supported for executable applications.</target>
         <note>{StrBegin="NETSDK1099: "}</note>
-      </trans-unit>
-      <trans-unit id="CannotHaveSingleFileWithoutRuntimeIdentifier">
-        <source>NETSDK1097: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. You must either specify a RuntimeIdentifier or set PublishSingleFile to false.</source>
-        <target state="new">NETSDK1097: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. You must either specify a RuntimeIdentifier or set PublishSingleFile to false.</target>
-        <note>{StrBegin="NETSDK1097: "}</note>
       </trans-unit>
       <trans-unit id="CannotHaveSolutionLevelRuntimeIdentifier">
         <source>NETSDK1134: Building a solution with a specific RuntimeIdentifier is not supported. If you would like to publish for a single RID, specifiy the RID at the individual project level instead.</source>
@@ -166,6 +161,11 @@
         <source>NETSDK1067: Self-contained applications are required to use the application host. Either set SelfContained to false or set UseAppHost to true.</source>
         <target state="new">NETSDK1067: Self-contained applications are required to use the application host. Either set SelfContained to false or set UseAppHost to true.</target>
         <note>{StrBegin="NETSDK1067: "}</note>
+      </trans-unit>
+      <trans-unit id="CanOnlyHaveSingleFileWithNetCoreApp">
+        <source>NETSDK1125: Publishing to a single-file is only supported for netcoreapp target.</source>
+        <target state="new">NETSDK1125: Publishing to a single-file is only supported for netcoreapp target.</target>
+        <note>{StrBegin="NETSDK1125: "}</note>
       </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
         <source>Choosing '{0}' because AssemblyVersion '{1}' is greater than '{2}'.</source>
@@ -607,7 +607,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="NonSelfContainedExeCannotReferenceSelfContained">
         <source>NETSDK1151: The referenced project '{0}' is a self-contained executable.  A self-contained executable cannot be referenced by a non self-contained executable.</source>
-        <target state="translated">NETSDK1151: el proyecto "{0}" al que se hace referencia es un ejecutable independiente. Un ejecutable independiente no puede hacer referencia a un archivo que no es independiente.</target>
+        <target state="new">NETSDK1151: The referenced project '{0}' is a self-contained executable.  A self-contained executable cannot be referenced by a non self-contained executable.</target>
         <note>{StrBegin="NETSDK1151: "}</note>
       </trans-unit>
       <trans-unit id="PDBGeneratorInputExecutableNotFound">
@@ -722,7 +722,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SelfContainedExeCannotReferenceNonSelfContained">
         <source>NETSDK1150: The referenced project '{0}' is a non self-contained executable.  A non self-contained executable cannot be referenced by a self-contained executable.</source>
-        <target state="translated">NETSDK1150: el proyecto "{0}" al que se hace referencia es un ejecutable independiente. Un ejecutable independiente no puede hacer referencia a un archivo que no es independiente.</target>
+        <target state="new">NETSDK1150: The referenced project '{0}' is a non self-contained executable.  A non self-contained executable cannot be referenced by a self-contained executable.</target>
         <note>{StrBegin="NETSDK1150: "}</note>
       </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
@@ -842,12 +842,12 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="WinMDReferenceNotSupportedOnTargetFramework">
         <source>NETSDK1130: {1} cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130</source>
-        <target state="translated">NETSDK1130: no puede hacer referencia a {1}. No se admite la referencia a un componente de metadatos de Windows directamente porque el destino .NET 5 o una versión posterior no se admiten. Para obtener más información, consulte https://aka.ms/netsdk1130.</target>
+        <target state="new">NETSDK1130: {1} cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130</target>
         <note>{StrBegin="NETSDK1130: "}</note>
       </trans-unit>
       <trans-unit id="WinMDTransitiveReferenceNotSupported">
         <source>NETSDK1149: {0} cannot be referenced because it uses built-in support for WinRT, which is no longer supported in .NET 5 and higher.  An updated version of the component supporting .NET 5 is needed. For more information, see https://aka.ms/netsdk1149</source>
-        <target state="translated">NETSDK1149: no se puede hacer referencia a {0} porque usa compatibilidad integrada para WinRT, que ya no se admite en .NET 5 y versiones posteriores.  Se necesita una versión actualizada del componente compatible con .NET 5. Para obtener más información, consulte https://aka.ms/netsdk1149.</target>
+        <target state="new">NETSDK1149: {0} cannot be referenced because it uses built-in support for WinRT, which is no longer supported in .NET 5 and higher.  An updated version of the component supporting .NET 5 is needed. For more information, see https://aka.ms/netsdk1149</target>
         <note>{StrBegin="NETSDK1149: "}</note>
       </trans-unit>
       <trans-unit id="WindowsDesktopFrameworkRequiresUseWpfOrUseWindowsForms">

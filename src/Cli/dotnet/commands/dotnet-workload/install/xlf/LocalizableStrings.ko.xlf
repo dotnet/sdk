@@ -99,17 +99,17 @@
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Install a workload.</source>
-        <target state="needs-review-translation">전역 또는 로컬 도구를 설치합니다. 로컬 도구는 매니페스트에 추가되고 복원됩니다.</target>
+        <target state="new">Install a workload.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
-        <target state="translated">사용할 NuGet 구성 파일입니다.</target>
+        <target state="new">The NuGet configuration file to use.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to install the workload for.</source>
-        <target state="needs-review-translation">도구를 설치할 대상 프레임워크입니다.</target>
+        <target state="new">The target framework to install the workload for.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestDoesNotExist">
@@ -179,42 +179,42 @@
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the SDK.</source>
-        <target state="needs-review-translation">설치할 도구 패키지 버전입니다.</target>
+        <target state="new">The version of the SDK.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallFullCommandNameLocalized">
         <source>.NET Install Command</source>
-        <target state="translated">.NET 설치 명령</target>
+        <target state="new">.NET Install Command</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetConfigurationFileDoesNotExist">
         <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="translated">NuGet 구성 파일 '{0}'이(가) 없습니다.</target>
+        <target state="new">NuGet configuration file '{0}' does not exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidNuGetVersionRange">
         <source>Specified version '{0}' is not a valid NuGet version range.</source>
-        <target state="translated">지정된 버전 '{0}'이(가) 유효한 NuGet 버전 범위가 아닙니다.</target>
+        <target state="new">Specified version '{0}' is not a valid NuGet version range.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionDescription">
         <source>Add an additional NuGet package source to use during installation.</source>
-        <target state="translated">설치 중 사용할 추가 NuGet 패키지 소스를 추가합니다.</target>
+        <target state="new">Add an additional NuGet package source to use during installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <target state="new">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
         <source>VERSION</source>
-        <target state="translated">VERSION</target>
+        <target state="new">VERSION</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigFileOptionName">
         <source>FILE</source>
-        <target state="translated">FILE</target>
+        <target state="new">FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadAlreadyInstalled">

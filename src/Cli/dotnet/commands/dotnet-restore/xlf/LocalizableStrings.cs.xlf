@@ -4,119 +4,119 @@
     <body>
       <trans-unit id="AppFullName">
         <source>.NET dependency restorer</source>
-        <target state="translated">Nástroj .NET pro obnovení závislostí</target>
+        <target state="new">.NET dependency restorer</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>restore for msbuild</source>
-        <target state="translated">obnovit pro msbuild</target>
+        <target state="new">restore for msbuild</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArgument">
         <source>PROJECT</source>
-        <target state="translated">PROJECT</target>
+        <target state="new">PROJECT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArgumentDescription">
         <source>Optional path to a project file or MSBuild arguments.</source>
-        <target state="translated">Volitelná cesta k souboru projektu nebo k argumentům MSBuildu</target>
+        <target state="new">Optional path to a project file or MSBuild arguments.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
         <source>Use current runtime as the target runtime.</source>
-        <target state="translated">Jako cílový modul runtime použijte aktuální modul.</target>
+        <target state="new">Use current runtime as the target runtime.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSourceOption">
         <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <target state="new">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSourceOptionDescription">
         <source>The NuGet package source to use for the restore.</source>
-        <target state="translated">Zdroj balíčku NuGet, který se má použít k obnovení</target>
+        <target state="new">The NuGet package source to use for the restore.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackagesOption">
         <source>PACKAGES_DIR</source>
-        <target state="translated">PACKAGES_DIR</target>
+        <target state="new">PACKAGES_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackagesOptionDescription">
         <source>The directory to restore packages to.</source>
-        <target state="translated">Adresář, do kterého se balíčky mají obnovit</target>
+        <target state="new">The directory to restore packages to.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
         <source>Prevent restoring multiple projects in parallel.</source>
-        <target state="translated">Zabrání souběžnému obnovení několika projektů.</target>
+        <target state="new">Prevent restoring multiple projects in parallel.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">
         <source>FILE</source>
-        <target state="translated">FILE</target>
+        <target state="new">FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
-        <target state="translated">Konfigurační soubor NuGet, který se použije.</target>
+        <target state="new">The NuGet configuration file to use.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoCacheOptionDescription">
         <source>Do not cache packages and http requests.</source>
-        <target state="translated">Neukládat balíčky a požadavky http do mezipaměti</target>
+        <target state="new">Do not cache packages and http requests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdIgnoreFailedSourcesOptionDescription">
         <source>Treat package source failures as warnings.</source>
-        <target state="translated">Zacházet s nenalezenými zdroji balíčku jako s upozorněními</target>
+        <target state="new">Treat package source failures as warnings.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
-        <target state="translated">Neobnoví odkazy mezi projekty a obnoví jen konkrétní projekt.</target>
+        <target state="new">Do not restore project-to-project references and only restore the specified project.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRuntimeOption">
         <source>RUNTIME_IDENTIFIER</source>
-        <target state="translated">RUNTIME_IDENTIFIER</target>
+        <target state="new">RUNTIME_IDENTIFIER</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRuntimeOptionDescription">
         <source>The target runtime to restore packages for.</source>
-        <target state="translated">Cílový modul runtime pro obnovení balíčků</target>
+        <target state="new">The target runtime to restore packages for.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdForceRestoreOptionDescription">
         <source>Force all dependencies to be resolved even if the last restore was successful.
 This is equivalent to deleting project.assets.json.</source>
-        <target state="translated">Vynutí vyřešení všech závislostí, i když poslední obnovení proběhlo úspěšně.
-Jedná se o ekvivalent odstranění project.assets.json.</target>
+        <target state="new">Force all dependencies to be resolved even if the last restore was successful.
+This is equivalent to deleting project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockedModeOptionDescription">
         <source>Don't allow updating project lock file.</source>
-        <target state="translated">Nepovolí aktualizaci souboru zámku projektu.</target>
+        <target state="new">Don't allow updating project lock file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
         <source>LOCK_FILE_PATH</source>
-        <target state="translated">LOCK_FILE_PATH</target>
+        <target state="new">LOCK_FILE_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOptionDescription">
         <source>Output location where project lock file is written. By default, this is 'PROJECT_ROOT\packages.lock.json'.</source>
-        <target state="translated">Výstupní umístění, kde je zapsán soubor zámku projektu. Ve výchozím nastavení jde o PROJECT_ROOT\packages.lock.json.</target>
+        <target state="new">Output location where project lock file is written. By default, this is 'PROJECT_ROOT\packages.lock.json'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
         <source>Forces restore to reevaluate all dependencies even if a lock file already exists.</source>
-        <target state="translated">Vynutí obnovení při přehodnocení všech závislostí i v případě, že už existuje soubor zámku.</target>
+        <target state="new">Forces restore to reevaluate all dependencies even if a lock file already exists.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>
-        <target state="translated">Povolí vygenerování souboru zámku projektu a jeho použití s obnovením.</target>
+        <target state="new">Enables project lock file to be generated and used with restore.</target>
         <note />
       </trans-unit>
     </body>

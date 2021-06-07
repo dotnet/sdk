@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
-        <target state="translated">Reenviar a la versión del marco (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
+        <target state="new">Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkDefinition">
@@ -14,287 +14,287 @@
       </trans-unit>
       <trans-unit id="Usage">
         <source>Usage</source>
-        <target state="translated">Uso</target>
+        <target state="new">Usage</target>
         <note />
       </trans-unit>
       <trans-unit id="Arguments">
         <source>Arguments</source>
-        <target state="translated">Argumentos</target>
+        <target state="new">Arguments</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDefinition">
         <source>The command to execute</source>
-        <target state="translated">Comando para ejecutar</target>
+        <target state="new">The command to execute</target>
         <note />
       </trans-unit>
       <trans-unit id="ArgumentsDefinition">
         <source>Arguments to pass to the command</source>
-        <target state="translated">Argumentos que se pasan al comando</target>
+        <target state="new">Arguments to pass to the command</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptionsDefinition">
         <source>Options specific to dotnet (host)</source>
-        <target state="translated">Opciones específicas de dotnet (host)</target>
+        <target state="new">Options specific to dotnet (host)</target>
         <note />
       </trans-unit>
       <trans-unit id="OptionsDescription">
         <source>Options common to all commands</source>
-        <target state="translated">Opciones comunes a todos los comandos</target>
+        <target state="new">Options common to all commands</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Show command line help.</source>
-        <target state="translated">Muestra ayuda de la línea de comandos.</target>
+        <target state="new">Show command line help.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptions">
         <source>Host options (passed before the command)</source>
-        <target state="translated">Opciones de host (pasadas antes que el comando)</target>
+        <target state="new">Host options (passed before the command)</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionDescription">
         <source>Display the version of the .NET SDK, including the effects of any global.json</source>
-        <target state="translated">Muestra la versión del SDK de .NET, incluidos los efectos de cualquier archivo global.json.</target>
+        <target state="new">Display the version of the .NET SDK, including the effects of any global.json</target>
         <note />
       </trans-unit>
       <trans-unit id="InfoDescription">
         <source>Display .NET CLI Info</source>
-        <target state="translated">Muestra información de la CLI de .NET</target>
+        <target state="new">Display .NET CLI Info</target>
         <note />
       </trans-unit>
       <trans-unit id="Commands">
         <source>SDK commands</source>
-        <target state="translated">Comandos de SDK</target>
+        <target state="new">SDK commands</target>
         <note />
       </trans-unit>
       <trans-unit id="NewDefinition">
         <source>Create a new .NET project or file.</source>
-        <target state="translated">Crea un nuevo archivo o proyecto de .NET.</target>
+        <target state="new">Create a new .NET project or file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreDefinition">
         <source>Restore dependencies specified in a .NET project.</source>
-        <target state="translated">Restaura dependencias especificadas en un proyecto de .NET.</target>
+        <target state="new">Restore dependencies specified in a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildDefinition">
         <source>Build a .NET project.</source>
-        <target state="translated">Compila un proyecto de .NET.</target>
+        <target state="new">Build a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDefinition">
         <source>Publish a .NET project for deployment.</source>
-        <target state="translated">Publica un proyecto de .NET para implementación.</target>
+        <target state="new">Publish a .NET project for deployment.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunDefinition">
         <source>Build and run a .NET project output.</source>
-        <target state="translated">Compila y ejecuta la salida de un proyecto de .NET.</target>
+        <target state="new">Build and run a .NET project output.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestDefinition">
         <source>Run unit tests using the test runner specified in a .NET project.</source>
-        <target state="translated">Ejecuta pruebas unitarias usando el ejecutor de pruebas especificado en un proyecto de .NET.</target>
+        <target state="new">Run unit tests using the test runner specified in a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackDefinition">
         <source>Create a NuGet package.</source>
-        <target state="translated">Crea un paquete de NuGet.</target>
+        <target state="new">Create a NuGet package.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectModificationCommands">
         <source>Project modification commands</source>
-        <target state="translated">Comandos de modificación del proyecto</target>
+        <target state="new">Project modification commands</target>
         <note />
       </trans-unit>
       <trans-unit id="AddDefinition">
         <source>Add a package or reference to a .NET project.</source>
-        <target state="translated">Agrega un paquete o una referencia a un proyecto de .NET.</target>
+        <target state="new">Add a package or reference to a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveDefinition">
         <source>Remove a package or reference from a .NET project.</source>
-        <target state="translated">Quita un paquete o una referencia de un proyecto de .NET.</target>
+        <target state="new">Remove a package or reference from a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdvancedCommands">
         <source>Advanced Commands</source>
-        <target state="translated">Comandos avanzados</target>
+        <target state="new">Advanced Commands</target>
         <note />
       </trans-unit>
       <trans-unit id="NugetDefinition">
         <source>Provides additional NuGet commands.</source>
-        <target state="translated">Proporciona comandos NuGet adicionales.</target>
+        <target state="new">Provides additional NuGet commands.</target>
         <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
         <source>Run Microsoft Build Engine (MSBuild) commands.</source>
-        <target state="translated">Ejecuta comandos de Microsoft Build Engine (MSBuild).</target>
+        <target state="new">Run Microsoft Build Engine (MSBuild) commands.</target>
         <note />
       </trans-unit>
       <trans-unit id="VsTestDefinition">
         <source>Run Microsoft Test Engine (VSTest) commands.</source>
-        <target state="translated">Ejecuta comandos de Microsoft Test Engine (VSTest).</target>
+        <target state="new">Run Microsoft Test Engine (VSTest) commands.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticsDefinition">
         <source>Enable diagnostic output</source>
-        <target state="translated">Habilitar salida de diagnóstico</target>
+        <target state="new">Enable diagnostic output</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanDefinition">
         <source>Clean build outputs of a .NET project.</source>
-        <target state="translated">Limpia los resultados de compilación de un proyecto .NET.</target>
+        <target state="new">Clean build outputs of a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="SlnDefinition">
         <source>Modify Visual Studio solution files.</source>
-        <target state="translated">Modifica los archivos de la solución de Visual Studio.</target>
+        <target state="new">Modify Visual Studio solution files.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListDefinition">
         <source>List project references of a .NET project.</source>
-        <target state="translated">Enumera las referencias de proyecto de un proyecto de .NET.</target>
+        <target state="new">List project references of a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">
         <source>Specified command '{0}' is not a valid SDK command. Specify a valid SDK command. For more information, run dotnet help.</source>
-        <target state="translated">El comando especificado "{0}" no es un comando de SDK válido. Especifique un comando de SDK válido. Para más información, ejecute la ayuda de dotnet.</target>
+        <target state="new">Specified command '{0}' is not a valid SDK command. Specify a valid SDK command. For more information, run dotnet help.</target>
         <note />
       </trans-unit>
       <trans-unit id="AppFullName">
         <source>.NET CLI help utility</source>
-        <target state="translated">Utilidad de ayuda de la CLI de .NET</target>
+        <target state="new">.NET CLI help utility</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Utility to get more detailed help about each of the SDK commands.</source>
-        <target state="translated">Utilidad para obtener ayuda más detallada sobre cada uno de los comandos de SDK.</target>
+        <target state="new">Utility to get more detailed help about each of the SDK commands.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandArgumentName">
         <source>COMMAND_NAME</source>
-        <target state="translated">COMMAND_NAME</target>
+        <target state="new">COMMAND_NAME</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandArgumentDescription">
         <source>The SDK command to launch online help for.</source>
-        <target state="translated">El comando de SDK para el que iniciar la ayuda en línea.</target>
+        <target state="new">The SDK command to launch online help for.</target>
         <note />
       </trans-unit>
       <trans-unit id="PathToApplicationDefinition">
         <source>The path to an application .dll file to execute.</source>
-        <target state="translated">La ruta de acceso al archivo .dll de una aplicación que se ejecutará.</target>
+        <target state="new">The path to an application .dll file to execute.</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKVersionCommandDefinition">
         <source>Display .NET SDK version in use.</source>
-        <target state="translated">Muestra la versión del SDK de .NET en uso.</target>
+        <target state="new">Display .NET SDK version in use.</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKInfoCommandDefinition">
         <source>Display .NET information.</source>
-        <target state="translated">Muestra la información de .NET.</target>
+        <target state="new">Display .NET information.</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKListSdksCommandDefinition">
         <source>Display the installed SDKs.</source>
-        <target state="translated">Muestra los SDK instalados.</target>
+        <target state="new">Display the installed SDKs.</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKListRuntimesCommandDefinition">
         <source>Display the installed runtimes.</source>
-        <target state="translated">Muestra los runtimes instalados.</target>
+        <target state="new">Display the installed runtimes.</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKDiagnosticsCommandDefinition">
         <source>Enable diagnostic output.</source>
-        <target state="translated">Habilita la salida de diagnóstico.</target>
+        <target state="new">Enable diagnostic output.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunDotnetCommandHelpForMore">
         <source>Run 'dotnet [command] --help' for more information on a command.</source>
-        <target state="translated">Ejecute "dotnet [comando] --help" para más información sobre un comando.</target>
+        <target state="new">Run 'dotnet [command] --help' for more information on a command.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdditionalProbingPathDefinition">
         <source>Path containing probing policy and assemblies to probe for.</source>
-        <target state="translated">Ruta de acceso que contiene la directiva de sondeo y los ensamblados para los que realizar el sondeo.</target>
+        <target state="new">Path containing probing policy and assemblies to probe for.</target>
         <note />
       </trans-unit>
       <trans-unit id="DepsFileDefinition">
         <source>Path to &lt;application&gt;.deps.json file.</source>
-        <target state="translated">Ruta de acceso al archivo &lt;aplicación&gt;.deps.json.</target>
+        <target state="new">Path to &lt;application&gt;.deps.json file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeConfigDefinition">
         <source>Path to &lt;application&gt;.runtimeconfig.json file.</source>
-        <target state="translated">Ruta de acceso al archivo &lt;aplicación&gt;.runtimeconfig.json.</target>
+        <target state="new">Path to &lt;application&gt;.runtimeconfig.json file.</target>
         <note />
       </trans-unit>
       <trans-unit id="FxVersionDefinition">
         <source>Version of the installed Shared Framework to use to run the application.</source>
-        <target state="translated">Versión de la instancia de Shared Framework instalada que se usará para ejecutar la aplicación.</target>
+        <target state="new">Version of the installed Shared Framework to use to run the application.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdditionalDeps">
         <source>Path to additional deps.json file.</source>
-        <target state="translated">Ruta de acceso al archivo deps.json adicional.</target>
+        <target state="new">Path to additional deps.json file.</target>
         <note />
       </trans-unit>
       <trans-unit id="StoreDefinition">
         <source>Store the specified assemblies in the runtime package store.</source>
-        <target state="translated">Almacena los ensamblados especificados en el almacén del paquete de tiempo de ejecución.</target>
+        <target state="new">Store the specified assemblies in the runtime package store.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolDefinition">
         <source>Install or manage tools that extend the .NET experience.</source>
-        <target state="translated">Instala o administra herramientas que mejoran la experiencia de .NET.</target>
+        <target state="new">Install or manage tools that extend the .NET experience.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildServerDefinition">
         <source>Interact with servers started by a build.</source>
-        <target state="translated">Interactúe con los servidores que inicia una compilación.</target>
+        <target state="new">Interact with servers started by a build.</target>
         <note />
       </trans-unit>
       <trans-unit id="DevCertsDefinition">
         <source>Create and manage development certificates.</source>
-        <target state="translated">Crea y administra certificados de desarrollo.</target>
+        <target state="new">Create and manage development certificates.</target>
         <note />
       </trans-unit>
       <trans-unit id="SqlCacheDefinition">
         <source>SQL Server cache command-line tools.</source>
-        <target state="translated">Herramientas de la línea de comandos de la caché de SQL Server.</target>
+        <target state="new">SQL Server cache command-line tools.</target>
         <note />
       </trans-unit>
       <trans-unit id="UserSecretsDefinition">
         <source>Manage development user secrets.</source>
-        <target state="translated">Administra secretos de usuario de desarrollo.</target>
+        <target state="new">Manage development user secrets.</target>
         <note />
       </trans-unit>
       <trans-unit id="WatchDefinition">
         <source>Start a file watcher that runs a command when files change.</source>
-        <target state="translated">Inicia un monitor de archivo que ejecuta un comando cuando los archivos cambian.</target>
+        <target state="new">Start a file watcher that runs a command when files change.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdditionalTools">
         <source>Additional commands from bundled tools:</source>
-        <target state="translated">Comandos adicionales para herramientas incluidas:</target>
+        <target state="new">Additional commands from bundled tools:</target>
         <note />
       </trans-unit>
       <trans-unit id="SDKCommandUsageDescription">
         <source>Execute a .NET SDK command.</source>
-        <target state="translated">Ejecute un comando del SDK de .NET.</target>
+        <target state="new">Execute a .NET SDK command.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExecutionUsageDescription">
         <source>Execute a .NET application.</source>
-        <target state="translated">Ejecute una aplicación de .NET.</target>
+        <target state="new">Execute a .NET application.</target>
         <note />
       </trans-unit>
       <trans-unit id="FsiDefinition">
         <source>Start F# Interactive / execute F# scripts.</source>
-        <target state="translated">Inicie F# interactivo o ejecute scripts de F#.</target>
+        <target state="new">Start F# Interactive / execute F# scripts.</target>
         <note />
       </trans-unit>
     </body>

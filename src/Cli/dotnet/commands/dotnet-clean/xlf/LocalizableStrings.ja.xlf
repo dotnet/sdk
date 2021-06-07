@@ -4,42 +4,42 @@
     <body>
       <trans-unit id="AppFullName">
         <source>.NET Clean Command</source>
-        <target state="translated">.NET Clean コマンド</target>
+        <target state="new">.NET Clean Command</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Command to clean previously generated build outputs.</source>
-        <target state="translated">以前に生成されたビルド出力を消去するコマンド。</target>
+        <target state="new">Command to clean previously generated build outputs.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">著作権情報を表示しません。</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutputDir">
         <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
+        <target state="new">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutputDirDescription">
         <source>The directory containing the build artifacts to clean.</source>
-        <target state="translated">クリーンするビルド成果物を含むディレクトリ。</target>
+        <target state="new">The directory containing the build artifacts to clean.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
-        <target state="translated">クリーンする対象のターゲット フレームワーク。ターゲット フレームワークはプロジェクト ファイルでも指定する必要があります。</target>
+        <target state="new">The target framework to clean for. The target framework must also be specified in the project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeOptionDescription">
         <source>The target runtime to clean for.</source>
-        <target state="translated">クリーンする対象のターゲット ランタイム。</target>
+        <target state="new">The target runtime to clean for.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">
         <source>The configuration to clean for. The default for most projects is 'Debug'.</source>
-        <target state="translated">クリーンする対象の構成。大部分のプロジェクトで、既定値は 'Debug' です。</target>
+        <target state="new">The configuration to clean for. The default for most projects is 'Debug'.</target>
         <note />
       </trans-unit>
     </body>

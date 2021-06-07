@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>List workloads available.</source>
-        <target state="needs-review-translation">전역으로 또는 로컬로 설치된 도구를 나열합니다.</target>
+        <target state="new">List workloads available.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdColumn">

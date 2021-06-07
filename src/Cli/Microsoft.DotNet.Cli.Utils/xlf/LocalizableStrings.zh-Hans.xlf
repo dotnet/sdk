@@ -1,25 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hans" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="MalformedText">
         <source>Malformed command text '{0}'</source>
-        <target state="translated">命令文本“{0}”格式错误</target>
+        <target state="new">Malformed command text '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
         <source>Unable to locate dotnet multiplexer</source>
-        <target state="translated">找不到 dotnet 多路复用器</target>
+        <target state="new">Unable to locate dotnet multiplexer</target>
         <note />
       </trans-unit>
       <trans-unit id="FileNotFound">
         <source>File not found `{0}`.</source>
-        <target state="translated">未找到文件“{0}”。</target>
+        <target state="new">File not found `{0}`.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotRestoredOrRestoreFailed">
         <source>The project may not have been restored or restore failed - run `dotnet restore`</source>
-        <target state="translated">可能未还原项目或还原失败 - 运行“dotnet restore”</target>
+        <target state="new">The project may not have been restored or restore failed - run `dotnet restore`</target>
         <note />
       </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommand">
@@ -28,90 +28,90 @@ Possible reasons for this include:
   * You misspelled a built-in dotnet command.
   * You intended to execute a .NET program, but {0} does not exist.
   * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</source>
-        <target state="translated">无法执行，因为找不到指定的命令或文件。
-可能的原因包括:
-  *内置的 dotnet 命令拼写错误。
-  *你打算执行 .NET 程序，但 {0} 不存在。
-  *你打算运行全局工具，但在路径上找不到具有此名称且前缀为 dotnet 的可执行文件。</target>
+        <target state="new">Could not execute because the specified command or file was not found.
+Possible reasons for this include:
+  * You misspelled a built-in dotnet command.
+  * You intended to execute a .NET program, but {0} does not exist.
+  * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</target>
         <note />
       </trans-unit>
       <trans-unit id="WaitingForDebuggerToAttach">
         <source>Waiting for debugger to attach. Press ENTER to continue</source>
-        <target state="translated">正在等待调试程序附加。按 Enter 继续操作</target>
+        <target state="new">Waiting for debugger to attach. Press ENTER to continue</target>
         <note />
       </trans-unit>
       <trans-unit id="ProcessId">
         <source>Process ID: {0}</source>
-        <target state="translated">进程 ID: {0}</target>
+        <target state="new">Process ID: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotAccessAssetsFile">
         <source>Could not access assets file.</source>
-        <target state="translated">无法访问资产文件。</target>
+        <target state="new">Could not access assets file.</target>
         <note />
       </trans-unit>
       <trans-unit id="WriteLineForwarderSetPreviously">
         <source>WriteLine forwarder set previously</source>
-        <target state="translated">以前设置的 WriteLine 转发器</target>
+        <target state="new">WriteLine forwarder set previously</target>
         <note />
       </trans-unit>
       <trans-unit id="AlreadyCapturingStream">
         <source>Already capturing stream!</source>
-        <target state="translated">已在捕获流！</target>
+        <target state="new">Already capturing stream!</target>
         <note />
       </trans-unit>
       <trans-unit id="RunningFileNameArguments">
         <source>Running {0} {1}</source>
-        <target state="translated">正在运行 {0} {1}</target>
+        <target state="new">Running {0} {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="ProcessExitedWithCode">
         <source>&lt; {0} exited with {1} in {2} ms.</source>
-        <target state="translated">&lt; 已在 {2} ms 内退出 {0}，并带有 {1}。</target>
+        <target state="new">&lt; {0} exited with {1} in {2} ms.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToInvokeMemberNameAfterCommand">
         <source>Unable to invoke {0} after the command has been run</source>
-        <target state="translated">运行命令后无法调用 {0}</target>
+        <target state="new">Unable to invoke {0} after the command has been run</target>
         <note />
       </trans-unit>
       <trans-unit id="DotNetSdkInfoLabel">
         <source>.NET SDK (reflecting any global.json):</source>
-        <target state="translated">.NET SDK (反映任何 global.json):</target>
+        <target state="new">.NET SDK (reflecting any global.json):</target>
         <note />
       </trans-unit>
       <trans-unit id="DotNetRuntimeInfoLabel">
         <source>Runtime Environment:</source>
-        <target state="translated">运行时环境:</target>
+        <target state="new">Runtime Environment:</target>
         <note />
       </trans-unit>
       <trans-unit id="EmbedAppNameInHostAppHostHasBeenModified">
         <source>Unable to use '{0}' as application host executable as it does not contain the expected placeholder byte sequence '{1}' that would mark where the application name would be written.</source>
-        <target state="translated">未能将“{0}”用作应用程序主机可执行文件，因为它没有必需的占位符字节序列“{1}”，该序列会标记应用程序名称的写入位置。</target>
+        <target state="new">Unable to use '{0}' as application host executable as it does not contain the expected placeholder byte sequence '{1}' that would mark where the application name would be written.</target>
         <note />
       </trans-unit>
       <trans-unit id="EmbedAppNameInHostFileNameIsTooLong">
         <source>Given file name '{0}' is longer than 1024 bytes</source>
-        <target state="translated">给定文件名“{0}”的长度超过 1024 个字节</target>
+        <target state="new">Given file name '{0}' is longer than 1024 bytes</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotFindCommandAvailableAsTool">
         <source>Cannot find command 'dotnet {0}', run the following command to install
 
 dotnet tool install --global {1}</source>
-        <target state="translated">找不到 "dotnet {0}" 命令，请运行以下命令进行安装
+        <target state="new">Cannot find command 'dotnet {0}', run the following command to install
 
 dotnet tool install --global {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetCliHomeUsed">
         <source>Using home directory '{0}' set by the '{1}' environment variable.</source>
-        <target state="translated">使用由“{1}”环境变量设置的“{0}”主目录。</target>
+        <target state="new">Using home directory '{0}' set by the '{1}' environment variable.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotNetSdkInfo">
         <source>.NET SDK</source>
-        <target state="translated">.NET SDK</target>
+        <target state="new">.NET SDK</target>
         <note />
       </trans-unit>
     </body>

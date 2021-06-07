@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Search for avaliable workloads.</source>
-        <target state="needs-review-translation">Перечисление средств, установленных глобально или локально.</target>
+        <target state="new">Search for avaliable workloads.</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionColumnName">

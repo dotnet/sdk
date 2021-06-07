@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="InstallFullCommandNameLocalized">
         <source>.NET Install Command</source>
-        <target state="translated">.NET 설치 명령</target>
+        <target state="new">.NET Install Command</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Install or work with tools that extend the .NET experience.</source>
-        <target state="translated">.NET 환경을 확장하는 도구를 설치하거나 도구로 작업합니다.</target>
+        <target state="new">Install or work with tools that extend the .NET experience.</target>
         <note />
       </trans-unit>
     </body>

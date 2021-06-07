@@ -4,57 +4,57 @@
     <body>
       <trans-unit id="GlobalSectionMoreThanOnceError">
         <source>Global section specified more than once</source>
-        <target state="translated">Několikrát zadaný globální oddíl</target>
+        <target state="new">Global section specified more than once</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSectionNotClosedError">
         <source>Global section not closed</source>
-        <target state="translated">Neuzavřený globální oddíl</target>
+        <target state="new">Global section not closed</target>
         <note />
       </trans-unit>
       <trans-unit id="FileHeaderMissingError">
         <source>Expected file header not found</source>
-        <target state="translated">Nenalezena očekávaná hlavička souboru</target>
+        <target state="new">Expected file header not found</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectSectionNotClosedError">
         <source>Project section not closed</source>
-        <target state="translated">Neuzavřený oddíl projektu</target>
+        <target state="new">Project section not closed</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidSectionTypeError">
         <source>Invalid section type: {0}</source>
-        <target state="translated">Neplatný typ oddílu: {0}</target>
+        <target state="new">Invalid section type: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="SectionIdMissingError">
         <source>Section id missing</source>
-        <target state="translated">Chybí ID oddílu</target>
+        <target state="new">Section id missing</target>
         <note />
       </trans-unit>
       <trans-unit id="ClosingSectionTagNotFoundError">
         <source>Closing section tag not found</source>
-        <target state="translated">Nenalezena koncová značka oddílu</target>
+        <target state="new">Closing section tag not found</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorMessageFormatString">
         <source>Invalid format in line {0}: {1}</source>
-        <target state="translated">Neplatný formát na řádku {0}: {1}</target>
+        <target state="new">Invalid format in line {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectParsingErrorFormatString">
         <source>Project section is missing '{0}' when parsing the line starting at position {1}</source>
-        <target state="translated">V oddíle projektu chybí {0}, když analýza řádku začíná na pozici {1}.</target>
+        <target state="new">Project section is missing '{0}' when parsing the line starting at position {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPropertySetFormatString">
         <source>Property set is missing '{0}'</source>
-        <target state="translated">V sadě vlastností chybí {0}.</target>
+        <target state="new">Property set is missing '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="FileHeaderMissingVersionError">
         <source>File header is missing version</source>
-        <target state="translated">Chybějící verze v hlavičce souboru</target>
+        <target state="new">File header is missing version</target>
         <note />
       </trans-unit>
     </body>

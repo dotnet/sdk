@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="NetRemoveCommand">
         <source>.NET Remove Command</source>
-        <target state="translated">Commande de suppression .NET</target>
+        <target state="new">.NET Remove Command</target>
         <note />
       </trans-unit>
     </body>

@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CommandDescription">
         <source>Update all installed optional workloads.</source>
-        <target state="needs-review-translation">Genel bir aracı güncelleştirin.</target>
+        <target state="new">Update all installed optional workloads.</target>
         <note />
       </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">

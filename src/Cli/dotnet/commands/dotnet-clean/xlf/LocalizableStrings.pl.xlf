@@ -4,42 +4,42 @@
     <body>
       <trans-unit id="AppFullName">
         <source>.NET Clean Command</source>
-        <target state="translated">Polecenie clean platformy .NET</target>
+        <target state="new">.NET Clean Command</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Command to clean previously generated build outputs.</source>
-        <target state="translated">Polecenie służące do czyszczenia wcześniej wygenerowanych danych wyjściowych kompilacji.</target>
+        <target state="new">Command to clean previously generated build outputs.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nie wyświetlaj baneru początkowego ani komunikatu o prawach autorskich.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutputDir">
         <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
+        <target state="new">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutputDirDescription">
         <source>The directory containing the build artifacts to clean.</source>
-        <target state="translated">Katalog zawierający artefakty kompilacji do oczyszczenia.</target>
+        <target state="new">The directory containing the build artifacts to clean.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
-        <target state="translated">Platforma docelowa czyszczenia. Platforma docelowa musi być również określona w pliku projektu.</target>
+        <target state="new">The target framework to clean for. The target framework must also be specified in the project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeOptionDescription">
         <source>The target runtime to clean for.</source>
-        <target state="translated">Docelowe środowisko uruchomieniowe czyszczenia.</target>
+        <target state="new">The target runtime to clean for.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">
         <source>The configuration to clean for. The default for most projects is 'Debug'.</source>
-        <target state="translated">Konfiguracja, dla której ma być wykonane czyszczenie. W przypadku większości projektów ustawienie domyślne to „Debugowanie”.</target>
+        <target state="new">The configuration to clean for. The default for most projects is 'Debug'.</target>
         <note />
       </trans-unit>
     </body>

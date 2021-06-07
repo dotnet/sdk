@@ -1,25 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="tr" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="MalformedText">
         <source>Malformed command text '{0}'</source>
-        <target state="translated">Hatalı biçimlendirilmiş komut metni: '{0}'</target>
+        <target state="new">Malformed command text '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
         <source>Unable to locate dotnet multiplexer</source>
-        <target state="translated">Dotnet çoğullayıcısı bulunamadı</target>
+        <target state="new">Unable to locate dotnet multiplexer</target>
         <note />
       </trans-unit>
       <trans-unit id="FileNotFound">
         <source>File not found `{0}`.</source>
-        <target state="translated">Dosya bulunamadı `{0}`.</target>
+        <target state="new">File not found `{0}`.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotRestoredOrRestoreFailed">
         <source>The project may not have been restored or restore failed - run `dotnet restore`</source>
-        <target state="translated">Proje geri yüklenmemiş veya geri yükleme başarısız olmuş olabilir - `dotnet restore` çalıştırın</target>
+        <target state="new">The project may not have been restored or restore failed - run `dotnet restore`</target>
         <note />
       </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommand">
@@ -28,90 +28,90 @@ Possible reasons for this include:
   * You misspelled a built-in dotnet command.
   * You intended to execute a .NET program, but {0} does not exist.
   * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</source>
-        <target state="translated">Belirtilen komut veya dosya bulunamadığından yürütülemedi.
-Bunun nedeni şunlardan biri olabilir:
-  * Yerleşik bir dotnet komutunu yanlış yazdınız.
-  * Bir .NET programını yürütmeyi amaçladınız, ancak {0} yok.
-  * Genel bir aracı çalıştırmayı amaçladınız, ancak bu ada sahip dotnet ön ekli yürütülebilir dosya PATH üzerinde bulunamadı.</target>
+        <target state="new">Could not execute because the specified command or file was not found.
+Possible reasons for this include:
+  * You misspelled a built-in dotnet command.
+  * You intended to execute a .NET program, but {0} does not exist.
+  * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</target>
         <note />
       </trans-unit>
       <trans-unit id="WaitingForDebuggerToAttach">
         <source>Waiting for debugger to attach. Press ENTER to continue</source>
-        <target state="translated">Hata ayıklayıcının eklenmesi bekleniyor. Devam etmek için ENTER tuşuna basın</target>
+        <target state="new">Waiting for debugger to attach. Press ENTER to continue</target>
         <note />
       </trans-unit>
       <trans-unit id="ProcessId">
         <source>Process ID: {0}</source>
-        <target state="translated">İşlem kimliği: {0}</target>
+        <target state="new">Process ID: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotAccessAssetsFile">
         <source>Could not access assets file.</source>
-        <target state="translated">Varlık dosyasına erişilemiyor.</target>
+        <target state="new">Could not access assets file.</target>
         <note />
       </trans-unit>
       <trans-unit id="WriteLineForwarderSetPreviously">
         <source>WriteLine forwarder set previously</source>
-        <target state="translated">WriteLine ileticisi önceden ayarlandı</target>
+        <target state="new">WriteLine forwarder set previously</target>
         <note />
       </trans-unit>
       <trans-unit id="AlreadyCapturingStream">
         <source>Already capturing stream!</source>
-        <target state="translated">Akış zaten yakalanıyor!</target>
+        <target state="new">Already capturing stream!</target>
         <note />
       </trans-unit>
       <trans-unit id="RunningFileNameArguments">
         <source>Running {0} {1}</source>
-        <target state="translated">{0} {1} çalıştırılıyor</target>
+        <target state="new">Running {0} {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="ProcessExitedWithCode">
         <source>&lt; {0} exited with {1} in {2} ms.</source>
-        <target state="translated">&lt; {0}, {1} ile {2} ms'de çıktı.</target>
+        <target state="new">&lt; {0} exited with {1} in {2} ms.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToInvokeMemberNameAfterCommand">
         <source>Unable to invoke {0} after the command has been run</source>
-        <target state="translated">Komut çalıştırıldıktan sonra {0} çağrılamıyor</target>
+        <target state="new">Unable to invoke {0} after the command has been run</target>
         <note />
       </trans-unit>
       <trans-unit id="DotNetSdkInfoLabel">
         <source>.NET SDK (reflecting any global.json):</source>
-        <target state="translated">.NET SDK (varsa global.json dosyasını yansıtır):</target>
+        <target state="new">.NET SDK (reflecting any global.json):</target>
         <note />
       </trans-unit>
       <trans-unit id="DotNetRuntimeInfoLabel">
         <source>Runtime Environment:</source>
-        <target state="translated">Çalışma Zamanı Ortamı:</target>
+        <target state="new">Runtime Environment:</target>
         <note />
       </trans-unit>
       <trans-unit id="EmbedAppNameInHostAppHostHasBeenModified">
         <source>Unable to use '{0}' as application host executable as it does not contain the expected placeholder byte sequence '{1}' that would mark where the application name would be written.</source>
-        <target state="translated">'{0}', uygulama adının yazılacağı yeri işaretlemesi için beklenen yer tutucu bayt dizisini ('{1}') içermediğinden uygulama konak yürütülebiliri olarak kullanılamıyor.</target>
+        <target state="new">Unable to use '{0}' as application host executable as it does not contain the expected placeholder byte sequence '{1}' that would mark where the application name would be written.</target>
         <note />
       </trans-unit>
       <trans-unit id="EmbedAppNameInHostFileNameIsTooLong">
         <source>Given file name '{0}' is longer than 1024 bytes</source>
-        <target state="translated">Belirtilen dosya adı '{0}' 1024 bayttan uzun</target>
+        <target state="new">Given file name '{0}' is longer than 1024 bytes</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotFindCommandAvailableAsTool">
         <source>Cannot find command 'dotnet {0}', run the following command to install
 
 dotnet tool install --global {1}</source>
-        <target state="translated">'dotnet {0}' komutu bulunamıyor, yüklemek için aşağıdaki komutu çalıştırın
+        <target state="new">Cannot find command 'dotnet {0}', run the following command to install
 
 dotnet tool install --global {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetCliHomeUsed">
         <source>Using home directory '{0}' set by the '{1}' environment variable.</source>
-        <target state="translated">'{1}' ortam değişkeni tarafından ayarlanan '{0}' giriş dizini kullanılıyor.</target>
+        <target state="new">Using home directory '{0}' set by the '{1}' environment variable.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotNetSdkInfo">
         <source>.NET SDK</source>
-        <target state="translated">.NET SDK</target>
+        <target state="new">.NET SDK</target>
         <note />
       </trans-unit>
     </body>

@@ -5,12 +5,12 @@
       <group id="src/dotnet/commands/dotnet-restore-projectjson/LocalizableStrings.resx" />
       <trans-unit id="AddMinimal">
         <source>minimal</source>
-        <target state="translated">minimal</target>
+        <target state="new">minimal</target>
         <note />
       </trans-unit>
       <trans-unit id="AddRestore">
         <source>restore</source>
-        <target state="translated">Ripristina</target>
+        <target state="new">restore</target>
         <note />
       </trans-unit>
     </body>

@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="NetAddCommand">
         <source>.NET Add Command</source>
-        <target state="translated">Comando Add de .NET</target>
+        <target state="new">.NET Add Command</target>
         <note />
       </trans-unit>
     </body>

@@ -4,119 +4,119 @@
     <body>
       <trans-unit id="AppFullName">
         <source>.NET dependency restorer</source>
-        <target state="translated">Programme de restauration de dépendances .NET</target>
+        <target state="new">.NET dependency restorer</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>restore for msbuild</source>
-        <target state="translated">restaurer pour msbuild</target>
+        <target state="new">restore for msbuild</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArgument">
         <source>PROJECT</source>
-        <target state="translated">PROJECT</target>
+        <target state="new">PROJECT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArgumentDescription">
         <source>Optional path to a project file or MSBuild arguments.</source>
-        <target state="translated">Chemin facultatif vers un fichier projet ou des arguments MSBuild.</target>
+        <target state="new">Optional path to a project file or MSBuild arguments.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
         <source>Use current runtime as the target runtime.</source>
-        <target state="translated">Utilisez le runtime actuel en tant que runtime cible.</target>
+        <target state="new">Use current runtime as the target runtime.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSourceOption">
         <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <target state="new">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSourceOptionDescription">
         <source>The NuGet package source to use for the restore.</source>
-        <target state="translated">Source de package NuGet à utiliser pour la restauration.</target>
+        <target state="new">The NuGet package source to use for the restore.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackagesOption">
         <source>PACKAGES_DIR</source>
-        <target state="translated">PACKAGES_DIR</target>
+        <target state="new">PACKAGES_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackagesOptionDescription">
         <source>The directory to restore packages to.</source>
-        <target state="translated">Répertoire de restauration des packages.</target>
+        <target state="new">The directory to restore packages to.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
         <source>Prevent restoring multiple projects in parallel.</source>
-        <target state="translated">Empêche la restauration de plusieurs projets en parallèle.</target>
+        <target state="new">Prevent restoring multiple projects in parallel.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">
         <source>FILE</source>
-        <target state="translated">FILE</target>
+        <target state="new">FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
-        <target state="translated">Fichier de configuration NuGet à utiliser.</target>
+        <target state="new">The NuGet configuration file to use.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoCacheOptionDescription">
         <source>Do not cache packages and http requests.</source>
-        <target state="translated">Ne mettez pas en cache les packages et les requêtes HTTP.</target>
+        <target state="new">Do not cache packages and http requests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdIgnoreFailedSourcesOptionDescription">
         <source>Treat package source failures as warnings.</source>
-        <target state="translated">Considérez les échecs de la source du package comme des avertissements.</target>
+        <target state="new">Treat package source failures as warnings.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
-        <target state="translated">Ne restaurez pas les références de projet à projet, et restaurez uniquement le projet spécifié.</target>
+        <target state="new">Do not restore project-to-project references and only restore the specified project.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRuntimeOption">
         <source>RUNTIME_IDENTIFIER</source>
-        <target state="translated">RUNTIME_IDENTIFIER</target>
+        <target state="new">RUNTIME_IDENTIFIER</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRuntimeOptionDescription">
         <source>The target runtime to restore packages for.</source>
-        <target state="translated">Runtime cible pour lequel la restauration des packages est effectuée.</target>
+        <target state="new">The target runtime to restore packages for.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdForceRestoreOptionDescription">
         <source>Force all dependencies to be resolved even if the last restore was successful.
 This is equivalent to deleting project.assets.json.</source>
-        <target state="translated">Forcez la résolution de toutes les dépendances même si la dernière restauration a réussi.
-Cela équivaut à supprimer project.assets.json.</target>
+        <target state="new">Force all dependencies to be resolved even if the last restore was successful.
+This is equivalent to deleting project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockedModeOptionDescription">
         <source>Don't allow updating project lock file.</source>
-        <target state="translated">Ne pas autoriser la mise à jour du fichier de verrouillage du projet.</target>
+        <target state="new">Don't allow updating project lock file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
         <source>LOCK_FILE_PATH</source>
-        <target state="translated">LOCK_FILE_PATH</target>
+        <target state="new">LOCK_FILE_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOptionDescription">
         <source>Output location where project lock file is written. By default, this is 'PROJECT_ROOT\packages.lock.json'.</source>
-        <target state="translated">Emplacement de sortie où le fichier de verrouillage du projet est écrit. Par défaut, le chemin est « PROJECT_ROOT\packages.lock.json ».</target>
+        <target state="new">Output location where project lock file is written. By default, this is 'PROJECT_ROOT\packages.lock.json'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
         <source>Forces restore to reevaluate all dependencies even if a lock file already exists.</source>
-        <target state="translated">Force la restauration à réévaluer toutes les dépendances, même s'il existe déjà un fichier de verrouillage.</target>
+        <target state="new">Forces restore to reevaluate all dependencies even if a lock file already exists.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>
-        <target state="translated">Permet au fichier de verrouillage du projet d'être généré et utilisé avec la restauration.</target>
+        <target state="new">Enables project lock file to be generated and used with restore.</target>
         <note />
       </trans-unit>
     </body>

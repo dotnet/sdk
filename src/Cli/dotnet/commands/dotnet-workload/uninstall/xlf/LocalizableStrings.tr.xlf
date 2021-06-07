@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="PackageIdArgumentDescription">
         <source>The NuGet Package Id of the workload to uninstall.</source>
-        <target state="translated">Kaldırılacak aracın NuGet Paket Kimliği.</target>
+        <target state="new">The NuGet Package Id of the workload to uninstall.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Uninstall a workload.</source>
-        <target state="needs-review-translation">Genel veya yerel bir aracı kaldırın.</target>
+        <target state="new">Uninstall a workload.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
+        <target state="new">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="RemovingWorkloadInstallationRecord">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Specify one workload Package Id to uninstall.</source>
-        <target state="translated">Kaldırılacak tek bir aracın Paket Kimliğini belirtin.</target>
+        <target state="new">Specify one workload Package Id to uninstall.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallSucceeded">
@@ -34,12 +34,7 @@
       </trans-unit>
       <trans-unit id="WorkloadNotInstalled">
         <source>Could not find workloads with id(s): {0}</source>
-        <target state="needs-review-translation">'{0}' paket kimliğine sahip araç bulunamadı. 
-
-Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen 
-paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve 
-karşılık gelen paket kimliklerini bulmak için 
-'dotnet workload list' komutunu kullanabilirsiniz.</target>
+        <target state="new">Could not find workloads with id(s): {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUninstallFailed">
