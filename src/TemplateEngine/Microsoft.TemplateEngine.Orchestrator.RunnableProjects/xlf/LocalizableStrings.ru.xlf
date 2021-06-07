@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../LocalizableStrings.resx">
     <body>
@@ -20,12 +20,12 @@
       </trans-unit>
       <trans-unit id="Authoring_InvalidRegex">
         <source>'{0}' could not be parsed as a regular expression</source>
-        <target state="new">'{0}' could not be parsed as a regular expression</target>
+        <target state="translated">Не удалось проанализировать "{0}" как регулярное выражение</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_MalformedPostActionManualInstructions">
         <source>One or more postActions have a malformed or missing manualInstructions value in '{0}'</source>
-        <target state="new">One or more postActions have a malformed or missing manualInstructions value in '{0}'</target>
+        <target state="translated">Одно или несколько postActions имеют неверное или отсутствующее значение manualInstructions в "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_ManualInstructionIdIsNotUnique">
@@ -37,12 +37,12 @@
       </trans-unit>
       <trans-unit id="Authoring_MissingValue">
         <source>Missing '{0}' in '{1}'</source>
-        <target state="new">Missing '{0}' in '{1}'</target>
+        <target state="translated">Отсутствует "{0}" в "{1}"</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_NonBoolDataTypeForRegexMatch">
         <source>A non-bool DataType was specified for a regexMatch type symbol</source>
-        <target state="new">A non-bool DataType was specified for a regexMatch type symbol</target>
+        <target state="translated">Для символа типа regexMatch был указан не-bool DataType</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_PostActionIdIsNotUnique">
@@ -53,47 +53,47 @@
       </trans-unit>
       <trans-unit id="Authoring_SourceDoesNotExist">
         <source>    Source '{0}' in template does not exist.</source>
-        <target state="new">    Source '{0}' in template does not exist.</target>
+        <target state="translated">    Источник "{0}" в шаблоне не существует.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceIsOutsideInstallSource">
         <source>    Source location '{0}' is outside the specified install source location.</source>
-        <target state="new">    Source location '{0}' is outside the specified install source location.</target>
+        <target state="translated">    Исходное расположение "{0}" находится за пределами указанного расположения источника установки.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceMustBeDirectory">
         <source>    Source must be a directory, but '{0}' is a file.</source>
-        <target state="new">    Source must be a directory, but '{0}' is a file.</target>
+        <target state="translated">    Источником должен быть каталог, но "{0}" является файлом.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourcePathRelativeToInstall">
         <source>    Source path relative to install location: '{0}'</source>
-        <target state="new">    Source path relative to install location: '{0}'</target>
+        <target state="translated">    Исходный путь относительно расположения установки: "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateMissingCommonInformation">
         <source>'{0}' is missing common information</source>
-        <target state="new">'{0}' is missing common information</target>
+        <target state="translated">В "{0}" отсутствуют общие сведения</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateNameDisplay">
         <source>Template: '{0}'</source>
-        <target state="new">Template: '{0}'</target>
+        <target state="translated">Шаблон: "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled">
         <source>Failed to load template from {0}:</source>
-        <target state="new">Failed to load template from {0}:</target>
+        <target state="needs-review-translation">Не загружено: "{0}"</target>
         <note>{0} is uri of template location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateRootOutsideInstallSource">
         <source>Template: '{0}' - Template root is outside the specified install source location.</source>
-        <target state="new">Template: '{0}' - Template root is outside the specified install source location.</target>
+        <target state="translated">Шаблон: "{0}" — корень шаблона находится за пределами указанного расположения источника установки.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateSourceRoot">
         <source>    TemplateSourceRoot = '{0}'</source>
-        <target state="new">    TemplateSourceRoot = '{0}'</target>
+        <target state="translated">    TemplateSourceRoot = "{0}"</target>
         <note />
       </trans-unit>
     </body>

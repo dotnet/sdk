@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
@@ -20,12 +20,12 @@
       </trans-unit>
       <trans-unit id="Authoring_InvalidRegex">
         <source>'{0}' could not be parsed as a regular expression</source>
-        <target state="new">'{0}' could not be parsed as a regular expression</target>
+        <target state="translated">'{0}'을(를) 정규식으로 구문 분석 할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_MalformedPostActionManualInstructions">
         <source>One or more postActions have a malformed or missing manualInstructions value in '{0}'</source>
-        <target state="new">One or more postActions have a malformed or missing manualInstructions value in '{0}'</target>
+        <target state="translated">'{0}'에서 하나 이상의 postActions에 잘못된 형식의 수동 지침 값이 있거나 누락된 수동 지침 값이 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_ManualInstructionIdIsNotUnique">
@@ -37,12 +37,12 @@
       </trans-unit>
       <trans-unit id="Authoring_MissingValue">
         <source>Missing '{0}' in '{1}'</source>
-        <target state="new">Missing '{0}' in '{1}'</target>
+        <target state="translated">'{1}'에 '{0}' 누락</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_NonBoolDataTypeForRegexMatch">
         <source>A non-bool DataType was specified for a regexMatch type symbol</source>
-        <target state="new">A non-bool DataType was specified for a regexMatch type symbol</target>
+        <target state="translated">regexMatch 유형 기호에 bool이 아닌 데이터 유형이 지정되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_PostActionIdIsNotUnique">
@@ -53,47 +53,47 @@
       </trans-unit>
       <trans-unit id="Authoring_SourceDoesNotExist">
         <source>    Source '{0}' in template does not exist.</source>
-        <target state="new">    Source '{0}' in template does not exist.</target>
+        <target state="translated">    템플릿에 '{0}' 소스가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceIsOutsideInstallSource">
         <source>    Source location '{0}' is outside the specified install source location.</source>
-        <target state="new">    Source location '{0}' is outside the specified install source location.</target>
+        <target state="translated">    소스 위치 '{0}'이(가) 지정된 설치 소스 위치 밖에 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceMustBeDirectory">
         <source>    Source must be a directory, but '{0}' is a file.</source>
-        <target state="new">    Source must be a directory, but '{0}' is a file.</target>
+        <target state="translated">    소스는 디렉터리 여야하지만 '{0}'은 파일입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourcePathRelativeToInstall">
         <source>    Source path relative to install location: '{0}'</source>
-        <target state="new">    Source path relative to install location: '{0}'</target>
+        <target state="translated">    설치 위치에 상대적인 소스 경로: '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateMissingCommonInformation">
         <source>'{0}' is missing common information</source>
-        <target state="new">'{0}' is missing common information</target>
+        <target state="translated">'{0}'에 일반적인 정보가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateNameDisplay">
         <source>Template: '{0}'</source>
-        <target state="new">Template: '{0}'</target>
+        <target state="translated">템플릿: '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled">
         <source>Failed to load template from {0}:</source>
-        <target state="new">Failed to load template from {0}:</target>
+        <target state="needs-review-translation">'{0}'이(가) 로드되지 않았습니다.</target>
         <note>{0} is uri of template location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateRootOutsideInstallSource">
         <source>Template: '{0}' - Template root is outside the specified install source location.</source>
-        <target state="new">Template: '{0}' - Template root is outside the specified install source location.</target>
+        <target state="translated">템플릿: '{0}'-템플릿 루트가 지정된 설치 소스 위치 밖에 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateSourceRoot">
         <source>    TemplateSourceRoot = '{0}'</source>
-        <target state="new">    TemplateSourceRoot = '{0}'</target>
+        <target state="translated">    TemplateSourceRoot = '{0}'</target>
         <note />
       </trans-unit>
     </body>
