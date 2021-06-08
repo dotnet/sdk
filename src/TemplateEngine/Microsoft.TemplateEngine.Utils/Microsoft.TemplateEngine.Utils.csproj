@@ -5,6 +5,7 @@
     <Description>Components used by all Template Engine extensions and consumers</Description>
     <IsPackable>true</IsPackable>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Shared\JExtensions.cs" Link="JExtensions.cs" />

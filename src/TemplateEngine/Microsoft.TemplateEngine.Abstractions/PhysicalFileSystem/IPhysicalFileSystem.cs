@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
         Stream CreateFile(string path);
 
         /// <summary>
-        /// Same behavior as <see cref="Directory.Create(string)"/>.
+        /// Same behavior as <see cref="Directory.CreateDirectory(string)"/>.
         /// </summary>
         void CreateDirectory(string path);
 

@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <param name="installRequest">the template package to be installed.</param>
         /// <param name="provider"><see cref="IManagedTemplatePackageProvider"/> installing the package.</param>
         /// <param name="cancellationToken"></param>
-        /// <returns><see cref="InstallResult"/> containing installation results and installed <see cref="InstallResult.TemplatePackage"/> if installation was successful.</returns>
+        /// <returns><see cref="InstallResult"/> containing installation results and installed <see cref="InstallerOperationResult.TemplatePackage"/> if installation was successful.</returns>
         Task<InstallResult> InstallAsync(InstallRequest installRequest, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken);
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <param name="updateRequest"><see cref="UpdateRequest"/> defining the template package to update and target version.</param>
         /// <param name="provider"><see cref="IManagedTemplatePackageProvider"/> updating the package.</param>
         /// <param name="cancellationToken"></param>
-        /// <returns><see cref="UpdateResult"/> containing the result for operation and installed <see cref="UpdateResult.TemplatePackage"/> if update was successful.</returns>
+        /// <returns><see cref="UpdateResult"/> containing the result for operation and installed <see cref="InstallerOperationResult.TemplatePackage"/> if update was successful.</returns>
         Task<UpdateResult> UpdateAsync(UpdateRequest updateRequest, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken);
     }
 }

@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateFiltering
         public string? Value { get; }
 
         /// <summary>
-        /// Frequently used filter names. They are also used by <see cref="WellKnownSearchFilters"/>.
+        /// Frequently used filter names. They are also used by Utils.WellKnownSearchFilters.
         /// </summary>
         public static class BuiltIn
         {

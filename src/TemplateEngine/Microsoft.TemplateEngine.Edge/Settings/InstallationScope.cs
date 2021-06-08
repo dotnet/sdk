@@ -15,6 +15,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// </summary>
         Global = 0,
 
+#pragma warning disable CS1587 // XML comment is not placed on a valid language element
         /// <summary>
         /// Template packages are visible to all versions of certain template host.
         /// </summary>
@@ -25,4 +26,5 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// </summary>
         //        Version = 2       //not supported at the moment
     }
+#pragma warning restore CS1587 // XML comment is not placed on a valid language element
 }

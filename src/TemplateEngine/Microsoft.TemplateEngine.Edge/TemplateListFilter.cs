@@ -18,18 +18,18 @@ namespace Microsoft.TemplateEngine.Edge
 {
     public static class TemplateListFilter
     {
-        [Obsolete("Use " + nameof(Utils.WellKnownSearchFilters.MatchesAllCriteria) + " instead")]
         /// <summary>
         /// Exact match criteria - the templates should match all filters.
         /// </summary>
         /// <seealso cref="GetTemplateMatchInfo"/>
+        [Obsolete("Use " + nameof(Utils.WellKnownSearchFilters.MatchesAllCriteria) + " instead")]
         public static Func<ITemplateMatchInfo, bool> ExactMatchFilter => x => x.IsMatch;
 
-        [Obsolete("Use " + nameof(Utils.WellKnownSearchFilters.MatchesAtLeastOneCriteria) + " instead")]
         /// <summary>
         /// Partial match criteria - the templates should match at least one of the filters.
         /// </summary>
         /// <seealso cref="GetTemplateMatchInfo"/>
+        [Obsolete("Use " + nameof(Utils.WellKnownSearchFilters.MatchesAtLeastOneCriteria) + " instead")]
         public static Func<ITemplateMatchInfo, bool> PartialMatchFilter => x => x.IsPartialMatch;
 
         [Obsolete("Use " + nameof(TemplatePackageManager.GetTemplatesAsync) + " instead")]

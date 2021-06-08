@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// </summary>
         /// <param name="template">template definition.</param>
         /// <returns>The language defined in the template or null if no language is defined.</returns>
-        /// <remarks>The tags are read in <see cref="SimpleConfigModel.ConvertedDeprecatedTagsToParameterSymbols"/> method. The single value for the tag is guaranteed.</remarks>
+        // The tags are read in SimpleConfigModel.ConvertedDeprecatedTagsToParameterSymbols method. The single value for the tag is guaranteed.
         public static string? GetLanguage(this ITemplateInfo template)
         {
             return template.GetTagValue("language");
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// </summary>
         /// <param name="template">template definition.</param>
         /// <returns>The type defined in the template or null if no type is defined.</returns>
-        /// <remarks>The tags are read in <see cref="SimpleConfigModel.ConvertedDeprecatedTagsToParameterSymbols"/> method. The single value for the tag is guaranteed.</remarks>
+        // The tags are read in SimpleConfigModel.ConvertedDeprecatedTagsToParameterSymbols method. The single value for the tag is guaranteed.
         public static string? GetTemplateType(this ITemplateInfo template)
         {
             return template.GetTagValue("type");

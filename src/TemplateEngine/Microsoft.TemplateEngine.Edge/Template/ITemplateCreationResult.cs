@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Abstractions;
 namespace Microsoft.TemplateEngine.Edge.Template
 {
     /// <summary>
-    /// Represents result of template instantiation / dry run via <see cref="TemplateCreator.InstantiateAsync(ITemplateInfo, string?, string?, System.Collections.Generic.IReadOnlyDictionary{string, string}, bool, string?, bool, System.Threading.CancellationToken)". />.
+    /// Represents result of template instantiation / dry run via <see cref="TemplateCreator.InstantiateAsync(ITemplateInfo, string?, string?, string?, System.Collections.Generic.IReadOnlyDictionary{string, string?}, bool, string?, bool, System.Threading.CancellationToken)"></see>. />.
     /// </summary>
     public interface ITemplateCreationResult
     {

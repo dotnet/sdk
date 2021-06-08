@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.IDE
         /// Added components are not persisted and need to be called every time new instance of <see cref="Bootstrapper"/> is created.
         /// </summary>
         /// <param name="interfaceType">Interface type that added component implements.</param>
-        /// <param name="instance">Instance of type that implements <paramref name="interfaceType"/>.</param>
+        /// <param name="component">Instance of type that implements <paramref name="interfaceType"/>.</param>
         public void AddComponent(Type interfaceType, IIdentifiedComponent component)
         {
             _engineEnvironmentSettings.Components.AddComponent(interfaceType, component);
@@ -93,7 +93,8 @@ namespace Microsoft.TemplateEngine.IDE
         /// <param name="outputPath">The output directory for template instantiation.</param>
         /// <param name="parameters">The template parameters.</param>
         /// <param name="baselineName">The baseline configuration to use.</param>
-        /// <returns><see cref="TemplateCreationResult"/> containing information on created template or error occurred.</returns>
+        /// <param name="cancellationToken">A cancellation token to cancel the asynchronous operation.</param>
+        /// <returns><see cref="ITemplateCreationResult"/> containing information on created template or error occurred.</returns>
 #pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         public Task<ITemplateCreationResult> CreateAsync(
             ITemplateInfo info,
@@ -124,6 +125,7 @@ namespace Microsoft.TemplateEngine.IDE
         /// <param name="outputPath">The output directory for template instantiation.</param>
         /// <param name="parameters">The template parameters.</param>
         /// <param name="baselineName">The baseline configuration to use.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the asynchronous operation.</param>
         /// <returns><see cref="ITemplateCreationResult"/> containing information on template that would be created or error occurred.</returns>
         public Task<ITemplateCreationResult> GetCreationEffectsAsync(
             ITemplateInfo info,

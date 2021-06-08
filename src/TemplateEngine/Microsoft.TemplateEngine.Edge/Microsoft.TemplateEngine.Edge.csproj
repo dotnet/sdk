@@ -1,10 +1,11 @@
-﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
     <Description>Helper package for adding Template Engine to consuming applications</Description>
     <IsPackable>true</IsPackable>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DefineConstants Condition="'$(TargetFramework)' == '$(NETFullTargetFramework)'">$(DefineConstants);NETFULL</DefineConstants>
   </PropertyGroup>
 

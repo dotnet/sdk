@@ -11,27 +11,24 @@ using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 namespace Microsoft.TemplateEngine.Utils
 {
     /// <summary>
-    /// Collection of the predicates to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/> for most used <see cref="ITemplateInfo"/> properties when filtering templates.
+    /// Collection of the predicates to be used for filtering templates by the most used <see cref="ITemplateInfo"/> properties.
     /// </summary>
     public static class WellKnownSearchFilters
     {
         /// <summary>
         /// The template should match all filters: <see cref="ITemplateMatchInfo.MatchDisposition"/> should have all dispositions of <see cref="MatchKind.Exact"/> or <see cref="MatchKind.Partial"/>.
-        /// Used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
         /// </summary>
         public static Func<ITemplateMatchInfo, bool> MatchesAllCriteria =>
             t => t.MatchDisposition.Count > 0 && t.MatchDisposition.All(x => x.Kind == MatchKind.Exact || x.Kind == MatchKind.Partial);
 
         /// <summary>
         /// The template should match at least one filter: <see cref="ITemplateMatchInfo.MatchDisposition"/> should have at least one disposition of <see cref="MatchKind.Exact"/> or <see cref="MatchKind.Partial"/>.
-        /// Used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
         /// </summary>
         public static Func<ITemplateMatchInfo, bool> MatchesAtLeastOneCriteria =>
             t => t.MatchDisposition.Any(x => x.Kind == MatchKind.Exact || x.Kind == MatchKind.Partial);
 
         /// <summary>
-        /// Filter to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
-        /// Matches <paramref name="name"/> on the following criteria: <br/>
+        /// The template filter that matches <paramref name="name"/> on the following criteria: <br/>
         /// - if <paramref name="name"/> is null or empty, adds match disposition <see cref="MatchInfo.BuiltIn.Name"/> with <see cref="MatchKind.Partial"/>;<br/>
         /// - if <paramref name="name"/> is equal to <see cref="ITemplateInfo.Name"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Name"/> with <see cref="MatchKind.Exact"/>;<br/>
         /// - if <paramref name="name"/> is equal to one of the short names in <see cref="ITemplateInfo.ShortNameList"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.ShortName"/> with <see cref="MatchKind.Exact"/>;<br/>
@@ -39,7 +36,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// - if one of the short names in <see cref="ITemplateInfo.ShortNameList"/> contains <paramref name="name"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.ShortName"/> with <see cref="MatchKind.Partial"/>;<br/>
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Name"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
-        /// <returns> the predicate to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/> as the filter.</returns>
+        /// <returns> the predicate to be used when filtering the templates.</returns>
         public static Func<ITemplateInfo, MatchInfo?> NameFilter(string name)
         {
             return (template) =>
@@ -85,13 +82,12 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Filter to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
-        /// Matches <paramref name="inputType"/> on the following criteria: <br/>
+        /// The template filter that matches <paramref name="inputType"/> on the following criteria: <br/>
         /// - if <paramref name="inputType"/> is null or empty, does not add match disposition;<br/>
         /// - if <paramref name="inputType"/> is equal to tag named 'type' from <see cref="ITemplateInfo.Tags"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Type"/> with <see cref="MatchKind.Exact"/>;<br/>
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Type"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
-        /// <returns> the predicate to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/> as the filter.</returns>
+        /// <returns> the predicate to be used when filtering the templates.</returns>
         public static Func<ITemplateInfo, MatchInfo?> TypeFilter(string? inputType)
         {
             string? type = inputType?.ToLowerInvariant();
@@ -114,13 +110,12 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Filter to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
-        /// Matches <paramref name="classification"/> on the following criteria: <br/>
+        /// The template filter that matches <paramref name="classification"/> on the following criteria: <br/>
         /// - if <paramref name="classification"/> is null or empty, does not add match disposition;<br/>
-        /// - if <paramref name="classification"/> is equal to any entry from <see cref="ITemplateInfo.Classification"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Classification"/> with <see cref="MatchKind.Exact"/>;<br/>
+        /// - if <paramref name="classification"/> is equal to any entry from <see cref="ITemplateInfo.Classifications"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Classification"/> with <see cref="MatchKind.Exact"/>;<br/>
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Classification"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
-        /// <returns> the predicate to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/> as the filter.</returns>
+        /// <returns> the predicate to be used when filtering the templates..</returns>
         public static Func<ITemplateInfo, MatchInfo?> ClassificationFilter(string classification)
         {
             return (template) =>
@@ -138,13 +133,12 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Filter to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
-        /// Matches <paramref name="language"/> on the following criteria: <br/>
+        /// The template filter that matches <paramref name="language"/> on the following criteria: <br/>
         /// - if <paramref name="language"/> is null or empty, does not add match disposition;<br/>
         /// - if <paramref name="language"/> is equal to tag named 'language' from <see cref="ITemplateInfo.Tags"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Language"/> with <see cref="MatchKind.Exact"/>;<br/>
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Language"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
-        /// <returns> the predicate to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/> as the filter.</returns>
+        /// <returns> the predicate to be used when filtering the templates.</returns>
         public static Func<ITemplateInfo, MatchInfo?> LanguageFilter(string language)
         {
             return (template) =>
@@ -166,13 +160,12 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Filter to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
-        /// Matches <paramref name="baselineName"/> on the following criteria: <br/>
+        /// The template filter that matches <paramref name="baselineName"/> on the following criteria: <br/>
         /// - if <paramref name="baselineName"/> is null or empty, does not add match disposition;<br/>
         /// - if <paramref name="baselineName"/> is equal to key from <see cref="ITemplateInfo.BaselineInfo"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Baseline"/> with <see cref="MatchKind.Exact"/>;<br/>
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Baseline"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
-        /// <returns> the predicate to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/> as the filter.</returns>
+        /// <returns> the predicate to be used when filtering the templates.</returns>
         public static Func<ITemplateInfo, MatchInfo?> BaselineFilter(string baselineName)
         {
             return (template) =>
@@ -194,15 +187,14 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Filter to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/>.
-        /// Matches <paramref name="author"/> on the following criteria: <br/>
+        /// The template filter that matches <paramref name="author"/> on the following criteria: <br/>
         /// - if <paramref name="author"/> is null or empty, does not add match disposition;<br/>
         /// - if <see cref="ITemplateInfo.Author"/> is null or empty, adds match disposition <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Mismatch"/>;<br/>
         /// - if <paramref name="author"/> is equal to <see cref="ITemplateInfo.Author"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Exact"/>;<br/>
         /// - if <see cref="ITemplateInfo.Author"/> contains <paramref name="author"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Partial"/>;<br/>
         /// - <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
-        /// <returns> the predicate to be used with <see cref="ISettingsLoader.GetTemplatesAsync(Func{ITemplateMatchInfo, bool}, System.Collections.Generic.IEnumerable{Func{ITemplateInfo, MatchInfo?}}[], System.Threading.CancellationToken)"/> as the filter.</returns>
+        /// <returns> the predicate to be used when filtering the templates.</returns>
         public static Func<ITemplateInfo, MatchInfo?> AuthorFilter(string author)
         {
             return (template) =>

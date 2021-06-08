@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
         /// <summary>
         /// Installs new <see cref="IManagedTemplatePackage"/> based on <see cref="InstallRequest"/> data.
         /// All <see cref="IInstaller"/>s are considered via <see cref="IInstaller.CanInstallAsync(InstallRequest, CancellationToken)"/> and if only 1 <see cref="IInstaller"/>
-        /// returns <c>true</c>. <see cref="IInstaller.InstallAsync(InstallRequest, CancellationToken)"/> is executed and result is returned.
+        /// returns <see langword="true" />. <see cref="IInstaller.InstallAsync(InstallRequest, IManagedTemplatePackageProvider, CancellationToken)"/> is executed and result is returned.
         /// </summary>
         /// <param name="installRequests">Contains the list of <see cref="InstallRequest"/> to perform.</param>
         /// <param name="cancellationToken"></param>

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace Microsoft.TemplateEngine.Abstractions
 {
     /// <summary>
-    /// The interface represents the effects of template instantiation: the file changes applied and template creation result. Creation effects are evaluated during template dry-run (see <see cref="IGenerator.GetCreationEffects(IEngineEnvironmentSettings, ITemplate, IParameterSet, IComponentManager, string)"/>.
+    /// The interface represents the effects of template instantiation: the file changes applied and template creation result. Creation effects are evaluated during template dry-run (see <see cref="IGenerator.GetCreationEffectsAsync(IEngineEnvironmentSettings, ITemplate, IParameterSet, string, System.Threading.CancellationToken)"/>.
     /// The interface is outdated, new version is <see cref="ICreationEffects2"/>.
     /// </summary>
     public interface ICreationEffects
@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     }
 
     /// <summary>
-    /// The interface represents the effects of template instantiation: the file changes applied and template creation result. Creation effects are evaluated during template dry-run (see <see cref="IGenerator.GetCreationEffects(IEngineEnvironmentSettings, ITemplate, IParameterSet, IComponentManager, string)"/>.
+    /// The interface represents the effects of template instantiation: the file changes applied and template creation result. Creation effects are evaluated during template dry-run (see <see cref="IGenerator.GetCreationEffectsAsync(IEngineEnvironmentSettings, ITemplate, IParameterSet, string, System.Threading.CancellationToken)"/>.
     /// </summary>
     public interface ICreationEffects2
     {

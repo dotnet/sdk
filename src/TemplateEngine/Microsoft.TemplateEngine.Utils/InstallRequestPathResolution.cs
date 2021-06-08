@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <remarks>
         /// Example of <paramref name="maskedPath"/> would be "C:\Users\username\packages\*.nupkg".<br/>
         /// Wildcards are supported only in file name.
-        /// Supported wildcards and rules are identical as for <see cref="searchPattern"/> for <see cref="Directory.EnumerateDirectories(string, string)"/>.
+        /// Supported wildcards and rules are identical as for searchPattern for <see cref="Directory.EnumerateDirectories(string, string)"/>.
         /// </remarks>
         /// <param name="maskedPath">This parameter can contain a wildcard (*) character in the filename.</param>
         /// <param name="environmentSettings"></param>

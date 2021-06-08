@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Utils
     public static class TemplateMatchInfoExtensions
     {
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> or <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.DefaultParameter.Name"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> or <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.BuiltIn.Name"/>.
         /// </summary>
         public static bool HasNameMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.DefaultParameter.Name"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.BuiltIn.Name"/>.
         /// </summary>
         public static bool HasNameExactMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.DefaultParameter.Name"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.BuiltIn.Name"/>.
         /// </summary>
         public static bool HasNamePartialMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.DefaultParameter.Name"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.BuiltIn.Name"/>.
         /// </summary>
         public static bool HasNameMismatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> or <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.DefaultParameter.ShortName"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> or <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.BuiltIn.ShortName"/>.
         /// </summary>
         public static bool HasShortNameMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.DefaultParameter.ShortName"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.BuiltIn.ShortName"/>.
         /// </summary>
         public static bool HasShortNameExactMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.DefaultParameter.ShortName"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.BuiltIn.ShortName"/>.
         /// </summary>
         public static bool HasShortNamePartialMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.DefaultParameter.ShortName"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.BuiltIn.ShortName"/>.
         /// </summary>
         public static bool HasShortNameMismatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.DefaultParameter.Type"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.BuiltIn.Type"/>.
         /// </summary>
         public static bool HasTypeMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.DefaultParameter.Type"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.BuiltIn.Type"/>.
         /// </summary>
         public static bool HasTypeMismatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.DefaultParameter.Classification"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.BuiltIn.Classification"/>.
         /// </summary>
         public static bool HasClassificationMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.DefaultParameter.Classification"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.BuiltIn.Classification"/>.
         /// </summary>
         public static bool HasClassificationMismatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.DefaultParameter.Language"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.BuiltIn.Language"/>.
         /// </summary>
         public static bool HasLanguageMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.DefaultParameter.Language"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.BuiltIn.Language"/>.
         /// </summary>
         public static bool HasLanguageMismatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -126,7 +126,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.DefaultParameter.Baseline"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.BuiltIn.Baseline"/>.
         /// </summary>
         public static bool HasBaselineMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -134,7 +134,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.DefaultParameter.Baseline"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.BuiltIn.Baseline"/>.
         /// </summary>
         public static bool HasBaselineMismatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -142,7 +142,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> or <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.DefaultParameter.Author"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> or <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.BuiltIn.Author"/>.
         /// </summary>
         public static bool HasAuthorMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -150,7 +150,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.DefaultParameter.Author"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Exact" /> match on <see cref="MatchInfo.BuiltIn.Author"/>.
         /// </summary>
         public static bool HasAuthorExactMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -158,7 +158,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.DefaultParameter.Author"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Partial" /> match on <see cref="MatchInfo.BuiltIn.Author"/>.
         /// </summary>
         public static bool HasAuthorPartialMatch(this ITemplateMatchInfo templateMatchInfo)
         {
@@ -166,7 +166,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.DefaultParameter.Author"/>.
+        /// Returns true when <paramref name="templateMatchInfo"/> has <see cref="MatchKind.Mismatch" /> on <see cref="MatchInfo.BuiltIn.Author"/>.
         /// </summary>
         public static bool HasAuthorMismatch(this ITemplateMatchInfo templateMatchInfo)
         {

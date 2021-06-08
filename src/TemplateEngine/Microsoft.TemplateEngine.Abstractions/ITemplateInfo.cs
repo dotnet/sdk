@@ -31,8 +31,11 @@ namespace Microsoft.TemplateEngine.Abstractions
         IReadOnlyList<string> Classifications { get; }
 
         /// <summary>
-        /// Gets default name. It is used as source name, in case name and fallback name passed to <see cref=">TemplateCreator"/> is null.
+        /// Gets default name.
         /// </summary>
+        /// <remarks>
+        /// It is used as source name, in case name and fallback name passed to TemplateCreator is null.
+        /// </remarks>
         string? DefaultName { get; }
 
         /// <summary>

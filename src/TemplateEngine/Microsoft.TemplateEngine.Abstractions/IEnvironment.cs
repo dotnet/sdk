@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Abstractions
@@ -23,7 +24,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         int ConsoleBufferWidth { get; }
 
         /// <summary>
-        /// Replaces the name of each environment variable embedded in the specified string with the string equivalent of the value of the variable, then returns the resulting string. Equivalent to <see cref="Enrionment.ExpandEnvironmentVariables(String)"/>.
+        /// Replaces the name of each environment variable embedded in the specified string with the string equivalent of the value of the variable, then returns the resulting string. Equivalent to <see cref="Environment.ExpandEnvironmentVariables(string)"/>.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>

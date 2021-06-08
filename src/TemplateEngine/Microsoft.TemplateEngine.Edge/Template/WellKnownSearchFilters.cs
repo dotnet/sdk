@@ -83,7 +83,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         /// Creates predicate for matching the template and given tag value.
         /// If the template contains the tag <paramref name="tagFilter"/>, it is exact match, otherwise mismatch.
         /// If the template has no tags defined, it is a mismatch.
-        /// If <paramref name="tagFilter"/> is <see cref="null"/> or empty the method returns <see cref="null"/>.
+        /// If <paramref name="tagFilter"/> is <c>null</c> or empty the method returns <c>null</c>.
         /// </summary>
         /// <param name="tagFilter">tag to filter by.</param>
         /// <returns>A predicate that returns if the given template matches <paramref name="tagFilter"/>.</returns>

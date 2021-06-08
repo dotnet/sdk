@@ -76,6 +76,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// Same as <see cref="GetTemplatePackagesAsync"/> but filters only <see cref="IManagedTemplatePackage"/> packages.
         /// </summary>
         /// <param name="force">Useful when <see cref="IManagedTemplatePackage"/> doesn't trigger <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/> event.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the asynchronous operation.</param>
         /// <returns>The list of <see cref="IManagedTemplatePackage"/>.</returns>
         public async Task<IReadOnlyList<IManagedTemplatePackage>> GetManagedTemplatePackagesAsync(bool force, CancellationToken cancellationToken)
         {
@@ -90,6 +91,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// Note that specifying <paramref name="force"/> will only return responses from already loaded providers. To reload providers, instantiate new instance of the <see cref="TemplatePackageManager"/>.
         /// </summary>
         /// <param name="force">Useful when <see cref="ITemplatePackageProvider"/> doesn't trigger <see cref="ITemplatePackageProvider.TemplatePackagesChanged"/> event.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the asynchronous operation.</param>
         /// <returns>The list of <see cref="ITemplatePackage"/>s.</returns>
         public async Task<IReadOnlyList<ITemplatePackage>> GetTemplatePackagesAsync(bool force, CancellationToken cancellationToken)
         {
@@ -153,10 +155,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         /// <summary>
-        /// Gets the templates filtered using <paramref name="filters"/> and <paramref name="matchCriteria"/>.
+        /// Gets the templates filtered using <paramref name="filters"/> and <paramref name="matchFilter"/>.
         /// </summary>
         /// <param name="matchFilter">The criteria for <see cref="ITemplateMatchInfo"/> to be included to result collection.</param>
         /// <param name="filters">The list of filters to be applied to templates.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the asynchronous operation.</param>
         /// <returns>The filtered list of templates with match information.</returns>
         /// <example>
         /// <c>GetTemplatesAsync(WellKnownSearchFilters.MatchesAllCriteria, new [] { WellKnownSearchFilters.NameFilter("myname") }</c> - returns the templates which name or short name contains "myname". <br/>
@@ -195,9 +198,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// <summary>
         /// Returns all <see cref="ITemplateInfo"/> contained by <paramref name="templatePackage"/>.
         /// </summary>
-        /// <param name="templatePackage"></param>
-        /// <param name="settings"></param>
-        /// <returns></returns>
+        /// <param name="templatePackage">The template package to get template from.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the asynchronous operation.</param>
+        /// <returns>The enumerator to templates of the <paramref name="templatePackage"/>.</returns>
         public async Task<IEnumerable<ITemplateInfo>> GetTemplatesAsync(ITemplatePackage templatePackage, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();

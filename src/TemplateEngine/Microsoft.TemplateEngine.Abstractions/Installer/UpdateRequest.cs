@@ -11,6 +11,11 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// </summary>
     public sealed class UpdateRequest
     {
+        /// <summary>
+        /// Creates the instance of <see cref="UpdateRequest"/>.
+        /// </summary>
+        /// <param name="templatePackage">template package to update.</param>
+        /// <param name="targetVersion">target version.</param>
         public UpdateRequest(IManagedTemplatePackage templatePackage, string targetVersion)
         {
             TemplatePackage = templatePackage ?? throw new ArgumentNullException(nameof(templatePackage));
