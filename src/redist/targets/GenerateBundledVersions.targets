@@ -39,7 +39,7 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <_NET50RuntimePackVersion>5.0.5</_NET50RuntimePackVersion>
+      <_NET50RuntimePackVersion>5.0.7</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
       <_WindowsDesktop50RuntimePackVersion>5.0.5</_WindowsDesktop50RuntimePackVersion>
       <_WindowsDesktop50TargetingPackVersion>5.0.0</_WindowsDesktop50TargetingPackVersion>
@@ -49,7 +49,7 @@
       <_NETCoreApp30RuntimePackVersion>3.0.3</_NETCoreApp30RuntimePackVersion>
       <_NETCoreApp30TargetingPackVersion>3.0.0</_NETCoreApp30TargetingPackVersion>
 
-      <_NETCoreApp31RuntimePackVersion>3.1.14</_NETCoreApp31RuntimePackVersion>
+      <_NETCoreApp31RuntimePackVersion>3.1.16</_NETCoreApp31RuntimePackVersion>
       <_NETCoreApp31TargetingPackVersion>3.1.0</_NETCoreApp31TargetingPackVersion>
 
       <_WindowsDesktop30RuntimePackVersion>3.0.3</_WindowsDesktop30RuntimePackVersion>
