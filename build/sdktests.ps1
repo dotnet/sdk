@@ -41,7 +41,7 @@ if ($install)
 {
     foreach ( $name in $testNames )
     {
-        dotnet tool install -g "testSdk$name" --version $packageVersion --add-source https://dotnet.myget.org/F/dotnet-cli/api/v3/index.json
+        dotnet tool install -g "testSdk$name" --version $packageVersion
     }
 }
 
