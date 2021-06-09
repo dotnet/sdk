@@ -69,6 +69,16 @@ namespace Microsoft.DotNet.ValidationSuppression.Tests
             Assert.True(StringComparer.OrdinalIgnoreCase.Equals(engine.sampleSuppressionFile.Trim(), output.Trim()));
 
         }
+
+        [Fact]
+        public void SuppressionEngineSupportsGlobalCompare()
+        {
+            SuppressionEngine engine = SuppressionEngine.Create();
+            // Engine has a suppression with no left and no right. This should be treated global for any left and any right.
+            engine.AddSuppression("CP0001", "T:A.B");
+
+            Assert.True(engine.IsErrorSuppressed("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll"));
+        }
     }
 
     public class TestSuppressionEngine : SuppressionEngine

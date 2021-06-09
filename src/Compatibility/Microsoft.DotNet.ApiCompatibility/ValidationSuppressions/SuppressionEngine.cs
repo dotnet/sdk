@@ -60,7 +60,24 @@ namespace Microsoft.DotNet.ValidationSuppression
             _readerWriterLock.EnterReadLock();
             try
             {
-                return _validationSuppressions.Contains(error);
+                if(_validationSuppressions.Contains(error))
+                {
+                    return true;
+                }
+                else
+                {
+                    // See if the error is globally suppressed by checking if the same diagnosticid and target are entered
+                    // without any left and right.
+                    if ((error.DiagnosticId == null || !error.DiagnosticId.StartsWith("pkv", StringComparison.InvariantCultureIgnoreCase)) 
+                        && _validationSuppressions.Contains(new Suppression { DiagnosticId = error.DiagnosticId, Target = error.Target }))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
             }
             finally
             {
