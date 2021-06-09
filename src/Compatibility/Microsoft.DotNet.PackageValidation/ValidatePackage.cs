@@ -38,6 +38,11 @@ namespace Microsoft.DotNet.PackageValidation
                 Package baselinePackage = NupkgParser.CreatePackage(BaselinePackageTargetPath, runtimeGraph);
                 new BaselinePackageValidator(baselinePackage, NoWarn, null, RunApiCompat, logger).Validate(package);
             }
+
+            if (!Log.HasLoggedErrors)
+            {
+                Log.LogMessage(MessageImportance.High, Resources.SuccessfulPackageRun);
+            }
         }
     }
 }

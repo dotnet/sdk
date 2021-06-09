@@ -15,7 +15,8 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         {
             // clearing the cache
             string localSdkNugetCacheValidationPath = Path.Combine(TestContext.Current.NuGetCachePath, "microsoft.dotnet.packagevalidation");
-            Directory.Delete(localSdkNugetCacheValidationPath, recursive: true);
+            if (Directory.Exists(localSdkNugetCacheValidationPath))
+                Directory.Delete(localSdkNugetCacheValidationPath, recursive: true);
 
             // Packing and copying the local version package validation
             string packageValidationProjectPath = Path.Combine(Path.GetDirectoryName(_testAssetsManager.TestAssetsRoot), "Compatibility", "Microsoft.DotNet.PackageValidation", "Microsoft.DotNet.PackageValidation.csproj");
@@ -33,8 +34,8 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             var result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
                 .Execute();
 
-            // No failures while running the package validation on a simple assembly.
             Assert.Equal(0, result.ExitCode);
+            Assert.Contains(Resources.SuccessfulPackageRun, result.StdOut);
         }
 
         [Fact]
@@ -53,8 +54,8 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
                 .Execute($"-p:PackageVersion=2.0.0;PackageValidationBaselinePath={packageValidationBaselinePath}");
 
-            // No failures while running the package validation on a simple assembly with baseline flag.
             Assert.Equal(0, result.ExitCode);
+            Assert.Contains(Resources.SuccessfulPackageRun, result.StdOut);
         }
 
         [Fact]
@@ -72,8 +73,8 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
                 .Execute($"-p:PackageVersion=2.0.0;PackageValidationBaselineVersion=1.0.0");
 
-            // No failures while running the package validation on a simple assembly with PackageValidationBaselineVersion flag.
             Assert.Equal(0, result.ExitCode);
+            Assert.Contains(Resources.SuccessfulPackageRun, result.StdOut);
         }
 
 
@@ -90,6 +91,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
 
             Assert.Equal(1, result.ExitCode);
             Assert.Contains($"{nonExistentPackageBaselinePath} does not exist. Please check the PackageValidationBaselinePath or PackageValidationBaselineVersion.", result.StdOut);
+            Assert.DoesNotContain(Resources.SuccessfulPackageRun, result.StdOut);
         }
     }
 }

@@ -67,6 +67,11 @@
         <target state="new">Package '{0}' not found. Please provide a valid package path.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SuccessfulPackageRun">
+        <source>Package validation ran successfully.</source>
+        <target state="new">Package validation ran successfully.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
