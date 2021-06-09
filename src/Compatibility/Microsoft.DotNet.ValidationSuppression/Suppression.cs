@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.DotNet.ValidationSuppression
 {
@@ -31,24 +32,31 @@ namespace Microsoft.DotNet.ValidationSuppression
         public string? Right { get; set; }
 
         /// <inheritdoc/>
-        public bool Equals(Suppression other)
+        public bool Equals(Suppression? other)
         {
-            if (DiagnosticId != null && !DiagnosticId.Equals(other.DiagnosticId, StringComparison.InvariantCultureIgnoreCase))
+            if (other == null)
             {
                 return false;
             }
 
-            if (Target != null && !Target.Equals(other.Target, StringComparison.InvariantCultureIgnoreCase))
+            StringComparer stringComparer = StringComparer.Create(CultureInfo.InvariantCulture, ignoreCase: true);
+
+            if ((!string.IsNullOrEmpty(DiagnosticId?.Trim()) || !string.IsNullOrEmpty(other.DiagnosticId?.Trim())) && !stringComparer.Equals(DiagnosticId?.Trim(), other.DiagnosticId?.Trim()))
             {
                 return false;
             }
 
-            if (Left != null && !Left.Equals(other.Left, StringComparison.InvariantCultureIgnoreCase))
+            if ((!string.IsNullOrEmpty(Target?.Trim()) || !string.IsNullOrEmpty(other.Target?.Trim())) && !stringComparer.Equals(Target?.Trim(), other.Target?.Trim()))
             {
                 return false;
             }
 
-            if (Right != null && !Right.Equals(other.Right, StringComparison.InvariantCultureIgnoreCase))
+            if ((!string.IsNullOrEmpty(Left?.Trim()) || !string.IsNullOrEmpty(other.Left?.Trim())) && !stringComparer.Equals(Left?.Trim(), other.Left?.Trim()))
+            {
+                return false;
+            }
+
+            if ((!string.IsNullOrEmpty(Right?.Trim()) || !string.IsNullOrEmpty(other.Right?.Trim())) && !stringComparer.Equals(Right?.Trim(), other.Right?.Trim()))
             {
                 return false;
             }

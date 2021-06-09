@@ -16,15 +16,15 @@ namespace Microsoft.DotNet.ValidationSuppression
     /// </summary>
     public class SuppressionEngine
     {
-        private HashSet<Suppression> _validationSuppressions;
+        protected HashSet<Suppression> _validationSuppressions;
         private ReaderWriterLockSlim _readerWriterLock = new();
 
-        private SuppressionEngine(string validationSuppressionFile)
+        protected SuppressionEngine(string validationSuppressionFile)
         {
             _validationSuppressions = ParseValidationSuppressionBaseline(validationSuppressionFile);
         }
 
-        private SuppressionEngine()
+        protected SuppressionEngine()
         {
             _validationSuppressions = new HashSet<Suppression>(new SuppressionComparer());
         }
@@ -122,18 +122,24 @@ namespace Microsoft.DotNet.ValidationSuppression
         {
             XmlSerializer serializer = new XmlSerializer(typeof(Suppression[]));
 
-            using (Stream writer = new FileStream(validationSuppressionFile, FileMode.OpenOrCreate))
+            using (Stream writer = GetWritableStream(validationSuppressionFile))
             {
                 _readerWriterLock.EnterReadLock();
                 try
                 {
                     serializer.Serialize(writer, _validationSuppressions.ToArray());
+                    AfterWrittingSuppressionsCallback(writer);
                 }
                 finally
                 {
                     _readerWriterLock.ExitReadLock();
                 }
             }
+        }
+
+        protected virtual void AfterWrittingSuppressionsCallback(Stream stream)
+        {
+            // Do nothing. Used for tests.
         }
 
         /// <summary>
@@ -157,7 +163,7 @@ namespace Microsoft.DotNet.ValidationSuppression
             try
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(Suppression[]));
-                using (Stream reader = new FileStream(baselineFile, FileMode.Open))
+                using (Stream reader = GetReadableStream(baselineFile))
                 {
                     Suppression[]? deserializedSuppressions = serializer.Deserialize(reader) as Suppression[];
                     if (deserializedSuppressions == null)
@@ -176,5 +182,9 @@ namespace Microsoft.DotNet.ValidationSuppression
             }
             return result;
         }
+
+        protected virtual Stream GetReadableStream(string baselineFile) => new FileStream(baselineFile, FileMode.Open);
+
+        protected virtual Stream GetWritableStream(string validationSuppressionFile) => new FileStream(validationSuppressionFile, FileMode.OpenOrCreate);
     }
 }

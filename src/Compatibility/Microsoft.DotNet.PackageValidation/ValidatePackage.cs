@@ -29,8 +29,6 @@ namespace Microsoft.DotNet.PackageValidation
 
         protected override void ExecuteCore()
         {
-            Debugger.Launch();
-            
             RuntimeGraph runtimeGraph = null;
             if (!string.IsNullOrEmpty(RuntimeGraph))
             {

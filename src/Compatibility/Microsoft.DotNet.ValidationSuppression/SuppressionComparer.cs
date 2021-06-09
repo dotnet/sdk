@@ -15,6 +15,6 @@ namespace Microsoft.DotNet.ValidationSuppression
         public bool Equals(Suppression x, Suppression y) => x.Equals(y);
 
         /// <inheritdoc/>
-        public int GetHashCode(Suppression obj) => HashCode.Combine(obj.DiagnosticId, obj.Target, obj.Left, obj.Right);
+        public int GetHashCode(Suppression obj) => HashCode.Combine(obj.DiagnosticId?.ToLowerInvariant(), obj.Target?.ToLowerInvariant(), obj.Left?.ToLowerInvariant(), obj.Right?.ToLowerInvariant());
     }
 }
