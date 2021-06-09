@@ -8,8 +8,6 @@ packageVersion=2.1.400-preview-63001-03
 tests=Build,Clean,Pack,Perf,Publish,Rebuild,Restore,ToolPack
 additionalargs=()
 
-packageSource=https://dotnet.myget.org/F/dotnet-cli/api/v3/index.json
-
 while (($# > 0)); do
   lowerI="$(echo "$1" | awk '{print tolower($0)}')"
   case $lowerI in
@@ -54,7 +52,7 @@ if [ "$install" = true ]; then
     for name in "${testsArray[@]}"
     do :
         echo Installing "$name"
-        dotnet tool install -g "testSdk$name" --version "$packageVersion" --add-source "$packageSource"
+        dotnet tool install -g "testSdk$name" --version "$packageVersion"
     done
 fi
 
