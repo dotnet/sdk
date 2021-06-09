@@ -11,8 +11,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
-
-    <ProjectReference Include="..\Microsoft.DotNet.ValidationSuppression\Microsoft.DotNet.ValidationSuppression.csproj" />
   </ItemGroup>
 
   <ItemGroup>
