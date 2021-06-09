@@ -481,7 +481,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
             var testAsset = _testAssetsManager
-                .CopyTestAsset(testAssetName, identifier: Path.GetRandomFileName())
+                .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource();
 
             var publishCommand = new PublishCommand(testAsset, "App");
@@ -504,7 +504,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
             var testAsset = _testAssetsManager
-                .CopyTestAsset(testAssetName, identifier: Path.GetRandomFileName())
+                .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource();
 
             var publishCommand = new PublishCommand(testAsset, "App");
@@ -524,7 +524,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
             var testAsset = _testAssetsManager
-                .CopyTestAsset(testAssetName, identifier: Path.GetRandomFileName())
+                .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource()
                 .WithProjectChanges(project => {
                     SetMetadata(project, "PackageReference", "TrimmerSingleWarn", "false");
@@ -906,7 +906,7 @@ namespace Microsoft.NET.Publish.Tests
             var referenceProjectName = "ClassLibForILLink";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName, referenceProjectIdentifier: targetFramework);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
@@ -1674,7 +1674,7 @@ public static class UnusedNonTrimmableAssembly
             string referenceProjectName = null,
             bool usePackageReference = true,
             [CallerMemberName] string callingMethod = "",
-            string referenceProjectIdentifier = "",
+            string referenceProjectIdentifier = null,
             Action<TestProject> modifyReferencedProject = null,
             bool addAssemblyReference = false)
         {
@@ -1763,7 +1763,7 @@ public class ClassLib
 
             if (usePackageReference)
             {
-                var packageReference = GetPackageReference(referenceProject, callingMethod, referenceProjectIdentifier);
+                var packageReference = GetPackageReference(referenceProject, callingMethod, referenceProjectIdentifier ?? targetFramework);
                 testProject.PackageReferences.Add(packageReference);
                 testProject.AdditionalProperties.Add(
                     "RestoreAdditionalProjectSources",
