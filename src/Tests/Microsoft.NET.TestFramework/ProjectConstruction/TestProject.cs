@@ -192,7 +192,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                     new XAttribute("Include", $"Microsoft.NETFramework.ReferenceAssemblies"),
                     new XAttribute("Version", $"1.0.0-preview.2")));
 
-                propertyGroup.Add(new XElement(ns + "RestoreAdditionalProjectSources", "$(RestoreAdditionalProjectSources);https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json"));
+                propertyGroup.Add(new XElement(ns + "RestoreAdditionalProjectSources", "$(RestoreAdditionalProjectSources)"));
             }
 
             var targetFrameworks = IsSdkProject ? TargetFrameworks.Split(';') : new[] { "net" };
