@@ -244,7 +244,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [MemberData(nameof(LatestTfm), MemberType = typeof(PublishTestUtils))]
+        [InlineData(nameof(LatestTfm))]
         public void ILLink_respects_TrimmableAssembly(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -344,7 +344,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [MemberData(nameof(Latest), MemberType = typeof(PublishTestUtils))]
+        [InlineData(nameof(LatestTfm))]
         public void ILLink_can_set_TrimmerDefaultAction(string targetFramework)
         {
             string projectName = "HelloWorld";
@@ -456,8 +456,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("net5.0")]
-        [InlineData(LatestTfm)]
+        [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_accepts_option_to_enable_analysis_warnings_without_PublishTrimmed(string targetFramework)
         {
             var projectName = "AnalysisWarnings";
@@ -475,7 +474,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [MemberData(nameof(LatestTfm), MemberType = typeof(PublishTestUtils))]
+        [InlineData(nameof(LatestTfm))]
         public void ILLink_shows_single_warning_for_packagereferences_only(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -498,7 +497,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [MemberData(nameof(LatestTfm), MemberType = typeof(PublishTestUtils))]
+        [InlineData(nameof(LatestTfm))]
         public void ILLink_accepts_option_to_show_all_warnings(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -518,7 +517,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [MemberData(nameof(LatestTfm), MemberType = typeof(PublishTestUtils))]
+        [InlineData(nameof(LatestTfm))]
         public void ILLink_can_show_single_warning_per_assembly(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -581,7 +580,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [MemberData(nameof(LatestTfm), MemberType = typeof(PublishTestUtils))]
+        [InlineData(nameof(LatestTfm))]
         public void ILLink_verify_analysis_warnings_hello_world_app_trim_mode_copyused(string targetFramework)
         {
             var projectName = "AnalysisWarningsOnHelloWorldApp";
