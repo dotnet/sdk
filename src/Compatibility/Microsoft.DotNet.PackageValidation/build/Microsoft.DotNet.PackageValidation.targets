@@ -16,6 +16,8 @@
 
     <PropertyGroup >
       <PackageValidationBaselinePath Condition="'$(PackageValidationBaselinePath)' == '' and '$(PackageValidationBaselineVersion)' != ''">$([MSBuild]::NormalizePath('$(NuGetPackageRoot)', '$(PackageValidationBaselineName.ToLower())', '$(PackageValidationBaselineVersion)', '$(PackageValidationBaselineName.ToLower()).$(PackageValidationBaselineVersion).nupkg'))</PackageValidationBaselinePath>
+      <BaselineAllPackageValidationErrors Condition="'$(BaselineAllPackageValidationErrors)' == ''">false</BaselineAllPackageValidationErrors>
+      <PackageValidationSuppressionBaselinePath Condition="'$(PackageValidationSuppressionBaselinePath)' == ''">$(IntermediateOutputPath)PackageValidationSuppressions.xml</PackageValidationSuppressionBaselinePath>
     </PropertyGroup>
 
     <Error Condition="'$(PackageValidationBaselinePath)' != '' and !Exists('$(PackageValidationBaselinePath)')" Text="$(PackageValidationBaselinePath) does not exist. Please check the PackageValidationBaselinePath or PackageValidationBaselineVersion." />
@@ -26,6 +28,8 @@
       RuntimeGraph="$(RuntimeIdentifierGraphPath)"
       NoWarn="$(NoWarn)"
       RunApiCompat="$([MSBuild]::ValueOrDefault('$(RunApiCompat)', 'true'))"
+      BaselineAllValidationErrors="$(BaselineAllPackageValidationErrors)"
+      ValidationSuppressionBaselinePath="$(PackageValidationSuppressionBaselinePath)"
       BaselinePackageTargetPath="$(PackageValidationBaselinePath)" />
   </Target>
 </Project>

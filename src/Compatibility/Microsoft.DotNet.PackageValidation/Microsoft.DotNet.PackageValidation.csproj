@@ -19,6 +19,7 @@
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageReference Include="NuGet.Protocol" Version="$(NuGetBuildTasksPackageVersion)" />
     <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.ValidationSuppression\Microsoft.DotNet.ValidationSuppression.csproj" />
   </ItemGroup>
 
   <ItemGroup>

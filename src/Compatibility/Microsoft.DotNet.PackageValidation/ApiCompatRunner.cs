@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using Microsoft.Build.Framework;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ValidationSuppression;
 
 namespace Microsoft.DotNet.PackageValidation
 {
@@ -41,17 +43,31 @@ namespace Microsoft.DotNet.PackageValidation
                     IAssemblySymbol leftSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName, leftAssemblyStream);
                     IAssemblySymbol rightSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName, rightAssemblyStream);
 
-                    IEnumerable<CompatDifference> differences = _differ.GetDifferences(leftSymbols, rightSymbols);
+                    _log.LogMessage(MessageImportance.Low, apicompatTuples.header);
 
-                    if (differences.Any())
-                    {
-                        _log.LogError(null, apicompatTuples.compatibilityReason);
-                        _log.LogError(null, apicompatTuples.header);
-                    }
+                    IEnumerable<CompatDifference> differences = _differ.GetDifferences(leftSymbols, rightSymbols);
 
                     foreach (CompatDifference difference in differences)
                     {
-                        _log.LogError(difference.DiagnosticId, difference.Message);
+                        // Only include package version when comparing assets from different packages.
+                        string leftOperand = apicompatTuples.leftAssemblyRelativePath;
+                        string rightOperand = apicompatTuples.rightAssemblyRelativePath;
+                        if (!apicompatTuples.leftAssemblyPackagePath.Equals(apicompatTuples.rightAssemblyPackagePath, System.StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            leftOperand = $"[{Path.GetFileNameWithoutExtension(apicompatTuples.leftAssemblyPackagePath)}]{leftOperand}";
+                            rightOperand = $"[{Path.GetFileNameWithoutExtension(apicompatTuples.rightAssemblyPackagePath)}]{rightOperand}";
+                        }
+
+                        _log.LogError(
+                            new Suppression
+                            {
+                                DiagnosticId = difference.DiagnosticId,
+                                Target = difference.ReferenceId,
+                                Left = leftOperand,
+                                Right = rightOperand
+                            },
+                            difference.DiagnosticId,
+                            difference.Message);
                     }
                 }
             }

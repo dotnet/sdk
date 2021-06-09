@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.DotNet.ValidationSuppression;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
