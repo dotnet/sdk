@@ -481,7 +481,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
             var testAsset = _testAssetsManager
-                .CopyTestAsset(testAssetName)
+                .CopyTestAsset(testAssetName, identifier: Path.GetRandomFileName())
                 .WithSource();
 
             var publishCommand = new PublishCommand(testAsset, "App");
@@ -504,7 +504,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
             var testAsset = _testAssetsManager
-                .CopyTestAsset(testAssetName)
+                .CopyTestAsset(testAssetName, identifier: Path.GetRandomFileName())
                 .WithSource();
 
             var publishCommand = new PublishCommand(testAsset, "App");
@@ -524,7 +524,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
             var testAsset = _testAssetsManager
-                .CopyTestAsset(testAssetName)
+                .CopyTestAsset(testAssetName, identifier: Path.GetRandomFileName())
                 .WithSource()
                 .WithProjectChanges(project => {
                     SetMetadata(project, "PackageReference", "TrimmerSingleWarn", "false");
