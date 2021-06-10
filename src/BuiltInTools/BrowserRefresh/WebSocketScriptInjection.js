@@ -38,6 +38,7 @@ setTimeout(async function () {
         'BlazorHotReloadDeltav1': () => applyBlazorDeltas(payload.deltas),
         'HotReloadDiagnosticsv1': () => displayDiagnostics(payload.diagnostics),
         'HotReloadApplied': () => notifyHotReloadApplied(),
+        'BlazorRequestApplyUpdateCapabilities': getBlazorWasmApplyUpdateCapabilities,
       };
 
       if (payload.type && action.hasOwnProperty(payload.type)) {
@@ -83,6 +84,12 @@ setTimeout(async function () {
       .forEach(e => updateCssElement(e));
   }
 
+  function getBlazorWasmApplyUpdateCapabilities() {
+    const applyUpdateCapabilities = window.Blazor._internal.HotReload.getApplyUpdateCapabilities();
+    console.debug(`Apply update capabilities: ${applyUpdateCapabilities}`);
+    connection.send(applyUpdateCapabilities);
+  }
+
   function updateCssElement(styleElement) {
     if (!styleElement || styleElement.loading) {
       // A file change notification may be triggered for the same file before the browser
@@ -108,7 +115,7 @@ setTimeout(async function () {
     let applyFailed = false;
     deltas.forEach(d => {
       try {
-        window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta)
+        window.Blazor._internal.HotReload.applyDelta(d.moduleId, d.metadataDelta, d.ilDelta)
       } catch (error) {
         console.warn(error);
         applyFailed = true;
