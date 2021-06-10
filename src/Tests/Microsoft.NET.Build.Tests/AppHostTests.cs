@@ -94,6 +94,55 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
+        [PlatformSpecificFact(TestPlatforms.OSX)]
+        public void It_can_disable_codesign_if_opt_out()
+        {
+            var targetFramework = "net6.0";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute(new string[] {
+                    "/p:_EnableMacOSCodeSign=false",
+                    "/p:UseAppHost=true"
+                })
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
+            var hostExecutable = $"HelloWorld{Constants.ExeSuffix}";
+            var appHostFullPath = Path.Combine(outputDirectory.FullName, hostExecutable);
+
+            // Check that the apphost was not signed
+            var psi = new ProcessStartInfo()
+            {
+                Arguments = $"-d {appHostFullPath}",
+                FileName = @"/usr/bin/codesign",
+                RedirectStandardError = true
+            };
+
+            using (var codesign = Process.Start(psi))
+            {
+                codesign.Start();
+                codesign.StandardError.ReadToEnd()
+                    .Should().Contain($"{appHostFullPath}: code object is not signed at all");
+                codesign.WaitForExit();
+            }
+
+            // Starting in .NET 6.0 prev5, runtimeconfig.dev.json is no longer
+            // produced by default.
+            outputDirectory.Should().OnlyHaveFiles(new[] {
+                hostExecutable,
+                "HelloWorld.dll",
+                "HelloWorld.pdb",
+                "HelloWorld.deps.json",
+                "HelloWorld.runtimeconfig.json",
+            });
+        }
+
         [Theory]
         [InlineData("netcoreapp2.1")]
         [InlineData("netcoreapp2.2")]

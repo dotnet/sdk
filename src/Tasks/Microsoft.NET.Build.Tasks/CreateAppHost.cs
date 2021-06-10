@@ -47,6 +47,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public int RetryDelayMilliseconds { get; set; } = DefaultRetryDelayMilliseconds;
 
+        public bool EnableMacOSCodeSign { get; set; } = false;
+
         protected override void ExecuteCore()
         {
             try
@@ -110,6 +112,10 @@ namespace Microsoft.NET.Build.Tasks
             catch (AppNameTooLongException ex)
             {
                 throw new BuildErrorException(Strings.FileNameIsTooLong, ex.LongName);
+            }
+            catch (AppHostSigningException ex)
+            {
+                throw new BuildErrorException(Strings.AppHostSigningFailed, ex.Message);
             }
             catch (PlaceHolderNotFoundInAppHostException ex)
             {
