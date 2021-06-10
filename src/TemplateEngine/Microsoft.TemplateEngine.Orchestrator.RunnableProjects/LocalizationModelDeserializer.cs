@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Newtonsoft.Json.Linq;
 
@@ -19,11 +20,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         private const char KeySeparator = '/';
 
-        public static ILocalizationModel Deserialize(JObject data)
+        /// <summary>
+        /// Deserializes the given localization file into an <see cref="ILocalizationModel"/>.
+        /// </summary>
+        /// <param name="file">File to be deserialized.</param>
+        /// <returns>loaded localization model.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="file"/> is null.</exception>
+        /// <exception cref="Exception">The file does not contain valid JSON data, JSON data contains element other than strings.</exception>
+        public static ILocalizationModel Deserialize(IFile file)
         {
+            _ = file ?? throw new ArgumentNullException(nameof(file));
+
+            JObject srcObject = file.ReadJObjectFromIFile();
             var parameterLocalizations = new Dictionary<string, ParameterSymbolLocalizationModel>();
 
-            List<(string Key, string Value)> localizedStrings = data.Properties()
+            List<(string Key, string Value)> localizedStrings = srcObject.Properties()
                 .Select(p => p.Value.Type == JTokenType.String ? (p.Name, p.Value.ToString()) : throw new Exception(LocalizableStrings.Authoring_InvalidJsonElementInLocalizationFile))
                 .ToList();
 

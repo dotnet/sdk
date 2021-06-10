@@ -98,7 +98,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 ";
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             JObject configJson = JObject.Parse(configContent);
-            SimpleConfigModel config = SimpleConfigModel.FromJObject(environment, configJson);
+            SimpleConfigModel config = new SimpleConfigModel(environment, configJson);
             Assert.Equal(2, config.SymbolFilenameReplacements.Count);
             Assert.Equal("testparamfilereplacement", config.SymbolFilenameReplacements.Single(x => x.VariableName.Contains("testparam")).OriginalValue.Value);
             Assert.Equal("testgeneratedfilereplacement", config.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
@@ -148,7 +148,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 }";
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             JObject configJson = JObject.Parse(configContent);
-            SimpleConfigModel config = SimpleConfigModel.FromJObject(environment, configJson);
+            SimpleConfigModel config = new SimpleConfigModel(environment, configJson);
             Assert.Equal(4, config.SymbolFilenameReplacements.Count);
             Assert.Equal(3, config.SymbolFilenameReplacements.Count(x => x.VariableName.Contains("testparam")));
             Assert.Equal("TestParamFileReplacement", config.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}identity").OriginalValue.Value);
@@ -178,7 +178,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(SimpleConfigModel.FromJObject(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -222,7 +222,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(SimpleConfigModel.FromJObject(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -276,7 +276,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(SimpleConfigModel.FromJObject(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -336,7 +336,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(SimpleConfigModel.FromJObject(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -388,7 +388,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(SimpleConfigModel.FromJObject(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -432,7 +432,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(SimpleConfigModel.FromJObject(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"

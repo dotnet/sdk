@@ -3,19 +3,19 @@
   <file datatype="xml" source-language="en" target-language="de" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">
-        <source>"templatestrings.json" file should only contain elements with type "string". Remove elements that are not strings.</source>
-        <target state="new">"templatestrings.json" file should only contain elements with type "string". Remove elements that are not strings.</target>
+        <source>Localization file should only contain elements with type 'string'. Remove elements that are not strings.</source>
+        <target state="new">Localization file should only contain elements with type 'string'. Remove elements that are not strings.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_InvalidManualInstructionLocalizationIndex">
-        <source>In templatestrings.json file under the post action with "id" "{1}", there are localized strings for manual instruction(s) with ids "{0}". These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file.</source>
-        <target state="new">In templatestrings.json file under the post action with "id" "{1}", there are localized strings for manual instruction(s) with ids "{0}". These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file.</target>
+        <source>In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</source>
+        <target state="new">In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".
 {1} is a single-word identifier string. Such as "myPostAction".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">
-        <source>Post action(s) with id(s) "{0}" specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file.</source>
-        <target state="new">Post action(s) with id(s) "{0}" specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file.</target>
+        <source>Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</source>
+        <target state="new">Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidRegex">
@@ -24,20 +24,19 @@
         <note />
       </trans-unit>
       <trans-unit id="Authoring_MalformedPostActionManualInstructions">
-        <source>One or more postActions have a malformed or missing manualInstructions value in '{0}'</source>
-        <target state="translated">Eine oder mehrere postActions weisen einen nicht wohlgeformten oder fehlenden "manualInstructions"-Wert in "{0}" auf.</target>
+        <source>One or more postActions have a malformed or missing manualInstructions value.</source>
+        <target state="new">One or more postActions have a malformed or missing manualInstructions value.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_ManualInstructionIdIsNotUnique">
-        <source>Id of the manual instruction "{0}" at index {1} under post action "{2}" is not unique. Only the first manual instruction that uses this Id will be localized.</source>
-        <target state="new">Id of the manual instruction "{0}" at index {1} under post action "{2}" is not unique. Only the first manual instruction that uses this Id will be localized.</target>
+        <source>'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</source>
+        <target state="new">'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</target>
         <note>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
-{1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".
-{2} is any identifier string that user provided in the file or a whole number. Such as: myPostAction, firstPostAction, postAction1, 5, 0 etc.</note>
+{1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_MissingValue">
-        <source>Missing '{0}' in '{1}'</source>
-        <target state="translated">"{0}" fehlt in "{1}"</target>
+        <source>Missing '{0}'.</source>
+        <target state="new">Missing '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_NonBoolDataTypeForRegexMatch">
@@ -46,54 +45,92 @@
         <note />
       </trans-unit>
       <trans-unit id="Authoring_PostActionIdIsNotUnique">
-        <source>Id of the post action "{0}" at index {1} is not unique. Only the first post action that uses this Id will be localized.</source>
-        <target state="new">Id of the post action "{0}" at index {1} is not unique. Only the first post action that uses this Id will be localized.</target>
+        <source>[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</source>
+        <target state="new">[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</target>
         <note>{0} is any identifier string that user provided in the file. Such as "myPostAction", "firstPostAction", "postAction1" etc.
 {1} is a number representing the zero-based index of the post action. Such as "5", or "0".</note>
       </trans-unit>
+      <trans-unit id="Authoring_PostActionMustHaveActionId">
+        <source>[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</source>
+        <target state="new">[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</target>
+        <note>{0} is a whole number representing the zero-based index of the post action. Such as "5" or "0".
+Do not localize: actionId</note>
+      </trans-unit>
       <trans-unit id="Authoring_SourceDoesNotExist">
-        <source>    Source '{0}' in template does not exist.</source>
-        <target state="translated">    Die Quelle "{0}" in der Vorlage ist nicht vorhanden.</target>
+        <source>Source '{0}' in template does not exist.</source>
+        <target state="needs-review-translation">    Die Quelle "{0}" in der Vorlage ist nicht vorhanden.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceIsOutsideInstallSource">
-        <source>    Source location '{0}' is outside the specified install source location.</source>
-        <target state="translated">    Der Quellspeicherort "{0}" liegt außerhalb des angegebenen Speicherorts der Installationsquelle.</target>
+        <source>Source location '{0}' is outside the specified install source location.</source>
+        <target state="needs-review-translation">    Der Quellspeicherort "{0}" liegt außerhalb des angegebenen Speicherorts der Installationsquelle.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceMustBeDirectory">
-        <source>    Source must be a directory, but '{0}' is a file.</source>
-        <target state="translated">    Die Quelle muss ein Verzeichnis sein, aber "{0}" ist eine Datei.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Authoring_SourcePathRelativeToInstall">
-        <source>    Source path relative to install location: '{0}'</source>
-        <target state="translated">    Quellpfad relativ zum Installationsspeicherort: "{0}"</target>
+        <source>Source must be a directory, but '{0}' is a file.</source>
+        <target state="needs-review-translation">    Die Quelle muss ein Verzeichnis sein, aber "{0}" ist eine Datei.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateMissingCommonInformation">
-        <source>'{0}' is missing common information</source>
-        <target state="translated">In "{0}" fehlen allgemeine Informationen.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Authoring_TemplateNameDisplay">
-        <source>Template: '{0}'</source>
-        <target state="translated">Vorlage: "{0}"</target>
-        <note />
+        <source>The template configuration {0} is missing common information:</source>
+        <target state="needs-review-translation">In "{0}" fehlen allgemeine Informationen.</target>
+        <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled">
         <source>Failed to load template from {0}:</source>
         <target state="needs-review-translation">"{0}" wurde nicht geladen</target>
-        <note>{0} is uri of template location.</note>
+        <note>{0} is template configuration location.</note>
+      </trans-unit>
+      <trans-unit id="Authoring_TemplateNotInstalled_Message">
+        <source>Failed to load template from {0}.
+Details: {1}</source>
+        <target state="new">Failed to load template from {0}.
+Details: {1}</target>
+        <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateRootOutsideInstallSource">
-        <source>Template: '{0}' - Template root is outside the specified install source location.</source>
-        <target state="translated">Vorlage: "{0}" – Der Vorlagenstamm liegt außerhalb des angegebenen Speicherorts der Installationsquelle.</target>
+        <source>The template root is outside the specified install source location.</source>
+        <target state="new">The template root is outside the specified install source location.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Authoring_TemplateSourceRoot">
-        <source>    TemplateSourceRoot = '{0}'</source>
-        <target state="translated">    TemplateSourceRoot = "{0}"</target>
+      <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
+        <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
+        <target state="new">Failed to read parse localization file {0}, it will be skipped from further processing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunnableProjectGenerator_Exception_ConfigShouldBeFile">
+        <source>Template configuration must be a file, but {0} is not a file.</source>
+        <target state="new">Template configuration must be a file, but {0} is not a file.</target>
+        <note>{0} is template configuration location.</note>
+      </trans-unit>
+      <trans-unit id="RunnableProjectGenerator_Exception_LocaleConfigShouldBeFile">
+        <source>Template localization configuration must be a file, but {0} is not a file.</source>
+        <target state="new">Template localization configuration must be a file, but {0} is not a file.</target>
+        <note>{0} is template localization configuration location.</note>
+      </trans-unit>
+      <trans-unit id="RunnableProjectGenerator_Exception_TemplateValidationFailed">
+        <source>The template configuration {0} is not valid.</source>
+        <target state="new">The template configuration {0} is not valid.</target>
+        <note>{0} is template configuration location.</note>
+      </trans-unit>
+      <trans-unit id="RunnableProjectGenerator_Exception_TemplateVersionNotSupported">
+        <source>The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</source>
+        <target state="new">The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunnableProjectGenerator_Warning_LocFileSkipped">
+        <source>Localization file {0} is not compatible with base configuration {1}, and will be skipped.</source>
+        <target state="new">Localization file {0} is not compatible with base configuration {1}, and will be skipped.</target>
+        <note>{0} and {1} are template configuration locations.</note>
+      </trans-unit>
+      <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound">
+        <source>Failed to load additional configuration file {0}, the file does not exist.</source>
+        <target state="new">Failed to load additional configuration file {0}, the file does not exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName">
+        <source>Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</source>
+        <target state="new">Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</target>
         <note />
       </trans-unit>
     </body>

@@ -108,8 +108,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
 
             IRunnableProjectConfig runnableConfig = TemplateConfigTestHelpers.ConfigFromSource(_environmentSettings, SourceMountPoint);
-            IFileSystemInfo configFileInfo = TemplateConfigTestHelpers.ConfigFileSystemInfo(SourceMountPoint, _configFile);
-            runnableConfig.Evaluate(parameters, variables, configFileInfo);
+            runnableConfig.Evaluate(parameters, variables);
 
             MockGlobalRunSpec runSpec = new MockGlobalRunSpec();
             runSpec.RootVariableCollection = variables;
@@ -139,8 +138,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
 
             IRunnableProjectConfig runnableConfig = TemplateConfigTestHelpers.ConfigFromSource(_environmentSettings, SourceMountPoint);
-            IFileSystemInfo configFileInfo = TemplateConfigTestHelpers.ConfigFileSystemInfo(SourceMountPoint, _configFile);
-            runnableConfig.Evaluate(parameters, variables, configFileInfo);
+            runnableConfig.Evaluate(parameters, variables);
 
             MockGlobalRunSpec runSpec = new MockGlobalRunSpec();
             IDirectory sourceDir = SourceMountPoint.DirectoryInfo("/");

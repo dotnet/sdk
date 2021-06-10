@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Newtonsoft.Json.Linq;
 
@@ -11,51 +10,52 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 {
     internal abstract class BaseValueSymbol : ISymbolModel
     {
-        public string Binding { get; set; }
+        protected BaseValueSymbol() { }
 
-        public string Type { get; protected set; }
-
-        public string Replaces { get; set; }
-
-        public string FileRename { get; set; }
-
-        public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
-
-        internal string DefaultValue { get; set; }
-
-        internal SymbolValueFormsModel Forms { get; set; }
-
-        internal bool IsRequired { get; set; }
-
-        internal string DataType { get; set; }
-
-        protected static T FromJObject<T>(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
-            where T : BaseValueSymbol, new()
+        /// <summary>
+        /// Initializes this instance with given JSON data.
+        /// </summary>
+        /// <param name="jObject"></param>
+        /// <param name="defaultOverride"></param>
+        protected BaseValueSymbol(JObject jObject, string defaultOverride)
         {
-            T symbol = new T
-            {
-                Binding = jObject.ToString(nameof(Binding)),
-                DefaultValue = defaultOverride ?? jObject.ToString(nameof(DefaultValue)),
-                FileRename = jObject.ToString(nameof(FileRename)),
-                IsRequired = jObject.ToBool(nameof(IsRequired)),
-                Type = jObject.ToString(nameof(Type)),
-                Replaces = jObject.ToString(nameof(Replaces)),
-                DataType = jObject.ToString(nameof(DataType)),
-                ReplacementContexts = SymbolModelConverter.ReadReplacementContexts(jObject)
-            };
+            Binding = jObject.ToString(nameof(Binding));
+            DefaultValue = defaultOverride ?? jObject.ToString(nameof(DefaultValue));
+            FileRename = jObject.ToString(nameof(FileRename));
+            IsRequired = jObject.ToBool(nameof(IsRequired));
+            Type = jObject.ToString(nameof(Type));
+            Replaces = jObject.ToString(nameof(Replaces));
+            DataType = jObject.ToString(nameof(DataType));
+            ReplacementContexts = SymbolModelConverter.ReadReplacementContexts(jObject);
 
-            if (!jObject.TryGetValue(nameof(symbol.Forms), StringComparison.OrdinalIgnoreCase, out JToken formsToken) || !(formsToken is JObject formsObject))
+            if (!jObject.TryGetValue(nameof(Forms), StringComparison.OrdinalIgnoreCase, out JToken formsToken) || !(formsToken is JObject formsObject))
             {
                 // no value forms explicitly defined, use the default ("identity")
-                symbol.Forms = SymbolValueFormsModel.Default;
+                Forms = SymbolValueFormsModel.Default;
             }
             else
             {
                 // the config defines forms for the symbol. Use them.
-                symbol.Forms = SymbolValueFormsModel.FromJObject(formsObject);
+                Forms = SymbolValueFormsModel.FromJObject(formsObject);
             }
-
-            return symbol;
         }
+
+        public string Binding { get; init; }
+
+        public string Type { get; init; }
+
+        public string Replaces { get; init; }
+
+        public string FileRename { get; init; }
+
+        public IReadOnlyList<IReplacementContext> ReplacementContexts { get; init; }
+
+        internal string DefaultValue { get; init; }
+
+        internal SymbolValueFormsModel Forms { get; init; }
+
+        internal bool IsRequired { get; init; }
+
+        internal string DataType { get; init; }
     }
 }

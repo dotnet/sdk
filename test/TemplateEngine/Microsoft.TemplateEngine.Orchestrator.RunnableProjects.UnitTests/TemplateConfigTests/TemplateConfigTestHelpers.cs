@@ -3,14 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Mocks;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
@@ -32,17 +28,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         // Note: this does not deal with configs split into multiple files.
         internal static IRunnableProjectConfig ConfigFromSource(IEngineEnvironmentSettings environment, IMountPoint mountPoint, string configFile = null)
         {
-            if (string.IsNullOrEmpty(configFile))
-            {
-                configFile = DefaultConfigRelativePath;
-            }
-
-            using Stream stream = mountPoint.FileInfo(configFile).OpenRead();
-            using StreamReader streamReader = new StreamReader(stream);
-            string configContent = streamReader.ReadToEnd();
-
-            JObject configJson = JObject.Parse(configContent);
-            return SimpleConfigModel.FromJObject(environment, configJson);
+            return new SimpleConfigModel((IFile)ConfigFileSystemInfo(mountPoint, configFile));
         }
 
         internal static void SetupFileSourceMatchersOnGlobalRunSpec(MockGlobalRunSpec runSpec, FileSourceMatchInfo source)

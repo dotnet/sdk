@@ -11,38 +11,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
     {
         internal const string TypeName = "generated";
 
-        public string Binding { get; set; }
+        internal GeneratedSymbol(JObject jObject)
+        {
+            Binding = jObject.ToString(nameof(Binding));
+            Replaces = jObject.ToString(nameof(Replaces));
+            FileRename = jObject.ToString(nameof(FileRename));
+            Type = jObject.ToString(nameof(Type));
+            ReplacementContexts = SymbolModelConverter.ReadReplacementContexts(jObject);
+            DataType = jObject.ToString(nameof(DataType));
+            Generator = jObject.ToString(nameof(Generator));
+            Parameters = jObject.ToJTokenDictionary(StringComparer.Ordinal, nameof(Parameters));
+        }
 
-        public string Replaces { get; set; }
+        public string Binding { get; init; }
 
-        public string FileRename { get; set; }
+        public string Replaces { get; init; }
 
-        public string Type { get; set; }
+        public string FileRename { get; init; }
 
-        public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
+        public string Type { get; init; }
 
-        internal string DataType { get; set; }
+        public IReadOnlyList<IReplacementContext> ReplacementContexts { get; init; }
+
+        internal string DataType { get; init; }
 
         // Refers to the Type property value of a concrete IMacro
-        internal string Generator { get; set; }
+        internal string Generator { get; init; }
 
-        internal IReadOnlyDictionary<string, JToken> Parameters { get; set; }
-
-        internal static GeneratedSymbol FromJObject(JObject jObject)
-        {
-            GeneratedSymbol sym = new GeneratedSymbol
-            {
-                Binding = jObject.ToString(nameof(Binding)),
-                Generator = jObject.ToString(nameof(Generator)),
-                DataType = jObject.ToString(nameof(DataType)),
-                Parameters = jObject.ToJTokenDictionary(StringComparer.Ordinal, nameof(Parameters)),
-                Type = jObject.ToString(nameof(Type)),
-                Replaces = jObject.ToString(nameof(Replaces)),
-                FileRename = jObject.ToString(nameof(FileRename)),
-                ReplacementContexts = SymbolModelConverter.ReadReplacementContexts(jObject)
-            };
-
-            return sym;
-        }
+        internal IReadOnlyDictionary<string, JToken> Parameters { get; init; }
     }
 }

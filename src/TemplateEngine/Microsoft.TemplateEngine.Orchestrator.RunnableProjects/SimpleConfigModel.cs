@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
@@ -26,6 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private const string NameSymbolName = "name";
         private const string DefaultPlaceholderFilename = "-.-";
+        private const string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
         private static readonly string[] IncludePatternDefaults = new[] { "**/*" };
 
         private static readonly string[] ExcludePatternDefaults = new[]
@@ -41,6 +43,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**" };
         private static readonly Dictionary<string, string> RenameDefaults = new Dictionary<string, string>(StringComparer.Ordinal);
 
+        private readonly ILogger _logger;
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
         private IReadOnlyDictionary<string, Parameter> _parameters;
         private IReadOnlyList<FileSourceMatchInfo> _sources;
@@ -57,45 +60,195 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private IReadOnlyList<IReplacementTokens> _symbolFilenameReplacements;
         private IReadOnlyList<ICustomFileGlobModel> _specialCustomSetup = new List<ICustomFileGlobModel>();
+        private IReadOnlyList<PostActionModel> _postActions;
 
-        internal SimpleConfigModel()
+        internal SimpleConfigModel(ILoggerFactory loggerFactory)
         {
+            _logger = ((ILogger)loggerFactory?.CreateLogger<SimpleConfigModel>()) ?? NullLogger.Instance;
             Sources = new[] { new ExtendedFileSource() };
+        }
+
+        internal SimpleConfigModel(IEngineEnvironmentSettings environmentSettings, JObject source, ISimpleConfigModifiers configModifiers = null, string filename = null)
+        {
+            _logger = environmentSettings.Host.LoggerFactory.CreateLogger<SimpleConfigModel>();
+
+            Author = source.ToString(nameof(Author));
+            Classifications = source.ArrayAsStrings(nameof(Classifications));
+            DefaultName = source.ToString(nameof(DefaultName));
+            Description = source.ToString(nameof(Description)) ?? string.Empty;
+            GroupIdentity = source.ToString(nameof(GroupIdentity));
+            Precedence = source.ToInt32(nameof(Precedence));
+            Guids = source.ArrayAsGuids(nameof(Guids));
+            Identity = source.ToString(nameof(Identity));
+            Name = source.ToString(nameof(Name));
+
+            SourceName = source.ToString(nameof(SourceName));
+            PlaceholderFilename = source.ToString(nameof(PlaceholderFilename));
+            EnvironmentSettings = environmentSettings;
+            GeneratorVersions = source.ToString(nameof(GeneratorVersions));
+            ThirdPartyNotices = source.ToString(nameof(ThirdPartyNotices));
+            PreferNameDirectory = source.ToBool(nameof(PreferNameDirectory));
+
+            ShortNameList = JTokenStringOrArrayToCollection(source.Get<JToken>("ShortName"), Array.Empty<string>());
+            Forms = SetupValueFormMapForTemplate(source);
+
+            var sources = new List<ExtendedFileSource>();
+            Sources = sources;
+            foreach (JObject item in source.Items<JObject>(nameof(Sources)))
+            {
+                ExtendedFileSource src = new ExtendedFileSource();
+                sources.Add(src);
+                src.CopyOnly = item.Get<JToken>(nameof(src.CopyOnly));
+                src.Exclude = item.Get<JToken>(nameof(src.Exclude));
+                src.Include = item.Get<JToken>(nameof(src.Include));
+                src.Condition = item.ToString(nameof(src.Condition));
+                src.Rename = item.Get<JObject>(nameof(src.Rename)).ToStringDictionary().ToDictionary(x => x.Key, x => x.Value);
+
+                List<SourceModifier> modifiers = new List<SourceModifier>();
+                src.Modifiers = modifiers;
+                foreach (JObject entry in item.Items<JObject>(nameof(src.Modifiers)))
+                {
+                    SourceModifier modifier = new SourceModifier
+                    {
+                        Condition = entry.ToString(nameof(modifier.Condition)),
+                        CopyOnly = entry.Get<JToken>(nameof(modifier.CopyOnly)),
+                        Exclude = entry.Get<JToken>(nameof(modifier.Exclude)),
+                        Include = entry.Get<JToken>(nameof(modifier.Include)),
+                        Rename = entry.Get<JObject>(nameof(modifier.Rename))
+                    };
+                    modifiers.Add(modifier);
+                }
+
+                src.Source = item.ToString(nameof(src.Source));
+                src.Target = item.ToString(nameof(src.Target));
+            }
+
+            IBaselineInfo baseline = null;
+            BaselineInfo = BaselineInfoFromJObject(source.PropertiesOf("baselines"));
+
+            if (!string.IsNullOrEmpty(configModifiers?.BaselineName))
+            {
+                BaselineInfo.TryGetValue(configModifiers.BaselineName, out baseline);
+            }
+
+            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
+            // create a name symbol. If one is explicitly defined in the template, it'll override this.
+            symbols.Add(NameSymbolName, SetupDefaultNameSymbol(SourceName));
+
+            // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
+            // They're turned into symbols here, which eventually become tags.
+            _tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "tags");
+            IReadOnlyDictionary<string, ISymbolModel> symbolsFromTags = ConvertDeprecatedTagsToParameterSymbols(_tags);
+
+            foreach (KeyValuePair<string, ISymbolModel> tagSymbol in symbolsFromTags)
+            {
+                if (!symbols.ContainsKey(tagSymbol.Key))
+                {
+                    symbols.Add(tagSymbol.Key, tagSymbol.Value);
+                }
+            }
+
+            Symbols = symbols;
+            foreach (JProperty prop in source.PropertiesOf(nameof(Symbols)))
+            {
+                if (prop.Value is not JObject obj)
+                {
+                    continue;
+                }
+
+                string defaultOverride = null;
+                if (baseline?.DefaultOverrides != null)
+                {
+                    baseline.DefaultOverrides.TryGetValue(prop.Name, out defaultOverride);
+                }
+
+                ISymbolModel modelForSymbol = SymbolModelConverter.GetModelForObject(obj, defaultOverride);
+
+                if (modelForSymbol != null)
+                {
+                    // The symbols dictionary comparer is Ordinal, making symbol names case-sensitive.
+                    if (string.Equals(prop.Name, NameSymbolName, StringComparison.Ordinal)
+                            && symbols.TryGetValue(prop.Name, out ISymbolModel existingSymbol)
+                            && existingSymbol is ParameterSymbol existingParameterSymbol
+                            && modelForSymbol is ParameterSymbol modelForParameterSymbol)
+                    {
+                        // "name" symbol is explicitly defined above. If it's also defined in the template.json, it gets special handling here.
+                        symbols[prop.Name] = new ParameterSymbol(modelForParameterSymbol, existingParameterSymbol.Binding, existingParameterSymbol.Forms);
+                    }
+                    else
+                    {
+                        // last in wins (in the odd case where a template.json defined a symbol multiple times)
+                        symbols[prop.Name] = modelForSymbol;
+                    }
+                }
+            }
+
+            _postActions = RunnableProjects.PostActionModel.LoadListFromJArray(source.Get<JArray>("PostActions"), _logger, filename);
+            PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
+
+            // Custom operations at the global level
+            JToken globalCustomConfigData = source[nameof(_customOperations)];
+            _customOperations = globalCustomConfigData != null ? CustomFileGlobModel.FromJObject((JObject)globalCustomConfigData, string.Empty) : null;
+
+            // Custom operations for specials
+            IReadOnlyDictionary<string, JToken> allSpecialOpsConfig = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "SpecialCustomOperations");
+            List<ICustomFileGlobModel> specialCustomSetup = new List<ICustomFileGlobModel>();
+
+            foreach (KeyValuePair<string, JToken> globConfigKeyValue in allSpecialOpsConfig)
+            {
+                string globName = globConfigKeyValue.Key;
+                JToken globData = globConfigKeyValue.Value;
+
+                CustomFileGlobModel globModel = CustomFileGlobModel.FromJObject((JObject)globData, globName);
+                specialCustomSetup.Add(globModel);
+            }
+
+            _specialCustomSetup = specialCustomSetup;
+        }
+
+        internal SimpleConfigModel(IFile templateFile, ISimpleConfigModifiers configModifiers = null)
+            : this(templateFile.MountPoint.EnvironmentSettings, MergeAdditionalConfiguration(templateFile.ReadJObjectFromIFile(), templateFile), configModifiers, templateFile.GetDisplayPath())
+        {
+            SourceFile = templateFile;
         }
 
         public IFile SourceFile { get; set; }
 
-        public string Author { get; set; }
+        public string Author { get; private set; }
 
-        public string DefaultName { get; set; }
+        public string DefaultName { get; init; }
 
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
-        public string GroupIdentity { get; set; }
+        public string GroupIdentity { get; init; }
 
-        public int Precedence { get; set; }
+        public int Precedence { get; init; }
 
-        public string Name { get; set; }
+        public string Name { get; private set; }
+
+        public string ThirdPartyNotices { get; private set; }
+
+        public bool PreferNameDirectory { get; init; }
 
         public IReadOnlyDictionary<string, string> Tags => _tags;
 
-        public IReadOnlyList<string> ShortNameList { get; set; }
+        public IReadOnlyList<string> ShortNameList { get; init; }
 
-        public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
+        public IReadOnlyList<IPostActionModel> PostActionModels => _postActions;
 
-        public IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; set; }
+        public IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; init; }
 
-        public string GeneratorVersions { get; set; }
+        public string GeneratorVersions { get; init; }
 
-        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
+        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; init; }
 
-        public string Identity { get; set; }
+        public string Identity { get; init; }
 
         public IReadOnlyList<string> IgnoreFileNames
         {
             get { return _ignoreFileNames ?? (_isPlaceholderFileNameCustomized ? new[] { PlaceholderFilename } : new[] { PlaceholderFilename, "_._" }); }
 
-            set
+            init
             {
                 _ignoreFileNames = value;
             }
@@ -353,6 +506,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
+        internal IDirectory TemplateSourceRoot => SourceFile?.Parent?.Parent;
+
         internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
         {
             get
@@ -365,19 +520,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        internal IReadOnlyList<string> Classifications { get; set; }
+        internal IReadOnlyList<string> Classifications { get; init; }
 
-        internal IReadOnlyList<Guid> Guids { get; set; }
+        internal IReadOnlyList<Guid> Guids { get; init; }
 
-        internal string SourceName { get; set; }
+        internal string SourceName { get; init; }
 
-        internal IReadOnlyList<ExtendedFileSource> Sources { get; set; }
+        internal IReadOnlyList<ExtendedFileSource> Sources { get; init; }
 
-        internal IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
+        internal IReadOnlyDictionary<string, ISymbolModel> Symbols { get; init; }
 
-        internal DateTime? ConfigTimestampUtc { get; set; }
+        internal DateTime? ConfigTimestampUtc { get; init; }
 
-        internal IReadOnlyDictionary<string, IValueForm> Forms { get; private set; }
+        internal IReadOnlyDictionary<string, IValueForm> Forms { get; private init; }
 
         internal string PlaceholderFilename
         {
@@ -397,7 +552,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        internal IEngineEnvironmentSettings EnvironmentSettings { get; private set; }
+        internal IEngineEnvironmentSettings EnvironmentSettings { get; private init; }
 
         private ITemplateParameter NameParameter
         {
@@ -420,7 +575,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile)
+        public void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection)
         {
             bool stable = Symbols == null;
             Dictionary<string, bool> computed = new Dictionary<string, bool>();
@@ -457,7 +612,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedNameParamValue);
 
-            _sources = EvaluateSources(parameters, rootVariableCollection, configFile, resolvedNameParamValue);
+            _sources = EvaluateSources(parameters, rootVariableCollection, resolvedNameParamValue);
 
             // evaluate the conditions and resolve the paths for the PrimaryOutputs
             foreach (ICreationPathModel pathModel in PrimaryOutputs)
@@ -477,170 +632,90 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        internal static SimpleConfigModel FromJObject(IEngineEnvironmentSettings environmentSettings, JObject source, ISimpleConfigModifiers configModifiers = null, JObject localeSource = null)
+        /// <summary>
+        /// Localizes this <see cref="SimpleConfigModel"/> with given localization model.
+        /// </summary>
+        /// <param name="locModel">Localization model containing the localized strings.</param>
+        /// <remarks>This method works on a best-effort basis. If the given model is invalid or incompatible,
+        /// erroneous data will be skipped. No errors will be logged. Use <see cref="Localize(ILocalizationModel)"/>
+        /// to validate localization models before calling this method.</remarks>
+        internal void Localize(ILocalizationModel locModel)
         {
-            ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
+            Author = locModel.Author ?? Author;
+            Name = locModel.Name ?? Name;
+            Description = locModel.Description ?? Description;
 
-            SimpleConfigModel config = new SimpleConfigModel()
+            foreach (var postAction in _postActions)
             {
-                Author = localizationModel?.Author ?? source.ToString(nameof(config.Author)),
-                Classifications = source.ArrayAsStrings(nameof(config.Classifications)),
-                DefaultName = source.ToString(nameof(DefaultName)),
-                Description = localizationModel?.Description ?? source.ToString(nameof(Description)) ?? string.Empty,
-                GroupIdentity = source.ToString(nameof(GroupIdentity)),
-                Precedence = source.ToInt32(nameof(Precedence)),
-                Guids = source.ArrayAsGuids(nameof(config.Guids)),
-                Identity = source.ToString(nameof(config.Identity)),
-                Name = localizationModel?.Name ?? source.ToString(nameof(config.Name)),
-
-                SourceName = source.ToString(nameof(config.SourceName)),
-                PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename)),
-                EnvironmentSettings = environmentSettings,
-                GeneratorVersions = source.ToString(nameof(config.GeneratorVersions))
-            };
-
-            JToken shortNameToken = source.Get<JToken>("ShortName");
-            config.ShortNameList = JTokenStringOrArrayToCollection(shortNameToken, Array.Empty<string>());
-
-            config.Forms = SetupValueFormMapForTemplate(source);
-
-            List<ExtendedFileSource> sources = new List<ExtendedFileSource>();
-            config.Sources = sources;
-
-            foreach (JObject item in source.Items<JObject>(nameof(config.Sources)))
-            {
-                ExtendedFileSource src = new ExtendedFileSource();
-                sources.Add(src);
-                src.CopyOnly = item.Get<JToken>(nameof(src.CopyOnly));
-                src.Exclude = item.Get<JToken>(nameof(src.Exclude));
-                src.Include = item.Get<JToken>(nameof(src.Include));
-                src.Condition = item.ToString(nameof(src.Condition));
-                src.Rename = item.Get<JObject>(nameof(src.Rename)).ToStringDictionary().ToDictionary(x => x.Key, x => x.Value);
-
-                List<SourceModifier> modifiers = new List<SourceModifier>();
-                src.Modifiers = modifiers;
-                foreach (JObject entry in item.Items<JObject>(nameof(src.Modifiers)))
+                if (postAction.Id != null && locModel.PostActions.TryGetValue(postAction.Id, out IPostActionLocalizationModel postActionLocModel))
                 {
-                    SourceModifier modifier = new SourceModifier
-                    {
-                        Condition = entry.ToString(nameof(modifier.Condition)),
-                        CopyOnly = entry.Get<JToken>(nameof(modifier.CopyOnly)),
-                        Exclude = entry.Get<JToken>(nameof(modifier.Exclude)),
-                        Include = entry.Get<JToken>(nameof(modifier.Include)),
-                        Rename = entry.Get<JObject>(nameof(modifier.Rename))
-                    };
-                    modifiers.Add(modifier);
-                }
-
-                src.Source = item.ToString(nameof(src.Source));
-                src.Target = item.ToString(nameof(src.Target));
-            }
-
-            IBaselineInfo baseline = null;
-            config.BaselineInfo = BaselineInfoFromJObject(source.PropertiesOf("baselines"));
-
-            if (configModifiers != null && !string.IsNullOrEmpty(configModifiers.BaselineName))
-            {
-                config.BaselineInfo.TryGetValue(configModifiers.BaselineName, out baseline);
-            }
-
-            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
-            // create a name symbol. If one is explicitly defined in the template, it'll override this.
-            symbols.Add(NameSymbolName, SetupDefaultNameSymbol(config.SourceName));
-
-            // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
-            // They're turned into symbols here, which eventually become tags.
-            config._tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "tags");
-            IReadOnlyDictionary<string, ISymbolModel> symbolsFromTags = ConvertDeprecatedTagsToParameterSymbols(config._tags);
-
-            foreach (KeyValuePair<string, ISymbolModel> tagSymbol in symbolsFromTags)
-            {
-                if (!symbols.ContainsKey(tagSymbol.Key))
-                {
-                    symbols.Add(tagSymbol.Key, tagSymbol.Value);
+                    postAction.Localize(postActionLocModel, _logger);
                 }
             }
+        }
 
-            config.Symbols = symbols;
-            foreach (JProperty prop in source.PropertiesOf(nameof(config.Symbols)))
+        /// <summary>
+        /// Verifies that the given localization model was correctly constructed
+        /// to localize this SimpleConfigModel.
+        /// </summary>
+        /// <param name="locModel">The localization model to be verified.</param>
+        /// <param name="localizedErrorMessages">Errors detected during verification.</param>
+        /// <returns>True if the verification succeeds. False otherwise.
+        /// Check logs for details in case of a failed verification.</returns>
+        internal bool VerifyLocalizationModel(ILocalizationModel locModel, out IEnumerable<string> localizedErrorMessages)
+        {
+            bool validModel = true;
+            List<string> errorMessages = new List<string>();
+            int unusedPostActionLocs = locModel.PostActions.Count;
+            foreach (var postAction in PostActionModels)
             {
-                JObject obj = prop.Value as JObject;
-
-                if (obj == null)
+                if (postAction.Id == null || !locModel.PostActions.TryGetValue(postAction.Id, out IPostActionLocalizationModel postActionLocModel))
                 {
+                    // Post action with no localization model.
                     continue;
                 }
 
-                IParameterSymbolLocalizationModel symbolLocalization = null;
-                if (localizationModel != null)
+                unusedPostActionLocs--;
+
+                // Validate manual instructions.
+                bool instructionUsesDefaultKey = postAction.ManualInstructionInfo.Count == 1 && postAction.ManualInstructionInfo[0].Id == null &&
+                    postActionLocModel.Instructions.ContainsKey(PostActionModel.DefaultIdForSingleManualInstruction);
+                if (instructionUsesDefaultKey)
                 {
-                    localizationModel.ParameterSymbols.TryGetValue(prop.Name, out symbolLocalization);
+                    // Just one manual instruction using the default key. No issues. Continue.
+                    continue;
                 }
 
-                string defaultOverride = null;
-                if (baseline != null && baseline.DefaultOverrides != null)
+                int unusedManualInstructionLocs = postActionLocModel.Instructions.Count;
+                foreach (var instruction in postAction.ManualInstructionInfo)
                 {
-                    baseline.DefaultOverrides.TryGetValue(prop.Name, out defaultOverride);
-                }
-
-                ISymbolModel modelForSymbol = SymbolModelConverter.GetModelForObject(obj, symbolLocalization, defaultOverride);
-
-                if (modelForSymbol != null)
-                {
-                    // The symbols dictionary comparer is Ordinal, making symbol names case-sensitive.
-                    if (string.Equals(prop.Name, NameSymbolName, StringComparison.Ordinal)
-                            && symbols.TryGetValue(prop.Name, out ISymbolModel existingSymbol))
+                    if (instruction.Id != null && postActionLocModel.Instructions.ContainsKey(instruction.Id))
                     {
-                        // "name" symbol is explicitly defined above. If it's also defined in the template.json, it gets special handling here.
-                        symbols[prop.Name] = ParameterSymbol.ExplicitNameSymbolMergeWithDefaults(modelForSymbol, existingSymbol);
-                    }
-                    else
-                    {
-                        // last in wins (in the odd case where a template.json defined a symbol multiple times)
-                        symbols[prop.Name] = modelForSymbol;
+                        unusedManualInstructionLocs--;
                     }
                 }
+
+                if (unusedManualInstructionLocs > 0)
+                {
+                    // Localizations provide more translations than the number of manual instructions we have.
+                    string excessInstructionLocalizationIds = string.Join(
+                        ", ",
+                        postActionLocModel.Instructions.Keys.Where(k => !postAction.ManualInstructionInfo.Any(i => i.Id == k)));
+
+                    errorMessages.Add(string.Format(LocalizableStrings.Authoring_InvalidManualInstructionLocalizationIndex, excessInstructionLocalizationIds, postAction.Id));
+                    validModel = false;
+                }
             }
 
-            config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray(source.Get<JArray>("PostActions"), localizationModel?.PostActions, environmentSettings.Host.Logger);
-            config.PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
-
-            // Custom operations at the global level
-            JToken globalCustomConfigData = source[nameof(config._customOperations)];
-            if (globalCustomConfigData != null)
+            if (unusedPostActionLocs > 0)
             {
-                config._customOperations = CustomFileGlobModel.FromJObject((JObject)globalCustomConfigData, string.Empty);
+                // Localizations provide more translations than the number of post actions we have.
+                string excessPostActionLocalizationIds = string.Join(", ", locModel.PostActions.Keys.Where(k => !PostActionModels.Any(p => p.Id == k)).Select(k => k.ToString()));
+                errorMessages.Add(string.Format(LocalizableStrings.Authoring_InvalidPostActionLocalizationIndex, excessPostActionLocalizationIds));
+                validModel = false;
             }
-            else
-            {
-                config._customOperations = null;
-            }
-
-            // Custom operations for specials
-            IReadOnlyDictionary<string, JToken> allSpecialOpsConfig = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "SpecialCustomOperations");
-            List<ICustomFileGlobModel> specialCustomSetup = new List<ICustomFileGlobModel>();
-
-            foreach (KeyValuePair<string, JToken> globConfigKeyValue in allSpecialOpsConfig)
-            {
-                string globName = globConfigKeyValue.Key;
-                JToken globData = globConfigKeyValue.Value;
-
-                CustomFileGlobModel globModel = CustomFileGlobModel.FromJObject((JObject)globData, globName);
-                specialCustomSetup.Add(globModel);
-            }
-
-            config._specialCustomSetup = specialCustomSetup;
-            return config;
-        }
-
-        internal static ILocalizationModel LocalizationFromJObject(JObject source)
-        {
-            if (source == null)
-            {
-                return null;
-            }
-
-            return LocalizationModelDeserializer.Deserialize(source);
+            localizedErrorMessages = errorMessages;
+            return validModel;
         }
 
         // If the token is a string:
@@ -721,7 +796,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             nameSymbolConfigBuilder.AppendLine("}");
 
             JObject config = JObject.Parse(nameSymbolConfigBuilder.ToString());
-            return ParameterSymbol.FromJObject(config, null, null);
+            return new ParameterSymbol(config, null);
         }
 
         private static IReadOnlyDictionary<string, IValueForm> SetupValueFormMapForTemplate(JObject source)
@@ -784,6 +859,45 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             return symbols;
+        }
+
+        /// <summary>
+        /// Checks the <paramref name="primarySource"/> for additional configuration files.
+        /// If found, merges them all together.
+        /// Returns the merged JObject (or the original if there was nothing to merge).
+        /// Additional files must be in the same folder as the template file.
+        /// </summary>
+        /// <exception cref="TemplateAuthoringException">when additional files configuration is invalid.</exception>
+        private static JObject MergeAdditionalConfiguration(JObject primarySource, IFileSystemInfo primarySourceConfig)
+        {
+            IReadOnlyList<string> otherFiles = primarySource.ArrayAsStrings(AdditionalConfigFilesIndicator);
+
+            if (!otherFiles.Any())
+            {
+                return primarySource;
+            }
+
+            JObject combinedSource = (JObject)primarySource.DeepClone();
+
+            foreach (string partialConfigFileName in otherFiles)
+            {
+                if (!partialConfigFileName.EndsWith("." + RunnableProjectGenerator.TemplateConfigFileName))
+                {
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName, partialConfigFileName, RunnableProjectGenerator.TemplateConfigFileName), partialConfigFileName);
+                }
+
+                IFile partialConfigFile = primarySourceConfig.Parent.EnumerateFiles(partialConfigFileName, SearchOption.TopDirectoryOnly).FirstOrDefault(x => string.Equals(x.Name, partialConfigFileName));
+
+                if (partialConfigFile == null)
+                {
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound, partialConfigFileName), partialConfigFileName);
+                }
+
+                JObject partialConfigJson = partialConfigFile.ReadJObjectFromIFile();
+                combinedSource.Merge(partialConfigJson);
+            }
+
+            return combinedSource;
         }
 
         private IGlobalRunConfig ProduceOperationSetup(SpecialOperationConfigParams defaultModel, bool generateMacros, ICustomFileGlobModel customGlobModel = null)
@@ -1056,7 +1170,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return generatedMacroConfigs;
         }
 
-        private List<FileSourceMatchInfo> EvaluateSources(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile, object resolvedNameParamValue)
+        private List<FileSourceMatchInfo> EvaluateSources(IParameterSet parameters, IVariableCollection rootVariableCollection, object resolvedNameParamValue)
         {
             List<FileSourceMatchInfo> sources = new List<FileSourceMatchInfo>();
 
@@ -1100,7 +1214,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 string sourceDirectory = source.Source ?? "./";
                 string targetDirectory = source.Target ?? "./";
-                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenamesFromSource);
+                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(SourceFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenamesFromSource);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
                     sourceDirectory,
@@ -1120,7 +1234,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 string targetDirectory = string.Empty;
                 Dictionary<string, string> fileRenamesFromSource = new Dictionary<string, string>(StringComparer.Ordinal);
-                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(configFile, "./", ref targetDirectory, resolvedNameParamValue, parameters, fileRenamesFromSource);
+                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(SourceFile, "./", ref targetDirectory, resolvedNameParamValue, parameters, fileRenamesFromSource);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
                     "./",

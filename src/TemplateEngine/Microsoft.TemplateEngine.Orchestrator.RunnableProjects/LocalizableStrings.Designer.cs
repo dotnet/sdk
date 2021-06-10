@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class LocalizableStrings {
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;templatestrings.json&quot; file should only contain elements with type &quot;string&quot;. Remove elements that are not strings..
+        ///   Looks up a localized string similar to Localization file should only contain elements with type &apos;string&apos;. Remove elements that are not strings..
         /// </summary>
         internal static string Authoring_InvalidJsonElementInLocalizationFile {
             get {
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to In templatestrings.json file under the post action with &quot;id&quot; &quot;{1}&quot;, there are localized strings for manual instruction(s) with ids &quot;{0}&quot;. These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file..
+        ///   Looks up a localized string similar to In localization file under the post action with id &apos;{1}&apos;, there are localized strings for manual instruction(s) with ids &apos;{0}&apos;. These manual instructions do not exist in the template.json file and should be removed from localization file..
         /// </summary>
         internal static string Authoring_InvalidManualInstructionLocalizationIndex {
             get {
@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Post action(s) with id(s) &quot;{0}&quot; specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file..
+        ///   Looks up a localized string similar to Post action(s) with id(s) &apos;{0}&apos; specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file..
         /// </summary>
         internal static string Authoring_InvalidPostActionLocalizationIndex {
             get {
@@ -97,7 +97,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to One or more postActions have a malformed or missing manualInstructions value in &apos;{0}&apos;.
+        ///   Looks up a localized string similar to One or more postActions have a malformed or missing manualInstructions value..
         /// </summary>
         internal static string Authoring_MalformedPostActionManualInstructions {
             get {
@@ -106,7 +106,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Id of the manual instruction &quot;{0}&quot; at index {1} under post action &quot;{2}&quot; is not unique. Only the first manual instruction that uses this Id will be localized..
+        ///   Looks up a localized string similar to &apos;id&apos; of the manual instruction &apos;{0}&apos; at index {1} is not unique. Only the first manual instruction that uses this id will be localized..
         /// </summary>
         internal static string Authoring_ManualInstructionIdIsNotUnique {
             get {
@@ -115,7 +115,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Missing &apos;{0}&apos; in &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Missing &apos;{0}&apos;..
         /// </summary>
         internal static string Authoring_MissingValue {
             get {
@@ -133,7 +133,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Id of the post action &quot;{0}&quot; at index {1} is not unique. Only the first post action that uses this Id will be localized..
+        ///   Looks up a localized string similar to [{0}]: id of the post action &apos;{1}&apos; at index &apos;{2}&apos; is not unique. Only the first post action that uses this id will be localized..
         /// </summary>
         internal static string Authoring_PostActionIdIsNotUnique {
             get {
@@ -142,7 +142,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to     Source &apos;{0}&apos; in template does not exist..
+        ///   Looks up a localized string similar to [{0}]: Post action at index &apos;{1}&apos; should have an &apos;actionId&apos; to declare the action to be executed..
+        /// </summary>
+        internal static string Authoring_PostActionMustHaveActionId {
+            get {
+                return ResourceManager.GetString("Authoring_PostActionMustHaveActionId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source &apos;{0}&apos; in template does not exist..
         /// </summary>
         internal static string Authoring_SourceDoesNotExist {
             get {
@@ -151,7 +160,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to     Source location &apos;{0}&apos; is outside the specified install source location..
+        ///   Looks up a localized string similar to Source location &apos;{0}&apos; is outside the specified install source location..
         /// </summary>
         internal static string Authoring_SourceIsOutsideInstallSource {
             get {
@@ -160,7 +169,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to     Source must be a directory, but &apos;{0}&apos; is a file..
+        ///   Looks up a localized string similar to Source must be a directory, but &apos;{0}&apos; is a file..
         /// </summary>
         internal static string Authoring_SourceMustBeDirectory {
             get {
@@ -169,29 +178,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to     Source path relative to install location: &apos;{0}&apos;.
-        /// </summary>
-        internal static string Authoring_SourcePathRelativeToInstall {
-            get {
-                return ResourceManager.GetString("Authoring_SourcePathRelativeToInstall", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is missing common information.
+        ///   Looks up a localized string similar to The template configuration {0} is missing common information:.
         /// </summary>
         internal static string Authoring_TemplateMissingCommonInformation {
             get {
                 return ResourceManager.GetString("Authoring_TemplateMissingCommonInformation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Template: &apos;{0}&apos;.
-        /// </summary>
-        internal static string Authoring_TemplateNameDisplay {
-            get {
-                return ResourceManager.GetString("Authoring_TemplateNameDisplay", resourceCulture);
             }
         }
         
@@ -205,7 +196,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Template: &apos;{0}&apos; - Template root is outside the specified install source location..
+        ///   Looks up a localized string similar to Failed to load template from {0}.
+        ///Details: {1}.
+        /// </summary>
+        internal static string Authoring_TemplateNotInstalled_Message {
+            get {
+                return ResourceManager.GetString("Authoring_TemplateNotInstalled_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The template root is outside the specified install source location..
         /// </summary>
         internal static string Authoring_TemplateRootOutsideInstallSource {
             get {
@@ -214,11 +215,74 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to     TemplateSourceRoot = &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Failed to read parse localization file {0}, it will be skipped from further processing..
         /// </summary>
-        internal static string Authoring_TemplateSourceRoot {
+        internal static string LocalizationModelDeserializer_Error_FailedToParse {
             get {
-                return ResourceManager.GetString("Authoring_TemplateSourceRoot", resourceCulture);
+                return ResourceManager.GetString("LocalizationModelDeserializer_Error_FailedToParse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template configuration must be a file, but {0} is not a file..
+        /// </summary>
+        internal static string RunnableProjectGenerator_Exception_ConfigShouldBeFile {
+            get {
+                return ResourceManager.GetString("RunnableProjectGenerator_Exception_ConfigShouldBeFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template localization configuration must be a file, but {0} is not a file..
+        /// </summary>
+        internal static string RunnableProjectGenerator_Exception_LocaleConfigShouldBeFile {
+            get {
+                return ResourceManager.GetString("RunnableProjectGenerator_Exception_LocaleConfigShouldBeFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The template configuration {0} is not valid..
+        /// </summary>
+        internal static string RunnableProjectGenerator_Exception_TemplateValidationFailed {
+            get {
+                return ResourceManager.GetString("RunnableProjectGenerator_Exception_TemplateValidationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The template is not compatible with generator version: allowed versions: {0}, generator version: {1}..
+        /// </summary>
+        internal static string RunnableProjectGenerator_Exception_TemplateVersionNotSupported {
+            get {
+                return ResourceManager.GetString("RunnableProjectGenerator_Exception_TemplateVersionNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Localization file {0} is not compatible with base configuration {1}, and will be skipped..
+        /// </summary>
+        internal static string RunnableProjectGenerator_Warning_LocFileSkipped {
+            get {
+                return ResourceManager.GetString("RunnableProjectGenerator_Warning_LocFileSkipped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load additional configuration file {0}, the file does not exist..
+        /// </summary>
+        internal static string SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound {
+            get {
+                return ResourceManager.GetString("SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load additional configuration file {0}. Additional configuration file names must end with &apos;.{1}&apos;..
+        /// </summary>
+        internal static string SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName {
+            get {
+                return ResourceManager.GetString("SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName", resourceCulture);
             }
         }
     }

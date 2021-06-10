@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using Microsoft.TemplateEngine.Abstractions.Mount;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 #nullable enable
@@ -290,5 +293,16 @@ namespace Microsoft.TemplateEngine
                 }
             }
         }
+
+        internal static JObject ReadJObjectFromIFile(this IFile file)
+        {
+            using (Stream s = file.OpenRead())
+            using (TextReader tr = new StreamReader(s, System.Text.Encoding.UTF8, true))
+            using (JsonReader r = new JsonTextReader(tr))
+            {
+                return JObject.Load(r);
+            }
+        }
+
     }
 }

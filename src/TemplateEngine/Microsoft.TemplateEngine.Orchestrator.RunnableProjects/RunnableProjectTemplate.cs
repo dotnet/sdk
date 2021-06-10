@@ -7,43 +7,29 @@ using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class RunnableProjectTemplate : ITemplate
     {
-        private readonly JObject _raw;
-        private readonly IRunnableProjectConfig _config;
-        private readonly IFile _configFile;
+        private readonly SimpleConfigModel _config;
         private readonly IGenerator _generator;
         private readonly IFile _localeConfigFile;
         private readonly IFile _hostConfigFile;
 
         internal RunnableProjectTemplate(
-            JObject raw,
             IGenerator generator,
-            IFile configFile,
-            IRunnableProjectConfig config,
+            SimpleConfigModel config,
             IFile localeConfigFile,
             IFile hostConfigFile)
         {
             _config = config;
-            _configFile = configFile;
             _generator = generator;
             _localeConfigFile = localeConfigFile;
             _hostConfigFile = hostConfigFile;
-            _raw = raw;
-            config.SourceFile = configFile;
         }
 
-        IDirectory ITemplate.TemplateSourceRoot
-        {
-            get
-            {
-                return _configFile?.Parent?.Parent;
-            }
-        }
+        IDirectory ITemplate.TemplateSourceRoot => _config.TemplateSourceRoot;
 
         string ITemplateInfo.Identity => _config.Identity ?? _config.Name;
 
@@ -125,28 +111,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             get
             {
-                return _config.Parameters.Values
+                return ((IRunnableProjectConfig)_config).Parameters.Values
                     .Where(param => param.Type.Equals("parameter", StringComparison.OrdinalIgnoreCase)
                         && param.Priority != TemplateParameterPriority.Implicit)
                     .ToList();
             }
         }
 
-        IFileSystemInfo ITemplate.Configuration => _configFile;
+        IFileSystemInfo ITemplate.Configuration => _config.SourceFile;
 
-        string ITemplateInfo.MountPointUri => _configFile.MountPoint.MountPointUri;
+        string ITemplateInfo.MountPointUri => _config.SourceFile.MountPoint.MountPointUri;
 
-        string ITemplateInfo.ConfigPlace => _configFile.FullPath;
+        string ITemplateInfo.ConfigPlace => _config.SourceFile.FullPath;
 
         IFileSystemInfo ITemplate.LocaleConfiguration => _localeConfigFile;
 
         string ITemplateInfo.LocaleConfigPlace => _localeConfigFile.FullPath;
 
-        bool ITemplate.IsNameAgreementWithFolderPreferred => _raw.ToBool("preferNameDirectory", false);
+        //read in simple template model instead
+        bool ITemplate.IsNameAgreementWithFolderPreferred => _config.PreferNameDirectory;
 
         string ITemplateInfo.HostConfigPlace => _hostConfigFile?.FullPath;
 
-        string ITemplateInfo.ThirdPartyNotices => _raw.ToString("thirdPartyNotices");
+        //read in simple template model instead
+        string ITemplateInfo.ThirdPartyNotices => _config.ThirdPartyNotices;
 
         IReadOnlyDictionary<string, IBaselineInfo> ITemplateInfo.BaselineInfo => _config.BaselineInfo;
 
@@ -155,7 +143,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
         internal IRunnableProjectConfig Config => _config;
-
-        internal IFile ConfigFile => _configFile;
     }
 }

@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -13,58 +12,79 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class PostActionModel : ConditionedConfigurationElementBase, IPostActionModel
     {
-        public PostActionModel(
-            string? id,
-            string? description,
-            Guid actionId,
-            bool continueOnError,
-            IReadOnlyDictionary<string, string> args,
-            IReadOnlyList<ManualInstructionModel> manualInstructionInfo,
-            string? condition)
+        /// <summary>
+        /// Default id to be used when post action contains only one manual instruction
+        /// and the author has not explicitly specified an id.
+        /// </summary>
+        public const string DefaultIdForSingleManualInstruction = "default";
+
+        public PostActionModel()
+            : this(new Dictionary<string, string>(), new List<ManualInstructionModel>()) { }
+
+        public PostActionModel(IReadOnlyDictionary<string, string> args, IReadOnlyList<ManualInstructionModel> manualInstructions)
         {
-            Id = id;
-            Description = description;
-            ActionId = actionId;
-            ContinueOnError = continueOnError;
             Args = args;
-            ManualInstructionInfo = manualInstructionInfo;
-            Condition = condition;
+            ManualInstructionInfo = manualInstructions;
         }
 
-        public string? Id { get; }
+        public string? Id { get; init; }
 
-        public string? Description { get; }
+        public string? Description { get; private set; }
 
-        public Guid ActionId { get; }
+        public Guid ActionId { get; init; }
 
-        public bool ContinueOnError { get; }
+        public bool ContinueOnError { get; init; }
 
-        public IReadOnlyDictionary<string, string> Args { get; }
+        public IReadOnlyDictionary<string, string> Args { get; init; } = new Dictionary<string, string>();
 
-        public IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; }
+        public IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; init; } = new List<ManualInstructionModel>();
 
-        internal static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jArray, IReadOnlyDictionary<string, IPostActionLocalizationModel>? localizations, ILogger logger)
+        public void Localize(IPostActionLocalizationModel locModel, ILogger logger)
         {
-            List<IPostActionModel> localizedPostActions = new List<IPostActionModel>();
-            int localizedPostActionCount = 0;
+            Description = locModel.Description ?? Description;
 
+            foreach (var manualInstruction in ManualInstructionInfo)
+            {
+                string localizedInstruction = string.Empty;
+                bool exactIdMatch = manualInstruction.Id != null && locModel.Instructions.TryGetValue(manualInstruction.Id, out localizedInstruction);
+                bool defaultIdMatch = manualInstruction.Id == null && ManualInstructionInfo.Count == 1 && locModel.Instructions.TryGetValue(DefaultIdForSingleManualInstruction, out localizedInstruction);
+
+                if (exactIdMatch || defaultIdMatch)
+                {
+                    manualInstruction.Localize(localizedInstruction);
+                }
+            }
+        }
+
+        internal static IReadOnlyList<PostActionModel> LoadListFromJArray(JArray jArray, ILogger logger, string filename)
+        {
+            List<PostActionModel> localizedPostActions = new List<PostActionModel>();
             if (jArray == null)
             {
                 return localizedPostActions;
             }
 
             HashSet<string> postActionIds = new();
-            HashSet<string> manualInstructionIds = new HashSet<string>();
             for (int postActionIndex = 0; postActionIndex < jArray.Count; postActionIndex++)
             {
                 JToken action = jArray[postActionIndex];
                 string? postActionId = action.ToString(nameof(Id));
+                string? description = action.ToString(nameof(Description));
+                Guid actionId = action.ToGuid(nameof(ActionId));
+                bool continueOnError = action.ToBool(nameof(ContinueOnError));
+                string? postActionCondition = action.ToString(nameof(Condition));
 
                 if (postActionId != null && !postActionIds.Add(postActionId))
                 {
-                    // There is already a post action with the same id. Do not localize this. Let user know.
-                    logger.LogWarning(LocalizableStrings.Authoring_PostActionIdIsNotUnique, postActionId, postActionIndex);
+                    // There is already a post action with the same id. Localization won't work properly. Let user know.
+                    logger.LogWarning(LocalizableStrings.Authoring_PostActionIdIsNotUnique, filename, postActionId, postActionIndex);
                     postActionId = null;
+                }
+
+                if (actionId == default)
+                {
+                    logger.LogError(LocalizableStrings.Authoring_PostActionMustHaveActionId, filename, postActionIndex);
+                    continue;
                 }
 
                 Dictionary<string, string> args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -73,79 +93,51 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     args.Add(argInfo.Name, argInfo.Value.ToString());
                 }
 
-                IPostActionLocalizationModel? actionLocalizations = null;
+                using var postActionLoggerScope = logger.BeginScope("PostAction " + (postActionId ?? postActionIndex.ToString()));
+                IReadOnlyList<ManualInstructionModel> manualInstructions = LoadManualInstructionsFromJArray(action.Get<JArray>("ManualInstructions"), logger);
 
-                if (postActionId != null &&
-                    localizations != null &&
-                    localizations.TryGetValue(postActionId, out actionLocalizations) &&
-                    actionLocalizations != null)
+                PostActionModel model = new PostActionModel(args, manualInstructions)
                 {
-                    localizedPostActionCount++;
-                }
-
-                List<ManualInstructionModel> localizedInstructions = new();
-                manualInstructionIds.Clear();
-                JArray? manualInstructions = action.Get<JArray>("ManualInstructions");
-
-                if (manualInstructions != null)
-                {
-                    int localizedInstructionCount = 0;
-                    for (int i = 0; i < manualInstructions.Count; i++)
-                    {
-                        string? id = manualInstructions[i].ToString("id");
-                        string? text = string.Empty;
-
-                        if (id != null && !manualInstructionIds.Add(id))
-                        {
-                            // There is already an instruction with the same id. Do not localize this. Let user know.
-                            logger.LogWarning(LocalizableStrings.Authoring_ManualInstructionIdIsNotUnique, id, i, postActionId);
-                            id = null;
-                        }
-
-                        if (id != null && (actionLocalizations?.Instructions.TryGetValue(id, out text) ?? false) ||
-                            manualInstructions.Count == 1 && (actionLocalizations?.Instructions.TryGetValue("default", out text) ?? false))
-                        {
-                            localizedInstructionCount++;
-                        }
-
-                        if (string.IsNullOrEmpty(text))
-                        {
-                            text = manualInstructions[i].ToString("text");
-                        }
-
-                        localizedInstructions.Add(new ManualInstructionModel(id, text ?? string.Empty, manualInstructions[i].ToString("condition")));
-                    }
-
-                    if (actionLocalizations?.Instructions.Count > localizedInstructionCount)
-                    {
-                        // Localizations provide more translations than the number of manual instructions we have.
-                        string excessInstructionLocalizationIds = string.Join(
-                            ", ",
-                            actionLocalizations.Instructions.Keys.Where(k => !localizedInstructions.Any(i => i.Id == k)));
-                        logger.LogWarning(LocalizableStrings.Authoring_InvalidManualInstructionLocalizationIndex, excessInstructionLocalizationIds, postActionId);
-                    }
-                }
-
-                PostActionModel model = new PostActionModel(
-                    postActionId,
-                    actionLocalizations?.Description ?? action.ToString(nameof(Description)),
-                    action.ToGuid(nameof(ActionId)),
-                    action.ToBool(nameof(ContinueOnError)),
-                    args,
-                    localizedInstructions,
-                    action.ToString(nameof(Condition))
-                );
+                    Id = postActionId,
+                    Description = description,
+                    ActionId = actionId,
+                    ContinueOnError = continueOnError,
+                    Condition = postActionCondition
+                };
 
                 localizedPostActions.Add(model);
             }
 
-            if (localizations?.Count > localizedPostActionCount)
-            {
-                // Localizations provide more translations than the number of post actions we have.
-                string excessPostActionLocalizationIds = string.Join(", ", localizations.Keys.Where(k => !localizedPostActions.Any(p => p.Id == k)).Select(k => k.ToString()));
-                logger.LogWarning(LocalizableStrings.Authoring_InvalidPostActionLocalizationIndex, excessPostActionLocalizationIds);
-            }
             return localizedPostActions;
+        }
+
+        private static IReadOnlyList<ManualInstructionModel> LoadManualInstructionsFromJArray(JArray? jArray, ILogger logger)
+        {
+            var results = new List<ManualInstructionModel>();
+            if (jArray == null)
+            {
+                return results;
+            }
+
+            HashSet<string> manualInstructionIds = new HashSet<string>();
+            for (int i = 0; i < jArray.Count; i++)
+            {
+                JToken jToken = jArray[i];
+                string? id = jToken.ToString("id");
+                string text = jToken.ToString("text") ?? string.Empty;
+                string? condition = jToken.ToString("condition");
+
+                if (id != null && !manualInstructionIds.Add(id))
+                {
+                    // There is already an instruction with the same id. We won't be able to localize this. Let user know.
+                    logger.LogWarning(LocalizableStrings.Authoring_ManualInstructionIdIsNotUnique, id, i);
+                    id = null;
+                }
+
+                results.Add(new ManualInstructionModel(id, text, condition));
+            }
+
+            return results;
         }
     }
 }

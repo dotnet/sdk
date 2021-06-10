@@ -34,6 +34,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <summary>
         /// Gets the text explaining the steps the user should take.
         /// </summary>
-        public string Text { get; }
+        public string Text { get; private set; }
+
+        /// <summary>
+        /// Localizes this manual instruction by replacing the value of the <see cref="Text"/> property the given text.
+        /// </summary>
+        /// <param name="localizedText">Localized <see cref="Text"/>.</param>
+        public void Localize(string localizedText)
+        {
+            Text = localizedText;
+        }
     }
 }

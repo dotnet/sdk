@@ -11,45 +11,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
     {
         internal const string TypeName = "computed";
 
-        public string Value { get; internal set; }
+        internal ComputedSymbol(JObject jObject)
+        {
+            DataType = jObject.ToString(nameof(DataType));
+            Value = jObject.ToString(nameof(Value));
+            Type = jObject.ToString(nameof(Type));
+            Evaluator = jObject.ToString(nameof(Evaluator));
+        }
 
-        public string Type { get; private set; }
+        public string Value { get; init; }
+
+        public string Type { get; init; }
 
         public IReadOnlyList<IReplacementContext> ReplacementContexts => Array.Empty<IReplacementContext>();
 
-        string ISymbolModel.Binding
-        {
-            get { return null; }
-            set { }
-        }
+        string ISymbolModel.Binding => null;
 
-        string ISymbolModel.Replaces
-        {
-            get { return null; }
-            set { }
-        }
+        string ISymbolModel.Replaces => null;
 
-        string ISymbolModel.FileRename
-        {
-            get { return null; }
-            set { }
-        }
+        string ISymbolModel.FileRename => null;
 
-        internal string DataType { get; private set; }
+        internal string DataType { get; init; }
 
-        internal string Evaluator { get; private set; }
-
-        internal static ISymbolModel FromJObject(JObject jObject)
-        {
-            ComputedSymbol sym = new ComputedSymbol
-            {
-                DataType = jObject.ToString(nameof(DataType)),
-                Value = jObject.ToString(nameof(Value)),
-                Type = jObject.ToString(nameof(Type)),
-                Evaluator = jObject.ToString(nameof(Evaluator))
-            };
-
-            return sym;
-        }
+        internal string Evaluator { get; init; }
     }
 }

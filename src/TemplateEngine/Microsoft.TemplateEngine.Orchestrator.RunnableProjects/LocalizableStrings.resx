@@ -118,66 +118,95 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Authoring_InvalidJsonElementInLocalizationFile" xml:space="preserve">
-    <value>"templatestrings.json" file should only contain elements with type "string". Remove elements that are not strings.</value>
+    <value>Localization file should only contain elements with type 'string'. Remove elements that are not strings.</value>
   </data>
   <data name="Authoring_InvalidManualInstructionLocalizationIndex" xml:space="preserve">
-    <value>In templatestrings.json file under the post action with "id" "{1}", there are localized strings for manual instruction(s) with ids "{0}". These manual instructions do not exist in the template.json file and should be removed from templatestrings.json file.</value>
+    <value>In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</value>
     <comment>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".
 {1} is a single-word identifier string. Such as "myPostAction".</comment>
   </data>
   <data name="Authoring_InvalidPostActionLocalizationIndex" xml:space="preserve">
-    <value>Post action(s) with id(s) "{0}" specified in the localization file do not exist in the template.json file. Remove the localized strings from the templatestrings.json file.</value>
+    <value>Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</value>
     <comment>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".</comment>
   </data>
   <data name="Authoring_InvalidRegex" xml:space="preserve">
     <value>'{0}' could not be parsed as a regular expression</value>
   </data>
   <data name="Authoring_MalformedPostActionManualInstructions" xml:space="preserve">
-    <value>One or more postActions have a malformed or missing manualInstructions value in '{0}'</value>
+    <value>One or more postActions have a malformed or missing manualInstructions value.</value>
   </data>
   <data name="Authoring_ManualInstructionIdIsNotUnique" xml:space="preserve">
-    <value>Id of the manual instruction "{0}" at index {1} under post action "{2}" is not unique. Only the first manual instruction that uses this Id will be localized.</value>
+    <value>'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</value>
     <comment>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
-{1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".
-{2} is any identifier string that user provided in the file or a whole number. Such as: myPostAction, firstPostAction, postAction1, 5, 0 etc.</comment>
+{1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".</comment>
   </data>
   <data name="Authoring_MissingValue" xml:space="preserve">
-    <value>Missing '{0}' in '{1}'</value>
+    <value>Missing '{0}'.</value>
   </data>
   <data name="Authoring_NonBoolDataTypeForRegexMatch" xml:space="preserve">
     <value>A non-bool DataType was specified for a regexMatch type symbol</value>
   </data>
   <data name="Authoring_PostActionIdIsNotUnique" xml:space="preserve">
-    <value>Id of the post action "{0}" at index {1} is not unique. Only the first post action that uses this Id will be localized.</value>
+    <value>[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</value>
     <comment>{0} is any identifier string that user provided in the file. Such as "myPostAction", "firstPostAction", "postAction1" etc.
 {1} is a number representing the zero-based index of the post action. Such as "5", or "0".</comment>
   </data>
+  <data name="Authoring_PostActionMustHaveActionId" xml:space="preserve">
+    <value>[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</value>
+    <comment>{0} is a whole number representing the zero-based index of the post action. Such as "5" or "0".
+Do not localize: actionId</comment>
+  </data>
   <data name="Authoring_SourceDoesNotExist" xml:space="preserve">
-    <value>    Source '{0}' in template does not exist.</value>
+    <value>Source '{0}' in template does not exist.</value>
   </data>
   <data name="Authoring_SourceIsOutsideInstallSource" xml:space="preserve">
-    <value>    Source location '{0}' is outside the specified install source location.</value>
+    <value>Source location '{0}' is outside the specified install source location.</value>
   </data>
   <data name="Authoring_SourceMustBeDirectory" xml:space="preserve">
-    <value>    Source must be a directory, but '{0}' is a file.</value>
-  </data>
-  <data name="Authoring_SourcePathRelativeToInstall" xml:space="preserve">
-    <value>    Source path relative to install location: '{0}'</value>
+    <value>Source must be a directory, but '{0}' is a file.</value>
   </data>
   <data name="Authoring_TemplateMissingCommonInformation" xml:space="preserve">
-    <value>'{0}' is missing common information</value>
-  </data>
-  <data name="Authoring_TemplateNameDisplay" xml:space="preserve">
-    <value>Template: '{0}'</value>
+    <value>The template configuration {0} is missing common information:</value>
+    <comment>{0} is template configuration location.</comment>
   </data>
   <data name="Authoring_TemplateNotInstalled" xml:space="preserve">
     <value>Failed to load template from {0}:</value>
-    <comment>{0} is uri of template location.</comment>
+    <comment>{0} is template configuration location.</comment>
+  </data>
+  <data name="Authoring_TemplateNotInstalled_Message" xml:space="preserve">
+    <value>Failed to load template from {0}.
+Details: {1}</value>
+    <comment>{0} is template configuration location.</comment>
   </data>
   <data name="Authoring_TemplateRootOutsideInstallSource" xml:space="preserve">
-    <value>Template: '{0}' - Template root is outside the specified install source location.</value>
+    <value>The template root is outside the specified install source location.</value>
   </data>
-  <data name="Authoring_TemplateSourceRoot" xml:space="preserve">
-    <value>    TemplateSourceRoot = '{0}'</value>
+  <data name="LocalizationModelDeserializer_Error_FailedToParse" xml:space="preserve">
+    <value>Failed to read parse localization file {0}, it will be skipped from further processing.</value>
+  </data>
+  <data name="RunnableProjectGenerator_Exception_ConfigShouldBeFile" xml:space="preserve">
+    <value>Template configuration must be a file, but {0} is not a file.</value>
+    <comment>{0} is template configuration location.</comment>
+  </data>
+  <data name="RunnableProjectGenerator_Exception_LocaleConfigShouldBeFile" xml:space="preserve">
+    <value>Template localization configuration must be a file, but {0} is not a file.</value>
+    <comment>{0} is template localization configuration location.</comment>
+  </data>
+  <data name="RunnableProjectGenerator_Exception_TemplateValidationFailed" xml:space="preserve">
+    <value>The template configuration {0} is not valid.</value>
+    <comment>{0} is template configuration location.</comment>
+  </data>
+  <data name="RunnableProjectGenerator_Exception_TemplateVersionNotSupported" xml:space="preserve">
+    <value>The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</value>
+  </data>
+  <data name="RunnableProjectGenerator_Warning_LocFileSkipped" xml:space="preserve">
+    <value>Localization file {0} is not compatible with base configuration {1}, and will be skipped.</value>
+    <comment>{0} and {1} are template configuration locations.</comment>
+  </data>
+  <data name="SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound" xml:space="preserve">
+    <value>Failed to load additional configuration file {0}, the file does not exist.</value>
+  </data>
+  <data name="SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName" xml:space="preserve">
+    <value>Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</value>
   </data>
 </root>

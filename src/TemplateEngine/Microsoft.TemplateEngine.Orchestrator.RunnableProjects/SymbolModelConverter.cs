@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
 using Newtonsoft.Json.Linq;
 
@@ -15,19 +14,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         // Note: Only ParameterSymbol has a Description property, this it's the only one that gets localization
         // TODO: change how localization gets merged in, don't do it here.
-        internal static ISymbolModel GetModelForObject(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
+        internal static ISymbolModel GetModelForObject(JObject jObject, string defaultOverride)
         {
             switch (jObject.ToString(nameof(ISymbolModel.Type)))
             {
                 case ParameterSymbol.TypeName:
-                    return ParameterSymbol.FromJObject(jObject, localization, defaultOverride);
+                    return new ParameterSymbol(jObject, defaultOverride);
                 case DerivedSymbol.TypeName:
-                    return DerivedSymbol.FromJObject(jObject, localization, defaultOverride);
+                    return new DerivedSymbol(jObject, defaultOverride);
                 case ComputedSymbol.TypeName:
-                    return ComputedSymbol.FromJObject(jObject);
+                    return new ComputedSymbol(jObject);
                 case BindSymbolTypeName:
                 case GeneratedSymbol.TypeName:
-                    return GeneratedSymbol.FromJObject(jObject);
+                    return new GeneratedSymbol(jObject);
                 default:
                     return null;
             }

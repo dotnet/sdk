@@ -17,20 +17,89 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         private IReadOnlyDictionary<string, ParameterChoice> _choices;
 
         /// <summary>
+        /// Creates a default instance of <see cref="ParameterSymbol"/>.
+        /// </summary>
+        public ParameterSymbol() { }
+
+        /// <summary>
+        /// Creates an instance of <see cref="ParameterSymbol"/> using
+        /// the provided Json Data.
+        /// </summary>
+        /// <param name="jObject">JSON to initialize the symbol with.</param>
+        /// <param name="defaultOverride"></param>
+        public ParameterSymbol(JObject jObject, string defaultOverride)
+            : base(jObject, defaultOverride)
+        {
+            DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
+            DisplayName = jObject.ToString(nameof(DisplayName)) ?? string.Empty;
+            Description = jObject.ToString(nameof(Description)) ?? string.Empty;
+
+            var choicesAndDescriptions = new Dictionary<string, ParameterChoice>();
+
+            if (DataType == "choice")
+            {
+                IsTag = false;
+                TagName = jObject.ToString(nameof(TagName));
+
+                foreach (JObject choiceObject in jObject.Items<JObject>(nameof(Choices)))
+                {
+                    string choiceName = choiceObject.ToString("choice");
+                    var choice = new ParameterChoice(
+                        choiceObject.ToString("displayName") ?? string.Empty,
+                        choiceObject.ToString("description") ?? string.Empty);
+
+                    choicesAndDescriptions.Add(choiceName, choice);
+                }
+            }
+            else if (DataType == "bool" && string.IsNullOrEmpty(DefaultIfOptionWithoutValue))
+            {
+                // bool flags are considered true if they're provided without a value.
+                DefaultIfOptionWithoutValue = "true";
+            }
+
+            Choices = choicesAndDescriptions;
+        }
+
+        /// <summary>
+        /// Creates a clone of the given <see cref="ParameterSymbol"/>.
+        /// </summary>
+        /// <param name="cloneFrom">The symbol to copy the values from.</param>
+        /// <param name="bindingFallback">The value to be used for <see cref="BaseValueSymbol.Binding"/> in the case
+        /// that the <paramref name="cloneFrom"/> does not specify a value for <see cref="BaseValueSymbol.Binding"/>.</param>
+        /// <param name="formsFallback">The value to be used for <see cref="BaseValueSymbol.Forms"/> in the case
+        /// that the <paramref name="cloneFrom"/> does not specify a value for <see cref="BaseValueSymbol.Forms"/>.</param>
+        public ParameterSymbol(ParameterSymbol cloneFrom, string bindingFallback, SymbolValueFormsModel formsFallback)
+        {
+            DefaultValue = cloneFrom.DefaultValue;
+            Description = cloneFrom.Description;
+            IsRequired = cloneFrom.IsRequired;
+            Type = cloneFrom.Type;
+            Replaces = cloneFrom.Replaces;
+            DataType = cloneFrom.DataType;
+            FileRename = cloneFrom.FileRename;
+            IsTag = cloneFrom.IsTag;
+            TagName = cloneFrom.TagName;
+            Choices = cloneFrom.Choices;
+            ReplacementContexts = cloneFrom.ReplacementContexts;
+            Binding = string.IsNullOrEmpty(cloneFrom.Binding) ? bindingFallback : cloneFrom.Binding;
+            Forms = cloneFrom.Forms.GlobalForms.Count != 0 ? cloneFrom.Forms : formsFallback;
+        }
+
+        /// <summary>
         /// Gets or sets the friendly name of the symbol to be displayed to the user.
         /// </summary>
-        internal string DisplayName { get; set; }
+        internal string DisplayName { get; private set; }
 
-        internal string Description { get; set; }
-
-        // only relevant for choice datatype
-        internal bool IsTag { get; set; }
+        internal string Description { get; private set; }
 
         // only relevant for choice datatype
-        internal string TagName { get; set; }
+        internal bool IsTag { get; init; }
+
+        // only relevant for choice datatype
+        internal string TagName { get; init; }
 
         // If this is set, the option can be provided without a value. It will be given this value.
-        internal string DefaultIfOptionWithoutValue { get; set; }
+        internal string DefaultIfOptionWithoutValue { get; init; }
 
         internal IReadOnlyDictionary<string, ParameterChoice> Choices
         {
@@ -43,101 +112,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             {
                 _choices = value.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
             }
-        }
-
-        // Used when the template explicitly defines the symbol "name".
-        // The template definition is used exclusively, except for the case where it doesn't define any value forms.
-        // When that is the case, the default value forms are used.
-        internal static ParameterSymbol ExplicitNameSymbolMergeWithDefaults(ISymbolModel templateDefinedName, ISymbolModel defaultDefinedName)
-        {
-            if (!(templateDefinedName is ParameterSymbol templateSymbol))
-            {
-                throw new InvalidCastException("templateDefinedName is not a ParameterSymbol");
-            }
-
-            if (!(defaultDefinedName is ParameterSymbol defaultSymbol))
-            {
-                throw new InvalidCastException("defaultDefinedName is not a ParameterSymbol");
-            }
-
-            // the merged symbol is mostly the user defined symbol, except the conditional cases below.
-            ParameterSymbol mergedSymbol = new ParameterSymbol()
-            {
-                DefaultValue = templateSymbol.DefaultValue,
-                Description = templateSymbol.Description,
-                IsRequired = templateSymbol.IsRequired,
-                Type = templateSymbol.Type,
-                Replaces = templateSymbol.Replaces,
-                DataType = templateSymbol.DataType,
-                FileRename = templateSymbol.FileRename,
-                IsTag = templateSymbol.IsTag,
-                TagName = templateSymbol.TagName,
-                Choices = templateSymbol.Choices,
-                ReplacementContexts = templateSymbol.ReplacementContexts,
-            };
-
-            // If the template hasn't explicitly defined a binding to the name symbol, use the default.
-            if (string.IsNullOrEmpty(templateSymbol.Binding))
-            {
-                mergedSymbol.Binding = defaultDefinedName.Binding;
-            }
-            else
-            {
-                mergedSymbol.Binding = templateSymbol.Binding;
-            }
-
-            // if the template defined name symbol doesn't have any value forms defined, use the defaults.
-            if (templateSymbol.Forms.GlobalForms.Count == 0)
-            {
-                mergedSymbol.Forms = defaultSymbol.Forms;
-            }
-            else
-            {
-                mergedSymbol.Forms = templateSymbol.Forms;
-            }
-
-            return mergedSymbol;
-        }
-
-        internal static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
-        {
-            ParameterSymbol symbol = FromJObject<ParameterSymbol>(jObject, localization, defaultOverride);
-            symbol.DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
-            symbol.DisplayName = localization?.DisplayName ?? jObject.ToString(nameof(DisplayName)) ?? string.Empty;
-            symbol.Description = localization?.Description ?? jObject.ToString(nameof(Description)) ?? string.Empty;
-
-            var choicesAndDescriptions = new Dictionary<string, ParameterChoice>();
-
-            if (symbol.DataType == "choice")
-            {
-                symbol.IsTag = false;
-                symbol.TagName = jObject.ToString(nameof(TagName));
-
-                foreach (JObject choiceObject in jObject.Items<JObject>(nameof(Choices)))
-                {
-                    string choiceName = choiceObject.ToString("choice");
-                    var choice = new ParameterChoice(
-                        choiceObject.ToString("displayName") ?? string.Empty,
-                        choiceObject.ToString("description") ?? string.Empty);
-
-                    if (localization != null
-                        && localization.Choices.TryGetValue(choiceName, out ParameterChoiceLocalizationModel choiceLocalization))
-                    {
-                        choice.Localize(choiceLocalization);
-                    }
-
-                    choicesAndDescriptions.Add(choiceName, choice);
-                }
-            }
-            else if (symbol.DataType == "bool" && string.IsNullOrEmpty(symbol.DefaultIfOptionWithoutValue))
-            {
-                // bool flags are considred true if they're provided without a value.
-                symbol.DefaultIfOptionWithoutValue = "true";
-            }
-
-            symbol.Choices = choicesAndDescriptions;
-
-            return symbol;
         }
 
         internal static ISymbolModel FromDeprecatedConfigTag(string value)

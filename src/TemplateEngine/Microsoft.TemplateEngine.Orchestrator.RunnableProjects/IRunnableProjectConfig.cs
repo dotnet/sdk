@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<string> IgnoreFileNames { get; }
 
-        IReadOnlyList<IPostActionModel> PostActionModel { get; }
+        IReadOnlyList<IPostActionModel> PostActionModels { get; }
 
         IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; }
 
@@ -50,6 +50,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
 
-        void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile);
+        void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection);
     }
 }
