@@ -109,7 +109,14 @@ namespace Microsoft.NET.TestFramework.Assertions
         public AndConstraint<CommandResultAssertions> HaveStdErr()
         {
             Execute.Assertion.ForCondition(!string.IsNullOrEmpty(_commandResult.StdErr))
-                .FailWith(AppendDiagnosticsTo("Command did not output anything to stderr."));
+                .FailWith(AppendDiagnosticsTo("Command did not output anything to StdErr."));
+            return new AndConstraint<CommandResultAssertions>(this);
+        }
+
+        public AndConstraint<CommandResultAssertions> HaveStdErr(string expectedOutput)
+        {
+            Execute.Assertion.ForCondition(_commandResult.StdErr.Equals(expectedOutput, StringComparison.Ordinal))
+                .FailWith(AppendDiagnosticsTo($"Command did not output the expected output to StdErr. Expected: {expectedOutput}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
