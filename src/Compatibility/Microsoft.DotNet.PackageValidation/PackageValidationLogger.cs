@@ -1,8 +1,9 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.IO;
 using Microsoft.Build.Framework;
-using Microsoft.DotNet.ValidationSuppression;
+using Microsoft.DotNet.Compatibility.ErrorSuppression;
 using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.DotNet.PackageValidation
@@ -13,13 +14,13 @@ namespace Microsoft.DotNet.PackageValidation
         private readonly SuppressionEngine _suppressionEngine;
         private readonly bool _baselineAllErrors;
 
-        public PackageValidationLogger(Logger log, string baselineFile)
-            : this(log, baselineFile, false) {}
+        public PackageValidationLogger(Logger log, string suppressionsFile)
+            : this(log, suppressionsFile, false) {}
 
-        public PackageValidationLogger(Logger log, string baselineFile, bool baselineAllErrors)
+        public PackageValidationLogger(Logger log, string suppressionsFile, bool baselineAllErrors)
         {
             _log = log;
-            _suppressionEngine = SuppressionEngine.CreateFromSuppressionFile(baselineFile);
+            _suppressionEngine = baselineAllErrors && !File.Exists(suppressionsFile) ? SuppressionEngine.Create() : SuppressionEngine.CreateFromFile(suppressionsFile);
             _baselineAllErrors = baselineAllErrors;
         }
 
@@ -31,8 +32,10 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     _suppressionEngine.AddSuppression(suppression);
                 }
-
-                _log.LogNonSdkError(code, format, args);
+                else
+                {
+                    _log.LogNonSdkError(code, format, args);
+                }
             }
         }
 
@@ -40,9 +43,10 @@ namespace Microsoft.DotNet.PackageValidation
 
         public void LogErrorHeader(string message) => _log.LogNonSdkError(null, message);
 
-        public void BaselineAllSuppressionsToFile(string baselineFile)
+        public void GenerateSuppressionsFile(string suppressionsFile)
         {
-            _suppressionEngine.WriteSuppressionsToFile(baselineFile);
+            _suppressionEngine.WriteSuppressionsToFile(suppressionsFile);
+            LogMessage(MessageImportance.High, Resources.WroteSuppressions, suppressionsFile);
         }
     }
 }

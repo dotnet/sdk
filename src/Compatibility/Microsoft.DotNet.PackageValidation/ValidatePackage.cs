@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Build.Framework;
-using Microsoft.DotNet.ValidationSuppression;
+using Microsoft.DotNet.Compatibility.ErrorSuppression;
 using Microsoft.NET.Build.Tasks;
 using NuGet.RuntimeModel;
 
@@ -23,9 +23,9 @@ namespace Microsoft.DotNet.PackageValidation
 
         public string BaselinePackageTargetPath { get; set; }
 
-        public bool BaselineAllValidationErrors { get; set; }
+        public bool GenerateCompatibilitySuppressionFile { get; set; }
 
-        public string ValidationSuppressionBaselinePath { get; set; }
+        public string CompatibilitySuppressionFilePath { get; set; }
 
         protected override void ExecuteCore()
         {
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.PackageValidation
             }
 
             Package package = NupkgParser.CreatePackage(PackageTargetPath, runtimeGraph);
-            PackageValidationLogger logger = new(Log, ValidationSuppressionBaselinePath, BaselineAllValidationErrors);
+            PackageValidationLogger logger = new(Log, CompatibilitySuppressionFilePath, GenerateCompatibilitySuppressionFile);
 
             new CompatibleTfmValidator(NoWarn, null, RunApiCompat, logger).Validate(package);
             new CompatibleFrameworkInPackageValidator(NoWarn, null, logger).Validate(package);
@@ -46,9 +46,9 @@ namespace Microsoft.DotNet.PackageValidation
                 new BaselinePackageValidator(baselinePackage, NoWarn, null, RunApiCompat, logger).Validate(package);
             }
 
-            if (BaselineAllValidationErrors)
+            if (GenerateCompatibilitySuppressionFile)
             {
-                logger.BaselineAllSuppressionsToFile(ValidationSuppressionBaselinePath);
+                logger.GenerateSuppressionsFile(CompatibilitySuppressionFilePath);
             }
         }
     }

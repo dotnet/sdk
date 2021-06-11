@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
-using Microsoft.DotNet.ValidationSuppression;
+using Microsoft.DotNet.Compatibility.ErrorSuppression;
 
 namespace Microsoft.DotNet.PackageValidation.Tests
 {

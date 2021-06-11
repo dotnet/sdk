@@ -9,7 +9,7 @@ using Microsoft.Build.Framework;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
-using Microsoft.DotNet.ValidationSuppression;
+using Microsoft.DotNet.Compatibility.ErrorSuppression;
 
 namespace Microsoft.DotNet.PackageValidation
 {
@@ -50,12 +50,10 @@ namespace Microsoft.DotNet.PackageValidation
                     foreach (CompatDifference difference in differences)
                     {
                         // Only include package version when comparing assets from different packages.
-                        string leftOperand = apicompatTuples.leftAssemblyRelativePath;
-                        string rightOperand = apicompatTuples.rightAssemblyRelativePath;
+                        bool isBaselineSuppression = false;
                         if (!apicompatTuples.leftAssemblyPackagePath.Equals(apicompatTuples.rightAssemblyPackagePath, System.StringComparison.InvariantCultureIgnoreCase))
                         {
-                            leftOperand = $"[{Path.GetFileNameWithoutExtension(apicompatTuples.leftAssemblyPackagePath)}]{leftOperand}";
-                            rightOperand = $"[{Path.GetFileNameWithoutExtension(apicompatTuples.rightAssemblyPackagePath)}]{rightOperand}";
+                            isBaselineSuppression = true;
                         }
 
                         _log.LogError(
@@ -63,8 +61,9 @@ namespace Microsoft.DotNet.PackageValidation
                             {
                                 DiagnosticId = difference.DiagnosticId,
                                 Target = difference.ReferenceId,
-                                Left = leftOperand,
-                                Right = rightOperand
+                                Left = apicompatTuples.leftAssemblyRelativePath,
+                                Right = apicompatTuples.rightAssemblyRelativePath,
+                                IsBaselineSuppression = isBaselineSuppression
                             },
                             difference.DiagnosticId,
                             difference.Message);

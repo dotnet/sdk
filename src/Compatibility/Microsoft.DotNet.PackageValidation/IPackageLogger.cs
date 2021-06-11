@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Build.Framework;
-using Microsoft.DotNet.ValidationSuppression;
+using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.Compatibility.ErrorSuppression;
 
 namespace Microsoft.DotNet.PackageValidation
 {

@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Xml.Serialization;
 
-namespace Microsoft.DotNet.ValidationSuppression
+namespace Microsoft.DotNet.Compatibility.ErrorSuppression
 {
     /// <summary>
     /// Collection of Suppressions which is able to add suppressions, check if a specific error is suppressed, and write all suppressions
@@ -18,11 +18,12 @@ namespace Microsoft.DotNet.ValidationSuppression
     public class SuppressionEngine
     {
         protected HashSet<Suppression> _validationSuppressions;
-        private ReaderWriterLockSlim _readerWriterLock = new();
+        private readonly ReaderWriterLockSlim _readerWriterLock = new();
+        private readonly XmlSerializer _serializer = new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
 
-        protected SuppressionEngine(string validationSuppressionFile)
+        protected SuppressionEngine(string suppressionFile)
         {
-            _validationSuppressions = ParseValidationSuppressionBaseline(validationSuppressionFile);
+            _validationSuppressions = ParseSuppressionFile(suppressionFile);
         }
 
         protected SuppressionEngine()
@@ -38,14 +39,15 @@ namespace Microsoft.DotNet.ValidationSuppression
         /// <param name="left">Optional. The left operand in a APICompat error.</param>
         /// <param name="right">Optional. The right operand in a APICompat error.</param>
         /// <returns><see langword="true"/> if the error is already suppressed. <see langword="false"/> otherwise.</returns>
-        public bool IsErrorSuppressed(string? diagnosticId, string? target, string? left = null, string? right = null)
+        public bool IsErrorSuppressed(string? diagnosticId, string? target, string? left = null, string? right = null, bool isBaselineSuppression = false)
         {
             var suppressionToCheck = new Suppression()
             {
                 DiagnosticId = diagnosticId,
                 Target = target,
                 Left = left,
-                Right = right
+                Right = right,
+                IsBaselineSuppression = isBaselineSuppression
             };
             return IsErrorSuppressed(suppressionToCheck);
         }
@@ -60,7 +62,7 @@ namespace Microsoft.DotNet.ValidationSuppression
             _readerWriterLock.EnterReadLock();
             try
             {
-                if(_validationSuppressions.Contains(error))
+                if (_validationSuppressions.Contains(error))
                 {
                     return true;
                 }
@@ -68,15 +70,8 @@ namespace Microsoft.DotNet.ValidationSuppression
                 {
                     // See if the error is globally suppressed by checking if the same diagnosticid and target are entered
                     // without any left and right.
-                    if ((error.DiagnosticId == null || !error.DiagnosticId.StartsWith("pkv", StringComparison.InvariantCultureIgnoreCase)) 
-                        && _validationSuppressions.Contains(new Suppression { DiagnosticId = error.DiagnosticId, Target = error.Target }))
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return (error.DiagnosticId == null || error.DiagnosticId.StartsWith("cp", StringComparison.InvariantCultureIgnoreCase)) &&
+                            _validationSuppressions.Contains(new Suppression { DiagnosticId = error.DiagnosticId, Target = error.Target });
                 }
             }
             finally
@@ -92,14 +87,15 @@ namespace Microsoft.DotNet.ValidationSuppression
         /// <param name="target">The target of where the <paramref name="diagnosticId"/> should be applied.</param>
         /// <param name="left">Optional. The left operand in a APICompat error.</param>
         /// <param name="right">Optional. The right operand in a APICompat error.</param>
-        public void AddSuppression(string? diagnosticId, string? target, string? left = null, string? right = null)
+        public void AddSuppression(string? diagnosticId, string? target, string? left = null, string? right = null, bool isBaselineSuppression = false)
         {
             var suppressionToAdd = new Suppression()
             {
                 DiagnosticId = diagnosticId,
                 Target = target,
                 Left = left,
-                Right = right
+                Right = right,
+                IsBaselineSuppression = isBaselineSuppression
             };
             AddSuppression(suppressionToAdd);
         }
@@ -107,18 +103,18 @@ namespace Microsoft.DotNet.ValidationSuppression
         /// <summary>
         /// Adds a suppression to the collection.
         /// </summary>
-        /// <param name="suppressionToAdd">The <see cref="Suppression"/> to be added.</param>
-        public void AddSuppression(Suppression suppressionToAdd)
+        /// <param name="suppression">The <see cref="Suppression"/> to be added.</param>
+        public void AddSuppression(Suppression suppression)
         {
             _readerWriterLock.EnterUpgradeableReadLock();
             try
             {
-                if (!_validationSuppressions.Contains(suppressionToAdd))
+                if (!_validationSuppressions.Contains(suppression))
                 {
                     _readerWriterLock.EnterWriteLock();
                     try
                     {
-                        _validationSuppressions.Add(suppressionToAdd);
+                        _validationSuppressions.Add(suppression);
                     }
                     finally
                     {
@@ -135,17 +131,15 @@ namespace Microsoft.DotNet.ValidationSuppression
         /// <summary>
         /// Writes all suppressions in collection down to a file.
         /// </summary>
-        /// <param name="validationSuppressionFile">The path to the file to be written.</param>
-        public void WriteSuppressionsToFile(string validationSuppressionFile)
+        /// <param name="supressionFile">The path to the file to be written.</param>
+        public void WriteSuppressionsToFile(string supressionFile)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(Suppression[]));
-
-            using (Stream writer = GetWritableStream(validationSuppressionFile))
+            using (Stream writer = GetWritableStream(supressionFile))
             {
                 _readerWriterLock.EnterReadLock();
                 try
                 {
-                    serializer.Serialize(writer, _validationSuppressions.ToArray());
+                    _serializer.Serialize(writer, _validationSuppressions.ToArray());
                     AfterWrittingSuppressionsCallback(writer);
                 }
                 finally
@@ -163,10 +157,10 @@ namespace Microsoft.DotNet.ValidationSuppression
         /// <summary>
         /// Creates a new instance of <see cref="SuppressionEngine"/> based on the contents of a given suppression file.
         /// </summary>
-        /// <param name="validationSuppressionFile">The path to the suppressions file to be used for initialization.</param>
+        /// <param name="suppressionFile">The path to the suppressions file to be used for initialization.</param>
         /// <returns>An instance of <see cref="SuppressionEngine"/>.</returns>
-        public static SuppressionEngine CreateFromSuppressionFile(string validationSuppressionFile)
-            => new SuppressionEngine(validationSuppressionFile);
+        public static SuppressionEngine CreateFromFile(string suppressionFile)
+            => new SuppressionEngine(suppressionFile);
 
         /// <summary>
         /// Creates a new instance of <see cref="SuppressionEngine"/> which is empty.
@@ -175,34 +169,32 @@ namespace Microsoft.DotNet.ValidationSuppression
         public static SuppressionEngine Create()
             => new SuppressionEngine();
 
-        private HashSet<Suppression> ParseValidationSuppressionBaseline(string baselineFile)
+        private HashSet<Suppression> ParseSuppressionFile(string? file)
         {
-            HashSet<Suppression> result;
-            try
+            if (string.IsNullOrEmpty(file?.Trim()))
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(Suppression[]));
-                using (Stream reader = GetReadableStream(baselineFile))
-                {
-                    Suppression[]? deserializedSuppressions = serializer.Deserialize(reader) as Suppression[];
-                    if (deserializedSuppressions == null)
-                    {
-                        result = new HashSet<Suppression>();
-                    }
-                    else
-                    {
-                        result = new HashSet<Suppression>(deserializedSuppressions);
-                    }
-                }
+                return new HashSet<Suppression>();
             }
-            catch (Exception)
+
+            HashSet<Suppression> result;
+
+            using (Stream reader = GetReadableStream(file!))
             {
-                result = new HashSet<Suppression>();
+                Suppression[]? deserializedSuppressions = _serializer.Deserialize(reader) as Suppression[];
+                if (deserializedSuppressions == null)
+                {
+                    result = new HashSet<Suppression>();
+                }
+                else
+                {
+                    result = new HashSet<Suppression>(deserializedSuppressions);
+                }
             }
             return result;
         }
 
-        protected virtual Stream GetReadableStream(string baselineFile) => new FileStream(baselineFile, FileMode.Open);
+        protected virtual Stream GetReadableStream(string supressionFile) => new FileStream(supressionFile, FileMode.Open);
 
-        protected virtual Stream GetWritableStream(string validationSuppressionFile) => new FileStream(validationSuppressionFile, FileMode.OpenOrCreate);
+        protected virtual Stream GetWritableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.OpenOrCreate);
     }
 }

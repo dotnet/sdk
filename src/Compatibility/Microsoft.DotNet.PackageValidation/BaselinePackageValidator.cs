@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
-using Microsoft.DotNet.ValidationSuppression;
+using Microsoft.DotNet.Compatibility.ErrorSuppression;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 

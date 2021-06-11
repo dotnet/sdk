@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.DotNet.ValidationSuppression.Tests
+namespace Microsoft.DotNet.Compatibility.ErrorSuppression.Tests
 {
     public class SuppressionTests
     {
@@ -16,7 +16,9 @@ namespace Microsoft.DotNet.ValidationSuppression.Tests
             yield return new object[] { new Suppression { DiagnosticId = "PK004" }, new Suppression { DiagnosticId = " pk004 " } };
             yield return new object[] { new Suppression { DiagnosticId = "PK004", Target = "A.B" }, new Suppression { DiagnosticId = " pk004 ", Target = "A.b " } };
             yield return new object[] { new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll" }, new Suppression { DiagnosticId = " pk004 ", Target = "A.B", Left = "ref/net6.0/mylib.dll" } };
-
+            yield return new object[] { new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll" }, new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = false } };
+            yield return new object[] { new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = false }, new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = false } };
+            yield return new object[] { new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = true }, new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = true } };
         }
 
         public static IEnumerable<object[]> GetDifferentData()
@@ -31,6 +33,8 @@ namespace Microsoft.DotNet.ValidationSuppression.Tests
             yield return new object[] { new Suppression { DiagnosticId = "PK004", Target = "A.B()", Right = "ref/net6.0/myLib.dll" }, new Suppression { DiagnosticId = "PK004", Target = "A.B()" } };
             yield return new object[] { new Suppression { DiagnosticId = "PK004", Target = "A.B()", Right = "ref/net6.0/myLib.dll" }, new Suppression { DiagnosticId = "PK004", Target = "A.B()", Right = "lib/net6.0/myLib.dll" } };
             yield return new object[] { new Suppression { DiagnosticId = "PK004", Target = "A.B()", Left = "ref/net6.0/mylib.dll", Right = "lib/net6.0/myLib.dll" }, new Suppression { DiagnosticId = "PK004", Target = "A.B()", Left = "ref/netstandard2.0/mylib.dll", Right = "lib/net6.0/myLib.dll" } };
+            yield return new object[] { new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = true }, new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = false } };
+            yield return new object[] { new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll" }, new Suppression { DiagnosticId = "PK004", Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = true } };
         }
 
         [Theory]
