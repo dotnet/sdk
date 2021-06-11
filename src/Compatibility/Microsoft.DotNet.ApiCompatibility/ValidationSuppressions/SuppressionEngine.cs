@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.ValidationSuppression
 
         protected SuppressionEngine()
         {
-            _validationSuppressions = new HashSet<Suppression>(new SuppressionComparer());
+            _validationSuppressions = new HashSet<Suppression>();
         }
 
         /// <summary>
@@ -186,17 +186,17 @@ namespace Microsoft.DotNet.ValidationSuppression
                     Suppression[]? deserializedSuppressions = serializer.Deserialize(reader) as Suppression[];
                     if (deserializedSuppressions == null)
                     {
-                        result = new HashSet<Suppression>(new SuppressionComparer());
+                        result = new HashSet<Suppression>();
                     }
                     else
                     {
-                        result = new HashSet<Suppression>(deserializedSuppressions, new SuppressionComparer());
+                        result = new HashSet<Suppression>(deserializedSuppressions);
                     }
                 }
             }
             catch (Exception)
             {
-                result = new HashSet<Suppression>(new SuppressionComparer());
+                result = new HashSet<Suppression>();
             }
             return result;
         }

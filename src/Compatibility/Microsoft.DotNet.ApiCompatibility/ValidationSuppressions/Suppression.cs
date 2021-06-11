@@ -42,18 +42,15 @@ namespace Microsoft.DotNet.ValidationSuppression
 
             StringComparer stringComparer = StringComparer.Create(CultureInfo.InvariantCulture, ignoreCase: true);
 
-            if (AreDifferent(DiagnosticId, other.DiagnosticId) ||
-                AreDifferent(Target, other.Target) ||
-                AreDifferent(Left, other.Left) ||
-                AreDifferent(Right, other.Right))
-            {
-                return false;
-            }
+            return AreEqual(DiagnosticId, other.DiagnosticId) &&
+                   AreEqual(Target, other.Target) &&
+                   AreEqual(Left, other.Left) &&
+                   AreEqual(Right, other.Right);
 
-            return true;
-
-            bool AreDifferent(string? first, string? second) 
-                => !(string.IsNullOrEmpty(first?.Trim()) && string.IsNullOrEmpty(second?.Trim()) || stringComparer.Equals(first?.Trim(), second?.Trim()));
+            bool AreEqual(string? first, string? second) 
+                => (string.IsNullOrEmpty(first?.Trim()) && string.IsNullOrEmpty(second?.Trim()) || stringComparer.Equals(first?.Trim(), second?.Trim()));
         }
+
+        public override int GetHashCode() => HashCode.Combine(DiagnosticId?.ToLowerInvariant(), Target?.ToLowerInvariant(), Left?.ToLowerInvariant(), Right?.ToLowerInvariant());
     }
 }
