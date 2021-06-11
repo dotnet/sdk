@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.ValidationSuppression
     public class Suppression : IEquatable<Suppression>
     {
         /// <summary>
-        /// The DiagnosticId represenging the error to be suppressed.
+        /// The DiagnosticId representing the error to be suppressed.
         /// </summary>
         public string? DiagnosticId { get; set; }
 
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.ValidationSuppression
         public string? Left { get; set; }
 
         /// <summary>
-        /// Right operand of an APICOmpat comparison.
+        /// Right operand of an APICompat comparison.
         /// </summary>
         public string? Right { get; set; }
 
@@ -42,27 +42,18 @@ namespace Microsoft.DotNet.ValidationSuppression
 
             StringComparer stringComparer = StringComparer.Create(CultureInfo.InvariantCulture, ignoreCase: true);
 
-            if ((!string.IsNullOrEmpty(DiagnosticId?.Trim()) || !string.IsNullOrEmpty(other.DiagnosticId?.Trim())) && !stringComparer.Equals(DiagnosticId?.Trim(), other.DiagnosticId?.Trim()))
-            {
-                return false;
-            }
-
-            if ((!string.IsNullOrEmpty(Target?.Trim()) || !string.IsNullOrEmpty(other.Target?.Trim())) && !stringComparer.Equals(Target?.Trim(), other.Target?.Trim()))
-            {
-                return false;
-            }
-
-            if ((!string.IsNullOrEmpty(Left?.Trim()) || !string.IsNullOrEmpty(other.Left?.Trim())) && !stringComparer.Equals(Left?.Trim(), other.Left?.Trim()))
-            {
-                return false;
-            }
-
-            if ((!string.IsNullOrEmpty(Right?.Trim()) || !string.IsNullOrEmpty(other.Right?.Trim())) && !stringComparer.Equals(Right?.Trim(), other.Right?.Trim()))
+            if (AreDifferent(DiagnosticId, other.DiagnosticId) ||
+                AreDifferent(Target, other.Target) ||
+                AreDifferent(Left, other.Left) ||
+                AreDifferent(Right, other.Right))
             {
                 return false;
             }
 
             return true;
+
+            bool AreDifferent(string? first, string? second) 
+                => !(string.IsNullOrEmpty(first?.Trim()) && string.IsNullOrEmpty(second?.Trim()) || stringComparer.Equals(first?.Trim(), second?.Trim()));
         }
     }
 }
