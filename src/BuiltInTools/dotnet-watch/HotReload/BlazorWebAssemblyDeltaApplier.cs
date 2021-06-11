@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
                 try
                 {
-                    // We'll query the browser and ask it send capabilities. If the browser does not respond in 5s, we'll assume something is amiss and return
+                    // We'll query the browser and ask it send capabilities. If the browser does not respond in 10s, we'll assume something is amiss and return
                     // no capabilities. This should give you baseline hot reload capabilties.
                     var response = await context.BrowserRefreshServer.ReceiveAsync(buffer, cancellationToken)
                         .AsTask()
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     }
 
                     var values = Encoding.UTF8.GetString(buffer.AsSpan(0, response.Value.Count));
-                    // Capabiltiies are expressed a space-separated string.
+                    // Capabilitiies are expressed a space-separated string.
                     // e.g. https://github.com/dotnet/runtime/blob/14343bdc281102bf6fffa1ecdd920221d46761bc/src/coreclr/System.Private.CoreLib/src/System/Reflection/Metadata/AssemblyExtensions.cs#L87
                     var result = values.Split(' ').ToImmutableArray();
                     return result;

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -55,7 +56,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 _wasmApplier.GetApplyUpdateCapabilitiesAsync(context, cancellationToken),
                 _hostApplier.GetApplyUpdateCapabilitiesAsync(context, cancellationToken));
 
-            return result[0].Intersect(result[1]).ToImmutableArray();
+            return result[0].Intersect(result[1], StringComparer.OrdinalIgnoreCase).ToImmutableArray();
         }
     }
 }

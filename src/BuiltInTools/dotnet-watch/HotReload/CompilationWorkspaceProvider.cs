@@ -59,7 +59,9 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await workspace.OpenProjectAsync(projectPath, cancellationToken: cancellationToken);
             var currentSolution = workspace.CurrentSolution;
-            var hotReloadService = new WatchHotReloadService(workspace.Services, hotReloadCapabilitiesTask);
+
+            var hotReloadCapabilities = await GetHotReloadCapabilitiesAsync(hotReloadCapabilitiesTask, reporter);
+            var hotReloadService = new WatchHotReloadService(workspace.Services, await hotReloadCapabilitiesTask);
 
             await hotReloadService.StartSessionAsync(currentSolution, cancellationToken);
 
@@ -74,6 +76,24 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             taskCompletionSource.TrySetResult((currentSolution, hotReloadService));
+        }
+
+        private static async Task<ImmutableArray<string>> GetHotReloadCapabilitiesAsync(Task<ImmutableArray<string>> hotReloadCapabilitiesTask, IReporter reporter)
+        {
+            try
+            {
+                var capabilities = await hotReloadCapabilitiesTask;
+                reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.");
+
+                return capabilities;
+            }
+            catch (Exception ex)
+            {
+                reporter.Verbose("Reading hot reload capabilities failed. Using default capabilities.");
+                reporter.Verbose(ex.ToString());
+
+                return ImmutableArray.Create("Baseline", "AddDefinitionToExistingType", "NewTypeDefinition");
+            }
         }
     }
 }
