@@ -160,6 +160,37 @@ namespace EndToEnd.Tests
             TestTemplateCreateAndBuild(templateName, language: language);
         }
 
+        /// <summary>
+        /// The test checks if dotnet new shows curated list correctly after the SDK installation and template insertion.
+        /// </summary>
+        [Fact]
+        public void DotnetNewShowsCuratedListCorrectly()
+        {
+            string expectedOutput =
+@"[\-\s]+
+[\w \.]+webapp,razor\s+\[C#\][\w\ \/]+
+[\w \.]+blazorwasm\s+\[C#\][\w\ \/]+
+[\w \.]+classlib\s+\[C#\],F#,VB[\w\ \/]+
+[\w \.]+console\s+\[C#\],F#,VB[\w\ \/]+
+[\w \.]+app\s+\[C#\][\w\ \/]+
+";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                expectedOutput +=
+@"[\w \.]+winforms\s+\[C#\],VB[\w\ \/]+
+[\w \.]+\wpf\s+\[C#\],VB[\w\ \/]+
+";
+            }
+            //list should end with new line
+            expectedOutput += Environment.NewLine;
+
+            new NewCommandShim()
+             .Execute()
+             .Should().Pass()
+             .And.HaveStdOutMatching(expectedOutput);
+        }
+
         [Theory]
         // microsoft.dotnet.common.itemtemplates templates
         [InlineData("globaljson")]
