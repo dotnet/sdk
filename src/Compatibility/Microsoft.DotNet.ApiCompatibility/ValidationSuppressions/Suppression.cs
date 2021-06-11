@@ -35,20 +35,14 @@ namespace Microsoft.DotNet.ValidationSuppression
         /// <inheritdoc/>
         public bool Equals(Suppression? other)
         {
-            if (other == null)
-            {
-                return false;
-            }
-
-            StringComparer stringComparer = StringComparer.Create(CultureInfo.InvariantCulture, ignoreCase: true);
-
-            return AreEqual(DiagnosticId, other.DiagnosticId) &&
+            return (other == null) ? false :
+                   AreEqual(DiagnosticId, other.DiagnosticId) &&
                    AreEqual(Target, other.Target) &&
                    AreEqual(Left, other.Left) &&
                    AreEqual(Right, other.Right);
 
             bool AreEqual(string? first, string? second) 
-                => (string.IsNullOrEmpty(first?.Trim()) && string.IsNullOrEmpty(second?.Trim()) || stringComparer.Equals(first?.Trim(), second?.Trim()));
+                => (string.IsNullOrEmpty(first?.Trim()) && string.IsNullOrEmpty(second?.Trim()) || StringComparer.InvariantCultureIgnoreCase.Equals(first?.Trim(), second?.Trim()));
         }
 
         public override int GetHashCode() => HashCode.Combine(DiagnosticId?.ToLowerInvariant(), Target?.ToLowerInvariant(), Left?.ToLowerInvariant(), Right?.ToLowerInvariant());
