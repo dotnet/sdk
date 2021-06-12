@@ -33,8 +33,6 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public bool CreateSymbols { get; set; }
 
-        public string DiasymReaderPath { get; set; }
-
         public bool ReadyToRun { get; set; }
 
         public ITaskItem[] PlatformAssemblyPaths { get; set; }
@@ -150,16 +148,6 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             var option = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap";
             return $"{option}";
-        }
-
-        private string GetDiasymReaderPath()
-        {
-            if (string.IsNullOrEmpty(DiasymReaderPath))
-            {
-                return null;
-            }
-
-            return $"-diasymreaderpath \"{DiasymReaderPath}\"";
         }
 
         private string GetReadyToRun()
