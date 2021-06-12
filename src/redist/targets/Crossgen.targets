@@ -5,10 +5,11 @@
     
     <PropertyGroup>
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
+      <RuntimeNETCrossgenPackageName>Microsoft.NETCore.App.Crossgen2.$(SharedFrameworkRid)</RuntimeNETCrossgenPackageName>
       <_crossDir Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' != 'arm64'">/x64_arm64</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">/x86_arm</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' != 'win'">/x64_arm</_crossDir>
-      <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools$(_crossDir)/crossgen$(ExeExtension)</CrossgenPath>
+      <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCrossgenPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools/crossgen2$(ExeExtension)</CrossgenPath>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' == 'x64'">x64_arm64</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86_arm</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' != 'win'">x64_arm</LibCLRJitRid>
@@ -24,7 +25,7 @@
     <ItemGroup>
       <CrossGenDownloadPackageProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
         <Properties>
-          PackageToRestore=$(RuntimeNETCoreAppPackageName);
+          PackageToRestore=$(RuntimeNETCrossgenPackageName);
           PackageVersionToRestore=$(MicrosoftNETCoreAppRuntimePackageVersion);
           TargetFramework=$(TargetFramework)
         </Properties>
