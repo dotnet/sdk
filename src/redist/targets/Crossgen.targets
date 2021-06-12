@@ -5,7 +5,7 @@
     
     <PropertyGroup>
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
-      <RuntimeNETCrossgenPackageName>Microsoft.NETCore.App.Crossgen2.$(SharedFrameworkRid)</RuntimeNETCrossgenPackageName>
+      <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(SharedFrameworkRid)</RuntimeNETCrossgenPackageName>
       <_crossDir Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' != 'arm64'">/x64_arm64</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">/x86_arm</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' != 'win'">/x64_arm</_crossDir>
