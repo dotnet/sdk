@@ -123,7 +123,7 @@
     <Crossgen
         SourceAssembly="%(RoslynTargets.FullPath)"
         DestinationPath="%(RoslynTargets.FullPath)"
-        JITPath="$(LibCLRJitPath)"
+        Architecture="$(Architecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
@@ -133,7 +133,7 @@
     <Crossgen
         SourceAssembly="%(FSharpTargets.FullPath)"
         DestinationPath="%(FSharpTargets.FullPath)"
-        JITPath="$(LibCLRJitPath)"
+        Architecture="$(Architecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
@@ -143,7 +143,7 @@
     <Crossgen
         SourceAssembly="%(RemainingTargets.FullPath)"
         DestinationPath="%(RemainingTargets.FullPath)"
-        JITPath="$(LibCLRJitPath)"
+        Architecture="$(Architecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"

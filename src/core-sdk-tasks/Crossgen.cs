@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Build.Tasks
         public string DestinationPath { get; set; }
 
         [Required]
-        public string JITPath { get; set; }
+        public string Architecture { get; set; }
 
         public string CrossgenPath { get; set; }
 
@@ -138,7 +138,12 @@ namespace Microsoft.DotNet.Build.Tasks
 
         protected override string GenerateCommandLineCommands()
         {
-            return $"{GetInPath()} {GetOutPath()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
+            return $"{GetInPath()} {GetOutPath()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
+        }
+
+        private string GetArchitecture()
+        {
+            return $"--targetarch {Architecture}";
         }
 
         private string GetCreateSymbols()
@@ -192,11 +197,6 @@ namespace Microsoft.DotNet.Build.Tasks
             return platformAssemblyPaths;
         }
         
-        private string GetJitPath()
-        {
-            return $"-JITPath {JITPath}";
-        }
-
         private string GetMissingDependenciesOk()
         {
             return "-MissingDependenciesOK";
