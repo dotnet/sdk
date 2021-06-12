@@ -10,6 +10,11 @@
       <OSName Condition=" '$(OSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD')) ">freebsd</OSName>
       <OSName Condition=" '$(OSName)' == '' AND '$(IsLinux)' == 'True' ">linux</OSName>
 
+      <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS')) ">win</HostOSName>
+      <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX')) ">osx</HostOSName>
+      <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD')) ">freebsd</HostOSName>
+      <HostOSName Condition=" '$(HostOSName)' == '' AND '$(IsLinux)' == 'True' ">linux</HostOSName>
+
       <Rid Condition=" '$(Rid)' == '' ">$(OSName)-$(Architecture)</Rid>
     </PropertyGroup>
 

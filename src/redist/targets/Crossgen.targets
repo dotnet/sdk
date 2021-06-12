@@ -5,7 +5,7 @@
     
     <PropertyGroup>
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
-      <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(OSName)-$(BuildArchitecture)</RuntimeNETCrossgenPackageName>
+      <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(HostOSName)-$(BuildArchitecture)</RuntimeNETCrossgenPackageName>
       <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCrossgenPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools/crossgen2$(ExeExtension)</CrossgenPath>
       <SharedFrameworkNameVersionPath>$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
     </PropertyGroup>
