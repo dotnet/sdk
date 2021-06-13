@@ -41,19 +41,37 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 
                     compilationContext.RegisterOperationAction(operationContext =>
                     {
-                        // Warn if this is `new TCS(object)` with an expression of type `TaskContinuationOptions` as the argument.
-                        var objectCreation = (IObjectCreationOperation)operationContext.Operation;
-                        if ((objectCreation.Type.OriginalDefinition.Equals(tcsGenericType) || (tcsType != null && objectCreation.Type.OriginalDefinition.Equals(tcsType))) &&
-                            objectCreation.Constructor.Parameters.Length == 1 &&
-                            objectCreation.Constructor.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
-                            objectCreation.Arguments.Length == 1 &&
-                            objectCreation.Arguments[0].Value is IConversionOperation conversionOperation &&
-                            conversionOperation.Operand.Type != null &&
-                            conversionOperation.Operand.Type.Equals(taskContinutationOptionsType))
+                        IConversionOperation? conversionOperation = null;
+                        switch (operationContext.Operation.Kind)
+                        {
+                            case OperationKind.ObjectCreation:
+                                // `new TCS(object)` with an expression of type `TaskContinuationOptions` as the argument
+                                var objectCreation = (IObjectCreationOperation)operationContext.Operation;
+                                conversionOperation = MatchInvalidContinuationOptions(objectCreation.Constructor, objectCreation.Arguments);
+                                break;
+
+                            case OperationKind.Invocation:
+                                // `base(object)` to TCS with an expression of type `TaskContinuationOptions` as the argument
+                                var invocation = (IInvocationOperation)operationContext.Operation;
+                                conversionOperation = MatchInvalidContinuationOptions(invocation.TargetMethod, invocation.Arguments);
+                                break;
+                        }
+
+                        if (conversionOperation is not null)
                         {
                             operationContext.ReportDiagnostic(conversionOperation.CreateDiagnostic(Rule));
                         }
-                    }, OperationKind.ObjectCreation);
+                    }, OperationKind.ObjectCreation, OperationKind.Invocation);
+
+                    IConversionOperation? MatchInvalidContinuationOptions(IMethodSymbol targetMethod, ImmutableArray<IArgumentOperation> arguments) =>
+                        (targetMethod.ContainingType.OriginalDefinition.Equals(tcsGenericType) || (tcsType != null && targetMethod.ContainingType.OriginalDefinition.Equals(tcsType))) &&
+                        targetMethod.Parameters.Length == 1 &&
+                        targetMethod.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
+                        arguments.Length == 1 &&
+                        arguments[0].Value is IConversionOperation conversionOperation &&
+                        conversionOperation.Operand.Type != null &&
+                        conversionOperation.Operand.Type.Equals(taskContinutationOptionsType) ?
+                        conversionOperation : null;
                 }
             });
         }
