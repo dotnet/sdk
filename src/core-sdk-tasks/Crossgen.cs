@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 // Copy both dll and pdb files to the destination folder
                 foreach(var file in files)
                 {
-                    File.Copy(file, $"{dest}{Path.DirectorySeparatorChar}{Path.GetFileName(file)}", overwrite: true);
+                    File.Copy(file, Path.Combine(dest, Path.GetFileName(file)), overwrite: true);
                     // Delete file in temp
                     File.Delete(file);
                 }
@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
         private string GetInPath()
         {
-            return $" \"{SourceAssembly}\"";
+            return $"\"{SourceAssembly}\"";
         }
         
         private string GetOutPath()
