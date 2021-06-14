@@ -24,7 +24,7 @@
   </Target>
 
   <PropertyGroup>
-      <VersionFeature21>$([MSBuild]::Add($(VersionFeature), 27))</VersionFeature21>
+      <VersionFeature21>$([MSBuild]::Add($(VersionFeature), 26))</VersionFeature21>
       <VersionFeature31>$([MSBuild]::Add($(VersionFeature), 15))</VersionFeature31>
   </PropertyGroup>
 
