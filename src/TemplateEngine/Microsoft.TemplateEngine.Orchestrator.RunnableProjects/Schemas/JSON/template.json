@@ -54,10 +54,6 @@
                 },
                 "parameters": {
                     "properties": {
-                        "action": {
-                            "description": "Must be the string literal \"new\".",
-                            "enum": [ "new" ]
-                        },
                         "format": {
                             "description": "When a string representation of the guid is needed, this is used as the format string in Guid.ToString().",
                             "type": "string"
@@ -73,7 +69,7 @@
                 },
                 "parameters": {
                     "properties": {
-                        "action": {
+                        "format": {
                             "description": "The format string to use when converting the date-time to a string representation.",
                             "type": "string"
                         },
@@ -93,10 +89,6 @@
                 "parameters": {
                     "required": [ "low" ],
                     "properties": {
-                        "action": {
-                            "description": "Must be the string literal \"new\"",
-                            "enum": [ "new" ]
-                        },
                         "low": {
                             "description": "An integer value indicating the low-end of the range to generate the random number in.",
                             "type": "integer"
