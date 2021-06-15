@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await workspace.OpenProjectAsync(projectPath, cancellationToken: cancellationToken);
             var currentSolution = workspace.CurrentSolution;
-            var hotReloadService = new WatchHotReloadService(workspace.Services);
+            var hotReloadService = new WatchHotReloadService(workspace.Services, ImmutableArray.Create("Baseline", "AddDefinitionToExistingType", "NewTypeDefinition"));
             await hotReloadService.StartSessionAsync(currentSolution, cancellationToken);
 
             // Read the documents to memory
