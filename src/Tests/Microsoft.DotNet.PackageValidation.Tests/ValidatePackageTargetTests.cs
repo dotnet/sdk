@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         public void ValidatePackageTargetRunsSuccessfully()
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PackageValidationTestProject")
+                .CopyTestAsset("PackageValidationTestProject", allowCopyIfPresent: true)
                 .WithSource();
 
             var result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         public void ValidatePackageTargetRunsSuccessfullyWithBaselineCheck()
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PackageValidationTestProject")
+                .CopyTestAsset("PackageValidationTestProject", allowCopyIfPresent: true)
                 .WithSource();
 
             var result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         public void ValidatePackageTargetRunsSuccessfullyWithBaselineVersion()
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PackageValidationTestProject")
+                .CopyTestAsset("PackageValidationTestProject", allowCopyIfPresent: true)
                 .WithSource();
 
             var result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         public void ValidatePackageTargetWithIncorrectBaselinePackagePath()
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PackageValidationTestProject")
+                .CopyTestAsset("PackageValidationTestProject", allowCopyIfPresent: true)
                 .WithSource();
 
             string nonExistentPackageBaselinePath = Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.1.0.0.nupkg");

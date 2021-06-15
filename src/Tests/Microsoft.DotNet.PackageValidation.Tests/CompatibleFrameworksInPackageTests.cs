@@ -58,7 +58,7 @@ namespace PackageValidationTests
             string name = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
             TestProject testProject = new()
             {
-                Name = "name",
+                Name = name,
                 TargetFrameworks = "netstandard2.0;netcoreapp3.1;net5.0",
             };
 
