@@ -25,6 +25,21 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         }
 
         [Fact]
+        public void InvalidPackage()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("PackageValidationTestProject", allowCopyIfPresent: true)
+                .WithSource();
+
+            var result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
+                .Execute($"-p:ForceValidationProblem=true");
+
+            // No failures while running the package validation on a simple assembly.
+            Assert.Equal(1, result.ExitCode);
+            Assert.Contains("error CP0002: Member 'PackageValidationTestProject.Program.SomeAPINotIn6_0()' exists on the left but not on the right", result.StdOut);
+        }
+
+        [Fact]
         public void ValidatePackageTargetRunsSuccessfully()
         {
             var testAsset = _testAssetsManager
