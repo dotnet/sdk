@@ -37,6 +37,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.UpdatePackageStaticWebAssets"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />    
+
   <!-- Static web assets define how web content needs to be served from web applications, class libraries and packages during
        development and what and where web contents need to be served on the published application.
 
@@ -169,7 +174,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GenerateStaticWebAssetsManifestDependsOn>$(GenerateStaticWebAssetsManifestDependsOn);ResolveStaticWebAssetsInputs</GenerateStaticWebAssetsManifestDependsOn>
 
-    <ResolveStaticWebAssetsInputsDependsOn>ResolveProjectStaticWebAssets;ResolveReferencedProjectsStaticWebAssets;$(ResolveStaticWebAssetsInputsDependsOn)</ResolveStaticWebAssetsInputsDependsOn>
+    <ResolveStaticWebAssetsInputsDependsOn>UpdateExistingPackageStaticWebAssets;ResolveProjectStaticWebAssets;ResolveReferencedProjectsStaticWebAssets;$(ResolveStaticWebAssetsInputsDependsOn)</ResolveStaticWebAssetsInputsDependsOn>
 
     <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);AddStaticWebAssetsManifest</GetCopyToOutputDirectoryItemsDependsOn>
 
@@ -243,6 +248,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Content Remove="@(StaticWebAsset)" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="UpdateExistingPackageStaticWebAssets">
+    <UpdatePackageStaticWebAssets Assets="@(StaticWebAsset)">
+      <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedAssets" />
+    </UpdatePackageStaticWebAssets>
+
+    <ItemGroup>
+      <StaticWebAsset Remove="%(_UpdatedAssets.OriginalItemSpec)"/>
+      <StaticWebAsset Include="@(_UpdatedAssets)" RemoveMetadata="OriginalItemSpec"/>
+    </ItemGroup>
   </Target>
 
   <!-- Publish -->
@@ -319,7 +335,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </MSBuild>
 
       <ItemGroup>
-        <StaticWebAssetManifest Include="@(_ReferencedProjectsManifest)" KeepMetadata="ManifestType" />
+        <StaticWebAssetManifest Include="@(_ReferencedProjectsManifest)" KeepMetadata="ManifestType;Source" />
       </ItemGroup>
 
       <ComputeReferencedProjectAssets Manifests="@(StaticWebAssetManifest)" AssetKind="Build">
@@ -330,19 +346,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <Target Name="GetStaticWebAssetManifestPath"
       DependsOnTargets="ResolveStaticWebAssetsConfiguration"
-      Returns="@(StaticWebAssetManifest)">
+      Returns="@(_ThisProjectStaticWebAssetManifest)">
 
       <ItemGroup>
         <_StaticWebAssetManifest Include="$(StaticWebAssetBuildManifestPath)">
           <ManifestType>Build</ManifestType>
+          <Source>$(PackageId)</Source>
         </_StaticWebAssetManifest>
         <_StaticWebAssetManifest Include="$(StaticWebAssetPublishManifestPath)">
           <ManifestType>Publish</ManifestType>
+          <Source>$(PackageId)</Source>
         </_StaticWebAssetManifest>
       </ItemGroup>
 
       <ConvertToAbsolutePath Paths="@(_StaticWebAssetManifest)">
-        <Output TaskParameter="AbsolutePaths" ItemName="StaticWebAssetManifest" />
+        <Output TaskParameter="AbsolutePaths" ItemName="_ThisProjectStaticWebAssetManifest" />
       </ConvertToAbsolutePath>
 
     </Target>

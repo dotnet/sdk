@@ -175,5 +175,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 #endif
             }
         }
+
+        public class ManifestTypes
+        {
+            public const string Build = nameof(Build);
+            public const string Publish = nameof(Publish);
+        }
     }
 }

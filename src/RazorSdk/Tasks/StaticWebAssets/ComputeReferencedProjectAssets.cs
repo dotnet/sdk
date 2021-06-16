@@ -26,17 +26,29 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             try
             {
-                var manifests = new StaticWebAssetsManifest[Manifests.Length];
+                var manifests = new List<StaticWebAssetsManifest>();
                 for (var i = 0; i < Manifests.Length; i++)
                 {
                     var manifest = Manifests[i];
+                    var manifestType = manifest.GetMetadata("ManifestType");
+                    if (!string.Equals(AssetKind, manifestType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log.LogMessage(
+                            "Skipping manifest '{0}' because manifest type '{1}' is different from asset kind '{2}'",
+                            manifest.ItemSpec,
+                            manifestType,
+                            AssetKind);
+
+                        continue;
+                    }
+
                     if (!File.Exists(manifest.ItemSpec))
                     {
                         Log.LogError($"Manifest file '{manifest.ItemSpec}' does not exist.");
-                        break;
+                        return false;
                     }
 
-                    manifests[i] = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifest.ItemSpec));
+                    manifests.Add(StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifest.ItemSpec)));
                 }
 
                 var staticWebAssets = new Dictionary<string, StaticWebAsset>();

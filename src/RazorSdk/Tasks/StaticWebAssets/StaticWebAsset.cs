@@ -35,7 +35,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string CopyToPublishDirectory { get; set; }
 
-        public static StaticWebAsset FromTaskItem(ITaskItem item)
+        public static StaticWebAsset FromTaskItem(ITaskItem item) => FromTaskItemCore(item, 2);
+
+        public static StaticWebAsset FromV1TaskItem(ITaskItem item) => FromTaskItemCore(item, 1);
+
+        private static StaticWebAsset FromTaskItemCore(ITaskItem item, int version)
         {
             var result = new StaticWebAsset
             {
@@ -53,6 +57,18 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 CopyToOutputDirectory = item.GetMetadata(nameof(CopyToOutputDirectory)),
                 CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
             };
+
+            if (version == 1)
+            {
+                if (string.IsNullOrEmpty(result.AssetKind))
+                {
+                    result.AssetKind = AssetKinds.All;
+                }
+                if (string.IsNullOrEmpty(result.AssetMode))
+                {
+                    result.AssetMode = AssetModes.All;
+                }
+            }
 
             result.Validate();
             result.Normalize();
@@ -79,6 +95,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             result.SetMetadata(nameof(RelativePath), RelativePath);
             result.SetMetadata(nameof(AssetKind), AssetKind);
             result.SetMetadata(nameof(AssetMode), AssetMode);
+            result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
+            result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
 
             return result;
         }
@@ -93,27 +111,27 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 case SourceTypes.Package:
                     break;
                 default:
-                    throw new InvalidOperationException($"Unknown source type '{SourceType}'.");
+                    throw new InvalidOperationException($"Unknown source type '{SourceType}' for '{Identity}'.");
             };
 
             if (SourceId == null)
             {
-                throw new InvalidOperationException($"The '{nameof(SourceId)}' for the asset must be defined.");
+                throw new InvalidOperationException($"The '{nameof(SourceId)}' for the asset must be defined for '{Identity}'.");
             }
 
             if (ContentRoot == null)
             {
-                throw new InvalidOperationException($"The '{nameof(ContentRoot)}' for the asset must be defined.");
+                throw new InvalidOperationException($"The '{nameof(ContentRoot)}' for the asset must be defined for '{Identity}'.");
             }
 
             if (BasePath == null)
             {
-                throw new InvalidOperationException($"The '{nameof(BasePath)}' for the asset must be defined.");
+                throw new InvalidOperationException($"The '{nameof(BasePath)}' for the asset must be defined for '{Identity}'.");
             }
 
             if (RelativePath == null)
             {
-                throw new InvalidOperationException($"The '{nameof(RelativePath)}' for the asset must be defined.");
+                throw new InvalidOperationException($"The '{nameof(RelativePath)}' for the asset must be defined for '{Identity}'.");
             }
 
             switch (AssetKind)
@@ -123,7 +141,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 case AssetKinds.Publish:
                     break;
                 default:
-                    throw new InvalidOperationException($"Unknown Asset kind '{AssetKind}'.");
+                    throw new InvalidOperationException($"Unknown Asset kind '{AssetKind}' for '{Identity}'.");
             };
 
             switch (AssetMode)
@@ -133,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 case AssetModes.Reference:
                     break;
                 default:
-                    throw new InvalidOperationException($"Unknown Asset mode '{AssetMode}'.");
+                    throw new InvalidOperationException($"Unknown Asset mode '{AssetMode}' for '{Identity}'.");
             };
         }
 

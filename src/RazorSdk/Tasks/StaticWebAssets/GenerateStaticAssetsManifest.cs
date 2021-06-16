@@ -38,14 +38,30 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public override bool Execute()
         {
-            var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem).ToArray();
-            var relatedManifests = RelatedManifests.OrderBy(a => a.GetMetadata("FullPath")).Select(ComputeManifestReference).ToArray();
-            var discoveryPatterns = DiscoveryPatterns.OrderBy(a => a.ItemSpec).Select(ComputeDiscoveryPattern).ToArray();
+            try
+            {
+                var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem).ToArray();
+                var relatedManifests = RelatedManifests.OrderBy(a => a.GetMetadata("FullPath"))
+                    .Select(ComputeManifestReference)
+                    .Where(r => r != null)
+                    .ToArray();
 
-            var manifest = new StaticWebAssetsManifest(Source, BasePath, Mode, ManifestType, relatedManifests, discoveryPatterns, assets);
-            PersistManifest(manifest);
+                if (Log.HasLoggedErrors)
+                {
+                    return false;
+                }
 
-            return true;
+                var discoveryPatterns = DiscoveryPatterns.OrderBy(a => a.ItemSpec).Select(ComputeDiscoveryPattern).ToArray();
+
+                var manifest = new StaticWebAssetsManifest(Source, BasePath, Mode, ManifestType, relatedManifests, discoveryPatterns, assets);
+                PersistManifest(manifest);
+            }
+            catch (Exception ex)
+            {
+                Log.LogError(ex.ToString());
+                Log.LogErrorFromException(ex);
+            }
+            return !Log.HasLoggedErrors;
         }
 
         private StaticWebAssetsManifest.DiscoveryPattern ComputeDiscoveryPattern(ITaskItem pattern)
@@ -61,15 +77,22 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         private StaticWebAssetsManifest.ManifestReference ComputeManifestReference(ITaskItem reference)
         {
             var identity = reference.GetMetadata("FullPath");
+            var source = reference.GetMetadata("Source");
+            var manifestType = reference.GetMetadata("ManifestType");
 
             if (!File.Exists(identity))
             {
-                throw new InvalidOperationException($"Manifest '{identity}' doesn't exist.");
+                if (!string.Equals(manifestType, StaticWebAssetsManifest.ManifestTypes.Publish, StringComparison.OrdinalIgnoreCase))
+                {
+                    Log.LogError("Manifest '{0}' for project '{1}' with type '{2}' does not exist.", identity, source, manifestType);
+                }
+
+                return null;
             }
 
             var relatedManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(identity));
 
-            return new StaticWebAssetsManifest.ManifestReference(identity, relatedManifest.Hash, relatedManifest.Source, relatedManifest.ManifestType);
+            return new StaticWebAssetsManifest.ManifestReference(identity, source, manifestType, relatedManifest.Hash);
         }
 
         private void PersistManifest(StaticWebAssetsManifest manifest)
