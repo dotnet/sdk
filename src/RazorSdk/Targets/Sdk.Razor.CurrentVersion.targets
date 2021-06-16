@@ -381,10 +381,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.Razor.SourceGenerators.targets" Condition="'$(UseRazorSourceGenerator)' == 'true'" />
 
-  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.targets" Condition="'$(ScopedCssEnabled)' == 'true'" />
-
   <!-- <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets.targets" Condition="'$(StaticWebAssetsEnabled)' == 'true'" /> -->
   <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets2.targets" Condition="'$(StaticWebAssetsEnabled)' == 'true'" />
+
+  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.targets" Condition="'$(ScopedCssEnabled)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
 
