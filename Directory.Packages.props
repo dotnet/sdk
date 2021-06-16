@@ -5,7 +5,7 @@
     <MicrosoftBuildVersion>16.5.0</MicrosoftBuildVersion>
     <MicrosoftExtensionsVersion>5.0.0-preview.7.20364.11</MicrosoftExtensionsVersion>
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
-    <NuGetVersion>5.8.0-preview.3.6823</NuGetVersion>
+    <NuGetVersion>5.10.0</NuGetVersion>
   </PropertyGroup>
 
   <ItemGroup>
