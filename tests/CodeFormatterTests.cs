@@ -413,7 +413,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 3);
         }
 
-        [MSBuildFact(Skip = "Test stalls when run on CI with NET6 Preview 4")]
+        [MSBuildFact(typeof(WindowsOnly))]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenNotFixingCodeStyle()
         {
             await TestFormatWorkspaceAsync(
@@ -427,7 +427,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle);
         }
 
-        [MSBuildFact(Skip = "Test stalls when run on CI with NET6 Preview 4")]
+        [MSBuildFact(typeof(WindowsOnly))]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenFixingCodeStyleErrors()
         {
             await TestFormatWorkspaceAsync(
@@ -442,7 +442,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 codeStyleSeverity: DiagnosticSeverity.Error);
         }
 
-        [MSBuildFact(Skip = "Test stalls when run on CI with NET 6 Preview 4")]
+        [MSBuildFact(typeof(WindowsOnly))]
         public async Task FilesFormattedInCodeStyleSolution_WhenFixingCodeStyleWarnings()
         {
             await TestFormatWorkspaceAsync(
@@ -457,7 +457,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 codeStyleSeverity: DiagnosticSeverity.Warning);
         }
 
-        [MSBuildFact(Skip = "Test stalls when run on CI with NET 6 Preview 4")]
+        [MSBuildFact(typeof(WindowsOnly))]
         public async Task FilesFormattedInCodeStyleSolutionFilter_WhenFixingCodeStyleWarnings()
         {
             var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilterFilePath, _output);
@@ -475,7 +475,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 codeStyleSeverity: DiagnosticSeverity.Warning);
         }
 
-        [MSBuildFact(Skip = "Test stalls when run on CI with NET6 Preview 4")]
+        [MSBuildFact(typeof(WindowsOnly))]
         public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
         {
             await TestFormatWorkspaceAsync(
@@ -489,7 +489,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 fixCategory: FixCategory.Whitespace);
         }
 
-        [MSBuildFact(Skip = "Test stalls when run on CI with NET 6 Preview 4")]
+        [MSBuildFact(typeof(WindowsOnly))]
         public async Task FilesFormattedInAnalyzersSolution_WhenFixingAnalyzerErrors()
         {
             await TestFormatWorkspaceAsync(
