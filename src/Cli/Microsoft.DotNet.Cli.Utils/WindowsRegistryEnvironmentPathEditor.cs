@@ -6,16 +6,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
-#if NET
-    [SupportedOSPlatform("windows")]
-#endif
+#pragma warning disable CA1416
     internal class WindowsRegistryEnvironmentPathEditor : IWindowsRegistryEnvironmentPathEditor
     {
         private static string Path = "PATH";
@@ -76,4 +73,5 @@ namespace Microsoft.DotNet.Cli.Utils
         private const int HWND_BROADCAST = 0xffff;
         private const int WM_SETTINGCHANGE = 0x001A;
     }
+#pragma warning restore CA1416
 }
