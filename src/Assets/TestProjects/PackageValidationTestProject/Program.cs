@@ -7,5 +7,12 @@ namespace PackageValidationTestProject
 {
     public class Program
     {
+#if ForceValidationProblem
+#if !NET6_0
+  public void SomeAPINotIn6_0()
+  {
+  }
+#endif
+#endif
     }
 }

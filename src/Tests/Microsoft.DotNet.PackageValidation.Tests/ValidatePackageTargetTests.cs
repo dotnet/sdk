@@ -15,7 +15,8 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         {
             // clearing the cache
             string localSdkNugetCacheValidationPath = Path.Combine(TestContext.Current.NuGetCachePath, "microsoft.dotnet.packagevalidation");
-            Directory.Delete(localSdkNugetCacheValidationPath, recursive: true);
+            if (Directory.Exists(localSdkNugetCacheValidationPath))
+                Directory.Delete(localSdkNugetCacheValidationPath, recursive: true);
 
             // Packing and copying the local version package validation
             string packageValidationProjectPath = Path.Combine(Path.GetDirectoryName(_testAssetsManager.TestAssetsRoot), "Compatibility", "Microsoft.DotNet.PackageValidation", "Microsoft.DotNet.PackageValidation.csproj");
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         public void ValidatePackageTargetRunsSuccessfully()
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PackageValidationTestProject")
+                .CopyTestAsset("PackageValidationTestProject", allowCopyIfPresent: true)
                 .WithSource();
 
             var result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         public void ValidatePackageTargetRunsSuccessfullyWithBaselineCheck()
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PackageValidationTestProject")
+                .CopyTestAsset("PackageValidationTestProject", allowCopyIfPresent: true)
                 .WithSource();
 
             var result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
@@ -53,7 +54,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
                 .Execute($"-p:PackageVersion=2.0.0;PackageValidationBaselinePath={packageValidationBaselinePath}");
 
-            // No failures while running the package validation on a simple assembly with baseline flag.
+            // No failures while running the package validation on a simple assembly.
             Assert.Equal(0, result.ExitCode);
         }
 
@@ -61,7 +62,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         public void ValidatePackageTargetRunsSuccessfullyWithBaselineVersion()
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PackageValidationTestProject")
+                .CopyTestAsset("PackageValidationTestProject", allowCopyIfPresent: true)
                 .WithSource();
 
             var result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
@@ -72,7 +73,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
                 .Execute($"-p:PackageVersion=2.0.0;PackageValidationBaselineVersion=1.0.0");
 
-            // No failures while running the package validation on a simple assembly with PackageValidationBaselineVersion flag.
+            // No failures while running the package validation on a simple assembly.
             Assert.Equal(0, result.ExitCode);
         }
 
@@ -81,7 +82,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         public void ValidatePackageTargetWithIncorrectBaselinePackagePath()
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PackageValidationTestProject")
+                .CopyTestAsset("PackageValidationTestProject", allowCopyIfPresent: true)
                 .WithSource();
 
             string nonExistentPackageBaselinePath = Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.1.0.0.nupkg");
