@@ -28,7 +28,7 @@
   <String Id="ModifyCloseButton">&amp;Zamknij</String>
   <String Id="SuccessRepairHeader">Pomyślnie ukończono naprawę</String>
   <String Id="SuccessUninstallHeader">Pomyślnie ukończono dezinstalację</String>
-  <String Id="SuccessHeader">Pomyślnie ukończono instalację</String>
+  <String Id="SuccessHeader">Instalacja powiodła się.</String>
   <String Id="SuccessLaunchButton">&amp;Uruchom</String>
   <String Id="SuccessRestartText">Aby zakończyć instalację oprogramowania, należy ponownie uruchomić komputer.</String>
   <String Id="SuccessRestartButton">&amp;Uruchom ponownie</String>
@@ -38,7 +38,7 @@
   <String Id="FailureUninstallHeader">Dezinstalacja nie powiodła się</String>
   <String Id="FailureRepairHeader">Naprawa nie powiodła się</String>
   <String Id="FailureHyperlinkLogText">Co najmniej jeden problem spowodował niepowodzenie instalacji. Rozwiąż problemy, a następnie ponów próbę instalacji. Aby uzyskać więcej informacji, zobacz &lt;a href="#"&gt;plik dziennika&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Aby ukończyć wycofywanie oprogramowania, musisz uruchomić ponownie komputer.</String>
+  <String Id="FailureRestartText">Aby zakończyć wycofywanie oprogramowania, musisz uruchomić ponownie komputer.</String>
   <String Id="FailureRestartButton">&amp;Uruchom ponownie</String>
   <String Id="FailureCloseButton">&amp;Zamknij</String>
   <String Id="FilesInUseHeader">Pliki w użyciu</String>
@@ -63,7 +63,7 @@ Zasoby
     • Dokumentacja zestawu SDK: https://aka.ms/dotnet-sdk-docs
     • Informacje o wersji: https://aka.ms/dotnet5-release-notes
     • Samouczki: https://aka.ms/dotnet-tutorials</String>
-  <String Id="FirstTimeWelcomeMessageArm64">Instalacja zakończyła się pomyślnie.
+<String Id="FirstTimeWelcomeMessageArm64">Instalacja zakończyła się pomyślnie.
 
 Następujące elementy zostały zainstalowane w: „[DOTNETHOME]”
     • Zestaw .NET SDK [DOTNETSDKVERSION]
@@ -87,7 +87,7 @@ Zasoby
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Dokumentacja zestawu SDK&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Zasady zachowania poufności informacji&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Informacje o licencjonowaniu dla platformy .NET&lt;/A&gt;</String>
-  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;Zbieranie telemetrii i rezygnacja&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Uwaga dotycząca instalacji</String>
   <String Id="InstallationNote">W trakcie procesu instalacji zostanie uruchomione polecenie, które zwiększy szybkość przywracania projektu i umożliwi dostęp do trybu offline. Zajmie to maksymalnie minutę.
   </String>

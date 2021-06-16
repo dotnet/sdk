@@ -18,8 +18,8 @@
   <String Id="InstallOptionsButton">&amp;Options</String>
   <String Id="InstallInstallButton">&amp;Installer</String>
   <String Id="InstallCloseButton">&amp;Fermer</String>
-  <String Id="ProgressHeader">Progression de l'installation</String>
-  <String Id="ProgressLabel">En cours :</String>
+  <String Id="ProgressHeader">Avancement de l'installation</String>
+  <String Id="ProgressLabel">En cours :</String>
   <String Id="OverallProgressPackageText">Initialisation...</String>
   <String Id="ProgressCancelButton">&amp;Annuler</String>
   <String Id="ModifyHeader">Modifier l'installation</String>
@@ -29,7 +29,7 @@
   <String Id="SuccessRepairHeader">Réparation terminée avec succès</String>
   <String Id="SuccessUninstallHeader">Désinstallation terminée avec succès</String>
   <String Id="SuccessHeader">Installation/désinstallation réussie</String>
-  <String Id="SuccessLaunchButton">&amp;Démarrer</String>
+  <String Id="SuccessLaunchButton">&amp;Lancer</String>
   <String Id="SuccessRestartText">Vous devez redémarrer l'ordinateur pour achever l'installation du logiciel.</String>
   <String Id="SuccessRestartButton">&amp;Redémarrer</String>
   <String Id="SuccessCloseButton">&amp;Fermer</String>
@@ -38,12 +38,12 @@
   <String Id="FailureUninstallHeader">Échec de la désinstallation</String>
   <String Id="FailureRepairHeader">Échec de la réparation</String>
   <String Id="FailureHyperlinkLogText">Un ou plusieurs problèmes sont à l'origine de l'échec de l'installation. Corrigez ces problèmes, puis recommencez l'installation. Pour plus d'informations, voir le &lt;a href="#"&gt;fichier journal&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Vous devez redémarrer votre ordinateur pour terminer l'opération de restauration du logiciel.</String>
+  <String Id="FailureRestartText">Vous devez redémarrer votre ordinateur afin de terminer la restauration du logiciel.</String>
   <String Id="FailureRestartButton">&amp;Redémarrer</String>
   <String Id="FailureCloseButton">&amp;Fermer</String>
   <String Id="FilesInUseHeader">Fichiers en cours d'utilisation</String>
   <String Id="FilesInUseLabel">Les applications suivantes utilisent des fichiers nécessitant une mise à jour :</String>
-  <String Id="FilesInUseCloseRadioButton">&amp;Fermez les applications, puis essayez de les redémarrer.</String>
+  <String Id="FilesInUseCloseRadioButton">&amp;Fermer les applications essayez de les ouvrir de nouveau.</String>
   <String Id="FilesInUseDontCloseRadioButton">&amp;Ne pas fermer les applications. Un redémarrage sera nécessaire.</String>
   <String Id="FilesInUseOkButton">&amp;OK</String>
   <String Id="FilesInUseCancelButton">&amp;Annuler</String>
@@ -63,7 +63,7 @@ Ressources
     • Documentation de kit SDK sur https://aka.ms/dotnet-sdk-docs
     • Notes de publication sur https://aka.ms/dotnet5-release-notes
     • Tutoriels sur https://aka.ms/dotnet-tutorials</String>
-  <String Id="FirstTimeWelcomeMessageArm64">L'installation a réussi.
+<String Id="FirstTimeWelcomeMessageArm64">L'installation a réussi.
 
 Les éléments suivants ont été installés sur : '[DOTNETHOME]'
     • Kit SDK .NET [DOTNETSDKVERSION]
@@ -71,14 +71,14 @@ Les éléments suivants ont été installés sur : '[DOTNETHOME]'
     • Runtime ASP.NET Core [ASPNETCOREVERSION]
 
 Ce produit collecte des données d'utilisation
-    • Plus informations et refus d'adhésion sur https://aka.ms/dotnet-cli-telemetry
+    • Pour plus d'informations ou pour vous y opposer, accédez à https://aka.ms/dotnet-cli-telemetry
 
 Ressources
     • Documentation .NET sur https://aka.ms/dotnet-docs
     • Documentation de kit SDK sur https://aka.ms/dotnet-sdk-docs
     • Notes de publication sur https://aka.ms/dotnet5-release-notes
     • Tutoriels sur https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">SDK .NET</String>
+  <String Id="WelcomeHeaderMessage">Kit SDK .NET</String>
   <String Id="WelcomeDescription">
     Le kit SDK .NET permet de générer, d'exécuter et de tester des applications .NET. Vous pouvez choisir parmi plusieurs langages, éditeurs et outils de développement. De plus, vous pouvez bénéficier d'un vaste écosystème de bibliothèques afin de générer des applications pour le web, les appareils mobiles, les ordinateurs de bureau, les jeux et l'IoT. Nous espérons que vous l'apprécierez !</String>
   <String Id="LearnMoreTitle">En savoir plus sur .NET</String>
@@ -87,11 +87,11 @@ Ressources
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Documentation du kit SDK&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Déclaration de confidentialité&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Informations de licence pour .NET&lt;/A&gt;</String>
-  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;Collecte et désactivation de la télémétrie&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Note d'installation</String>
   <String Id="InstallationNote">Une commande va être exécutée pendant le processus d'installation, ce qui va améliorer la vitesse de restauration du projet et permettre l'accès hors connexion. L'opération va prendre environ une minute.
   </String>
-  <String Id="VisualStudioWarning">Si vous comptez utiliser .NET 5.0 avec Visual Studio, Visual Studio 2019 16.8 ou version ultérieure est nécessaire. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;En savoir plus&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si vous comptez utiliser .NET 5.0 avec Visual Studio, Visual Studio 2019 16.8 ou une version ultérieure est nécessaire. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;En savoir plus&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">En cliquant sur Installer, vous acceptez les conditions suivantes.</String>
 </WixLocalization>

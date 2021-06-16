@@ -24,7 +24,7 @@
   </Target>
 
   <PropertyGroup>
-      <VersionFeature21>$([MSBuild]::Add($(VersionFeature), 27))</VersionFeature21>
+      <VersionFeature21>$([MSBuild]::Add($(VersionFeature), 26))</VersionFeature21>
       <VersionFeature31>$([MSBuild]::Add($(VersionFeature), 15))</VersionFeature31>
   </PropertyGroup>
 
@@ -481,6 +481,15 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="NETStandard.Library.Ref"
                               TargetingPackVersion="$(NETStandardLibraryRefPackageVersion)"
                               />
+                              
+    <!-- Supported Windows versions -->
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.20348.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_20348PackageVersion)" MinimumNETVersion="5.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.19041.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)" MinimumNETVersion="5.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.18362.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)" MinimumNETVersion="5.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.17763.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)" MinimumNETVersion="5.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="8.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="7.0" />
+    
   </ItemGroup>
 </Project>
 ]]>

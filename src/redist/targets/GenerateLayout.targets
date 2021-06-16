@@ -334,7 +334,7 @@
 
     <DownloadFile Condition=" '@(ComponentToDownload)' != '' And '%(ComponentToDownload.ShouldDownload)' == 'true'"
                   Uri="%(ComponentToDownload.BaseUrl)/%(ComponentToDownload.DownloadFileName)"
-                  PrivateUri="%(ComponentToDownload.PrivateBaseUrl)/%(ComponentToDownload.DownloadFileName)$(DOTNETCLIMSRC_READ_SAS_TOKEN)"
+                  PrivateUri="%(ComponentToDownload.PrivateBaseUrl)/%(ComponentToDownload.DownloadFileName)$([System.Environment]::GetEnvironmentVariable('DOTNETCLIMSRC_READ_SAS_TOKEN'))"
                   DestinationPath="%(ComponentToDownload.DownloadDestination)" />
 
     <ItemGroup>
