@@ -36,32 +36,42 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var matcher = new Matcher().AddInclude(Pattern);
                 var assets = new List<ITaskItem>();
+                var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
 
                 for (var i = 0; i < Candidates.Length; i++)
                 {
                     var candidate = Candidates[i];
-                    var match = matcher.Match(candidate.ItemSpec);
+                    var candidateMatchPath = GetCandidateMatchPath(candidate);
+                    var match = matcher.Match(candidateMatchPath);
                     if (!match.HasMatches)
                     {
-                        Log.LogMessage("Rejected asset '{0}' for pattern '{1}'", candidate.ItemSpec, Pattern);
+                        Log.LogMessage("Rejected asset '{0}' for pattern '{1}'", candidateMatchPath, Pattern);
                         continue;
                     }
 
-                    var assetCopyOptions = ComputeAssetCopyOptions(candidate);
+                    Log.LogMessage("Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidateMatchPath, Pattern, match.Files.Single().Stem);
 
-                    Log.LogMessage("Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidate.ItemSpec, Pattern, match.Files.Single().Stem);
-                    assets.Add(new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
+                    var candidateRelativePath = StaticWebAsset.Normalize(match.Files.Single().Stem);
+                    var asset = new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
                     {
                         [nameof(StaticWebAsset.SourceType)] = StaticWebAsset.SourceTypes.Discovered,
                         [nameof(StaticWebAsset.SourceId)] = SourceId,
                         [nameof(StaticWebAsset.ContentRoot)] = ContentRoot,
                         [nameof(StaticWebAsset.BasePath)] = StaticWebAsset.Normalize(BasePath),
-                        [nameof(StaticWebAsset.RelativePath)] = StaticWebAsset.Normalize(match.Files.Single().Stem),
-                        [nameof(StaticWebAsset.AssetKind)] = assetCopyOptions.AssetKind,
+                        [nameof(StaticWebAsset.RelativePath)] = candidateRelativePath,
+                        [nameof(StaticWebAsset.AssetKind)] = StaticWebAsset.AssetKinds.All,
                         [nameof(StaticWebAsset.AssetMode)] = StaticWebAsset.AssetModes.All,
-                        [nameof(StaticWebAsset.CopyToOutputDirectory)] = assetCopyOptions.CopyToOutputDirectory,
-                        [nameof(StaticWebAsset.CopyToPublishDirectory)] = assetCopyOptions.CopyToPublishDirectory,
-                    }));
+                        [nameof(StaticWebAsset.CopyToOutputDirectory)] = ComputeCopyOption(candidate.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory))),
+                        [nameof(StaticWebAsset.CopyToPublishDirectory)] = ComputeCopyOption(candidate.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory))),
+                    });
+
+                    assets.Add(asset);
+
+                    UpdateAssetKindIfNecessary(assetsByRelativePath, candidateRelativePath, asset);
+                    if (Log.HasLoggedErrors)
+                    {
+                        return false;
+                    }
                 }
 
                 DiscoveredStaticWebAssets = assets.ToArray();
@@ -74,40 +84,107 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private static CandidateCopyOptions ComputeAssetCopyOptions(ITaskItem candidate)
+        private string GetCandidateMatchPath(ITaskItem candidate)
         {
-            var copyToOutputDirectory = candidate.GetMetadata(nameof(CandidateCopyOptions.CopyToOutputDirectory));
-            var copyToPublishDirectory = candidate.GetMetadata(nameof(CandidateCopyOptions.CopyToPublishDirectory));
-
-            return new CandidateCopyOptions()
+            var targetPath = candidate.GetMetadata("TargetPath");
+            if (!string.IsNullOrEmpty(targetPath))
             {
-                CopyToOutputDirectory = string.Equals(copyToOutputDirectory, CandidateCopyOptions.CopyOptions.Never) ? CandidateCopyOptions.CopyOptions.Never :
-                string.Equals(copyToOutputDirectory, CandidateCopyOptions.CopyOptions.PreserveNewest) ? CandidateCopyOptions.CopyOptions.PreserveNewest :
-                string.Equals(copyToOutputDirectory, CandidateCopyOptions.CopyOptions.Always) ? CandidateCopyOptions.CopyOptions.Always :
-                CandidateCopyOptions.CopyOptions.Never,
+                Log.LogMessage("TargetPath '{0}' found for candidate '{1}' and will be used for matching.", targetPath, candidate.ItemSpec);
+                return targetPath;
+            }
 
-                CopyToPublishDirectory = string.Equals(copyToPublishDirectory, CandidateCopyOptions.CopyOptions.Never) ? CandidateCopyOptions.CopyOptions.Never :
-                string.Equals(copyToPublishDirectory, CandidateCopyOptions.CopyOptions.PreserveNewest) ? CandidateCopyOptions.CopyOptions.PreserveNewest :
-                string.Equals(copyToPublishDirectory, CandidateCopyOptions.CopyOptions.Always) ? CandidateCopyOptions.CopyOptions.Always :
-                CandidateCopyOptions.CopyOptions.Never
-            };
+            var linkPath = candidate.GetMetadata("Link");
+            if (!string.IsNullOrEmpty(linkPath))
+            {
+                Log.LogMessage("Link '{0}' found for candidate '{1}' and will be used for matching.", linkPath, candidate.ItemSpec);
+
+                return linkPath;
+            }
+
+            return candidate.ItemSpec;
         }
 
-        private struct CandidateCopyOptions
+        private void UpdateAssetKindIfNecessary(Dictionary<string, List<ITaskItem>> assetsByRelativePath, string candidateRelativePath, TaskItem asset)
         {
-            public string CopyToOutputDirectory { get; set; }
-
-            public string CopyToPublishDirectory { get; set; }
-
-            public string AssetKind => CopyToPublishDirectory == CopyOptions.Never ? StaticWebAsset.AssetKinds.Build :
-                CopyToOutputDirectory == CopyOptions.Never ? StaticWebAsset.AssetKinds.Publish : StaticWebAsset.AssetKinds.All;
-
-            public static class CopyOptions
+            // We want to support content items in the form of
+            // <Content Include="service-worker.development.js CopyToPublishDirectory="Never" TargetPath="wwwroot\service-worker.js" />
+            // <Content Include="service-worker.js />
+            // where the first item is used during development and the second item is used when the app is published.
+            // To that matter, we keep track of the assets relative paths and make sure that when two assets target the same relative paths, at least one
+            // of them is marked with CopyToPublishDirectory="Never" to identify it as a "development/build" time asset as opposed to the other asset.
+            // As a result, assets by default have an asset kind 'All' when there is only one asset for the target path and 'Build' or 'Publish' when there are two of them.
+            if (!assetsByRelativePath.TryGetValue(candidateRelativePath, out var existing))
             {
-                public const string Never = nameof(Never);
-                public const string PreserveNewest = nameof(PreserveNewest);
-                public const string Always = nameof(Always);
+                assetsByRelativePath.Add(candidateRelativePath, new List<ITaskItem> { asset });
             }
+            else
+            {
+                if (existing.Count == 2)
+                {
+                    var first = existing[0];
+                    var second = existing[1];
+                    var errorMessage = "More than two assets are targeting the same path: " + Environment.NewLine +
+                        "'{0}' with kind '{1}'" + Environment.NewLine +
+                        "'{2}' with kind '{3}'" + Environment.NewLine +
+                        "for path '{4}'";
+
+                    Log.LogError(
+                        errorMessage,
+                        first.GetMetadata("FullPath"),
+                        first.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                        second.GetMetadata("FullPath"),
+                        second.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                        candidateRelativePath);
+
+                    return;
+                }
+                else if (existing.Count == 1)
+                {
+                    var existingAsset = existing[0];
+                    switch ((asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)), existingAsset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory))))
+                    {
+                        case (CopyOptions.Never, CopyOptions.Never):
+                        case (not CopyOptions.Never, not CopyOptions.Never):
+                            var errorMessage = "Two assets found targeting the same path with incompatible asset kinds: " + Environment.NewLine +
+                                "'{0}' with kind '{1}'" + Environment.NewLine +
+                                "'{2}' with kind '{3}'" + Environment.NewLine +
+                                "for path '{4}'";
+                            Log.LogError(
+                                errorMessage,
+                                existingAsset.GetMetadata("FullPath"),
+                                existingAsset.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                                asset.GetMetadata("FullPath"),
+                                asset.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                                candidateRelativePath);
+
+                            break;
+
+                        case (CopyOptions.Never, not CopyOptions.Never):
+                            existing.Add(asset);
+                            asset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Build);
+                            existingAsset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Publish);
+                            break;
+
+                        case (not CopyOptions.Never, CopyOptions.Never):
+                            existing.Add(asset);
+                            asset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Publish);
+                            existingAsset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Build);
+                            break;
+                    }
+                }
+            }
+        }
+
+        private static string ComputeCopyOption(string copyToOutputDirectory) => string.Equals(copyToOutputDirectory, CopyOptions.Never) ? CopyOptions.Never :
+                        string.Equals(copyToOutputDirectory, CopyOptions.PreserveNewest) ? CopyOptions.PreserveNewest :
+                        string.Equals(copyToOutputDirectory, CopyOptions.Always) ? CopyOptions.Always :
+                        CopyOptions.Never;
+
+        private static class CopyOptions
+        {
+            public const string Never = nameof(Never);
+            public const string PreserveNewest = nameof(PreserveNewest);
+            public const string Always = nameof(Always);
         }
     }
 }

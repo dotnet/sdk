@@ -176,7 +176,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                    BasePath == asset.BasePath &&
                    RelativePath == asset.RelativePath &&
                    AssetKind == asset.AssetKind &&
-                   AssetMode == asset.AssetMode;
+                   AssetMode == asset.AssetMode &&
+                   CopyToOutputDirectory == asset.CopyToOutputDirectory &&
+                   CopyToPublishDirectory == asset.CopyToPublishDirectory;
         }
 
         public static class AssetModes
@@ -214,7 +216,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             $"BasePath: {BasePath}, " +
             $"RelativePath: {RelativePath}, " +
             $"AssetKind: {AssetKind}, " +
-            $"AssetMode: {AssetMode}";
+            $"AssetMode: {AssetMode}, " +
+            $"AssetKind: {CopyToOutputDirectory}, " +
+            $"AssetKind: {CopyToPublishDirectory}";
 
         public override int GetHashCode()
         {
