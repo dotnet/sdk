@@ -81,6 +81,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                             filePaths.Add(filePath);
                         }
                     }
+
                     return filePaths.ToImmutable();
                 }
             }

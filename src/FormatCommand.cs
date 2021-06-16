@@ -126,7 +126,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 option.GetValueOrDefault<T>() is { } t)
             {
                 return t;
-            };
+            }
 
             return default;
         }
