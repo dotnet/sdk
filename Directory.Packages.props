@@ -5,7 +5,7 @@
     <MicrosoftBuildVersion>16.5.0</MicrosoftBuildVersion>
     <MicrosoftExtensionsVersion>5.0.0-preview.7.20364.11</MicrosoftExtensionsVersion>
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
-    <NuGetVersion>5.10.0-preview.2.7190</NuGetVersion>
+    <NuGetVersion>5.10.0</NuGetVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,8 +35,8 @@
     <PackageVersion Include="NuGet.Packaging" Version="$(NuGetVersion)" />
     <PackageVersion Include="NuGet.Protocol" Version="$(NuGetVersion)" />
     <PackageVersion Include="NuGet.Versioning" Version="$(NuGetVersion)" />
-    <PackageVersion Include="System.CommandLine.Rendering" Version="0.3.0-alpha.21216.1" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta1.21216.1" />
+    <PackageVersion Include="System.CommandLine.Rendering" Version="0.3.0-alpha.21256.1" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta1.21256.1" />
     <PackageVersion Include="System.Text.Json" Version="$(MicrosoftExtensionsVersion)" />
 
     <!-- Avoid version conflicts during build. -->

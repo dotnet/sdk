@@ -26,7 +26,7 @@ jobs:
         _configuration: Release
   timeoutInMinutes: 10
   steps:
-    - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine
+    - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine /p:TestTimeout=120000 /p:TestRunnerAdditionalArguments="-verbose"
       displayName: Build and Test
     - task: PublishTestResults@2
       inputs:
@@ -57,7 +57,7 @@ jobs:
         _configuration: Release
   timeoutInMinutes: 10
   steps:
-    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine
+    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=120000 /p:TestRunnerAdditionalArguments="-verbose"
       displayName: Build and Test
     - task: PublishTestResults@2
       displayName: Publish xUnit Test Results
@@ -90,7 +90,7 @@ jobs:
         _configuration: Release
   timeoutInMinutes: 10
   steps:
-    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine
+    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=120000 /p:TestRunnerAdditionalArguments="-verbose"
       displayName: Build and Test
     - task: PublishTestResults@2
       displayName: Publish xUnit Test Results

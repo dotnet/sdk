@@ -53,6 +53,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                             loader: new FileTextLoader(filePaths[index], DefaultEncoding),
                             filePath: filePaths[index]);
                     }
+
                     return documents;
                 }
             }

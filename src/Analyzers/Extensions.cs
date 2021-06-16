@@ -132,6 +132,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     {
                         severity = configuredSeverity;
                     }
+
                     continue;
                 }
 
@@ -141,6 +142,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     {
                         severity = codeStyleSeverity;
                     }
+
                     continue;
                 }
 

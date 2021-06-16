@@ -96,7 +96,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             Assert.Single(analyzers);
         }
 
-
         private static async Task<AnalyzersAndFixers> GetAnalyzersAndFixersAsync()
         {
             var assemblies = new[]

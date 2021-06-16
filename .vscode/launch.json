@@ -10,7 +10,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp3.1/dotnet-format.dll",
       "args": [
         "@validate.rsp",
         "--check"

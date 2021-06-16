@@ -223,7 +223,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 Assert.True(includeGenerated);
 
                 return Task.FromResult(uniqueExitCode);
-            };
+            }
 
             var args = @"
 ./src

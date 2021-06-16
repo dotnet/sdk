@@ -28,7 +28,6 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
                     info = info.Parent;
                 }
 
-
                 Environment.CurrentDirectory = info.FullName;
             }
         }
