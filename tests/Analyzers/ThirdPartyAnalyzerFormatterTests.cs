@@ -121,7 +121,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Analyzers, analyzerReferences: analyzerReferences);
         }
 
-        [Fact]
+        [Fact(Skip = "Test stalls when run on CI with NET6 Preview 4")]
         public async Task TestIDisposableAnalyzer_AddsUsing()
         {
             var analyzerReferences = GetAnalyzerReferences("IDisposable");
