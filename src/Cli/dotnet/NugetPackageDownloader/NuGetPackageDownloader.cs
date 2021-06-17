@@ -26,12 +26,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 {
     internal class NuGetPackageDownloader : INuGetPackageDownloader
     {
-        private readonly SourceCacheContext _cacheSettings = new SourceCacheContext
-        {
-            NoCache = true,
-            DirectDownload = true
-        };
-
+        private readonly SourceCacheContext _cacheSettings;
         private readonly IFilePermissionSetter _filePermissionSetter;
         
         /// <summary>
@@ -61,6 +56,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                                                          tempDirectory: packageInstallDir, logger: _verboseLogger);
             _filePermissionSetter = filePermissionSetter ?? new FilePermissionSetter();
             _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
+
+            _cacheSettings = new SourceCacheContext
+            {
+                NoCache = _restoreActionConfig.NoCache,
+                DirectDownload = true,
+                IgnoreFailedSources = _restoreActionConfig.IgnoreFailedSources,
+            };
         }
 
         public async Task<string> DownloadPackageAsync(PackageId packageId,
@@ -381,11 +383,22 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     nameof(packageIdentifier));
             }
 
-            (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)[] foundPackagesBySource =
-                await Task.WhenAll(
-                        packageSources.Select(source => GetPackageMetadataAsync(source, packageIdentifier,
-                            true, cancellationToken)))
-                    .ConfigureAwait(false);
+            (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)[] foundPackagesBySource;
+
+            if (_restoreActionConfig.DisableParallel)
+            {
+                foundPackagesBySource = packageSources.Select(source => GetPackageMetadataAsync(source,
+                    packageIdentifier,
+                    true, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult()).ToArray();
+            }
+            else
+            {
+                foundPackagesBySource =
+                    await Task.WhenAll(
+                            packageSources.Select(source => GetPackageMetadataAsync(source, packageIdentifier,
+                                true, cancellationToken)))
+                        .ConfigureAwait(false);
+            }
 
             if (!foundPackagesBySource.Any())
             {
@@ -440,25 +453,49 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             List<Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)>> tasks = sources
                 .Select(source =>
                     GetPackageMetadataAsync(source, packageIdentifier, true, linkedCts.Token)).ToList();
-            while (tasks.Any())
-            {
-                Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)> finishedTask =
-                    await Task.WhenAny(tasks).ConfigureAwait(false);
-                tasks.Remove(finishedTask);
-                (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages) result =
-                    await finishedTask.ConfigureAwait(false);
-                if (result.foundPackages == null)
-                {
-                    continue;
-                }
 
-                atLeastOneSourceValid = true;
-                IPackageSearchMetadata matchedVersion =
-                    result.foundPackages.FirstOrDefault(package => package.Identity.Version == packageVersion);
-                if (matchedVersion != null)
+            if (_restoreActionConfig.DisableParallel)
+            {
+                foreach (Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)> task in tasks)
                 {
-                    linkedCts.Cancel();
-                    return (result.source, matchedVersion);
+                    var result = task.ConfigureAwait(false).GetAwaiter().GetResult();
+                    if (result.foundPackages == null)
+                    {
+                        continue;
+                    }
+
+                    atLeastOneSourceValid = true;
+                    IPackageSearchMetadata matchedVersion =
+                        result.foundPackages.FirstOrDefault(package => package.Identity.Version == packageVersion);
+                    if (matchedVersion != null)
+                    {
+                        linkedCts.Cancel();
+                        return (result.source, matchedVersion);
+                    }
+                }
+            }
+            else
+            {
+                while (tasks.Any())
+                {
+                    Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)> finishedTask =
+                        await Task.WhenAny(tasks).ConfigureAwait(false);
+                    tasks.Remove(finishedTask);
+                    (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages) result =
+                        await finishedTask.ConfigureAwait(false);
+                    if (result.foundPackages == null)
+                    {
+                        continue;
+                    }
+
+                    atLeastOneSourceValid = true;
+                    IPackageSearchMetadata matchedVersion =
+                        result.foundPackages.FirstOrDefault(package => package.Identity.Version == packageVersion);
+                    if (matchedVersion != null)
+                    {
+                        linkedCts.Cancel();
+                        return (result.source, matchedVersion);
+                    }
                 }
             }
 
