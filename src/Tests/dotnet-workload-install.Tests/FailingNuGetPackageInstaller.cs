@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         public Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation = null,
+            RestoreActionConfig restoreActionConfig = TODO,
             bool includePreview = false,
             DirectoryPath? downloadFolder = null)
         {

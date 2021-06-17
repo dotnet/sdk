@@ -31,16 +31,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly SdkFeatureBand _sdkFeatureBand;
         private readonly NetSdkManagedInstallationRecordRepository _installationRecordRepository;
         private readonly PackageSourceLocation _packageSourceLocation;
+        private readonly RestoreActionConfig _restoreActionConfig;
 
-        public NetSdkManagedInstaller(
-            IReporter reporter,
+        public NetSdkManagedInstaller(IReporter reporter,
             SdkFeatureBand sdkFeatureBand,
             IWorkloadResolver workloadResolver,
             INuGetPackageDownloader nugetPackageDownloader = null,
-            string dotnetDir =  null,
-            string tempDirPath =  null,
-            VerbosityOptions verbosity = VerbosityOptions.normal, 
-            PackageSourceLocation packageSourceLocation = null)
+            string dotnetDir = null,
+            string tempDirPath = null,
+            VerbosityOptions verbosity = VerbosityOptions.normal,
+            PackageSourceLocation packageSourceLocation = null,
+            RestoreActionConfig restoreActionConfig = null)
         {
             _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             _tempPackagesDir = new DirectoryPath(tempDirPath ?? Path.GetTempPath());
@@ -54,6 +55,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _workloadResolver = workloadResolver;
             _installationRecordRepository = new NetSdkManagedInstallationRecordRepository(_dotnetDir);
             _packageSourceLocation = packageSourceLocation;
+            _restoreActionConfig = restoreActionConfig;
         }
 
         public InstallationUnit GetInstallationUnit()
@@ -91,7 +93,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             string packagePath;
                             if (offlineCache == null || !offlineCache.HasValue)
                             {
-                                packagePath = _nugetPackageDownloader.DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId), new NuGetVersion(packInfo.Version), _packageSourceLocation).GetAwaiter().GetResult();
+                                packagePath = _nugetPackageDownloader
+                                    .DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId),
+                                        new NuGetVersion(packInfo.Version),
+                                        _packageSourceLocation,
+                                        _restoreActionConfig).GetAwaiter().GetResult();
                                 tempFilesToDelete.Add(packagePath);
                             }
                             else
@@ -189,7 +195,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                        if (offlineCache == null || !offlineCache.HasValue)
                        {
                            packagePath = _nugetPackageDownloader.DownloadPackageAsync(WorkloadManifestUpdater.GetManifestPackageId(sdkFeatureBand, manifestId),
-                               new NuGetVersion(manifestVersion.ToString()), _packageSourceLocation).GetAwaiter().GetResult();
+                               new NuGetVersion(manifestVersion.ToString()), _packageSourceLocation, _restoreActionConfig).GetAwaiter().GetResult();
                        }
                        else
                        {
@@ -264,8 +270,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 Directory.CreateDirectory(cachePath.Value);
             }
-            _nugetPackageDownloader.DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId), new NuGetVersion(packInfo.Version), downloadFolder: cachePath,
-                packageSourceLocation: _packageSourceLocation, includePreview: includePreviews).Wait();
+
+            _nugetPackageDownloader.DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId),
+                new NuGetVersion(packInfo.Version),
+                packageSourceLocation: _packageSourceLocation,
+                restoreActionConfig: _restoreActionConfig,
+                includePreview: includePreviews,
+                downloadFolder: cachePath).GetAwaiter().GetResult();
         }
 
         public void GarbageCollectInstalledWorkloadPacks()

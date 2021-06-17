@@ -58,6 +58,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public async Task<string> DownloadPackageAsync(PackageId packageId,
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
+            RestoreActionConfig restoreActionConfig = null,
             bool includePreview = false,
             DirectoryPath? downloadFolder = null)
         {

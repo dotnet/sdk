@@ -87,10 +87,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                           filePermissionSetter: null,
                                           new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, new NullLogger()),
                                           new NullLogger());
-            _workloadInstaller = workloadInstaller ?? 
-                WorkloadInstallerFactory.GetWorkloadInstaller(_reporter, sdkFeatureBand, _workloadResolver, _verbosity, _nugetPackageDownloader, _dotnetPath, _tempDirPath, _packageSourceLocation);
+            var restoreActionConfig = _parseResult.ToRestoreActionConfig();
+            _workloadInstaller = workloadInstaller ??
+                                 WorkloadInstallerFactory.GetWorkloadInstaller(_reporter, sdkFeatureBand,
+                                     _workloadResolver, _verbosity, _nugetPackageDownloader, _dotnetPath, _tempDirPath,
+                                     _packageSourceLocation, restoreActionConfig);
             _userHome = userHome ?? CliFolderPathCalculator.DotnetHomePath;
-            _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(_reporter, _workloadManifestProvider, _nugetPackageDownloader, _userHome, _tempDirPath, _packageSourceLocation);
+            _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(_reporter,
+                _workloadManifestProvider, _nugetPackageDownloader, _userHome, _tempDirPath, _packageSourceLocation,
+                restoreActionConfig);
 
             ValidateWorkloadIdsInput();
         }

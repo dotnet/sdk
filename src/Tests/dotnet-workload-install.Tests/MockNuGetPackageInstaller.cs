@@ -31,8 +31,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public Task<string> DownloadPackageAsync(PackageId packageId,
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
+            RestoreActionConfig restoreActionConfig = TODO,
             bool includePreview = false,
-			DirectoryPath? downloadFolder = null)
+            DirectoryPath? downloadFolder = null)
         {
             DownloadCallParams.Add((packageId, packageVersion, downloadFolder, packageSourceLocation));
             var path = Path.Combine(_downloadPath, "mock.nupkg");
