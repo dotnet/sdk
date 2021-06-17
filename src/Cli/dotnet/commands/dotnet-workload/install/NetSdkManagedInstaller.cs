@@ -46,16 +46,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             _tempPackagesDir = new DirectoryPath(tempDirPath ?? Path.GetTempPath());
             ILogger logger = verbosity.VerbosityIsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
+            _restoreActionConfig = restoreActionConfig;
             _nugetPackageDownloader = nugetPackageDownloader ??
                                       new NuGetPackageDownloader(_tempPackagesDir, filePermissionSetter: null,
-                                          new FirstPartyNuGetPackageSigningVerifier(_tempPackagesDir), logger);
+                                          new FirstPartyNuGetPackageSigningVerifier(_tempPackagesDir), logger,
+                                          restoreActionConfig: _restoreActionConfig);
             _workloadMetadataDir = Path.Combine(_dotnetDir, "metadata", "workloads");
             _reporter = reporter;
             _sdkFeatureBand = sdkFeatureBand;
             _workloadResolver = workloadResolver;
             _installationRecordRepository = new NetSdkManagedInstallationRecordRepository(_dotnetDir);
             _packageSourceLocation = packageSourceLocation;
-            _restoreActionConfig = restoreActionConfig;
+            
         }
 
         public InstallationUnit GetInstallationUnit()
@@ -96,8 +98,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                 packagePath = _nugetPackageDownloader
                                     .DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId),
                                         new NuGetVersion(packInfo.Version),
-                                        _packageSourceLocation,
-                                        _restoreActionConfig).GetAwaiter().GetResult();
+                                        _packageSourceLocation).GetAwaiter().GetResult();
                                 tempFilesToDelete.Add(packagePath);
                             }
                             else
@@ -195,7 +196,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                        if (offlineCache == null || !offlineCache.HasValue)
                        {
                            packagePath = _nugetPackageDownloader.DownloadPackageAsync(WorkloadManifestUpdater.GetManifestPackageId(sdkFeatureBand, manifestId),
-                               new NuGetVersion(manifestVersion.ToString()), _packageSourceLocation, _restoreActionConfig).GetAwaiter().GetResult();
+                               new NuGetVersion(manifestVersion.ToString()), _packageSourceLocation).GetAwaiter().GetResult();
                        }
                        else
                        {
@@ -274,7 +275,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _nugetPackageDownloader.DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId),
                 new NuGetVersion(packInfo.Version),
                 packageSourceLocation: _packageSourceLocation,
-                restoreActionConfig: _restoreActionConfig,
                 includePreview: includePreviews,
                 downloadFolder: cachePath).GetAwaiter().GetResult();
         }

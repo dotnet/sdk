@@ -68,6 +68,22 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [Fact]
+        public async Task GivenAFailedSourceAndIgnoreFailedSourcesItShouldPass()
+        {
+            var installer =
+                new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(),
+                    _logger, restoreActionConfig: new RestoreActionConfig(IgnoreFailedSources: true));
+            // action should not throw
+            await installer.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[]
+                {
+                    "https://dotnet.myget.org/F/not-right/api/v3/index.json"
+                }));
+        }
+
+        [Fact]
         public async Task GivenNugetConfigInstallSucceeds()
         {
             FilePath nugetConfigPath = GenerateRandomNugetConfigFilePath();

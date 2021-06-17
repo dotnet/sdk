@@ -27,6 +27,10 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(VersionOption);
             command.AddOption(TempDirOption);
             command.AddOption(IncludePreviewsOption);
+            command.AddOption(WorkloadCommandNuGetRestoreActionConfigOptions.DisableParallelOption);
+            command.AddOption(WorkloadCommandNuGetRestoreActionConfigOptions.IgnoreFailedSourcesOption);
+            command.AddOption(WorkloadCommandNuGetRestoreActionConfigOptions.NoCacheOption);
+            command.AddOption(WorkloadCommandNuGetRestoreActionConfigOptions.InteractiveRestoreOption);
             return command;
         }
     }

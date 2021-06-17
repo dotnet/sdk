@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
             nugetPackageDownloader ??= new NuGetPackageDownloader(
                 tempPackagesDir,
                 filePermissionSetter: null,
-                new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, nullLogger), nullLogger);
+                new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, nullLogger), nullLogger, restoreActionConfig: _parseResult.ToRestoreActionConfig());
             _workloadInstaller = workloadInstaller ??
                                  WorkloadInstallerFactory.GetWorkloadInstaller(_reporter, sdkFeatureBand,
                                      _workloadResolver, _verbosity, nugetPackageDownloader, dotnetDir, tempDirPath,

@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             var tempPackagesDir = new DirectoryPath(Path.Combine(_tempDirPath, "dotnet-sdk-advertising-temp"));
             _nugetPackageDownloader = nugetPackageDownloader ?? new NuGetPackageDownloader(tempPackagesDir,
                 filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir),
-                new NullLogger());
+                new NullLogger(), restoreActionConfig: _parseResult.ToRestoreActionConfig());
             _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(_reporter,
                 _workloadManifestProvider, _nugetPackageDownloader, _userHome, _tempDirPath, _packageSourceLocation,
                 restoreActionConfig);

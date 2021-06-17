@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                       new NuGetPackageDownloader(tempPackagesDir,
                                           filePermissionSetter: null,
                                           new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, new NullLogger()),
-                                          new NullLogger());
+                                          new NullLogger(), restoreActionConfig: parseResult.ToRestoreActionConfig());
             var restoreActionConfig = _parseResult.ToRestoreActionConfig();
             _workloadInstaller = workloadInstaller ??
                                  WorkloadInstallerFactory.GetWorkloadInstaller(_reporter, sdkFeatureBand,

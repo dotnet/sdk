@@ -96,7 +96,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(
                         GetManifestPackageId(_sdkFeatureBand, manifest),
                         packageSourceLocation: _packageSourceLocation,
-                        restoreActionConfig: _restoreActionConfig,
                         includePreview: includePreviews, downloadFolder: downloadPath);
                     packagePaths.Add(packagePath);
                 }
@@ -169,7 +168,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         packagePath = await _nugetPackageDownloader.DownloadPackageAsync(
                             GetManifestPackageId(_sdkFeatureBand, manifestId),
                             packageSourceLocation: _packageSourceLocation,
-                            restoreActionConfig: _restoreActionConfig,
                             includePreview: includePreviews);
                     }
                     catch (NuGetPackageNotFoundException)
