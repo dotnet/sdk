@@ -16,6 +16,7 @@ using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Credentials;
 using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -46,13 +47,18 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly IFirstPartyNuGetPackageSigningVerifier _firstPartyNuGetPackageSigningVerifier;
         private bool _validationMessagesDisplayed = false;
 
-        public NuGetPackageDownloader(DirectoryPath packageInstallDir, IFilePermissionSetter filePermissionSetter = null, IFirstPartyNuGetPackageSigningVerifier firstPartyNuGetPackageSigningVerifier = null, ILogger verboseLogger = null, IReporter reporter = null)
+        public NuGetPackageDownloader(DirectoryPath packageInstallDir,
+            IFilePermissionSetter filePermissionSetter = null,
+            IFirstPartyNuGetPackageSigningVerifier firstPartyNuGetPackageSigningVerifier = null,
+            ILogger verboseLogger = null, IReporter reporter = null)
         {
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
             _verboseLogger = verboseLogger ?? new NuGetConsoleLogger();
-            _firstPartyNuGetPackageSigningVerifier = firstPartyNuGetPackageSigningVerifier ?? new FirstPartyNuGetPackageSigningVerifier(tempDirectory: packageInstallDir, logger: _verboseLogger);
-            _filePermissionSetter = new FilePermissionSetter();
+            _firstPartyNuGetPackageSigningVerifier = firstPartyNuGetPackageSigningVerifier ??
+                                                     new FirstPartyNuGetPackageSigningVerifier(
+                                                         tempDirectory: packageInstallDir, logger: _verboseLogger);
+            _filePermissionSetter = filePermissionSetter ?? new FilePermissionSetter();
         }
 
         public async Task<string> DownloadPackageAsync(PackageId packageId,
@@ -63,6 +69,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             DirectoryPath? downloadFolder = null)
         {
             CancellationToken cancellationToken = CancellationToken.None;
+
+            if (restoreActionConfig.Interactive)
+            {
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(_verboseLogger, restoreActionConfig.Interactive);
+            }
 
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVerion(packageId, packageVersion, packageSourceLocation, includePreview);
 
