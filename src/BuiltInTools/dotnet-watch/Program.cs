@@ -105,11 +105,11 @@ Examples:
 
         internal async Task<int> RunAsync(string[] args)
         {
-            var rootCommand = CreateRootCommand(HandleWatch);
+            var rootCommand = CreateRootCommand(HandleWatch, _reporter);
             return await rootCommand.InvokeAsync(args);
         }
 
-        internal static RootCommand CreateRootCommand(Func<CommandLineOptions, Task<int>> handler)
+        internal static RootCommand CreateRootCommand(Func<CommandLineOptions, Task<int>> handler, IReporter reporter)
         {
             var quiet = new Option<bool>(
                 new[] { "--quiet", "-q" },
@@ -147,6 +147,11 @@ Examples:
             root.TreatUnmatchedTokensAsErrors = false;
             root.Handler = CommandHandler.Create((CommandLineOptions options, ParseResult parseResults) =>
             {
+                if (!string.IsNullOrEmpty(parseResults.ValueForOption<string>("-p")))
+                {
+                     reporter.Warn(Resources.Warning_ProjectAbbreviationDeprecated);
+                }
+
                 string[] remainingArguments;
                 if (parseResults.UnparsedTokens.Any() && parseResults.UnmatchedTokens.Any())
                 {
