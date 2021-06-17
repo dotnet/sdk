@@ -9,7 +9,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Restore.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
-    internal static class WorkloadCommandRestorePassThroughOptions
+    internal static class WorkloadCommandNuGetRestoreActionConfigOptions
     {
         public static Option DisableParallelOption = new ForwardedOption<bool>(
                 "--disable-parallel",

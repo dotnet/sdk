@@ -20,10 +20,10 @@ namespace Microsoft.DotNet.Cli
 
             command.AddOption(ConfigOption);
             command.AddOption(AddSourceOption);
-            command.AddOption(WorkloadCommandRestorePassThroughOptions.DisableParallelOption);
-            command.AddOption(WorkloadCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-            command.AddOption(WorkloadCommandRestorePassThroughOptions.NoCacheOption);
-            command.AddOption(WorkloadCommandRestorePassThroughOptions.InteractiveRestoreOption);
+            command.AddOption(WorkloadCommandNuGetRestoreActionConfigOptions.DisableParallelOption);
+            command.AddOption(WorkloadCommandNuGetRestoreActionConfigOptions.IgnoreFailedSourcesOption);
+            command.AddOption(WorkloadCommandNuGetRestoreActionConfigOptions.NoCacheOption);
+            command.AddOption(WorkloadCommandNuGetRestoreActionConfigOptions.InteractiveRestoreOption);
             command.AddOption(VerbosityOption);
 
             return command;
