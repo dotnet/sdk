@@ -3,7 +3,7 @@
     <!-- Tasks are multitargeted to support building in VS and with desktop MSBuild -->
     <TaskTargetFramework>$(CoreSdkTargetFramework)</TaskTargetFramework>
     <TaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</TaskTargetFramework>
-    
+
     <CoreSdkTaskDll>$(ArtifactsDir)tasks\bin\core-sdk-tasks\$(Configuration)\$(TaskTargetFramework)\core-sdk-tasks.dll</CoreSdkTaskDll>
     <CoreSdkTaskProject>$(RepoRoot)src\core-sdk-tasks\core-sdk-tasks.csproj</CoreSdkTaskProject>
   </PropertyGroup>
@@ -27,6 +27,7 @@
   <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="GenerateMsiVersionFromFullVersion" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="ReplaceFileContents" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="UpdateRuntimeConfig" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="Chmod" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="DotNetDebTool" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="BuildFPMToolPreReqs" AssemblyFile="$(CoreSdkTaskDll)"/>
