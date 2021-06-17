@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     internal class TemplateCache
     {
-        public TemplateCache(IEnumerable<ScanResult> scanResults, Dictionary<string, DateTime> mountPoints)
+        public TemplateCache(ScanResult?[] scanResults, Dictionary<string, DateTime> mountPoints)
         {
             // We need this dictionary to de-duplicate templates that have same identity
             // notice that IEnumerable<ScanResult> that we get in is order by priority which means
@@ -27,6 +27,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             foreach (var scanResult in scanResults)
             {
+                if (scanResult == null)
+                {
+                    continue;
+                }
                 foreach (ILocalizationLocator locator in scanResult.Localizations)
                 {
                     if (uiLocale != locator.Locale &&

@@ -89,6 +89,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                     info.TagsCollection = tags;
                 }
+
+                info.HostData = entry.Get<JObject>(nameof(info.HostData));
+
                 return info;
             }
 

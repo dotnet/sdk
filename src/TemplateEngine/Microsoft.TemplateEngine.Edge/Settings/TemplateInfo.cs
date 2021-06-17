@@ -5,7 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
@@ -13,9 +15,10 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    internal partial class TemplateInfo : ITemplateInfo
+    internal partial class TemplateInfo : ITemplateInfo, ITemplateInfoHostJsonCache
     {
-        internal const string CurrentVersion = "1.0.0.6";
+        internal const string CurrentVersion = "1.0.0.7";
+        private static readonly Guid RunnableProjectGeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
 
 #pragma warning disable CS0618 // Type or member is obsolete
         private IReadOnlyDictionary<string, ICacheTag>? _tags;
@@ -69,13 +72,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// </summary>
         /// <param name="template">unlocalized template.</param>
         /// <param name="localizationInfo">localization information.</param>
-        internal TemplateInfo(ITemplateInfo template, ILocalizationLocator? localizationInfo)
+        internal TemplateInfo(ITemplate template, ILocalizationLocator? localizationInfo)
         {
             if (template is null)
             {
                 throw new ArgumentNullException(nameof(template));
             }
-
             GeneratorId = template.GeneratorId;
             ConfigPlace = template.ConfigPlace;
             MountPointUri = template.MountPointUri;
@@ -97,6 +99,22 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             Name = localizationInfo?.Name ?? template.Name;
             Parameters = LocalizeParameters(template, localizationInfo);
+
+            if (template.GeneratorId == RunnableProjectGeneratorId && HostConfigPlace != null)
+            {
+                try
+                {
+                    using (var sr = new StreamReader(template.TemplateSourceRoot.FileInfo(HostConfigPlace).OpenRead()))
+                    using (var jsonTextReader = new JsonTextReader(sr))
+                    {
+                        HostData = JObject.Load(jsonTextReader);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    template.TemplateSourceRoot.MountPoint.EnvironmentSettings.Host.Logger.LogDebug(ex, $"Failed to load HostConfig in {template.TemplateSourceRoot.MountPoint.MountPointUri} at {template.HostConfigPlace}.");
+                }
+            }
         }
 
         [JsonProperty]
@@ -220,6 +238,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonIgnore]
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
+
+        public JObject? HostData { get; private set; }
 
         public static TemplateInfo FromJObject(JObject entry)
         {

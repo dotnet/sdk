@@ -47,11 +47,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             MountPointScanSource source = GetOrCreateMountPointScanInfoForInstallSource(mountPointUri);
 
             ScanForComponents(source);
-            var scanResult = ScanMountPointForTemplatesAndLangpacks(source);
-
-            source.MountPoint.Dispose();
-
-            return scanResult;
+            return ScanMountPointForTemplatesAndLangpacks(source);
         }
 
         private MountPointScanSource GetOrCreateMountPointScanInfoForInstallSource(string sourceLocation)
@@ -194,7 +190,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 source.FoundTemplates |= templateList.Count > 0 || localizationInfo.Count > 0;
             }
 
-            return new ScanResult(source.MountPoint.MountPointUri, templates, localizationLocators, Array.Empty<(string, Type, IIdentifiedComponent)>());
+            return new ScanResult(source.MountPoint, templates, localizationLocators, Array.Empty<(string, Type, IIdentifiedComponent)>());
         }
 
         /// <summary>

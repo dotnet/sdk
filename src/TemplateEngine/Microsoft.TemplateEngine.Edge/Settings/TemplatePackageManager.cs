@@ -294,7 +294,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return cache;
             }
 
-            var scanResults = new ScanResult[allTemplatePackages.Count];
+            var scanResults = new ScanResult?[allTemplatePackages.Count];
             Parallel.For(0, allTemplatePackages.Count, (int index) =>
             {
                 try
@@ -304,7 +304,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
                 catch (Exception ex)
                 {
-                    scanResults[index] = ScanResult.Empty;
                     _logger.LogWarning(LocalizableStrings.TemplatePackageManager_Error_FailedToScan, allTemplatePackages[index].MountPointUri, ex);
                 }
             });
@@ -313,6 +312,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 scanResults,
                 mountPoints
                 );
+            foreach (var scanResult in scanResults)
+            {
+                scanResult?.Dispose();
+            }
             JObject serialized = JObject.FromObject(cache);
             _paths.WriteAllText(_paths.TemplateCacheFile, serialized.ToString());
             return _userTemplateCache = cache;

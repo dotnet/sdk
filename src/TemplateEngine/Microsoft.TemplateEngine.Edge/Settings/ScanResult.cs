@@ -6,38 +6,32 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
     /// <summary>
     /// Returned by <see cref="Scanner.Scan"/>.
     /// </summary>
-    public class ScanResult
+    public class ScanResult : IDisposable
     {
-        public static readonly ScanResult Empty = new(
-            string.Empty,
-            Array.Empty<ITemplate>(),
-            Array.Empty<ILocalizationLocator>(),
-            Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>()
-            );
-
         public ScanResult(
-            string mountPointUri,
+            IMountPoint mountPoint,
             IReadOnlyList<ITemplate> templates,
             IReadOnlyList<ILocalizationLocator> localizations,
             IReadOnlyList<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)> components
             )
         {
-            MountPointUri = mountPointUri;
+            MountPoint = mountPoint;
             Templates = templates;
             Localizations = localizations;
             Components = components;
         }
 
         /// <summary>
-        /// Uri of mountpoint that was scanned.
+        /// Mountpoint that was scanned.
         /// </summary>
-        public string MountPointUri { get; }
+        public IMountPoint MountPoint { get; }
 
         /// <summary>
         /// All components found inside mountpoint.
@@ -56,5 +50,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// All templates found inside mountpoint.
         /// </summary>
         public IReadOnlyList<ITemplate> Templates { get; }
+
+        /// <summary>
+        /// Disposes <see cref="MountPoint"/> that was scanned.
+        /// </summary>
+        public void Dispose() => MountPoint.Dispose();
     }
 }

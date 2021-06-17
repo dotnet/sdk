@@ -42,8 +42,6 @@ Microsoft.TemplateEngine.Edge.Settings.Scanner.Scanner(Microsoft.TemplateEngine.
 Microsoft.TemplateEngine.Edge.Settings.ScanResult
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.Components.get -> System.Collections.Generic.IReadOnlyList<(string! AssemblyPath, System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.Localizations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>!
-Microsoft.TemplateEngine.Edge.Settings.ScanResult.MountPointUri.get -> string!
-Microsoft.TemplateEngine.Edge.Settings.ScanResult.ScanResult(string! mountPointUri, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>! templates, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>! localizations, System.Collections.Generic.IReadOnlyList<(string! AssemblyPath, System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>! components) -> void
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.Templates.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>!
 Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager
 Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.Dispose() -> void
@@ -144,7 +142,6 @@ static Microsoft.TemplateEngine.Edge.TemplateListFilter.FilterTemplates(System.C
 static Microsoft.TemplateEngine.Edge.TemplateListFilter.GetTemplateMatchInfo(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>! templateList, System.Func<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!, bool>! matchFilter, params System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>![]! filters) -> System.Collections.Generic.IReadOnlyCollection<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!>!
 static Microsoft.TemplateEngine.Edge.TemplateListFilter.GetTemplateMatchInfo(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>! templateList, System.Func<Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo!, bool>! matchFilter, params System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Edge.Template.MatchInfo?>![]! filters) -> System.Collections.Generic.IReadOnlyCollection<Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo!>!
 static Microsoft.TemplateEngine.Edge.TemplateListFilter.PartialMatchFilter.get -> System.Func<Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo!, bool>!
-static readonly Microsoft.TemplateEngine.Edge.Settings.ScanResult.Empty -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
 virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.BuiltInComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!
 virtual Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.TryGetHostParamDefault(string! paramName, out string? value) -> bool
 ~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.Author.get -> string
