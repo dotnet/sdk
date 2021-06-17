@@ -68,19 +68,23 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [Fact]
-        public async Task GivenAFailedSourceAndIgnoreFailedSourcesItShouldPass()
+        public async Task GivenAFailedSourceAndIgnoreFailedSourcesItShouldNotThrowFatalProtocolException ()
         {
             var installer =
                 new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(),
                     _logger, restoreActionConfig: new RestoreActionConfig(IgnoreFailedSources: true));
-            // action should not throw
-            await installer.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[]
-                {
-                    "https://dotnet.myget.org/F/not-right/api/v3/index.json"
-                }));
+
+            // should not throw FatalProtocolException
+            // when there is at least one valid source, it should pass.
+            // but it is hard to set up that in unit test
+            await Assert.ThrowsAsync<NuGetPackageInstallerException>(() =>
+                installer.DownloadPackageAsync(
+                    TestPackageId,
+                    new NuGetVersion(TestPackageVersion),
+                    new PackageSourceLocation(sourceFeedOverrides: new[]
+                    {
+                        "https://nonexist.nuget.source/F/nonexist/api/v3/index.json"
+                    })));
         }
 
         [Fact]
