@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,8 +15,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     internal class TemplateCache
     {
-        public TemplateCache(ScanResult?[] scanResults, Dictionary<string, DateTime> mountPoints)
+        private readonly ILogger _logger;
+
+        public TemplateCache(ScanResult?[] scanResults, Dictionary<string, DateTime> mountPoints, ILogger logger)
         {
+            _logger = logger;
             // We need this dictionary to de-duplicate templates that have same identity
             // notice that IEnumerable<ScanResult> that we get in is order by priority which means
             // last template with same Identity wins, others are ignored...
@@ -62,7 +66,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             foreach (ITemplate newTemplate in templateDeduplicationDictionary.Values)
             {
                 localizationsByTemplateId.TryGetValue(newTemplate.Identity, out ILocalizationLocator locatorForTemplate);
-                templates.Add(new TemplateInfo(newTemplate, locatorForTemplate));
+                templates.Add(new TemplateInfo(newTemplate, locatorForTemplate, logger));
             }
 
             Version = Settings.TemplateInfo.CurrentVersion;
@@ -71,8 +75,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             MountPointsInfo = mountPoints;
         }
 
-        public TemplateCache(JObject contentJobject)
+        public TemplateCache(JObject contentJobject, ILogger logger)
         {
+            _logger = logger;
             if (contentJobject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken versionToken))
             {
                 Version = versionToken.ToString();

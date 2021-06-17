@@ -38,6 +38,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// <summary>
         /// Scans mount point for templates, localizations and components.
         /// </summary>
+        /// <remarks>
+        /// The mount point will not be disposed by the <see cref="Scanner"/>. Use <see cref="ScanResult.Dispose"/> to dispose mount point.
+        /// </remarks>
         public ScanResult Scan(string mountPointUri)
         {
             if (string.IsNullOrWhiteSpace(mountPointUri))

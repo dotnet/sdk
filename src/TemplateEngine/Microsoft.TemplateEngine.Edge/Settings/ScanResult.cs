@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         /// <summary>
-        /// Mountpoint that was scanned.
+        /// Gets the mount point that was scanned.
         /// </summary>
         public IMountPoint MountPoint { get; }
 

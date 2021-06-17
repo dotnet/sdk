@@ -72,7 +72,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// </summary>
         /// <param name="template">unlocalized template.</param>
         /// <param name="localizationInfo">localization information.</param>
-        internal TemplateInfo(ITemplate template, ILocalizationLocator? localizationInfo)
+        /// <param name="logger"></param>
+        internal TemplateInfo(ITemplate template, ILocalizationLocator? localizationInfo, ILogger logger)
         {
             if (template is null)
             {
@@ -112,7 +113,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
                 catch (Exception ex)
                 {
-                    template.TemplateSourceRoot.MountPoint.EnvironmentSettings.Host.Logger.LogDebug(ex, $"Failed to load HostConfig in {template.TemplateSourceRoot.MountPoint.MountPointUri} at {template.HostConfigPlace}.");
+                    logger.LogDebug(ex, $"Failed to load HostConfig in {template.TemplateSourceRoot.MountPoint.MountPointUri} at {template.HostConfigPlace}.");
                 }
             }
         }

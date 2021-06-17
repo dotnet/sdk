@@ -6,9 +6,9 @@
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
+namespace Microsoft.TemplateEngine.Utils
 {
-    internal static class IFileSystemInfoExtensions
+    public static class IFileSystemInfoExtensions
     {
         /// <summary>
         /// Returns full path to <paramref name="fileSystemInfo"/> including mount point URI in a format
@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// Full path to <paramref name="fileSystemInfo"/> including mount point URI.
         /// If mount point is not a directory, the path is returned as 'mount point URI(path inside mount point)'.
         /// </returns>
-        internal static string GetDisplayPath(this IFileSystemInfo fileSystemInfo)
+        public static string GetDisplayPath(this IFileSystemInfo fileSystemInfo)
         {
             string result = string.Empty;
             if (fileSystemInfo.MountPoint.EnvironmentSettings.Host.FileSystem.DirectoryExists(fileSystemInfo.MountPoint.MountPointUri))

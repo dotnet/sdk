@@ -235,7 +235,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             Task<IReadOnlyList<ITemplatePackage>> getTemplatePackagesTask = GetTemplatePackagesAsync(needsRebuild, cancellationToken);
             if (!(_userTemplateCache is TemplateCache cache))
             {
-                cache = new TemplateCache(JObject.Parse(_paths.ReadAllText(_paths.TemplateCacheFile, "{}")));
+                cache = new TemplateCache(JObject.Parse(_paths.ReadAllText(_paths.TemplateCacheFile, "{}")), _logger);
             }
 
             if (cache.Version == null)
@@ -308,10 +308,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             });
             cancellationToken.ThrowIfCancellationRequested();
-            cache = new TemplateCache(
-                scanResults,
-                mountPoints
-                );
+            cache = new TemplateCache(scanResults, mountPoints, _logger);
             foreach (var scanResult in scanResults)
             {
                 scanResult?.Dispose();
