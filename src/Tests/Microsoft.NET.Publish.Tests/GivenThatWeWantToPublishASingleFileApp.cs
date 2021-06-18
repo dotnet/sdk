@@ -28,6 +28,7 @@ namespace Microsoft.NET.Publish.Tests
         private const string ExcludeAlways = "/p:ExcludeAlways=true";
         private const string DontUseAppHost = "/p:UseAppHost=false";
         private const string ReadyToRun = "/p:PublishReadyToRun=true";
+        private const string ReadyToRunComposite = "/p:PublishReadyToRunComposite=true";
         private const string ReadyToRunWithSymbols = "/p:PublishReadyToRunEmitSymbols=true";
         private const string UseAppHost = "/p:UseAppHost=true";
         private const string IncludeDefault = "/p:IncludeSymbolsInSingleFile=false";
@@ -276,6 +277,27 @@ namespace Microsoft.NET.Publish.Tests
             GetPublishDirectory(publishCommand, "net6.0")
                 .Should()
                 .OnlyHaveFiles(expectedFiles);
+        }
+
+        [RequiresMSBuildVersionTheory("16.8.0")]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_supports_composite_r2r(bool extractAll)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = "net6.0",
+                IsExe = true,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand
+                .Execute(PublishSingleFile, ReadyToRun, ReadyToRunComposite, RuntimeIdentifier, extractAll ? IncludeAllContent: "")
+                .Should()
+                .Pass();
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
