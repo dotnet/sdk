@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
@@ -25,8 +24,10 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.Linux | TestPlatforms.FreeBSD)]
+        [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.Linux | TestPlatforms.FreeBSD | TestPlatforms.OSX)]
         [InlineData("netcoreapp3.0")]
+        [InlineData("net5.0")]
+        [InlineData("net6.0")]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
             var testAsset = _testAssetsManager
@@ -64,40 +65,12 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [PlatformSpecificFact(TestPlatforms.OSX)]
-        public void It_builds_a_runnable_apphost_if_opt_in_on_mac()
+        [PlatformSpecificTheory(TestPlatforms.OSX)]
+        [InlineData("netcoreapp3.0")]
+        [InlineData("net5.0")]
+        [InlineData("net6.0")]
+        public void It_can_disable_codesign_if_opt_out(string targetFramework)
         {
-            var targetFramework = "netcoreapp3.0";
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework)
-                .WithSource()
-                .WithTargetFramework(targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand
-                .Execute(new string[] {
-                    "/restore", "/p:UseAppHost=true",
-                })
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
-            var hostExecutable = $"HelloWorld{Constants.ExeSuffix}";
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                hostExecutable,
-                "HelloWorld.dll",
-                "HelloWorld.pdb",
-                "HelloWorld.deps.json",
-                "HelloWorld.runtimeconfig.dev.json",
-                "HelloWorld.runtimeconfig.json",
-            });
-        }
-
-        [PlatformSpecificFact(TestPlatforms.OSX)]
-        public void It_can_disable_codesign_if_opt_out()
-        {
-            var targetFramework = "net6.0";
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
@@ -107,7 +80,6 @@ namespace Microsoft.NET.Build.Tests
             buildCommand
                 .Execute(new string[] {
                     "/p:_EnableMacOSCodeSign=false",
-                    "/p:UseAppHost=true"
                 })
                 .Should()
                 .Pass();
@@ -143,17 +115,54 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
+        [PlatformSpecificTheory(TestPlatforms.OSX)]
+        [InlineData("netcoreapp3.0", "win-x64")]
+        [InlineData("net5.0", "win-x64")]
+        [InlineData("net6.0", "win-x64")]
+        [InlineData("netcoreapp3.0", "linux-x64")]
+        [InlineData("net5.0", "linux-x64")]
+        [InlineData("net6.0", "linux-x64")]
+        public void It_does_not_try_to_codesign_non_osx_app_hosts(string targetFramework, string rid)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute(new string[] {
+                    $"/p:RuntimeIdentifier={rid}",
+                })
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
+            var hostExecutable = $"HelloWorld{Constants.ExeSuffix}";
+            var appHostFullPath = Path.Combine(outputDirectory.FullName, hostExecutable);
+
+            // Check that the apphost was not signed
+            var psi = new ProcessStartInfo()
+            {
+                Arguments = $"-d {appHostFullPath}",
+                FileName = @"/usr/bin/codesign",
+                RedirectStandardError = true
+            };
+
+            using (var codesign = Process.Start(psi))
+            {
+                codesign.Start();
+                codesign.StandardError.ReadToEnd()
+                    .Should().Contain($"{appHostFullPath}: code object is not signed at all");
+                codesign.WaitForExit();
+            }
+        }
+
         [Theory]
         [InlineData("netcoreapp2.1")]
         [InlineData("netcoreapp2.2")]
-        [InlineData("netcoreapp3.0")] // only on macOS
-        public void It_does_not_build_with_an_apphost_by_default_before_netcoreapp_3_or_macOs(string targetFramework)
+        public void It_does_not_build_with_an_apphost_by_default_before_netcoreapp_3(string targetFramework)
         {
-            if (targetFramework == "netcoreapp3.0" && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return;
-            }
-
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()

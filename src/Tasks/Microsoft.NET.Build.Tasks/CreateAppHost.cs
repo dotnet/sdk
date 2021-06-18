@@ -77,7 +77,8 @@ namespace Microsoft.NET.Build.Tasks
                                                 appHostDestinationFilePath: AppHostDestinationPath,
                                                 appBinaryFilePath: AppBinaryName,
                                                 windowsGraphicalUserInterface: isGUI,
-                                                assemblyToCopyResorcesFrom: resourcesAssembly);
+                                                assemblyToCopyResorcesFrom: resourcesAssembly,
+                                                enableMacOSCodeSign: EnableMacOSCodeSign);
                         return;
                     }
                     catch (Exception ex) when (ex is IOException ||
@@ -115,7 +116,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             catch (AppHostSigningException ex)
             {
-                throw new BuildErrorException(Strings.AppHostSigningFailed, ex.Message);
+                throw new BuildErrorException(Strings.AppHostSigningFailed, ex.Message, ex.ExitCode.ToString());
             }
             catch (PlaceHolderNotFoundInAppHostException ex)
             {
