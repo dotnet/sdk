@@ -22,7 +22,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly IReporter _reporter;
         private Task _task;
         private NamedPipeServerStream _pipe;
-        private bool _refreshBrowserAfterFileChange;
 
         public DefaultDeltaApplier(IReporter reporter)
         {
@@ -31,10 +30,17 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public bool SuppressBrowserRefreshAfterApply { get; init; }
 
+        internal bool RefreshBrowserAfterFileChange { get; private set; }
+
+        internal bool SuppressNamedPipeForTests { get; set; }
+
         public ValueTask InitializeAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            _pipe = new NamedPipeServerStream(_namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-            _task = _pipe.WaitForConnectionAsync(cancellationToken);
+            if (!SuppressNamedPipeForTests)
+            {
+                _pipe = new NamedPipeServerStream(_namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+                _task = _pipe.WaitForConnectionAsync(cancellationToken);
+            }
 
             if (context.Iteration == 0)
             {
@@ -44,12 +50,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 // Configure the app for EnC
                 context.ProcessSpec.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
                 context.ProcessSpec.EnvironmentVariables["DOTNET_HOTRELOAD_NAMEDPIPE_NAME"] = _namedPipeName;
+            }
 
-                // If there's any .razor file, we'll assume this is a blazor app and not cause a browser refresh.
-                if (!SuppressBrowserRefreshAfterApply)
-                {
-                    _refreshBrowserAfterFileChange = !context.FileSet.Any(f => f.FilePath.EndsWith(".razor", StringComparison.Ordinal));
-                }
+            // If there's any .razor file, we'll assume this is a blazor app and not cause a browser refresh.
+            if (!SuppressBrowserRefreshAfterApply)
+            {
+                RefreshBrowserAfterFileChange = !context.FileSet.Any(f => f.FilePath.EndsWith(".razor", StringComparison.Ordinal));
             }
 
             return default;
@@ -117,7 +123,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 // For a Web app, we have the option of either letting the app update the UI or
                 // refresh the browser. In general, for Blazor apps, we will choose not to refresh the UI
                 // and for other apps we'll always refresh
-                if (_refreshBrowserAfterFileChange)
+                if (RefreshBrowserAfterFileChange)
                 {
                     await context.BrowserRefreshServer.ReloadAsync(cancellationToken);
                 }
