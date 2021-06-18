@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="Authoring_InvalidManualInstructionLocalizationIndex">
         <source>In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</source>
-        <target state="new">In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</target>
+        <target state="translated">In der Lokalisierungsdatei unter der POST-Aktion mit der ID „{1}“ befinden sich lokalisierte Zeichenfolgen für manuelle Anweisungen mit den IDs „{0}“. Diese manuellen Anweisungen sind in der Datei „template.json“ nicht vorhanden und sollten aus der Lokalisierungsdatei entfernt werden.</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".
 {1} is a single-word identifier string. Such as "myPostAction".</note>
       </trans-unit>
@@ -95,7 +95,7 @@ Details: {1}</target>
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
-        <target state="new">Failed to read parse localization file {0}, it will be skipped from further processing.</target>
+        <target state="translated">Fehler beim Lesen der Analyselokalisierungsdatei {0}. Sie wird bei der weiteren Verarbeitung übersprungen.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_ConfigShouldBeFile">
@@ -120,7 +120,7 @@ Details: {1}</target>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Warning_LocFileSkipped">
         <source>Localization file {0} is not compatible with base configuration {1}, and will be skipped.</source>
-        <target state="new">Localization file {0} is not compatible with base configuration {1}, and will be skipped.</target>
+        <target state="translated">Die Lokalisierungsdatei {0} ist nicht mit der Basiskonfiguration {1} kompatibel und wird übersprungen.</target>
         <note>{0} and {1} are template configuration locations.</note>
       </trans-unit>
       <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound">
