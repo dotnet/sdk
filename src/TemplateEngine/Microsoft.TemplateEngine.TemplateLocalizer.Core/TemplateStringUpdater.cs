@@ -111,7 +111,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
             foreach (TemplateString templateString in templateStrings)
             {
                 string? localizedText = null;
-                if (!existingStrings?.TryGetValue(templateString.LocalizationKey, out localizedText) ?? false)
+                if (!existingStrings?.TryGetValue(templateString.LocalizationKey, out localizedText) ?? true)
                 {
                     // Existing file did not contain a localized version of the string. Use the original value from template.json.
                     localizedText = templateString.Value;

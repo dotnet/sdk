@@ -4,6 +4,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.TemplateEngine.TestHelper;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
@@ -38,6 +40,99 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
                 Assert.StartsWith("templatestrings.", Path.GetFileName(p));
                 Assert.EndsWith(".json", p);
             });
+        }
+
+        [Fact]
+        public async Task LocFilesAreExportedFirstTime()
+        {
+            string testTemplate = GetTestTemplateInTempDir("TemplateWithSourceName");
+            int runResult = await Program.Main(new [] { "export", testTemplate }).ConfigureAwait(false);
+            Assert.Equal(0, runResult);
+            string[] exportedFiles;
+            string expectedExportDirectory = Path.Combine(testTemplate, ".template.config", "localize");
+            try
+            {
+                exportedFiles = Directory.GetFiles(expectedExportDirectory);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Since no templates were created, it is normal that no directory was created.
+                exportedFiles = Array.Empty<string>();
+            }
+            Assert.True(exportedFiles.Length > 0);
+            Assert.All(exportedFiles, p =>
+            {
+                Assert.StartsWith("templatestrings.", Path.GetFileName(p));
+                Assert.EndsWith(".json", p);
+            });
+        }
+
+        [Fact]
+        public async Task EnglishLocFilesAreOverwritten()
+        {
+            string testTemplate = GetTestTemplateInTempDir("TemplateWithSourceName");
+            int runResult = await Program.Main(new[] { "export", testTemplate }).ConfigureAwait(false);
+            Assert.Equal(0, runResult);
+            string expectedExportDirectory = Path.Combine(testTemplate, ".template.config", "localize");
+            string enLocFile = Path.Combine(expectedExportDirectory, "templatestrings.en.json");
+            string deLocFile = Path.Combine(expectedExportDirectory, "templatestrings.de.json");
+            Assert.True(File.Exists(enLocFile));
+            Assert.True(File.Exists(deLocFile));
+            var engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
+            var deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
+            Assert.Equal("Test Asset", engJsonContent.Property("author").Value.ToString());
+            Assert.Equal("Test Asset", deJsonContent.Property("author").Value.ToString());
+
+            //modify author property
+            string baseConfig = Path.Combine(testTemplate, ".template.config", "template.json");
+            var templateJsonContent = JObject.Parse(File.ReadAllText(baseConfig));
+            templateJsonContent.Property("author").Value = "New Author";
+            File.WriteAllText(baseConfig, templateJsonContent.ToString());
+
+            runResult = await Program.Main(new[] { "export", testTemplate }).ConfigureAwait(false);
+            Assert.Equal(0, runResult);
+            Assert.True(File.Exists(enLocFile));
+            Assert.True(File.Exists(deLocFile));
+            engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
+            deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
+            Assert.Equal("New Author", engJsonContent.Property("author").Value.ToString());
+            Assert.Equal("Test Asset", deJsonContent.Property("author").Value.ToString());
+        }
+
+        [Fact]
+        public async Task TemplateLanguageLocFilesAreOverwritten()
+        {
+            string testTemplate = GetTestTemplateInTempDir("TemplateWithSourceName");
+            string baseConfig = Path.Combine(testTemplate, ".template.config", "template.json");
+            var templateJsonContent = JObject.Parse(File.ReadAllText(baseConfig));
+            templateJsonContent.AddFirst(new JProperty("authoringLanguage", "de"));
+            File.WriteAllText(baseConfig, templateJsonContent.ToString());
+
+            int runResult = await Program.Main(new[] { "export", testTemplate }).ConfigureAwait(false);
+            Assert.Equal(0, runResult);
+            string expectedExportDirectory = Path.Combine(testTemplate, ".template.config", "localize");
+            string enLocFile = Path.Combine(expectedExportDirectory, "templatestrings.en.json");
+            string deLocFile = Path.Combine(expectedExportDirectory, "templatestrings.de.json");
+            Assert.True(File.Exists(enLocFile));
+            Assert.True(File.Exists(deLocFile));
+            var engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
+            var deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
+            Assert.Equal("Test Asset", engJsonContent.Property("author").Value.ToString());
+            Assert.Equal("Test Asset", deJsonContent.Property("author").Value.ToString());
+
+            //modify author property
+            templateJsonContent = JObject.Parse(File.ReadAllText(baseConfig));
+            templateJsonContent.Property("author").Value = "New Author";
+            File.WriteAllText(baseConfig, templateJsonContent.ToString());
+
+            runResult = await Program.Main(new[] { "export", testTemplate }).ConfigureAwait(false);
+            Assert.Equal(0, runResult);
+            Assert.True(File.Exists(enLocFile));
+            Assert.True(File.Exists(deLocFile));
+            engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
+            deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
+            Assert.Equal("New Author", deJsonContent.Property("author").Value.ToString());
+            Assert.Equal("Test Asset", engJsonContent.Property("author").Value.ToString());
         }
 
         [Fact]
@@ -137,6 +232,14 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
                 // Since no templates were created, it is normal that no directory was created.
                 return Array.Empty<string>();
             }
+        }
+
+        private static string GetTestTemplateInTempDir(string templateName)
+        {
+            string templateLocation = TestUtils.GetTestTemplateLocation(templateName);
+            string tmpLocation = TestUtils.CreateTemporaryFolder();
+            TestUtils.DirectoryCopy(templateLocation, tmpLocation, true);
+            return tmpLocation;
         }
 
         private static string GetTestTemplateJsonContent()
