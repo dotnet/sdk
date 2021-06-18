@@ -130,6 +130,6 @@
     <value>Cannot specify both '--quiet' and '--verbose' options.</value>
   </data>
   <data name="Warning_ProjectAbbreviationDeprecated" xml:space="preserve">
-    <value>Warning: The abbreviation of -p for --project is deprecated. Please use --project.</value>
+    <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>
   </data>
 </root>
