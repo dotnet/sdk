@@ -14,6 +14,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -293,11 +294,27 @@ namespace Microsoft.NET.Publish.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
+            var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunComposite, RuntimeIdentifier };
+
+            if (extractAll)
+            {
+                extraArgs.Add(IncludeAllContent);
+            }
 
             publishCommand
-                .Execute(PublishSingleFile, ReadyToRun, ReadyToRunComposite, RuntimeIdentifier, extractAll ? IncludeAllContent: "")
+                .Execute(extraArgs.ToArray())
                 .Should()
                 .Pass();
+
+            var publishDir = GetPublishDirectory(publishCommand, targetFramework: "net6.0").FullName;
+            var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            var command = new RunExeCommand(Log, singleFilePath);
+            command.Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("Hello World");
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
