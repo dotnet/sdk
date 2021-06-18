@@ -21,7 +21,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         private readonly DocumentFormatter _endOfLineFormatter = new EndOfLineFormatter();
 
         public override string Name => "IMPORTS";
-        public override FixCategory Category => FixCategory.Whitespace;
+        public override FixCategory Category => FixCategory.CodeStyle;
 
         internal override async Task<SourceText> FormatFileAsync(
             Document document,
