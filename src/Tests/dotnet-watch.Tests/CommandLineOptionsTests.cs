@@ -74,11 +74,28 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var reporter = new Mock<Extensions.Tools.Internal.IReporter>();
             reporter.Setup(r => r.Warn(Resources.Warning_ProjectAbbreviationDeprecated)).Verifiable();
-            var rootCommand = Program.CreateRootCommand(c => Task.FromResult(0), reporter.Object);
+            CommandLineOptions options = null;
+            var rootCommand = Program.CreateRootCommand(c => { options = c; return Task.FromResult(0); }, reporter.Object);
 
             await rootCommand.InvokeAsync(new[] { "-p", "MyProject.csproj" }, _console);
 
             reporter.Verify();
+            Assert.NotNull(options);
+            Assert.Equal("MyProject.csproj", options.Project);
+        }
+
+        [Fact]
+        public async Task LongFormForProjectArgumentWorks()
+        {
+            var reporter = new Mock<Extensions.Tools.Internal.IReporter>();
+            CommandLineOptions options = null;
+            var rootCommand = Program.CreateRootCommand(c => { options = c; return Task.FromResult(0); }, reporter.Object);
+
+            await rootCommand.InvokeAsync(new[] { "--project", "MyProject.csproj" }, _console);
+
+            reporter.Verify(r => r.Warn(It.IsAny<string>()), Times.Never());
+            Assert.NotNull(options);
+            Assert.Equal("MyProject.csproj", options.Project);
         }
     }
 }

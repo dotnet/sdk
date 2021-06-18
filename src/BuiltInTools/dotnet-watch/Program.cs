@@ -137,8 +137,11 @@ Examples:
                     new[] { "--no-hot-reload" },
                     "Suppress hot reload for supported apps."),
                  new Option<string>(
-                    new[] { "--project", "-p" },
+                     "--project",
                     "The project to watch"),
+                 new Option<string>(
+                     "-p",
+                     "The project to watch") { IsHidden = true },
                  new Option<bool>(
                     "--list",
                     "Lists all discovered files without starting the watcher"),
@@ -147,9 +150,14 @@ Examples:
             root.TreatUnmatchedTokensAsErrors = false;
             root.Handler = CommandHandler.Create((CommandLineOptions options, ParseResult parseResults) =>
             {
-                if (!string.IsNullOrEmpty(parseResults.ValueForOption<string>("-p")))
+                if (string.IsNullOrEmpty(options.Project))
                 {
-                     reporter.Warn(Resources.Warning_ProjectAbbreviationDeprecated);
+                    var projectOptionShort = parseResults.ValueForOption<string>("-p");
+                    if (!string.IsNullOrEmpty(projectOptionShort))
+                    {
+                        reporter.Warn(Resources.Warning_ProjectAbbreviationDeprecated);
+                        options.Project = projectOptionShort;
+                    }
                 }
 
                 string[] remainingArguments;

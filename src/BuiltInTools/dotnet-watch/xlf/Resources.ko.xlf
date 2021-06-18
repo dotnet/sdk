@@ -23,8 +23,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
-        <source>The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="new">The abbreviation of -p for --project is deprecated. Please use --project.</target>
+        <source>Warning: The abbreviation of -p for --project is deprecated. Please use --project.</source>
+        <target state="new">Warning: The abbreviation of -p for --project is deprecated. Please use --project.</target>
         <note />
       </trans-unit>
     </body>
