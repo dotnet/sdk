@@ -285,9 +285,15 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(false)]
         public void It_supports_composite_r2r(bool extractAll)
         {
+            var projName = "SingleFileTest";
+            if (extractAll)
+            {
+                projName += "Extracted";
+            }
+
             var testProject = new TestProject()
             {
-                Name = "SingleFileTest",
+                Name = projName,
                 TargetFrameworks = "net6.0",
                 IsExe = true,
             };
