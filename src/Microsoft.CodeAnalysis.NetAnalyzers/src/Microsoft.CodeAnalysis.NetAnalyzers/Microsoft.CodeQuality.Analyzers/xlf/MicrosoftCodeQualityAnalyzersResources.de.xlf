@@ -232,6 +232,11 @@
         <target state="translated">Ereignisse dürfen kein Präfix "Before" oder "After" aufweisen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
+        <source>Remove underscores</source>
+        <target state="new">Remove underscores</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">Entfernen Sie den Finalizer vom Typ "{0}", setzen Sie "Dispose(bool disposing)" außer Kraft, und platzieren Sie die Finalisierungslogik im Codepfad, wenn "disposing" FALSE lautet. Andernfalls kann es zu doppelten Dispose-Aufrufen kommen, weil der Basistyp "{1}" ebenfalls einen Finalizer bereitstellt.</target>
