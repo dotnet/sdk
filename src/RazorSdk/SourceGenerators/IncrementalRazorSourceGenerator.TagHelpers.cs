@@ -9,7 +9,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
     public partial class IncrementalRazorSourceGenerator
     {
-        public IReadOnlyList<TagHelperDescriptor> GetTagHelpers(IEnumerable<MetadataReference> references, StaticCompilationTagHelperFeature tagHelperFeature, Compilation compilation)
+        private IReadOnlyList<TagHelperDescriptor> GetTagHelpers(IEnumerable<MetadataReference> references, StaticCompilationTagHelperFeature tagHelperFeature, Compilation compilation)
         {
             List<TagHelperDescriptor> descriptors = new();
             tagHelperFeature.Compilation = compilation;
@@ -25,7 +25,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return descriptors;
         }
 
-        public IReadOnlyList<TagHelperDescriptor> GetTagHelpersFromCompilation(Compilation compilation, StaticCompilationTagHelperFeature tagHelperFeature, SyntaxTree syntaxTrees)
+        private IReadOnlyList<TagHelperDescriptor> GetTagHelpersFromCompilation(Compilation compilation, StaticCompilationTagHelperFeature tagHelperFeature, SyntaxTree syntaxTrees)
         {
             var compilationWithDeclarations = compilation.AddSyntaxTrees(syntaxTrees);
 

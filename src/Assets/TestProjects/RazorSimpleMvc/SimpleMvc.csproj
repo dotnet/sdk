@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(AspNetTestTfm)</TargetFramework>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>

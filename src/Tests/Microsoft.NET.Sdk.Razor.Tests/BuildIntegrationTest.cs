@@ -39,7 +39,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var build = new BuildCommand(projectDirectory);
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
-            build.Execute("/p:EmitCompilerGeneratedFiles=true", "/bl:/Users/captainsafia/Downloads/test.binlog")
+            build.Execute()
                 .Should()
                 .Pass()
                 .And.NotHaveStdOutContaining($"SimpleMvc -> {Path.Combine(projectDirectory.Path, outputPath, "SimpleMvc.Views.dll")}");
