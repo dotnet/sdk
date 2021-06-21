@@ -4,9 +4,9 @@
 
 using System;
 
-namespace dotnet.Tests
+namespace Microsoft.NET.Build.Tests
 {
-    internal static class TargetFrameworkVersion
+    internal static class TargetFrameworkMoniker
     {
         public static Version NetCoreApp20 => new Version(2, 0);
         public static Version NetCoreApp21 => new Version(2, 1);

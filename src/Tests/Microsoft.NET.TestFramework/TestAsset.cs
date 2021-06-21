@@ -21,7 +21,9 @@ namespace Microsoft.NET.TestFramework
 
         public string TestRoot => Path;
 
-        public readonly Version SDKVersion;
+        public readonly string Name;
+
+        public Version TFM { get; private set; }
 
         public ITestOutputHelper Log { get; }
 
@@ -31,7 +33,7 @@ namespace Microsoft.NET.TestFramework
         internal TestAsset(string testDestination, string sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
         {
             Log = log;
-            SDKVersion = new Version(new string(sdkVersion.Where(c => !char.IsLetter(c)).ToArray()));
+            Name = new DirectoryInfo(testDestination).Name;
         }
 
         internal TestAsset(string testAssetRoot, string testDestination, string sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
@@ -42,6 +44,7 @@ namespace Microsoft.NET.TestFramework
             }
 
             Log = log;
+            Name = new DirectoryInfo(testAssetRoot).Name;
             _testAssetRoot = testAssetRoot;
         }
 
@@ -94,6 +97,7 @@ namespace Microsoft.NET.TestFramework
 
         public TestAsset WithTargetFramework(string targetFramework, string projectName = null)
         {
+            TFM = new Version(new string(targetFramework.Where(c => !char.IsLetter(c)).ToArray()));
             return WithTargetFramework(
             p =>
             {

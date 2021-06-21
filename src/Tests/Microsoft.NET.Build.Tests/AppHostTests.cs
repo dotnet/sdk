@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
     {
         private static string[] GetExpectedFilesFromBuild(TestAsset testAsset)
         {
-            var testProjectName = testAsset.TestProject.Name;
+            var testProjectName = testAsset.TestProject?.Name ?? testAsset.Name;
             var expectedFiles = new List<string>()
             {
                 $"{testProjectName}.dll",
@@ -32,11 +32,11 @@ namespace Microsoft.NET.Build.Tests
                 $"{testProjectName}.runtimeconfig.json"
             };
 
-            if (testAsset.SDKVersion == TargetFrameworkVersion.Net50)
+            if (testAsset.TFM == TargetFrameworkMoniker.Net50)
                 expectedFiles.Add($"ref/{testProjectName}.dll");
 
-            if (testAsset.SDKVersion < TargetFrameworkVersion.Net60)
-                expectedFiles.Add($"{testAsset.TestProject.Name}.runtimeconfig.dev.json");
+            if (testAsset.TFM < TargetFrameworkMoniker.Net60)
+                expectedFiles.Add($"{testProjectName}.runtimeconfig.dev.json");
 
             return expectedFiles.ToArray();
         }
