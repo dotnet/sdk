@@ -73,7 +73,8 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression.Tests
                 using StreamReader reader = new(stream);
                 output = reader.ReadToEnd();
             });
-            engine.WriteSuppressionsToFile("DummyFile");
+            string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
+            engine.WriteSuppressionsToFile(filePath);
 
             Assert.True(StringComparer.OrdinalIgnoreCase.Equals(engine.suppressionsFile.Trim(), output.Trim()));
         }
@@ -111,7 +112,8 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression.Tests
             };
 
             engine.AddSuppression(newSuppression);
-            engine.WriteSuppressionsToFile("DummyFile");
+            string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
+            engine.WriteSuppressionsToFile(filePath);
 
             XmlSerializer xmlSerializer = new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
             Suppression[] deserializedSuppressions = xmlSerializer.Deserialize(stream) as Suppression[];
