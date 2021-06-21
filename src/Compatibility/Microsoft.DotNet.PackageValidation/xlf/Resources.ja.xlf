@@ -68,8 +68,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WroteSuppressions">
-        <source>Wrote compatibility suppressions to file: '{0}'.</source>
-        <target state="new">Wrote compatibility suppressions to file: '{0}'.</target>
+        <source>Successfully wrote compatibility suppressions to '{0}'.</source>
+        <target state="new">Successfully wrote compatibility suppressions to '{0}'.</target>
         <note />
       </trans-unit>
     </body>
