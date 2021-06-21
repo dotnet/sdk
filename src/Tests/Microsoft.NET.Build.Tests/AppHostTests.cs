@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -20,6 +21,26 @@ namespace Microsoft.NET.Build.Tests
 {
     public class AppHostTests : SdkTest
     {
+        private static string[] GetExpectedFilesFromBuild(TestAsset testAsset)
+        {
+            var testProjectName = testAsset.TestProject.Name;
+            var expectedFiles = new List<string>()
+            {
+                $"{testProjectName}.dll",
+                $"{testProjectName}.pdb",
+                $"{testProjectName}.deps.json",
+                $"{testProjectName}.runtimeconfig.json"
+            };
+
+            if (testAsset.SDKVersion == TargetFrameworkVersion.Net50)
+                expectedFiles.Add($"ref/{testProjectName}.dll");
+
+            if (testAsset.SDKVersion < TargetFrameworkVersion.Net60)
+                expectedFiles.Add($"{testAsset.TestProject.Name}.runtimeconfig.dev.json");
+
+            return expectedFiles.ToArray();
+        }
+
         public AppHostTests(ITestOutputHelper log) : base(log)
         {
         }
@@ -43,17 +64,7 @@ namespace Microsoft.NET.Build.Tests
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
             var hostExecutable = $"HelloWorld{Constants.ExeSuffix}";
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                hostExecutable,
-                "HelloWorld.dll",
-                "HelloWorld.pdb",
-                "HelloWorld.deps.json",
-                "HelloWorld.runtimeconfig.dev.json",
-                "HelloWorld.runtimeconfig.json",
-            });
-
-
+            outputDirectory.Should().OnlyHaveFiles(GetExpectedFilesFromBuild(testAsset));
             new RunExeCommand(Log, Path.Combine(outputDirectory.FullName, hostExecutable))
                 .WithEnvironmentVariable(
                     Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)",
@@ -104,15 +115,7 @@ namespace Microsoft.NET.Build.Tests
                 codesign.WaitForExit();
             }
 
-            // Starting in .NET 6.0 prev5, runtimeconfig.dev.json is no longer
-            // produced by default.
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                hostExecutable,
-                "HelloWorld.dll",
-                "HelloWorld.pdb",
-                "HelloWorld.deps.json",
-                "HelloWorld.runtimeconfig.json",
-            });
+            outputDirectory.Should().OnlyHaveFiles(GetExpectedFilesFromBuild(testAsset));
         }
 
         [PlatformSpecificTheory(TestPlatforms.OSX)]

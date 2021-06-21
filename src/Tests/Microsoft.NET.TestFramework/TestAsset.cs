@@ -21,6 +21,8 @@ namespace Microsoft.NET.TestFramework
 
         public string TestRoot => Path;
 
+        public readonly Version SDKVersion;
+
         public ITestOutputHelper Log { get; }
 
         //  The TestProject from which this asset was created, if any
@@ -29,6 +31,7 @@ namespace Microsoft.NET.TestFramework
         internal TestAsset(string testDestination, string sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
         {
             Log = log;
+            SDKVersion = new Version(new string(sdkVersion.Where(c => !char.IsLetter(c)).ToArray()));
         }
 
         internal TestAsset(string testAssetRoot, string testDestination, string sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
