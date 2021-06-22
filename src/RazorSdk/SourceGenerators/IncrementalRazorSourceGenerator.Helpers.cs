@@ -57,13 +57,12 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         private static RazorProjectEngine GetDiscoveryProjectEngine(StaticCompilationTagHelperFeature tagHelperFeature, IEnumerable<MetadataReference> references, IEnumerable<SourceGeneratorProjectItem> items, string rootNamespace)
         {
             var config = RazorConfiguration.Create(RazorLanguageVersion.Latest, "default", Enumerable.Empty<RazorExtension>(), true);
-            
+
             var fileSystem = new VirtualRazorProjectFileSystem();
             foreach (var item in items)
             {
                 fileSystem.Add(item);
             }
-            
 
             var discoveryProjectEngine = RazorProjectEngine.Create(config, fileSystem, b =>
                 {
@@ -96,7 +95,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             {
                 fileSystem.Add(item);
             }
-            
 
             var projectEngine = RazorProjectEngine.Create(rsgOptions.Configuration, fileSystem, b =>
             {
@@ -116,6 +114,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
                 b.SetCSharpLanguageVersion(LanguageVersion.Preview);
             });
+
             return projectEngine;
         }
 

@@ -43,16 +43,24 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             };
         }
 
-        private static SourceGeneratorProjectItem ComputeProjectItems((AdditionalText, AnalyzerConfigOptionsProvider) pair, CancellationToken ct)
+        private static (SourceGeneratorProjectItem?, Diagnostic?) ComputeProjectItems((AdditionalText, AnalyzerConfigOptionsProvider) pair, CancellationToken ct)
         {
             var (additionalText, globalOptions) = pair;
             var options = globalOptions.GetOptions(additionalText);
 
-            options.TryGetValue("build_metadata.AdditionalFiles.TargetPath", out var encodedRelativePath);
+            if (!options.TryGetValue("build_metadata.AdditionalFiles.TargetPath", out var encodedRelativePath))
+            {
+                var diagnostic = Diagnostic.Create(
+                    RazorDiagnostics.TargetPathNotProvided,
+                    Location.None,
+                    additionalText.Path);
+                return (null, diagnostic);
+            }
+
             options.TryGetValue("build_metadata.AdditionalFiles.CssScope", out var cssScope);
             var relativePath = Encoding.UTF8.GetString(Convert.FromBase64String(encodedRelativePath));
 
-            return new SourceGeneratorProjectItem(
+            var projectItem = new SourceGeneratorProjectItem(
                 basePath: "/",
                 filePath: '/' + relativePath
                     .Replace(Path.DirectorySeparatorChar, '/')
@@ -61,6 +69,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 fileKind: additionalText.Path.EndsWith(".razor") ? FileKinds.Component : FileKinds.Legacy,
                 additionalText: additionalText,
                 cssScope: cssScope);
+            return (projectItem, null);
         }
     }
 }
