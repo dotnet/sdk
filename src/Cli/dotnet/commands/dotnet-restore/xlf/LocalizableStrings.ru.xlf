@@ -22,11 +22,6 @@
         <target state="translated">Дополнительный путь к файлу проекта или аргументам MSBuild.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdCurrentRuntimeOptionDescription">
-        <source>Use current runtime as the target runtime.</source>
-        <target state="translated">Использовать текущую среду выполнения в качестве целевой среды выполнения.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdSourceOption">
         <source>SOURCE</source>
         <target state="translated">SOURCE</target>
