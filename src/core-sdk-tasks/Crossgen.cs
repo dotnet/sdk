@@ -27,21 +27,17 @@ namespace Microsoft.DotNet.Build.Tasks
         public string DestinationPath { get; set; }
 
         [Required]
-        public string JITPath { get; set; }
+        public string Architecture { get; set; }
 
         public string CrossgenPath { get; set; }
 
         public bool CreateSymbols { get; set; }
-
-        public string DiasymReaderPath { get; set; }
 
         public bool ReadyToRun { get; set; }
 
         public ITaskItem[] PlatformAssemblyPaths { get; set; }
 
         private string TempOutputPath { get; set; }
-
-        private bool _secondInvocationToCreateSymbols;
 
         protected override bool ValidateParameters()
         {
@@ -67,7 +63,15 @@ namespace Microsoft.DotNet.Build.Tasks
 
             if (toolResult)
             {
-                File.Copy(TempOutputPath, DestinationPath, overwrite: true);
+                var files = System.IO.Directory.GetFiles(Path.GetDirectoryName(TempOutputPath));
+                var dest = Path.GetDirectoryName(DestinationPath);
+                // Copy both dll and pdb files to the destination folder
+                foreach(var file in files)
+                {
+                    File.Copy(file, Path.Combine(dest, Path.GetFileName(file)), overwrite: true);
+                    // Delete file in temp
+                    File.Delete(file);
+                }
             }
 
             if (File.Exists(TempOutputPath))
@@ -76,18 +80,12 @@ namespace Microsoft.DotNet.Build.Tasks
             }
             Directory.Delete(tempDirPath);
 
-            if (toolResult && CreateSymbols)
-            {
-                _secondInvocationToCreateSymbols = true;
-                toolResult = base.Execute();
-            }
-
             return toolResult;
         }
 
         protected override string ToolName
         {
-            get { return "crossgen"; }
+            get { return "crossgen2"; }
         }
 
         protected override MessageImportance StandardOutputLoggingImportance
@@ -133,33 +131,23 @@ namespace Microsoft.DotNet.Build.Tasks
                 return CrossgenPath;
             }
 
-            return "crossgen";
+            return "crossgen2";
         }
 
         protected override string GenerateCommandLineCommands()
         {
-            if (_secondInvocationToCreateSymbols)
-            {
-                return $"{GetReadyToRun()} {GetPlatformAssemblyPaths()} {GetDiasymReaderPath()} {GetCreateSymbols()}";
-            }
+            return $"{GetInPath()} {GetOutPath()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
+        }
 
-            return $"{GetReadyToRun()} {GetMissingDependenciesOk()} {GetInPath()} {GetOutPath()} {GetPlatformAssemblyPaths()} {GetJitPath()}";
+        private string GetArchitecture()
+        {
+            return $"--targetarch {Architecture}";
         }
 
         private string GetCreateSymbols()
         {
-            var option = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "-createpdb" : "-createperfmap";
-            return $"{option} \"{Path.GetDirectoryName(DestinationPath)}\" \"{DestinationPath}\"";
-        }
-
-        private string GetDiasymReaderPath()
-        {
-            if (string.IsNullOrEmpty(DiasymReaderPath))
-            {
-                return null;
-            }
-
-            return $"-diasymreaderpath \"{DiasymReaderPath}\"";
+            var option = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap";
+            return $"{option}";
         }
 
         private string GetReadyToRun()
@@ -174,12 +162,12 @@ namespace Microsoft.DotNet.Build.Tasks
 
         private string GetInPath()
         {
-            return $"-in \"{SourceAssembly}\"";
+            return $"\"{SourceAssembly}\"";
         }
         
         private string GetOutPath()
         {
-            return $"-out \"{TempOutputPath}\"";
+            return $"-o \"{TempOutputPath}\"";
         }
 
         private string GetPlatformAssemblyPaths()
@@ -190,18 +178,13 @@ namespace Microsoft.DotNet.Build.Tasks
             {
                 foreach (var excludeTaskItem in PlatformAssemblyPaths)
                 {
-                    platformAssemblyPaths += $"{excludeTaskItem.ItemSpec}{Path.PathSeparator}";
+                    platformAssemblyPaths += $"-r {excludeTaskItem.ItemSpec}{Path.DirectorySeparatorChar}*.dll ";
                 }
             }
             
-            return $" -platform_assemblies_paths {platformAssemblyPaths.Trim(':')}";
+            return platformAssemblyPaths;
         }
         
-        private string GetJitPath()
-        {
-            return $"-JITPath {JITPath}";
-        }
-
         private string GetMissingDependenciesOk()
         {
             return "-MissingDependenciesOK";

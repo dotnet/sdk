@@ -37,6 +37,9 @@
       <SdkPlaceholderInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.SdkPlaceholder.$(Architecture).$(FullNugetVersion).nupkg</SdkPlaceholderInstallerNupkgFile>
       <VSToolsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Tools.Net.Core.SDK.nuspec</VSToolsNuspecFile>
       <VSToolsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</VSToolsNupkgFile>
+      
+      <ManifestInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.NetCore.Manifest.nuspec</ManifestInstallerNuspecFile>
+      <ManifestInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Manifest.$(Architecture).$(FullNugetVersion).nupkg</ManifestInstallerNupkgFile>
 
       <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/$(Configuration)</SdkResolverLayoutPath>
       <VSToolsResolverNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Tools.Net.Core.SDK.Resolver.nuspec</VSToolsResolverNuspecFile>
@@ -451,6 +454,24 @@
 
   </Target>
 
+  <Target Name="GenerateManifestNupkg"
+          DependsOnTargets="GenerateLayout;GenerateManifestsMsi"
+          Condition=" '$(OS)' == 'Windows_NT' "
+          Inputs="$(ManifestsMSIInstallerFile);
+                    $(ManifestInstallerNuspecFile);
+                    $(GenerateNupkgPowershellScript)"
+          Outputs="$(ManifestInstallerNupkgFile)">
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ArtifactsDir)' ^
+                      '$(ManifestsMSIInstallerFile)' ^
+                      '$(FullNugetVersion)' ^
+                      '$(ManifestInstallerNuspecFile)' ^
+                      '$(ManifestInstallerNupkgFile)' ^
+                      '$(Architecture)' ^
+                      '$(MajorMinorVersion)'" />
+  </Target>
+
   <Target Name="GenerateVSToolsNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
           Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86' "
@@ -535,6 +556,7 @@
                             GenerateSdkPlaceholderMsi;
                             SignSdkPlaceholderMsi;
                             GenerateToolsetNupkg;
+                            GenerateManifestNupkg;
                             GenerateTemplatesNupkgs;
                             GenerateSdkPlaceholderNupkg;
                             GenerateVSToolsNupkg;

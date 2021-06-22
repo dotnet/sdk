@@ -403,30 +403,15 @@
   </Target>
 
   <Target Name="RetargetTools">
-    <PropertyGroup>
-      <ReplacementPattern>"version": ".*"</ReplacementPattern>
-      <ReplacementString>"version": "$(MicrosoftNETCoreAppRuntimePackageVersion)"</ReplacementString>
-      <AspNetCoreRuntimeReplacementString>"version": "$(MicrosoftAspNetCoreAppRuntimePackageVersion)"</AspNetCoreRuntimeReplacementString>
-    </PropertyGroup>
     <ItemGroup>
       <ToolRuntimeConfigPath Include="$(RedistLayoutPath)sdk/$(Version)/**/*.runtimeconfig.json" />
     </ItemGroup>
 
-    <!-- Update runtimeconfig files that target Microsoft.NETCore.App -->
-    <ReplaceFileContents
-      InputFiles="@(ToolRuntimeConfigPath)"
-      DestinationFiles="@(ToolRuntimeConfigPath)"
-      ReplacementPatterns="$(ReplacementPattern)"
-      ReplacementStrings="$(ReplacementString)"
-      FileMustContainText="Microsoft.NETCore.App" />
-
-    <!-- Update runtimeconfig files that target Microsoft.AspNetCore.App -->
-    <ReplaceFileContents
-      InputFiles="@(ToolRuntimeConfigPath)"
-      DestinationFiles="@(ToolRuntimeConfigPath)"
-      ReplacementPatterns="$(ReplacementPattern)"
-      ReplacementStrings="$(AspNetCoreRuntimeReplacementString)"
-      FileMustContainText="Microsoft.AspNetCore.App" />
+    <!-- Update runtimeconfig files for tools in the SDK to pin the shared frameworks to the one carried by this installer. -->
+    <UpdateRuntimeConfig
+      RuntimeConfigPaths="@(ToolRuntimeConfigPath)"
+      MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
   </Target>
 
   <Target Name="GenerateVersionFile"

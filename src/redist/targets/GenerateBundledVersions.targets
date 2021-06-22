@@ -39,17 +39,17 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <_NET50RuntimePackVersion>5.0.5</_NET50RuntimePackVersion>
+      <_NET50RuntimePackVersion>5.0.7</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
       <_WindowsDesktop50RuntimePackVersion>5.0.7</_WindowsDesktop50RuntimePackVersion>
       <_WindowsDesktop50TargetingPackVersion>5.0.0</_WindowsDesktop50TargetingPackVersion>
-      <_AspNet50RuntimePackVersion>5.0.6</_AspNet50RuntimePackVersion>
+      <_AspNet50RuntimePackVersion>5.0.7</_AspNet50RuntimePackVersion>
       <_AspNet50TargetingPackVersion>5.0.0</_AspNet50TargetingPackVersion>
 
       <_NETCoreApp30RuntimePackVersion>3.0.3</_NETCoreApp30RuntimePackVersion>
       <_NETCoreApp30TargetingPackVersion>3.0.0</_NETCoreApp30TargetingPackVersion>
 
-      <_NETCoreApp31RuntimePackVersion>3.1.14</_NETCoreApp31RuntimePackVersion>
+      <_NETCoreApp31RuntimePackVersion>3.1.16</_NETCoreApp31RuntimePackVersion>
       <_NETCoreApp31TargetingPackVersion>3.1.0</_NETCoreApp31TargetingPackVersion>
 
       <_WindowsDesktop30RuntimePackVersion>3.0.3</_WindowsDesktop30RuntimePackVersion>
@@ -61,7 +61,7 @@
       <_AspNet30RuntimePackVersion>3.0.3</_AspNet30RuntimePackVersion>
       <_AspNet30TargetingPackVersion>3.0.1</_AspNet30TargetingPackVersion>
 
-      <_AspNet31RuntimePackVersion>3.1.15</_AspNet31RuntimePackVersion>
+      <_AspNet31RuntimePackVersion>3.1.16</_AspNet31RuntimePackVersion>
       <_AspNet31TargetingPackVersion>3.1.10</_AspNet31TargetingPackVersion>
 
       <!-- Use only major and minor in target framework version -->

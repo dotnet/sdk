@@ -5,26 +5,16 @@
     
     <PropertyGroup>
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
-      <_crossDir Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' != 'arm64'">/x64_arm64</_crossDir>
-      <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">/x86_arm</_crossDir>
-      <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' != 'win'">/x64_arm</_crossDir>
-      <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools$(_crossDir)/crossgen$(ExeExtension)</CrossgenPath>
-      <LibCLRJitRid Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' == 'x64'">x64_arm64</LibCLRJitRid>
-      <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86_arm</LibCLRJitRid>
-      <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' != 'win'">x64_arm</LibCLRJitRid>
-      <LibCLRJitRid Condition="'$(LibCLRJitRid)' == ''">$(SharedFrameworkRid)</LibCLRJitRid>
-      <LibCLRJitPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/$(LibCLRJitRid)/native/$(DynamicLibPrefix)clrjit$(DynamicLibExtension)</LibCLRJitPath>
+      <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(HostOSName)-$(BuildArchitecture)</RuntimeNETCrossgenPackageName>
+      <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCrossgenPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools/crossgen2$(ExeExtension)</CrossgenPath>
       <SharedFrameworkNameVersionPath>$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
-      <DIASymReaderCrossgenFilter>*</DIASymReaderCrossgenFilter>
-      <DIASymReaderCrossgenFilter Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86</DIASymReaderCrossgenFilter>
-      <DIASymReaderCrossgenFilter Condition="'$(Architecture)' == 'arm64' And '$(OSName)' == 'win'">amd64</DIASymReaderCrossgenFilter>
     </PropertyGroup>
 
     <!-- Download the runtime package with the crossgen executable in it -->
     <ItemGroup>
       <CrossGenDownloadPackageProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
         <Properties>
-          PackageToRestore=$(RuntimeNETCoreAppPackageName);
+          PackageToRestore=$(RuntimeNETCrossgenPackageName);
           PackageVersionToRestore=$(MicrosoftNETCoreAppRuntimePackageVersion);
           TargetFramework=$(TargetFramework)
         </Properties>
@@ -78,7 +68,6 @@
       <!-- Don't crossgen reference assemblies redisted with msbuild for RoslynCodeTaskFactory -->
       <RemainingFiles Remove="$(SdkOutputDirectory)**\ref\*.dll" />
 
-      <DiasymReaderPath Include="$(SharedFrameworkNameVersionPath)/Microsoft.DiaSymReader.Native.$(DIASymReaderCrossgenFilter).dll" />
     </ItemGroup>
 
     <AddMetadataIsPE Items="@(RoslynFiles)">
@@ -122,31 +111,28 @@
     <Crossgen
         SourceAssembly="%(RoslynTargets.FullPath)"
         DestinationPath="%(RoslynTargets.FullPath)"
-        JITPath="$(LibCLRJitPath)"
+        Architecture="$(Architecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
-        DiasymReaderPath="@(DiasymReaderPath)"
         PlatformAssemblyPaths="@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(FSharpTargets.FullPath)"
         DestinationPath="%(FSharpTargets.FullPath)"
-        JITPath="$(LibCLRJitPath)"
+        Architecture="$(Architecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
-        DiasymReaderPath="@(DiasymReaderPath)"
         PlatformAssemblyPaths="@(FSharpFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(RemainingTargets.FullPath)"
         DestinationPath="%(RemainingTargets.FullPath)"
-        JITPath="$(LibCLRJitPath)"
+        Architecture="$(Architecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
-        DiasymReaderPath="@(DiasymReaderPath)"
         PlatformAssemblyPaths="@(RemainingFolders);$(SharedFrameworkNameVersionPath)" />
 
 
