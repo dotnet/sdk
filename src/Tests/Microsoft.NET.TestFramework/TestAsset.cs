@@ -23,7 +23,7 @@ namespace Microsoft.NET.TestFramework
 
         public readonly string Name;
 
-        public Version TFM { get; private set; }
+        public string TargetFrameworkMoniker { get; private set; }
 
         public ITestOutputHelper Log { get; }
 
@@ -97,7 +97,7 @@ namespace Microsoft.NET.TestFramework
 
         public TestAsset WithTargetFramework(string targetFramework, string projectName = null)
         {
-            TFM = new Version(new string(targetFramework.Where(c => !char.IsLetter(c)).ToArray()));
+            TargetFrameworkMoniker = targetFramework;
             return WithTargetFramework(
             p =>
             {

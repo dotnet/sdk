@@ -26,17 +26,23 @@ namespace Microsoft.NET.Build.Tests
             var testProjectName = testAsset.TestProject?.Name ?? testAsset.Name;
             var expectedFiles = new List<string>()
             {
+                $"{testProjectName}{Constants.ExeSuffix}",
                 $"{testProjectName}.dll",
                 $"{testProjectName}.pdb",
                 $"{testProjectName}.deps.json",
                 $"{testProjectName}.runtimeconfig.json"
             };
 
-            if (testAsset.TFM == TargetFrameworkMoniker.Net50)
-                expectedFiles.Add($"ref/{testProjectName}.dll");
+            var tfm = testAsset.TargetFrameworkMoniker;
+            if (!string.IsNullOrEmpty(tfm) && (tfm.Contains("netcoreapp") || tfm.Contains("net5") || tfm.Contains("net6")))
+            {
+                var netCoreTFM = new Version(new string(tfm.Where(c => !char.IsLetter(c)).ToArray()));
+                if (netCoreTFM >= new Version(5, 0))
+                    expectedFiles.Add($"ref/{testProjectName}.dll");
 
-            if (testAsset.TFM < TargetFrameworkMoniker.Net60)
-                expectedFiles.Add($"{testProjectName}.runtimeconfig.dev.json");
+                if (netCoreTFM < new Version(6, 0))
+                    expectedFiles.Add($"{testProjectName}.runtimeconfig.dev.json");
+            }
 
             return expectedFiles.ToArray();
         }
