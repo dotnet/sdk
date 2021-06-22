@@ -134,7 +134,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_does_not_try_to_codesign_non_osx_app_hosts(string targetFramework, string rid)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .CopyTestAsset("HelloWorld", identifier: $"{targetFramework}_{rid}")
                 .WithSource()
                 .WithTargetFramework(targetFramework);
 
