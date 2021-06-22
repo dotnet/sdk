@@ -4,73 +4,73 @@
     <body>
       <trans-unit id="command_export_help_description">
         <source>Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</source>
-        <target state="new">Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</target>
+        <target state="translated">Dado un archivo template.config, crea un directorio de "localización" junto a él y exporta los archivos de localización en el directorio creado. Si los archivos de localización ya existen, se conservarán las traducciones existentes.</target>
         <note>The phrase "localization files" here mean the files that will be given to the translators to be localized.</note>
       </trans-unit>
       <trans-unit id="command_export_help_dryrun_description">
         <source>If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</source>
-        <target state="new">If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</target>
+        <target state="translated">Si se especifica esta opción, los archivos modificados no se guardarán en el sistema de archivos y los cambios solo se imprimirán en los resultados de la consola.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_help_language_description">
         <source>The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</source>
-        <target state="new">The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</target>
+        <target state="translated">La lista de idiomas que va a ser compatible con esta plantilla. Si omite esta opción, se usará la siguiente lista de idiomas como predeterminada: cs, de, en, es, fr, it, ja, dc, pl, pt-BR, ru, zh-hans, zh-hant</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_help_recursive_description">
         <source>When specified, subdirectories are also searched for template.json files.</source>
-        <target state="new">When specified, subdirectories are also searched for template.json files.</target>
+        <target state="translated">Al especificar esto, los subdirectorios también se buscan los archivos template.json.</target>
         <note>Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_help_templatePath_description">
         <source>Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</source>
-        <target state="new">Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</target>
+        <target state="translated">Especifica la ruta de acceso al archivo template.json. Si se da un directorio, se buscará el archivo template.json dentro del directorio. Si se especifican opciones --recursive, todos los archivos template.json del directorio especificado y sus valores se tomarán como entrada.</target>
         <note>Do not localize: "template.json", "--recursive"</note>
       </trans-unit>
       <trans-unit id="command_export_log_cancelled">
         <source>"--export" command for the following file was cancelled: "{0}".</source>
-        <target state="new">"--export" command for the following file was cancelled: "{0}".</target>
+        <target state="translated">Comando "--export" para el archivo siguiente se ha cancelado: "{0}".</target>
         <note>Do not localize: "--export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_executionEnded">
         <source>Execution of "--export" command has completed. {0} files were processed.</source>
-        <target state="new">Execution of "--export" command has completed. {0} files were processed.</target>
+        <target state="translated">Se ha completado la ejecución del comando "--export". {0} se procesaron los archivos.</target>
         <note>{0} is the number of files. Do not localize "--export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithError">
         <source>Generating localization files for a template.json has failed.
 Reason: {0}.
 File Path: {1}.</source>
-        <target state="new">Generating localization files for a template.json has failed.
-Reason: {0}.
-File Path: {1}.</target>
+        <target state="translated">Error al generar archivos de localización para una template.json.
+Motivo: {0}.
+Ruta de acceso del archivo: {1}.</target>
         <note>{0} is a sentence such as "Json property should contain a field 'ID'"
 {1} is a file path such as: C:\temp\template.json
 Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithException">
         <source>Generating localization files for the following template.json file has failed: "{0}".</source>
-        <target state="new">Generating localization files for the following template.json file has failed: "{0}".</target>
+        <target state="translated">No se pudo generar archivos de localización para el siguiente archivo template.json: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_log_templateExportSucceeded">
         <source>Localization files were successfully generated for the template.json file at path "{0}".</source>
-        <target state="new">Localization files were successfully generated for the template.json file at path "{0}".</target>
+        <target state="translated">Los archivos de localización se generaron correctamente para el archivo template.json en la ruta de acceso "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_log_templateJsonNotFound">
         <source>Failed to find "template.json" file under the path "{0}".</source>
-        <target state="new">Failed to find "template.json" file under the path "{0}".</target>
+        <target state="translated">No se pudo encontrar el archivo "template.json" bajo la ruta "{0}".</target>
         <note>Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailed">
         <source>"--{0}" command has encountered an error. See the logs for more details.</source>
-        <target state="new">"--{0}" command has encountered an error. See the logs for more details.</target>
+        <target state="translated">El comando "--{0}" ha encontrado un error. Vea los registros para obtener más información.</target>
         <note>{0} will be replaced by the command name. Such as: "export" command has encountered an error.</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailedWithErrorMessage">
         <source>There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</source>
-        <target state="new">There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</target>
+        <target state="translated">Ha ocurrido un error al ejecutar el comando "{0}". Mensaje de error: "{1}". Vea los registros para obtener más información.</target>
         <note />
       </trans-unit>
     </body>

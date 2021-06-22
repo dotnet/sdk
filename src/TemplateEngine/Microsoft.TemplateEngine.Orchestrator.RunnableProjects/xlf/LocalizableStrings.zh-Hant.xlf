@@ -1,21 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">
         <source>Localization file should only contain elements with type 'string'. Remove elements that are not strings.</source>
-        <target state="new">Localization file should only contain elements with type 'string'. Remove elements that are not strings.</target>
+        <target state="translated">當地語系化檔案應只包含類型為 'string' 的元素。請移除非字串的元素。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_InvalidManualInstructionLocalizationIndex">
         <source>In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</source>
-        <target state="new">In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</target>
+        <target state="translated">在識別碼為 '{1}' 張貼動作下的當地語系化檔案中，有識別碼為 '{0}' 的手動指令當地語系化字串。這些手動指令不存在於 template.json 檔案中，並應該從當地語系化檔案中移除。</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".
 {1} is a single-word identifier string. Such as "myPostAction".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">
         <source>Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</source>
-        <target state="new">Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</target>
+        <target state="translated">當地語系化檔案中指定識別碼為 '{0}' 的張貼動作不存在於 template.json 檔案中。請從當地語系化檔案中移除當地語系化字串。</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidRegex">
@@ -25,18 +25,18 @@
       </trans-unit>
       <trans-unit id="Authoring_MalformedPostActionManualInstructions">
         <source>One or more postActions have a malformed or missing manualInstructions value.</source>
-        <target state="new">One or more postActions have a malformed or missing manualInstructions value.</target>
+        <target state="translated">一或多個 postActions 具有格式錯誤或遺漏 manualInstructions 值。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_ManualInstructionIdIsNotUnique">
         <source>'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</source>
-        <target state="new">'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</target>
+        <target state="translated">位於索引 {1} 之手動指令 '{0}' 的 'id' 不是唯一的。系統只會將使用此識別碼的第一個手動指令當地語系化。</target>
         <note>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
 {1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_MissingValue">
         <source>Missing '{0}'.</source>
-        <target state="new">Missing '{0}'.</target>
+        <target state="translated">缺少 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_NonBoolDataTypeForRegexMatch">
@@ -46,91 +46,91 @@
       </trans-unit>
       <trans-unit id="Authoring_PostActionIdIsNotUnique">
         <source>[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</source>
-        <target state="new">[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</target>
+        <target state="translated">[{0}]: 位於索引 '{2}' 之張貼動作 '{1}' 的識別碼不是唯一的。系統只會將使用此識別碼的第一個張貼動作當地語系化。</target>
         <note>{0} is any identifier string that user provided in the file. Such as "myPostAction", "firstPostAction", "postAction1" etc.
 {1} is a number representing the zero-based index of the post action. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_PostActionMustHaveActionId">
         <source>[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</source>
-        <target state="new">[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</target>
+        <target state="translated">[{0}]: 在索引 '{1}' 張貼動作應該有 'actionId' 來宣告要執行的動作。</target>
         <note>{0} is a whole number representing the zero-based index of the post action. Such as "5" or "0".
 Do not localize: actionId</note>
       </trans-unit>
       <trans-unit id="Authoring_SourceDoesNotExist">
         <source>Source '{0}' in template does not exist.</source>
-        <target state="needs-review-translation">    範本中的來源 '{0}' 不存在。</target>
+        <target state="translated">範本中的來源 '{0}' 不存在。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceIsOutsideInstallSource">
         <source>Source location '{0}' is outside the specified install source location.</source>
-        <target state="needs-review-translation">    來源位置 '{0}' 超出指定的安裝來源位置。</target>
+        <target state="translated">來源位置 '{0}' 超出指定的安裝來源位置。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceMustBeDirectory">
         <source>Source must be a directory, but '{0}' is a file.</source>
-        <target state="needs-review-translation">    來源必須是目錄，但 '{0}' 是檔案。</target>
+        <target state="translated">來源必須是目錄，但 '{0}' 是檔案。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateMissingCommonInformation">
         <source>The template configuration {0} is missing common information:</source>
-        <target state="needs-review-translation">'{0}' 缺少通用訊息</target>
+        <target state="translated">範本設定 {0} 遺失一般資訊:</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled">
         <source>Failed to load template from {0}:</source>
-        <target state="needs-review-translation">'{0}' 未載入</target>
+        <target state="translated">無法從 {0} 載入範本:</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled_Message">
         <source>Failed to load template from {0}.
 Details: {1}</source>
-        <target state="new">Failed to load template from {0}.
-Details: {1}</target>
+        <target state="translated">無法從 {0} 載入範本。
+詳細資料:{1}</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateRootOutsideInstallSource">
         <source>The template root is outside the specified install source location.</source>
-        <target state="new">The template root is outside the specified install source location.</target>
+        <target state="translated">範本根目錄超出指定的安裝來源位置。</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
-        <target state="new">Failed to read parse localization file {0}, it will be skipped from further processing.</target>
+        <target state="translated">無法讀取剖析當地語系化檔案 {0}，將略過進一步處理。</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_ConfigShouldBeFile">
         <source>Template configuration must be a file, but {0} is not a file.</source>
-        <target state="new">Template configuration must be a file, but {0} is not a file.</target>
+        <target state="translated">範本設定必須是檔案，但 {0} 不是檔案。</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_LocaleConfigShouldBeFile">
         <source>Template localization configuration must be a file, but {0} is not a file.</source>
-        <target state="new">Template localization configuration must be a file, but {0} is not a file.</target>
+        <target state="translated">範本當地語系化設定必須是檔案，{0} 不是檔案。</target>
         <note>{0} is template localization configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_TemplateValidationFailed">
         <source>The template configuration {0} is not valid.</source>
-        <target state="new">The template configuration {0} is not valid.</target>
+        <target state="translated">範本設定 {0} 無效。</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_TemplateVersionNotSupported">
         <source>The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</source>
-        <target state="new">The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</target>
+        <target state="translated">範本與產生器版本不相容: 允許的版本: {0}，產生器版本: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Warning_LocFileSkipped">
         <source>Localization file {0} is not compatible with base configuration {1}, and will be skipped.</source>
-        <target state="new">Localization file {0} is not compatible with base configuration {1}, and will be skipped.</target>
+        <target state="translated">當地語系化檔案 {0} 與基本設定 {1} 不相容，將會略過。</target>
         <note>{0} and {1} are template configuration locations.</note>
       </trans-unit>
       <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound">
         <source>Failed to load additional configuration file {0}, the file does not exist.</source>
-        <target state="new">Failed to load additional configuration file {0}, the file does not exist.</target>
+        <target state="translated">無法載入其他設定檔 {0}，檔案不存在。</target>
         <note />
       </trans-unit>
       <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName">
         <source>Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</source>
-        <target state="new">Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</target>
+        <target state="translated">無法載入其他設定檔 {0}。其他設定檔名稱的結尾必須是 '.{1}'。</target>
         <note />
       </trans-unit>
     </body>

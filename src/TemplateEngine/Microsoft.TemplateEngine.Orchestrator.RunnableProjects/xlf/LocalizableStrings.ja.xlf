@@ -1,21 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">
         <source>Localization file should only contain elements with type 'string'. Remove elements that are not strings.</source>
-        <target state="new">Localization file should only contain elements with type 'string'. Remove elements that are not strings.</target>
+        <target state="translated">ローカライズ ファイルには、'string' 型の要素のみを含める必要があります。文字列以外の要素を削除してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_InvalidManualInstructionLocalizationIndex">
         <source>In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</source>
-        <target state="new">In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</target>
+        <target state="translated">ID '{1}' の事後アクションの下にあるローカライズ ファイルには、ID '{0}' の手動手順のローカライズされた文字列があります。これらの手動手順は、template.json ファイルに存在しないため、ローカライズ ファイルから削除する必要があります。</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".
 {1} is a single-word identifier string. Such as "myPostAction".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">
         <source>Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</source>
-        <target state="new">Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</target>
+        <target state="translated">ローカライズ ファイルに指定された ID '{0}' の事後アクションが template.json ファイルに存在しません。ローカライズされた文字列をローカライズ ファイルから削除してください。</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidRegex">
@@ -25,18 +25,18 @@
       </trans-unit>
       <trans-unit id="Authoring_MalformedPostActionManualInstructions">
         <source>One or more postActions have a malformed or missing manualInstructions value.</source>
-        <target state="new">One or more postActions have a malformed or missing manualInstructions value.</target>
+        <target state="translated">manualInstructions 値が正しくないか、または不足している postActions が一つ以上あります。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_ManualInstructionIdIsNotUnique">
         <source>'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</source>
-        <target state="new">'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</target>
+        <target state="translated">インデックス {1} の手動手順 "{0}" の 'ID' が一意ではありません。この ID を使用する最初の手動手順のみがローカライズされます。</target>
         <note>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
 {1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_MissingValue">
         <source>Missing '{0}'.</source>
-        <target state="new">Missing '{0}'.</target>
+        <target state="translated">'{0}' がありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_NonBoolDataTypeForRegexMatch">
@@ -46,91 +46,91 @@
       </trans-unit>
       <trans-unit id="Authoring_PostActionIdIsNotUnique">
         <source>[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</source>
-        <target state="new">[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</target>
+        <target state="translated">[{0}]: インデックス '{2}' の事後アクション '{1}' の ID が一意ではありません。この ID を使用する最初の事後アクションのみがローカライズされます。</target>
         <note>{0} is any identifier string that user provided in the file. Such as "myPostAction", "firstPostAction", "postAction1" etc.
 {1} is a number representing the zero-based index of the post action. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_PostActionMustHaveActionId">
         <source>[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</source>
-        <target state="new">[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</target>
+        <target state="translated">[{0}]: インデックス '{1}' の事後アクションは、実行するアクションを宣言するために 'actionId' を含んでいなければなりません。</target>
         <note>{0} is a whole number representing the zero-based index of the post action. Such as "5" or "0".
 Do not localize: actionId</note>
       </trans-unit>
       <trans-unit id="Authoring_SourceDoesNotExist">
         <source>Source '{0}' in template does not exist.</source>
-        <target state="needs-review-translation">    テンプレートにソース '{0}' が存在しません。</target>
+        <target state="translated">テンプレートにソース '{0}' が存在しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceIsOutsideInstallSource">
         <source>Source location '{0}' is outside the specified install source location.</source>
-        <target state="needs-review-translation">    テンプレート: '{0}' - テンプレート ルートは、指定されたインストール ソースの場所外です。</target>
+        <target state="translated">テンプレート: '{0}' - テンプレート ルートは、指定されたインストール ソースの場所外です。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceMustBeDirectory">
         <source>Source must be a directory, but '{0}' is a file.</source>
-        <target state="needs-review-translation">    ソースはディレクトリである必要がありますが、' {0} ' はファイルです。</target>
+        <target state="translated">ソースはディレクトリである必要がありますが、' {0} ' はファイルです。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateMissingCommonInformation">
         <source>The template configuration {0} is missing common information:</source>
-        <target state="needs-review-translation">'{0}' には共通情報がありません</target>
+        <target state="translated">テンプレート構成 {0} に共通情報がありません:</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled">
         <source>Failed to load template from {0}:</source>
-        <target state="needs-review-translation">'{0}' は読み込まれていません。</target>
+        <target state="translated">テンプレートを以下の {0} から読み込めませんでした。</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled_Message">
         <source>Failed to load template from {0}.
 Details: {1}</source>
-        <target state="new">Failed to load template from {0}.
-Details: {1}</target>
+        <target state="translated">テンプレートを以下の {0} から読み込めませんでした。
+詳細: {1}</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateRootOutsideInstallSource">
         <source>The template root is outside the specified install source location.</source>
-        <target state="new">The template root is outside the specified install source location.</target>
+        <target state="translated">テンプレート ルートは、指定されたインストール ソースの場所外です。</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
-        <target state="new">Failed to read parse localization file {0}, it will be skipped from further processing.</target>
+        <target state="translated">{0} 解析ローカライズ ファイルを読み取ることができませんでした。それ以降の処理からはスキップされます。</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_ConfigShouldBeFile">
         <source>Template configuration must be a file, but {0} is not a file.</source>
-        <target state="new">Template configuration must be a file, but {0} is not a file.</target>
+        <target state="translated">テンプレートの構成はファイルである必要がありますが、{0} はファイルではありません。</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_LocaleConfigShouldBeFile">
         <source>Template localization configuration must be a file, but {0} is not a file.</source>
-        <target state="new">Template localization configuration must be a file, but {0} is not a file.</target>
+        <target state="translated">テンプレートのローカライズ構成はファイルである必要がありますが、{0} はファイルではありません。</target>
         <note>{0} is template localization configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_TemplateValidationFailed">
         <source>The template configuration {0} is not valid.</source>
-        <target state="new">The template configuration {0} is not valid.</target>
+        <target state="translated">テンプレート構成 {0} が有効ではありません。</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_TemplateVersionNotSupported">
         <source>The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</source>
-        <target state="new">The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</target>
+        <target state="translated">テンプレートは、ジェネレーター バージョン: 許可されたバージョン: {0}、ジェネレーターバージョン: {1} と互換性がありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Warning_LocFileSkipped">
         <source>Localization file {0} is not compatible with base configuration {1}, and will be skipped.</source>
-        <target state="new">Localization file {0} is not compatible with base configuration {1}, and will be skipped.</target>
+        <target state="translated">ローカライズ ファイル {0} は、基本構成 {1} と互換性がないため、スキップされます。</target>
         <note>{0} and {1} are template configuration locations.</note>
       </trans-unit>
       <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound">
         <source>Failed to load additional configuration file {0}, the file does not exist.</source>
-        <target state="new">Failed to load additional configuration file {0}, the file does not exist.</target>
+        <target state="translated">追加の構成ファイル {0} を読み込むことができませんでした。ファイルが存在しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName">
         <source>Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</source>
-        <target state="new">Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</target>
+        <target state="translated">追加の構成ファイル {0} を読み込むことができませんでした。追加の構成ファイル名の末尾は、'.{1}' である必要があります。</target>
         <note />
       </trans-unit>
     </body>

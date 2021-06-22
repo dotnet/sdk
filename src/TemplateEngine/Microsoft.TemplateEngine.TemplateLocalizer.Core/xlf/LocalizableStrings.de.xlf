@@ -4,43 +4,43 @@
     <body>
       <trans-unit id="stringExtractor_log_jsonElementAdded">
         <source>Adding into localizable strings: {0}</source>
-        <target state="new">Adding into localizable strings: {0}</target>
+        <target state="translated">Hinzufügen zu lokalisierbaren Zeichenfolgen: {0}</target>
         <note>{0} is a string similar to "postActions/0/manualInstructions/2/text"</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonElementExcluded">
         <source>The following element in the template.json will not be included in the localizations because it does not match any of the rules for localizable elements: {0}</source>
-        <target state="new">The following element in the template.json will not be included in the localizations because it does not match any of the rules for localizable elements: {0}</target>
+        <target state="translated">Das folgende Element in der template.json wird nicht in die Lokalisierungen einbezogen, da es mit keiner der Regeln für lokalisierbare Elemente übereinstimmt: {0}</target>
         <note>{0} is any string from a json file. Such as "postActions", "myParameter", "author" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonKeyIsNotUnique">
         <source>Each child of "{0}" should have a unique id. Currently, the id "{1}" is shared by multiple children.</source>
-        <target state="new">Each child of "{0}" should have a unique id. Currently, the id "{1}" is shared by multiple children.</target>
+        <target state="translated">Jedes untergeordnete Element von "{0}" muss eine eindeutige ID aufweisen. Zurzeit wird die ID {1} von mehreren untergeordneten Elementen verwendet.</target>
         <note>{0} is an identifier string similar to "postActions/0/manualInstructions/2/text"
 {1} is a user-defined string such as "myPostAction", "pa0", "postActionFirst" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonMemberIsMissing">
         <source>Json element "{0}" must have a member "{1}".</source>
-        <target state="new">Json element "{0}" must have a member "{1}".</target>
+        <target state="translated">Das JSON-Element "{0}" muss einen Member "{1}" aufweisen.</target>
         <note>{0} and {1} are strings such as "postActions", "manualInstructions", "id" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_skippingAlreadyAddedElement">
         <source>The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}</source>
-        <target state="new">The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}</target>
+        <target state="translated">Das folgende Element in der template.json wird übersprungen, da es bereits der Liste der lokalisierbaren Zeichenfolgen hinzugefügt wurde: {0}</target>
         <note>{0} is a string similar to "postActions/0/manualInstructions/2/text"</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_failedToReadLocFile">
         <source>"Failed to read the existing strings from "{0}"</source>
-        <target state="new">"Failed to read the existing strings from "{0}"</target>
+        <target state="translated">"Fehler beim Lesen der vorhandenen Zeichenfolgen aus "{0}"</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_loadingLocFile">
         <source>Loading existing localizations from file "{0}"</source>
-        <target state="new">Loading existing localizations from file "{0}"</target>
+        <target state="translated">Vorhandene Lokalisierungen werden aus der Datei "{0}" geladen</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_openingTemplatesJson">
         <source>"Opening the following templatestrings.json file for writing: "{0}"</source>
-        <target state="new">"Opening the following templatestrings.json file for writing: "{0}"</target>
+        <target state="translated">"Öffnen der folgenden templatestrings.json-Datei zum Schreiben: "{0}"</target>
         <note>{0} is a file path.</note>
       </trans-unit>
     </body>

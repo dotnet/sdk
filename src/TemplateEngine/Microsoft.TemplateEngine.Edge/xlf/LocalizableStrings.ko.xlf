@@ -4,187 +4,187 @@
     <body>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
         <source>The folder {0} doesn't exist.</source>
-        <target state="new">The folder {0} doesn't exist.</target>
+        <target state="translated">폴더 {0}이(가) 존재하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Generic_LatestVersion">
         <source>latest version</source>
-        <target state="new">latest version</target>
+        <target state="translated">최신 버전</target>
         <note>small letters, string is used in the sentence</note>
       </trans-unit>
       <trans-unit id="Generic_Version">
         <source>version {0}</source>
-        <target state="new">version {0}</target>
+        <target state="translated">버전 {0}</target>
         <note>small letters, string is used in the sentence</note>
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed">
         <source>{0} can be installed by several installers. Specify the installer name to be used.</source>
-        <target state="new">{0} can be installed by several installers. Specify the installer name to be used.</target>
+        <target state="translated">{0}은(는) 여러 설치 관리자가 설치할 수 있습니다. 사용할 설치 관리자 이름을 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageAlreadyInstalled">
         <source>{0} is already installed.</source>
-        <target state="new">{0} is already installed.</target>
+        <target state="translated">{0}이(가) 이미 설치되어 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageCannotBeInstalled">
         <source>{0} cannot be installed.</source>
-        <target state="new">{0} cannot be installed.</target>
+        <target state="translated">{0}을(를) 설치할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled">
         <source>{0} is already installed, version: {1}, it will be replaced with {2}.</source>
-        <target state="new">{0} is already installed, version: {1}, it will be replaced with {2}.</target>
+        <target state="translated">{0}이(가) 이미 설치되어 있습니다. 버전: {1}이(가) {2}(으)로 대체됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled">
         <source>{0} was successfully uninstalled.</source>
-        <target state="new">{0} was successfully uninstalled.</target>
+        <target state="translated">{0}이(가) 성공적으로 제거되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
         <source>Failed to load the NuGet source {0}.</source>
-        <target state="new">Failed to load the NuGet source {0}.</target>
+        <target state="translated">NuGet 원본 {0}을(를) 로드하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSources">
         <source>Failed to load NuGet sources configured for the folder {0}.</source>
-        <target state="new">Failed to load NuGet sources configured for the folder {0}.</target>
+        <target state="translated">폴더 {0}에 대해 구성된 NuGet 원본을 로드하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToReadPackage">
         <source>Failed to read package information from NuGet source {0}.</source>
-        <target state="new">Failed to read package information from NuGet source {0}.</target>
+        <target state="translated">NuGet 원본 {0}에서 패키지 정보를 읽지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FileAlreadyExists">
         <source>File {0} already exists.</source>
-        <target state="new">File {0} already exists.</target>
+        <target state="translated">파일 {0}이(가) 이미 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_NoSources">
         <source>No NuGet sources are defined or enabled.</source>
-        <target state="new">No NuGet sources are defined or enabled.</target>
+        <target state="translated">NuGet 원본이 정의되거나 사용하도록 설정되지 않았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDelete">
         <source>Failed to remove {0} after failed download. Remove the file manually if it exists.</source>
-        <target state="new">Failed to remove {0} after failed download. Remove the file manually if it exists.</target>
+        <target state="translated">다운로드 실패 후{0} 제거에 실패했습니다. 파일이 있으면 수동으로 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDownload">
         <source>Failed to download {0} from NuGet feed {1}.</source>
-        <target state="new">Failed to download {0} from NuGet feed {1}.</target>
+        <target state="translated">NuGet 피드 {1}에서 {0}을(를) 다운로드하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToLoadSource">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
-        <target state="new">Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</target>
+        <target state="translated">NuGet 원본 {0}을(를) 로드하지 못했습니다. 원본이 유효하지 않습니다. 추가 처리에서 건너뛰세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="new">{0} is not found in NuGet feeds {1}.</target>
+        <target state="translated">{0}을(를) NuGet 피드 {1}에서 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_CopyFailed">
         <source>Failed to copy package {0} to {1}.</source>
-        <target state="new">Failed to copy package {0} to {1}.</target>
+        <target state="translated">패키지 {0}을(를) {1}(으)로 복사하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FailedToReadPackage">
         <source>Failed to read content of package {0}.</source>
-        <target state="new">Failed to read content of package {0}.</target>
+        <target state="translated">패키지 {0}의 콘텐츠를 읽지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FileAlreadyExists">
         <source>File {0} already exists.</source>
-        <target state="new">File {0} already exists.</target>
+        <target state="translated">파일 {0}이(가) 이미 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_DownloadFailed">
         <source>Failed to download {0} from {1}.</source>
-        <target state="new">Failed to download {0} from {1}.</target>
+        <target state="translated">{1}에서 {0}을(를) 다운로드하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InstallGeneric">
         <source>Failed to install the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to install the package {0}.
-Details: {1}.</target>
+        <target state="translated">패키지 {0}을(를) 설치하지 못했습니다.
+세부 정보: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InstallRequestNotSupported">
         <source>The install request {0} cannot be processed by installer {1}.</source>
-        <target state="new">The install request {0} cannot be processed by installer {1}.</target>
+        <target state="translated">설치 요청 {0}은(는) 설치 관리자 {1}에서 처리할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidPackage">
         <source>The NuGet package {0} is invalid.</source>
-        <target state="new">The NuGet package {0} is invalid.</target>
+        <target state="translated">NuGet 패키지 {0}이(가) 잘못되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources">
         <source>The configured NuGet sources are invalid: {0}.</source>
-        <target state="new">The configured NuGet sources are invalid: {0}.</target>
+        <target state="translated">구성된 NuGet 원본이 잘못되었습니다. {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources_None">
         <source>No NuGet sources are configured.</source>
-        <target state="new">No NuGet sources are configured.</target>
+        <target state="translated">NuGet 원본이 구성되지 않았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_OperationCancelled">
         <source>The operation was cancelled.</source>
-        <target state="new">The operation was cancelled.</target>
+        <target state="translated">작업이 취소되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotFound">
         <source>{0} was not found in NuGet feeds {1}.</source>
-        <target state="new">{0} was not found in NuGet feeds {1}.</target>
+        <target state="translated">{0}을(를) NuGet 피드 {1}에서 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotSupported">
         <source>The package {0} is not supported by installer {1}.</source>
-        <target state="new">The package {0} is not supported by installer {1}.</target>
+        <target state="translated">설치 관리자 {1}이(가) 패키지 {0}를(을) 지원하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_UninstallGeneric">
         <source>Failed to uninstall the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to uninstall the package {0}.
-Details: {1}.</target>
+        <target state="translated">패키지 {0}을(를) 설치하지 못했습니다.
+세부 정보: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_UpdateCheckGeneric">
         <source>Failed to check the update for the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to check the update for the package {0}.
-Details: {1}.</target>
+        <target state="translated">패키지 {0}에 대한 업데이트를 확인하지 못했습니다.
+세부 정보: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate">
         <source>Could not load template.</source>
-        <target state="new">Could not load template.</target>
+        <target state="translated">템플릿을 로드할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
 Details: {0}.</source>
-        <target state="new">Failed to create template.
-Details: {0}.</target>
+        <target state="translated">템플릿을 만들지 못했습니다.
+세부 정보: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
         <source>Destructive changes detected.</source>
-        <target state="new">Destructive changes detected.</target>
+        <target state="translated">파괴적 변경이 감지되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToScan">
         <source>Failed to scan {0}.
 Details: {1}.</source>
-        <target state="new">Failed to scan {0}.
-Details: {1}.</target>
+        <target state="translated">{0}을(를) 검사하지 못했습니다.
+세부 정보: {1}.</target>
         <note />
       </trans-unit>
     </body>

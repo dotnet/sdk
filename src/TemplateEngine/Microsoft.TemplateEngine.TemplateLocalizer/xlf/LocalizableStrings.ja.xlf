@@ -4,73 +4,73 @@
     <body>
       <trans-unit id="command_export_help_description">
         <source>Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</source>
-        <target state="new">Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</target>
+        <target state="translated">template.config ファイルが指定されている場合、そのファイルの横に "localize" ディレクトリが作成され、作成したディレクトリにローカライズ ファイルがエクスポートされます。ローカライズ ファイルが既に存在する場合、既存の翻訳は保存されます。</target>
         <note>The phrase "localization files" here mean the files that will be given to the translators to be localized.</note>
       </trans-unit>
       <trans-unit id="command_export_help_dryrun_description">
         <source>If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</source>
-        <target state="new">If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</target>
+        <target state="translated">このオプションを指定されている場合、変更されたファイルはファイル システムに保存されず、変更はコンソール出力にのみ出力されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_help_language_description">
         <source>The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</source>
-        <target state="new">The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</target>
+        <target state="translated">このテンプレートでサポートされる言語の一覧です。このオプションを省略すると、次の言語の一覧が既定で使用されます: cs、de、en、es、fr、it、ja、ko、pl、pt-BR、ru、tr、zh-Hans、zh-Hant</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_help_recursive_description">
         <source>When specified, subdirectories are also searched for template.json files.</source>
-        <target state="new">When specified, subdirectories are also searched for template.json files.</target>
+        <target state="translated">指定されている場合、template.json ファイルのサブディレクトリも検索されます。</target>
         <note>Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_help_templatePath_description">
         <source>Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</source>
-        <target state="new">Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</target>
+        <target state="translated">template.json ファイルへのパスを指定します。ディレクトリが指定されている場合、template.json ファイルはディレクトリ内で検索されます。--recursive オプションが指定されている場合、指定されたディレクトリとそのサブディレクトリの下にあるすべての template.json ファイルが入力として取得されます。</target>
         <note>Do not localize: "template.json", "--recursive"</note>
       </trans-unit>
       <trans-unit id="command_export_log_cancelled">
         <source>"--export" command for the following file was cancelled: "{0}".</source>
-        <target state="new">"--export" command for the following file was cancelled: "{0}".</target>
+        <target state="translated">"--export" コマンドは、次のファイルに対してキャンセルされました: "{0}"。</target>
         <note>Do not localize: "--export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_executionEnded">
         <source>Execution of "--export" command has completed. {0} files were processed.</source>
-        <target state="new">Execution of "--export" command has completed. {0} files were processed.</target>
+        <target state="translated">"--export" コマンドの実行が完了しました。{0} 個のファイルが処理されました。</target>
         <note>{0} is the number of files. Do not localize "--export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithError">
         <source>Generating localization files for a template.json has failed.
 Reason: {0}.
 File Path: {1}.</source>
-        <target state="new">Generating localization files for a template.json has failed.
-Reason: {0}.
-File Path: {1}.</target>
+        <target state="translated">template.json のローカライズ ファイルを生成できませんでした。
+理由: {0}。
+ファイルのパス: {1}。</target>
         <note>{0} is a sentence such as "Json property should contain a field 'ID'"
 {1} is a file path such as: C:\temp\template.json
 Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithException">
         <source>Generating localization files for the following template.json file has failed: "{0}".</source>
-        <target state="new">Generating localization files for the following template.json file has failed: "{0}".</target>
+        <target state="translated">次の template.json ファイルのローカライズ ファイルを生成できませんでした: "{0}"。</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_log_templateExportSucceeded">
         <source>Localization files were successfully generated for the template.json file at path "{0}".</source>
-        <target state="new">Localization files were successfully generated for the template.json file at path "{0}".</target>
+        <target state="translated">パス "{0}" にある template.json ファイルのローカライズ ファイルが正常に生成されました。</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_log_templateJsonNotFound">
         <source>Failed to find "template.json" file under the path "{0}".</source>
-        <target state="new">Failed to find "template.json" file under the path "{0}".</target>
+        <target state="translated">パス "{0}" の下に "template.json" ファイルが見つかりません。</target>
         <note>Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailed">
         <source>"--{0}" command has encountered an error. See the logs for more details.</source>
-        <target state="new">"--{0}" command has encountered an error. See the logs for more details.</target>
+        <target state="translated">"--{0}" コマンドでエラーが発生しました。詳細については、ログをご覧ください。</target>
         <note>{0} will be replaced by the command name. Such as: "export" command has encountered an error.</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailedWithErrorMessage">
         <source>There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</source>
-        <target state="new">There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</target>
+        <target state="translated">"--{0}" コマンドの実行中にエラーが発生しました。エラー メッセージ: "{1}"。詳細については、ログをご覧ください。</target>
         <note />
       </trans-unit>
     </body>

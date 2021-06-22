@@ -4,187 +4,187 @@
     <body>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
         <source>The folder {0} doesn't exist.</source>
-        <target state="new">The folder {0} doesn't exist.</target>
+        <target state="translated">フォルダー {0} が存在しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="Generic_LatestVersion">
         <source>latest version</source>
-        <target state="new">latest version</target>
+        <target state="translated">最新バージョン</target>
         <note>small letters, string is used in the sentence</note>
       </trans-unit>
       <trans-unit id="Generic_Version">
         <source>version {0}</source>
-        <target state="new">version {0}</target>
+        <target state="translated">バージョン {0}</target>
         <note>small letters, string is used in the sentence</note>
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed">
         <source>{0} can be installed by several installers. Specify the installer name to be used.</source>
-        <target state="new">{0} can be installed by several installers. Specify the installer name to be used.</target>
+        <target state="translated">{0} は複数のインストーラーでインストールできます。使用するインストーラー名を指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageAlreadyInstalled">
         <source>{0} is already installed.</source>
-        <target state="new">{0} is already installed.</target>
+        <target state="translated">{0} は既にインストールされています。</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageCannotBeInstalled">
         <source>{0} cannot be installed.</source>
-        <target state="new">{0} cannot be installed.</target>
+        <target state="translated">{0} をインストールできません。</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled">
         <source>{0} is already installed, version: {1}, it will be replaced with {2}.</source>
-        <target state="new">{0} is already installed, version: {1}, it will be replaced with {2}.</target>
+        <target state="translated">{0} は既にインストールされています。バージョン: {1}、{2} に置き換えられます。</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled">
         <source>{0} was successfully uninstalled.</source>
-        <target state="new">{0} was successfully uninstalled.</target>
+        <target state="translated">{0} が正常にアンインストールされました。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
         <source>Failed to load the NuGet source {0}.</source>
-        <target state="new">Failed to load the NuGet source {0}.</target>
+        <target state="translated">NuGet ソース {0} の読み込みに失敗しました。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSources">
         <source>Failed to load NuGet sources configured for the folder {0}.</source>
-        <target state="new">Failed to load NuGet sources configured for the folder {0}.</target>
+        <target state="translated">フォルダー {0} に対して構成された NuGet ソースを読み込むことができませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToReadPackage">
         <source>Failed to read package information from NuGet source {0}.</source>
-        <target state="new">Failed to read package information from NuGet source {0}.</target>
+        <target state="translated">NuGet ソース {0} からパッケージ情報を読み取れませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FileAlreadyExists">
         <source>File {0} already exists.</source>
-        <target state="new">File {0} already exists.</target>
+        <target state="translated">ファイル {0} は既に存在します。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_NoSources">
         <source>No NuGet sources are defined or enabled.</source>
-        <target state="new">No NuGet sources are defined or enabled.</target>
+        <target state="translated">NuGet ソースが定義されていないか、有効になっていません。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDelete">
         <source>Failed to remove {0} after failed download. Remove the file manually if it exists.</source>
-        <target state="new">Failed to remove {0} after failed download. Remove the file manually if it exists.</target>
+        <target state="translated">ダウンロードに失敗した {0} を削除できませんでした。ファイルが存在する場合は手動で削除してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDownload">
         <source>Failed to download {0} from NuGet feed {1}.</source>
-        <target state="new">Failed to download {0} from NuGet feed {1}.</target>
+        <target state="translated">NuGet フィード{0}から {1} をダウンロードできませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToLoadSource">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
-        <target state="new">Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</target>
+        <target state="translated">NuGet ソース {0} の読み込みに失敗しました: このソースが有効ではありません。今後の処理ではスキップされます。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="new">{0} is not found in NuGet feeds {1}.</target>
+        <target state="translated">{0} が NuGet フィードに見つかりません{1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_CopyFailed">
         <source>Failed to copy package {0} to {1}.</source>
-        <target state="new">Failed to copy package {0} to {1}.</target>
+        <target state="translated">{0} から {1} にパッケージをコピーできませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FailedToReadPackage">
         <source>Failed to read content of package {0}.</source>
-        <target state="new">Failed to read content of package {0}.</target>
+        <target state="translated">パッケージ {0} のコンテンツを読み取れませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FileAlreadyExists">
         <source>File {0} already exists.</source>
-        <target state="new">File {0} already exists.</target>
+        <target state="translated">ファイル {0} は既に存在します。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_DownloadFailed">
         <source>Failed to download {0} from {1}.</source>
-        <target state="new">Failed to download {0} from {1}.</target>
+        <target state="translated">{1} からの {0} のダウンロードに失敗しました。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InstallGeneric">
         <source>Failed to install the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to install the package {0}.
-Details: {1}.</target>
+        <target state="translated">パッケージ {0} をインストールできませんでした。
+詳細: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InstallRequestNotSupported">
         <source>The install request {0} cannot be processed by installer {1}.</source>
-        <target state="new">The install request {0} cannot be processed by installer {1}.</target>
+        <target state="translated">インストール要求 {0} をインストーラー {1} で処理できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidPackage">
         <source>The NuGet package {0} is invalid.</source>
-        <target state="new">The NuGet package {0} is invalid.</target>
+        <target state="translated">NuGet パッケージ {0} が無効です。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources">
         <source>The configured NuGet sources are invalid: {0}.</source>
-        <target state="new">The configured NuGet sources are invalid: {0}.</target>
+        <target state="translated">構成済みの NuGet ソースが無効です: {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources_None">
         <source>No NuGet sources are configured.</source>
-        <target state="new">No NuGet sources are configured.</target>
+        <target state="translated">構成された NuGet ソースがありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_OperationCancelled">
         <source>The operation was cancelled.</source>
-        <target state="new">The operation was cancelled.</target>
+        <target state="translated">処理が取り消されました。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotFound">
         <source>{0} was not found in NuGet feeds {1}.</source>
-        <target state="new">{0} was not found in NuGet feeds {1}.</target>
+        <target state="translated">{0} が NuGet フィード {1} で見つかりません。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotSupported">
         <source>The package {0} is not supported by installer {1}.</source>
-        <target state="new">The package {0} is not supported by installer {1}.</target>
+        <target state="translated">このパッケージ {0}はインストーラー {1} でサポートされていません</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_UninstallGeneric">
         <source>Failed to uninstall the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to uninstall the package {0}.
-Details: {1}.</target>
+        <target state="translated">パッケージ {0} をアンインストールできませんでした。
+詳細: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_UpdateCheckGeneric">
         <source>Failed to check the update for the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to check the update for the package {0}.
-Details: {1}.</target>
+        <target state="translated">パッケージ {0} の更新プログラムを確認できませんでした。
+詳細: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate">
         <source>Could not load template.</source>
-        <target state="new">Could not load template.</target>
+        <target state="translated">テンプレートを読み込めませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
 Details: {0}.</source>
-        <target state="new">Failed to create template.
-Details: {0}.</target>
+        <target state="translated">テンプレートを作成できませんでした。
+詳細: {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
         <source>Destructive changes detected.</source>
-        <target state="new">Destructive changes detected.</target>
+        <target state="translated">重大な変更が検出されました。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToScan">
         <source>Failed to scan {0}.
 Details: {1}.</source>
-        <target state="new">Failed to scan {0}.
-Details: {1}.</target>
+        <target state="translated">{0} をスキャンできませんでした。
+詳細: {1}。</target>
         <note />
       </trans-unit>
     </body>

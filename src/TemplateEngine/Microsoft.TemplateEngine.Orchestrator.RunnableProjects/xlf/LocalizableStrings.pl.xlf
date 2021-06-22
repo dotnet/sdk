@@ -1,21 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">
         <source>Localization file should only contain elements with type 'string'. Remove elements that are not strings.</source>
-        <target state="new">Localization file should only contain elements with type 'string'. Remove elements that are not strings.</target>
+        <target state="translated">Plik lokalizacji powinien zawierać tylko elementy typu „ciąg”. Usuń elementy, które nie są ciągami.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_InvalidManualInstructionLocalizationIndex">
         <source>In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</source>
-        <target state="new">In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</target>
+        <target state="translated">W pliku lokalizacji w ramach akcji publikowania z wartością id „{1}” istnieją zlokalizowane ciągi dla ręcznych instrukcji z identyfikatorami „{0}”. Te ręczne instrukcje nie istnieją w pliku template.json i powinny zostać usunięte z pliku lokalizacji.</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".
 {1} is a single-word identifier string. Such as "myPostAction".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">
         <source>Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</source>
-        <target state="new">Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</target>
+        <target state="translated">Akcje publikowania z identyfikatorami „{0}” określone w pliku lokalizacji nie istnieją w pliku template.json. Usuń zlokalizowane ciągi z pliku lokalizacji.</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidRegex">
@@ -25,18 +25,18 @@
       </trans-unit>
       <trans-unit id="Authoring_MalformedPostActionManualInstructions">
         <source>One or more postActions have a malformed or missing manualInstructions value.</source>
-        <target state="new">One or more postActions have a malformed or missing manualInstructions value.</target>
+        <target state="translated">Co najmniej jeden element postActions ma źle sformułowaną lub brakującą wartość manualInstructions.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_ManualInstructionIdIsNotUnique">
         <source>'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</source>
-        <target state="new">'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</target>
+        <target state="translated">Identyfikator instrukcji ręcznej „{0}” pod indeksem {1} nie jest unikatowy. Zlokalizowana zostanie tylko pierwsza instrukcja ręczna, która używa tego identyfikatora.</target>
         <note>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
 {1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_MissingValue">
         <source>Missing '{0}'.</source>
-        <target state="new">Missing '{0}'.</target>
+        <target state="translated">Brak elementu „{0}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_NonBoolDataTypeForRegexMatch">
@@ -46,91 +46,91 @@
       </trans-unit>
       <trans-unit id="Authoring_PostActionIdIsNotUnique">
         <source>[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</source>
-        <target state="new">[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</target>
+        <target state="translated">[{0}]: identyfikator akcji publikowania „{1}” pod indeksem „{2}” nie jest unikatowy. Tylko pierwsza akcja publikowania, która używa tego identyfikatora, zostanie zlokalizowana.</target>
         <note>{0} is any identifier string that user provided in the file. Such as "myPostAction", "firstPostAction", "postAction1" etc.
 {1} is a number representing the zero-based index of the post action. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_PostActionMustHaveActionId">
         <source>[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</source>
-        <target state="new">[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</target>
+        <target state="translated">[{0}]: akcja publikowania pod indeksem „{1}” powinna mieć identyfikator „actionId”, aby zadeklarować akcję do wykonania.</target>
         <note>{0} is a whole number representing the zero-based index of the post action. Such as "5" or "0".
 Do not localize: actionId</note>
       </trans-unit>
       <trans-unit id="Authoring_SourceDoesNotExist">
         <source>Source '{0}' in template does not exist.</source>
-        <target state="needs-review-translation">    Źródło "{0}" w szablonie nie istnieje.</target>
+        <target state="translated">Źródło „{0}” w szablonie nie istnieje.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceIsOutsideInstallSource">
         <source>Source location '{0}' is outside the specified install source location.</source>
-        <target state="needs-review-translation">    Lokalizacja źródła "{0}" jest poza określoną lokalizacją źródła instalacji.</target>
+        <target state="translated">Lokalizacja źródła „{0}” jest poza określoną lokalizacją źródła instalacji.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceMustBeDirectory">
         <source>Source must be a directory, but '{0}' is a file.</source>
-        <target state="needs-review-translation">    Źródło musi być katalogiem, ale szablon "{0}" jest plikiem.</target>
+        <target state="translated">Źródło musi być katalogiem, natomiast szablon „{0}” jest plikiem.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateMissingCommonInformation">
         <source>The template configuration {0} is missing common information:</source>
-        <target state="needs-review-translation">Szablon "{0}" nie zawiera informacji ogólnych</target>
+        <target state="translated">W konfiguracji szablonu {0} brakuje wspólnych informacji:</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled">
         <source>Failed to load template from {0}:</source>
-        <target state="needs-review-translation">Nie załadowano szablonu "{0}"</target>
+        <target state="translated">Nie można załadować szablonu z {0}:</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled_Message">
         <source>Failed to load template from {0}.
 Details: {1}</source>
-        <target state="new">Failed to load template from {0}.
-Details: {1}</target>
+        <target state="translated">Nie można załadować szablonu z {0}.
+Szczegóły: {1}</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateRootOutsideInstallSource">
         <source>The template root is outside the specified install source location.</source>
-        <target state="new">The template root is outside the specified install source location.</target>
+        <target state="translated">Katalog główny szablonu znajduje się poza określoną lokalizacją źródła instalacji.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
-        <target state="new">Failed to read parse localization file {0}, it will be skipped from further processing.</target>
+        <target state="translated">Nie można odczytać pliku lokalizacji analizy {0}. Zostanie on pominięty podczas dalszego przetwarzania.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_ConfigShouldBeFile">
         <source>Template configuration must be a file, but {0} is not a file.</source>
-        <target state="new">Template configuration must be a file, but {0} is not a file.</target>
+        <target state="translated">Konfiguracja szablonu musi być plikiem, natomiast konfiguracja {0} nie jest plikiem.</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_LocaleConfigShouldBeFile">
         <source>Template localization configuration must be a file, but {0} is not a file.</source>
-        <target state="new">Template localization configuration must be a file, but {0} is not a file.</target>
+        <target state="translated">Konfiguracja lokalizacji szablonu musi być plikiem, natomiast konfiguracja {0} nie jest plikiem.</target>
         <note>{0} is template localization configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_TemplateValidationFailed">
         <source>The template configuration {0} is not valid.</source>
-        <target state="new">The template configuration {0} is not valid.</target>
+        <target state="translated">Konfiguracja szablonu {0} jest nieprawidłowa.</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_TemplateVersionNotSupported">
         <source>The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</source>
-        <target state="new">The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</target>
+        <target state="translated">Szablon nie jest zgodny z wersją generatora. Dozwolone wersje: {0}. Wersja generatora: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Warning_LocFileSkipped">
         <source>Localization file {0} is not compatible with base configuration {1}, and will be skipped.</source>
-        <target state="new">Localization file {0} is not compatible with base configuration {1}, and will be skipped.</target>
+        <target state="translated">Plik lokalizacji {0} nie jest zgodny z konfiguracją podstawową {1} i zostanie pominięty.</target>
         <note>{0} and {1} are template configuration locations.</note>
       </trans-unit>
       <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound">
         <source>Failed to load additional configuration file {0}, the file does not exist.</source>
-        <target state="new">Failed to load additional configuration file {0}, the file does not exist.</target>
+        <target state="translated">Nie można załadować dodatkowego pliku konfiguracji {0}. Ten plik nie istnieje.</target>
         <note />
       </trans-unit>
       <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName">
         <source>Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</source>
-        <target state="new">Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</target>
+        <target state="translated">Nie można załadować dodatkowego pliku konfiguracji {0}. Nazwy dodatkowych plików konfiguracji muszą kończyć się znakiem „{1}”.</target>
         <note />
       </trans-unit>
     </body>

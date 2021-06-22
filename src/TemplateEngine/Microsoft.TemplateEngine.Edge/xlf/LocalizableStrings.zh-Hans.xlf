@@ -4,187 +4,187 @@
     <body>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
         <source>The folder {0} doesn't exist.</source>
-        <target state="new">The folder {0} doesn't exist.</target>
+        <target state="translated">文件夹 {0} 不存在。</target>
         <note />
       </trans-unit>
       <trans-unit id="Generic_LatestVersion">
         <source>latest version</source>
-        <target state="new">latest version</target>
+        <target state="translated">最新版本</target>
         <note>small letters, string is used in the sentence</note>
       </trans-unit>
       <trans-unit id="Generic_Version">
         <source>version {0}</source>
-        <target state="new">version {0}</target>
+        <target state="translated">版本 {0}</target>
         <note>small letters, string is used in the sentence</note>
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed">
         <source>{0} can be installed by several installers. Specify the installer name to be used.</source>
-        <target state="new">{0} can be installed by several installers. Specify the installer name to be used.</target>
+        <target state="translated">可由多个安装程序安装 {0}。请指定要使用的安装程序名称。</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageAlreadyInstalled">
         <source>{0} is already installed.</source>
-        <target state="new">{0} is already installed.</target>
+        <target state="translated">{0} 已安装。</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageCannotBeInstalled">
         <source>{0} cannot be installed.</source>
-        <target state="new">{0} cannot be installed.</target>
+        <target state="translated">无法安装 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled">
         <source>{0} is already installed, version: {1}, it will be replaced with {2}.</source>
-        <target state="new">{0} is already installed, version: {1}, it will be replaced with {2}.</target>
+        <target state="translated">已安装 {0}，版本: {1}，将替换为 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled">
         <source>{0} was successfully uninstalled.</source>
-        <target state="new">{0} was successfully uninstalled.</target>
+        <target state="translated">已成功卸载 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
         <source>Failed to load the NuGet source {0}.</source>
-        <target state="new">Failed to load the NuGet source {0}.</target>
+        <target state="translated">无法加载 NuGet 源 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSources">
         <source>Failed to load NuGet sources configured for the folder {0}.</source>
-        <target state="new">Failed to load NuGet sources configured for the folder {0}.</target>
+        <target state="translated">无法加载为文件夹 {0} 配置的 NuGet 源</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToReadPackage">
         <source>Failed to read package information from NuGet source {0}.</source>
-        <target state="new">Failed to read package information from NuGet source {0}.</target>
+        <target state="translated">无法从 NuGet 源 {0} 读取包信息</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FileAlreadyExists">
         <source>File {0} already exists.</source>
-        <target state="new">File {0} already exists.</target>
+        <target state="translated">文件 {0} 已存在。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_NoSources">
         <source>No NuGet sources are defined or enabled.</source>
-        <target state="new">No NuGet sources are defined or enabled.</target>
+        <target state="translated">未定义或启用任何 NuGet 源。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDelete">
         <source>Failed to remove {0} after failed download. Remove the file manually if it exists.</source>
-        <target state="new">Failed to remove {0} after failed download. Remove the file manually if it exists.</target>
+        <target state="translated">下载失败后未能删除 {0}。如果该文件存在，请手动将其删除。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDownload">
         <source>Failed to download {0} from NuGet feed {1}.</source>
-        <target state="new">Failed to download {0} from NuGet feed {1}.</target>
+        <target state="translated">无法从 NuGet 源 {1} 中下载文件 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToLoadSource">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
-        <target state="new">Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</target>
+        <target state="translated">无法加载 NuGet 源 {0}: 源无效。进一步处理中将跳过它。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="new">{0} is not found in NuGet feeds {1}.</target>
+        <target state="translated">在 NuGet 源 {1} 中找不到 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_CopyFailed">
         <source>Failed to copy package {0} to {1}.</source>
-        <target state="new">Failed to copy package {0} to {1}.</target>
+        <target state="translated">无法将包 {0} 复制到 {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FailedToReadPackage">
         <source>Failed to read content of package {0}.</source>
-        <target state="new">Failed to read content of package {0}.</target>
+        <target state="translated">未能读取包 {0} 的内容。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FileAlreadyExists">
         <source>File {0} already exists.</source>
-        <target state="new">File {0} already exists.</target>
+        <target state="translated">文件 {0} 已存在。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_DownloadFailed">
         <source>Failed to download {0} from {1}.</source>
-        <target state="new">Failed to download {0} from {1}.</target>
+        <target state="translated">未能从 {1} 下载 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InstallGeneric">
         <source>Failed to install the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to install the package {0}.
-Details: {1}.</target>
+        <target state="translated">未能安装包 {0}。
+详细信息: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InstallRequestNotSupported">
         <source>The install request {0} cannot be processed by installer {1}.</source>
-        <target state="new">The install request {0} cannot be processed by installer {1}.</target>
+        <target state="translated">安装程序 {1} 无法处理安装请求 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidPackage">
         <source>The NuGet package {0} is invalid.</source>
-        <target state="new">The NuGet package {0} is invalid.</target>
+        <target state="translated">NuGet 包 {0} 无效。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources">
         <source>The configured NuGet sources are invalid: {0}.</source>
-        <target state="new">The configured NuGet sources are invalid: {0}.</target>
+        <target state="translated">配置的 NuGet 源无效: {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources_None">
         <source>No NuGet sources are configured.</source>
-        <target state="new">No NuGet sources are configured.</target>
+        <target state="translated">未配置 NuGet 源。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_OperationCancelled">
         <source>The operation was cancelled.</source>
-        <target state="new">The operation was cancelled.</target>
+        <target state="translated">操作被取消。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotFound">
         <source>{0} was not found in NuGet feeds {1}.</source>
-        <target state="new">{0} was not found in NuGet feeds {1}.</target>
+        <target state="translated">在 NuGet 源 {1} 中未找到 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotSupported">
         <source>The package {0} is not supported by installer {1}.</source>
-        <target state="new">The package {0} is not supported by installer {1}.</target>
+        <target state="translated">安装程序 {1} 不支持包 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_UninstallGeneric">
         <source>Failed to uninstall the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to uninstall the package {0}.
-Details: {1}.</target>
+        <target state="translated">未能卸载包 {0}。
+详细信息: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_UpdateCheckGeneric">
         <source>Failed to check the update for the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to check the update for the package {0}.
-Details: {1}.</target>
+        <target state="translated">无法检查包 {0} 的更新。
+详细信息: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate">
         <source>Could not load template.</source>
-        <target state="new">Could not load template.</target>
+        <target state="translated">无法加载模板。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
 Details: {0}.</source>
-        <target state="new">Failed to create template.
-Details: {0}.</target>
+        <target state="translated">未能创建模板。
+详细信息: {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
         <source>Destructive changes detected.</source>
-        <target state="new">Destructive changes detected.</target>
+        <target state="translated">检测到破坏性更改。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToScan">
         <source>Failed to scan {0}.
 Details: {1}.</source>
-        <target state="new">Failed to scan {0}.
-Details: {1}.</target>
+        <target state="translated">未能扫描 {0}"。
+: {1}。</target>
         <note />
       </trans-unit>
     </body>

@@ -1,21 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">
         <source>Localization file should only contain elements with type 'string'. Remove elements that are not strings.</source>
-        <target state="new">Localization file should only contain elements with type 'string'. Remove elements that are not strings.</target>
+        <target state="translated">현지화 파일에는 ‘문자열’ 형식의 요소만 포함되어야 합니다. 문자열이 아닌 요소를 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_InvalidManualInstructionLocalizationIndex">
         <source>In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</source>
-        <target state="new">In localization file under the post action with id '{1}', there are localized strings for manual instruction(s) with ids '{0}'. These manual instructions do not exist in the template.json file and should be removed from localization file.</target>
+        <target state="translated">id ‘{1}’이(가) 있는 게시 작업 아래의 현지화 파일에는 ids ‘{0}’이(가) 있는 수동 지침을 위한 현지화된 문자열이 있습니다. 이러한 수동 지침은 template.json 파일에 없으며 현지화 파일에서 제거해야 합니다.</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".
 {1} is a single-word identifier string. Such as "myPostAction".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">
         <source>Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</source>
-        <target state="new">Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</target>
+        <target state="translated">지역화 파일에 지정된 id ‘{0}’이(가) 있는 게시 작업이 template.json 파일에 없습니다. 현지화 파일에서 현지화된 문자열을 제거합니다.</target>
         <note>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidRegex">
@@ -25,18 +25,18 @@
       </trans-unit>
       <trans-unit id="Authoring_MalformedPostActionManualInstructions">
         <source>One or more postActions have a malformed or missing manualInstructions value.</source>
-        <target state="new">One or more postActions have a malformed or missing manualInstructions value.</target>
+        <target state="translated">하나 이상의 postActions에 잘못된 형식의 수동 지침 값이 있거나 누락된 수동 지침 값이 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_ManualInstructionIdIsNotUnique">
         <source>'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</source>
-        <target state="new">'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</target>
+        <target state="translated">인덱스 {1}에 있는 수동 명령 '{0}'의 'id'가 고유하지 않습니다. 이 ID를 사용하는 첫 번째 수동 명령만 현지화됩니다.</target>
         <note>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
 {1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_MissingValue">
         <source>Missing '{0}'.</source>
-        <target state="new">Missing '{0}'.</target>
+        <target state="translated">'{0}'이(가) 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_NonBoolDataTypeForRegexMatch">
@@ -46,91 +46,91 @@
       </trans-unit>
       <trans-unit id="Authoring_PostActionIdIsNotUnique">
         <source>[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</source>
-        <target state="new">[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</target>
+        <target state="translated">인덱스 ‘{2}’에서 게시 작업 ‘{1}’의 [{0}] ID가 고유하지 않습니다. 이 ID를 사용하는 첫 번째 게시 작업만 현지화됩니다.</target>
         <note>{0} is any identifier string that user provided in the file. Such as "myPostAction", "firstPostAction", "postAction1" etc.
 {1} is a number representing the zero-based index of the post action. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_PostActionMustHaveActionId">
         <source>[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</source>
-        <target state="new">[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</target>
+        <target state="translated">[{0}]: 인덱스 '{1}'의 게시 작업에는 실행할 작업을 선언하는 'actionId'가 있어야 합니다.</target>
         <note>{0} is a whole number representing the zero-based index of the post action. Such as "5" or "0".
 Do not localize: actionId</note>
       </trans-unit>
       <trans-unit id="Authoring_SourceDoesNotExist">
         <source>Source '{0}' in template does not exist.</source>
-        <target state="needs-review-translation">    템플릿에 '{0}' 소스가 없습니다.</target>
+        <target state="translated">템플릿에 '{0}' 소스가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceIsOutsideInstallSource">
         <source>Source location '{0}' is outside the specified install source location.</source>
-        <target state="needs-review-translation">    소스 위치 '{0}'이(가) 지정된 설치 소스 위치 밖에 있습니다.</target>
+        <target state="translated">소스 위치 '{0}'이(가) 지정된 설치 소스 위치 밖에 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_SourceMustBeDirectory">
         <source>Source must be a directory, but '{0}' is a file.</source>
-        <target state="needs-review-translation">    소스는 디렉터리 여야하지만 '{0}'은 파일입니다.</target>
+        <target state="translated">소스는 디렉터리여야 하지만 '{0}'은(는) 파일입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_TemplateMissingCommonInformation">
         <source>The template configuration {0} is missing common information:</source>
-        <target state="needs-review-translation">'{0}'에 일반적인 정보가 없습니다.</target>
+        <target state="translated">템플릿 구성 {0}에 일반 정보가 없습니다.</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled">
         <source>Failed to load template from {0}:</source>
-        <target state="needs-review-translation">'{0}'이(가) 로드되지 않았습니다.</target>
+        <target state="translated">{0}에서 템플릿을 로드하지 못했습니다.</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled_Message">
         <source>Failed to load template from {0}.
 Details: {1}</source>
-        <target state="new">Failed to load template from {0}.
-Details: {1}</target>
+        <target state="translated">{0}에서 템플릿을 로드하지 못했습니다.
+세부 정보: {1}</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateRootOutsideInstallSource">
         <source>The template root is outside the specified install source location.</source>
-        <target state="new">The template root is outside the specified install source location.</target>
+        <target state="translated">템플릿 루트가 지정된 설치 원본 위치 외부에 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
-        <target state="new">Failed to read parse localization file {0}, it will be skipped from further processing.</target>
+        <target state="translated">구문 분석 지역화 파일 {0}을(를) 읽지 못했습니다. 해당 파일을 추가 처리에서 건너뜁니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_ConfigShouldBeFile">
         <source>Template configuration must be a file, but {0} is not a file.</source>
-        <target state="new">Template configuration must be a file, but {0} is not a file.</target>
+        <target state="translated">템플릿 구성은 파일이어야 하지만 {0}은(는) 파일이 아닙니다.</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_LocaleConfigShouldBeFile">
         <source>Template localization configuration must be a file, but {0} is not a file.</source>
-        <target state="new">Template localization configuration must be a file, but {0} is not a file.</target>
+        <target state="translated">템플릿 현지화 구성은 파일이어야 하지만 {0}은(는) 파일이 아닙니다.</target>
         <note>{0} is template localization configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_TemplateValidationFailed">
         <source>The template configuration {0} is not valid.</source>
-        <target state="new">The template configuration {0} is not valid.</target>
+        <target state="translated">템플릿 구성 {0}이(가) 잘못되었습니다.</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_TemplateVersionNotSupported">
         <source>The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</source>
-        <target state="new">The template is not compatible with generator version: allowed versions: {0}, generator version: {1}.</target>
+        <target state="translated">템플릿이 생성기 버전과 호환되지 않습니다. 허용된 버전: {0}, 생성기 버전: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Warning_LocFileSkipped">
         <source>Localization file {0} is not compatible with base configuration {1}, and will be skipped.</source>
-        <target state="new">Localization file {0} is not compatible with base configuration {1}, and will be skipped.</target>
+        <target state="translated">지역화 파일 {0}은(는) 기본 구성 {1}와(과) 호환되지 않으므로 건너뜁니다.</target>
         <note>{0} and {1} are template configuration locations.</note>
       </trans-unit>
       <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_FileNotFound">
         <source>Failed to load additional configuration file {0}, the file does not exist.</source>
-        <target state="new">Failed to load additional configuration file {0}, the file does not exist.</target>
+        <target state="translated">추가 구성 파일 {0}을(를) 로드하지 못했습니다. 파일이 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName">
         <source>Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</source>
-        <target state="new">Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</target>
+        <target state="translated">추가 구성 파일 {0}을(를) 로드하지 못했습니다. 추가 구성 파일 이름은 '{1}’(으)로 끝나야 합니다.</target>
         <note />
       </trans-unit>
     </body>

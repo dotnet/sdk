@@ -4,186 +4,186 @@
     <body>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
         <source>The folder {0} doesn't exist.</source>
-        <target state="new">The folder {0} doesn't exist.</target>
+        <target state="translated">Der Ordner "{0}" ist nicht vorhanden.</target>
         <note />
       </trans-unit>
       <trans-unit id="Generic_LatestVersion">
         <source>latest version</source>
-        <target state="new">latest version</target>
+        <target state="translated">Aktuelle Version</target>
         <note>small letters, string is used in the sentence</note>
       </trans-unit>
       <trans-unit id="Generic_Version">
         <source>version {0}</source>
-        <target state="new">version {0}</target>
+        <target state="translated">Version {0}</target>
         <note>small letters, string is used in the sentence</note>
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed">
         <source>{0} can be installed by several installers. Specify the installer name to be used.</source>
-        <target state="new">{0} can be installed by several installers. Specify the installer name to be used.</target>
+        <target state="translated">"{0}" kann von mehreren Installern installiert werden. Geben Sie den Namen des zu verwendenden Installers an.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageAlreadyInstalled">
         <source>{0} is already installed.</source>
-        <target state="new">{0} is already installed.</target>
+        <target state="translated">"{0}" ist bereits installiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageCannotBeInstalled">
         <source>{0} cannot be installed.</source>
-        <target state="new">{0} cannot be installed.</target>
+        <target state="translated">"{0}" kann nicht installiert werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled">
         <source>{0} is already installed, version: {1}, it will be replaced with {2}.</source>
-        <target state="new">{0} is already installed, version: {1}, it will be replaced with {2}.</target>
+        <target state="translated">{0} ist bereits installiert, Version {1} wird durch {2} ersetzt.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled">
         <source>{0} was successfully uninstalled.</source>
-        <target state="new">{0} was successfully uninstalled.</target>
+        <target state="translated">"{0}" wurde erfolgreich deinstalliert.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
         <source>Failed to load the NuGet source {0}.</source>
-        <target state="new">Failed to load the NuGet source {0}.</target>
+        <target state="translated">Fehler beim Laden der NuGet-Quelle "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSources">
         <source>Failed to load NuGet sources configured for the folder {0}.</source>
-        <target state="new">Failed to load NuGet sources configured for the folder {0}.</target>
+        <target state="translated">Fehler beim Laden der für den Ordner "{0}" konfigurierten NuGet-Quellen.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToReadPackage">
         <source>Failed to read package information from NuGet source {0}.</source>
-        <target state="new">Failed to read package information from NuGet source {0}.</target>
+        <target state="translated">Fehler beim Lesen von Paketinformationen aus der NuGet-Quelle "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FileAlreadyExists">
         <source>File {0} already exists.</source>
-        <target state="new">File {0} already exists.</target>
+        <target state="translated">Die Datei "{0}" ist bereits vorhanden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_NoSources">
         <source>No NuGet sources are defined or enabled.</source>
-        <target state="new">No NuGet sources are defined or enabled.</target>
+        <target state="translated">Es sind keine NuGet-Quellen definiert oder aktiviert.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDelete">
         <source>Failed to remove {0} after failed download. Remove the file manually if it exists.</source>
-        <target state="new">Failed to remove {0} after failed download. Remove the file manually if it exists.</target>
+        <target state="translated">Fehler beim Entfernen von {0} nach dem fehlerhaften Download. Entfernen Sie die Datei manuell, falls vorhanden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDownload">
         <source>Failed to download {0} from NuGet feed {1}.</source>
-        <target state="new">Failed to download {0} from NuGet feed {1}.</target>
+        <target state="translated">Fehler beim Herunterladen von "{0}" aus dem NuGet-Feed {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToLoadSource">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
-        <target state="new">Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</target>
+        <target state="translated">Fehler beim Laden der NuGet-Quelle {0}: die Quelle ist ungültig. Sie wird bei der weiteren Verarbeitung übersprungen.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="new">{0} is not found in NuGet feeds {1}.</target>
+        <target state="translated">"{0}" wurde in NuGet-Feeds "{1}" nicht gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_CopyFailed">
         <source>Failed to copy package {0} to {1}.</source>
-        <target state="new">Failed to copy package {0} to {1}.</target>
+        <target state="translated">Fehler beim Kopieren des Pakets "{0}" in {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FailedToReadPackage">
         <source>Failed to read content of package {0}.</source>
-        <target state="new">Failed to read content of package {0}.</target>
+        <target state="translated">Der Inhalt des Pakets "{0}" konnte nicht gelesen werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FileAlreadyExists">
         <source>File {0} already exists.</source>
-        <target state="new">File {0} already exists.</target>
+        <target state="translated">Die Datei "{0}" ist bereits vorhanden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_DownloadFailed">
         <source>Failed to download {0} from {1}.</source>
-        <target state="new">Failed to download {0} from {1}.</target>
+        <target state="translated">Fehler beim Herunterladen von "{0}" von "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InstallGeneric">
         <source>Failed to install the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to install the package {0}.
+        <target state="translated">Fehler beim Installieren des Pakets "{0}".
 Details: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InstallRequestNotSupported">
         <source>The install request {0} cannot be processed by installer {1}.</source>
-        <target state="new">The install request {0} cannot be processed by installer {1}.</target>
+        <target state="translated">Die Installationsanforderung "{0}" kann vom Installer "{1}" nicht verarbeitet werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidPackage">
         <source>The NuGet package {0} is invalid.</source>
-        <target state="new">The NuGet package {0} is invalid.</target>
+        <target state="translated">Das NuGet-Paket "{0}" ist ungültig.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources">
         <source>The configured NuGet sources are invalid: {0}.</source>
-        <target state="new">The configured NuGet sources are invalid: {0}.</target>
+        <target state="translated">Die konfigurierten NuGet-Quellen sind ungültig: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources_None">
         <source>No NuGet sources are configured.</source>
-        <target state="new">No NuGet sources are configured.</target>
+        <target state="translated">Es sind keine NuGet-Quellen konfiguriert.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_OperationCancelled">
         <source>The operation was cancelled.</source>
-        <target state="new">The operation was cancelled.</target>
+        <target state="translated">Der Vorgang wurde abgebrochen.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotFound">
         <source>{0} was not found in NuGet feeds {1}.</source>
-        <target state="new">{0} was not found in NuGet feeds {1}.</target>
+        <target state="translated">"{0}" wurde in NuGet-Feeds "{1}" nicht gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotSupported">
         <source>The package {0} is not supported by installer {1}.</source>
-        <target state="new">The package {0} is not supported by installer {1}.</target>
+        <target state="translated">Das Paket "{0}" wird vom Installer "{1}" nicht unterstützt.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_UninstallGeneric">
         <source>Failed to uninstall the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to uninstall the package {0}.
+        <target state="translated">Fehler beim Deinstallieren des Pakets "{0}".
 Details: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResut_Error_UpdateCheckGeneric">
         <source>Failed to check the update for the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to check the update for the package {0}.
+        <target state="translated">Fehler beim Überprüfen des Updates für das Paket "{0}".
 Details: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate">
         <source>Could not load template.</source>
-        <target state="new">Could not load template.</target>
+        <target state="translated">Die Vorlage konnte nicht geladen werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
 Details: {0}.</source>
-        <target state="new">Failed to create template.
+        <target state="translated">Fehler beim Erstellen der Vorlage.
 Details: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
         <source>Destructive changes detected.</source>
-        <target state="new">Destructive changes detected.</target>
+        <target state="translated">Es wurden destruktive Änderungen erkannt.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToScan">
         <source>Failed to scan {0}.
 Details: {1}.</source>
-        <target state="new">Failed to scan {0}.
+        <target state="translated">Fehler beim Überprüfen von “{0}“.
 Details: {1}.</target>
         <note />
       </trans-unit>

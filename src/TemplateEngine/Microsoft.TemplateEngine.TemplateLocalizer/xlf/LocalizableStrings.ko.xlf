@@ -4,73 +4,73 @@
     <body>
       <trans-unit id="command_export_help_description">
         <source>Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</source>
-        <target state="new">Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</target>
+        <target state="translated">template.config 파일이 지정된 경우 옆에 "localize" 디렉터리를 만들고 지역화 파일을 생성된 디렉터리로 내보냅니다. 지역화 파일이 이미 있는 경우 기존 번역이 유지됩니다.</target>
         <note>The phrase "localization files" here mean the files that will be given to the translators to be localized.</note>
       </trans-unit>
       <trans-unit id="command_export_help_dryrun_description">
         <source>If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</source>
-        <target state="new">If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</target>
+        <target state="translated">이 옵션을 지정하면 수정된 파일이 파일 시스템에 저장되지 않고 변경 내용이 콘솔 출력에만 출력됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_help_language_description">
         <source>The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</source>
-        <target state="new">The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</target>
+        <target state="translated">이 템플릿에서 지원되는 언어 목록입니다. 이 옵션을 생략하면 다음 언어 목록이 기본값으로 사용됩니다. cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_help_recursive_description">
         <source>When specified, subdirectories are also searched for template.json files.</source>
-        <target state="new">When specified, subdirectories are also searched for template.json files.</target>
+        <target state="translated">지정된 경우 하위 디렉터리에 대해서도 template.json 파일을 검색합니다.</target>
         <note>Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_help_templatePath_description">
         <source>Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</source>
-        <target state="new">Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</target>
+        <target state="translated">template.json 파일의 경로를 지정합니다. 디렉터리가 지정되면 디렉터리 내에서 template.json 파일이 검색됩니다. --recursive 옵션을 지정하면 지정된 디렉터리 아래의 모든 template.json 파일과 해당 하위 디렉터리가 입력으로 간주됩니다.</target>
         <note>Do not localize: "template.json", "--recursive"</note>
       </trans-unit>
       <trans-unit id="command_export_log_cancelled">
         <source>"--export" command for the following file was cancelled: "{0}".</source>
-        <target state="new">"--export" command for the following file was cancelled: "{0}".</target>
+        <target state="translated">다음 파일에 대한 "--export" 명령이 취소되었습니다. "{0}".</target>
         <note>Do not localize: "--export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_executionEnded">
         <source>Execution of "--export" command has completed. {0} files were processed.</source>
-        <target state="new">Execution of "--export" command has completed. {0} files were processed.</target>
+        <target state="translated">"--export" 명령 실행이 완료되었습니다. {0} 파일이 처리되었습니다.</target>
         <note>{0} is the number of files. Do not localize "--export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithError">
         <source>Generating localization files for a template.json has failed.
 Reason: {0}.
 File Path: {1}.</source>
-        <target state="new">Generating localization files for a template.json has failed.
-Reason: {0}.
-File Path: {1}.</target>
+        <target state="translated">template.js에 대한 지역화 파일을 생성하지 못했습니다.
+이유: {0}.
+파일 경로: {1}.</target>
         <note>{0} is a sentence such as "Json property should contain a field 'ID'"
 {1} is a file path such as: C:\temp\template.json
 Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithException">
         <source>Generating localization files for the following template.json file has failed: "{0}".</source>
-        <target state="new">Generating localization files for the following template.json file has failed: "{0}".</target>
+        <target state="translated">template.json 파일에 대한 지역화 파일을 생성하지 못했습니다. "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_log_templateExportSucceeded">
         <source>Localization files were successfully generated for the template.json file at path "{0}".</source>
-        <target state="new">Localization files were successfully generated for the template.json file at path "{0}".</target>
+        <target state="translated">경로 "{0}"에서 template.json 파일에 대한 지역화 파일이 생성되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_log_templateJsonNotFound">
         <source>Failed to find "template.json" file under the path "{0}".</source>
-        <target state="new">Failed to find "template.json" file under the path "{0}".</target>
+        <target state="translated">"{0}” 경로에서 "template.json" 파일을 찾지 못했습니다.</target>
         <note>Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailed">
         <source>"--{0}" command has encountered an error. See the logs for more details.</source>
-        <target state="new">"--{0}" command has encountered an error. See the logs for more details.</target>
+        <target state="translated">"--{0}" 명령에 오류가 발생했습니다. 자세한 내용은 로그를 참조하세요.</target>
         <note>{0} will be replaced by the command name. Such as: "export" command has encountered an error.</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailedWithErrorMessage">
         <source>There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</source>
-        <target state="new">There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</target>
+        <target state="translated">"--{0}" 명령을 실행하는 동안 오류가 발생했습니다. 오류 메시지: "{1}". 자세한 내용은 로그를 참조하세요.</target>
         <note />
       </trans-unit>
     </body>

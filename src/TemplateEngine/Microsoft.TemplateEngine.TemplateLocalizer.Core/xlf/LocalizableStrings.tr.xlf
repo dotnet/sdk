@@ -4,43 +4,43 @@
     <body>
       <trans-unit id="stringExtractor_log_jsonElementAdded">
         <source>Adding into localizable strings: {0}</source>
-        <target state="new">Adding into localizable strings: {0}</target>
+        <target state="translated">{0}, yerelleştirilebilir dizelere ekleniyor</target>
         <note>{0} is a string similar to "postActions/0/manualInstructions/2/text"</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonElementExcluded">
         <source>The following element in the template.json will not be included in the localizations because it does not match any of the rules for localizable elements: {0}</source>
-        <target state="new">The following element in the template.json will not be included in the localizations because it does not match any of the rules for localizable elements: {0}</target>
+        <target state="translated">template.json dosyasındaki şu öğe, yerelleştirilebilir öğelerin kurallarıyla eşleşmediğinden yerelleştirmelere dahil edilmeyecek: {0}</target>
         <note>{0} is any string from a json file. Such as "postActions", "myParameter", "author" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonKeyIsNotUnique">
         <source>Each child of "{0}" should have a unique id. Currently, the id "{1}" is shared by multiple children.</source>
-        <target state="new">Each child of "{0}" should have a unique id. Currently, the id "{1}" is shared by multiple children.</target>
+        <target state="translated">Her "{0}" alt öğesi benzersiz bir kimliğe sahip olmalıdır. Şu anda "{1}" kimliğini birden çok alt öğe paylaşıyor.</target>
         <note>{0} is an identifier string similar to "postActions/0/manualInstructions/2/text"
 {1} is a user-defined string such as "myPostAction", "pa0", "postActionFirst" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonMemberIsMissing">
         <source>Json element "{0}" must have a member "{1}".</source>
-        <target state="new">Json element "{0}" must have a member "{1}".</target>
+        <target state="translated">"{0}" JSON öğesi bir üye "{1}" içermelidir.</target>
         <note>{0} and {1} are strings such as "postActions", "manualInstructions", "id" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_skippingAlreadyAddedElement">
         <source>The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}</source>
-        <target state="new">The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}</target>
+        <target state="translated">template.json dosyasındaki şu öğe yerelleştirilebilir dizeler listesine zaten eklendiğinden atlanacak: {0}</target>
         <note>{0} is a string similar to "postActions/0/manualInstructions/2/text"</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_failedToReadLocFile">
         <source>"Failed to read the existing strings from "{0}"</source>
-        <target state="new">"Failed to read the existing strings from "{0}"</target>
+        <target state="translated">"{0}" içindeki mevcut dizeler okunamadı</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_loadingLocFile">
         <source>Loading existing localizations from file "{0}"</source>
-        <target state="new">Loading existing localizations from file "{0}"</target>
+        <target state="translated">"{0}" dosyasındaki mevcut yerelleştirmeler yükleniyor</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_openingTemplatesJson">
         <source>"Opening the following templatestrings.json file for writing: "{0}"</source>
-        <target state="new">"Opening the following templatestrings.json file for writing: "{0}"</target>
+        <target state="translated">"Yazma için şu templatestrings.json dosyası açılıyor: "{0} "</target>
         <note>{0} is a file path.</note>
       </trans-unit>
     </body>
