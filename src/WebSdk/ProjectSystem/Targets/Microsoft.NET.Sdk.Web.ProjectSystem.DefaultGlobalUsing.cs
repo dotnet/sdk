@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NET6_0
 global using global::System;
 global using global::System.Collections.Generic;
 global using global::System.Linq;
@@ -16,3 +17,6 @@ global using global::Microsoft.Extensions.Configuration;
 global using global::Microsoft.Extensions.DependencyInjection;
 global using global::Microsoft.Extensions.Hosting;
 global using global::Microsoft.Extensions.Logging;
+#else
+#error Target frameworks need to be updated.
+#endif
