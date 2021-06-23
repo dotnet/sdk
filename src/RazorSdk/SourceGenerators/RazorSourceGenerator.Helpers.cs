@@ -1,20 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Text;
-using System.Diagnostics;
-using System.Threading;
-using System.Linq;
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
-using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
-    public partial class IncrementalRazorSourceGenerator
+    public partial class RazorSourceGenerator
     {
         private static string GetIdentifierFromPath(string filePath)
         {
@@ -59,30 +59,31 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             }
 
             var discoveryProjectEngine = RazorProjectEngine.Create(config, fileSystem, b =>
+            {
+                b.Features.Add(new DefaultTypeNameFeature());
+                b.Features.Add(new ConfigureRazorCodeGenerationOptions(options =>
                 {
-                    b.Features.Add(new DefaultTypeNameFeature());
-                    b.Features.Add(new ConfigureRazorCodeGenerationOptions(options =>
-                    {
-                        options.SuppressPrimaryMethodBody = true;
-                        options.SuppressChecksum = true;
-                    }));
+                    options.SuppressPrimaryMethodBody = true;
+                    options.SuppressChecksum = true;
+                }));
 
-                    b.SetRootNamespace(rootNamespace);
+                b.SetRootNamespace(rootNamespace);
 
-                    b.Features.Add(new DefaultMetadataReferenceFeature { References = references.ToList() });
+                b.Features.Add(new DefaultMetadataReferenceFeature { References = references.ToList() });
 
-                    b.Features.Add(tagHelperFeature);
-                    b.Features.Add(new DefaultTagHelperDescriptorProvider());
+                b.Features.Add(tagHelperFeature);
+                b.Features.Add(new DefaultTagHelperDescriptorProvider());
 
-                    CompilerFeatures.Register(b);
-                    RazorExtensions.Register(b);
+                CompilerFeatures.Register(b);
+                RazorExtensions.Register(b);
 
-                    b.SetCSharpLanguageVersion(LanguageVersion.Preview);
-                });
+                b.SetCSharpLanguageVersion(LanguageVersion.Preview);
+            });
+
             return discoveryProjectEngine;
         }
 
-        private static RazorProjectEngine GetGenerationProjectEngine(IReadOnlyList<TagHelperDescriptor> tagHelpers, IEnumerable<SourceGeneratorProjectItem> items, RazorSourceGenerationOptions rsgOptions)
+        private static RazorProjectEngine GetGenerationProjectEngine(IReadOnlyList<TagHelperDescriptor> tagHelpers, IEnumerable<SourceGeneratorProjectItem> items, RazorSourceGenerationOptions razorSourceGeneratorOptions)
         {
             var fileSystem = new VirtualRazorProjectFileSystem();
             foreach (var item in items)
@@ -90,14 +91,14 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 fileSystem.Add(item);
             }
 
-            var projectEngine = RazorProjectEngine.Create(rsgOptions.Configuration, fileSystem, b =>
+            var projectEngine = RazorProjectEngine.Create(razorSourceGeneratorOptions.Configuration, fileSystem, b =>
             {
                 b.Features.Add(new DefaultTypeNameFeature());
-                b.SetRootNamespace(rsgOptions.RootNamespace);
+                b.SetRootNamespace(razorSourceGeneratorOptions.RootNamespace);
 
                 b.Features.Add(new ConfigureRazorCodeGenerationOptions(options =>
                 {
-                    options.SuppressMetadataSourceChecksumAttributes = !rsgOptions.GenerateMetadataSourceChecksumAttributes;
+                    options.SuppressMetadataSourceChecksumAttributes = !razorSourceGeneratorOptions.GenerateMetadataSourceChecksumAttributes;
                 }));
 
                 b.Features.Add(new StaticTagHelperFeature { TagHelpers = tagHelpers });

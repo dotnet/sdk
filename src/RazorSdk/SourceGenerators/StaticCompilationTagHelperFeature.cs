@@ -14,8 +14,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
     {
         private ITagHelperDescriptorProvider[]? _providers;
 
-        public StaticCompilationTagHelperFeature() {}
-
         public IReadOnlyList<TagHelperDescriptor> GetDescriptors()
         {
             if (Compilation is null)

@@ -3,17 +3,17 @@
 
 using System;
 using System.IO;
+using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Text;
-using System.Threading;
 
 namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
-    public partial class IncrementalRazorSourceGenerator
+    public partial class RazorSourceGenerator
     {
-        private static RazorSourceGenerationOptions ComputeRazorCodeGenerationOptions(AnalyzerConfigOptionsProvider options, CancellationToken ct)
+        private static RazorSourceGenerationOptions ComputeRazorSourceGeneratorOptions(AnalyzerConfigOptionsProvider options, CancellationToken ct)
         {
             var globalOptions = options.GlobalOptions;
 
@@ -22,7 +22,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             globalOptions.TryGetValue("build_property._RazorSourceGeneratorDebug", out var waitForDebugger);
             globalOptions.TryGetValue("build_property.SuppressRazorSourceGenerator", out var suppressRazorSourceGenerator);
             globalOptions.TryGetValue("build_property.GenerateRazorMetadataSourceChecksumAttributes", out var generateMetadataSourceChecksumAttributes);
-
 
             var razorLanguageVersion = RazorLanguageVersion.Latest;
             if (!globalOptions.TryGetValue("build_property.RazorLangVersion", out var razorLanguageVersionString) ||

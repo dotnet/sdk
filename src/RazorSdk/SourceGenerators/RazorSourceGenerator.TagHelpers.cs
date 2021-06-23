@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
-    public partial class IncrementalRazorSourceGenerator
+    public partial class RazorSourceGenerator
     {
         private IReadOnlyList<TagHelperDescriptor> GetTagHelpers(IEnumerable<MetadataReference> references, StaticCompilationTagHelperFeature tagHelperFeature, Compilation compilation)
         {
