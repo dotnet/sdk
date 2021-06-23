@@ -76,14 +76,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     );
                 });
 
-            var tagHelpers = tagHelpersFromCompilation.Combine(tagHelpersFromReferences)
-                .WithLambdaComparer((tagHelpers, newTagHelpers) =>
-                {
-                    var (tagHelpersFromCompilation, tagHelpersFromReferences) = tagHelpers;
-                    var (newTagHelpersFromCompilation, newTagHelpersFromReferences) = newTagHelpers;
-                    return tagHelpersFromCompilation != newTagHelpersFromCompilation &&
-                        tagHelpersFromReferences != newTagHelpersFromReferences;
-                });
+            var tagHelpers = tagHelpersFromCompilation.Combine(tagHelpersFromReferences);
 
             var generationProjectEngine = tagHelpers.Combine(razorSourceGeneratorOptions).Combine(sourceItems.Collect())
                 .Select((pair, _ct) =>
