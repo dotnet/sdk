@@ -22,7 +22,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildWebTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed.Web\</MSBuildWebTargetsPath>
     <AspNetCoreHostingModel Condition="'$(AspNetCoreHostingModel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">inprocess</AspNetCoreHostingModel>
     <AspNetCoreModuleName Condition="'$(AspNetCoreModuleName)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">AspNetCoreModuleV2</AspNetCoreModuleName>
+    <EnableGlobalUsingFiles Condition="
+      '$(EnableGlobalUsingFiles)' == ''
+      And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+      And '$(_TargetFrameworkVersionWithoutV)' != ''
+      And '$(_TargetFrameworkVersionWithoutV)' &gt;= '6.0'
+      And '$(LangVersion)' == 'preview'">true</EnableGlobalUsingFiles>
+    <GlobalUsingFilesDirectory>$(IntermediateOutputPath)GlobalUsingFiles\</GlobalUsingFilesDirectory>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(EnableGlobalUsingFiles)' == 'true'">
+    <DefaultGlobalUsingFiles Include="$(MSBuildThisFileDirectory)..\content\Microsoft.NET.Sdk.Web.ProjectSystem.DefaultGlobalUsing.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectCapability Include="DotNetCoreWeb" />
@@ -83,5 +94,18 @@ Copyright (c) .NET Foundation. All rights reserved.
         </ItemGroup>
     </When>
   </Choose>
+
+  <Target Name="_CopyDefaultGlobalUsingFiles" AfterTargets="Restore" Condition="'$(EnableGlobalUsingFiles)' == 'true'">
+    <Copy
+      SourceFiles="%(DefaultGlobalUsingFiles.FullPath)"
+      DestinationFolder="$(GlobalUsingFilesDirectory)"
+      Condition="Exists('%(DefaultGlobalUsingFiles.FullPath)') And !Exists('$(GlobalUsingFilesDirectory)%(DefaultGlobalUsingFiles.Filename)%(DefaultGlobalUsingFiles.Extension)')" />
+  </Target>
+
+  <Target Name="_AddDefaultGlobalUsingFilesToCompile" BeforeTargets="BeforeCompile" DependsOnTargets="_CopyDefaultGlobalUsingFiles" Condition="'$(EnableGlobalUsingFiles)' == 'true'">
+    <ItemGroup>
+      <Compile Include="$(GlobalUsingFilesDirectory)*.cs" />
+    </ItemGroup>
+  </Target>
 
 </Project>
