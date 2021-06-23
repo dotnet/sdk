@@ -16,12 +16,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
     public partial class IncrementalRazorSourceGenerator
     {
-        private static string GetProvideApplicationPartFactorySourceText()
-        {
-            var typeInfo = "Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor";
-            var assemblyInfo = $@"[assembly: global::Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(""{typeInfo}"")]";
-            return assemblyInfo;
-        }
         private static string GetIdentifierFromPath(string filePath)
         {
             var builder = new StringBuilder(filePath.Length);
