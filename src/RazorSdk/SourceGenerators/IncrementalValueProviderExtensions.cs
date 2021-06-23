@@ -22,7 +22,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return source.WithComparer(comparer);
         }
 
-        internal static IncrementalValuesProvider<TSource> ReportDiagnostics<TSource>(this IncrementalValuesProvider<(TSource?, Diagnostic?)> source, IncrementalGeneratorPipelineContext context)
+        internal static IncrementalValuesProvider<TSource> ReportDiagnostics<TSource>(this IncrementalValuesProvider<(TSource?, Diagnostic?)> source, IncrementalGeneratorInitializationContext context)
         {
             context.RegisterSourceOutput(source, (spc, source) =>
             {
