@@ -1552,7 +1552,6 @@ public class Program
 
     public class Derived : Base
     {
-        [RequiresUnreferencedCode(""Testing analysis warning IL2046"")]
         public override void IL_2046() {}
 
         [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
