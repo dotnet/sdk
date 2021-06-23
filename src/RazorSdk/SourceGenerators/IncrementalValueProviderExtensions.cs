@@ -35,20 +35,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
             return source.Where((pair) => pair.Item1 != null).Select((pair, ct) => pair.Item1!);
         }
-
-        internal static IncrementalValueProvider<TSource> ReportDiagnostics<TSource>(this IncrementalValueProvider<(TSource?, Diagnostic?)> source, IncrementalGeneratorInitializationContext context)
-        {
-            context.RegisterSourceOutput(source, (spc, source) =>
-            {
-                var (sourceItem, diagnostic) = source;
-                if (sourceItem == null && diagnostic != null)
-                {
-                    spc.ReportDiagnostic(diagnostic);
-                }
-            });
-
-            return source.Where((pair) => pair.Item1 != null).Select((pair, ct) => pair.Item1!);
-        }
     }
 
     internal class LambdaComparer<T> : IEqualityComparer<T>

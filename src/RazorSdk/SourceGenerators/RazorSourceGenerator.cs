@@ -15,7 +15,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var razorSourceGeneratorOptionsWithDiagnostics = context.AnalyzerConfigOptionsProvider
-                .Select(ComputeRazorSourceGeneratorOptions);
+                .SelectMany(ComputeRazorSourceGeneratorOptions);
             var razorSourceGeneratorOptions = razorSourceGeneratorOptionsWithDiagnostics.ReportDiagnostics(context);
 
             var sourceItemsWithDiagnostics = context.AdditionalTextsProvider
