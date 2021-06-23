@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.BuiltInManagedProvider;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
@@ -235,7 +237,20 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             Task<IReadOnlyList<ITemplatePackage>> getTemplatePackagesTask = GetTemplatePackagesAsync(needsRebuild, cancellationToken);
             if (!(_userTemplateCache is TemplateCache cache))
             {
-                cache = new TemplateCache(JObject.Parse(_paths.ReadAllText(_paths.TemplateCacheFile, "{}")), _logger);
+                try
+                {
+                    using (var fileReadStream = _environmentSettings.Host.FileSystem.OpenRead(_paths.TemplateCacheFile))
+                    using (var textReader = new StreamReader(fileReadStream))
+                    using (var jsonReader = new JsonTextReader(textReader))
+                    {
+                        _userTemplateCache = cache = new TemplateCache(JObject.Load(jsonReader), _logger);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Failed to load templatecache.json.");
+                    cache = new TemplateCache(null, _logger);
+                }
             }
 
             if (cache.Version == null)
@@ -313,8 +328,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 scanResult?.Dispose();
             }
-            JObject serialized = JObject.FromObject(cache);
-            _paths.WriteAllText(_paths.TemplateCacheFile, serialized.ToString());
+
+            _environmentSettings.Host.FileSystem.CreateDirectory(Path.GetDirectoryName(_paths.TemplateCacheFile));
+            using (var fileWriteStream = _environmentSettings.Host.FileSystem.CreateFile(_paths.TemplateCacheFile))
+            using (var textWriter = new StreamWriter(fileWriteStream))
+            using (var jsonWriter = new JsonTextWriter(textWriter))
+            {
+                var serializer = new JsonSerializer();
+                serializer.Serialize(jsonWriter, cache);
+            }
+
             return _userTemplateCache = cache;
         }
     }

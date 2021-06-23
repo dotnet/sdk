@@ -75,17 +75,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             MountPointsInfo = mountPoints;
         }
 
-        public TemplateCache(JObject contentJobject, ILogger logger)
+        public TemplateCache(JObject? contentJobject, ILogger logger)
         {
             _logger = logger;
-            if (contentJobject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken versionToken))
+            if (contentJobject != null && contentJobject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken versionToken))
             {
                 Version = versionToken.ToString();
             }
             else
             {
                 Version = null;
-                TemplateInfo = new List<TemplateInfo>();
+                TemplateInfo = Array.Empty<TemplateInfo>();
                 MountPointsInfo = new Dictionary<string, DateTime>();
                 Locale = string.Empty;
                 return;

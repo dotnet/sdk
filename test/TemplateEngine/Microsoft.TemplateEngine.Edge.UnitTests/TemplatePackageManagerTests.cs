@@ -15,11 +15,11 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class SettingsLoaderTests : IClassFixture<EnvironmentSettingsHelper>
+    public class TemplatePackageManagerTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private EnvironmentSettingsHelper _environmentSettingsHelper;
 
-        public SettingsLoaderTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public TemplatePackageManagerTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _environmentSettingsHelper = environmentSettingsHelper;
         }
@@ -96,6 +96,42 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var allNupkgs = Directory.GetFiles(nupkgFolder);
             // All mount points should have been scanned
             AssertMountPointsWereOpened(allNupkgs, engineEnvironmentSettings);
+        }
+
+        [Fact]
+        public async Task EnsureCacheIsLoadedOnlyOnce()
+        {
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
+            var monitoredFileSystem = (MonitoredFileSystem)engineEnvironmentSettings.Host.FileSystem;
+
+            var nupkgFolder = GetNupkgsFolder();
+            var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
+
+            FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
+            engineEnvironmentSettings.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
+
+            // Execute 1st time to create file on disk
+            monitoredFileSystem.Reset();
+            var templatePackageManager1 = new TemplatePackageManager(engineEnvironmentSettings);
+            await templatePackageManager1.GetTemplatesAsync(default).ConfigureAwait(false);
+            Assert.Contains(new SettingsFilePaths(engineEnvironmentSettings).TemplateCacheFile, monitoredFileSystem.FilesOpened);
+            // All mount points should have been scanned
+            AssertMountPointsWereOpened(Directory.GetFiles(nupkgFolder), engineEnvironmentSettings);
+
+            // Execute 2st time with different templatePackageManager to load existing cached created in 1st step
+            monitoredFileSystem.Reset();
+            var templatePackageManager2 = new TemplatePackageManager(engineEnvironmentSettings);
+            await templatePackageManager2.GetTemplatesAsync(default).ConfigureAwait(false);
+            Assert.Contains(new SettingsFilePaths(engineEnvironmentSettings).TemplateCacheFile, monitoredFileSystem.FilesOpened);
+            // No mount points should have been scanned
+            AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
+
+            // Execute 3rd time with same templatePackageManager to test that TemplateCacheFile is not parsed.
+            monitoredFileSystem.Reset();
+            await templatePackageManager2.GetTemplatesAsync(default).ConfigureAwait(false);
+            Assert.DoesNotContain(new SettingsFilePaths(engineEnvironmentSettings).TemplateCacheFile, monitoredFileSystem.FilesOpened);
+            // No mount points should have been scanned
+            AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
         }
 
         [Fact]
@@ -211,7 +247,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         private static string GetNupkgsFolder()
         {
-            var thisDir = Path.GetDirectoryName(typeof(SettingsLoaderTests).Assembly.Location);
+            var thisDir = Path.GetDirectoryName(typeof(TemplatePackageManagerTests).Assembly.Location);
             return Path.Combine(thisDir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates");
         }
 
@@ -236,6 +272,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 .OrderBy(x => x)
                 .ToArray();
             string[] actualScannedDirectories = ((MonitoredFileSystem)environmentSettings.Host.FileSystem).FilesOpened
+                .Where((f) => Path.GetExtension(f) == ".nupkg") // Filter to only check for .nupkgs, and ignore templatecache.json and others...
                 .Select(f => Path.GetFullPath(f))
                 .OrderBy(x => x)
                 .ToArray();
