@@ -108,6 +108,13 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 var codeDocument = projectEngine.Process(projectItem);
                 var csharpDocument = codeDocument.GetCSharpDocument();
 
+                for (var j = 0; j < csharpDocument.Diagnostics.Count; j++)
+                {
+                    var razorDiagnostic = csharpDocument.Diagnostics[j];
+                    var csharpDiagnostic = razorDiagnostic.AsDiagnostic();
+                    context.ReportDiagnostic(csharpDiagnostic);
+                }
+
                 if (!razorSourceGeneratorOptions.SuppressRazorSourceGenerator)
                 {
                     context.AddSource(GetIdentifierFromPath(projectItem.RelativePhysicalPath), csharpDocument.GeneratedCode);
