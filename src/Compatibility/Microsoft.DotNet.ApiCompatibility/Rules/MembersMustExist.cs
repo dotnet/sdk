@@ -35,11 +35,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         {
             if (left != null && right == null)
             {
-                differences.Add(CreateDifference(left, DiagnosticIds.TypeMustExist, DifferenceType.Removed, "Type '{0}' exists on the left but not on the right"));
+                differences.Add(CreateDifference(left, DiagnosticIds.TypeMustExist, DifferenceType.Removed, Resources.TypeExistsOnLeft));
             }
             else if (Settings.StrictMode && left == null && right != null)
             {
-                differences.Add(CreateDifference(right, DiagnosticIds.TypeMustExist, DifferenceType.Added, "Type '{0}' exists on the right but not on the left"));
+                differences.Add(CreateDifference(right, DiagnosticIds.TypeMustExist, DifferenceType.Added, Resources.TypeExistsOnRight));
             }
         }
 
@@ -54,14 +54,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 if (ShouldReportMissingMember(left))
                 {
-                    differences.Add(CreateDifference(left, DiagnosticIds.MemberMustExist, DifferenceType.Removed, "Member '{0}' exists on the left but not on the right"));
+                    differences.Add(CreateDifference(left, DiagnosticIds.MemberMustExist, DifferenceType.Removed, Resources.MemberExistsOnLeft));
                 }
             }
             else if (Settings.StrictMode && left == null && right != null)
             {
                 if (ShouldReportMissingMember(right))
                 {
-                    differences.Add(CreateDifference(right, DiagnosticIds.MemberMustExist, DifferenceType.Added, "Member '{0}' exists on the right but not on the left"));
+                    differences.Add(CreateDifference(right, DiagnosticIds.MemberMustExist, DifferenceType.Added, Resources.MemberExistsOnRight));
                 }
             }
         }
