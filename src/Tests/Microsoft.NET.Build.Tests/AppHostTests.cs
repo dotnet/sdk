@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.Linux | TestPlatforms.FreeBSD | TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.0")]
+        [InlineData("netcoreapp3.1")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.0")]
+        [InlineData("netcoreapp3.1")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
         public void It_can_disable_codesign_if_opt_out(string targetFramework)
@@ -125,16 +125,16 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.0", "win-x64")]
+        [InlineData("netcoreapp3.1", "win-x64")]
         [InlineData("net5.0", "win-x64")]
         [InlineData("net6.0", "win-x64")]
-        [InlineData("netcoreapp3.0", "linux-x64")]
+        [InlineData("netcoreapp3.1", "linux-x64")]
         [InlineData("net5.0", "linux-x64")]
         [InlineData("net6.0", "linux-x64")]
         public void It_does_not_try_to_codesign_non_osx_app_hosts(string targetFramework, string rid)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: $"{targetFramework}_{rid}")
+                .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
 
@@ -146,7 +146,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, rid);
             var hostExecutable = $"HelloWorld{Constants.ExeSuffix}";
             var appHostFullPath = Path.Combine(outputDirectory.FullName, hostExecutable);
 
@@ -201,7 +201,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("")]
         public void It_uses_an_apphost_based_on_platform_target(string target)
         {
-            var targetFramework = "netcoreapp3.0";
+            var targetFramework = "netcoreapp3.1";
 
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: target)
@@ -267,7 +267,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact(Skip = "https://github.com/dotnet/coreclr/issues/27275")]
         public void FSharp_app_can_customize_the_apphost()
         {
-            var targetFramework = "netcoreapp3.0";
+            var targetFramework = "netcoreapp3.1";
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorldFS")
                 .WithSource()
@@ -302,7 +302,7 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "NoAppHost",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = "netcoreapp3.1",
                 //  Use "any" as RID so that it will fail to find AppHost
                 RuntimeIdentifier = "any",
                 IsExe = true,
@@ -331,7 +331,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = TFM,
                 IsExe = true,
             };
-            
+
             // enable generating apphost even on macOS
             testProject.AdditionalProperties.Add("UseApphost", "true");
 
