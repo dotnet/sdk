@@ -13,15 +13,6 @@ namespace Microsoft.DotNet.PackageValidation.Tests
     {
         public ValidatePackageTargetTests(ITestOutputHelper log) : base(log)
         {
-            // clearing the cache
-            string localSdkNugetCacheValidationPath = Path.Combine(TestContext.Current.NuGetCachePath, "microsoft.dotnet.packagevalidation");
-            if (Directory.Exists(localSdkNugetCacheValidationPath))
-                Directory.Delete(localSdkNugetCacheValidationPath, recursive: true);
-
-            // Packing and copying the local version package validation
-            string packageValidationProjectPath = Path.Combine(Path.GetDirectoryName(_testAssetsManager.TestAssetsRoot), "Compatibility", "Microsoft.DotNet.PackageValidation", "Microsoft.DotNet.PackageValidation.csproj");
-            new PackCommand(Log, packageValidationProjectPath)
-                .Execute($"-p:PackageVersion=1.0.0-test;PackageOutputPath={TestContext.Current.TestPackages}");
         }
 
         [Fact]
@@ -86,7 +77,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             Assert.Equal(0, result.ExitCode);
 
             result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
-                .Execute($"-p:PackageVersion=2.0.0;PackageValidationBaselineVersion=1.0.0");
+                .Execute($"-p:PackageVersion=2.0.0;PackageValidationBaselineVersion=1.0.0;PackageValidationBaselineName=PackageValidationTestProject");
 
             // No failures while running the package validation on a simple assembly.
             Assert.Equal(0, result.ExitCode);
