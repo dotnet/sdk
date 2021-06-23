@@ -24,14 +24,14 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             globalOptions.TryGetValue("build_property.GenerateRazorMetadataSourceChecksumAttributes", out var generateMetadataSourceChecksumAttributes);
 
             var razorLanguageVersion = RazorLanguageVersion.Latest;
+            Diagnostic? diagnostic = null;
             if (!globalOptions.TryGetValue("build_property.RazorLangVersion", out var razorLanguageVersionString) ||
                 !RazorLanguageVersion.TryParse(razorLanguageVersionString, out razorLanguageVersion))
             {
-                var diagnostic = Diagnostic.Create(
+                diagnostic = Diagnostic.Create(
                     RazorDiagnostics.InvalidRazorLangVersionDescriptor,
                     Location.None,
                     razorLanguageVersionString);
-                return (null, diagnostic);
             }
 
             var razorConfiguration = RazorConfiguration.Create(razorLanguageVersion, configurationName ?? "default", System.Linq.Enumerable.Empty<RazorExtension>(), true);
@@ -45,7 +45,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 Configuration = razorConfiguration
             };
 
-            return (razorSourceGenerationOptions, null);
+            return (razorSourceGenerationOptions, diagnostic);
         }
 
         private static (SourceGeneratorProjectItem?, Diagnostic?) ComputeProjectItems((AdditionalText, AnalyzerConfigOptionsProvider) pair, CancellationToken ct)
