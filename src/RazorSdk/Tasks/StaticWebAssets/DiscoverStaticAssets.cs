@@ -143,8 +143,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     var existingAsset = existing[0];
                     switch ((asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)), existingAsset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory))))
                     {
-                        case (CopyOptions.Never, CopyOptions.Never):
-                        case (not CopyOptions.Never, not CopyOptions.Never):
+                        case (StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
+                        case (not StaticWebAsset.AssetCopyOptions.Never, not StaticWebAsset.AssetCopyOptions.Never):
                             var errorMessage = "Two assets found targeting the same path with incompatible asset kinds: " + Environment.NewLine +
                                 "'{0}' with kind '{1}'" + Environment.NewLine +
                                 "'{2}' with kind '{3}'" + Environment.NewLine +
@@ -159,13 +159,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                             break;
 
-                        case (CopyOptions.Never, not CopyOptions.Never):
+                        case (StaticWebAsset.AssetCopyOptions.Never, not StaticWebAsset.AssetCopyOptions.Never):
                             existing.Add(asset);
                             asset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Build);
                             existingAsset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Publish);
                             break;
 
-                        case (not CopyOptions.Never, CopyOptions.Never):
+                        case (not StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
                             existing.Add(asset);
                             asset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Publish);
                             existingAsset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Build);
@@ -175,16 +175,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
         }
 
-        private static string ComputeCopyOption(string copyToOutputDirectory) => string.Equals(copyToOutputDirectory, CopyOptions.Never) ? CopyOptions.Never :
-                        string.Equals(copyToOutputDirectory, CopyOptions.PreserveNewest) ? CopyOptions.PreserveNewest :
-                        string.Equals(copyToOutputDirectory, CopyOptions.Always) ? CopyOptions.Always :
-                        CopyOptions.Never;
-
-        private static class CopyOptions
-        {
-            public const string Never = nameof(Never);
-            public const string PreserveNewest = nameof(PreserveNewest);
-            public const string Always = nameof(Always);
-        }
+        private static string ComputeCopyOption(string copyToOutputDirectory) => string.Equals(copyToOutputDirectory, StaticWebAsset.AssetCopyOptions.Never) ? StaticWebAsset.AssetCopyOptions.Never :
+                        string.Equals(copyToOutputDirectory, StaticWebAsset.AssetCopyOptions.PreserveNewest) ? StaticWebAsset.AssetCopyOptions.PreserveNewest :
+                        string.Equals(copyToOutputDirectory, StaticWebAsset.AssetCopyOptions.Always) ? StaticWebAsset.AssetCopyOptions.Always :
+                        StaticWebAsset.AssetCopyOptions.Never;
     }
 }

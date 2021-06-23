@@ -87,6 +87,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
+  <!-- Wire-up static web assets -->
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _AddBlazorWasmStaticWebAssets;
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
   <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
   <Target Name="_ScrambleDotnetJsFileName" AfterTargets="ResolveRuntimePackAssets">
@@ -265,27 +273,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GetFileHash>
   </Target>
 
-  <PropertyGroup>
-    <PrepareForRunDependsOn>
-      _BlazorWasmPrepareForRun;
-      $(PrepareForRunDependsOn)
-    </PrepareForRunDependsOn>
-
-    <GetCurrentProjectStaticWebAssetsDependsOn>
-      $(GetCurrentProjectStaticWebAssetsDependsOn);
-      _BlazorWasmReplaceBundle;
-      _BlazorWasmPrepareForRun;
-    </GetCurrentProjectStaticWebAssetsDependsOn>
-  </PropertyGroup>
-
-  <Target Name="_BlazorWasmReplaceBundle">
-    <ItemGroup>
-      <StaticWebAsset Include="@(_AppBundleStaticWebAsset)" />
-      <Staticwebasset Remove="@(_ProjectBundleStaticWebAsset)" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ProcessBlazorWasmOutputs" BeforeTargets="_RazorPrepareForRun" AfterTargets="GetCurrentProjectStaticWebAssets">
+  <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ProcessBlazorWasmOutputs" BeforeTargets="_RazorPrepareForRun">
     <PropertyGroup>
       <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
       <_BlazorOutputContent>@(_BlazorOutputWithHash)</_BlazorOutputContent>
@@ -313,115 +301,33 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileWrites Include="$(OutDir)$(_BlazorOutputPath)blazor.boot.json" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="_AddBlazorWasmStaticWebAssets" DependsOnTargets="_BlazorWasmPrepareForRun">
     <ItemGroup>
-      <_BlazorWebAssemblyStaticWebAsset Include="$(_BlazorBuildBootJsonPath)">
-        <SourceId>$(PackageId)</SourceId>
-        <SourceType></SourceType>
-        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
-        <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <RelativePath>_framework/blazor.boot.json</RelativePath>
-        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-      </_BlazorWebAssemblyStaticWebAsset>
-
-      <_BlazorWebAssemblyStaticWebAsset Include="@(_BlazorOutputWithHash)">
-        <SourceId>$(PackageId)</SourceId>
-        <SourceType></SourceType>
-        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
-        <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <RelativePath>$([System.String]::Copy('%(_BlazorOutputWithHash.TargetPath)').Replace('\','/').Substring(8))</RelativePath>
-        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-      </_BlazorWebAssemblyStaticWebAsset>
-
-      <_BlazorWebAssemblyStaticWebAsset Include="@(_BlazorBuildGZipCompressedFile)">
-        <SourceId>$(PackageId)</SourceId>
-        <SourceType></SourceType>
-        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
-        <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <RelativePath>$([System.String]::Copy('%(_BlazorBuildGZipCompressedFile.RelativePath)').Replace('\','/').Substring(8))</RelativePath>
-        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-      </_BlazorWebAssemblyStaticWebAsset>
-
-      <StaticWebAsset Include="@(_BlazorWebAssemblyStaticWebAsset)" />
-      <_ExternalStaticWebAsset Include="@(_BlazorWebAssemblyStaticWebAsset)" SourceType="Generated" />
+      <_BlazorAsset Include="$(_BlazorBuildBootJsonPath)" RelativePath="_framework/blazor.boot.json" CopyToPublishDirectory="Never"/>
+      <_BlazorAsset Include="@(_BlazorOutputWithHash)" CopyToPublishDirectory="Never" />
     </ItemGroup>
+    <DefineStaticWebAssets
+      CandidateAssets="@(_BlazorAsset)"
+      RelativePathPattern="wwwroot/**"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      ContentRoot="$(TargetDir)wwwroot\"
+      BasePath="$(StaticWebAssetBasePath)"
+      >
+      <Output TaskParameter="Assets" ItemName="_BlazorWebAssemblyStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_BlazorWebAssemblyStaticWebAsset)" RemoveMetadata="OriginalItemSpec" />
+    </ItemGroup>    
+
   </Target>
 
   <!-- Mimics the behavior of CopyFilesToOutputDirectory. We simply copy relevant build outputs to the wwwroot directory -->
   <Target Name="_BlazorCopyFilesToOutputDirectory" AfterTargets="CopyFilesToOutputDirectory">
-    <Copy
-        SourceFiles="@(IntermediateAssembly)"
-        DestinationFolder="$(OutDir)$(_BlazorOutputPath)"
-        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-        Retries="$(CopyRetryCount)"
-        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
-        ErrorIfLinkFails="$(ErrorIfLinkFailsForCopyFilesToOutputDirectory)"
-        Condition="'$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)' != 'true'">
-
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-    </Copy>
-
     <Message Importance="High" Text="$(MSBuildProjectName) (Blazor output) -&gt; $(TargetDir)wwwroot" Condition="'$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
-
-    <Copy
-        SourceFiles="@(_DebugSymbolsIntermediatePath)"
-        DestinationFolder="$(OutDir)$(_BlazorOutputPath)"
-        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-        Retries="$(CopyRetryCount)"
-        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
-        ErrorIfLinkFails="$(ErrorIfLinkFailsForCopyFilesToOutputDirectory)"
-        Condition="'$(_DebugSymbolsProduced)'=='true' and '$(SkipCopyingSymbolsToOutputDirectory)' != 'true' and '$(CopyOutputSymbolsToOutputDirectory)'=='true'">
-
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-    </Copy>
-
-    <Copy
-        SourceFiles="@(IntermediateSatelliteAssembliesWithTargetPath)"
-        DestinationFiles="@(IntermediateSatelliteAssembliesWithTargetPath->'$(OutDir)$(_BlazorOutputPath)%(Culture)\$(TargetName).resources.dll')"
-        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-        Retries="$(CopyRetryCount)"
-        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
-        ErrorIfLinkFails="$(ErrorIfLinkFailsForCopyFilesToOutputDirectory)"
-        Condition="'@(IntermediateSatelliteAssembliesWithTargetPath)' != ''" >
-
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-    </Copy>
-
-    <Copy
-        SourceFiles="@(_BlazorJSFile);$(_BlazorBuildBootJsonPath)"
-        DestinationFolder="$(OutDir)$(_BlazorOutputPath)"
-        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-        Retries="$(CopyRetryCount)"
-        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
-        ErrorIfLinkFails="$(ErrorIfLinkFailsForCopyFilesToOutputDirectory)">
-
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-    </Copy>
-
-    <Copy
-        SourceFiles="@(_BlazorBuildGZipCompressedFile)"
-        DestinationFiles="@(_BlazorBuildGZipCompressedFile->'$(OutDir)%(RelativePath)')"
-        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-        Retries="$(CopyRetryCount)"
-        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
-        ErrorIfLinkFails="$(ErrorIfLinkFailsForCopyFilesToOutputDirectory)">
-
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-    </Copy>
   </Target>
 
   <!--

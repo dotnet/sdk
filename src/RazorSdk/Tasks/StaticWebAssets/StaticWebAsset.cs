@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     {
         public string Identity { get; set; }
 
-        public string SourceType { get; set; }
-
         public string SourceId { get; set; }
+
+        public string SourceType { get; set; }
 
         public string ContentRoot { get; set; }
 
@@ -155,6 +155,38 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             };
         }
 
+        internal static StaticWebAsset FromProperties(
+            string identity,
+            string sourceId,
+            string sourceType,
+            string basePath,
+            string relativePath,
+            string contentRoot,
+            string assetKind,
+            string assetMode,
+            string copyToOutputDirectory,
+            string copyToPublishDirectory)
+        {
+            var result = new StaticWebAsset
+            {
+                Identity = identity,
+                SourceId = sourceId,
+                SourceType = sourceType,
+                ContentRoot = contentRoot,
+                BasePath = basePath,
+                RelativePath = relativePath,
+                AssetKind = assetKind,
+                AssetMode = assetMode,
+                CopyToOutputDirectory = copyToOutputDirectory,
+                CopyToPublishDirectory = copyToPublishDirectory
+            };
+
+            result.Normalize();
+            result.Validate();
+
+            return result;
+        }
+
         public void Normalize()
         {
             BasePath = Normalize(BasePath);
@@ -201,6 +233,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             public const string Computed = nameof(Computed);
             public const string Project = nameof(Project);
             public const string Package = nameof(Package);
+        }
+
+        public static class AssetCopyOptions
+        {
+            public const string Never = nameof(Never);
+            public const string PreserveNewest = nameof(PreserveNewest);
+            public const string Always = nameof(Always);
         }
 
         private string GetDebuggerDisplay()
