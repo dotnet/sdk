@@ -19,7 +19,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 {
                     tagHelperFeature.TargetAssembly = assembly;
                     descriptors.AddRange(tagHelperFeature.GetDescriptors());
-
                 }
             }
             return descriptors;

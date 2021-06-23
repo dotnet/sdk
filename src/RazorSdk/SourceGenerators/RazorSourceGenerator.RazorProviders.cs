@@ -13,7 +13,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
     public partial class RazorSourceGenerator
     {
-        private static RazorSourceGenerationOptions ComputeRazorSourceGeneratorOptions(AnalyzerConfigOptionsProvider options, CancellationToken ct)
+        private static (RazorSourceGenerationOptions?, Diagnostic?) ComputeRazorSourceGeneratorOptions(AnalyzerConfigOptionsProvider options, CancellationToken ct)
         {
             var globalOptions = options.GlobalOptions;
 
@@ -27,12 +27,16 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             if (!globalOptions.TryGetValue("build_property.RazorLangVersion", out var razorLanguageVersionString) ||
                 !RazorLanguageVersion.TryParse(razorLanguageVersionString, out razorLanguageVersion))
             {
-                System.Console.WriteLine("foo");
+                var diagnostic = Diagnostic.Create(
+                    RazorDiagnostics.InvalidRazorLangVersionDescriptor,
+                    Location.None,
+                    razorLanguageVersionString);
+                return (null, diagnostic);
             }
 
             var razorConfiguration = RazorConfiguration.Create(razorLanguageVersion, configurationName ?? "default", System.Linq.Enumerable.Empty<RazorExtension>(), true);
-
-            return new RazorSourceGenerationOptions()
+            
+            var razorSourceGenerationOptions = new RazorSourceGenerationOptions()
             {
                 WaitForDebugger = waitForDebugger == "true",
                 SuppressRazorSourceGenerator = suppressRazorSourceGenerator == "true",
@@ -40,6 +44,8 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 RootNamespace = rootNamespace ?? "ASP",
                 Configuration = razorConfiguration
             };
+
+            return (razorSourceGenerationOptions, null);
         }
 
         private static (SourceGeneratorProjectItem?, Diagnostic?) ComputeProjectItems((AdditionalText, AnalyzerConfigOptionsProvider) pair, CancellationToken ct)

@@ -14,7 +14,10 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var razorSourceGeneratorOptions = context.AnalyzerConfigOptionsProvider.Select(ComputeRazorSourceGeneratorOptions);
+            var razorSourceGeneratorOptionsWithDiagnostics = context.AnalyzerConfigOptionsProvider
+                .Select(ComputeRazorSourceGeneratorOptions);
+            var razorSourceGeneratorOptions = razorSourceGeneratorOptionsWithDiagnostics.ReportDiagnostics(context);
+
             var sourceItemsWithDiagnostics = context.AdditionalTextsProvider
                 .Combine(context.AnalyzerConfigOptionsProvider)
                 .Select(ComputeProjectItems);
@@ -24,12 +27,12 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             var references = context.CompilationProvider
                 .WithLambdaComparer(
                     (c1, c2) => c1 != null && c2 != null && c1.References != c2.References)
-                .Select((compilation, _ct) => compilation.References);
+                .Select((compilation, _) => compilation.References);
 
             var discoveryProjectEngine = references
                 .Combine(razorSourceGeneratorOptions)
                 .Combine(sourceItems.Collect())
-                .Select((pair, _ct) =>
+                .Select((pair, _) =>
                 {
                     var ((references, razorSourceGeneratorOptions), projectItems) = pair;
                     var tagHelperFeature = new StaticCompilationTagHelperFeature();
@@ -38,7 +41,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
             var syntaxTrees = sourceItems
                 .Combine(discoveryProjectEngine)
-                .Select((pair, _ct) =>
+                .Select((pair, _) =>
                 {
                     var (item, discoveryProjectEngine) = pair;
 
@@ -50,7 +53,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             var tagHelpersFromCompilation = syntaxTrees
                 .Combine(context.CompilationProvider)
                 .Combine(discoveryProjectEngine)
-                .Select((pair, _ct) =>
+                .Select((pair, _) =>
                 {
                     var ((syntaxTrees, compilation), discoveryProjectEngine) = pair;
                     var tagHelperFeature = GetFeature<StaticCompilationTagHelperFeature>(discoveryProjectEngine);
@@ -64,7 +67,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             var tagHelpersFromReferences = discoveryProjectEngine
                 .Combine(context.CompilationProvider)
                 .Combine(references)
-                .Select((pair, _ct) =>
+                .Select((pair, _) =>
                 {
                     var (engineAndCompilation, references) = pair;
                     var (discoveryProjectEngine, compilation) = engineAndCompilation;
@@ -79,7 +82,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             var tagHelpers = tagHelpersFromCompilation.Combine(tagHelpersFromReferences);
 
             var generationProjectEngine = tagHelpers.Combine(razorSourceGeneratorOptions).Combine(sourceItems.Collect())
-                .Select((pair, _ct) =>
+                .Select((pair, _) =>
                 {
                     var (tagHelpersAndOptions, items) = pair;
                     var (tagHelpers, razorSourceGeneratorOptions) = tagHelpersAndOptions;
