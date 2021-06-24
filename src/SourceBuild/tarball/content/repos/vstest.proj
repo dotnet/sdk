@@ -1,0 +1,31 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-x64</OverrideTargetRid>
+
+    <BuildCommandArgs>-DotNetBuildFromSource</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) -DotNetCoreSdkDir $(DotNetCliToolDir)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) -c $(Configuration)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) -r $(OverrideTargetRid)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) -v $(OutputPackageVersion)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+
+    <BuildCommand>$(ProjectDirectory)/build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+
+    <PackagesOutput>$(ProjectDirectory)/artifacts/$(Configuration)/packages</PackagesOutput>
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)" />
+    <RepositoryReference Include="diagnostics" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="newtonsoft-json" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

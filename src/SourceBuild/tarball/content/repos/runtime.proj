@@ -1,0 +1,23 @@
+<Project>
+  <Import Project="runtime.common.props"/>
+
+  <!-- Repository References -->
+  <ItemGroup>
+      <RepositoryReference Include="arcade" />
+      <RepositoryReference Include="symreader" />
+      <RepositoryReference Include="linker" />
+      <RepositoryReference Include="newtonsoft-json" />
+      <RepositoryReference Include="newtonsoft-json901" />
+      <RepositoryReference Include="roslyn" />
+      <RepositoryReference Include="runtime-portable" Condition="'$(TargetOS)' == 'Linux' and '$(BuildPortableRuntime)' == 'true'" />
+  </ItemGroup>
+
+    <!-- Additional Targets -->
+  <Target Name="InstallJustBuiltRuntime" AfterTargets="RemoveBuiltPackagesFromCache">
+    <!-- Install the runtime that was just built to be used by downstream repos, namely, aspnetcore -->
+    <Exec Command="tar -xvf $(SourceBuiltAssetsDir)dotnet-runtime-$(runtimeOutputPackageVersion)-$(OverrideTargetRid).tar.gz -C $(DotNetCliToolDir)" />
+  </Target>
+
+
+  <Import Project="runtime.common.targets" />
+</Project>

@@ -1,0 +1,20 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <OutputArgs>/bl /v:$(LogVerbosity) /p:OutputPath=$(OutputPath)$(RepositoryName)/ /p:BaseIntermediateOutputPath=$(IntermediatePath)$(RepositoryName)</OutputArgs>
+    <BuildCommand>$(DotnetToolCommand) pack -c $(Configuration) --output $(SourceBuiltPackagesPath) --no-build FSharp.NET.Sdk.csproj /p:NuspecFile=FSharp.NET.Sdk.nuspec $(OutputArgs) $(RedirectRepoOutputToLog)</BuildCommand>
+    <PackagesOutput>$(SourceBuiltPackagesPath)</PackagesOutput>
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <ProjectDirectory>$(SubmoduleDirectory)$(RepositoryName)/</ProjectDirectory>
+  </PropertyGroup>
+
+  <Target Name="RepoRestore" BeforeTargets="Build" DependsOnTargets="UpdateNuGetConfig">
+    <Exec Command="$(DotnetToolCommand) restore FSharp.NET.Sdk.csproj $(OutputArgs) /v:$(LogVerbosity) $(RedirectRepoOutputToLog)"
+          WorkingDirectory="$(ProjectDirectory)"
+          EnvironmentVariables="@(EnvironmentVariables)"
+          IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

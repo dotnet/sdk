@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Target Name="AcquireDarcCore">
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Installing Darc." />
+    <Exec Command="$(RepositoryEngineeringDir)common/darc-init.sh --darcversion $(DarcVersion) --toolpath $(DarcInstallDir)" />
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done installing Darc." />
+  </Target>
+
+</Project>

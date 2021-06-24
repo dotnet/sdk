@@ -1,0 +1,135 @@
+<Project>
+  <PropertyGroup>
+    <SourceDirectory>installer</SourceDirectory>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+     <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
+     <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-x64</OverrideTargetRid>
+     <OSNameOverride>$(OverrideTargetRid.Substring(0, $(OverrideTargetRid.IndexOf("-"))))</OSNameOverride>
+
+     <RuntimeArg>--runtime-id $(OverrideTargetRid)</RuntimeArg>
+     <RuntimeArg Condition="'$(TargetOS)' == 'Linux'">--runtime-id $(TargetRid)</RuntimeArg>
+
+     <BuildCommandArgs>--restore --build --pack --ci --binaryLog</BuildCommandArgs>
+     <BuildCommandArgs>$(BuildCommandArgs) --configuration $(Configuration)</BuildCommandArgs>
+     <BuildCommandArgs>$(BuildCommandArgs) $(RuntimeArg)</BuildCommandArgs>
+
+     <!--
+       Setting NETCoreAppMaximumVersion to a high version so that the sdk doesn't complain if we're restoring/publishing for a higher version than the sdk.
+       See https://github.com/dotnet/sdk/issues/1512#issuecomment-377082883
+     -->
+     <BuildCommandArgs>$(BuildCommandArgs) /p:NETCoreAppMaximumVersion=99.9</BuildCommandArgs>
+     <BuildCommandArgs>$(BuildCommandArgs) /p:OSName=$(OSNameOverride)</BuildCommandArgs>
+     <BuildCommandArgs Condition="'$(TargetOS)' == 'Linux'">$(BuildCommandArgs) /p:Rid=$(TargetRid)</BuildCommandArgs>
+     <BuildCommandArgs>$(BuildCommandArgs) /p:DOTNET_INSTALL_DIR=$(DotNetCliToolDir)</BuildCommandArgs>
+
+
+     <BuildCommandArgs Condition="'$(TargetOS)' == 'Linux'">$(BuildCommandArgs) /p:AspNetCoreSharedFxInstallerRid=linux-$(Platform)</BuildCommandArgs>
+     <!-- core-sdk always wants to build portable on OSX and FreeBSD -->
+     <BuildCommandArgs Condition="'$(TargetOS)' == 'FreeBSD'">$(BuildCommandArgs) /p:CoreSetupRid=freebsd-x64 /p:PortableBuild=true</BuildCommandArgs>
+     <BuildCommandArgs Condition="'$(TargetOS)' == 'OSX'">$(BuildCommandArgs) /p:CoreSetupRid=osx-x64</BuildCommandArgs>
+     <BuildCommandArgs Condition="'$(TargetOS)' == 'Linux'">$(BuildCommandArgs) /p:CoreSetupRid=$(TargetRid)</BuildCommandArgs>
+
+     <!-- Consume the source-built Core-Setup. This line must be removed to source-build CLI without source-building Core-Setup first. -->
+     <BuildCommandArgs>$(BuildCommandArgs) /p:CoreSetupBlobRootUrl=file:%2F%2F$(LocalBlobStorageRoot)</BuildCommandArgs>
+
+     <!-- location to pick up the toolset binaries from.  This must be removed to source-build core-sdk without building toolset first -->
+     <BuildCommandArgs>$(BuildCommandArgs) /p:DotnetToolsetBlobRootUrl=file:%2F%2F$(LocalBlobStorageRoot)</BuildCommandArgs>
+
+     <BuildCommandArgs>$(BuildCommandArgs) /p:SkipBuildingInstallers=true</BuildCommandArgs>
+     <BuildCommandArgs>$(BuildCommandArgs) /p:IncludeNuGetPackageArchive=false</BuildCommandArgs>
+     <BuildCommandArgs>$(BuildCommandArgs) /p:IncludeAdditionalSharedFrameworks=false</BuildCommandArgs>
+     <BuildCommandArgs>$(BuildCommandArgs) /p:UsePortableLinuxSharedFramework=false</BuildCommandArgs>
+     <BuildCommandArgs>$(BuildCommandArgs) /p:IncludeSharedFrameworksForBackwardsCompatibilityTests=false</BuildCommandArgs>
+
+     <BuildCommand>$(ProjectDirectory)/build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+
+    <PackageOutputRid Condition="'$(TargetOS)' == 'Windows_NT'">win-x64</PackageOutputRid>
+    <PackageOutputRid Condition="'$(TargetOS)' == 'OSX'">osx-x64</PackageOutputRid>
+    <PackageOutputRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-x64</PackageOutputRid>
+    <PackageOutputRid Condition="'$(PackageOutputRid)' == ''">$(TargetRid)</PackageOutputRid>
+    <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/Shipping/</PackagesOutput>
+    <TarBallOutput>$(PackagesOutput)</TarBallOutput>
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <SourceOverrideRepoApiImplemented>true</SourceOverrideRepoApiImplemented>
+    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
+
+    <EnvironmentExternalRestoreSources>$(SourceBuiltPackagesPath)</EnvironmentExternalRestoreSources>
+    <EnvironmentExternalRestoreSources Condition="'$(OfflineBuild)' == 'true'">$(EnvironmentExternalRestoreSources)%3B$(ReferencePackagesDir)%3B$(PrebuiltPackagesPath)</EnvironmentExternalRestoreSources>
+
+    <!-- This project builds zips, not NuGet packages. -->
+    <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
+    <NuGetConfigFile>$(ProjectDirectory)/NuGet.config</NuGetConfigFile>
+
+    <!-- This repo uses text-only template packages from the internal transport feed. -->
+    <SetUpInternalTransportFeed>true</SetUpInternalTransportFeed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="application-insights" />
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="aspnetcore" />
+    <RepositoryReference Include="clicommandlineparser" />
+    <RepositoryReference Include="fsharp" />
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="netcorecli-fsc" />
+    <RepositoryReference Include="newtonsoft-json" />
+    <RepositoryReference Include="newtonsoft-json901" />
+    <RepositoryReference Include="nuget-client" />
+    <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="sdk" />
+    <RepositoryReference Include="templating" />
+    <RepositoryReference Include="test-templates" />
+    <RepositoryReference Include="vstest" />
+    <RepositoryReference Include="xliff-tasks" />
+  </ItemGroup>
+
+  <!--
+    If we have authentication, keep the templating internal feed (if one exists) to acquire the
+    text-only prebuilt. The source-build repo as a whole should depend on the same internal feed as
+    this repo does, so authentication should already be set up in the global endpoints json.
+  -->
+  <ItemGroup Condition="'$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != ''">
+    <KeepFeedPrefixes Include="darc-int-dotnet-aspnetcore-" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="CLIBUILD_SKIP_TESTS=true" />
+
+    <!-- Pass multiple restore sources as environment: avoid the shell seeing ';' in an Exec. -->
+    <EnvironmentVariables Include="ExternalRestoreSources=$(EnvironmentExternalRestoreSources)" />
+
+    <!-- Disable bundled tools until we can figure out:
+      Unable to find package dotnet-dev-certs.
+      Unable to find package dotnet-ef.
+      Unable to find package dotnet-sql-cache.
+      Unable to find package dotnet-user-secrets.
+      Unable to find package dotnet-watch.  -->
+    <EnvironmentVariables Include="CLIBUILD_SKIP_BUNDLEDDOTNETTOOLS=true" />
+  </ItemGroup>
+
+  <Target Name="CopyTarBall"
+          AfterTargets="CopyPackage"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)CopyTarBall.complete">
+    <ItemGroup>
+      <CliTarBalls Include="$(TarBallOutput)*$(TarBallExtension)" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(CliTarBalls)"
+          DestinationFolder="$(SourceBuiltTarBallPath)"
+          Condition="'@(CliTarBalls)'!=''" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CopyTarBall.complete" Overwrite="true" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

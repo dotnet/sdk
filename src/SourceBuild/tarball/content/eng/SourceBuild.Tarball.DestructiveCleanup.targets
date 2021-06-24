@@ -1,0 +1,63 @@
+<Project>
+
+  <!--
+    Below are some destructive cleanup steps that we optionally perform during tarball creation.
+    These are used in CI to avoid filling up disk space, when we have weak build agents. These steps
+    are not generally suitable for dev scenarios because they delete intermediate data that might
+    have taken quite a while to download or create, and Git data that may be in-progress work.
+  -->
+
+  <!--
+    We need to keep artifacts/src/<repo>/.git around for sourcelink metadata but we can delete just
+    about everything else, Darc will pull it from the copy in .git/modules. This list of extensions
+    is everything over 6MB or so.
+  -->
+  <Target Name="DestructiveIntermediateCleanLargeFilesFromClonedSource"
+          BeforeTargets="AddTarballSource">
+    <ItemGroup>
+      <LargeSrcFileExtension Include="
+        .dll;
+        .exe;
+        .pdb;
+        .mdb;
+        .zip;
+        .so;
+        .o;
+        .a;
+        .tar.gz;
+        .vb;
+        .il;
+        .xlf;
+        .cpp;
+        .txt;
+        .map;
+        .md;
+        .fs;
+        .h;
+        .c;
+        .js;
+        .json;
+        .ildump;
+        .resx;
+        .xml;
+        .css;
+        .nupkg" />
+
+      <LargeSrcFiles Include="$(ClonedSubmoduleDirectory)*%(LargeSrcFileExtension.Identity)" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Removing large and unnecessary source files from $(ClonedSubmoduleDirectory)" />
+
+    <Delete Files="@(LargeSrcFiles)" />
+  </Target>
+
+  <Target Name="DestructiveIntermediateCleanTarballSource"
+          AfterTargets="AddTarballSource">
+    <!-- Now we don't need .git/modules/src anymore. -->
+    <RemoveDir Directories="$(ClonedSubmoduleGitRootDirectory)" />
+
+    <!-- we don't build CoreCLR tests right now and they have a lot of them - ~380MB -->
+    <Exec Command="rm -rf '$(TarballSourceDir)coreclr.'*'/tests'" />
+  </Target>
+
+</Project>

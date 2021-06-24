@@ -1,0 +1,49 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="Build">
+    <ItemGroup>
+      <AllRepoProjects
+        Include="$(ProjectDir)repos\*.proj"
+        Exclude="
+          $(ProjectDir)repos\known-good.proj;
+          $(ProjectDir)repos\known-good-tests.proj" />
+    </ItemGroup>
+
+    <MSBuild
+      Projects="@(AllRepoProjects)"
+      Targets="GetRepositoryReferences">
+      <Output TaskParameter="TargetOutputs" ItemName="RepoReferences" />
+    </MSBuild>
+
+    <ItemGroup>
+      <RepoLink Include="%(RepoReferences.MSBuildSourceProjectFile)" SourceRepo="%(RepoReferences.Identity)" />
+      <RepoLink TargetRepo="%(Filename)" />
+      <RepoLink Text="&quot;%(SourceRepo)&quot; -> &quot;%(TargetRepo)&quot;" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <GraphVizFile>$(BaseIntermediatePath)graphviz.dot</GraphVizFile>
+      <GraphVizPngFile>$(BaseIntermediatePath)graphviz.png</GraphVizPngFile>
+      <GraphVizContent>digraph {
+graph [ dpi = 150 ]
+@(RepoLink -> '%(Text)')
+}</GraphVizContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+      Lines="$(GraphVizContent)"
+      File="$(GraphVizFile)"
+      Overwrite="True" />
+
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(GraphVizFile)" />
+
+    <Exec
+      Condition="'$(GraphVizDir)' != ''"
+      Command="$([MSBuild]::NormalizePath('$(GraphVizDir)', 'dot')) $(GraphVizFile) -Tpng:cairo -o $(GraphVizPngFile)" />
+
+    <Message Condition="'$(GraphVizDir)' != ''" Importance="High" Text="$(MSBuildProjectName) -> $(GraphVizPngFile)" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

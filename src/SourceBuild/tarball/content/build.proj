@@ -1,0 +1,197 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="CheckForPoison" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageBurndownData" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="DownloadFileSB" />
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="Build" DependsOnTargets="PrepareOutput;InitBuild">
+    <Message Text="Build Environment: $(Platform) $(Configuration) $(TargetOS) $(TargetRid)" />
+
+    <MSBuild Projects="repos\$(RootRepo).proj" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
+  </Target>
+
+  <Target Name="RunTests" DependsOnTargets="PrepareOutput;InitBuild">
+    <Message Text="Build Environment: $(Platform) $(Configuration) $(TargetOS) $(TargetRid)" />
+
+    <MSBuild Projects="repos\$(RootRepoTests).proj" Targets="Build" Properties="PrepForTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
+    <MSBuild Projects="repos\$(RootRepoTests).proj" Targets="Build" Properties="RunTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
+  </Target>
+
+  <Target Name="CreateRootRepoFile" AfterTargets="PrepareOutput">
+    <WriteLinesToFile Lines="$(RootRepo)" File="$(BaseIntermediatePath)rootrepo.txt" Overwrite="True" />
+  </Target>
+
+  <Target Name="PrepareOutput">
+    <MakeDir Directories="$(OutputPath)" />
+    <MakeDir Directories="$(LoggingDir)" />
+    <MakeDir Directories="$(GitInfoOutputDir)" />
+    <MakeDir Directories="$(IntermediatePath)" />
+    <MakeDir Directories="$(SourceBuiltBlobFeedDir)" />
+    <MakeDir Directories="$(SourceBuiltPackagesPath)" />
+    <MakeDir Directories="$(SourceBuiltAssetsDir)" />
+    <MakeDir Directories="$(LocalBlobStorageRoot)" />
+    <MakeDir Directories="$(MSBuildDebugPathTargetDir)" />
+    <MakeDir Directories="$(RoslynDebugPathTargetDir)" />
+    <MakeDir Directories="$(AspNetRazorBuildServerLogDir)" />
+  </Target>
+
+  <Target Name="InitBuild">
+    <MSBuild Projects="tools-local/init-build.proj" />
+  </Target>
+
+  <Target Name="Clean">
+    <RemoveDir Directories="$(BaseOutputPath)" />
+  </Target>
+
+  <Target Name="OutputArchiveArtifactsTextFile"
+          AfterTargets="Build"
+          Condition="'$(OfflineBuild)' != 'true' and '$(OS)' != 'Windows_NT'" >
+
+    <ItemGroup>
+      <ArtifactUrls Include="$(ReferencePackagesTarballUrl)$(ReferencePackagesTarballName).$(PrivateSourceBuildReferencePackagesPackageVersion).tar.gz" />
+      <ArtifactUrls Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltArtifactsTarballName).$(PrivateSourceBuiltArtifactsPackageVersion).tar.gz" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(ArchiveArtifactsTextFile)"
+      Lines="@(ArtifactUrls)"
+      Overwrite="true" />
+  </Target>
+
+
+  <Target Name="DownloadSourceBuildReferencePackages"
+          AfterTargets="Build"
+          Condition="'$(OfflineBuild)' != 'true' and '$(OS)' != 'Windows_NT' and '$(SkipDownloadingReferencePackages)' != 'true'"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(CompletedSemaphorePath)DownloadSourceBuildReferencePackages.complete" >
+    <PropertyGroup Condition="'$(DownloadSourceBuildReferencePackagesTimeoutSeconds)' == ''">
+      <DownloadSourceBuildReferencePackagesTimeoutSeconds>N/A</DownloadSourceBuildReferencePackagesTimeoutSeconds>
+    </PropertyGroup>
+
+    <DownloadFileSB
+          SourceUrl="$(ReferencePackagesTarballUrl)$(ReferencePackagesTarballName).$(PrivateSourceBuildReferencePackagesPackageVersion).tar.gz"
+          DestinationFolder="$(ExternalTarballsDir)"
+          TimeoutSeconds="$(DownloadSourceBuildReferencePackagesTimeoutSeconds)" />
+
+    <WriteLinesToFile File="$(CompletedSemaphorePath)DownloadSourceBuildReferencePackages.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="DownloadSourceBuiltArtifacts"
+          AfterTargets="Build"
+          Condition="
+            '$(OfflineBuild)' != 'true' and
+            '$(OS)' != 'Windows_NT' and
+            '$(SkipDownloadingPreviouslySourceBuiltPackages)' != 'true' and
+            '$(PrivateSourceBuiltArtifactsPackageVersion)' != ''"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(CompletedSemaphorePath)DownloadSourceBuiltArtifacts.complete" >
+    <PropertyGroup Condition="'$(DownloadSourceBuiltArtifactsTimeoutSeconds)' == ''">
+      <DownloadSourceBuiltArtifactsTimeoutSeconds>N/A</DownloadSourceBuiltArtifactsTimeoutSeconds>
+    </PropertyGroup>
+
+    <DownloadFileSB
+          SourceUrl="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltArtifactsTarballName).$(PrivateSourceBuiltArtifactsPackageVersion).tar.gz"
+          DestinationFolder="$(ExternalTarballsDir)"
+          TimeoutSeconds="$(DownloadSourceBuiltArtifactsTimeoutSeconds)" />
+
+    <WriteLinesToFile File="$(CompletedSemaphorePath)DownloadSourceBuiltArtifacts.complete" Overwrite="true" />
+  </Target>
+
+  <!-- After building, generate a prebuilt usage report. -->
+  <Target Name="ReportPrebuiltUsage"
+          AfterTargets="Build"
+          Condition="'$(SkipReportPrebuiltUsage)' != 'true'">
+    <MSBuild Projects="repos\$(RootRepo).proj" Targets="WritePrebuiltUsageData;ReportPrebuiltUsage" />
+  </Target>
+
+  <!--
+    Dev scenario: rewrite a prebuilt-report. This makes it easy to add data to an existing
+    prebuilt report without performing another full build. This doesn't reevalutate which packages
+    are prebuilts or search the projects: it uses the existing usage.xml file to generate report
+    XMLs based on the info put in artifacts/.
+  -->
+  <Target Name="RewritePrebuiltUsageReport">
+    <MSBuild Projects="repos\$(RootRepo).proj" Targets="ReportPrebuiltUsage" />
+  </Target>
+
+  <Target Name="ReportPoisonUsage"
+          AfterTargets="Build"
+          Condition="'$(EnablePoison)' == 'true' and '$(OfflineBuild)' == 'true'"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(CompletedSemaphorePath)ReportPoisonUsage.complete" >
+    <ItemGroup>
+      <FinalCliTarball Include="$(SourceBuiltTarBallPath)**/*$(TarBallExtension)" />
+    </ItemGroup>
+    <CheckForPoison FilesToCheck="@(FinalCliTarball)"
+                    HashCatalogFilePath="$(PoisonReportDataFile)"
+                    MarkerFileName="$(PoisonMarkerFile)"
+                    PoisonReportOutputFilePath="$(PoisonUsageReportFile)" />
+
+    <WriteLinesToFile File="$(CompletedSemaphorePath)ReportPoisonUsage.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="GeneratePrebuiltBurndownData"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(CompletedSemaphorePath)GeneratePrebuiltBurndownData.complete" >
+    <WriteUsageBurndownData RootDirectory="$(ProjectDir)"
+                            PrebuiltBaselineFile="$(OnlineBaselineDataFile)"
+                            OutputFilePath="$(OnlinePrebuiltBurndownDataFile)" />
+    <WriteUsageBurndownData RootDirectory="$(ProjectDir)"
+                            PrebuiltBaselineFile="$(OfflineBaselineDataFile)"
+                            OutputFilePath="$(OfflinePrebuiltBurndownDataFile)" />
+
+    <WriteLinesToFile File="$(CompletedSemaphorePath)GeneratePrebuiltBurndownData.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="RunSmokeTest" DependsOnTargets="GetProdConBlobFeedUrl">
+    <PropertyGroup>
+      <SmokeTestCommand>./smoke-test.sh</SmokeTestCommand>
+      <SmokeTestCommand>$(SmokeTestCommand) --minimal</SmokeTestCommand>
+      <SmokeTestCommand>$(SmokeTestCommand) --projectOutput</SmokeTestCommand>
+      <SmokeTestCommand>$(SmokeTestCommand) --configuration $(Configuration)</SmokeTestCommand>
+      <SmokeTestCommand>$(SmokeTestCommand) --archiveRestoredPackages</SmokeTestCommand>
+
+      <!-- Dev certs don't work on this platform. -->
+      <SmokeTestCommand Condition="'$(TargetOS)' == 'OSX'">$(SmokeTestCommand) --excludeWebHttpsTests</SmokeTestCommand>
+    </PropertyGroup>
+
+    <!--
+      Pass prodConBlobFeedUrl via EnvironmentVariables because it has '//' in it, which is
+      translated into '/' if it's passed in the Command arg.
+      This is also a problem when passing CLI feeds: https://github.com/dotnet/source-build/issues/561
+    -->
+    <Exec Command="$(SmokeTestCommand)"
+          EnvironmentVariables="
+            targetRid=$(TargetRid);
+            prodConBlobFeedUrl=$(ProdConBlobFeedUrl)" />
+  </Target>
+
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UploadToAzure" />
+
+  <Target Name="PublishPrebuiltReportData">
+    <Error Text="RelativeBlobPath must be set to a non-empty string." Condition="'$(RelativeBlobPath)' == ''" />
+    <Error Text="ContainerName must be set to a non-empty string." Condition="'$(ContainerName)' == ''" />
+    <Error Text="AzureAccountName must be set to a non-empty string." Condition="'$(AzureAccountName)' == ''" />
+    <Error Text="AzureAccessToken must be set to a non-empty string." Condition="'$(AzureAccessToken)' == ''" />
+
+    <ItemGroup>
+      <ItemsToPublish Include="$(PackageReportDir)*.xml" />
+      <ItemsToPublish Include="$(PackageReportDir)*.csv" />
+      <ItemsToPublish>
+        <RelativeBlobPath>$(RelativeBlobPath)/%(Filename)%(Extension)</RelativeBlobPath>
+      </ItemsToPublish>
+    </ItemGroup>
+
+    <Message Text="Uploading files to '$(AzureAccountName)' blob storage at $(ContainerName)/$(RelativeBlobPath)" />
+
+    <UploadToAzure AccountName="$(AzureAccountName)"
+                   AccountKey="$(AzureAccessToken)"
+                   ContainerName="$(ContainerName)"
+                   Items="@(ItemsToPublish)"
+                   Overwrite="true" />
+  </Target>
+
+</Project>

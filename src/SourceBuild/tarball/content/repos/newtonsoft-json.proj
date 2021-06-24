@@ -1,0 +1,39 @@
+<Project>
+
+  <PropertyGroup>
+    <SourceDirectory>Newtonsoft.Json</SourceDirectory>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  
+  <!--The Library Frameworks was added to environment variables so as to override the frameworks in newtonsoft csproj-->
+  <!--The semicolons were added with encoding so as to avoid conflicts in MSBuild shell-->
+  <ItemGroup>
+    <EnvironmentVariables Include="LibraryFrameworks=netstandard1.0%3Bnetstandard1.3%3Bnetstandard2.0" />
+    <!--This is a fake repo reference to slightly tweak build ordering so that arcade builds before newtonsoft. Although this tweak is temporary. dtd 06/19/2019-->
+    <RepositoryReference Include="arcade" />
+  </ItemGroup>   
+
+  <PropertyGroup>
+    <NuGetConfigFile>$(ProjectDirectory)/Src/NuGet.Config</NuGetConfigFile>
+    <NewtonsoftJsonKeyFilePath>$(KeysDir)Newtonsoft.Json.snk</NewtonsoftJsonKeyFilePath>
+    <NewtonsoftJsonDirectory>$(ProjectDirectory)/Src/Newtonsoft.Json/</NewtonsoftJsonDirectory>
+    <NewtonsoftJsonProjectPath>$(NewtonsoftJsonDirectory)Newtonsoft.Json.csproj</NewtonsoftJsonProjectPath>
+    <DotnetToolCommandArguments>"/p:DotnetOnly=true" "/p:Configuration=$(Configuration)" "/p:AssemblyOriginatorKeyFile=$(NewtonsoftJsonKeyFilePath)" "/p:SignAssembly=true" "/p:PublicSign=true" "/p:TreatWarningsAsErrors=false" "/p:AdditionalConstants=SIGNED"</DotnetToolCommandArguments>
+    <BuildCommand>$(DotnetToolCommand) build $(NewtonsoftJsonProjectPath) /bl:build.binlog $(DotnetToolCommandArguments)</BuildCommand>
+    <BuildPackagesCommand>$(DotnetToolCommand) pack $(NewtonsoftJsonProjectPath) /bl:pack.binlog $(DotnetToolCommandArguments)</BuildPackagesCommand>
+    <CleanCommand>$(DotnetToolCommand) clean $(NewtonsoftJsonProjectPath) $(DotnetToolCommandArguments)</CleanCommand>
+    <PackagesOutput>$(NewtonsoftJsonDirectory)bin/$(Configuration)/</PackagesOutput>
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+  </PropertyGroup>
+
+  <Target Name="RepoRestore" BeforeTargets="Build" DependsOnTargets="UpdateNuGetConfig">
+    <Exec Command="$(DotnetToolCommand) restore $(NewtonsoftJsonProjectPath) $(DotnetToolCommandArguments) /v:$(LogVerbosity) /bl:restore.binlog $(RedirectRepoOutputToLog)"
+          WorkingDirectory="$(ProjectDirectory)"
+          EnvironmentVariables="@(EnvironmentVariables)"
+          IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- SDK/Runtime Version Information -->
+  <PropertyGroup>
+    <MajorVersion>6</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <RuntimePatchVersion>0-preview.6</RuntimePatchVersion>
+    <SdkPatchVersion>100-preview.6</SdkPatchVersion>
+    <RuntimeProductVersion>$(MajorVersion).$(MinorVersion).$(RuntimePatchVersion)</RuntimeProductVersion>
+    <AspNetCoreProductVersion>$(MajorVersion).$(MinorVersion).$(RuntimePatchVersion)</AspNetCoreProductVersion>
+    <SdkProductVersion>$(MajorVersion).$(MinorVersion).$(SdkPatchVersion)</SdkProductVersion>
+  </PropertyGroup>
+  <!-- Repo Version Information -->
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <PreReleaseVersionLabel>alpha.1</PreReleaseVersionLabel>
+  </PropertyGroup>
+  <!-- Humanizer expects us to tell the version it's building -->
+  <PropertyGroup>
+    <HumanizerCorePackageVersion>2.2.0</HumanizerCorePackageVersion>
+  </PropertyGroup>
+  <!-- Production Dependencies -->
+  <PropertyGroup>
+    <PrivateSourceBuiltArtifactsPackageVersion>0.1.0-6.0.100-bootstrap.3</PrivateSourceBuiltArtifactsPackageVersion>
+  </PropertyGroup>
+</Project>

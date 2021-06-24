@@ -1,0 +1,148 @@
+<Project>
+
+  <PropertyGroup>
+    <RepositoryName Condition="'$(RepositoryName)' == ''">$(MSBuildProjectName)</RepositoryName>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
+
+  <Import Project="$(OutputGitInfoPropsFile)" Condition="Exists('$(OutputGitInfoPropsFile)')" />
+  <Import Project="$(OfflineGitInfoPropsFile)" Condition="Exists('$(OfflineGitInfoPropsFile)')" />
+
+  <PropertyGroup>
+    <SourceDirectory Condition="'$(SourceDirectory)' == ''">$(RepositoryName)</SourceDirectory>
+    <ProjectDirectory Condition="'$(ProjectDirectory)' == '' and '$(OfflineBuild)' != 'true'">$(ClonedSubmoduleDirectory)$(SourceDirectory).$(GitCommitHash)/</ProjectDirectory>
+    <ProjectDirectory Condition="'$(ProjectDirectory)' == '' and '$(OfflineBuild)' == 'true'">$(SubmoduleDirectory)$(SourceDirectory).$(GitCommitHash)/</ProjectDirectory>
+    <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == ''">true</MinimalConsoleLogOutput>
+    <RepoConsoleLogFile>$(LoggingDir)$(RepositoryName).log</RepoConsoleLogFile>
+    <RedirectRepoOutputToLog Condition="'$(MinimalConsoleLogOutput)' == 'true'">&gt;&gt; $(RepoConsoleLogFile) 2&gt;&amp;1</RedirectRepoOutputToLog>
+    <IsStable Condition="'$(UseStableVersions)' == 'true'">true</IsStable>
+
+    <!--
+      Repo specific semaphore path for incremental build
+    -->
+    <RepoCompletedSemaphorePath>$(CompletedSemaphorePath)$(RepositoryName)/</RepoCompletedSemaphorePath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <FlagParameterPrefix>-</FlagParameterPrefix>
+    <ArcadeFalseBoolBuildArg>0</ArcadeFalseBoolBuildArg>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <FlagParameterPrefix>--</FlagParameterPrefix>
+    <ArcadeFalseBoolBuildArg>false</ArcadeFalseBoolBuildArg>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GitCommitDateNoDashes>$(GitCommitDate.Replace('-', ''))</GitCommitDateNoDashes>
+  </PropertyGroup>
+
+  <!-- A human-readable description of what's building and why. -->
+  <PropertyGroup>
+    <ProjectBuildReason>'$(RepositoryName)'</ProjectBuildReason>
+    <ProjectBuildReason Condition="'$(OfflineBuild)' != 'true' AND '$(ArchiveDownloadedPackages)' == 'true'">$(ProjectBuildReason) to produce tarball</ProjectBuildReason>
+    <ProjectBuildReason Condition="'$(OfflineBuild)' == 'true'">$(ProjectBuildReason) in tarball</ProjectBuildReason>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="DotNetBuildFromSource=true" />
+    <EnvironmentVariables Include="DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)" />
+    <EnvironmentVariables Include="DotNetRestorePackagesPath=$(PackagesDir)" />
+    <EnvironmentVariables Include="DotNetBuildOffline=true" Condition="'$(OfflineBuild)' == 'true'" />
+
+    <!-- Ensure the SDK (Core-SDK/Installer) doesn't add an online source. -->
+    <EnvironmentVariables Include="AddDotnetfeedProjectSource=false" Condition="'$(OfflineBuild)' == 'true'" />
+
+    <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
+    <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(DotNetCliToolDir)" />
+    <EnvironmentVariables Include="DOTNET_PATH=$(DotNetCliToolDir)" />
+    <EnvironmentVariables Include="DOTNET_HOST_PATH=$(DotNetCliToolDir)dotnet" />
+
+    <!-- _InitializeDotNetCli is used by websdk and templating to decide whether to init the SDK -->
+    <EnvironmentVariables Include="_InitializeDotNetCli=$(DotNetCliToolDir)" />
+    <EnvironmentVariables Include="_DotNetInstallDir=$(DotNetCliToolDir)" />
+    <EnvironmentVariables Include="_InitializeToolset=$(ProjectDir)Tools/source-built/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj" Condition="'$(UseBootstrapArcade)' != 'true'" />
+    <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=net5.0" />
+
+    <!--
+      With ProdCon v2, stabilization options are checked in, unlike ProdCon v1. These should be
+      deprecated but are left in to avoid potentially regressing edge-case versioning.
+    -->
+    <EnvironmentVariables Include="StabilizePackageVersion=$(IsStable)" Condition="'$(IsStable)' != '' and '$(IsToolingProject)' != 'true'" />
+    <EnvironmentVariables Include="PB_IsStable=$(IsStable)" Condition="'$(IsStable)' != '' and '$(IsToolingProject)' != 'true'" />
+    <EnvironmentVariables Include="IsStableBuild=$(IsStable)" Condition="'$(IsStable)' != '' and '$(IsToolingProject)' != 'true'" />
+    <EnvironmentVariables Include="DotNetFinalVersionKind=release" Condition="'$(IsStable)' == 'true' and '$(IsToolingProject)' != 'true'" />
+    <EnvironmentVariables Include="DropSuffix=true" Condition="'$(IsStable)' == 'true' and '$(IsToolingProject)' != 'true'" />
+
+    <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
+
+    <EnvironmentVariables Include="PreReleaseVersionLabel=$(PreReleaseVersionLabel)" />
+    <EnvironmentVariables Include="PackageVersionStamp=$(PreReleaseVersionLabel)" />
+    <EnvironmentVariables Include="PB_VersionStamp=$(PreReleaseVersionLabel)" />
+
+    <!-- We pass '-ci', but also apply ci mode via env var for edge cases. (E.g. misbehaving inner builds.) -->
+    <EnvironmentVariables Include="ContinuousIntegrationBuild=true" />
+
+    <!-- Turn off node reuse for source build because repos use conflicting versions
+         of compilers which cause assembly load errors.
+         See https://github.com/dotnet/source-build/issues/541 -->
+    <EnvironmentVariables Include="MSBUILDDISABLENODEREUSE=1" />
+
+    <!--
+      Apply official build versioning to match Microsoft build. These are based on build date, so
+      need to be parsed from Maestro++ auto-update and passed through.
+    -->
+    <EnvironmentVariables Include="OfficialBuildId=$(OfficialBuildId)" />
+    <EnvironmentVariables Include="BUILD_BUILDNUMBER=$(OfficialBuildId)" />
+
+    <!-- Give build access to commit info without necessarily requiring git queries. -->
+    <EnvironmentVariables Include="GitCommitCount=$(GitCommitCount)" />
+    <EnvironmentVariables Include="GitCommitHash=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
+    <EnvironmentVariables Include="GitInfoCommitHash=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
+    <EnvironmentVariables Include="SourceRevisionId=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
+    <EnvironmentVariables Include="RepositoryCommit=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
+    <EnvironmentVariables Include="COMMIT_SHA=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
+    <EnvironmentVariables Include="GIT_COMMIT=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
+    <EnvironmentVariables Include="RepositoryType=Git" />
+
+    <EnvironmentVariables Include="DeterministicSourcePaths=true" Condition="'$(DeterministicBuildOptOut)' != 'true'" />
+    <EnvironmentVariables Include="DeterministicSourcePaths=false" Condition="'$(DeterministicBuildOptOut)' == 'true'" />
+
+    <EnvironmentVariables Include="SourceRoot=$(ProjectDirectory)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
+    <!-- If MSBuild exits early, make sure debug output like 'MSBuild_*.failure.txt' ends up in a place we can see it. -->
+    <EnvironmentVariables Include="MSBUILDDEBUGPATH=$(MSBuildDebugPathTargetDir)" />
+    <EnvironmentVariables Include="MSBUILDDEBUGCOMM=1" />
+    <EnvironmentVariables Include="MSBUILDDEBUGSCHEDULER=1" />
+    <EnvironmentVariables Include="MSBUILDDEBUGFORCECACHING=1" />
+    <EnvironmentVariables Include="MSBUILDDEBUG=1" />
+    <EnvironmentVariables Include="MSBUILDDEBUGEVALUATION=1" />
+    <EnvironmentVariables Include="MSBUILDTARGETOUTPUTLOGGING=1" />
+    <EnvironmentVariables Include="MSBUILDLOGTASKINPUTS=1" />
+    <EnvironmentVariables Include="MSBUILDEMITSOLUTION=1" />
+    <EnvironmentVariables Include="MSBUILDLOGVERBOSERARSEARCHRESULTS=1" />
+
+    <!-- Output Roslyn logs to allow debugging compiler errors -->
+    <EnvironmentVariables Include="RoslynCommandLineLogFile=$(RoslynDebugPathTargetDir)" />
+
+    <!--ASP.NET dev server request logs -->
+    <EnvironmentVariables Include="RAZORBUILDSERVER_LOG=$(AspNetRazorBuildServerLogFile)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <ArcadeBootstrapDir Condition="'$(OfflineBuild)' != 'true'">$(PackagesDir)</ArcadeBootstrapDir>
+    <ArcadeBootstrapDir Condition="'$(OfflineBuild)' == 'true'">$(ArcadeBootstrapPackageDir)</ArcadeBootstrapDir>
+    <ArcadeBootstrapVersion>$(ARCADE_BOOTSTRAP_VERSION)</ArcadeBootstrapVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ArcadeSdkOverride Include="Microsoft.DotNet.Arcade.Sdk" Group="ARCADE" Version="$(arcadeOutputPackageVersion)"/>
+    <ArcadeBootstrapSdkOverride Include="Microsoft.DotNet.Arcade.Sdk" Group="ARCADE" Version="$(ArcadeBootstrapVersion)" Location="$(ArcadeBootstrapDir)microsoft.dotnet.arcade.sdk/$(ArcadeBootstrapVersion)" />
+    <ArcadePackagingOverride Include="Microsoft.DotNet.Build.Tasks.Packaging" Group="ARCADE_PACKAGING" Version="$(arcadeOutputPackageVersion)"/>
+    <ArcadeTargetFrameworkSdkOverride Include="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk" Group="ARCADE_TGT_FX_SDK" Version="$(arcadeOutputPackageVersion)"/>
+    <ILSdkOverride Include="Microsoft.NET.Sdk.IL" Group="IL" />
+    <MsBuildTraversalSdkOverride Include="Microsoft.Build.Traversal" Group="MSBUILD_TRAVERSAL" Version="2.0.2"/>
+  </ItemGroup>
+</Project>

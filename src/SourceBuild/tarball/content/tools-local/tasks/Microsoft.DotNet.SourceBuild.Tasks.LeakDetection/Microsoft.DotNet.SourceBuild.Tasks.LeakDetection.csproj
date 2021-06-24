@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>$(LeakDetectionTasksBinDir)</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build">
+      <Version>15.7.179</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Utilities.Core">
+      <Version>15.7.179</Version>
+    </PackageReference>
+    <ProjectReference Include="$(ClonedSubmoduleDirectory)linker.$(linkerGitCommitHash)/external/cecil/Mono.Cecil.csproj" Condition="'$(OfflineBuild)' != 'true'">
+      <SetConfiguration Condition=" '$(Configuration)' == 'Debug' ">Configuration=netstandard_Debug</SetConfiguration>
+      <SetConfiguration Condition=" '$(Configuration)' == 'Release' ">Configuration=netstandard_Release</SetConfiguration>
+      <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
+      <Name>Mono.Cecil</Name>
+    </ProjectReference>
+    <ProjectReference Include="$(SubmoduleDirectory)linker.$(linkerGitCommitHash)/external/cecil/Mono.Cecil.csproj" Condition="'$(OfflineBuild)' == 'true'">
+      <SetConfiguration Condition=" '$(Configuration)' == 'Debug' ">Configuration=netstandard_Debug</SetConfiguration>
+      <SetConfiguration Condition=" '$(Configuration)' == 'Release' ">Configuration=netstandard_Release</SetConfiguration>
+      <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
+      <Name>Mono.Cecil</Name>
+    </ProjectReference>
+    <ProjectReference Include="../Microsoft.DotNet.SourceBuild.Tasks.XPlat/Microsoft.DotNet.SourceBuild.Tasks.XPlat.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="@(SdkAssemblyReference)" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,386 @@
+<Project>
+
+  <Target Name="PackSourceBuildTarball"
+          Condition="'$(PackSourceBuildTarball)' == 'true'"
+          DependsOnTargets="
+            GetTarballDirProps;
+            AddTarballSource;
+            AddTarballSourcelinkMetadata;
+            AddTarballTools;
+            AddTarballPackages;
+            AddTarballExternalTarballs;
+            AddTarballCommitInfo;
+            AddTarballLeakDetection;
+            CopyTarballFiles;
+            RemoveTarballKnownExtraPrebuilts;
+            ForbidPrebuilts;
+            "
+          AfterTargets="Execute" />
+
+  <Import Project="SourceBuild.Tarball.KnownExtraPrebuilts.targets" />
+  <Import Project="SourceBuild.Tarball.AllowedPrebuilts.targets" />
+  <Import Project="SourceBuild.Tarball.TextOnlyPrebuilts.targets" />
+
+  <Import
+    Project="SourceBuild.Tarball.DestructiveCleanup.targets"
+    Condition="'$(DestructiveIntermediateClean)' == 'true'"/>
+
+  <Target Name="GetTarballDirProps">
+    <PropertyGroup>
+      <TarballRootDir>$([MSBuild]::NormalizeDirectory('$(TarballRoot)'))</TarballRootDir>
+      <TarballSourceDir>$([MSBuild]::NormalizeDirectory('$(TarballRootDir)', 'src'))</TarballSourceDir>
+      <TarballPrebuiltPackageDir>$([MSBuild]::NormalizeDirectory('$(TarballRootDir)', 'packages', 'prebuilt'))</TarballPrebuiltPackageDir>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="AddTarballSource"
+          DependsOnTargets="
+            GetTarballDirProps;
+            GetCommonDarcCloneCommand"
+          Condition="'$(SkipAddTarballSource)' != 'true'">
+    <!--
+      Use Git to put sources in the tarball. This ensure it's fresh, without having to clean and
+      reset the working dir. This helps preserve diagnostic information if the tarball build doesn't
+      work.
+    -->
+    <Exec
+      Command="git --work-tree=&quot;$(TarballRootDir)&quot; checkout HEAD -- src"
+      WorkingDirectory="$(ProjectDir)" />
+
+    <!--
+      Now re-uberclone into the tarball src directory. Since we reuse the .gitdirs, this shouldn't
+      hit the network at all.
+    -->
+    <Exec
+      Command="$(DarcCloneCommand) --repos-folder $(TarballSourceDir)"
+      WorkingDirectory="$(ProjectDir)" />
+
+    <Message Importance="High" Text="Darc clone into tarball complete." />
+
+    <ItemGroup>
+      <TarballSrcBinaryExtension Include="
+        .dll;
+        .Dll;
+        .exe;
+        .pdb;
+        .mdb;
+        .zip;
+        .nupkg" />
+
+      <TarballSrcBinaryToRemove Include="$(TarballSourceDir)**\*%(TarballSrcBinaryExtension.Identity)" />
+
+      <!-- Runtime coreclr and installer parts have empty placeholder PDB files. Keep them. -->
+      <TarballSrcBinaryToRemove Remove="
+        $(TarballSourceDir)runtime*\src\coreclr\src\.nuget\**\*%(TarballSrcBinaryExtension.Identity);
+        $(TarballSourceDir)runtime*\src\installer\pkg\**\*%(TarballSrcBinaryExtension.Identity)" />
+    </ItemGroup>
+
+    <Delete Files="@(TarballSrcBinaryToRemove)" />
+
+    <ItemGroup>
+      <MasterRepositoryDirToRemove
+        Include="$([System.IO.Directory]::GetDirectories('$(TarballSourceDir)'))" />
+
+      <!-- Keep known source dirs and non-master repo dirs. -->
+      <MasterRepositoryDirToRemove Remove="$(TarballSourceDir)reference-assemblies" />
+      <MasterRepositoryDirToRemove Remove="$(TarballSourceDir)netcorecli-fsc" />
+      <MasterRepositoryDirToRemove Remove="$(TarballSourceDir)package-source-build" />
+      <MasterRepositoryDirToRemove
+        Remove="@(MasterRepositoryDirToRemove)"
+        Condition="
+          $([System.Text.RegularExpressions.Regex]::IsMatch(
+            '%(Identity)',
+            '\.[A-Fa-f0-9]{40}$'))" />
+    </ItemGroup>
+
+    <RemoveDir Directories="@(MasterRepositoryDirToRemove)" />
+  </Target>
+
+  <Target Name="AddTarballSourcelinkMetadata">
+    <ItemGroup>
+      <ArtifactsGitDir Include="$(ClonedSubmoduleDirectory)**\.git\**\*" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(ArtifactsGitDir)"
+      DestinationFiles="@(ArtifactsGitDir -> '$(TarballSourceDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <Target Name="AddTarballTools">
+    <ItemGroup>
+      <TarballRootToolFile
+        Include="
+          $(ProjectDir)*.proj;
+          $(ProjectDir)*.props;
+          $(ProjectDir)*.targets;
+          $(ProjectDir)global.json;
+          $(ProjectDir)DarcVersion.txt;
+          $(ProjectDir)ProdConFeed.txt;
+          $(ProjectDir)smoke-test*;
+          $(ProjectDir)eng\**;
+          $(ProjectDir)keys\**;
+          $(ProjectDir)patches\**;
+          $(ProjectDir)scripts\**;
+          $(ProjectDir)repos\**;
+          $(ProjectDir)tools-local\**;
+          "
+        Exclude="
+          $(ProjectDir)tools-local\arcade-services\**;
+          $(ProjectDir)tools-local\tasks\*\bin\**;
+          $(ProjectDir)tools-local\tasks\*\obj\**;
+          " />
+
+      <TarballRootToolFile
+        Include="$(DotNetCliToolDir)**"
+        Exclude="
+          $(DotNetCliToolDir)shared\2.1.0\**;
+          $(DotNetCliToolDir)tools\**;
+          "
+        Condition=" '$(CustomDotNetSdkDir)' == '' AND '$(PackBaseTarball)' != 'true' "/>
+
+      <TarballCopyFile
+        Include="@(TarballRootToolFile)"
+        RelativeDestination="$([MSBuild]::MakeRelative('$(ProjectDir)', '%(Identity)'))" />
+
+      <TarballGitInfoFile Include="$(ProjectDir)artifacts\git-info\**" />
+      <TarballCopyFile
+        Include="@(TarballGitInfoFile)"
+        RelativeDestination="git-info\%(RecursiveDir)%(Filename)%(Extension)" />
+
+      <TarballBootstrappingToolFile Include="$(ProjectDir)support\tarball\tool-bootstrapping/**;" />
+      <TarballCopyFile
+        Include="@(TarballBootstrappingToolFile)"
+        RelativeDestination="tool-bootstrapping\%(RecursiveDir)%(Filename)%(Extension)" />
+
+      <TarballCopyFile
+        Include="$(ProjectDir)support/tarball/build.sh"
+        RelativeDestination="build.sh" />
+        
+      <TarballCopyFile
+        Condition=" '$(PackBaseTarball)' == 'true' "
+        Include="$(ProjectDir)support/tarball/prep.sh"
+        RelativeDestination="prep.sh" />
+
+      <!--
+        When building an internal build, the main smoke-test nuget config has authenticated sources
+        in it to generate a full set of smoke-test-prereqs. This isn't necessary in the tarball
+        because we have those smoke-test-prereqs, but we hit authentication errors nonetheless. Copy
+        a trimmed down nuget.config in this case.
+        TODO: Automatically trim down the main nuget.config.
+      -->
+      <TarballCopyFile
+        Condition="Exists('$(ProjectDir)support\tarball\smoke-testNuGet.Config')"
+        Include="$(ProjectDir)support\tarball\smoke-testNuGet.Config"
+        RelativeDestination="smoke-testNuGet.Config" />
+
+      <!-- Setup package version props to include both source-built and running PackageVersions.props -->
+      <TarballCopyFile
+        Include="$(ProjectDir)support\tarball\PackageVersions.props"
+        RelativeRoot="artifacts/obj/$(Platform)/Release/" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddTarballPackages">
+    <!-- Find reference-packages to exclude from tarball prebuilts...-->
+    <ItemGroup Condition="'$(CustomRefPackagesDir)' != ''">
+      <SourceBuildReferencePackageFile Include="$(CustomRefPackagesDir)**\*.nupkg" />
+    </ItemGroup>
+
+    <Exec
+      Command="tar -tf $(ExternalTarballsDir)Private.SourceBuild.ReferencePackages.*.tar.gz | tr '[:upper:]' '[:lower:]'"
+      ConsoleToMsBuild="true"
+      StandardOutputImportance="low"
+      Condition="'$(CustomRefPackagesDir)' == ''">
+      <Output TaskParameter="ConsoleOutput" ItemName="SourceBuildReferencePackageFile" />
+    </Exec>
+
+    <ItemGroup>
+      <SourceBuildReferencePackageFilename Include="@(SourceBuildReferencePackageFile -> '%(Filename)')" />
+    </ItemGroup>
+
+    <!-- Find previously source-built packages to exclude from tarball prebuilts... -->
+    <ItemGroup Condition="'$(CustomPreviouslySourceBuiltPackagesDir)' != ''">
+      <PreviouslySourceBuiltPackageFile Include="$(CustomPreviouslySourceBuiltPackagesDir)**\*.nupkg" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- Use a downloaded previously source built artifacts tar.gz if specified. -->
+      <PrivateSourceBuiltArtifactsTarGzFile
+        Condition="'$(PrivateSourceBuiltArtifactsPackageVersion)' != ''"
+        Include="$(ExternalTarballsDir)Private.SourceBuilt.Artifacts.*.tar.gz" />
+
+      <!-- If not using previously source built artifacts tar.gz, use Production build output. -->
+      <PrivateSourceBuiltArtifactsTarGzFile
+        Condition="'$(PrivateSourceBuiltArtifactsPackageVersion)' == ''"
+        Include="$(OutputPath)$(SourceBuiltArtifactsTarballName).*.tar.gz" />
+    </ItemGroup>
+
+    <Error
+      Text="Expected one PrivateSourceBuiltArtifactsTarGzFile item, got @(PrivateSourceBuiltArtifactsTarGzFile->Count())"
+      Condition="@(PrivateSourceBuiltArtifactsTarGzFile->Count()) != 1" />
+
+    <Exec
+      Command="tar -tf @(PrivateSourceBuiltArtifactsTarGzFile) | tr '[:upper:]' '[:lower:]'"
+      ConsoleToMsBuild="true"
+      StandardOutputImportance="low"
+      Condition="'$(CustomPreviouslySourceBuiltPackagesDir)' == ''">
+      <Output TaskParameter="ConsoleOutput" ItemName="PreviouslySourceBuiltPackageFile" />
+    </Exec>
+
+    <ItemGroup>
+      <PreviouslySourceBuiltPackageFilename Include="@(PreviouslySourceBuiltPackageFile -> '%(Filename)')" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- Find source-built packages to exclude from tarball prebuilts... -->
+      <SourceBuiltPackageFile Include="$(SourceBuiltPackagesPath)**\*.nupkg" />
+      <SourceBuiltPackageFilename Include="@(SourceBuiltPackageFile -> '%(Filename)')" />
+
+      <!-- Find prebuilts and smoke-test prebuilts to copy (with exclusions). -->
+      <PrebuiltPackageFile
+        Include="
+          $(ProjectDir)packages\restored\**\*.nupkg;
+          $(LocalNuGetPackagesRoot)**\*.nupkg;
+          " />
+      <PrebuiltPackageFile
+        RelativeDestination="packages\prebuilt\%(Filename)%(Extension)" />
+
+      <SmokeTestPackageFile
+        Include="$(ProjectDir)testing-smoke\smoke-test-packages\**\*.nupkg"
+        RelativeRoot="packages\smoke-test-packages\" />
+
+      <!--
+        Set up filename-based items, in order to filter out some packages that aren't necessary as
+        prebuilts, or are generated/acquired another way.
+      -->
+      <IncludedPrebuiltPackageCandidate Include="@(PrebuiltPackageFile)" />
+
+      <!--
+        For internal builds, all smoke-test packages should be kept. For external builds, they can
+        be restored during smoke-test execution from public sources, so can be pruned.
+      -->
+      <IncludedPrebuiltPackageFile Include="@(SmokeTestPackageFile)" Condition="'$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != ''" />
+      <IncludedPrebuiltPackageCandidate Include="@(SmokeTestPackageFile)" Condition="'$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' == ''" />
+
+      <IncludedPrebuiltPackageFilename
+        Include="@(IncludedPrebuiltPackageCandidate -> '%(Filename)')"
+        OriginalIdentity="%(Identity)" />
+
+      <IncludedPrebuiltPackageFilename Remove="
+        @(SourceBuiltPackageFilename);
+        @(SourceBuildReferencePackageFilename);
+        @(PreviouslySourceBuiltPackageFilename);
+        @(RefOnlyPackageFilename);
+        " />
+
+      <IncludedPrebuiltPackageFile
+        Include="@(IncludedPrebuiltPackageFilename -> '%(OriginalIdentity)')" />
+
+      <!-- Add prebuilt packages to tarball. -->
+      <TarballCopyFile Include="@(IncludedPrebuiltPackageFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddTarballExternalTarballs"
+          DependsOnTargets="AddTarballPackages">
+    <ItemGroup>
+      <ExternalTarballFile
+        Condition=" '$(PackBaseTarball)' != 'true' "
+        Include="$(ExternalTarballsDir)*.tar.gz"
+        RelativeRoot="packages\archive\" />
+
+      <!-- If not using previously source built artifacts tar.gz, use Production build output. -->
+      <ExternalTarballFile
+        Condition=" '$(PrivateSourceBuiltArtifactsPackageVersion)' == '' AND '$(PackBaseTarball)' != 'true' "
+        Include="@(PrivateSourceBuiltArtifactsTarGzFile)"
+        RelativeRoot="packages\archive\" />
+
+      <ExternalTarballFile
+        Condition=" '$(PackBaseTarball)' == 'true' "
+        Include="$(ArchiveArtifactsTextFile)"
+        RelativeRoot="packages\archive\" />
+
+      <TarballCopyFile Include="@(ExternalTarballFile);" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Record commits for the source-build repo and all submodules, to aid in reproducibility...
+  -->
+  <Target Name="AddTarballCommitInfo"
+          Condition="'$(SkipAddTarballCommitInfo)' != 'true'">
+    <PropertyGroup>
+      <SourceBuildInfoFile>$(TarballRootDir)source-build-info.txt</SourceBuildInfoFile>
+    </PropertyGroup>
+
+    <Exec
+      Command="(
+        echo 'source-build:';
+        echo ' '%24(git rev-parse HEAD)' . ('%24(git describe --always HEAD)')';
+        echo ''
+        echo 'submodules:'
+        echo %24(git submodule status --recursive)
+        ) > $(SourceBuildInfoFile)"
+      WorkingDirectory="$(ProjectDir)"
+      StandardOutputImportance="low" />
+  </Target>
+
+  <Target Name="AddTarballLeakDetection"
+          Condition="'$(IncludeLeakDetection)' == 'true'"
+          DependsOnTargets="CopyTarballFiles">
+    <PropertyGroup>
+      <LeakDetectionProjectFile>$(ProjectDir)tools-local\tasks\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.csproj</LeakDetectionProjectFile>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="$(LeakDetectionProjectFile)"
+      Targets="Restore"
+      Properties="
+        RestoreSources=$(SourceBuiltPackagesPath)%3B$(TarballRootDir)packages/prebuilt%3bhttps://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public%40Local/nuget/v3/index.json;
+        DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)"/>
+
+    <MSBuild
+      Projects="$(LeakDetectionProjectFile)"
+      Targets="Publish"
+      Properties="
+        OutputPath=$(TarballRootDir)tools-local/tasks/Microsoft.DotNet.SourceBuild.Tasks.LeakDetection/;
+        DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)"/>
+  </Target>
+
+  <Target Name="CopyTarballFiles">
+    <ItemGroup>
+      <TarballCopyFile
+        Condition="
+          '%(TarballCopyFile.RelativeDestination)' == '' and
+          '%(TarballCopyFile.RelativeRoot)' != ''"
+        RelativeDestination="%(TarballCopyFile.RelativeRoot)%(TarballCopyFile.RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(TarballCopyFile)"
+      DestinationFiles="@(TarballCopyFile -> '$(TarballRootDir)%(RelativeDestination)')" />
+  </Target>
+
+  <!-- Check for any remaining prebuilts... -->
+  <Target Name="ForbidPrebuilts"
+          Condition="'$(SkipPrebuiltEnforcement)' != 'true'">
+    <ItemGroup>
+      <!--
+        'Exclude' is an escape hatch for prebuilts, but none are allowed as of writing this target.
+        If necessary, define a target in a separate targets file (to avoid clutter) that sets up the
+        exclusion items and runs with BeforeTargets="ForbidPrebuilts".
+      -->
+      <ForbiddenPrebuiltPackageFile
+        Include="$(TarballPrebuiltPackageDir)**\*.nupkg"
+        Exclude="@(AllowedPrebuiltPackageFile)" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'@(ForbiddenPrebuiltPackageFile)' != ''">
+      <PrebuiltErrorText>Detected forbidden prebuilts. They must be removed, or explicitly allowed (see target for details):</PrebuiltErrorText>
+      <PrebuiltErrorText>$(PrebuiltErrorText)%0A@(ForbiddenPrebuiltPackageFile -> '%(Identity)', '%0A')</PrebuiltErrorText>
+    </PropertyGroup>
+
+    <Error Text="$(PrebuiltErrorText)" Condition="'$(PrebuiltErrorText)' != ''" />
+  </Target>
+
+</Project>

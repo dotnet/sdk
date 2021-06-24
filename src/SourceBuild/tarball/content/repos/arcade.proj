@@ -1,0 +1,78 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <!-- 'restore' and 'build' switches automatically passed by build.sh/ps1. -->
+    <BuildCommandArgs />
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)pack</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <BuildCommandArgs>$(BuildCommandArgs) -v $(LogVerbosity)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) -bl</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) -ci</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:ArcadeBuildFromSource=true</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:CopyWipIntoInnerSourceBuildRepo=true</BuildCommandArgs>
+
+    <BuildCommand>$(ProjectDirectory)\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+
+    <!-- NuGet SDK resolver only checks nuget.config files. https://github.com/Microsoft/msbuild/issues/2914 -->
+    <NuGetConfigFile>$(ProjectDirectory)/NuGet.config</NuGetConfigFile>
+
+    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
+
+    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
+    <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
+
+    <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</PackagesOutput>
+
+    <!-- we need to use a prebuilt Arcade to build Arcade -->
+    <UseBootstrapArcade>true</UseBootstrapArcade>
+    <IsToolingProject>true</IsToolingProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Include="@(ArcadeBootstrapSdkOverride)" />
+    <BuiltSdkPackageOverride Include="@(ArcadeSdkOverride)" />
+    <BuiltSdkPackageOverride Include="@(ArcadeCoreFxTestingOverride)" />
+    <BuiltSdkPackageOverride Include="@(ArcadePackagingOverride)" />
+    <BuiltSdkPackageOverride Include="@(ArcadeTargetFrameworkSdkOverride)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="UsingToolMicrosoftNetCompilers=false" />
+    <EnvironmentVariables Include="useInstalledDotNetCli=false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="sourcelink" />
+  </ItemGroup>
+
+  <!-- TODO: Temporarily skip this target for now until source-build NuGet packaging is built 
+       and packaged into source-built artifacts for 6.0.
+       See https://github.com/dotnet/source-build/issues/2285 -->
+  <Target Name="UsePreviouslySourceBuiltNuGet"
+          Condition="'$(OfflineBuild)' == 'true' AND 'true' == 'false' "
+          BeforeTargets="RepoBuild">
+    <ItemGroup>
+      <PreviouslySourceBuiltNuGetPackageFile Include="$(PrebuiltSourceBuiltPackagesPath)NuGet.Packaging.*.nupkg" />
+    </ItemGroup>
+
+    <Error
+      Text="Unable to find any previously source built NuGet.Packaging version to use in Arcade SDK tooling."
+      Condition="'@(PreviouslySourceBuiltNuGetPackageFile)' == ''" />
+
+    <ReadNuGetPackageInfos PackagePaths="@(PreviouslySourceBuiltNuGetPackageFile)">
+      <Output TaskParameter="PackageInfoItems" ItemName="PreviouslySourceBuiltNuGetPackageInfo" />
+    </ReadNuGetPackageInfos>
+
+    <PropertyGroup>
+      <PreviouslySourceBuiltNuGetVersion>%(PreviouslySourceBuiltNuGetPackageInfo.PackageVersion)</PreviouslySourceBuiltNuGetVersion>
+      <BuildCommand>$(BuildCommand) /p:NuGetVersion=$(PreviouslySourceBuiltNuGetVersion)</BuildCommand>
+    </PropertyGroup>
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

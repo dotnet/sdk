@@ -1,0 +1,136 @@
+<Project>
+
+  <!--
+    Remove a list of packages that end up in the tarball's prebuilts folder but are not actually
+    needed. This is typically because part of the build are turned off for DotNetBuildOffline but
+    not DotNetBuildFromSource.
+  -->
+  <Target Name="RemoveTarballKnownExtraPrebuilts"
+          DependsOnTargets="GetTarballDirProps">
+    <ItemGroup>
+      <KnownExtraPrebuiltFile Include="
+        $(TarballPrebuiltPackageDir)microbuild.core.0.2.0.nupkg;
+        $(TarballPrebuiltPackageDir)microbuild.core.sentinel.1.0.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.bcl.asyncinterfaces.1.1.1.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.bcl.asyncinterfaces.5.0.0-rc.1.20451.14.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.build.framework.15.3.409.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.build.framework.15.4.8.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.build.tasks.core.15.3.409.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.build.utilities.core.15.3.409.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.build.utilities.core.15.4.8.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.analyzers.2.6.1.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.analyzers.2.9.6.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.analyzers.3.0.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.bannedapianalyzers.3.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.common.2.9.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.common.3.4.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.common.3.8.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.csharp.2.9.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.csharp.3.4.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.csharp.3.8.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.csharp.codestyle.3.8.0-2.20414.4.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.csharp.codestyle.3.8.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.visualbasic.codestyle.3.8.0-2.20414.4.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.codeanalysis.visualbasic.codestyle.3.8.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.dotnet.arcade.sdk.5.0.0-beta.20426.4.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.dotnet.signtool.5.0.0-beta.20426.4.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.extensions.dependencymodel.3.1.6.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.extensions.dependencyinjection.5.0.0.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.netcore.app.host.linux-x64.3.1.7.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.symboluploader.build.task.1.1.141804.nupkg;
+        $(TarballPrebuiltPackageDir)netstandard.library.1.6.0.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.commands.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.common.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.configuration.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.credentials.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.dependencyresolver.core.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.frameworks.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.librarymodel.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.packaging.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.projectmodel.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.protocol.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)nuget.versioning.5.6.0-preview.2.6489.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.fedora.23-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.fedora.23-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.fedora.24-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.fedora.24-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.4.0.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.data.sqlclient.sni.4.7.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.io.compression.4.1.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.io.compression.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.net.http.4.0.1.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.net.http.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.net.security.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.security.cryptography.4.0.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.security.cryptography.apple.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.opensuse.13.2-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.opensuse.13.2-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.opensuse.42.1-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.opensuse.42.1-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.osx.10.10-x64.runtime.native.system.security.cryptography.apple.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.osx.10.10-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.osx.10.10-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.rhel.7-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.rhel.7-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.ubuntu.14.04-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.ubuntu.14.04-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.ubuntu.16.04-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.ubuntu.16.04-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.ubuntu.16.10-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.ubuntu.16.10-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.win-arm64.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.win-x64.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg;
+        $(TarballPrebuiltPackageDir)runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg;
+        $(TarballPrebuiltPackageDir)sn.1.0.0.nupkg;
+        $(TarballPrebuiltPackageDir)system.collections.immutable.5.0.0-preview.8.20407.11.nupkg;
+        $(TarballPrebuiltPackageDir)system.composition.1.0.31.nupkg;
+        $(TarballPrebuiltPackageDir)system.composition.attributedmodel.1.0.31.nupkg;
+        $(TarballPrebuiltPackageDir)system.composition.convention.1.0.31.nupkg;
+        $(TarballPrebuiltPackageDir)system.composition.hosting.1.0.31.nupkg;
+        $(TarballPrebuiltPackageDir)system.composition.runtime.1.0.31.nupkg;
+        $(TarballPrebuiltPackageDir)system.composition.typedparts.1.0.31.nupkg;
+        $(TarballPrebuiltPackageDir)system.io.pipelines.5.0.0.nupkg;
+        $(TarballPrebuiltPackageDir)system.reflection.metadata.5.0.0-preview.8.20407.11.nupkg;
+        $(TarballPrebuiltPackageDir)system.runtime.compilerservices.unsafe.5.0.0-rc.1.20451.14.nupkg;
+        $(TarballPrebuiltPackageDir)system.security.cryptography.pkcs.5.0.0.nupkg;
+        $(TarballPrebuiltPackageDir)system.text.encodings.web.4.7.1.nupkg;
+        $(TarballPrebuiltPackageDir)system.text.encodings.web.5.0.0-rc.1.20451.14.nupkg;
+        $(TarballPrebuiltPackageDir)system.text.json.4.7.2.nupkg;
+        $(TarballPrebuiltPackageDir)system.text.json.5.0.0-rc.1.20451.14.nupkg;
+        $(TarballPrebuiltPackageDir)system.text.json.5.0.0.nupkg;
+        $(TarballPrebuiltPackageDir)system.valuetuple.4.3.0.nupkg;
+        $(TarballPrebuiltPackageDir)system.xml.xpath.xmldocument.4.0.1.nupkg;
+        $(TarballPrebuiltPackageDir)vswhere.2.6.7.nupkg;
+        $(TarballPrebuiltPackageDir)xlifftasks.1.0.0-beta.20420.1.nupkg;
+        " />
+      <!--
+        Remove source-link packages to throw away tooling that Arcade imports unconditionally in the
+        production build.
+      -->
+      <KnownExtraPrebuiltFile Include="
+        $(TarballPrebuiltPackageDir)microsoft.build.tasks.git.1.0.0-beta2-*.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.sourcelink.common.1.0.0-beta2-*.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.sourcelink.github.1.0.0-beta2-*.nupkg;
+        $(TarballPrebuiltPackageDir)microsoft.sourcelink.vsts.git.1.0.0-beta2-*.nupkg;
+        " />
+      <!--
+        Remove packages that show up when dotnet/sdk restores Microsoft.Build/15.7.179 in net472
+        configuration. These are not present in the source-build-reference-packages version of
+        Microsoft.Build/15.7.179, so we know it's safe to ignore. In the production build, we aren't
+        using SBRP yet, so we need to remove them here.
+      -->
+      <KnownExtraPrebuiltFile Include="
+        $(TarballPrebuiltPackageDir)microsoft.visualstudio.setup.configuration.interop.1.16.30.nupkg;
+        $(TarballPrebuiltPackageDir)system.threading.tasks.dataflow.4.5.24.nupkg;
+        " />
+    </ItemGroup>
+
+    <Delete Files="@(KnownExtraPrebuiltFile)" />
+  </Target>
+
+</Project>

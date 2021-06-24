@@ -1,0 +1,81 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <!-- Package version is pinned to what CoreFX expects because CoreFX doesn't take an override property. -->
+    <ILLinkTasksPackageId>Microsoft.NET.ILLink.Tasks</ILLinkTasksPackageId>
+
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)ci</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)restore</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)build</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)pack</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)publish</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) -bl</BuildCommandArgs>
+
+    <BuildCommandArgs>$(BuildCommandArgs) /p:ArcadeBuildFromSource=true</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:CopyWipIntoInnerSourceBuildRepo=true</BuildCommandArgs>
+
+    <BuildCommand>$(ProjectDirectory)\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+
+    <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</PackagesOutput>
+
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <NuGetConfigFile>$(ProjectDirectory)/NuGet.config</NuGetConfigFile>
+    <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
+  </ItemGroup>
+
+  <!-- Extract this package into packages dir, because repos assume it's restored as a tool. -->
+  <!-- TODO: Determine if this is still required.  See https://github.com/dotnet/source-build/issues/2291 -->
+  <!-- <Target Name="ExtractLinkerPackageToCache"
+          AfterTargets="Package"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)ExtractLinkerPackageToCache.complete">
+    <PropertyGroup>
+      <ILLinkTasksPackageFile>$(PackagesOutput)/$(ILLinkTasksPackageId).$(OutputPackageVersion).nupkg</ILLinkTasksPackageFile>
+      <ILLinkTasksPackageIdToLower>$(ILLinkTasksPackageId.ToLowerInvariant())</ILLinkTasksPackageIdToLower>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="Extracting $(ILLinkTasksPackageFile) to package cache..." />
+
+    <ZipFileExtractToDirectory SourceArchive="$(ILLinkTasksPackageFile)"
+                               DestinationDirectory="$(PackagesDir)$(ILLinkTasksPackageIdToLower)/$(OutputPackageVersion)/"
+                               OverwriteDestination="true" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)ExtractLinkerPackageToCache.complete" Overwrite="true" />
+  </Target> -->
+
+  <!-- Replace file includes in nuspec as recommended in the linker repo's ./corebuild/README.md -->
+  <Target Name="ReplaceNuspecDllIncludeLines" BeforeTargets="Build" Condition="'$(TargetOS)' != 'Windows_NT'">
+    <PropertyGroup>
+      <LinkerTasksNuspecFile>$(ProjectDirectory)src/ILLink.Tasks/ILLink.Tasks.nuspec</LinkerTasksNuspecFile>
+      <NuspecFileContents>
+        <![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <description>$description$</description>
+  </metadata>
+  <files>
+    <file src="ILLink.Tasks.targets" target="build" />
+    <file src="ILLink.CrossGen.targets" target="build" />
+    <file src="netcoreapp2.0/**/*.dll" target="tools/netcoreapp2.0" />
+  </files>
+</package>
+]]>
+      </NuspecFileContents>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(LinkerTasksNuspecFile)"
+                      Lines="$(NuspecFileContents)"
+                      Overwrite="true" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
