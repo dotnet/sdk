@@ -77,6 +77,7 @@ Integration with static web assets:
 
   <ResolveStaticWebAssetsInputsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
     $(ResolveStaticWebAssetsInputsDependsOn);
+    UpdateLegacyPackageScopedCssBundles;
     _AddScopedCssBundles;
   </ResolveStaticWebAssetsInputsDependsOn>
 
@@ -330,5 +331,28 @@ Integration with static web assets:
   </ItemGroup>
 
 </Target>
+
+<!-- Back-compat -->
+
+  <Target Name="UpdateLegacyPackageScopedCssBundles" DependsOnTargets="UpdateExistingPackageStaticWebAssets">
+    <ItemGroup>
+      <_LegacyOverrides Include="AssetMode" />
+      <_PackageProjectBundleCandidates Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Package'" />
+    </ItemGroup>
+    <DefineStaticWebAssets
+      CandidateAssets="@(_PackageProjectBundleCandidates)"
+      RelativePathFilter="**/*.bundle.scp.css"
+      PropertyOverrides="@(_LegacyOverrides)"
+      AssetMode="Reference"
+    >
+      <Output TaskParameter="Assets" ItemName="_UpdatedLegacyProjectBundles" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+      <StaticWebAsset Remove="@(_UpdatedLegacyProjectBundles->'%(OriginalItemSpec)')" />
+      <StaticWebAsset Include="@(_UpdatedLegacyProjectBundles)" RemoveMetadata="OriginalItemSpec" />
+    </ItemGroup>
+  
+  </Target>
 
 </Project>

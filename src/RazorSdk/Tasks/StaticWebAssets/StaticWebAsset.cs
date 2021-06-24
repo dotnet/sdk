@@ -58,6 +58,16 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
             };
 
+            if (string.IsNullOrEmpty(result.CopyToOutputDirectory))
+            {
+                result.CopyToOutputDirectory = AssetCopyOptions.Never;
+            }
+
+            if (string.IsNullOrEmpty(result.CopyToPublishDirectory))
+            {
+                result.CopyToPublishDirectory = AssetCopyOptions.PreserveNewest;
+            }
+
             if (version == 1)
             {
                 if (string.IsNullOrEmpty(result.AssetKind))

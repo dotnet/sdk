@@ -1,0 +1,24 @@
+{
+  "Version": 1,
+  "Hash": "A\u002B/bHp5MCU3MnzwBco2lC2n4s8T\u002BfWAVNIG\u002Bcwe0gcw=",
+  "Source": "ComponentApp",
+  "BasePath": "_content/ComponentApp",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "RelatedManifests": [],
+  "DiscoveryPatterns": [],
+  "Assets": [
+    {
+      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
+      "SourceId": "ComponentApp",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectRoot}\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\",
+      "BasePath": "_content/ComponentApp",
+      "RelativePath": "ComponentApp.bundle.scp.css",
+      "AssetKind": "All",
+      "AssetMode": "Reference",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    }
+  ]
+}

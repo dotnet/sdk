@@ -3,13 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
-    public class StaticWebAssetsManifest
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
+    public class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifest>
     {
         internal StaticWebAssetsManifest(
             string source,
@@ -102,6 +106,59 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return manifest;
         }
 
+        public static StaticWebAssetsManifest FromJsonString(string jsonManifest)
+        {
+            var manifest = JsonSerializer.Deserialize<StaticWebAssetsManifest>(jsonManifest);
+            if (manifest.Version != 1)
+            {
+                throw new InvalidOperationException($"Invalid manifest version. Expected manifest version '1' and found version '{manifest.Version}'.");
+            }
+
+            return manifest;
+        }
+
+        public override bool Equals(object obj) => Equals(obj as StaticWebAssetsManifest);
+        public bool Equals(StaticWebAssetsManifest other) => 
+            other != null
+            && Version == other.Version
+            && Hash == other.Hash
+            && Source == other.Source
+            && BasePath == other.BasePath
+            && Mode == other.Mode
+            && ManifestType == other.ManifestType
+            && EqualityComparer<ManifestReference[]>.Default.Equals(RelatedManifests, other.RelatedManifests)
+            && EqualityComparer<DiscoveryPattern[]>.Default.Equals(DiscoveryPatterns, other.DiscoveryPatterns)
+            && EqualityComparer<StaticWebAsset[]>.Default.Equals(Assets, other.Assets);
+
+        public override int GetHashCode()
+        {
+#if NET6_0_OR_GREATER
+            HashCode hash = new HashCode();
+            hash.Add(Version);
+            hash.Add(Hash);
+            hash.Add(Source);
+            hash.Add(BasePath);
+            hash.Add(Mode);
+            hash.Add(ManifestType);
+            hash.Add(RelatedManifests);
+            hash.Add(DiscoveryPatterns);
+            hash.Add(Assets);
+            return hash.ToHashCode();
+#else
+            int hashCode = 1467594941;
+            hashCode = hashCode * -1521134295 + Version.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Hash);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Source);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(BasePath);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Mode);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ManifestType);
+            hashCode = hashCode * -1521134295 + EqualityComparer<ManifestReference[]>.Default.GetHashCode(RelatedManifests);
+            hashCode = hashCode * -1521134295 + EqualityComparer<DiscoveryPattern[]>.Default.GetHashCode(DiscoveryPatterns);
+            hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAsset[]>.Default.GetHashCode(Assets);
+            return hashCode;
+#endif
+        }
+
         public class ManifestReference
         {
             public ManifestReference(string identity, string source, string type, string hash)
@@ -139,6 +196,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 return hashCode;
 #endif
             }
+
+            internal ITaskItem ToTaskItem()
+            {
+                var result = new TaskItem(Identity);
+                result.SetMetadata(nameof(Source), Source);
+                result.SetMetadata(nameof(Source), Type);
+                result.SetMetadata(nameof(Source), Hash);
+                return result;
+            }
         }
 
         public class DiscoveryPattern
@@ -151,15 +217,20 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 Pattern = pattern;
             }
 
-            public string Name { get; }
+            public string Name { get; set; }
 
-            public string ContentRoot { get; }
+            public string ContentRoot { get; set; }
 
-            public string BasePath { get; }
+            public string BasePath { get; set; }
 
-            public string Pattern { get; }
+            public string Pattern { get; set; }
 
-            public override bool Equals(object obj) => obj is DiscoveryPattern pattern && Name == pattern.Name && ContentRoot == pattern.ContentRoot && BasePath == pattern.BasePath && Pattern == pattern.Pattern;
+            public override bool Equals(object obj) => 
+                obj is DiscoveryPattern pattern
+                && Name == pattern.Name
+                && ContentRoot == pattern.ContentRoot
+                && BasePath == pattern.BasePath
+                && Pattern == pattern.Pattern;
 
             public override int GetHashCode()
             {
@@ -180,6 +251,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             public const string Build = nameof(Build);
             public const string Publish = nameof(Publish);
+        }
+
+        private string GetDebuggerDisplay()
+        {
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 }

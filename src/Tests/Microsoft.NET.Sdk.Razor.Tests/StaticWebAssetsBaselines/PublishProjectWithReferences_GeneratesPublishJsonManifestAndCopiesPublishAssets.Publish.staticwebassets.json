@@ -1,0 +1,157 @@
+{
+  "Version": 1,
+  "Hash": "jzV6LJg/ZKZUx7eYNXZUE4gd0TWrmo0WAX0UoxABE4g=",
+  "Source": "AppWithPackageAndP2PReference",
+  "BasePath": "_content/AppWithPackageAndP2PReference",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "RelatedManifests": [
+    {
+      "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
+      "Source": "dl2cIZq5vattKMSC/DoBSAc9esZKAymxNSbjIztKa3E=",
+      "Type": "",
+      "Hash": "dl2cIZq5vattKMSC/DoBSAc9esZKAymxNSbjIztKa3E="
+    },
+    {
+      "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
+      "Source": "EwlTstoEQtSD4IYHZQ3ecbExJPjXLHp44S2m7vzYgo8=",
+      "Type": "",
+      "Hash": "EwlTstoEQtSD4IYHZQ3ecbExJPjXLHp44S2m7vzYgo8="
+    }
+  ],
+  "DiscoveryPatterns": [],
+  "Assets": [
+    {
+      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\css\\site.css",
+      "SourceId": "PackageLibraryDirectDependency",
+      "SourceType": "Package",
+      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\build\\..\\staticwebassets\\",
+      "BasePath": "_content/PackageLibraryDirectDependency",
+      "RelativePath": "css/site.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\js\\pkg-direct-dep.js",
+      "SourceId": "PackageLibraryDirectDependency",
+      "SourceType": "Package",
+      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\build\\..\\staticwebassets\\",
+      "BasePath": "_content/PackageLibraryDirectDependency",
+      "RelativePath": "js/pkg-direct-dep.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\PackageLibraryDirectDependency.bundle.scp.css",
+      "SourceId": "PackageLibraryDirectDependency",
+      "SourceType": "Package",
+      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\build\\..\\staticwebassets\\",
+      "BasePath": "_content/PackageLibraryDirectDependency",
+      "RelativePath": "PackageLibraryDirectDependency.bundle.scp.css",
+      "AssetKind": "All",
+      "AssetMode": "Reference",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\staticwebassets\\js\\pkg-transitive-dep.js",
+      "SourceId": "PackageLibraryTransitiveDependency",
+      "SourceType": "Package",
+      "ContentRoot": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\build\\..\\staticwebassets\\",
+      "BasePath": "_content/PackageLibraryTransitiveDependency",
+      "RelativePath": "js/pkg-transitive-dep.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AnotherClassLib.styles.css",
+      "SourceId": "AnotherClassLib",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\scopedcss\\bundle\\",
+      "BasePath": "_content/AnotherClassLib",
+      "RelativePath": "AnotherClassLib.styles.css",
+      "AssetKind": "All",
+      "AssetMode": "CurrentProject",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\css\\site.css",
+      "SourceId": "AnotherClassLib",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\",
+      "BasePath": "_content/AnotherClassLib",
+      "RelativePath": "css/site.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js",
+      "SourceId": "AnotherClassLib",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\",
+      "BasePath": "_content/AnotherClassLib",
+      "RelativePath": "js/project-direct-dep.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\AppWithPackageAndP2PReference\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css",
+      "SourceId": "AppWithPackageAndP2PReference",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectRoot}\\AppWithPackageAndP2PReference\\obj\\Debug\\net6.0\\scopedcss\\bundle\\",
+      "BasePath": "_content/AppWithPackageAndP2PReference",
+      "RelativePath": "AppWithPackageAndP2PReference.styles.css",
+      "AssetKind": "All",
+      "AssetMode": "CurrentProject",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
+      "SourceId": "ClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\",
+      "BasePath": "_content/ClassLibrary",
+      "RelativePath": "ClassLibrary.bundle.scp.css",
+      "AssetKind": "All",
+      "AssetMode": "Reference",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
+      "SourceId": "ClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\ClassLibrary\\wwwroot\\",
+      "BasePath": "_content/ClassLibrary",
+      "RelativePath": "js/project-transitive-dep.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
+      "SourceId": "ClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\ClassLibrary\\wwwroot\\",
+      "BasePath": "_content/ClassLibrary",
+      "RelativePath": "js/project-transitive-dep.v4.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    }
+  ]
+}

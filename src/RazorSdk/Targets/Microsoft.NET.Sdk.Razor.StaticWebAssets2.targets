@@ -28,7 +28,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
-    TaskName="Microsoft.AspNetCore.Razor.Tasks.ReadStaticWebAssetsFromManifestFile"
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.ReadStaticWebAssetsManifestFile"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
@@ -41,6 +41,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     TaskName="Microsoft.AspNetCore.Razor.Tasks.UpdatePackageStaticWebAssets"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />    
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.DefineStaticWebAssets"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
   <!-- Static web assets define how web content needs to be served from web applications, class libraries and packages during
        development and what and where web contents need to be served on the published application.
@@ -142,6 +147,8 @@ Copyright (c) .NET Foundation. All rights reserved.
               (* ResolvePackageStaticWebAssets doesn't need a target, they get defined in the package props file)
           GetCopyToOutputDirectoryItems ->
             AddStaticWebAssetsManifest
+          CopyStaticWebAssetsToOutputFolder
+            MaterializeComputedStaticWebAssets
 
       During the publish flow for the project the following happens:
         PrepareForPublish ->
@@ -178,11 +185,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);AddStaticWebAssetsManifest</GetCopyToOutputDirectoryItemsDependsOn>
 
-    <PrepareForPublishDependsOn>StaticWebAssetsPrepareForPublish;$(PrepareForPublishDependsOn)</PrepareForPublishDependsOn>
+    <!-- StaticWebAssetsPrepareForPublish -> PrepareForPublish -->
 
-    <StaticWebAssetsPrepareForPublishDependsOn>GenerateStaticWebAssetsPublishManifest;CopyStaticWebAssetsToPublishDirectory</StaticWebAssetsPrepareForPublishDependsOn>
+    <StaticWebAssetsPrepareForPublishDependsOn>ResolveStaticWebAssetsConfiguration;GenerateStaticWebAssetsPublishManifest;CopyStaticWebAssetsToPublishDirectory</StaticWebAssetsPrepareForPublishDependsOn>
 
-    <ResolvePublishStaticWebAssetsDependsOn>LoadStaticWebAssetsBuildManifest;ComputeReferencedProjectsPublishAssets</ResolvePublishStaticWebAssetsDependsOn>
+    <GenerateStaticWebAssetsPublishManifestDependsOn>ResolveStaticWebAssetsConfiguration;ResolvePublishStaticWebAssets;$(GenerateStaticWebAssetsPublishManifestDependsOn)</GenerateStaticWebAssetsPublishManifestDependsOn>
+
+    <ResolvePublishStaticWebAssetsDependsOn>LoadStaticWebAssetsBuildManifest;ComputeReferencedProjectsPublishAssets;$(ResolvePublishStaticWebAssetsDependsOn)</ResolvePublishStaticWebAssetsDependsOn>
+
+    <CopyStaticWebAssetsToPublishDirectoryDependsOn>LoadStaticWebAssetsPublishManifest</CopyStaticWebAssetsToPublishDirectoryDependsOn>
 
   </PropertyGroup>
 
@@ -219,7 +230,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       Assets="@(StaticWebAsset)"
       ManifestPath="$(StaticWebAssetBuildManifestPath)"></GenerateStaticWebAssetsManifest>
     <ItemGroup>
-      <StaticWebAsset Remove="**" />
+      <StaticWebAsset Remove="@(StaticWebAsset)" />
+      <StaticWebAssetManifest Remove="@(StaticWebAssetManifest)" />
+      <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
+      <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
     </ItemGroup>
   </Target>
 
@@ -263,17 +277,55 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Publish -->
 
-  <Target Name="StaticWebAssetsPrepareForPublish" BeforeTargets="PrepareForPublish">
+  <Target Name="StaticWebAssetsPrepareForPublish" 
+    BeforeTargets="PrepareForPublish"
+    DependsOnTargets="$(StaticWebAssetsPrepareForPublishDependsOn)" />
+
+  <Target Name="GenerateStaticWebAssetsPublishManifest" DependsOnTargets="$(GenerateStaticWebAssetsPublishManifestDependsOn)">
+    <GenerateStaticWebAssetsManifest
+      Source="$(PackageId)"
+      BasePath="$(StaticWebAssetBasePath)"
+      Mode="$(StaticWebAssetProjectMode)"
+      ManifestType="Publish"
+      RelatedManifests="@(StaticWebAssetManifest)"
+      DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"  
+      Assets="@(StaticWebAsset)"
+      ManifestPath="$(StaticWebAssetPublishManifestPath)">
+    </GenerateStaticWebAssetsManifest>
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)" />
+      <StaticWebAssetManifest Remove="@(StaticWebAssetManifest)" />
+      <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
+      <FileWrites Include="$(StaticWebAssetPublishManifestPath)" />
+    </ItemGroup>
   </Target>
 
-  <Target Name="ResolvePublishStaticWebAssets" BeforeTargets="StaticWebAssetsPrepareForPublish" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
-    <ReadStaticWebAssetsFromManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
+  <Target Name="ResolvePublishStaticWebAssets" DependsOnTargets="$(ResolvePublishStaticWebAssetsDependsOn)" />
+
+  <Target Name="LoadStaticWebAssetsBuildManifest">
+    <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
-    </ReadStaticWebAssetsFromManifestFile>
-
+      <Output TaskParameter="RelatedManifests" ItemName="StaticWebAssetManifest" />
+    </ReadStaticWebAssetsManifestFile>
   </Target>
 
-  <Target Name="CopyStaticWebAssetsToPublishDirectory" DependsOnTargets="ResolvePublishStaticWebAssets" BeforeTargets="StaticWebAssetsPrepareForPublish">
+  <Target Name="ComputeReferencedProjectsPublishAssets">
+    <MSBuild
+      Condition="'@(_StaticWebAssetProjectReference)' != '' and '%(_StaticWebAssetProjectReference.BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != ''"
+      Targets="GenerateStaticWebAssetsPublishManifest"
+      Properties="%(_StaticWebAssetProjectReference.SetConfiguration); %(_StaticWebAssetProjectReference.SetPlatform);  %(_StaticWebAssetProjectReference.SetTargetFramework)"
+      RemoveProperties="%(_StaticWebAssetProjectReference.GlobalPropertiesToRemove)"
+      Projects="@(_StaticWebAssetProjectReference)"
+      BuildInParallel="$(BuildInParallel)"
+      ContinueOnError="!$(BuildingProject)"
+      SkipNonexistentTargets="true" />
+
+    <ComputeReferencedProjectAssets Manifests="@(StaticWebAssetManifest)" AssetKind="Publish">
+      <Output TaskParameter="StaticWebAssets" ItemName="StaticWebAsset" />
+    </ComputeReferencedProjectAssets>
+  </Target>
+
+  <Target Name="CopyStaticWebAssetsToPublishDirectory" DependsOnTargets="$(CopyStaticWebAssetsToPublishDirectoryDependsOn)">
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="StaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
@@ -292,11 +344,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="GenerateStaticWebAssetPublishManifest" BeforeTargets="GetCopyToPublishDirectoryItems" DependsOnTargets="ResolvePublishStaticWebAssets">
-    <GenerateStaticWebAssetsManifest Assets="@(StaticWebAsset)" ManifestPath="$(StaticWebAssetPublishManifestPath)"></GenerateStaticWebAssetsManifest>
-    <ItemGroup>
-      <StaticWebAsset Remove="**" />
-    </ItemGroup>
+  <Target Name="LoadStaticWebAssetsPublishManifest">
+    <ReadStaticWebAssetsFromManifestFile ManifestPath="$(StaticWebAssetPublishManifestPath)">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+    </ReadStaticWebAssetsFromManifestFile>    
   </Target>
 
   <Target Name="AddStaticWebAssetsToTheListOfResolvedAssetsToPublish" BeforeTargets="GetCopyToPublishDirectoryItems" DependsOnTargets="ResolvePublishStaticWebAssets" Condition="'$(StaticWebAssetTransitiveMode)' == 'SelfContained'">
@@ -339,7 +390,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ItemGroup>
 
       <ComputeReferencedProjectAssets Manifests="@(StaticWebAssetManifest)" AssetKind="Build">
-        <Output TaskParameter="StaticWebAssets" ItemName="ReferencedAssets" />
+        <Output TaskParameter="StaticWebAssets" ItemName="StaticWebAsset" />
       </ComputeReferencedProjectAssets>
 
     </Target>

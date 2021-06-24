@@ -9,7 +9,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
-    public class ReadStaticWebAssetsFromManifestFile : Task
+    public class ReadStaticWebAssetsManifestFile : Task
     {
         [Required]
         public string ManifestPath { get; set; }
@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         [Output]
         public ITaskItem[] Assets { get; set; }
 
+        [Output]
+        public ITaskItem[] RelatedManifests { get; set; }
 
         public override bool Execute()
         {
@@ -29,6 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath));
                 Assets = manifest.Assets.Select(a => a.ToTaskItem()).ToArray();
+                RelatedManifests = manifest.RelatedManifests.Select(m => m.ToTaskItem()).ToArray();
             }
             catch (Exception ex)
             {

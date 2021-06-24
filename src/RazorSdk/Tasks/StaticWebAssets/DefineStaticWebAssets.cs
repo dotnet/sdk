@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     // The BaseAssets might already define all the properties the assets care about and in that case,
     // those properties are preserved and reused. If some other properties are not present, default
     // values are used when possible. Otherwise, the properties need to be specified explicitly on the task or
-    // else an error is generated.
+    // else an error is generated. The property overrides allows the caller to override the existing value for a property
+    // with the provided value.
     // There is an asset pattern filter that can be used to apply the pattern to a subset of the candidate assets
     // which allows for applying a different set of values to a subset of the candidates without having to previously
     // filter them. The asset pattern filter is applied after we've determined the RelativePath for the candidate asset.
@@ -27,6 +28,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     {
         [Required]
         public ITaskItem [] CandidateAssets { get; set; }
+
+        public ITaskItem [] PropertyOverrides { get; set; }
 
         public string SourceId { get; set; }
 
@@ -131,12 +134,17 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private string ComputePropertyValue(ITaskItem element, string metadataName, string defaultValue)
+        private string ComputePropertyValue(ITaskItem element, string metadataName, string propertyValue)
         {
+            if (PropertyOverrides != null && PropertyOverrides.Any(a => string.Equals(a.ItemSpec, metadataName, StringComparison.OrdinalIgnoreCase)))
+            {
+                return propertyValue;
+            }
+
             var value = element.GetMetadata(metadataName);
             if (string.IsNullOrEmpty(value))
             {
-                if (defaultValue == null)
+                if (propertyValue == null)
                 {
                     Log.LogError("No metadata '{0}' was present for item '{1}' and no default value was provided.",
                         metadataName,
@@ -146,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
                 else
                 {
-                    return defaultValue;
+                    return propertyValue;
                 }
             }
             else
@@ -183,7 +191,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var normalizedContentRoot = Path.GetFullPath(candidate.GetMetadata(nameof(StaticWebAsset.ContentRoot)) ?? ContentRoot)
                 .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             
-            if (!normalizedContentRoot.EndsWith(Path.DirectorySeparatorChar))
+            if (!normalizedContentRoot.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
                 normalizedContentRoot += Path.DirectorySeparatorChar;
             }
