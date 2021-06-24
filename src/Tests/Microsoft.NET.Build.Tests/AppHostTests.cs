@@ -146,7 +146,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, rid);
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid);
             var hostExecutable = $"HelloWorld{Constants.ExeSuffix}";
             var appHostFullPath = Path.Combine(outputDirectory.FullName, hostExecutable);
 
@@ -165,6 +165,9 @@ namespace Microsoft.NET.Build.Tests
                     .Should().Contain($"{appHostFullPath}: code object is not signed at all");
                 codesign.WaitForExit();
             }
+
+            var buildProjDir = Path.Combine(outputDirectory.FullName, "../..");
+            Directory.Delete(buildProjDir, true);
         }
 
         [Theory]
