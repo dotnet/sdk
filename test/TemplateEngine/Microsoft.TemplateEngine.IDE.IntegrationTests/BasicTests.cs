@@ -139,12 +139,14 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         [Fact]
         internal async Task Create_TemplateWithBinaryFile_Package()
         {
+            Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
             using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string packageLocation = _packageManager.PackTestTemplatesNuGetPackage();
             await bootstrapper.InstallTemplateAsync(packageLocation).ConfigureAwait(false);
             string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithBinaryFile");
 
             string output = TestUtils.CreateTemporaryFolder();
+
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithBinaryFile") }).ConfigureAwait(false);
             var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string>()).ConfigureAwait(false);
 
