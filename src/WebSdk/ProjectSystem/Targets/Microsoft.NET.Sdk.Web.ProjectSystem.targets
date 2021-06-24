@@ -23,7 +23,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <AspNetCoreHostingModel Condition="'$(AspNetCoreHostingModel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">inprocess</AspNetCoreHostingModel>
     <AspNetCoreModuleName Condition="'$(AspNetCoreModuleName)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">AspNetCoreModuleV2</AspNetCoreModuleName>
     <EnableAspNetCoreGlobalUsings Condition="
-      '$(EnableGlobalUsingFiles)' == ''
+      '$(EnableAspNetCoreGlobalUsings)' == ''
       And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
       And $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0'))
       And '$(LangVersion)' == 'preview'">true</EnableAspNetCoreGlobalUsings>
