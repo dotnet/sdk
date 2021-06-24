@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -237,6 +238,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 try
                 {
                     _userTemplateCache = cache = new TemplateCache(_environmentSettings.Host.FileSystem.ReadObject(_paths.TemplateCacheFile), _logger);
+                }
+                catch (FileNotFoundException)
+                {
+                    // Don't log this, it's expected, we just don't want to do File.Exists...
+                    cache = new TemplateCache(null, _logger);
                 }
                 catch (Exception ex)
                 {
