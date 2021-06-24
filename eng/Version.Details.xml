@@ -111,7 +111,7 @@
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="6.0.100-preview.6.21321.1">
       <Uri>https://github.com/mono/linker</Uri>
       <Sha>f2588193553431636b9853b0f87209fa395a72c5</Sha>
-      <SourceBuild RepoName="roslyn" ManagedOnly="true" />
+      <SourceBuild RepoName="linker" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="6.0.100-preview.6.21321.1">
       <Uri>https://github.com/mono/linker</Uri>
