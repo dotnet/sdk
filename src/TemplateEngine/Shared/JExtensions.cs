@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -301,6 +302,27 @@ namespace Microsoft.TemplateEngine
             using (JsonReader r = new JsonTextReader(tr))
             {
                 return JObject.Load(r);
+            }
+        }
+
+        internal static JObject ReadObject(this IPhysicalFileSystem fileSystem, string path)
+        {
+            using (var fileStream = fileSystem.OpenRead(path))
+            using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
+            using (var jsonReader = new JsonTextReader(textReader))
+            {
+                return JObject.Load(jsonReader);
+            }
+        }
+
+        internal static void WriteObject(this IPhysicalFileSystem fileSystem, string path, object obj)
+        {
+            using (var fileStream = fileSystem.CreateFile(path))
+            using (var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8))
+            using (var jsonWriter = new JsonTextWriter(textWriter))
+            {
+                var serializer = new JsonSerializer();
+                serializer.Serialize(jsonWriter, obj);
             }
         }
 

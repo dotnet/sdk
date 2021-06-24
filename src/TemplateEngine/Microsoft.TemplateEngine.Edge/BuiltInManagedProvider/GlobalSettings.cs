@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Edge.Settings;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
@@ -85,8 +84,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
                 try
                 {
-                    string? textFileContent = _paths.ReadAllText(_globalSettingsFile, "{}");
-                    var jObject = JObject.Parse(textFileContent);
+                    var jObject = _environmentSettings.Host.FileSystem.ReadObject(_globalSettingsFile);
                     var packages = new List<TemplatePackageData>();
 
                     foreach (var package in jObject.Get<JArray>(nameof(GlobalSettingsData.Packages)) ?? new JArray())
@@ -125,10 +123,10 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 throw new InvalidOperationException($"Before calling {nameof(SetInstalledTemplatePackagesAsync)}, {nameof(LockAsync)} must be called.");
             }
 
-            string? serializedText = JsonConvert.SerializeObject(new GlobalSettingsData()
+            var globalSettingsData = new GlobalSettingsData()
             {
                 Packages = packages
-            });
+            };
 
             for (int i = 0; i < FileReadWriteRetries; i++)
             {
@@ -136,7 +134,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
                 try
                 {
-                    _paths.WriteAllText(_globalSettingsFile, serializedText);
+                    _environmentSettings.Host.FileSystem.WriteObject(_globalSettingsFile, globalSettingsData);
                     SettingsChanged?.Invoke();
                     return;
                 }

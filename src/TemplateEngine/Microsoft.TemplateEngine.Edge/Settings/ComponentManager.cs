@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-using Newtonsoft.Json.Linq;
 #if !NETFULL
 using System.Runtime.Loader;
 #endif
@@ -22,9 +21,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly Dictionary<Type, HashSet<Guid>> _componentIdsByType;
         private readonly SettingsStore _settings;
         private readonly SettingsFilePaths _paths;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public ComponentManager(IEngineEnvironmentSettings engineEnvironmentSettings)
         {
+            _engineEnvironmentSettings = engineEnvironmentSettings;
             _paths = new SettingsFilePaths(engineEnvironmentSettings);
             _settings = SettingsStore.Load(engineEnvironmentSettings, _paths);
             _loadLocations.AddRange(_settings.ProbingPaths);
@@ -235,8 +236,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 try
                 {
-                    JObject serialized = JObject.FromObject(_settings);
-                    _paths.WriteAllText(_paths.SettingsFile, serialized.ToString());
+                    _engineEnvironmentSettings.Host.FileSystem.WriteObject(_paths.SettingsFile, _settings);
                     successfulWrite = true;
                 }
                 catch (IOException)

@@ -51,6 +51,11 @@ namespace Microsoft.TemplateEngine.Edge
                 Host.VirtualizeDirectory(Paths.GlobalSettingsDir);
             }
             Components = componentManager ?? new ComponentManager(this);
+            // In past we created this folder as some file was created
+            // Checking if folder exists/create folder consumes time + is error prone(we could forget)
+            // Hence it should be done once, question is when and by who...
+            // It feels like this is sane place to do it
+            host.FileSystem.CreateDirectory(Paths.HostVersionSettingsDir);
         }
 
         [Obsolete("ISettingsLoader is obsolete, see obsolete messages for individual properties/methods of ISettingsLoader for details.")]

@@ -135,23 +135,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return Path.GetFileName(path);
         }
 
-        internal string ReadAllText(string path, string defaultValue = "")
-        {
-            return Exists(path) ? _environmentSettings.Host.FileSystem.ReadAllText(path) : defaultValue;
-        }
-
-        internal void WriteAllText(string path, string value)
-        {
-            string parentDir = Path.GetDirectoryName(path);
-
-            if (!Exists(parentDir))
-            {
-                _environmentSettings.Host.FileSystem.CreateDirectory(parentDir);
-            }
-
-            _environmentSettings.Host.FileSystem.WriteAllText(path, value);
-        }
-
         private void CreateDirectory(string path, string parent)
         {
             string[] parts = path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);

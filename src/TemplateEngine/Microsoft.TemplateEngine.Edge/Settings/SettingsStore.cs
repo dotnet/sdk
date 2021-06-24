@@ -5,8 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
@@ -94,35 +92,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return new SettingsStore(null);
             }
 
-            const int MaxLoadAttempts = 20;
-            string? userSettings = null;
-            using (Timing.Over(engineEnvironmentSettings.Host.Logger, "Read settings"))
-            {
-                for (int i = 0; i < MaxLoadAttempts; ++i)
-                {
-                    try
-                    {
-                        userSettings = paths.ReadAllText(paths.SettingsFile, "{}");
-                        break;
-                    }
-                    catch (IOException)
-                    {
-                        if (i == MaxLoadAttempts - 1)
-                        {
-                            throw;
-                        }
-
-                        Task.Delay(2).Wait();
-                    }
-                }
-            }
-
             JObject parsed;
             using (Timing.Over(engineEnvironmentSettings.Host.Logger, "Parse settings"))
             {
                 try
                 {
-                    parsed = JObject.Parse(userSettings);
+                    parsed = engineEnvironmentSettings.Host.FileSystem.ReadObject(paths.SettingsFile);
                 }
                 catch (Exception ex)
                 {
