@@ -62,9 +62,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == 'true'">
-    <RuntimeIdentifier Condition="'$(NETCoreSdkRuntimeIdentifier).EndsWith('-arm64')' and
-                                  '$(NETCoreSdkRuntimeIdentifier).StartsWith('osx')' and
-                                  '$(_TargetFrameworkVersionWithoutV)' &lt; '6.0'">$([System.String]::Copy('$(NETCoreSdkRuntimeIdentifier)').Replace('-arm64', 'x64'))</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(NETCoreSdkRuntimeIdentifier.EndsWith('arm64')) and
+                                  $(NETCoreSdkRuntimeIdentifier.StartsWith('osx')) and
+                                  '$(_TargetFrameworkVersionWithoutV)' &lt; '6.0'">$([System.String]::Copy('$(NETCoreSdkRuntimeIdentifier)').Replace("arm64", "x64"))</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
