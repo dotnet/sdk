@@ -114,6 +114,52 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         }
 
         [Fact]
+        internal async Task Create_TemplateWithBinaryFile_Folder()
+        {
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithBinaryFile");
+            await bootstrapper.InstallTemplateAsync(templateLocation).ConfigureAwait(false);
+   
+            string output = TestUtils.CreateTemporaryFolder();
+
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithBinaryFile") }).ConfigureAwait(false);
+            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string>()).ConfigureAwait(false);
+
+            string sourceImage = Path.Combine(templateLocation, "image.png");
+            string targetImage = Path.Combine(output, "image.png");
+
+            Assert.True(File.Exists(targetImage));
+
+            Assert.Equal(
+                new FileInfo(sourceImage).Length,
+                new FileInfo(targetImage).Length);
+            Assert.True(TestUtils.CompareFiles(sourceImage, targetImage), $"The content of {sourceImage} and {targetImage} is not same.");
+        }
+
+        [Fact]
+        internal async Task Create_TemplateWithBinaryFile_Package()
+        {
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            string packageLocation = _packageManager.PackTestTemplatesNuGetPackage();
+            await bootstrapper.InstallTemplateAsync(packageLocation).ConfigureAwait(false);
+            string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithBinaryFile");
+
+            string output = TestUtils.CreateTemporaryFolder();
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithBinaryFile") }).ConfigureAwait(false);
+            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string>()).ConfigureAwait(false);
+
+            string sourceImage = Path.Combine(templateLocation, "image.png");
+            string targetImage = Path.Combine(output, "image.png");
+
+            Assert.True(File.Exists(targetImage));
+
+            Assert.Equal(
+                new FileInfo(sourceImage).Length,
+                new FileInfo(targetImage).Length);
+            Assert.True(TestUtils.CompareFiles(sourceImage, targetImage), $"The content of {sourceImage} and {targetImage} is not same.");
+        }
+
+        [Fact]
         internal async Task GetTemplates_BasicTest()
         {
             using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper(loadBuiltInTemplates: true);
