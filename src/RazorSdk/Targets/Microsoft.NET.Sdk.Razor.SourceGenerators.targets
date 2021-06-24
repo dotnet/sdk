@@ -47,10 +47,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RazorAnalyzer Include="$(_RazorSdkSourceGeneratorDirectoryRoot)Microsoft.NET.Sdk.Razor.SourceGenerators.dll" />
     </ItemGroup>
 
-    <ItemGroup>
-      <_RazorAnalyzer Include="$(RoslynTargetsPath)\bincore\Microsoft.CodeAnalysis.dll" />
-    </ItemGroup>
-
     <!-- Configure analyzers -->
     <ItemGroup>
       <Analyzer Include="@(_RazorAnalyzer)" />
