@@ -59,7 +59,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     var tagHelperFeature = GetFeature<StaticCompilationTagHelperFeature>(discoveryProjectEngine);
                     return GetTagHelpersFromCompilation(
                         compilation,
-                        tagHelperFeature ?? new StaticCompilationTagHelperFeature(),
+                        tagHelperFeature!,
                         syntaxTrees
                     );
                 });
@@ -74,7 +74,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     var tagHelperFeature = GetFeature<StaticCompilationTagHelperFeature>(discoveryProjectEngine);
                     return GetTagHelpers(
                         references,
-                        tagHelperFeature ?? new StaticCompilationTagHelperFeature(),
+                        tagHelperFeature!,
                         compilation
                     );
                 });
