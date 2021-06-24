@@ -42,10 +42,6 @@ namespace Microsoft.NET.TestFramework
                     {
                         targetFramework.Value = overrideTfm ?? DefaultTfm;
                     }
-                    // Required to support incremental source generator
-                    var itemGroup = new XElement(ns + "PropertyGroup");
-                    itemGroup.Add(new XElement("LangVersion", "preview"));
-                    project.Root.Add(itemGroup);
                 });
             return projectDirectory;
         }
