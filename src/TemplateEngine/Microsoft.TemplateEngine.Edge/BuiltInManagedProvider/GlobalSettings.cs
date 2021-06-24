@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
     internal sealed class GlobalSettings : IGlobalSettings, IDisposable
     {
-        private const int FileReadWriteRetries = 5;
+        private const int FileReadWriteRetries = 20;
         private readonly SettingsFilePaths _paths;
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly string _globalSettingsFile;
