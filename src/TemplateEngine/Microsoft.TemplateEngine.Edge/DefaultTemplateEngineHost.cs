@@ -40,9 +40,7 @@ namespace Microsoft.TemplateEngine.Edge
 
             if (loggerFactory == null)
             {
-                loggerFactory = Extensions.Logging.LoggerFactory.Create(
-                    builder
-                        => builder.AddProvider(NullLoggerProvider.Instance));
+                loggerFactory = NullLoggerFactory.Instance;
             }
             _loggerFactory = loggerFactory;
             _logger = _loggerFactory.CreateLogger("Template Engine") ?? NullLogger.Instance;

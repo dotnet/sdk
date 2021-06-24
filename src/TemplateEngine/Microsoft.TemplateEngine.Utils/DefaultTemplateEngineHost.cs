@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Utils
             _hostBuiltInComponents = builtIns ?? NoComponents;
             FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames ?? new List<string>();
             _diagnosticLoggers = new Dictionary<string, Action<string, string[]>>();
-            _loggerFactory = Extensions.Logging.LoggerFactory.Create(builder => builder.AddProvider(NullLoggerProvider.Instance));
+            _loggerFactory = NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger("Template Engine") ?? NullLogger.Instance;
         }
 
