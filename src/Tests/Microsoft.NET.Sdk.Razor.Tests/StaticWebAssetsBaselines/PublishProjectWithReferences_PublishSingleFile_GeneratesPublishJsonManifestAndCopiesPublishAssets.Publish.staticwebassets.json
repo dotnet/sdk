@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "a1igEdm\u002BIA\u002BI6sBkgyr\u002B6gKyLc3RNnDQtLg0mNqk5og=",
+  "Hash": "k4h9/ePzLAoB92KP1AQGdYVsUPxa3u9gHfu/5zqr5vI=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -8,31 +8,19 @@
   "RelatedManifests": [
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
-      "Source": "iqHU\u002BywQkLIcaXayFQNtyk8B6K3EVGKW8XeejuntZ7Q=",
+      "Source": "AnotherClassLib",
       "Type": "",
-      "Hash": "iqHU\u002BywQkLIcaXayFQNtyk8B6K3EVGKW8XeejuntZ7Q="
+      "Hash": "MUXdJMfRe3j\u002BujZrNGWypvNOPQFAhDazNbj5JZ2rxvk="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
-      "Source": "B/mrEOFhV0nHkWITBsDrqFcVz5fEUd9t56UkG2vUvmQ=",
+      "Source": "ClassLibrary",
       "Type": "",
       "Hash": "B/mrEOFhV0nHkWITBsDrqFcVz5fEUd9t56UkG2vUvmQ="
     }
   ],
   "DiscoveryPatterns": [],
   "Assets": [
-    {
-      "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AnotherClassLib.styles.css",
-      "SourceId": "AnotherClassLib",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\scopedcss\\bundle\\",
-      "BasePath": "_content/AnotherClassLib",
-      "RelativePath": "AnotherClassLib.styles.css",
-      "AssetKind": "All",
-      "AssetMode": "CurrentProject",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest"
-    },
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\css\\site.css",
       "SourceId": "AnotherClassLib",

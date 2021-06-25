@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "3JZ2tU1Gsf4JiMH5yF\u002BE2DyHjvghZTPiS1W4JoSe6ro=",
+  "Hash": "/22VnlVE24f6khp0DubYR9Tzia1HyRSTAvK2QGCj170=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -8,31 +8,19 @@
   "RelatedManifests": [
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
-      "Source": "dl2cIZq5vattKMSC/DoBSAc9esZKAymxNSbjIztKa3E=",
+      "Source": "AnotherClassLib",
       "Type": "",
-      "Hash": "dl2cIZq5vattKMSC/DoBSAc9esZKAymxNSbjIztKa3E="
+      "Hash": "/kOKbmV/Qo/KPT7D9aM/ynaFXrbkjh\u002B45cYCEHDbjb8="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
-      "Source": "EwlTstoEQtSD4IYHZQ3ecbExJPjXLHp44S2m7vzYgo8=",
+      "Source": "ClassLibrary",
       "Type": "",
       "Hash": "EwlTstoEQtSD4IYHZQ3ecbExJPjXLHp44S2m7vzYgo8="
     }
   ],
   "DiscoveryPatterns": [],
   "Assets": [
-    {
-      "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AnotherClassLib.styles.css",
-      "SourceId": "AnotherClassLib",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\scopedcss\\bundle\\",
-      "BasePath": "_content/AnotherClassLib",
-      "RelativePath": "AnotherClassLib.styles.css",
-      "AssetKind": "All",
-      "AssetMode": "CurrentProject",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest"
-    },
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\css\\site.css",
       "SourceId": "AnotherClassLib",

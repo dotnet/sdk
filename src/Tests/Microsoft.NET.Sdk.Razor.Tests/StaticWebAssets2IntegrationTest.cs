@@ -542,7 +542,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Publish no build
 
             var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            publish.Execute("/p:NoBuild=true").Should().Pass();
+            publish.Execute("/p:NoBuild=true", "/p:ErrorOnDuplicatePublishOutputFiles=false").Should().Pass();
 
             new FileInfo(path).LastWriteTimeUtc.Should().Be(objManifestFileTimeStamp);
 
@@ -550,7 +550,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             AssertManifest(seconbObjManifest, LoadBuildManifest());
 
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var seconBinManifestPath = Path.Combine(outputPath, "ComponentApp.staticwebassets.json");
+            var seconBinManifestPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.json");
             var secondBinManifestFile = new FileInfo(seconBinManifestPath);
             secondBinManifestFile.Should().Exist();
 

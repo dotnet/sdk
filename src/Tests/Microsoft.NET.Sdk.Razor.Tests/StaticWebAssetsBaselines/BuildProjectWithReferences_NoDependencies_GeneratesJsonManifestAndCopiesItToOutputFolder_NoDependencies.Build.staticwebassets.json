@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "3GSbTMxIv2fa0NupoPU6AypuEiaNvJF41gLSk8q3Drk=",
+  "Hash": "J0E\u002B4\u002BUQQC8VVd0BG256VYfqkDPJZq6q21KcfSqEpRk=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -10,7 +10,7 @@
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
       "Source": "AnotherClassLib",
       "Type": "Build",
-      "Hash": "8hRnZDh6lEmEHD4UiFR2OGX2U/hP\u002BSLqjHg8OvcAoKM="
+      "Hash": "hh\u002BIAxd49Qsy4BD0fmb1UrV2UyCQf4z3Sptb0lWxv/0="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
@@ -21,25 +21,25 @@
   ],
   "DiscoveryPatterns": [
     {
+      "Name": "AnotherClassLib\\wwwroot",
+      "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\",
+      "BasePath": "_content/AnotherClassLib",
+      "Pattern": "wwwroot/**"
+    },
+    {
       "Name": "AppWithPackageAndP2PReference\\wwwroot",
       "ContentRoot": "${ProjectRoot}\\AppWithPackageAndP2PReference\\wwwroot\\",
       "BasePath": "_content/AppWithPackageAndP2PReference",
       "Pattern": "wwwroot/**"
+    },
+    {
+      "Name": "ClassLibrary\\wwwroot",
+      "ContentRoot": "${ProjectRoot}\\ClassLibrary\\wwwroot\\",
+      "BasePath": "_content/ClassLibrary",
+      "Pattern": "wwwroot/**"
     }
   ],
   "Assets": [
-    {
-      "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AnotherClassLib.styles.css",
-      "SourceId": "AnotherClassLib",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\scopedcss\\bundle\\",
-      "BasePath": "_content/AnotherClassLib",
-      "RelativePath": "AnotherClassLib.styles.css",
-      "AssetKind": "All",
-      "AssetMode": "CurrentProject",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest"
-    },
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\css\\site.css",
       "SourceId": "AnotherClassLib",
