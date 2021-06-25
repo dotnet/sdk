@@ -1416,7 +1416,9 @@ Public Class C
 End Class");
         }
 
-        [Fact, WorkItem(4733, "https://github.com/dotnet/roslyn-analyzers/issues/4733")]
+        [Fact]
+        [WorkItem(4733, "https://github.com/dotnet/roslyn-analyzers/issues/4733")]
+        [WorkItem(5168, "https://github.com/dotnet/roslyn-analyzers/issues/5168")]
         public async Task CA1822_PartialMethod_CannotBeStatic()
         {
             string source = @"
@@ -1451,7 +1453,9 @@ partial class Class1
             }.RunAsync();
         }
 
-        [Fact, WorkItem(4733, "https://github.com/dotnet/roslyn-analyzers/issues/4733")]
+        [Fact]
+        [WorkItem(4733, "https://github.com/dotnet/roslyn-analyzers/issues/4733")]
+        [WorkItem(5168, "https://github.com/dotnet/roslyn-analyzers/issues/5168")]
         public async Task CA1822_PartialMethod_CanBeStatic()
         {
             string source = @"
