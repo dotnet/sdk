@@ -1,0 +1,68 @@
+<Project>
+
+  <PropertyGroup>
+    <SourceDirectory>nuget.client</SourceDirectory>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <PackagesOutput>$(ProjectDirectory)artifacts/nupkgs/</PackagesOutput>
+    <NuGetCoreSourceDirectory>$(ProjectDirectory)src/NuGet.Core/</NuGetCoreSourceDirectory>
+    <ToolsDirectory>$(ProjectDirectory)cli/</ToolsDirectory>
+    <NuGetKeyFilePath>$(KeysDir)NuGet.Client.snk</NuGetKeyFilePath>
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
+    <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="MS_PFX_PATH=$(NuGetKeyFilePath)" />
+    <EnvironmentVariables Include="NUGET_PFX_PATH=$(NuGetKeyFilePath)" />
+    <RepositoryReference Include="common" />
+    <RepositoryReference Include="newtonsoft-json" />
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="aspnet-xdt" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="RepoBuild">
+    <PropertyGroup>
+      <BuildCommandBase>$(DotnetToolCommand) msbuild $(ProjectDirectory)/build/build.proj</BuildCommandBase>
+      <BuildCommandBase>$(BuildCommandBase) /p:VisualStudioVerion=15.0</BuildCommandBase>
+      <BuildCommandBase>$(BuildCommandBase) /p:Configuration=$(Configuration)</BuildCommandBase>
+      <BuildCommandBase>$(BuildCommandBase) /p:BuildRTM=false</BuildCommandBase>
+      <BuildCommandBase>$(BuildCommandBase) /p:BuildNumber=$(OfficialBuildId)</BuildCommandBase>
+      <BuildCommandBase>$(BuildCommandBase) /v:$(LogVerbosity)</BuildCommandBase>
+      <BuildCommandBase>$(BuildCommandBase) /p:TreatWarningsAsErrors=false</BuildCommandBase>
+      <BuildCommandBase>$(BuildCommandBase) /p:DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)</BuildCommandBase>
+    </PropertyGroup>
+
+    <Exec Command="$(BuildCommandBase) /t:RestoreXPLAT /bl:restore.binlog $(RedirectRepoOutputToLog)"
+          EnvironmentVariables="@(EnvironmentVariables)"
+          WorkingDirectory="$(ProjectDirectory)"
+          IgnoreStandardErrorWarningFormat="true" />
+
+    <Exec Command="$(BuildCommandBase) /t:BuildXPLAT /bl:build.binlog $(RedirectRepoOutputToLog)"
+          EnvironmentVariables="@(EnvironmentVariables)"
+          WorkingDirectory="$(ProjectDirectory)"
+          IgnoreStandardErrorWarningFormat="true" />
+
+    <PropertyGroup>
+      <PackCommand>$(BuildCommandBase) /t:PackXPlat</PackCommand>
+      <PackCommand>$(PackCommand) /p:PackageOutputPath=$(PackagesOutput)</PackCommand>
+      <PackCommand>$(PackCommand) /p:NoPackageAnalysis=true</PackCommand>
+      <PackCommand>$(PackCommand) /flp:v=detailed</PackCommand>
+      <PackCommand>$(PackCommand) /v:$(LogVerbosity)</PackCommand>
+      <PackCommand>$(PackCommand) /bl:pack.binlog</PackCommand>
+      <PackCommand>$(PackCommand) $(RedirectRepoOutputToLog)</PackCommand>
+    </PropertyGroup>
+
+    <Exec Command="$(PackCommand)"
+          EnvironmentVariables="@(EnvironmentVariables)"
+          WorkingDirectory="$(ProjectDirectory)"
+          IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+</Project>

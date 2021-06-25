@@ -1,0 +1,31 @@
+<Project>
+
+  <PropertyGroup>
+    <SourceDirectory>Newtonsoft.Json</SourceDirectory>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <NuGetConfigFile>$(ProjectDirectory)/Src/NuGet.Config</NuGetConfigFile>
+    <NewtonsoftJsonKeyFilePath>$(KeysDir)Newtonsoft.Json.snk</NewtonsoftJsonKeyFilePath>
+    <NewtonsoftJsonDirectory>$(ProjectDirectory)/Src/Newtonsoft.Json/</NewtonsoftJsonDirectory>
+    <NewtonsoftJsonProjectPath>$(NewtonsoftJsonDirectory)Newtonsoft.Json.Dotnet.csproj</NewtonsoftJsonProjectPath>
+    <DotnetToolCommandArguments>"/p:DotnetOnly=true" "/p:Configuration=$(Configuration)" "/p:AssemblyOriginatorKeyFile=$(NewtonsoftJsonKeyFilePath)" "/p:SignAssembly=true" "/p:PublicSign=true" "/p:TreatWarningsAsErrors=false" "/p:AdditionalConstants=SIGNED"</DotnetToolCommandArguments>
+    <BuildCommand>$(DotnetToolCommand) build $(NewtonsoftJsonProjectPath) $(DotnetToolCommandArguments)</BuildCommand>
+    <BuildPackagesCommand>$(DotnetToolCommand) pack $(NewtonsoftJsonProjectPath) $(DotnetToolCommandArguments)</BuildPackagesCommand>
+    <CleanCommand>$(DotnetToolCommand) clean $(NewtonsoftJsonProjectPath) $(DotnetToolCommandArguments)</CleanCommand>
+    <PackagesOutput>$(NewtonsoftJsonDirectory)bin/$(Configuration)/</PackagesOutput>
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+  </PropertyGroup>
+
+  <Target Name="RepoRestore" BeforeTargets="Build" DependsOnTargets="UpdateNuGetConfig">
+    <Exec Command="$(DotnetToolCommand) restore $(NewtonsoftJsonProjectPath) $(DotnetToolCommandArguments) /v:$(LogVerbosity) $(RedirectRepoOutputToLog)"
+          WorkingDirectory="$(ProjectDirectory)"
+          EnvironmentVariables="@(EnvironmentVariables)"
+          IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

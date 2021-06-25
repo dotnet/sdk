@@ -1,0 +1,170 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Import Project="$(OfflineAllRepoPropsFile)" Condition="Exists('$(OfflineAllRepoPropsFile)')" />
+
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteSourceRepoProperties" />
+  <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="MarkAndCatalogPackages" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="NuGetPack" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
+
+  <ItemGroup>
+    <BuildTasksTarget Include="Restore;Build;InstallResolver" />
+  </ItemGroup>
+
+  <!-- TODO: Don't setup these sources now.  Need a switch for building to check prebuilts. 
+       Currently, tarball build allows online restore sources.  
+       See https://github.com/dotnet/source-build/issues/2255 -->
+  <PropertyGroup Condition="'$(OfflineBuild)' == 'true' AND 'false' == 'true' ">
+    <BuildTasksOfflineSources>$(ReferencePackagesDir)%3B$(PrebuiltPackagesPath)</BuildTasksOfflineSources>
+  </PropertyGroup>
+
+  <Target Name="Build">
+    <CallTarget Targets="
+      UnpackTarballs;
+      BuildXPlatTasks;
+      ExtractToolPackage;
+      GenerateRootFs;
+      ApplyPatches;
+      PoisonPrebuiltPackages" />
+  </Target>
+
+  <Target Name="PrepareOfflineLocalTools"
+          DependsOnTargets="
+            ExtractToolPackage;
+            BuildXPlatTasks" />
+
+  <Target Name="Clean">
+    <Delete Files="$(CompletedSemaphorePath)*.*" />
+  </Target>
+
+  <Target Name="UnpackTarballs"
+          Condition="'$(OfflineBuild)' == 'true'"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(CompletedSemaphorePath)UnpackTarballs.complete" >
+
+    <!-- Make this directory here even though we're no
+        longer unpacking into it because some restore sources are looking
+        for it.  Keeping this because once source-build-reference-packages
+        is built, the resulting packages will be put here. -->
+    <MakeDir Directories="$(ReferencePackagesDir)" />
+
+    <MakeDir Directories="$(PrebuiltSourceBuiltPackagesPath)" Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
+    <Exec Command="tar -xzf $(ExternalTarballsDir)$(SourceBuiltArtifactsTarballName).*.tar.gz"
+          WorkingDirectory="$(PrebuiltSourceBuiltPackagesPath)"
+          Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
+
+    <Copy SourceFiles="$(PrebuiltSourceBuiltPackagesPath)PackageVersions.props" DestinationFiles="$(IntermediatePath)SourceBuiltPackageVersions.props" />
+
+    <!-- Setup the PackageVersions.props file to be a combination of SourceBuilt and GennedPackages -->
+    <PropertyGroup>
+      <PackageVersionsPropsFile>$(IntermediatePath)PackageVersions.props</PackageVersionsPropsFile>
+      <PackageVersionsPropsContents>
+        <![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="SourceBuiltPackageVersions.props" Condition="Exists('SourceBuiltPackageVersions.props')" />
+  <Import Project="GennedPackageVersions.props" Condition="Exists('GennedPackageVersions.props')" />
+</Project>
+]]>
+      </PackageVersionsPropsContents>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(PackageVersionsPropsFile)"
+                      Lines="$(PackageVersionsPropsContents)"
+                      Overwrite="true" />
+
+    <WriteLinesToFile File="$(CompletedSemaphorePath)UnpackTarballs.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="BuildXPlatTasks"
+          DependsOnTargets="UnpackTarballs"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(CompletedSemaphorePath)BuildXPlatTasks.complete">
+    <MSBuild
+      Projects="
+        tasks\Microsoft.DotNet.SourceBuild.Tasks.XPlat\Microsoft.DotNet.SourceBuild.Tasks.XPlat.csproj;
+        tasks\SourceBuild.MSBuildSdkResolver\SourceBuild.MSBuildSdkResolver.csproj"
+      Targets="%(BuildTasksTarget.Identity)"
+      SkipNonexistentTargets="true"
+      Properties="
+        RestoreSources=$(BuildTasksOfflineSources);
+        __ToolInitPhase=%(BuildTasksTarget.Identity)" />
+
+    <WriteLinesToFile File="$(CompletedSemaphorePath)BuildXPlatTasks.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="GetRepoProjects">
+    <ItemGroup>
+      <RepoProjects Include="$(ProjectDir)repos/*.proj" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ApplyPatches" DependsOnTargets="GetRepoProjects">
+    <Message Text="Applying patches only" />
+    <MSBuild Projects="@(RepoProjects)" Targets="ApplyPatches" BuildInParallel="$(BuildInParallel)" />
+  </Target>
+
+  <Target Name="GenerateRootFs" Condition="'$(OS)' != 'Windows_NT'">
+     <Exec Condition="$(Platform.Contains('arm')) AND '$(Platform)' != 'armel' AND '$(BuildArchitecture)' != 'arm64'" Command="$(ArmEnvironmentVariables) $(ProjectDir)cross/build-rootfs.sh" />
+     <Exec Condition="'$(Platform)' == 'armel'" Command="$(ArmEnvironmentVariables) $(ProjectDir)cross/armel/tizen-build-rootfs.sh" />
+  </Target>
+
+  <Target Name="BuildTextOnlyPackages"
+          Condition="'$(OfflineBuild)' == 'true'"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(CompletedSemaphorePath)BuildTextOnlyPackages.complete">
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Packing text-only packages." />
+
+    <ItemGroup>
+      <TextOnlyPackageNuspecFile Include="$(TextOnlyPackageBaseDir)/**/*.nuspec" />
+    </ItemGroup>
+
+    <NugetPack
+      Nuspecs="%(TextOnlyPackageNuspecFile.Identity)"
+      OutputDirectory="$(SourceBuiltPackagesPath)"
+      ExcludeEmptyDirectories="false"
+      CreateSymbolPackage="false" />
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done packing text-only packages." />
+    <WriteLinesToFile File="$(CompletedSemaphorePath)BuildTextOnlyPackages.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="ExtractToolPackage"
+          DependsOnTargets="UnpackTarballs;BuildXPlatTasks"
+          Condition="'$(OfflineBuild)' == 'true'"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(CompletedSemaphorePath)ExtractToolPackage.complete">
+    <ZipFileExtractToDirectory SourceArchive="$(PrebuiltSourceBuiltPackagesPath)Microsoft.DotNet.Arcade.Sdk.$(ARCADE_BOOTSTRAP_VERSION).nupkg"
+                               DestinationDirectory="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/"
+                               OverwriteDestination="true" />
+
+    <!-- TODO: When unpacking using ZipFileExtractToDirectory, this executable file has the wrong
+         permissions.  See https://github.com/dotnet/source-build/issues/2259 -->
+    <Exec Command="chmod 755 git-clone-to-dir.sh"
+      WorkingDirectory="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/tools/SourceBuild/" />
+
+    <ReplaceTextInFile InputFile="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/tools/SourceBuild/SourceBuildArcadeTools.targets"
+      OldText="%3CReadSourceBuildIntermediateNupkgDependencies"
+      NewText="%3CReadSourceBuildIntermediateNupkgDependencies Condition=&quot;'%24%28DotNetBuildOffline%29' != 'true'&quot;" />
+
+    <WriteLinesToFile File="$(CompletedSemaphorePath)ExtractToolPackage.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="PoisonPrebuiltPackages"
+          Condition="'$(EnablePoison)' == 'true' and '$(OfflineBuild)' == 'true'"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(CompletedSemaphorePath)PoisonPrebuiltPackages.complete">
+    <ItemGroup>
+      <PrebuiltPackages Include="$(PrebuiltPackagesPath)**/*.nupkg" />
+      <PrebuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)**/*.nupkg" />
+    </ItemGroup>
+    <MarkAndCatalogPackages PackagesToMark="@(PrebuiltPackages)" CatalogOutputFilePath="$(PoisonReportDataFile)" MarkerFileName="$(PoisonMarkerFile)" />
+    <MarkAndCatalogPackages PackagesToMark="@(PrebuiltSourceBuiltPackages)" CatalogOutputFilePath="$(SourceBuiltPoisonReportDataFile)" MarkerFileName="$(SourceBuiltPoisonMarkerFile)" />
+
+    <WriteLinesToFile File="$(CompletedSemaphorePath)PoisonPrebuiltPackages.complete" Overwrite="true" />
+  </Target>
+
+</Project>

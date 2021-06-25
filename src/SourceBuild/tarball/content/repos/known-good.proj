@@ -1,0 +1,43 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
+  </PropertyGroup>
+
+  <!-- This project file serves a couple of purpose.
+       - We conditionally include repos based on what works on different platforms/configurations.
+       - We need an "empty" build after the last real repo for prebuilt detection to work - this is that file.
+       - If we have a repo that is not in core-sdk's dependency tree, we can still build it by including it here.  -->
+
+  <!-- Windows and ARM builds currently only work through core-setup -->
+  <Choose>
+    <When Condition="'$(OS)' == 'Windows_NT'">
+      <ItemGroup>
+        <RepositoryReference Include="runtime" />
+      </ItemGroup>
+    </When>
+    <When Condition="$(Platform.Contains('arm')) AND '$(BuildArchitecture)' != 'arm64'">
+      <ItemGroup>
+        <RepositoryReference Include="runtime" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <!-- Toolsets -->
+        <RepositoryReference Include="source-build-reference-packages" />
+        <RepositoryReference Include="sourcelink" />
+        <RepositoryReference Include="arcade" />
+        <RepositoryReference Include="linker" />
+
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="RepoBuild">
+  </Target>
+
+</Project>

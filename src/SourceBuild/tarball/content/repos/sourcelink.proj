@@ -1,0 +1,34 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <BuildCommandArgs/>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)pack</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)binaryLog</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)ci</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:ArcadeBuildFromSource=true</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:CopyWipIntoInnerSourceBuildRepo=true</BuildCommandArgs>
+    <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+
+    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
+    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
+    <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</PackagesOutput>
+
+    <!-- SourceLink builds before Arcade so it also needs the bootstrap Arcade version -->
+    <UseBootstrapArcade>true</UseBootstrapArcade>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Include="@(ArcadeBootstrapSdkOverride)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftSourceLinkVersion" Version="$(SOURCE_LINK_BOOTSTRAP_VERSION)" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

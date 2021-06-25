@@ -1,0 +1,179 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Project Sdk="Microsoft.DotNet.Arcade.Sdk">
+
+  <Import Project="./BuildTasks.props" />
+  <Import Project="../tools/SourceBuild/SourceBuildArcadeTools.targets"  Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.Tarball_ReadSourceBuildIntermediateNupkgDependencies" AssemblyFile="$(SourceBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.Tarball_WriteSourceRepoProperties" AssemblyFile="$(SourceBuildTasksAssembly)" />
+
+  <Target Name="CreateSourceTarball"
+    DependsOnTargets="
+      CreateTarballDir;
+      SetupSelfGithubInfo;
+      CloneRepoAndDependentsRecursive;
+      CopyTarballContent;
+      ">
+      <Message Text="Tarball successfully created: $(TarballRootDir)" Importance="High" />
+    </Target>
+
+  <PropertyGroup>
+    <TarballDir>$(RepoRoot)artifacts/tarball/</TarballDir>
+    <TarballRootDir>$([MSBuild]::EnsureTrailingSlash('$(TarballDir)'))</TarballRootDir>
+    <TarballSourceDir>$(TarballRootDir)src/</TarballSourceDir>
+    <TarballGitInfoDir>$(TarballRootDir)git-info/</TarballGitInfoDir>
+    <CloneVerbosity>quiet</CloneVerbosity> <!-- Support quiet and full -->
+  </PropertyGroup>
+
+  <Target Name="CreateTarballDir" >
+    <RemoveDir Directories='$(TarballRootDir)' Condition=" EXISTS('$(TarballRootDir)') " />
+    <Error Text="Tarball directory not specified.  Pass /p:TarballDir=[new dir name] to specify a tarball directory." Condition=" '$(TarballDir)' == '' " />
+    <Error Text="Tarball directory already exists: $(TarballRootDir)" Condition=" '$(TarballRootDir)' != '' AND EXISTS('$(TarballRootDir)') " />
+
+    <MakeDir Directories="$(TarballRootDir)" Condition=" '$(TarballRootDir)' != '' " />
+    <MakeDir Directories="$(TarballSourceDir)" Condition=" '$(TarballSourceDir)' != '' " />
+    <MakeDir Directories="$(TarballGitInfoDir)" Condition=" '$(TarballGitInfoDir)' != '' " />
+  </Target>
+
+  <Target Name="SetupSelfGithubInfo" Condition=" '$(IsRootRepo)' != 'true' ">
+
+    <Exec
+      Command="cd $(RepoRoot);git config --get remote.origin.url"
+      ConsoleToMSBuild="true"
+      WorkingDirectory="$(RepoRoot)">
+      <Output TaskParameter="ConsoleOutput" ItemName="RootRepoUri" />
+    </Exec>
+
+    <Exec
+      Command="cd $(RepoRoot);git rev-parse HEAD"
+      ConsoleToMSBuild="true"
+      WorkingDirectory="$(RepoRoot)">
+      <Output TaskParameter="ConsoleOutput" ItemName="RootRepoCommitSha" />
+    </Exec>
+
+    <!-- This is hardcoding version for the root repo (installer), since there
+         isn't a Version.Details.xml file to read it from.  
+         See https://github.com/dotnet/source-build/issues/2250 -->
+    <ItemGroup>
+      <SourceBuildRepos Include="$(GitHubRepositoryName)">
+        <Name>$(GitHubRepositoryName)</Name>
+        <Version>1.0.0</Version>
+        <ExactVersion>1.0.0</ExactVersion>
+        <Sha>@(RootRepoCommitSha)</Sha>
+        <Uri>@(RootRepoUri)</Uri>
+        <SourceBuildRepoName>$(GitHubRepositoryName)</SourceBuildRepoName>
+      </SourceBuildRepos>
+    </ItemGroup>
+
+    <Tarball_WriteSourceRepoProperties
+      SourceBuildMetadataDir="$(TarballGitInfoDir)"
+      Dependencies="@(SourceBuildRepos)" />
+
+    <PropertyGroup>
+      <SourceBuildRepoName>%(SourceBuildRepos.SourceBuildRepoName)</SourceBuildRepoName>
+      <RepoUri>%(SourceBuildRepos.Uri)</RepoUri>
+      <RepoSha>%(SourceBuildRepos.Sha)</RepoSha>
+    </PropertyGroup>
+
+    <!-- Remove root repo from SourceBuildRepos so it doesn't try to clone twice -->
+    <ItemGroup>
+      <SourceBuildRepos Remove="@(SourceBuildRepos)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CloneRepoAndDependentsRecursive" 
+    DependsOnTargets="GetSourceBuildIntermediateNupkgNameConvention">
+    
+    <Message Text="--> Start Cloning Repo $(SourceBuildRepoName)" Importance="High" />
+    <PropertyGroup>
+      <SourceDir>$(SourceBuildRepoName).$(RepoSha)/</SourceDir>
+      <TarballRepoSourceDir>$(TarballSourceDir)$(SourceDir)</TarballRepoSourceDir>
+      <TarballRepoSourceEngDir>$(TarballSourceDir)$(SourceDir)eng/</TarballRepoSourceEngDir>
+      <TarballVersionDetailsFile>$(TarballRepoSourceEngDir)Version.Details.xml</TarballVersionDetailsFile>
+      <CloneParam Condition=" '$(CloneVerbosity)' == 'quiet' ">-q</CloneParam>
+    </PropertyGroup>
+
+    <Exec 
+      Command="git clone $(CloneParam) $(RepoUri) $(SourceDir)" 
+      WorkingDirectory="$(TarballSourceDir)" />
+
+    <Exec 
+      Command="git checkout $(CloneParam) $(RepoSha)" 
+      WorkingDirectory="$(TarballRepoSourceDir)" />
+
+    <Exec 
+      Command="git submodule update --init --recursive" 
+      WorkingDirectory="$(TarballRepoSourceDir)" />
+
+    <Message Text="--> Done Cloning Repo $(SourceBuildRepoName)" Importance="High" />
+
+    <!-- Override to use a temporary SourceBuild specific Version.Details.xml file in installer for Preview 6
+         See https://github.com/dotnet/source-build/issues/2266 -->
+    <Copy
+      Condition=" '$(SourceBuildRepoName)' == 'installer' "
+      SourceFiles="$(RepoRoot)eng/SourceBuild.Version.Details.xml"
+      DestinationFiles="$(TarballRepoSourceDir)/eng/Version.Details.xml" />
+
+    <Tarball_ReadSourceBuildIntermediateNupkgDependencies
+      VersionDetailsXmlFile="$([MSBuild]::NormalizePath($(TarballVersionDetailsFile)))"
+      SourceBuildIntermediateNupkgPrefix="$(SourceBuildIntermediateNupkgPrefix)"
+      SourceBuildIntermediateNupkgRid="$(SourceBuildIntermediateNupkgRid)">
+      <Output TaskParameter="Dependencies" ItemName="SourceBuildRepos" />
+    </Tarball_ReadSourceBuildIntermediateNupkgDependencies>
+
+    <!-- Remove repo if it has already be cloned at any sha.  This results in 
+         The commit sha for the cloned repo in the tarball being the one that
+         was first encountered. -->
+    <ItemGroup>
+      <SourceBuildRepos Remove="@(SourceBuildRepos)" Condition=" EXISTS('$(TarballGitInfoDir)%(SourceBuildRepoName).props')" />
+    </ItemGroup>
+
+    <Tarball_WriteSourceRepoProperties
+      SourceBuildMetadataDir="$(TarballGitInfoDir)"
+      Dependencies="@(SourceBuildRepos)" />
+
+    <Message Text="--> Dependencies for $(TarballVersionDetailsFile):" Importance="High" />
+    <Message Text="-->     [@(SourceBuildRepos)]" Importance="High" />
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+      Condition=" '@(SourceBuildRepos)' != '' "
+      Targets="CloneRepoAndDependentsRecursive" 
+      Properties="SourceBuildRepoName=%(SourceBuildRepos.SourceBuildRepoName);RepoSha=%(SourceBuildRepos.Sha);RepoUri=%(SourceBuildRepos.Uri)" />
+
+  </Target>
+
+  <Target Name="CopyTarballContent">
+    <ItemGroup>
+      <TarballContent Include="$(RepoRoot)src/SourceBuild/tarball/content/**/*" />
+      <EngCommonContent Include="$(RepoRoot)eng/common/**/*" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(TarballContent)"
+      DestinationFiles="@(TarballContent->'$(TarballRootDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <Copy
+      SourceFiles="@(EngCommonContent)"
+      DestinationFiles="@(EngCommonContent->'$(TarballRootDir)eng/common/%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <PropertyGroup>
+      <ExternalTarballsDir>$(TarballRootDir)packages/archive/</ExternalTarballsDir>
+      <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
+      <SourceBuiltArtifactsTarballUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/</SourceBuiltArtifactsTarballUrl>
+      <ArchiveArtifactsTextFileName>archiveArtifacts.txt</ArchiveArtifactsTextFileName>
+      <ArchiveArtifactsTextFile>$(ExternalTarballsDir)$(ArchiveArtifactsTextFileName)</ArchiveArtifactsTextFile>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(ExternalTarballsDir)" />
+
+    <ItemGroup>
+      <ArtifactUrls Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltArtifactsTarballName).$(PrivateSourceBuiltArtifactsPackageVersion).tar.gz" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(ArchiveArtifactsTextFile)"
+      Lines="@(ArtifactUrls)"
+      Overwrite="true" />
+
+    <MakeDir Directories="$(TarballRootDir)packages/prebuilt" />
+  </Target>
+
+</Project>

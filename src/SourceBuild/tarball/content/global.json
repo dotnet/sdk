@@ -1,0 +1,12 @@
+{
+  "tools": {
+    "dotnet": "6.0.100-preview.5.21225.11"
+  },
+  "msbuild-sdks": {
+    "Microsoft.Build.CentralPackageVersions": "2.0.1",
+    "Microsoft.Build.Traversal": "2.0.2",
+    "Microsoft.NET.Sdk.IL": "3.0.0-preview-27107-01",
+    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21304.1",
+    "Yarn.MSBuild": "1.15.2"
+  }
+}

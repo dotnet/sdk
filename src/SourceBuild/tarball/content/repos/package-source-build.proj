@@ -1,0 +1,38 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <ProjectDirectory>$(SubmoduleDirectory)$(RepositoryName)/</ProjectDirectory>
+    <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
+    <IncludedPackageVersionPropsFile Condition="'$(OfflineBuild)' != 'true'">$(PackageVersionPropsPath)</IncludedPackageVersionPropsFile>
+    <IncludedPackageVersionPropsFile Condition="'$(OfflineBuild)' == 'true'">$(GennedPackageVersionPropsPath)</IncludedPackageVersionPropsFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="sdk" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="RepoBuild">
+    <!-- Copy PVP to packages dir in order to package them together -->
+    <Copy SourceFiles="$(IncludedPackageVersionPropsFile)" DestinationFiles="$(SourceBuiltPackagesPath)PackageVersions.props" />
+
+    <!-- Copy coreclr tools to packages dir to include it in the source-built tarball as well -->
+    <ItemGroup>
+      <CoreClrToolsFiles Include="$(ToolPackageExtractDir)coreclr-tools/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CoreClrToolsFiles)" DestinationFolder="$(SourceBuiltPackagesPath)coreclr-tools" />
+
+    <PropertyGroup>
+      <SourceBuiltTarballName>$(OutputPath)$(SourceBuiltArtifactsTarballName).$(VersionPrefix)-$(VersionSuffix).tar.gz</SourceBuiltTarballName>
+    </PropertyGroup>
+
+    <Exec Command="tar --numeric-owner -czf $(SourceBuiltTarballName) *.nupkg *.props coreclr-tools/*" WorkingDirectory="$(SourceBuiltPackagesPath)" />
+
+    <Message Importance="High" Text="Packaged source-built artifacts to $(SourceBuiltTarballName)" />
+  </Target>
+
+</Project>

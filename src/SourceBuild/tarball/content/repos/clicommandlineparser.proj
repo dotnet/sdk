@@ -1,0 +1,41 @@
+<Project>
+
+  <PropertyGroup>
+    <SourceDirectory>CliCommandLineParser</SourceDirectory>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <!-- In Windows -restore is already passed by default by build.cmd to build.ps1 -->
+    <BuildCommandArgs>$(FlagParameterPrefix)pack $(FlagParameterPrefix)configuration $(Configuration)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) --projects $(ProjectDirectory)CommandLine.sln</BuildCommandArgs>
+    <BuildCommandArgs Condition="'$(OS)' != 'Windows_NT'">$(BuildCommandArgs) $(FlagParameterPrefix)restore</BuildCommandArgs>
+
+    <!-- CliCommandLineParser takes -v instead of /v -->
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <BuildCommandArgs>$(BuildCommandArgs) -v $(LogVerbosity)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) -bl</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) -ci</BuildCommandArgs>
+
+    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)</BuildCommandArgs>
+
+    <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+    <DependencyVersionInputRepoApiImplemented>false</DependencyVersionInputRepoApiImplemented>
+    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
+
+    <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</PackagesOutput>
+    <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
+    <NuGetConfigFile>$(ProjectDirectory)/NuGet.config</NuGetConfigFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

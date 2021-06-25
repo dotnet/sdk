@@ -1,0 +1,99 @@
+<Project>
+
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
+
+  <!--
+    Find text-only nupkgs and decompose them into text files to include in the tarball as source
+    code. This simplifies maintenance by removing the need to put a new version of these files in
+    dotnet/source-build-reference-packages for potentially every single servicing release.
+
+    'dotnet new' template packages are a prominent example of text-only packages that change often.
+  -->
+  <Target Name="AddAllUnpackedTextOnlyPackageSource"
+          DependsOnTargets="GetTarballDirProps"
+          BeforeTargets="AddTarballPackages">
+    <PropertyGroup>
+      <TarballUnpackedTextOnlyPackageSourceDir>$([MSBuild]::NormalizeDirectory('$(TarballRootDir)', 'packages', 'text-only'))</TarballUnpackedTextOnlyPackageSourceDir>
+    </PropertyGroup>
+
+    <!--
+      Find .nupkg files in package cache in order to locate the extraction directory, then filter
+      which files are copied to the tarball to exclude the nupkg itself and unnecessary metadata.
+    -->
+    <ItemGroup>
+      <TextOnlyPrebuiltNupkgFile Include="
+        $(ProjectDir)packages\restored\**\microsoft.dotnet.web.itemtemplates.2.1.*.nupkg;
+        $(ProjectDir)packages\restored\**\microsoft.dotnet.web.projecttemplates.2.1.2.1.*.nupkg;
+        $(ProjectDir)packages\restored\**\microsoft.dotnet.web.spa.projecttemplates.2.1.2.1.*.nupkg;
+        $(ProjectDir)packages\restored\**\microsoft.dotnet.common.itemtemplates.3.1.*.nupkg;
+        $(ProjectDir)packages\restored\**\microsoft.dotnet.web.itemtemplates.3.1.*.nupkg;
+        $(ProjectDir)packages\restored\**\microsoft.dotnet.web.projecttemplates.3.1.3.1.*.nupkg;
+        $(ProjectDir)packages\restored\**\microsoft.dotnet.web.spa.projecttemplates.3.1.3.1.*.nupkg;
+        $(ProjectDir)packages\restored\**\microsoft.dotnet.web.itemtemplates.5.0.*.nupkg;
+        $(ProjectDir)packages\restored\**\microsoft.dotnet.web.projecttemplates.5.0.5.0.*.nupkg;
+        $(ProjectDir)packages\restored\**\microsoft.dotnet.web.spa.projecttemplates.5.0.5.0.*.nupkg;
+        " />
+
+      <!-- Make prebuilt nupkg copy logic ignore these text-only nupkgs. -->
+      <RefOnlyPackageFilename Include="@(TextOnlyPrebuiltNupkgFile->'%(Filename)')" />
+
+      <TextOnlyPrebuiltNupkgProject
+        Include="$(MSBuildProjectFullPath)"
+        Properties="
+          TextOnlyPackageRootDir=%(TextOnlyPrebuiltNupkgFile.RootDir)%(TextOnlyPrebuiltNupkgFile.Directory)" />
+    </ItemGroup>
+
+    <MSBuild
+      Projects="@(TextOnlyPrebuiltNupkgProject)"
+      Targets="AddUnpackedTextOnlyPackageSource">
+      <Output TaskParameter="TargetOutputs" ItemName="TarballCopyFile" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="AddUnpackedTextOnlyPackageSource"
+          DependsOnTargets="GetTarballDirProps"
+          Returns="@(TarballCopyFile)">
+    <PropertyGroup>
+      <PackageVersionDirFile>$([System.IO.Path]::GetDirectoryName('$(TextOnlyPackageRootDir)'))</PackageVersionDirFile>
+      <PackageIdDirFile>$([System.IO.Path]::GetDirectoryName('$(PackageVersionDirFile)'))</PackageIdDirFile>
+      <PackageVersion>$([System.IO.Path]::GetFileName('$(PackageVersionDirFile)'))</PackageVersion>
+      <PackageId>$([System.IO.Path]::GetFileName('$(PackageIdDirFile)'))</PackageId>
+
+      <PackageIntermediateDir>$([MSBuild]::NormalizeDirectory('$(TextOnlyPackageBaseDir)', '$(PackageId)', '$(PackageVersion)'))</PackageIntermediateDir>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(PackageIntermediateDir)" />
+
+    <ItemGroup>
+      <NuspecFile Include="$(TextOnlyPackageRootDir)*.nuspec" />
+      <PackableNuspecFile Include="@(NuspecFile->'$(PackageIntermediateDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+    <Error Condition="@(NuspecFile->Count()) != 1" Text="Expected exactly one nuspec file in $(TextOnlyPackageRootDir)" />
+
+    <Copy SourceFiles="@(NuspecFile)" DestinationFiles="@(PackableNuspecFile)" />
+
+    <ReplaceTextInFile
+      InputFile="@(PackableNuspecFile)"
+      OldText="&lt;/package&gt;"
+      NewText="&lt;files&gt;&lt;file src=&quot;.\**\*&quot;/&gt;&lt;/files&gt;&lt;/package&gt;" />
+
+    <ItemGroup>
+      <TextOnlyPackageContentFile
+        Include="
+          $(TextOnlyPackageRootDir)**;
+          $(PackageIntermediateDir)**"
+        Exclude="
+          @(NuspecFile);
+          $(TextOnlyPackageRootDir)**\.nupkg.metadata;
+          $(TextOnlyPackageRootDir)**\.signature.p7s;
+          $(TextOnlyPackageRootDir)**\*.nupkg;
+          $(TextOnlyPackageRootDir)**\*.nupkg.sha512" />
+
+      <TarballCopyFile
+        Include="@(TextOnlyPackageContentFile)"
+        RelativeDestination="packages\text-only\$(PackageId)\$(PackageVersion)\%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

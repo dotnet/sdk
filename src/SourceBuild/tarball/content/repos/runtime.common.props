@@ -1,0 +1,143 @@
+<Project>
+  <PropertyGroup>
+    <SourceDirectory>runtime</SourceDirectory>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <!--- Portable / TargetRid Overrides-->
+  <PropertyGroup>
+    <!-- OSX installer build always uses the portable RID, so override it -->
+    <OverridePortableBuild>$(PortableBuild)</OverridePortableBuild>
+    <OverridePortableBuild Condition="'$(TargetOS)' == 'OSX' OR '$(TargetOS)' == 'Windows_NT' OR '$(TargetOS)' == 'FreeBSD'">true</OverridePortableBuild>
+
+    <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-x64</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-x64</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-x64</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'Linux' and ('$(PortableBuild)' == 'true' or '$(BuildingPortableRuntime)' == 'true')">linux-$(Platform)</OverrideTargetRid>
+
+    <UseSystemLibunwind Condition="'$(UseSystemLibunwind)' == '' AND '$(OS)' == 'Windows_NT'">false</UseSystemLibunwind>
+    <UseSystemLibunwind Condition="'$(UseSystemLibunwind)' == '' AND '$(TargetOS)' == 'OSX'">false</UseSystemLibunwind>
+    <UseSystemLibunwind Condition="'$(UseSystemLibunwind)' == ''">$(UseSystemLibraries)</UseSystemLibunwind>
+  </PropertyGroup>
+
+  <!-- Build arguments -->
+  <PropertyGroup>
+    <!-- common arguments -->
+    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <!-- coreclr -->
+    <CoreClrBuildArguments Condition="'$(UseSystemLibunwind)' == 'true'">$(CoreClrBuildArguments) -cmakeargs -DCLR_CMAKE_USE_SYSTEM_LIBUNWIND=TRUE</CoreClrBuildArguments>
+    <CoreClrBuildArguments Condition="$(Platform.Contains('arm')) AND '$(BuildArchitecture)' != 'arm64' ">$(CoreClrBuildArguments) skipnuget cross -skiprestore cmakeargs -DFEATURE_GDBJIT=TRUE</CoreClrBuildArguments>
+    <CoreClrBuildArguments Condition="'$(TargetOS)' == 'FreeBSD'">$(CoreClrBuildArguments) -clang6.0 /p:PortableBuild=true</CoreClrBuildArguments>
+
+    <!-- Portable builds only apply to Linux - Mac and Windows are both always portable.
+     Additionally, Linux builds are portable by default and only have a switch to turn it off -->
+    <CoreClrBuildArguments Condition="'$(TargetOS)' == 'Linux' and '$(PortableBuild)' == 'false'">$(CoreClrBuildArguments) /p:PortableBuild=false</CoreClrBuildArguments>
+
+    <CoreClrBuildArguments>$(CoreClrBuildArguments) /p:PackagesDir=$(PackagesDir)</CoreClrBuildArguments>
+    <CoreClrBuildArguments>$(CoreClrBuildArguments) /p:ContinuousIntegrationBuild=true</CoreClrBuildArguments>
+    <CoreClrBuildArguments>$(CoreClrBuildArguments) /p:PackageRid=$(OverrideTargetRid)</CoreClrBuildArguments>
+    <!-- PGO is disabled for now because the profiler only runs on Windows: https://github.com/dotnet/source-build/issues/247 -->
+    <CoreClrBuildArguments>$(CoreClrBuildArguments) /p:NoPgoOptimize=true</CoreClrBuildArguments>
+    <CoreClrBuildArguments>$(CoreClrBuildArguments) /p:KeepNativeSymbols=true</CoreClrBuildArguments>
+    <CoreClrBuildArguments Condition="'$(TargetOS)' != 'OSX'">$(CoreClrBuildArguments) /p:RuntimeOS=$(OverrideTargetRid.Substring(0, $(OverrideTargetRid.IndexOf("-"))))</CoreClrBuildArguments>
+    <CoreClrBuildArguments Condition="'$(TargetOS)' == 'OSX'">$(CoreClrBuildArguments) /p:RuntimeOS=$(OverrideTargetRid)</CoreClrBuildArguments>
+
+    <!-- libraries -->
+
+    <LibrariesBuildArguments Condition="'$(RunTests)' != 'true' AND '$(PrepForTests)' != 'true'">$(LibrariesBuildArguments) $(FlagParameterPrefix)restore $(FlagParameterPrefix)build $(FlagParameterPrefix)pack /p:SkipTests=true</LibrariesBuildArguments>
+    <LibrariesBuildArguments Condition="'$(PrepForTests)' == 'true'">$(LibrariesBuildArguments) $(FlagParameterPrefix)restore $(FlagParameterPrefix)build /p:IncludeTestUtils=true</LibrariesBuildArguments>
+    <LibrariesBuildArguments Condition="'$(RunTests)' == 'true'">$(LibrariesBuildArguments) $(FlagParameterPrefix)restore $(FlagParameterPrefix)buildtests $(FlagParameterPrefix)test /p:IncludeTestUtils=true</LibrariesBuildArguments>
+    <LibrariesBuildArguments Condition="'$(RunTests)' == 'true' AND '$(DotNetRunningInDocker)' == '1' AND '$(TargetOS)' == 'Linux'">$(LibrariesBuildArguments) /p:TestRspFile=$(TestExclusionsDir)corefx/linux.docker.rsp</LibrariesBuildArguments>
+    <LibrariesBuildArguments>$(LibrariesBuildArguments) /p:ConfigurationGroup=$(Configuration)</LibrariesBuildArguments>
+    <LibrariesBuildArguments>$(LibrariesBuildArguments) /p:PackageRid=$(OverrideTargetRid)</LibrariesBuildArguments>
+    <!-- CoreFX parses this argument for a OS "family", i.e. rhel.7 to rhel.  OSX doesn't have the extra identifier so we need to include the
+          "-x64" so CoreFX can find a character to break on (digits, hyphen, period).  -->
+    <LibrariesBuildArguments Condition="'$(TargetOS)' != 'OSX'">$(LibrariesBuildArguments) /p:RuntimeOS=$(OverrideTargetRid.Substring(0, $(OverrideTargetRid.IndexOf("-"))))</LibrariesBuildArguments>
+    <LibrariesBuildArguments Condition="'$(TargetOS)' == 'OSX'">$(LibrariesBuildArguments) /p:RuntimeOS=$(OverrideTargetRid)</LibrariesBuildArguments>
+    <LibrariesBuildArguments>$(LibrariesBuildArguments) /p:PortableBuild=$(OverridePortableBuild)</LibrariesBuildArguments>
+    <LibrariesBuildArguments>$(LibrariesBuildArguments) /p:BuildAllPackages=true</LibrariesBuildArguments>
+    <LibrariesBuildArguments>$(LibrariesBuildArguments) /p:BuildAllOOBPackages=true</LibrariesBuildArguments>
+    <LibrariesBuildArguments>$(LibrariesBuildArguments) /p:KeepNativeSymbols=true</LibrariesBuildArguments>
+    <LibrariesBuildArguments>$(LibrariesBuildArguments) /p:BuiltSdkPackageOverride=""</LibrariesBuildArguments>    <!-- Clear PackageOverride for Libraries - it only applies to coreclr -->
+    <LibrariesBuildArguments Condition="'$(OfflineBuild)' == 'true'">$(LibrariesBuildArguments) /p:MicrosoftNETCoreDotNetHostPackageVersion=$(DOTNET_HOST_BOOTSTRAP_VERSION)</LibrariesBuildArguments>
+    <LibrariesBuildArguments Condition="'$(OfflineBuild)' == 'true'">$(LibrariesBuildArguments) /p:MicrosoftNETCoreDotNetHostPolicyPackageVersion=$(DOTNET_HOST_BOOTSTRAP_VERSION)</LibrariesBuildArguments>
+
+
+    <!-- installer -->
+
+    <InstallerBuildArguments>$(FlagParameterPrefix)restore $(FlagParameterPrefix)build</InstallerBuildArguments>
+    <InstallerBuildArguments>$(InstallerBuildArguments) /p:PortableBuild=$(OverridePortableBuild)</InstallerBuildArguments>
+    <InstallerBuildArguments>$(InstallerBuildArguments) /p:KeepNativeSymbols=true</InstallerBuildArguments>
+    <InstallerBuildArguments Condition="'$(UseSystemLibunwind)' == 'true'">$(InstallerBuildArguments) -cmakeargs -DCLR_CMAKE_USE_SYSTEM_LIBUNWIND=TRUE</InstallerBuildArguments>
+    <InstallerBuildArguments Condition="$(Platform.Contains('arm')) AND '$(BuildArchitecture)' != 'arm64'">$(InstallerBuildArguments) /p:TargetArchitecture=$(Platform) /p:DisableCrossgen=true /p:CrossBuild=true</InstallerBuildArguments>
+    <InstallerBuildArguments>$(InstallerBuildArguments) /p:BuildDebPackage=false</InstallerBuildArguments>
+    <InstallerBuildArguments>$(InstallerBuildArguments) /p:BuildAllPackages=true</InstallerBuildArguments>
+    <InstallerBuildArguments>$(InstallerBuildArguments) /p:RestoreAllBuildRids=false</InstallerBuildArguments>
+    <InstallerBuildArguments>$(InstallerBuildArguments) /p:OutputRid=$(OverrideTargetRid)</InstallerBuildArguments>
+    <InstallerBuildArguments>$(InstallerBuildArguments) /p:DotNetOutputBlobFeedDir=$(SourceBuiltBlobFeedDir)</InstallerBuildArguments>
+    <InstallerBuildArguments>$(InstallerBuildArguments) /p:PublishCompressedFilesPathPrefix=$(SourceBuiltRuntimeDir)</InstallerBuildArguments>
+    <InstallerBuildArguments>$(InstallerBuildArguments) /p:BuiltSdkPackageOverride=""</InstallerBuildArguments>    <!-- Clear PackageOverride for Installer - it only applies to coreclr -->
+    <InstallerBuildArguments>$(InstallerBuildArguments) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</InstallerBuildArguments>
+
+    <CommonBuildArguments>$(FlagParameterPrefix)arch $(Platform)</CommonBuildArguments>
+    <CommonBuildArguments>$(CommonBuildArguments) $(FlagParameterPrefix)configuration $(Configuration)</CommonBuildArguments>
+    <CommonBuildArguments>$(CommonBuildArguments) /p:RuntimeConfiguration=$(Configuration)</CommonBuildArguments>
+    <CommonBuildArguments>$(CommonBuildArguments) /p:MicrosoftNetFrameworkReferenceAssembliesVersion=1.0.0</CommonBuildArguments>
+    <CommonBuildArguments>$(CommonBuildArguments) $(FlagParameterPrefix)binaryLog</CommonBuildArguments>
+    <CommonBuildArguments>$(CommonBuildArguments) $(FlagParameterPrefix)ci</CommonBuildArguments>
+    <CommonBuildArguments>$(CommonBuildArguments) $(FlagParameterPrefix)runtimeConfiguration $(Configuration)</CommonBuildArguments>
+    <CommonBuildArguments>$(CommonBuildArguments) $(FlagParameterPrefix)verbosity $(LogVerbosity)</CommonBuildArguments>
+    <!--
+    Disable node reuse (in the new/Arcade way) to avoid errors like this:
+
+    error MSB4062: The "Microsoft.CodeAnalysis.BuildTasks.Csc" task could not be loaded from the
+    assembly .../build/../tools/Microsoft.Build.Tasks.CodeAnalysis.dll. Assembly with same name
+    is already loaded
+    -->
+    <CommonBuildArguments>$(CommonBuildArguments) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</CommonBuildArguments>
+    <CommonBuildArguments>$(CommonBuildArguments) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</CommonBuildArguments>
+
+    <BuildCommand>$(ProjectDirectory)build-source-build$(ShellExtension) $(CommonBuildArguments) $(FlagParameterPrefix)coreclr-args $(CoreClrBuildArguments) $(FlagParameterPrefix)libraries-args $(LibrariesBuildArguments) $(FlagParameterPrefix)installer-args $(InstallerBuildArguments) $(FlagParameterPrefix)additional-args</BuildCommand>
+    <BuildCommand Condition="$(Platform.Contains('arm')) AND '$(BuildArchitecture)' != 'arm64'">$(ArmEnvironmentVariables) $(BuildCommand)</BuildCommand>
+    <CleanCommand>$(ProjectDirectory)/clean$(ShellExtension)</CleanCommand>
+  </PropertyGroup>
+
+  <!-- Output / source-build flags -->
+  <PropertyGroup>
+    <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
+    <PackagesOutput>$(ProjectDirectory)bin/Product/$(TargetOS).$(Platform).$(Configuration)/.nuget/pkg</PackagesOutput>
+    <ShippingPackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/Shipping/</ShippingPackagesOutput>
+    <NonShippingPackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</NonShippingPackagesOutput>
+    <NuGetConfigFile>$(ProjectDirectory)/NuGet.config</NuGetConfigFile>
+    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
+  </PropertyGroup>
+
+  <!-- Environment Restore Sources -->
+  <PropertyGroup>
+    <EnvironmentRestoreSources>$(SourceBuiltPackagesPath)</EnvironmentRestoreSources>
+    <EnvironmentRestoreSources>$(EnvironmentRestoreSources)%3B$(ShippingPackagesOutput)</EnvironmentRestoreSources>
+    <EnvironmentRestoreSources>$(EnvironmentRestoreSources)%3B$(NonShippingPackagesOutput)</EnvironmentRestoreSources>
+    <EnvironmentRestoreSources Condition="'$(OfflineBuild)' == 'true'">$(EnvironmentRestoreSources)%3B$(ReferencePackagesDir)%3B$(PrebuiltPackagesPath)</EnvironmentRestoreSources>
+    <EnvironmentRestoreSources Condition="'$(OfflineBuild)' != 'true'">$(EnvironmentRestoreSources)%3Bhttps://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public%40Local/nuget/v3/index.json</EnvironmentRestoreSources>
+
+  </PropertyGroup>
+
+  <!-- SDK Overrides -->
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
+    <UseSourceBuiltSdkOverride Include="@(ArcadeCoreFxTestingOverride)" />
+    <UseSourceBuiltSdkOverride Include="@(ArcadePackagingOverride)" />
+    <UseSourceBuiltSdkOverride Include="@(ArcadeTargetFrameworkSdkOverride)" />
+  </ItemGroup>
+
+  <!-- Environment Variables -->
+  <ItemGroup>
+    <EnvironmentVariables Include="RestoreSources=$(EnvironmentRestoreSources)" />
+    <EnvironmentVariables Include="BuildInParallel=false" />
+  </ItemGroup>
+
+</Project>

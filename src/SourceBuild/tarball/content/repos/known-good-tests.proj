@@ -1,0 +1,37 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
+  </PropertyGroup>
+
+  <!-- This project file includes only repos that are enabled for building and running tests in source-build.  -->
+  <!-- Windows and ARM builds don't support all repos, keep them separate for future conditioning. -->
+  <Choose>
+    <When Condition="'$(OS)' == 'Windows_NT'">
+      <ItemGroup>
+        <RepositoryReference Include="runtime" />
+      </ItemGroup>
+    </When>
+    <When Condition="$(Platform.Contains('arm'))">
+      <ItemGroup>
+        <RepositoryReference Include="runtime" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <!-- List of repos currently enabled. -->
+
+        <RepositoryReference Include="runtime" />
+
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="RepoBuild">
+  </Target>
+
+</Project>

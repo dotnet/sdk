@@ -1,0 +1,9 @@
+<!--
+  This project intentionally does nothing. It is a stub used to avoid building while preventing
+  Arcade from searching the repo root to find something to do.
+-->
+<Project>
+
+  <Target Name="Build" />
+
+</Project>
