@@ -20,7 +20,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
     public class AspNetSdkBaselineTest : AspNetSdkTest
     {
         private static readonly JsonSerializerOptions BaselineSerializationOptions = new() { WriteIndented = true };
-        
+
         private string _baselinesFolder;
 
 #if GENERATE_SWA_BASELINES
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private bool _generateBaselines = GenerateBaselines;
 
-        public string BaselinesFolder => 
+        public string BaselinesFolder =>
             _baselinesFolder ??= Path.Combine(TestContext.GetRepoRoot(), "src", "Tests", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
 
         public TestAsset ProjectDirectory { get; set; }
@@ -69,15 +69,154 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
-        public string[] LoadExpectedBuildFiles()
+        protected void AssertBuildAssets(
+            StaticWebAssetsManifest manifest,
+            string outputFolder,
+            string intermediateOutputPath,
+            string suffix = "",
+            [CallerMemberName] string name = "")
         {
-            return default;
+            var fileEnumerationOptions = new EnumerationOptions { RecurseSubdirectories = true };
+            var wwwRootFolder = Path.Combine(outputFolder, "wwwroot");
+            var wwwRootFiles = Directory.Exists(wwwRootFolder) ?
+                Directory.GetFiles(wwwRootFolder, "*", fileEnumerationOptions) :
+                Array.Empty<string>();
+
+            var computedFiles = manifest.Assets
+                .Where(a => a.SourceType is StaticWebAsset.SourceTypes.Computed &&
+                            a.AssetKind is not StaticWebAsset.AssetKinds.Publish);
+
+            // For assets that are copied to the output folder, the path is always based on
+            // the wwwroot folder and the relative path.
+            var copyToOutputDirectoryFiles = manifest.Assets
+                .Where(a => a.SourceType is StaticWebAsset.SourceTypes.Computed or StaticWebAsset.SourceTypes.Discovered &&
+                            a.AssetKind is not StaticWebAsset.AssetKinds.Publish &&
+                            a.CopyToOutputDirectory is not StaticWebAsset.AssetCopyOptions.Never)
+                .Select(a => Path.Combine(outputFolder, "wwwroot", a.RelativePath));
+
+            if (!_generateBaselines)
+            {
+                var expected = LoadExpectedFilesBaseline(manifest.ManifestType, outputFolder, intermediateOutputPath, suffix, name);
+
+                var existingFiles = wwwRootFiles.Concat(computedFiles.Select(f => f.Identity)).Concat(copyToOutputDirectoryFiles)
+                    .Distinct()
+                    .OrderBy(f => f, StringComparer.Ordinal)
+                    .ToArray();
+
+                existingFiles.ShouldBeEquivalentTo(expected);
+            }
+            else
+            {
+                var templatizedFiles = TemplatizeExpectedFiles(
+                    wwwRootFiles
+                        .Concat(computedFiles.Select(f => f.Identity))
+                        .Concat(copyToOutputDirectoryFiles)
+                        .Distinct()
+                        .OrderBy(f => f, StringComparer.Ordinal)
+                        .ToArray(),
+                    outputFolder,
+                    intermediateOutputPath);
+
+                File.WriteAllText(
+                    GetExpectedFilesPath(suffix, name, manifest.ManifestType),
+                    JsonSerializer.Serialize(templatizedFiles, BaselineSerializationOptions));
+            }
         }
 
-        public string[] LoadExpectedPublishFiles()
+        protected void AssertPublishAssets(
+            StaticWebAssetsManifest manifest,
+            string publishFolder,
+            string intermediateOutputPath,
+            string suffix = "",
+            [CallerMemberName] string name = "")
         {
-            return default;
+            var fileEnumerationOptions = new EnumerationOptions { RecurseSubdirectories = true };
+            string wwwRootFolder = Path.Combine(publishFolder, "wwwroot");
+            var wwwRootFiles = Directory.Exists(wwwRootFolder) ?
+                Directory.GetFiles(wwwRootFolder, "*", fileEnumerationOptions) :
+                Array.Empty<string>();
+
+            // Computed publish assets must exist on disk (we do this check to quickly identify when something is not being
+            // generated vs when its being copied to the wrong place)
+            var computedFiles = manifest.Assets
+                .Where(a => a.SourceType is StaticWebAsset.SourceTypes.Computed &&
+                            a.AssetKind is not StaticWebAsset.AssetKinds.Build);
+
+            // For assets that are copied to the publish folder, the path is always based on
+            // the wwwroot folder, the relative path and the base path for project or package
+            // assets.
+            var copyToPublishDirectoryFiles = manifest.Assets
+                .Where(a => !string.Equals(a.SourceId, manifest.Source, StringComparison.Ordinal) ||
+                            !string.Equals(a.AssetMode, StaticWebAsset.AssetModes.Reference))
+                .Select(a => a.ComputeTargetPath(wwwRootFolder));
+
+            var existingFiles = wwwRootFiles.Concat(computedFiles.Select(f => f.Identity)).Concat(copyToPublishDirectoryFiles)
+                .Distinct()
+                .OrderBy(f => f, StringComparer.Ordinal)
+                .ToArray();
+
+            if (!_generateBaselines)
+            {
+                var expected = LoadExpectedFilesBaseline(manifest.ManifestType, publishFolder, intermediateOutputPath, suffix, name);
+                existingFiles.ShouldBeEquivalentTo(expected);
+            }
+            else
+            {
+                var templatizedFiles = TemplatizeExpectedFiles(
+                    wwwRootFiles
+                        .Concat(computedFiles.Select(f => f.Identity))
+                        .Concat(copyToPublishDirectoryFiles)
+                        .Distinct()
+                        .OrderBy(f => f, StringComparer.Ordinal)
+                        .ToArray(),
+                    publishFolder,
+                    intermediateOutputPath);
+
+                File.WriteAllText(
+                    GetExpectedFilesPath(suffix, name, manifest.ManifestType),
+                    JsonSerializer.Serialize(templatizedFiles, BaselineSerializationOptions));
+            }
         }
+
+        public string[] LoadExpectedFilesBaseline(
+            string type,
+            string buildOrPublishPath,
+            string intermediateOutputPath,
+            string suffix,
+            string name)
+        {
+            var filesBaselinePath = GetExpectedFilesPath(suffix, name, type);
+            if (!_generateBaselines)
+            {
+                return ApplyPathsToTemplatedFilePaths(
+                    JsonSerializer.Deserialize<string[]>(File.ReadAllBytes(filesBaselinePath)),
+                    buildOrPublishPath,
+                    intermediateOutputPath)
+                    .ToArray();
+            }
+            else
+            {
+
+                return Array.Empty<string>();
+            }
+        }
+
+        private IEnumerable<string> TemplatizeExpectedFiles(
+            IEnumerable<string> files,
+            string buildOrPublishFolder,
+            string intermediateOutputPath) =>
+                files.Select(f => f.Replace(buildOrPublishFolder, "${OutputPath}")
+                               .Replace(intermediateOutputPath, "${IntermediateOutputPath}")
+                               .Replace(Path.DirectorySeparatorChar, '\\'));
+
+        private IEnumerable<string> ApplyPathsToTemplatedFilePaths(
+            IEnumerable<string> files,
+            string buildOrPublishFolder,
+            string intermediateOutputPath) =>
+                files.Select(f => f.Replace("${OutputPath}", buildOrPublishFolder)
+                               .Replace("${IntermediateOutputPath}", intermediateOutputPath)
+                               .Replace('\\', Path.DirectorySeparatorChar));
+
 
         internal void AssertManifest(
             StaticWebAssetsManifest manifest,
@@ -112,9 +251,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         private string GetManifestPath(string suffix, string name, string manifestType)
-        {
-            return Path.Combine(BaselinesFolder, $"{name}{(!string.IsNullOrEmpty(suffix)? $"_{suffix}" : "")}.{manifestType}.staticwebassets.json");
-        }
+            => Path.Combine(BaselinesFolder, $"{name}{(!string.IsNullOrEmpty(suffix) ? $"_{suffix}" : "")}.{manifestType}.staticwebassets.json");
+
+        private string GetExpectedFilesPath(string suffix, string name, string manifestType)
+            => Path.Combine(BaselinesFolder, $"{name}{(!string.IsNullOrEmpty(suffix) ? $"_{suffix}" : "")}.{manifestType}.files.json");
+
 
         private void ApplyPathsToAssets(
             StaticWebAssetsManifest manifest,

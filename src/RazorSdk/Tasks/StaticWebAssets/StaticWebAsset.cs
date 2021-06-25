@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return result;
         }
 
-        internal string ComputeTargetPath(string pathPrefix)
+        public string ComputeTargetPath(string pathPrefix)
         {
             var prefix = pathPrefix != null ? Normalize(pathPrefix) : "";
             // These have been normalized already, so only contain forward slashes

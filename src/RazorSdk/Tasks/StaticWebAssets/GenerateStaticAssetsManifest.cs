@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -12,6 +13,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 {
     public class GenerateStaticWebAssetsManifest : Task
     {
+        // Since the manifest is only used at development time, it's ok for it to use the relaxed
+        // json escaping (which is also what MVC uses by default) and to produce indented output
+        // since that makes it easier to inspect the manifest when necessary.
+        private static readonly JsonSerializerOptions ManifestSerializationOptions = new()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = true
+        };
+
         [Required]
         public string Source { get; set; }
 
@@ -40,7 +50,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             try
             {
-                var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem).ToArray();
+                var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem);
+
+                // On a publish manifest we don't care about build only assets, so filter them out.
+                if (ManifestType == StaticWebAssetsManifest.ManifestTypes.Publish)
+                {
+                    assets = assets.Where(a => a.AssetKind is not StaticWebAsset.AssetKinds.Build);
+                }
+
                 var relatedManifests = RelatedManifests.OrderBy(a => a.GetMetadata("FullPath"))
                     .Select(ComputeManifestReference)
                     .Where(r => r != null)
@@ -51,10 +68,20 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     return false;
                 }
 
-                var discoveryPatterns = DiscoveryPatterns.OrderBy(a => a.ItemSpec).Select(ComputeDiscoveryPattern).ToArray();
+                var discoveryPatterns = DiscoveryPatterns
+                    .OrderBy(a => a.ItemSpec)
+                    .Select(ComputeDiscoveryPattern)
+                    .ToArray();
 
-                var manifest = new StaticWebAssetsManifest(Source, BasePath, Mode, ManifestType, relatedManifests, discoveryPatterns, assets);
-                PersistManifest(manifest);
+                PersistManifest(
+                    new StaticWebAssetsManifest(
+                        Source,
+                        BasePath,
+                        Mode,
+                        ManifestType,
+                        relatedManifests,
+                        discoveryPatterns,
+                        assets.ToArray()));
             }
             catch (Exception ex)
             {
@@ -97,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         private void PersistManifest(StaticWebAssetsManifest manifest)
         {
-            var data = JsonSerializer.SerializeToUtf8Bytes(manifest);
+            var data = JsonSerializer.SerializeToUtf8Bytes(manifest, ManifestSerializationOptions);
             var fileExists = File.Exists(ManifestPath);
             var existingManifestHash = fileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath)).Hash : "";
 

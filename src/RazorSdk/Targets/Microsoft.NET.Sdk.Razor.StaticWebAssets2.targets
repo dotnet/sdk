@@ -213,7 +213,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ContentWithTargetPath
         Include="$(StaticWebAssetBuildManifestPath)"
         TargetPath="$(TargetName).staticwebassets.json"
-        CopyToOutputDirectory="PreserveNewest" />
+        CopyToOutputDirectory="PreserveNewest"
+        CopyToPublishDirectory="Never" />
     </ItemGroup>
   </Target>
 

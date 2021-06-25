@@ -30,7 +30,17 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             try
             {
                 var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath));
-                Assets = manifest.Assets.Select(a => a.ToTaskItem()).ToArray();
+
+                // When we are reading a publish manifest we are about to compute the list of files to publish
+                // so we filter out files marked as Reference here since they don't have to be copied to the output.
+                // The process for merging assets from dependent projects reads their manifests directly, so its not
+                // an issue there.
+                var assets = manifest.ManifestType is not StaticWebAssetsManifest.ManifestTypes.Publish ?
+                    manifest.Assets :
+                    manifest.Assets.Where(a => !string.Equals(a.SourceId, manifest.Source, StringComparison.Ordinal)
+                        || a.AssetMode is not StaticWebAsset.AssetModes.Reference);
+
+                Assets = assets.Select(a => a.ToTaskItem()).ToArray();
                 RelatedManifests = manifest.RelatedManifests.Select(m => m.ToTaskItem()).ToArray();
             }
             catch (Exception ex)
