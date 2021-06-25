@@ -147,7 +147,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid);
-            var hostExecutable = $"HelloWorld{Constants.ExeSuffix}";
+            var hostExecutable = $"HelloWorld{(rid.StartsWith("win") ? ".exe" : string.Empty)}";
             var appHostFullPath = Path.Combine(outputDirectory.FullName, hostExecutable);
 
             // Check that the apphost was not signed
@@ -165,9 +165,6 @@ namespace Microsoft.NET.Build.Tests
                     .Should().Contain($"{appHostFullPath}: code object is not signed at all");
                 codesign.WaitForExit();
             }
-
-            var buildProjDir = Path.Combine(outputDirectory.FullName, "../..");
-            Directory.Delete(buildProjDir, true);
         }
 
         [Theory]
