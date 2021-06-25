@@ -39,6 +39,8 @@ namespace Microsoft.DotNet.ApiCompatibility
 
         /// <summary>
         /// Callback function to get the <see cref="ComparingSettings"/> to be used when creating the settings to get the differences.
+        /// The callback takes a string leftName and string[] rightNames parameters to indicate API Compat via the settings what the 
+        /// name for the left and right the user specified.
         /// This callback is called at the beginning of every <see cref="GetDifferences"/> overload.
         /// </summary>
         public Func<string, string[], ComparingSettings> GetComparingSettings { get; set; }
