@@ -244,9 +244,9 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 string itemType = fileElement.Attribute("Type")?.Value;
-                bool isAnalzer = itemType?.Equals("Analyzer", StringComparison.OrdinalIgnoreCase) ?? false;
+                bool isAnalyzer = itemType?.Equals("Analyzer", StringComparison.OrdinalIgnoreCase) ?? false;
 
-                string dllPath = usePathElementsInFrameworkListAsFallBack || isAnalzer ?
+                string dllPath = usePathElementsInFrameworkListAsFallBack || isAnalyzer ?
                     Path.Combine(targetingPackRoot, fileElement.Attribute("Path").Value) :
                     GetDllPathViaAssemblyName(targetingPackDllFolder, fileElement);
 
@@ -256,7 +256,7 @@ namespace Microsoft.NET.Build.Tasks
                 item.SetMetadata("FileVersion", fileElement.Attribute("FileVersion").Value);
                 item.SetMetadata("PublicKeyToken", fileElement.Attribute("PublicKeyToken").Value);
 
-                if (isAnalzer)
+                if (isAnalyzer)
                 {
                     string itemLanguage = fileElement.Attribute("Language")?.Value;
 
