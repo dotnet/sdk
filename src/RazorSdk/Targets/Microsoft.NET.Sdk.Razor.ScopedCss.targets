@@ -348,9 +348,22 @@ Integration with static web assets:
       <Output TaskParameter="Assets" ItemName="_UpdatedLegacyProjectBundles" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssets
+      CandidateAssets="@(_PackageProjectBundleCandidates)"
+      RelativePathFilter="**/*.styles.css"
+      PropertyOverrides="@(_LegacyOverrides)"
+      AssetMode="CurrentProject"
+    >
+    <Output TaskParameter="Assets" ItemName="_UpdatedLegacyAppBundles" />
+  </DefineStaticWebAssets>
+
+
     <ItemGroup>
       <StaticWebAsset Remove="@(_UpdatedLegacyProjectBundles->'%(OriginalItemSpec)')" />
       <StaticWebAsset Include="@(_UpdatedLegacyProjectBundles)" RemoveMetadata="OriginalItemSpec" />
+      
+      <StaticWebAsset Remove="@(_UpdatedLegacyAppBundles->'%(OriginalItemSpec)')" />
+      <StaticWebAsset Include="@(_UpdatedLegacyAppBundles)" RemoveMetadata="OriginalItemSpec" />
     </ItemGroup>
   
   </Target>

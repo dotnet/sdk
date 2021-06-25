@@ -201,8 +201,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var result = new TaskItem(Identity);
                 result.SetMetadata(nameof(Source), Source);
-                result.SetMetadata(nameof(Source), Type);
-                result.SetMetadata(nameof(Source), Hash);
+                result.SetMetadata(nameof(Type), Type);
+                result.SetMetadata(nameof(Hash), Hash);
                 return result;
             }
         }
@@ -245,12 +245,30 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 return hashCode;
 #endif
             }
+
+            internal ITaskItem ToTaskItem()
+            {
+                var result = new TaskItem(Name);
+
+                result.SetMetadata(nameof(ContentRoot), ContentRoot);
+                result.SetMetadata(nameof(BasePath), BasePath);
+                result.SetMetadata(nameof(Pattern), Pattern);
+
+                return result;
+            }
         }
 
         public class ManifestTypes
         {
             public const string Build = nameof(Build);
             public const string Publish = nameof(Publish);
+        }
+
+        public class ManifestModes
+        {
+            public const string Default = nameof(Default);
+            public const string Root = nameof(Root);
+            public const string SelfContained = nameof(SelfContained);
         }
 
         private string GetDebuggerDisplay()

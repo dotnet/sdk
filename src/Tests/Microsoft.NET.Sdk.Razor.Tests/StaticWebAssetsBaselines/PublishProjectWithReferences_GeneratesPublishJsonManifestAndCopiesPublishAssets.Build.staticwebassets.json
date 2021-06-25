@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "6hv4kFX7AflsnY8BMG3WhgIguNP2GI1D3kwFH9AchHQ=",
+  "Hash": "fcXLUIfu/ikaptDzUJpZ7yEVCcndRtzVMZa4hyaDYYQ=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -28,54 +28,6 @@
     }
   ],
   "Assets": [
-    {
-      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\css\\site.css",
-      "SourceId": "PackageLibraryDirectDependency",
-      "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\build\\..\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "css/site.css",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest"
-    },
-    {
-      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\js\\pkg-direct-dep.js",
-      "SourceId": "PackageLibraryDirectDependency",
-      "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\build\\..\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "js/pkg-direct-dep.js",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest"
-    },
-    {
-      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\PackageLibraryDirectDependency.bundle.scp.css",
-      "SourceId": "PackageLibraryDirectDependency",
-      "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\build\\..\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "PackageLibraryDirectDependency.bundle.scp.css",
-      "AssetKind": "All",
-      "AssetMode": "Reference",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest"
-    },
-    {
-      "Identity": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\staticwebassets\\js\\pkg-transitive-dep.js",
-      "SourceId": "PackageLibraryTransitiveDependency",
-      "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\build\\..\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryTransitiveDependency",
-      "RelativePath": "js/pkg-transitive-dep.js",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest"
-    },
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AnotherClassLib.styles.css",
       "SourceId": "AnotherClassLib",

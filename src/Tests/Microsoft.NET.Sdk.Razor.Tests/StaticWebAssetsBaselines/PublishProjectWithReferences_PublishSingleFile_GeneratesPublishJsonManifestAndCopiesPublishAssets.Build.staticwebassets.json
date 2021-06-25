@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "3GSbTMxIv2fa0NupoPU6AypuEiaNvJF41gLSk8q3Drk=",
+  "Hash": "84acOcf6MVmPP7Ilxf5r0qOBlcwG5cRFohticsxYvCc=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -10,13 +10,13 @@
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
       "Source": "AnotherClassLib",
       "Type": "Build",
-      "Hash": "8hRnZDh6lEmEHD4UiFR2OGX2U/hP\u002BSLqjHg8OvcAoKM="
+      "Hash": "iqHU\u002BywQkLIcaXayFQNtyk8B6K3EVGKW8XeejuntZ7Q="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
       "Source": "ClassLibrary",
       "Type": "Build",
-      "Hash": "YEvmsQeTa5voEgOVNwh/VNRCFz5LqrRaJSuem8qLJTs="
+      "Hash": "B/mrEOFhV0nHkWITBsDrqFcVz5fEUd9t56UkG2vUvmQ="
     }
   ],
   "DiscoveryPatterns": [

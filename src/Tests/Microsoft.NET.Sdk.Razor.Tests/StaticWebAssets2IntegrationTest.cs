@@ -406,7 +406,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             AssertManifest(publishManifest, LoadPublishManifest());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/17979")]
         public void Build_DeployOnPublish_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -566,7 +566,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             AssertManifest(publishManifest, LoadPublishManifest());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/17979")]
         public void BuildProjectWithReferences_DeployOnPublish_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";

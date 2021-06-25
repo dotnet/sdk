@@ -1,32 +1,25 @@
 {
   "Version": 1,
-  "Hash": "3GSbTMxIv2fa0NupoPU6AypuEiaNvJF41gLSk8q3Drk=",
+  "Hash": "a1igEdm\u002BIA\u002BI6sBkgyr\u002B6gKyLc3RNnDQtLg0mNqk5og=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
-  "ManifestType": "Build",
+  "ManifestType": "Publish",
   "RelatedManifests": [
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
-      "Source": "AnotherClassLib",
-      "Type": "Build",
-      "Hash": "8hRnZDh6lEmEHD4UiFR2OGX2U/hP\u002BSLqjHg8OvcAoKM="
+      "Source": "iqHU\u002BywQkLIcaXayFQNtyk8B6K3EVGKW8XeejuntZ7Q=",
+      "Type": "",
+      "Hash": "iqHU\u002BywQkLIcaXayFQNtyk8B6K3EVGKW8XeejuntZ7Q="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
-      "Source": "ClassLibrary",
-      "Type": "Build",
-      "Hash": "YEvmsQeTa5voEgOVNwh/VNRCFz5LqrRaJSuem8qLJTs="
+      "Source": "B/mrEOFhV0nHkWITBsDrqFcVz5fEUd9t56UkG2vUvmQ=",
+      "Type": "",
+      "Hash": "B/mrEOFhV0nHkWITBsDrqFcVz5fEUd9t56UkG2vUvmQ="
     }
   ],
-  "DiscoveryPatterns": [
-    {
-      "Name": "AppWithPackageAndP2PReference\\wwwroot",
-      "ContentRoot": "${ProjectRoot}\\AppWithPackageAndP2PReference\\wwwroot\\",
-      "BasePath": "_content/AppWithPackageAndP2PReference",
-      "Pattern": "wwwroot/**"
-    }
-  ],
+  "DiscoveryPatterns": [],
   "Assets": [
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AnotherClassLib.styles.css",
