@@ -197,8 +197,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 #pragma warning restore RS1012 // Start action has no registered actions
         {
             // Modifiers that we don't care about
+            // 'PartialImplementationPart is not null' means the method is partial, and the
+            // symbol we have is the "definition", not the "implementation".
+            // We should only analyze the implementation.
             if (methodSymbol.IsStatic || methodSymbol.IsOverride || methodSymbol.IsVirtual ||
-                methodSymbol.IsExtern || methodSymbol.IsAbstract || methodSymbol.IsImplementationOfAnyInterfaceMember())
+                methodSymbol.IsExtern || methodSymbol.IsAbstract || methodSymbol.PartialImplementationPart is not null ||
+                methodSymbol.IsImplementationOfAnyInterfaceMember())
             {
                 return false;
             }
