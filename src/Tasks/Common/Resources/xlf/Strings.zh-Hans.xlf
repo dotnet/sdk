@@ -212,6 +212,16 @@
         <note>{StrBegin="NETSDK1090: "}
 {0} - The path to the invalid assembly.</note>
       </trans-unit>
+      <trans-unit id="CompressionInSingleFileRequires60">
+        <source>NETSDK1167: Compression in a single file bundle is only supported when publishing for .NET6 or higher.</source>
+        <target state="new">NETSDK1167: Compression in a single file bundle is only supported when publishing for .NET6 or higher.</target>
+        <note>{StrBegin="NETSDK1167: "}</note>
+      </trans-unit>
+      <trans-unit id="CompressionInSingleFileRequiresSelfContained">
+        <source>NETSDK1174: Compression in a single file bundle is only supported when publishing a self-contained application.</source>
+        <target state="new">NETSDK1174: Compression in a single file bundle is only supported when publishing a self-contained application.</target>
+        <note>{StrBegin="NETSDK1174: "}</note>
+      </trans-unit>
       <trans-unit id="ConflictingRuntimePackInformation">
         <source>NETSDK1133: There was conflicting information about runtime packs available for {0}:
 {1}</source>
@@ -535,6 +545,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1071: “{0}”的 PackageReference 指定了版本“{1}”。不建议指定此包的版本。有关详细信息，请查看 https://aka.ms/sdkimplicitrefs</target>
         <note>{StrBegin="NETSDK1071: "}</note>
       </trans-unit>
+      <trans-unit id="PlaceholderRunCommandProjectAbbreviationDeprecated">
+        <source>NETSDK1176: Placeholder</source>
+        <target state="new">NETSDK1176: Placeholder</target>
+        <note>{StrBegin="NETSDK1176: "} - This string is not used here, but is a placeholder for the error code, which is used by the "dotnet run" command.</note>
+      </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>
         <target state="translated">NETSDK1011: 从项目“{0}”消耗资产，但在“{1}”中找不到相应的 MSBuild 项目路径。</target>
@@ -644,6 +659,21 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1127: The targeting pack {0} is not installed. Please restore and try again.</source>
         <target state="translated">NETSDK1127: 未安装目标包 {0}。请还原并重试。</target>
         <note>{StrBegin="NETSDK1127: "}</note>
+      </trans-unit>
+      <trans-unit id="TrimmingWindowsFormsIsNotSupported">
+        <source>NETSDK1175: Windows Forms is not supported or recommended with trimming enabled. Please go to https://aka.ms/dotnet-illink/windows-forms for more details.</source>
+        <target state="new">NETSDK1175: Windows Forms is not supported or recommended with trimming enabled. Please go to https://aka.ms/dotnet-illink/windows-forms for more details.</target>
+        <note>{StrBegin="NETSDK1175: "}</note>
+      </trans-unit>
+      <trans-unit id="TrimmingWpfIsNotSupported">
+        <source>NETSDK1168: WPF is not supported or recommended with trimming enabled. Please go to https://aka.ms/dotnet-illink/wpf for more details.</source>
+        <target state="new">NETSDK1168: WPF is not supported or recommended with trimming enabled. Please go to https://aka.ms/dotnet-illink/wpf for more details.</target>
+        <note>{StrBegin="NETSDK1168: "}</note>
+      </trans-unit>
+      <trans-unit id="TypeLibraryDoesNotExist">
+        <source>NETSDK1172: The provided type library '{0}' does not exist.</source>
+        <target state="new">NETSDK1172: The provided type library '{0}' does not exist.</target>
+        <note>{StrBegin="NETSDK1172: "}</note>
       </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
         <source>NETSDK1016: Unable to find resolved path for '{0}'.</source>
