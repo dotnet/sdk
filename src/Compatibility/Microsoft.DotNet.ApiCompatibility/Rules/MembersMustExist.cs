@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         /// </summary>
         /// <param name="mapper">The <see cref="TypeMapper"/> to evaluate.</param>
         /// <param name="differences">The list of <see cref="CompatDifference"/> to add differences to.</param>
-        private void RunOnTypeSymbol(ITypeSymbol left, ITypeSymbol right, IList<CompatDifference> differences)
+        private void RunOnTypeSymbol(ITypeSymbol left, ITypeSymbol right, string leftName, string rightName, IList<CompatDifference> differences)
         {
             if (left != null && right == null)
             {
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             void AddDifference(ITypeSymbol symbol, DifferenceType type, string format)
             {
-                differences.Add(new CompatDifference(DiagnosticIds.TypeMustExist, string.Format(format, symbol.ToDisplayString()), type, symbol));
+                differences.Add(new CompatDifference(DiagnosticIds.TypeMustExist, string.Format(format, symbol.ToDisplayString(), leftName, rightName), type, symbol));
             }
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         /// </summary>
         /// <param name="mapper">The <see cref="MemberMapper"/> to evaluate.</param>
         /// <param name="differences">The list of <see cref="CompatDifference"/> to add differences to.</param>
-        private void RunOnMemberSymbol(ISymbol left, ISymbol right, IList<CompatDifference> differences)
+        private void RunOnMemberSymbol(ISymbol left, ISymbol right, string leftName, string rightName, IList<CompatDifference> differences)
         {
             if (left != null && right == null)
             {
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         return;
                 }
 
-                differences.Add(new CompatDifference(DiagnosticIds.MemberMustExist, string.Format(Resources.MemberExistsOnLeft, left.ToDisplayString()), DifferenceType.Removed, left));
+                differences.Add(new CompatDifference(DiagnosticIds.MemberMustExist, string.Format(Resources.MemberExistsOnLeft, left.ToDisplayString(), leftName, rightName), DifferenceType.Removed, left));
             }
         }
 
