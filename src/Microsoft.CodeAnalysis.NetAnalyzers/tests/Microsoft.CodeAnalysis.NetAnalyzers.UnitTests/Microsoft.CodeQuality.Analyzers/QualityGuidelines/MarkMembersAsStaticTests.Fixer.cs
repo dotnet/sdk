@@ -1482,7 +1482,7 @@ partial class Class1
     }
 }
 ";
-            // The fixed source shouldn't have diagnostics, this is a bug.
+            // The fixed source shouldn't have diagnostics. Tracked by https://github.com/dotnet/roslyn-analyzers/issues/5171.
             string fixedSource = @"
 using System.Threading;
 using System.Threading.Tasks;
