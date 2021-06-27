@@ -51,30 +51,29 @@ namespace Microsoft.NetCore.Analyzers.Resources
             // any diagnostics from it.
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
 
-            context.RegisterCompilationStartAction(cc =>
+            context.RegisterCompilationStartAction(context =>
             {
-                INamedTypeSymbol? generatedCode = cc.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCodeDomCompilerGeneratedCodeAttribute);
-                if (generatedCode is null)
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCodeDomCompilerGeneratedCodeAttribute, out var generatedCode))
                 {
                     return;
                 }
 
-                INamedTypeSymbol? attribute = cc.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemResourcesNeutralResourcesLanguageAttribute);
+                INamedTypeSymbol? attribute = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemResourcesNeutralResourcesLanguageAttribute);
                 if (attribute is null)
                 {
                     return;
                 }
 
-                if (TryCheckNeutralResourcesLanguageAttribute(cc.Compilation, attribute, out var data))
+                if (TryCheckNeutralResourcesLanguageAttribute(context.Compilation, attribute, out var data))
                 {
                     // attribute already exist
                     return;
                 }
 
                 var hasResource = false;
-                RegisterAttributeAnalyzer(cc, () => hasResource = true, generatedCode);
+                RegisterAttributeAnalyzer(context, () => hasResource = true, generatedCode);
 
-                cc.RegisterCompilationEndAction(ce =>
+                context.RegisterCompilationEndAction(context =>
                 {
                     // there is nothing to do.
                     if (!hasResource)
@@ -85,12 +84,12 @@ namespace Microsoft.NetCore.Analyzers.Resources
                     if (data != null)
                     {
                         // we have the attribute but its doing it wrong.
-                        ce.ReportDiagnostic(data.ApplicationSyntaxReference.GetSyntax(ce.CancellationToken).CreateDiagnostic(Rule));
+                        context.ReportDiagnostic(data.ApplicationSyntaxReference.GetSyntax(context.CancellationToken).CreateDiagnostic(Rule));
                         return;
                     }
 
                     // attribute just don't exist
-                    ce.ReportNoLocationDiagnostic(Rule);
+                    context.ReportNoLocationDiagnostic(Rule);
                 });
             });
         }
