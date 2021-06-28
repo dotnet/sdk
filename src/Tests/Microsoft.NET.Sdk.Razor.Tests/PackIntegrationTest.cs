@@ -255,7 +255,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.build.PackageLibraryTransitiveDependency.props")).Should().Exist();
             new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.buildMultiTargeting.PackageLibraryTransitiveDependency.props")).Should().Exist();
             new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.buildTransitive.PackageLibraryTransitiveDependency.props")).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "PackageLibraryTransitiveDependency.StaticWebAssets.Pack.cache")).Should().Exist();
 
             var directoryPath = Path.Combine(intermediateOutputPath, "staticwebassets");
             var thumbPrints = new Dictionary<string, FileThumbPrint>();
@@ -265,7 +264,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 Path.Combine(directoryPath, "msbuild.build.PackageLibraryTransitiveDependency.props"),
                 Path.Combine(directoryPath, "msbuild.buildMultiTargeting.PackageLibraryTransitiveDependency.props"),
                 Path.Combine(directoryPath, "msbuild.buildTransitive.PackageLibraryTransitiveDependency.props"),
-                Path.Combine(directoryPath, "PackageLibraryTransitiveDependency.StaticWebAssets.Pack.cache"),
             };
 
             foreach (var file in thumbPrintFiles)
