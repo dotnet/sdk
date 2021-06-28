@@ -133,9 +133,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultAppHostRuntimeIdentifier Condition="$(DefaultAppHostRuntimeIdentifier.StartsWith('win')) and '$(PlatformTarget)' == 'x86'">win-x86</DefaultAppHostRuntimeIdentifier>
     <DefaultAppHostRuntimeIdentifier Condition="$(DefaultAppHostRuntimeIdentifier.StartsWith('win')) and '$(PlatformTarget)' == 'ARM'">win-arm</DefaultAppHostRuntimeIdentifier>
     <DefaultAppHostRuntimeIdentifier Condition="$(DefaultAppHostRuntimeIdentifier.StartsWith('win')) and '$(PlatformTarget)' == 'ARM64'">win-arm64</DefaultAppHostRuntimeIdentifier>
-    <DefaultAppHostRuntimeIdentifier Condition="$(NETCoreSdkRuntimeIdentifier.EndsWith('arm64')) and
-                                  $(NETCoreSdkRuntimeIdentifier.StartsWith('osx')) and
-                                  '$(_TargetFrameworkVersionWithoutV)' &lt; '6.0'">$(NETCoreSdkRuntimeIdentifier.Replace("arm64", "x64"))</DefaultAppHostRuntimeIdentifier>
+    <DefaultAppHostRuntimeIdentifier Condition="$(DefaultAppHostRuntimeIdentifier.EndsWith('arm64')) and
+                                  $(DefaultAppHostRuntimeIdentifier.StartsWith('osx')) and
+                                  '$(_TargetFrameworkVersionWithoutV)' &lt; '6.0'">$(DefaultAppHostRuntimeIdentifier.Replace("arm64", "x64"))</DefaultAppHostRuntimeIdentifier>
   </PropertyGroup>
 
   <Target Name="_CheckForUnsupportedAppHostUsage"
