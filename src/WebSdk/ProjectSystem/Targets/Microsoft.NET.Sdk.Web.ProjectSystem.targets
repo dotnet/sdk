@@ -22,16 +22,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildWebTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed.Web\</MSBuildWebTargetsPath>
     <AspNetCoreHostingModel Condition="'$(AspNetCoreHostingModel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">inprocess</AspNetCoreHostingModel>
     <AspNetCoreModuleName Condition="'$(AspNetCoreModuleName)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">AspNetCoreModuleV2</AspNetCoreModuleName>
-    <EnableAspNetCoreGlobalUsings Condition="
-      '$(EnableAspNetCoreGlobalUsings)' == ''
-      And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-      And $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0'))
-      And '$(LangVersion)' == 'preview'">true</EnableAspNetCoreGlobalUsings>
   </PropertyGroup>
-
-  <ItemGroup Condition="'$(EnableAspNetCoreGlobalUsings)' == 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Web.ProjectSystem.DefaultGlobalUsing.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectCapability Include="DotNetCoreWeb" />
@@ -42,6 +33,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">
     <ProjectCapability Include="AspNetCoreInProcessHosting" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '6.0' ">
+    <GlobalUsings Include="Microsoft.AspNetCore.Builder" />
+    <GlobalUsings Include="Microsoft.AspNetCore.Hosting" />
+    <GlobalUsings Include="Microsoft.AspNetCore.Http" />
+    <GlobalUsings Include="Microsoft.AspNetCore.Mvc" />
+    <GlobalUsings Include="Microsoft.AspNetCore.Routing" />
+    <GlobalUsings Include="Microsoft.Extensions.Configuration" />
+    <GlobalUsings Include="Microsoft.Extensions.DependencyInjection" />
+    <GlobalUsings Include="Microsoft.Extensions.Hosting" />
+    <GlobalUsings Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
   <PropertyGroup>
