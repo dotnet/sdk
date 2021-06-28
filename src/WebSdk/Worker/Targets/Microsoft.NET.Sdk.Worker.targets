@@ -14,6 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <EnableDefaultContentItems Condition=" '$(EnableDefaultContentItems)' == '' ">true</EnableDefaultContentItems>
     <RunWorkingDirectory Condition=" '$(RunWorkingDirectory)' == '' and '$(EnableDefaultRunWorkingDirectory)' != 'false' ">$(MSBuildProjectDirectory)</RunWorkingDirectory>
+    <GenerateWorkerGlobalUsings Condition="'$(GenerateWorkerGlobalUsings)' == '' and '$(LangVersion)' == 'preview'">true</GenerateWorkerGlobalUsings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +24,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Include="DynamicFileNesting" />
     <ProjectCapability Include="LocalUserSecrets" />
     <ProjectCapability Include="WebNestingDefaults" />
+  </ItemGroup>
+
+
+  <ItemGroup Condition=" '$(GenerateWorkerGlobalUsings)' == 'true'
+      And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+      And $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '6.0'))">
+    <GlobalUsing Include="Microsoft.Extensions.Configuration" />
+    <GlobalUsing Include="Microsoft.Extensions.DependencyInjection" />
+    <GlobalUsing Include="Microsoft.Extensions.Hosting" />
+    <GlobalUsing Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
 </Project>
