@@ -6,16 +6,6 @@
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.Tarball_ReadSourceBuildIntermediateNupkgDependencies" AssemblyFile="$(SourceBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.Tarball_WriteSourceRepoProperties" AssemblyFile="$(SourceBuildTasksAssembly)" />
 
-  <Target Name="CreateSourceTarball"
-    DependsOnTargets="
-      CreateTarballDir;
-      SetupSelfGithubInfo;
-      CloneRepoAndDependentsRecursive;
-      CopyTarballContent;
-      ">
-      <Message Text="Tarball successfully created: $(TarballRootDir)" Importance="High" />
-    </Target>
-
   <PropertyGroup>
     <TarballDir>$(RepoRoot)artifacts/tarball/</TarballDir>
     <TarballRootDir>$([MSBuild]::EnsureTrailingSlash('$(TarballDir)'))</TarballRootDir>
@@ -23,6 +13,26 @@
     <TarballGitInfoDir>$(TarballRootDir)git-info/</TarballGitInfoDir>
     <CloneVerbosity>quiet</CloneVerbosity> <!-- Support quiet and full -->
   </PropertyGroup>
+
+  <Target Name="CreateSourceTarball"
+    DependsOnTargets="
+      CreateTarballDir;
+      SetupSelfGithubInfo;
+      CloneRepoAndDependentsRecursive;
+      CopyTarballContent;
+      ">
+
+    <PropertyGroup>
+      <TarballFileDir>$([System.IO.Path]::GetDirectoryName('$(TarballFilePath)'))</TarballFileDir>
+    </PropertyGroup>
+
+    <Error Text="TarballFilePath not specified." Condition=" '$(TarballFilePath)' == '' " />
+
+    <MakeDir Directories="$(TarballFileDir)" Condition=" '$(TarballFileDir)' != '' " />
+    <Exec Command="tar --numeric-owner -zcf $(TarballFilePath) -C $(TarballDir) ." />
+
+    <Message Text="Tarball '$(TarballFilePath)' was successfully created from '$(TarballDir)'" Importance="High" />
+  </Target>
 
   <Target Name="CreateTarballDir" >
     <RemoveDir Directories='$(TarballRootDir)' Condition=" EXISTS('$(TarballRootDir)') " />
@@ -61,6 +71,7 @@
         <Sha>@(RootRepoCommitSha)</Sha>
         <Uri>@(RootRepoUri)</Uri>
         <SourceBuildRepoName>$(GitHubRepositoryName)</SourceBuildRepoName>
+        <IsRootRepo>true</IsRootRepo>
       </SourceBuildRepos>
     </ItemGroup>
 
@@ -72,6 +83,7 @@
       <SourceBuildRepoName>%(SourceBuildRepos.SourceBuildRepoName)</SourceBuildRepoName>
       <RepoUri>%(SourceBuildRepos.Uri)</RepoUri>
       <RepoSha>%(SourceBuildRepos.Sha)</RepoSha>
+      <IsRootRepo>%(SourceBuildRepos.IsRootRepo)</IsRootRepo>
     </PropertyGroup>
 
     <!-- Remove root repo from SourceBuildRepos so it doesn't try to clone twice -->
@@ -82,7 +94,7 @@
 
   <Target Name="CloneRepoAndDependentsRecursive" 
     DependsOnTargets="GetSourceBuildIntermediateNupkgNameConvention">
-    
+
     <Message Text="--> Start Cloning Repo $(SourceBuildRepoName)" Importance="High" />
     <PropertyGroup>
       <SourceDir>$(SourceBuildRepoName).$(RepoSha)/</SourceDir>
@@ -92,16 +104,24 @@
       <CloneParam Condition=" '$(CloneVerbosity)' == 'quiet' ">-q</CloneParam>
     </PropertyGroup>
 
-    <Exec 
-      Command="git clone $(CloneParam) $(RepoUri) $(SourceDir)" 
-      WorkingDirectory="$(TarballSourceDir)" />
+    <!-- Perform a local clone of the root repo, it's faster and doesn't require the RepoSha to be a tree. -->
+    <Exec
+      Command="git clone ./.git $(TarballRepoSourceDir)"
+      WorkingDirectory="$(RepoRoot)"
+      Condition="$(IsRootRepo) == 'true'" />
 
-    <Exec 
-      Command="git checkout $(CloneParam) $(RepoSha)" 
-      WorkingDirectory="$(TarballRepoSourceDir)" />
+    <Exec
+      Command="git clone $(CloneParam) $(RepoUri) $(SourceDir)"
+      WorkingDirectory="$(TarballSourceDir)"
+      Condition="$(IsRootRepo) != 'true'" />
 
-    <Exec 
-      Command="git submodule update --init --recursive" 
+    <Exec
+      Command="git checkout $(CloneParam) $(RepoSha)"
+      WorkingDirectory="$(TarballRepoSourceDir)"
+      Condition="$(IsRootRepo) != 'true'" />
+
+    <Exec
+      Command="git submodule update --init --recursive"
       WorkingDirectory="$(TarballRepoSourceDir)" />
 
     <Message Text="--> Done Cloning Repo $(SourceBuildRepoName)" Importance="High" />

@@ -1,0 +1,53 @@
+jobs:
+  - job: Source_Build_Tarball_Creation
+    displayName: Source-Build Tarball Creation
+    pool:
+      vmImage: ubuntu-20.04
+    container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-32-20210222183556-031e7d2
+    workspace:
+      clean: all
+
+    steps:
+    - script: |
+        set -x
+        df -h
+
+        buildConfig=Release
+        # Check if AzDO substitutes in a build config from a variable, and use it if so.
+        if [ '$(_BuildConfig)' != '$''(_BuildConfig)' ]; then
+          buildConfig='$(_BuildConfig)'
+        fi
+
+        officialBuildArgs=
+        if [ '${{ and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}' = 'True' ]; then
+          officialBuildArgs='/p:DotNetPublishUsingPipelines=true /p:OfficialBuildId=$(BUILD.BUILDNUMBER)'
+        fi
+
+        ./build.sh \
+          --ci \
+          --configuration $buildConfig \
+          --publish \
+          -bl \
+          $officialBuildArgs \
+          /p:ArcadeBuildTarball=true
+      displayName: Create Tarball
+
+    - task: CopyFiles@2
+      displayName: Prepare BuildLogs staging directory
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)'
+        Contents: |
+          **/*.log
+          **/*.binlog
+        TargetFolder: '$(Build.StagingDirectory)/BuildLogs'
+        CleanTargetFolder: true
+      continueOnError: true
+      condition: succeededOrFailed()
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish BuildLogs
+      inputs:
+        targetPath: '$(Build.StagingDirectory)/BuildLogs'
+        artifactName: BuildLogs_SourceBuild_TarballCreation_Attempt$(System.JobAttempt)
+      continueOnError: true
+      condition: succeededOrFailed()

@@ -1,6 +1,10 @@
 <Project>
   <Import Project="../Arcade/tools/SourceBuildArcadeTarball.targets" />
 
+  <PropertyGroup>
+    <TarballFilePath>$(ArtifactsShippingPackagesDir)dotnet-sdk-source-$(Version).tar.gz</TarballFilePath>
+  </PropertyGroup>
+
   <Target Name="Build" DependsOnTargets="CreateSourceTarball" />
 
 </Project>
