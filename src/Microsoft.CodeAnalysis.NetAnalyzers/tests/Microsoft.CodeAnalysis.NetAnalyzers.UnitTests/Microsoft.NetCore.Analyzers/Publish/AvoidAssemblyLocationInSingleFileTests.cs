@@ -8,6 +8,7 @@ using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Publish.AvoidAssemblyLocationInSingleFile,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using static Analyzer.Utilities.MSBuildPropertyOptionNames;
+using static Microsoft.NetCore.Analyzers.Publish.AvoidAssemblyLocationInSingleFile;
 
 namespace Microsoft.NetCore.Analyzers.Publish.UnitTests
 {
