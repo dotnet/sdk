@@ -6764,6 +6764,5 @@ public class C
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
             }.RunAsync();
         }
-
     }
 }
