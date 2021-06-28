@@ -167,7 +167,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationContext.Compilation);
                                 var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
-                                    operationBlockStartContext.Options, Rule, cfg, operationBlockStartContext.Compilation, InterproceduralAnalysisKind.None, operationBlockStartContext.CancellationToken);
+                                    operationBlockStartContext.Options, Rule, cfg, operationBlockStartContext.Compilation, InterproceduralAnalysisKind.None);
                                 var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(cfg,
                                     containingMethod, operationBlockStartContext.Options, wellKnownTypeProvider,
                                     PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties,
