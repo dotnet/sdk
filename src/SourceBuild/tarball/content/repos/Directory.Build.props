@@ -137,6 +137,23 @@
     <ArcadeBootstrapVersion>$(ARCADE_BOOTSTRAP_VERSION)</ArcadeBootstrapVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <StandardSourceBuildArgs> $(FlagParameterPrefix)ci</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) $(FlagParameterPrefix)configuration $(Configuration)</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) $(FlagParameterPrefix)restore</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) $(FlagParameterPrefix)build</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) $(FlagParameterPrefix)pack</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) $(FlagParameterPrefix)publish</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) -bl</StandardSourceBuildArgs>
+
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:ArcadeBuildFromSource=true</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:CopyWipIntoInnerSourceBuildRepo=true</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:DotNetBuildOffline=true</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:DotNetPackageVersionPropsPath="$(PackageVersionPropsPath)"</StandardSourceBuildArgs>
+
+    <StandardSourceBuildCommand>$(ProjectDirectory)\build$(ShellExtension)</StandardSourceBuildCommand>
+  </PropertyGroup>
+
   <ItemGroup>
     <ArcadeSdkOverride Include="Microsoft.DotNet.Arcade.Sdk" Group="ARCADE" Version="$(arcadeOutputPackageVersion)"/>
     <ArcadeBootstrapSdkOverride Include="Microsoft.DotNet.Arcade.Sdk" Group="ARCADE" Version="$(ArcadeBootstrapVersion)" Location="$(ArcadeBootstrapDir)microsoft.dotnet.arcade.sdk/$(ArcadeBootstrapVersion)" />

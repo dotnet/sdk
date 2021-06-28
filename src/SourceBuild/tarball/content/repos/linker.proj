@@ -5,18 +5,7 @@
     <!-- Package version is pinned to what CoreFX expects because CoreFX doesn't take an override property. -->
     <ILLinkTasksPackageId>Microsoft.NET.ILLink.Tasks</ILLinkTasksPackageId>
 
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)ci</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)restore</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)build</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)pack</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)publish</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -bl</BuildCommandArgs>
-
-    <BuildCommandArgs>$(BuildCommandArgs) /p:ArcadeBuildFromSource=true</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:CopyWipIntoInnerSourceBuildRepo=true</BuildCommandArgs>
-
-    <BuildCommand>$(ProjectDirectory)\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
 
     <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</PackagesOutput>
 

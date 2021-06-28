@@ -150,6 +150,16 @@
       OldText="%3CReadSourceBuildIntermediateNupkgDependencies"
       NewText="%3CReadSourceBuildIntermediateNupkgDependencies Condition=&quot;'%24%28DotNetBuildOffline%29' != 'true'&quot;" />
 
+    <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker 
+         dev turnaround for Preview 6 -->
+    <ItemGroup>
+      <OverrideArcadeFiles Include="$(ProjectDir)ArcadeOverrides/**/*" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(OverrideArcadeFiles)"
+      DestinationFiles="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/tools/SourceBuild/%(RecursiveDir)%(Filename)%(Extension)" />
+
     <WriteLinesToFile File="$(CompletedSemaphorePath)ExtractToolPackage.complete" Overwrite="true" />
   </Target>
 

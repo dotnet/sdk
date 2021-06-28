@@ -1,0 +1,186 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Project>
+
+  <!--
+    These targets inject source-build into Arcade's build process.
+  -->
+
+  <Import Project="SourceBuildArcade.targets" />
+
+  <PropertyGroup>
+    <CurrentRepoSourceBuildBinlogFile>$([MSBuild]::NormalizePath('$(CurrentRepoSourceBuildArtifactsDir)', 'sourcebuild.binlog'))</CurrentRepoSourceBuildBinlogFile>
+
+    <InnerSourceBuildRepoRoot Condition="'$(InnerSourceBuildRepoRoot)' == ''">$(CurrentRepoSourceBuildSourceDir)</InnerSourceBuildRepoRoot>
+
+    <CleanInnerSourceBuildRepoRoot Condition="'$(CleanInnerSourceBuildRepoRoot)' == ''">true</CleanInnerSourceBuildRepoRoot>
+  </PropertyGroup>
+
+  <Target Name="ExecuteWithSourceBuiltTooling"
+          DependsOnTargets="
+            BuildUpstreamRepos;
+            GetSourceBuildCommandConfiguration;
+            RunInnerSourceBuildCommand;
+            PackSourceBuildTarball"
+          Condition="
+            '$(ArcadeBuildFromSource)' == 'true' and
+            '$(ArcadeInnerBuildFromSource)' != 'true'"
+          BeforeTargets="Execute" />
+
+  <!--
+    Use BeforeTargets="ExecuteInnerSourceBuild" to trigger when the inner build is happening.
+  -->
+  <Target Name="ExecuteInnerSourceBuild" />
+
+  <!--
+    HookExecuteInnerSourceBuild triggers ExecuteInnerSourceBuild only if it's the right time. A
+    BeforeTargets on HookExecuteInnerSourceBuild would always execute because BeforeTargets runs
+    even if the condition isn't met, so we need this indirection.
+  -->
+  <Target Name="HookExecuteInnerSourceBuild"
+          Condition="
+            '$(ArcadeBuildFromSource)' == 'true' and
+            '$(ArcadeInnerBuildFromSource)' == 'true'"
+          DependsOnTargets="ExecuteInnerSourceBuild"
+          BeforeTargets="Execute"/>
+
+  <!--
+    Build upstream repos from source.
+
+    TODO: (arcade-sb) Support building upstreams from source based on int nupkgs. For now this
+    target is overridden in any repo that implements the upstream build from source. It involves a
+    lot of source-build infra that will be more gradually moved. Same for PackSourceBuildTarball.
+  -->
+  <Target Name="BuildUpstreamRepos"
+          Condition="'$(BuildUpstreamRepos)' == 'true'">
+    <Error Text="NotImplemented" />
+  </Target>
+
+  <Target Name="PackSourceBuildTarball"
+          Condition="'$(PackSourceBuildTarball)' == 'true'">
+    <Error Text="NotImplemented" />
+  </Target>
+
+  <!--
+    Set up build args to append to the passed build command. These args specify what is unique about
+    building from source, such as non-overlapping artifacts dirs and package caches.
+
+    Use BeforeTargets="GetSourceBuildCommandConfiguration" or set props/items to customize.
+  -->
+  <Target Name="GetSourceBuildCommandConfiguration">
+    <PropertyGroup>
+      <!-- Track that this is the inner build to prevent infinite recursion. -->
+      <InnerBuildArgs>$(InnerBuildArgs) /p:ArcadeInnerBuildFromSource=true</InnerBuildArgs>
+      <!-- Set DotNetBuildFromSource to avoid publishing. -->
+      <InnerBuildArgs>$(InnerBuildArgs) /p:DotNetBuildFromSource=true</InnerBuildArgs>
+      <!-- Use a fresh clone of the repo so that source-build modifications are isolated. -->
+      <InnerBuildArgs>$(InnerBuildArgs) /p:RepoRoot=$(InnerSourceBuildRepoRoot)</InnerBuildArgs>
+      <!-- Override the artifacts dir to cleanly separate the inner build from outer build. -->
+      <InnerBuildArgs>$(InnerBuildArgs) /p:ArtifactsDir=$(CurrentRepoSourceBuildArtifactsDir)</InnerBuildArgs>
+      <!-- Set a custom binlog location to avoid clashing over the currenly specified file. -->
+      <InnerBuildArgs>$(InnerBuildArgs) /bl:$(CurrentRepoSourceBuildBinlogFile)</InnerBuildArgs>
+
+      <!-- The inner build needs to reference the overall output dir for nupkg transport etc. -->
+      <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuildOutputDir=$(SourceBuildOutputDir)</InnerBuildArgs>
+      <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuiltBlobFeedDir=$(SourceBuiltBlobFeedDir)</InnerBuildArgs>
+
+      <!-- Work around issue where local clone may cause failure using non-origin remote fallback: https://github.com/dotnet/sourcelink/issues/629 -->
+      <InnerBuildArgs>$(InnerBuildArgs) /p:EnableSourceControlManagerQueries=false</InnerBuildArgs>
+      <InnerBuildArgs>$(InnerBuildArgs) /p:EnableSourceLink=false</InnerBuildArgs>
+      <InnerBuildArgs>$(InnerBuildArgs) /p:DeterministicSourcePaths=false</InnerBuildArgs>
+      <InnerBuildArgs Condition=" '$(DotNetPackageVersionPropsPath)' != '' ">$(InnerBuildArgs) /p:DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)</InnerBuildArgs>
+      <InnerBuildArgs Condition=" '$(DotNetBuildOffline)' != '' ">$(InnerBuildArgs) /p:DotNetBuildOffline=$(DotNetBuildOffline)</InnerBuildArgs>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Override package cache to separate source-built packages from upstream. -->
+      <InnerBuildEnv Include="NUGET_PACKAGES=$(CurrentRepoSourceBuildPackageCache)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Clone the repo to a new location. Source-build targets will change the source dynamically.
+    Creating a fresh clone avoids overwriting existing work or making subtle changes that might
+    accidentally get added to the user's existing work via a 'git add .'. Since the clone also has
+    access to the git data, this also makes it easy to see what changes the source-build infra has
+    made, for diagnosis or exploratory purposes.
+  -->
+  <Target Name="PrepareInnerSourceBuildRepoRoot">
+    <PropertyGroup>
+      <!--
+        By default, copy WIP. WIP copy helps with local machine dev work. Don't copy WIP if this is
+        a CI build: CI often uses shallow clones, which WIP copying doesn't support.
+      -->
+      <CopyWipIntoInnerSourceBuildRepo Condition="'$(CopyWipIntoInnerSourceBuildRepo)' == '' and '$(ContinuousIntegrationBuild)' == 'true'">false</CopyWipIntoInnerSourceBuildRepo>
+      <CopyWipIntoInnerSourceBuildRepo Condition="'$(CopyWipIntoInnerSourceBuildRepo)' == ''">true</CopyWipIntoInnerSourceBuildRepo>
+
+      <_GitCloneToDirArgs />
+      <_GitCloneToDirArgs>$(_GitCloneToDirArgs) --source &quot;$(RepoRoot)&quot;</_GitCloneToDirArgs>
+      <_GitCloneToDirArgs>$(_GitCloneToDirArgs) --dest &quot;$(InnerSourceBuildRepoRoot)&quot;</_GitCloneToDirArgs>
+      <_GitCloneToDirArgs Condition="'$(CopyWipIntoInnerSourceBuildRepo)' == 'true'">$(_GitCloneToDirArgs) --copy-wip</_GitCloneToDirArgs>
+      <_GitCloneToDirArgs Condition="'$(CleanInnerSourceBuildRepoRoot)' == 'true'">$(_GitCloneToDirArgs) --clean</_GitCloneToDirArgs>
+
+      <_GitCloneToDirScriptFile>$(MSBuildThisFileDirectory)git-clone-to-dir.sh</_GitCloneToDirScriptFile>
+    </PropertyGroup>
+
+    <Exec Command="$(_GitCloneToDirScriptFile) $(_GitCloneToDirArgs)" />
+
+    <!--
+      If the repo has submodules, use 'git clone' on each submodule to put it in the inner repo. We
+      could simply call 'git submodule update ...' one time in the inner repo. However, that hits
+      the network, which is slow and may be unreliable. Also:
+
+      * 'git clone' copies the minimal amount of files from one place on disk to another.
+      * 'git clone' uses hard links instead of doing a full copy of all the Git data files. (In some
+        cases it can't use hard links, but Git figures that out itself.)
+
+      The result of cloning each submodule into the right location in the inner repo isn't identical
+      to fully setting up a submodule, but it behaves the same in the context of source-build.
+    -->
+    <PropertyGroup>
+      <CloneSubmodulesToInnerSourceBuildRepo Condition="'$(CloneSubmodulesToInnerSourceBuildRepo)' == ''">true</CloneSubmodulesToInnerSourceBuildRepo>
+
+      <_GitSubmoduleCloneArgs />
+      <_GitSubmoduleCloneArgs>$(_GitSubmoduleCloneArgs) --source .</_GitSubmoduleCloneArgs>
+      <_GitSubmoduleCloneArgs>$(_GitSubmoduleCloneArgs) --dest &quot;$(InnerSourceBuildRepoRoot)$sm_path&quot;</_GitSubmoduleCloneArgs>
+      <_GitSubmoduleCloneArgs Condition="'$(CopyWipIntoInnerSourceBuildRepo)' == 'true'">$(_GitSubmoduleCloneArgs) --copy-wip</_GitSubmoduleCloneArgs>
+      <_GitSubmoduleCloneArgs Condition="'$(CleanInnerSourceBuildRepoRoot)' == 'true'">$(_GitSubmoduleCloneArgs) --clean</_GitSubmoduleCloneArgs>
+    </PropertyGroup>
+
+    <Exec
+      Condition="'$(CloneSubmodulesToInnerSourceBuildRepo)' == 'true'"
+      Command="git submodule foreach --recursive '$(_gitCloneToDirScriptFile) $(_GitSubmoduleCloneArgs)'"
+      WorkingDirectory="$(RepoRoot)" />
+  </Target>
+
+  <Target Name="RunInnerSourceBuildCommand"
+          DependsOnTargets="PrepareInnerSourceBuildRepoRoot">
+    <PropertyGroup>
+      <!-- Prevent any projects from building in the outside build: they would use prebuilts. -->
+      <PreventPrebuiltBuild>true</PreventPrebuiltBuild>
+
+      <!--
+        Normally, the inner build should run using the original build command with some extra args
+        appended. Allow the repo to override this default behavior if the repo is e.g. not onboarded
+        enough on Arcade for this to work nicely.
+      -->
+      <BaseInnerSourceBuildCommand Condition="'$(BaseInnerSourceBuildCommand)' == ''">$(ARCADE_BUILD_TOOL_COMMAND)</BaseInnerSourceBuildCommand>
+    </PropertyGroup>
+
+    <Exec
+      Command="$(BaseInnerSourceBuildCommand) $(InnerBuildArgs)"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+      EnvironmentVariables="@(InnerBuildEnv)"
+      IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Target Name="PreventPrebuiltBuild"
+          DependsOnTargets="ExecuteWithSourceBuiltTooling"
+          Condition="'$(PreventPrebuiltBuild)' == 'true'"
+          BeforeTargets="Execute">
+    <ItemGroup>
+      <ProjectToBuild Remove="@(ProjectToBuild)" />
+      <ProjectToBuild Include="$(MSBuildThisFileDirectory)Noop.proj" />
+    </ItemGroup>
+  </Target>
+
+</Project>

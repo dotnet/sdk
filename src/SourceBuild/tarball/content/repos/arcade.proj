@@ -2,21 +2,8 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <!-- 'restore' and 'build' switches automatically passed by build.sh/ps1. -->
-    <BuildCommandArgs />
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)pack</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
 
-    <LogVerbosityOptOut>true</LogVerbosityOptOut>
-    <BuildCommandArgs>$(BuildCommandArgs) -v $(LogVerbosity)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -bl</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -ci</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:ArcadeBuildFromSource=true</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:CopyWipIntoInnerSourceBuildRepo=true</BuildCommandArgs>
-
-    <BuildCommand>$(ProjectDirectory)\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
 
     <!-- NuGet SDK resolver only checks nuget.config files. https://github.com/Microsoft/msbuild/issues/2914 -->
     <NuGetConfigFile>$(ProjectDirectory)/NuGet.config</NuGetConfigFile>
