@@ -14,7 +14,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class StaticWebAssets2IntegrationTest : AspNetSdkBaselineTest
     {
-        public StaticWebAssets2IntegrationTest(ITestOutputHelper log) : base(log, true) { }
+        public StaticWebAssets2IntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
 
         // Build Standalone project
         [Fact]
