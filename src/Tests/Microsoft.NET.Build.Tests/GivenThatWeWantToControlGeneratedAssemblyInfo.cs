@@ -418,7 +418,7 @@ namespace Microsoft.NET.Build.Tests
             else
             {
                 Assert.True(contains);
-                Assert.True(langVersion.Equals("Preview", System.StringComparison.Ordinal));
+                Assert.Equal(langVersion.Equals("10.0", System.StringComparison.Ordinal));
             }
         }
 
