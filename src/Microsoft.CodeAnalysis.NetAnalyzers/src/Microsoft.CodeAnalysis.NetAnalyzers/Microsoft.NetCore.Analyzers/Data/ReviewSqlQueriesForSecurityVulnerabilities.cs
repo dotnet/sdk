@@ -215,7 +215,7 @@ namespace Microsoft.NetCore.Analyzers.Data
                 {
                     var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationContext.Compilation);
                     var valueContentResult = ValueContentAnalysis.TryGetOrComputeResult(cfg, containingMethod, wellKnownTypeProvider,
-                        operationContext.Options, Rule, PointsToAnalysisKind.Complete, operationContext.CancellationToken);
+                        operationContext.Options, Rule, PointsToAnalysisKind.Complete);
                     if (valueContentResult != null)
                     {
                         ValueContentAbstractValue value = valueContentResult[argumentValue.Kind, argumentValue.Syntax];

@@ -204,8 +204,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (!disposableFields.IsEmpty)
                     {
                         if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockStartContext.OperationBlocks, containingMethod,
-                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.Complete, trackInstanceFields: true, trackExceptionPaths: false, cancellationToken: operationBlockStartContext.CancellationToken,
-                            disposeAnalysisResult: out var disposeAnalysisResult, pointsToAnalysisResult: out var pointsToAnalysisResult))
+                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.Complete, trackInstanceFields: true, trackExceptionPaths: false, disposeAnalysisResult: out var disposeAnalysisResult,
+                            pointsToAnalysisResult: out var pointsToAnalysisResult))
                         {
                             RoslynDebug.Assert(disposeAnalysisResult.TrackedInstanceFieldPointsToMap != null);
 

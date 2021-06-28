@@ -87,7 +87,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         {
                             hazardousParameterUsages = ParameterValidationAnalysis.GetOrComputeHazardousParameterUsages(
                                 topmostBlock, operationBlockContext.Compilation, containingMethod,
-                                operationBlockContext.Options, Rule, operationBlockContext.CancellationToken);
+                                operationBlockContext.Options, Rule);
                             break;
                         }
                     }

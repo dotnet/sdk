@@ -90,8 +90,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             var valueContentAnalysisResult = ValueContentAnalysis.TryGetOrComputeResult(cfg, owningSymbol, wellKnownTypeProvider,
                                     operationBlockContext.Options, AlwaysTrueFalseOrNullRule,
                                     PointsToAnalysisKind.Complete,
-                                    operationBlockContext.CancellationToken,
-                                    out var copyAnalysisResultOpt, out var pointsToAnalysisResult);
+                                    out var copyAnalysisResultOpt,
+                                    out var pointsToAnalysisResult);
                             if (valueContentAnalysisResult == null ||
                                 pointsToAnalysisResult == null)
                             {

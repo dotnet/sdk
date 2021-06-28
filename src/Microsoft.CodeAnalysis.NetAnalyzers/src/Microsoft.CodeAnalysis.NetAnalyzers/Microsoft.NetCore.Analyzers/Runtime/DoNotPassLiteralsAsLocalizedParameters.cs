@@ -165,7 +165,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartContext.Compilation);
                         return ValueContentAnalysis.TryGetOrComputeResult(cfg, containingMethod, wellKnownTypeProvider,
-                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, operationBlockStartContext.CancellationToken);
+                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties);
                     }
 
                     return null;

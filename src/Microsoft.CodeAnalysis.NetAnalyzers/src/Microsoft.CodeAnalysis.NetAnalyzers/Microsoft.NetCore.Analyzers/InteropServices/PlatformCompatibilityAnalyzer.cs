@@ -263,8 +263,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         cfg, context.OwningSymbol, CreateOperationVisitor, wellKnownTypeProvider,
                         context.Options, SupportedCsAllPlatforms, performValueContentAnalysis,
                         pessimisticAnalysis: false,
-                        context.CancellationToken, out var valueContentAnalysisResult,
-                        additionalSupportedValueTypes: osPlatformTypeArray,
+                        valueContentAnalysisResult: out var valueContentAnalysisResult, additionalSupportedValueTypes: osPlatformTypeArray,
                         getValueContentValueForAdditionalSupportedValueTypeOperation: osPlatformTypeArray.IsEmpty ? null : GetValueContentValue);
 
                     if (analysisResult == null)

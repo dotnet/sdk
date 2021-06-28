@@ -101,9 +101,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         null;
 
                     if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockContext.OperationBlocks, containingMethod,
-                        operationBlockContext.Options, NotDisposedRule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, trackInstanceFields: false, trackExceptionPaths,
-                        operationBlockContext.CancellationToken, out var disposeAnalysisResult, out var pointsToAnalysisResult,
-                        interproceduralAnalysisPredicate))
+                        operationBlockContext.Options, NotDisposedRule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, trackInstanceFields: false, trackExceptionPaths: trackExceptionPaths,
+                        disposeAnalysisResult: out var disposeAnalysisResult, pointsToAnalysisResult: out var pointsToAnalysisResult, interproceduralAnalysisPredicate: interproceduralAnalysisPredicate))
                     {
                         using var notDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();
                         using var mayBeNotDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();

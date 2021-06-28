@@ -226,8 +226,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                     TaintedDataEnteringSinkDescriptor,
                                                     sourceInfoSymbolMap,
                                                     taintedDataConfig.GetSanitizerSymbolMap(this.SinkKind),
-                                                    sinkInfoSymbolMap,
-                                                    operationBlockAnalysisContext.CancellationToken);
+                                                    sinkInfoSymbolMap);
                                                 if (taintedDataAnalysisResult == null)
                                                 {
                                                     return;
