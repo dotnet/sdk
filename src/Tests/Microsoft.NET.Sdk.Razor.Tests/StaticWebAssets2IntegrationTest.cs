@@ -485,8 +485,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            publish.Execute().Should().Pass();
+            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
+            restore.Execute().Should().Pass();
+
+            var publish = new PublishCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
+            publish.WithWorkingDirectory(ProjectDirectory.Path);
+            publish.Execute("/bl").Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -521,7 +525,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            var publish = new PublishCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
             publish.Execute($"/p:PublishSingleFile=true /p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
@@ -580,7 +584,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             // Publish no build
 
-            var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            var publish = new PublishCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
             publish.Execute("/p:NoBuild=true", "/p:ErrorOnDuplicatePublishOutputFiles=false").Should().Pass();
 
             new FileInfo(path).LastWriteTimeUtc.Should().Be(objManifestFileTimeStamp);
