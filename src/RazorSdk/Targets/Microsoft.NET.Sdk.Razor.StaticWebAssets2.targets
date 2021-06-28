@@ -375,13 +375,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ReadStaticWebAssetsManifestFile>
   </Target>
 
-  <Target Name="ComputeReferencedProjectsPublishAssets">
+  <Target Name="ComputeReferencedProjectsPublishAssets" DependsOnTargets="PrepareProjectReferences">
+
+    <ItemGroup>
+      <_StaticWebAssetPublishProjectReference Include="@(_MSBuildProjectReferenceExistent)" />
+    </ItemGroup>
+
     <MSBuild
-      Condition="'@(_StaticWebAssetProjectReference)' != '' and '%(_StaticWebAssetProjectReference.BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != ''"
+      Condition="'@(_StaticWebAssetPublishProjectReference)' != '' and '%(_StaticWebAssetPublishProjectReference.BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != ''"
       Targets="GenerateStaticWebAssetsPublishManifest"
-      Properties="%(_StaticWebAssetProjectReference.SetConfiguration); %(_StaticWebAssetProjectReference.SetPlatform);  %(_StaticWebAssetProjectReference.SetTargetFramework)"
-      RemoveProperties="%(_StaticWebAssetProjectReference.GlobalPropertiesToRemove)"
-      Projects="@(_StaticWebAssetProjectReference)"
+      Properties="%(_StaticWebAssetPublishProjectReference.SetConfiguration); %(_StaticWebAssetPublishProjectReference.SetPlatform);  %(_StaticWebAssetPublishProjectReference.SetTargetFramework)"
+      RemoveProperties="%(_StaticWebAssetPublishProjectReference.GlobalPropertiesToRemove)"
+      Projects="@(_StaticWebAssetPublishProjectReference)"
       BuildInParallel="$(BuildInParallel)"
       ContinueOnError="!$(BuildingProject)"
       SkipNonexistentTargets="true" />

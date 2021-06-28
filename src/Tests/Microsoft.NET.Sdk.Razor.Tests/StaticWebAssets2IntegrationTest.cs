@@ -547,6 +547,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(path).Should().Exist();
             var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath));
             AssertManifest(publishManifest, LoadPublishManifest());
+
+            AssertPublishAssets(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath)),
+                publishPath,
+                intermediateOutputPath);
         }
 
         [Fact]
@@ -585,7 +590,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Publish no build
 
             var publish = new PublishCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
-            publish.Execute("/p:NoBuild=true", "/p:ErrorOnDuplicatePublishOutputFiles=false").Should().Pass();
+            var publishResult = publish.Execute("/p:NoBuild=true", "/p:ErrorOnDuplicatePublishOutputFiles=false");
+            var publishPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+
+            publishResult.Should().Pass();
 
             new FileInfo(path).LastWriteTimeUtc.Should().Be(objManifestFileTimeStamp);
 
@@ -607,6 +616,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(path).Should().Exist();
             var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath));
             AssertManifest(publishManifest, LoadPublishManifest());
+
+            AssertPublishAssets(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath)),
+                publishPath,
+            intermediateOutputPath);
         }
 
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/17979")]
