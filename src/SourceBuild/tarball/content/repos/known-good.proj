@@ -31,6 +31,10 @@
         <RepositoryReference Include="arcade" />
         <RepositoryReference Include="linker" />
 
+        <!-- Package source-build artifacts -->
+
+        <RepositoryReference Include="package-source-build" />
+        
       </ItemGroup>
     </Otherwise>
   </Choose>
