@@ -413,12 +413,12 @@ namespace Microsoft.NET.Build.Tests
             if (!enablePreviewFeatures)
             {
                 Assert.False(contains);
-                Assert.True(langVersion.Equals(string.Empty, System.StringComparison.Ordinal));
+                Assert.Equal(string.Empty, langVersion, System.StringComparer.Ordinal);
             }
             else
             {
                 Assert.True(contains);
-                Assert.True(langVersion.Equals("10.0", System.StringComparison.Ordinal), $"Expected '10.0' but got '{langVersion}'");
+                Assert.Equal("10.0", langVersion, System.StringComparer.Ordinal);
             }
         }
 
