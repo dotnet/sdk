@@ -22,6 +22,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildWebTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed.Web\</MSBuildWebTargetsPath>
     <AspNetCoreHostingModel Condition="'$(AspNetCoreHostingModel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">inprocess</AspNetCoreHostingModel>
     <AspNetCoreModuleName Condition="'$(AspNetCoreModuleName)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">AspNetCoreModuleV2</AspNetCoreModuleName>
+    <GenerateAspNetCoreGlobalUsings Condition="'$(GenerateAspNetCoreGlobalUsings)' == '' and '$(LangVersion)' == 'preview'">true</GenerateAspNetCoreGlobalUsings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,16 +36,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Include="AspNetCoreInProcessHosting" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '6.0' ">
-    <GlobalUsings Include="Microsoft.AspNetCore.Builder" />
-    <GlobalUsings Include="Microsoft.AspNetCore.Hosting" />
-    <GlobalUsings Include="Microsoft.AspNetCore.Http" />
-    <GlobalUsings Include="Microsoft.AspNetCore.Mvc" />
-    <GlobalUsings Include="Microsoft.AspNetCore.Routing" />
-    <GlobalUsings Include="Microsoft.Extensions.Configuration" />
-    <GlobalUsings Include="Microsoft.Extensions.DependencyInjection" />
-    <GlobalUsings Include="Microsoft.Extensions.Hosting" />
-    <GlobalUsings Include="Microsoft.Extensions.Logging" />
+  <ItemGroup Condition=" '$(GenerateAspNetCoreGlobalUsings)' == 'true'
+      And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+      And $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '6.0'))">
+    <GlobalUsing Include="Microsoft.AspNetCore.Builder" />
+    <GlobalUsing Include="Microsoft.AspNetCore.Hosting" />
+    <GlobalUsing Include="Microsoft.AspNetCore.Http" />
+    <GlobalUsing Include="Microsoft.AspNetCore.Mvc" />
+    <GlobalUsing Include="Microsoft.AspNetCore.Routing" />
+    <GlobalUsing Include="Microsoft.Extensions.Configuration" />
+    <GlobalUsing Include="Microsoft.Extensions.DependencyInjection" />
+    <GlobalUsing Include="Microsoft.Extensions.Hosting" />
+    <GlobalUsing Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
   <PropertyGroup>
