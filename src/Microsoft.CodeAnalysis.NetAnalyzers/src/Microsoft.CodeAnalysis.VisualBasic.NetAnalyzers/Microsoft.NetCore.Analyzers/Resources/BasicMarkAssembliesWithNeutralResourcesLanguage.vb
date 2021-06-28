@@ -13,14 +13,15 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Resources
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public NotInheritable Class BasicMarkAssembliesWithNeutralResourcesLanguageAnalyzer
         Inherits MarkAssembliesWithNeutralResourcesLanguageAnalyzer
-        Protected Overrides Sub RegisterAttributeAnalyzer(context As CompilationStartAnalysisContext, onResourceFound As Action)
+        Protected Overrides Sub RegisterAttributeAnalyzer(context As CompilationStartAnalysisContext, onResourceFound As Action, generatedCode As INamedTypeSymbol)
             context.RegisterSyntaxNodeAction(
                 Sub(nc)
-                    If Not CheckBasicAttribute(nc.Node) Then
+                    Dim attributeSyntax = DirectCast(nc.Node, AttributeSyntax)
+                    If Not CheckBasicAttribute(attributeSyntax) Then
                         Return
                     End If
 
-                    If Not CheckResxGeneratedFile(nc.SemanticModel, nc.Node, DirectCast(nc.Node, AttributeSyntax).ArgumentList.Arguments(0).GetExpression(), nc.CancellationToken) Then
+                    If Not CheckResxGeneratedFile(nc.SemanticModel, attributeSyntax, attributeSyntax.ArgumentList.Arguments(0).GetExpression(), generatedCode, nc.CancellationToken) Then
                         Return
                     End If
 
@@ -28,8 +29,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Resources
                 End Sub, SyntaxKind.Attribute)
         End Sub
 
-        Private Shared Function CheckBasicAttribute(node As SyntaxNode) As Boolean
-            Dim attribute = TryCast(node, AttributeSyntax)
+        Private Shared Function CheckBasicAttribute(attribute As AttributeSyntax) As Boolean
             Return (attribute?.Name?.GetLastToken().Text.Equals(GeneratedCodeAttribute, StringComparison.Ordinal) = True AndAlso
                 attribute.ArgumentList.Arguments.Count > 0).GetValueOrDefault()
         End Function
