@@ -6715,5 +6715,55 @@ public class C
 }",
             }.RunAsync();
         }
+
+        [Fact, WorkItem(3634, "https://github.com/dotnet/roslyn-analyzers/issues/3634")]
+        public async Task NullConditionalAssignmentOperator_NullableEnableContext_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+using System.Collections.Generic;
+
+public class C
+{
+    public void ParameterTest(Dictionary<string, string>? dict = null)
+    {
+        dict ??= new Dictionary<string, string>();
+        SetParameter(dict);
+    }
+
+    private void SetParameter(Dictionary<string, string> dict)
+    {
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3634, "https://github.com/dotnet/roslyn-analyzers/issues/3634")]
+        public async Task NullConditionalAssignmentOperator_NonNullableEnableContext_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+
+public class C
+{
+    public void ParameterTest(Dictionary<string, string> dict = null)
+    {
+        dict ??= new Dictionary<string, string>();
+        SetParameter(dict);
+    }
+
+    private void SetParameter(Dictionary<string, string> dict)
+    {
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
     }
 }
