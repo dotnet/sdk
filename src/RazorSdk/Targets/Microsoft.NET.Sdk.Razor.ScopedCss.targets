@@ -59,7 +59,6 @@ Integration with static web assets:
 
   <_PrepareForScopedCssDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
     _ResolveBundlingConfiguration;
-    ResolveStaticWebAssetsInputs;    
     BundleScopedCssFiles;
     $(_PrepareForScopedCssDependsOn)
   </_PrepareForScopedCssDependsOn>
@@ -72,9 +71,10 @@ Integration with static web assets:
 
   <ResolveStaticWebAssetsInputsDependsOn Condition="'$(DisableScopedCssBundling)' == 'true'">
     $(ResolveStaticWebAssetsInputsDependsOn);
+    UpdateLegacyPackageScopedCssBundles;
     _AddGeneratedScopedCssFiles;
   </ResolveStaticWebAssetsInputsDependsOn>
-
+  
   <ResolveStaticWebAssetsInputsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
     $(ResolveStaticWebAssetsInputsDependsOn);
     UpdateLegacyPackageScopedCssBundles;
@@ -252,6 +252,8 @@ Integration with static web assets:
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </StaticWebAsset>
 
+    <StaticWebAsset Remove="@(_DiscoveredScopedCssFiles)"/>
+
   </ItemGroup>
 
 </Target>
@@ -259,8 +261,8 @@ Integration with static web assets:
 <!-- This target runs as part of ResolveStaticWebAssetInputs and collects all the generated scoped css files. When bundling is enabled
      these files are removed from the list of static web assets by '_AddScopedCssBundles' -->
 
-<Target Name="_CollectAllScopedCssAssets">
-  <ResolveAllScopedCssAssets StaticWebAssets="@(StaticWebAsset)">
+<Target Name="_CollectAllScopedCssAssets" DependsOnTargets="_ComputeScopedCssStaticWebAssets">
+  <ResolveAllScopedCssAssets StaticWebAssets="@(StaticWebAsset);@(_ScopedCssStaticWebAsset)">
     <Output TaskParameter="ScopedCssAssets" ItemName="_DiscoveredScopedCssFiles" />
     <Output TaskParameter="ScopedCssProjectBundles" ItemName="_ScopedCssProjectBundles" />
   </ResolveAllScopedCssAssets>
@@ -278,9 +280,7 @@ Integration with static web assets:
 
 </Target>
 
-<Target Name="_AddGeneratedScopedCssFiles" DependsOnTargets="_ResolveScopedCssOutputs;ResolveStaticWebAssetsConfiguration">
-  <!-- We do this in two steps because we will be modifying the list of static web assets if we bundle the files and these assets need to be
-  available when called from GetCurrentProjectStaticWebAssets -->
+<Target Name="_ComputeScopedCssStaticWebAssets" DependsOnTargets="_ResolveScopedCssOutputs;ResolveStaticWebAssetsConfiguration">
   <ItemGroup>
     <_ScopedCssStaticWebAsset Include="%(_ScopedCss.OutputFile)" Condition="@(_ScopedCss) != ''">
       <SourceType>Computed</SourceType>
@@ -293,7 +293,11 @@ Integration with static web assets:
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </_ScopedCssStaticWebAsset>
+  </ItemGroup>
+</Target>
 
+<Target Name="_AddGeneratedScopedCssFiles" DependsOnTargets="_ComputeScopedCssStaticWebAssets">
+  <ItemGroup>
     <StaticWebAsset Include="@(_ScopedCssStaticWebAsset)" />
   </ItemGroup>
 </Target>
