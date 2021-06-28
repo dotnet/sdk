@@ -333,6 +333,10 @@
       </ComponentToDownload>
     </ItemGroup>
 
+    <PropertyGroup>
+      <DOTNETCLIMSRC_READ_SAS_TOKEN>$([System.Environment]::GetEnvironmentVariable('DOTNETCLIMSRC_READ_SAS_TOKEN'))</DOTNETCLIMSRC_READ_SAS_TOKEN>
+    </PropertyGroup>
+
     <DownloadFile Condition=" '@(ComponentToDownload)' != '' And '%(ComponentToDownload.ShouldDownload)' == 'true'"
                   Uri="%(ComponentToDownload.BaseUrl)/%(ComponentToDownload.DownloadFileName)"
                   PrivateUri="%(ComponentToDownload.PrivateBaseUrl)/%(ComponentToDownload.DownloadFileName)$(DOTNETCLIMSRC_READ_SAS_TOKEN)"
