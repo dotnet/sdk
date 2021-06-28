@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly string _downloadPath;
         private readonly bool _manifestDownload;
 
-        public List<(PackageId, NuGetVersion, DirectoryPath?, PackageSourceLocation)> DownloadCallParams = new List<(PackageId, NuGetVersion, DirectoryPath?, PackageSourceLocation)>();
+        public List<(PackageId, NuGetVersion, DirectoryPath?, PackageSourceLocation)> DownloadCallParams = new();
 
         public List<string> DownloadCallResult = new List<string>();
 
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
-			DirectoryPath? downloadFolder = null)
+            DirectoryPath? downloadFolder = null)
         {
             DownloadCallParams.Add((packageId, packageVersion, downloadFolder, packageSourceLocation));
             var path = Path.Combine(_downloadPath, "mock.nupkg");
@@ -49,6 +49,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 Directory.CreateDirectory(Path.Combine(targetFolder.Value, "data"));
             }
             return Task.FromResult(new List<string>() as IEnumerable<string>);
+        }
+
+        public Task<NuGetVersion> GetLatestPackageVerion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
+        {
+            return Task.FromResult(new NuGetVersion("10.0.0"));
         }
 
         public Task<string> GetPackageUrl(PackageId packageId,

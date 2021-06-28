@@ -77,9 +77,11 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             _nugetPackageDownloader = nugetPackageDownloader ??
                                       new NuGetPackageDownloader(tempPackagesDir, null,
                                           new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, nullLogger),
-                                          verboseLogger: nullLogger);
+                                          verboseLogger: nullLogger,
+                                          restoreActionConfig: _parseResult.ToRestoreActionConfig());
+            var workloadResolver = WorkloadResolver.Create(_workloadManifestProvider, _dotnetPath, currentSdkReleaseVersion.ToString());
             _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(_reporter,
-                _workloadManifestProvider, _nugetPackageDownloader, _userHome, _tempDirPath);
+                _workloadManifestProvider, workloadResolver, _nugetPackageDownloader, _userHome, _tempDirPath);
         }
 
         public override int Execute()

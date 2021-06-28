@@ -31,23 +31,26 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly SdkFeatureBand _sdkFeatureBand;
         private readonly NetSdkManagedInstallationRecordRepository _installationRecordRepository;
         private readonly PackageSourceLocation _packageSourceLocation;
+        private readonly RestoreActionConfig _restoreActionConfig;
 
-        public NetSdkManagedInstaller(
-            IReporter reporter,
+        public NetSdkManagedInstaller(IReporter reporter,
             SdkFeatureBand sdkFeatureBand,
             IWorkloadResolver workloadResolver,
             INuGetPackageDownloader nugetPackageDownloader = null,
-            string dotnetDir =  null,
-            string tempDirPath =  null,
-            VerbosityOptions verbosity = VerbosityOptions.normal, 
-            PackageSourceLocation packageSourceLocation = null)
+            string dotnetDir = null,
+            string tempDirPath = null,
+            VerbosityOptions verbosity = VerbosityOptions.normal,
+            PackageSourceLocation packageSourceLocation = null,
+            RestoreActionConfig restoreActionConfig = null)
         {
             _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             _tempPackagesDir = new DirectoryPath(tempDirPath ?? Path.GetTempPath());
             ILogger logger = verbosity.VerbosityIsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
+            _restoreActionConfig = restoreActionConfig;
             _nugetPackageDownloader = nugetPackageDownloader ??
                                       new NuGetPackageDownloader(_tempPackagesDir, filePermissionSetter: null,
-                                          new FirstPartyNuGetPackageSigningVerifier(_tempPackagesDir), logger);
+                                          new FirstPartyNuGetPackageSigningVerifier(_tempPackagesDir), logger,
+                                          restoreActionConfig: _restoreActionConfig);
             _workloadMetadataDir = Path.Combine(_dotnetDir, "metadata", "workloads");
             _reporter = reporter;
             _sdkFeatureBand = sdkFeatureBand;
@@ -91,7 +94,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             string packagePath;
                             if (offlineCache == null || !offlineCache.HasValue)
                             {
-                                packagePath = _nugetPackageDownloader.DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId), new NuGetVersion(packInfo.Version), _packageSourceLocation).GetAwaiter().GetResult();
+                                packagePath = _nugetPackageDownloader
+                                    .DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId),
+                                        new NuGetVersion(packInfo.Version),
+                                        _packageSourceLocation).GetAwaiter().GetResult();
                                 tempFilesToDelete.Add(packagePath);
                             }
                             else
@@ -120,7 +126,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                 Directory.CreateDirectory(tempExtractionDir);
                                 var packFiles = _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(tempExtractionDir)).GetAwaiter().GetResult();
 
-                                FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(tempExtractionDir, packInfo.Path));
+                                FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(tempExtractionDir, packInfo.Path));
                             }
                         }
                         else
@@ -211,16 +217,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                            {
                                Directory.Delete(tempBackupDir, true);
                            }
-                           FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(manifestPath, tempBackupDir));
+                           FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(manifestPath, tempBackupDir));
                        }
                        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath));
-                       FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(Path.Combine(tempExtractionDir, "data"), manifestPath));
+                       FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(Path.Combine(tempExtractionDir, "data"), manifestPath));
                    },
                     rollback: () =>
                     {
                         if (!string.IsNullOrEmpty(tempBackupDir) && Directory.Exists(tempBackupDir))
                         {
-                            FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(tempBackupDir, manifestPath));
+                            FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(tempBackupDir, manifestPath));
                         }
                     });
 
@@ -264,8 +270,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 Directory.CreateDirectory(cachePath.Value);
             }
-            _nugetPackageDownloader.DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId), new NuGetVersion(packInfo.Version), downloadFolder: cachePath,
-                packageSourceLocation: _packageSourceLocation, includePreview: includePreviews).Wait();
+
+            _nugetPackageDownloader.DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId),
+                new NuGetVersion(packInfo.Version),
+                packageSourceLocation: _packageSourceLocation,
+                includePreview: includePreviews,
+                downloadFolder: cachePath).GetAwaiter().GetResult();
         }
 
         public void GarbageCollectInstalledWorkloadPacks()
