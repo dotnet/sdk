@@ -22,7 +22,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildWebTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed.Web\</MSBuildWebTargetsPath>
     <AspNetCoreHostingModel Condition="'$(AspNetCoreHostingModel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">inprocess</AspNetCoreHostingModel>
     <AspNetCoreModuleName Condition="'$(AspNetCoreModuleName)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">AspNetCoreModuleV2</AspNetCoreModuleName>
-    <GenerateAspNetCoreGlobalUsings Condition="'$(GenerateAspNetCoreGlobalUsings)' == '' and '$(LangVersion)' == 'preview'">true</GenerateAspNetCoreGlobalUsings>
+    <GenerateAspNetCoreGlobalUsings Condition="'$(GenerateAspNetCoreGlobalUsings)' == ''">true</GenerateAspNetCoreGlobalUsings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,7 +42,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GlobalUsing Include="Microsoft.AspNetCore.Builder" />
     <GlobalUsing Include="Microsoft.AspNetCore.Hosting" />
     <GlobalUsing Include="Microsoft.AspNetCore.Http" />
-    <GlobalUsing Include="Microsoft.AspNetCore.Mvc" />
     <GlobalUsing Include="Microsoft.AspNetCore.Routing" />
     <GlobalUsing Include="Microsoft.Extensions.Configuration" />
     <GlobalUsing Include="Microsoft.Extensions.DependencyInjection" />

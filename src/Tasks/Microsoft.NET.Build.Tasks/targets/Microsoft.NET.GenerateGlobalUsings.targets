@@ -19,7 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <PropertyGroup>
     <GeneratedGlobalUsingsFile Condition="'$(GeneratedGlobalUsingsFile)' ==''">$(IntermediateOutputPath)$(MSBuildProjectName).GlobalUsings$(DefaultLanguageSourceExtension)</GeneratedGlobalUsingsFile>
-    <GenerateGlobalUsings Condition="'$(GenerateGlobalUsings)' == '' and '$(LangVersion)' == 'preview'">true</GenerateGlobalUsings>
+    <GenerateGlobalUsings Condition="'$(GenerateGlobalUsings)' == ''">true</GenerateGlobalUsings>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
