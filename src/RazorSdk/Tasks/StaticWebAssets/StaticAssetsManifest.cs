@@ -161,11 +161,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public class ManifestReference
         {
-            public ManifestReference(string identity, string source, string type, string hash)
+            public ManifestReference(string identity, string source, string manifestType, string hash)
             {
                 Identity = identity;
                 Source = source;
-                Type = type;
+                ManifestType = manifestType;
                 Hash = hash;
             }
 
@@ -173,25 +173,25 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             public string Source { get; set; }
 
-            public string Type { get; set; }
+            public string ManifestType { get; set; }
 
             public string Hash { get; set; }
 
             public override bool Equals(object obj) => obj is ManifestReference reference
                 && Identity == reference.Identity
                 && Source == reference.Source
-                && Type == reference.Type
+                && ManifestType == reference.ManifestType
                 && Hash == reference.Hash;
 
             public override int GetHashCode()
             {
 #if NET6_0_OR_GREATER
-                return HashCode.Combine(Identity, Source, Type, Hash);
+                return HashCode.Combine(Identity, Source, ManifestType, Hash);
 #else
                 int hashCode = -868952447;
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Identity);
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Source);
-                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Type);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ManifestType);
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Hash);
                 return hashCode;
 #endif
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var result = new TaskItem(Identity);
                 result.SetMetadata(nameof(Source), Source);
-                result.SetMetadata(nameof(Type), Type);
+                result.SetMetadata(nameof(ManifestType), ManifestType);
                 result.SetMetadata(nameof(Hash), Hash);
                 return result;
             }

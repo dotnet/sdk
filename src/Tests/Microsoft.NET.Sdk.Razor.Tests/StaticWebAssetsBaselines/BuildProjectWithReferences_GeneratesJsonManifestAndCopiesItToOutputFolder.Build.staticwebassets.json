@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "CNbKkRnZJ6vx6unW5jFixwmRElwPZGsWiMD\u002B9wYRqAA=",
+  "Hash": "SDQiNeUeSEVlyWuExu6I\u002BEiLMmFogoMe3pIlO0T9MWg=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -9,14 +9,26 @@
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
       "Source": "AnotherClassLib",
-      "Type": "Build",
-      "Hash": "zM2Y1MNtibt/ZJ6v1iD8dy4bE5\u002BUsnVX199x/Ay5CbE="
+      "ManifestType": "Build",
+      "Hash": "ar0o1rXA5anRb/494meatjhWLMMjtn8ufijmvN4zAWs="
+    },
+    {
+      "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
+      "Source": "AnotherClassLib",
+      "ManifestType": "Publish",
+      "Hash": ""
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
       "Source": "ClassLibrary",
-      "Type": "Build",
+      "ManifestType": "Build",
       "Hash": "RtfG4oIz4lR7zKjKw0118dpogvJK/vZKRbA5Qd9VGLM="
+    },
+    {
+      "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
+      "Source": "ClassLibrary",
+      "ManifestType": "Publish",
+      "Hash": ""
     }
   ],
   "DiscoveryPatterns": [

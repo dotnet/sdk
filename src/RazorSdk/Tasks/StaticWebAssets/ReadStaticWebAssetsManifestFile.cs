@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
@@ -35,12 +36,28 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 // so we filter out files marked as Reference here since they don't have to be copied to the output.
                 // The process for merging assets from dependent projects reads their manifests directly, so its not
                 // an issue there.
-                var assets = manifest.ManifestType is not StaticWebAssetsManifest.ManifestTypes.Publish ?
-                    manifest.Assets :
-                    manifest.Assets.Where(a => !string.Equals(a.SourceId, manifest.Source, StringComparison.Ordinal)
-                        || a.AssetMode is not StaticWebAsset.AssetModes.Reference);
+                var isPublishManifest = string.Equals(manifest.ManifestType, StaticWebAssetsManifest.ManifestTypes.Publish, StringComparison.Ordinal);
+                if (isPublishManifest)
+                {
+                    var assets = new List<StaticWebAsset>();
+                    foreach (var asset in manifest.Assets)
+                    {
+                        if (string.Equals(asset.SourceId, manifest.Source, StringComparison.Ordinal) &&
+                            string.Equals(asset.AssetMode, StaticWebAsset.AssetModes.Reference))
+                        {
+                            continue;
+                        }
 
-                Assets = assets.Select(a => a.ToTaskItem()).ToArray();
+                        assets.Add(asset);
+                    }
+
+                    Assets = assets.Select(a => a.ToTaskItem()).ToArray();
+                }
+                else
+                {
+                    Assets = manifest.Assets.Select(a => a.ToTaskItem()).ToArray();
+                }
+
                 RelatedManifests = manifest.RelatedManifests.Select(m => m.ToTaskItem()).ToArray();
             }
             catch (Exception ex)

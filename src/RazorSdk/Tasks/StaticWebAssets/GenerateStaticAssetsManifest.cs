@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
@@ -53,9 +54,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem);
 
                 // On a publish manifest we don't care about build only assets, so filter them out.
-                if (ManifestType == StaticWebAssetsManifest.ManifestTypes.Publish)
+                if (string.Equals(ManifestType, StaticWebAssetsManifest.ManifestTypes.Publish, StringComparison.Ordinal))
                 {
-                    assets = assets.Where(a => a.AssetKind is not StaticWebAsset.AssetKinds.Build);
+                    Log.LogMessage("Filtering build assets from the publish manifest.");
+                    assets = FilterBuildAssets(assets);
                 }
 
                 var relatedManifests = RelatedManifests.OrderBy(a => a.GetMetadata("FullPath"))
@@ -91,6 +93,23 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return !Log.HasLoggedErrors;
         }
 
+        private IEnumerable<StaticWebAsset> FilterBuildAssets(IEnumerable<StaticWebAsset> assets)
+        {
+            foreach (var asset in assets)
+            {
+                if (!string.Equals(asset.AssetKind, StaticWebAsset.AssetKinds.Build, StringComparison.Ordinal))
+                {
+                    yield return asset;
+                }
+                else
+                {
+                    Log.LogMessage("Skipping asset '{0}' because its asset kind is '{1}'",
+                        asset.Identity,
+                        asset.AssetKind);
+                }
+            }
+        }
+
         private StaticWebAssetsManifest.DiscoveryPattern ComputeDiscoveryPattern(ITaskItem pattern)
         {
             var name = pattern.ItemSpec;
@@ -114,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     Log.LogError("Manifest '{0}' for project '{1}' with type '{2}' does not exist.", identity, source, manifestType);
                 }
 
-                return null;
+                return new StaticWebAssetsManifest.ManifestReference(identity, source, manifestType, "");
             }
 
             var relatedManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(identity));

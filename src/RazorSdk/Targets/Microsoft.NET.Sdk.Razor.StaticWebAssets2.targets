@@ -229,7 +229,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       RelatedManifests="@(StaticWebAssetManifest)"
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
-      ManifestPath="$(StaticWebAssetBuildManifestPath)"></GenerateStaticWebAssetsManifest>
+      ManifestPath="$(StaticWebAssetBuildManifestPath)">
+    </GenerateStaticWebAssetsManifest>
     <ItemGroup>
       <StaticWebAsset Remove="@(StaticWebAsset)" />
       <StaticWebAssetManifest Remove="@(StaticWebAssetManifest)" />

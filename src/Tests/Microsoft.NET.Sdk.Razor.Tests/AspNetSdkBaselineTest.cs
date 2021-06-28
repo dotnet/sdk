@@ -233,9 +233,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 manifest.BasePath.Should().Be(expected.BasePath);
                 manifest.Mode.Should().Be(expected.Mode);
                 manifest.ManifestType.Should().Be(expected.ManifestType);
-                manifest.RelatedManifests.Select(rm => new ComparableManifest(rm.Identity, rm.Source, rm.Type))
+                manifest.RelatedManifests.Select(rm => new ComparableManifest(rm.Identity, rm.Source, rm.ManifestType))
                     .Should()
-                    .BeEquivalentTo(expected.RelatedManifests.Select(rm => new ComparableManifest(rm.Identity, rm.Source, rm.Type)));
+                    .BeEquivalentTo(expected.RelatedManifests.Select(rm => new ComparableManifest(rm.Identity, rm.Source, rm.ManifestType)));
                 manifest.DiscoveryPatterns.ShouldBeEquivalentTo(expected.DiscoveryPatterns);
             }
             else

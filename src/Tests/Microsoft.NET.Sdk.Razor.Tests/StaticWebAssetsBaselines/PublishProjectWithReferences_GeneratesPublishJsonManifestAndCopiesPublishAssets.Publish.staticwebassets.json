@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "/22VnlVE24f6khp0DubYR9Tzia1HyRSTAvK2QGCj170=",
+  "Hash": "rr1o9L5q3EZoVXZIcUavSGJhKOhouOA6Lid8dKXlE4k=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -9,14 +9,26 @@
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
       "Source": "AnotherClassLib",
-      "Type": "",
-      "Hash": "/kOKbmV/Qo/KPT7D9aM/ynaFXrbkjh\u002B45cYCEHDbjb8="
+      "ManifestType": "Build",
+      "Hash": "/T\u002Bf10hdkVhR4KOUoeMxtLn0kXAg20md0Ujtar46N\u002Bg="
+    },
+    {
+      "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
+      "Source": "AnotherClassLib",
+      "ManifestType": "Publish",
+      "Hash": "mpmxnXVd2dkBnLBtLo8A0vn1nbH7MRciZ42xKz/UjGQ="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
       "Source": "ClassLibrary",
-      "Type": "",
+      "ManifestType": "Build",
       "Hash": "EwlTstoEQtSD4IYHZQ3ecbExJPjXLHp44S2m7vzYgo8="
+    },
+    {
+      "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
+      "Source": "ClassLibrary",
+      "ManifestType": "Publish",
+      "Hash": "xK\u002BxTksTcFNYj3P8VxgjCYim3QEKUOyn8g4wcGSxe2c="
     }
   ],
   "DiscoveryPatterns": [],
@@ -28,6 +40,30 @@
       "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\",
       "BasePath": "_content/AnotherClassLib",
       "RelativePath": "css/site.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\css\\site.css",
+      "SourceId": "AnotherClassLib",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\",
+      "BasePath": "_content/AnotherClassLib",
+      "RelativePath": "css/site.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js",
+      "SourceId": "AnotherClassLib",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\",
+      "BasePath": "_content/AnotherClassLib",
+      "RelativePath": "js/project-direct-dep.js",
       "AssetKind": "All",
       "AssetMode": "All",
       "CopyToOutputDirectory": "Never",
@@ -70,12 +106,48 @@
       "CopyToPublishDirectory": "PreserveNewest"
     },
     {
+      "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
+      "SourceId": "ClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\",
+      "BasePath": "_content/ClassLibrary",
+      "RelativePath": "ClassLibrary.bundle.scp.css",
+      "AssetKind": "All",
+      "AssetMode": "Reference",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
       "Identity": "${ProjectRoot}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
       "SourceId": "ClassLibrary",
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\ClassLibrary\\wwwroot\\",
       "BasePath": "_content/ClassLibrary",
       "RelativePath": "js/project-transitive-dep.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
+      "SourceId": "ClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\ClassLibrary\\wwwroot\\",
+      "BasePath": "_content/ClassLibrary",
+      "RelativePath": "js/project-transitive-dep.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
+      "SourceId": "ClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\ClassLibrary\\wwwroot\\",
+      "BasePath": "_content/ClassLibrary",
+      "RelativePath": "js/project-transitive-dep.v4.js",
       "AssetKind": "All",
       "AssetMode": "All",
       "CopyToOutputDirectory": "Never",
