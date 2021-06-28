@@ -117,7 +117,6 @@ namespace Microsoft.Extensions.HotReload
                 Assert.Equal(e.ModuleId, a.ModuleId);
                 Assert.Equal(e.ILDelta, a.ILDelta);
                 Assert.Equal(e.MetadataDelta, a.MetadataDelta);
-                
                 if (e.UpdatedTypes is null)
                 {
                     Assert.Empty(a.UpdatedTypes);
