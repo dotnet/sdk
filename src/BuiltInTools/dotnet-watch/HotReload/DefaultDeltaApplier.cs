@@ -1,5 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+#nullable enable
 
 using System;
 using System.Buffers;
@@ -20,9 +22,9 @@ namespace Microsoft.DotNet.Watcher.Tools
     {
         private static readonly string _namedPipeName = Guid.NewGuid().ToString();
         private readonly IReporter _reporter;
-        private Task _connectionTask;
-        private Task<ImmutableArray<string>> _capabilities;
-        private NamedPipeServerStream _pipe;
+        private Task? _connectionTask;
+        private Task<ImmutableArray<string>>? _capabilities;
+        private NamedPipeServerStream? _pipe;
 
         public DefaultDeltaApplier(IReporter reporter)
         {
@@ -70,11 +72,11 @@ namespace Microsoft.DotNet.Watcher.Tools
         }
 
         public Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(DotNetWatchContext context, CancellationToken cancellationToken)
-            => _capabilities;
+            => _capabilities ?? Task.FromResult(ImmutableArray<string>.Empty);
 
         public async ValueTask<bool> Apply(DotNetWatchContext context, string changedFile, ImmutableArray<WatchHotReloadService.Update> solutionUpdate, CancellationToken cancellationToken)
         {
-            if (!_connectionTask.IsCompletedSuccessfully || !_pipe.IsConnected)
+            if (_connectionTask is null || !_connectionTask.IsCompletedSuccessfully || _pipe is null || !_pipe.IsConnected)
             {
                 // The client isn't listening
                 _reporter.Verbose("No client connected to receive delta updates.");
@@ -89,6 +91,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     ModuleId = c.ModuleId,
                     ILDelta = c.ILDelta.ToArray(),
                     MetadataDelta = c.MetadataDelta.ToArray(),
+                    UpdatedTypes = c.UpdatedTypes.ToArray(),
                 }),
             };
 
@@ -129,7 +132,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            await context.BrowserRefreshServer.SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
+            if (context.BrowserRefreshServer is not null)
+            {
+                // BrowserRefreshServer will be null in non web projects or if we failed to establish a websocket connection
+                await context.BrowserRefreshServer.SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
+            }
+
             return true;
         }
 

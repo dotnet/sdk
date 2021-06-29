@@ -15,11 +15,13 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var razorSourceGeneratorOptionsWithDiagnostics = context.AnalyzerConfigOptionsProvider
+                .Combine(context.ParseOptionsProvider)
                 .Select(ComputeRazorSourceGeneratorOptions);
             var razorSourceGeneratorOptions = razorSourceGeneratorOptionsWithDiagnostics.ReportDiagnostics(context);
 
             var sourceItemsWithDiagnostics = context.AdditionalTextsProvider
                 .Combine(context.AnalyzerConfigOptionsProvider)
+                .Where((pair) => pair.Item1.Path.EndsWith(".razor") || pair.Item1.Path.EndsWith(".cshtml"))
                 .Select(ComputeProjectItems);
 
             var sourceItems = sourceItemsWithDiagnostics.ReportDiagnostics(context);
@@ -36,24 +38,26 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 {
                     var ((references, razorSourceGeneratorOptions), projectItems) = pair;
                     var tagHelperFeature = new StaticCompilationTagHelperFeature();
-                    return GetDiscoveryProjectEngine(tagHelperFeature, references, projectItems, razorSourceGeneratorOptions.RootNamespace);
+                    return GetDiscoveryProjectEngine(tagHelperFeature, references, projectItems, razorSourceGeneratorOptions);
                 });
 
             var syntaxTrees = sourceItems
                 .Combine(discoveryProjectEngine)
+                .Combine(context.ParseOptionsProvider)
                 .Select((pair, _) =>
                 {
-                    var (item, discoveryProjectEngine) = pair;
+                    var (itemAndDiscoveryEngine, parseOptions) = pair;
+                    var (item, discoveryProjectEngine) = itemAndDiscoveryEngine;
 
                     var codeGen = discoveryProjectEngine.Process(item);
                     var generatedCode = codeGen.GetCSharpDocument().GeneratedCode;
-                    return CSharpSyntaxTree.ParseText(generatedCode, new CSharpParseOptions(LanguageVersion.Preview));
+                    return CSharpSyntaxTree.ParseText(generatedCode, (CSharpParseOptions)parseOptions);
                 });
 
             var tagHelpersFromCompilation = syntaxTrees
                 .Combine(context.CompilationProvider)
                 .Combine(discoveryProjectEngine)
-                .Select((pair, _) =>
+                .SelectMany((pair, _) =>
                 {
                     var ((syntaxTrees, compilation), discoveryProjectEngine) = pair;
                     var tagHelperFeature = GetFeature<StaticCompilationTagHelperFeature>(discoveryProjectEngine);
@@ -79,7 +83,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     );
                 });
 
-            var tagHelpers = tagHelpersFromCompilation.Combine(tagHelpersFromReferences);
+            var tagHelpers = tagHelpersFromCompilation.Collect().Combine(tagHelpersFromReferences);
 
             var generationProjectEngine = tagHelpers.Combine(razorSourceGeneratorOptions).Combine(sourceItems.Collect())
                 .Select((pair, _) =>
@@ -87,7 +91,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     var (tagHelpersAndOptions, items) = pair;
                     var (tagHelpers, razorSourceGeneratorOptions) = tagHelpersAndOptions;
                     var (tagHelpersFromCompilation, tagHelpersFromReferences) = tagHelpers;
-                    var tagHelpersCount = tagHelpersFromCompilation.Count + tagHelpersFromReferences.Count;
+                    var tagHelpersCount = tagHelpersFromCompilation.Count() + tagHelpersFromReferences.Count;
                     var allTagHelpers = new List<TagHelperDescriptor>(tagHelpersCount);
                     allTagHelpers.AddRange(tagHelpersFromCompilation);
                     allTagHelpers.AddRange(tagHelpersFromReferences);
@@ -97,13 +101,12 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
             var generationInputs = sourceItems
                 .Combine(razorSourceGeneratorOptions)
-                .Combine(generationProjectEngine.Collect());
+                .Combine(generationProjectEngine);
 
             context.RegisterSourceOutput(generationInputs, (context, pair) =>
             {
-                var (sourceItemsAndOptions, projectEngines) = pair;
+                var (sourceItemsAndOptions, projectEngine) = pair;
                 var (projectItem, razorSourceGeneratorOptions) = sourceItemsAndOptions;
-                var projectEngine = projectEngines.Last();
 
                 var codeDocument = projectEngine.Process(projectItem);
                 var csharpDocument = codeDocument.GetCSharpDocument();
