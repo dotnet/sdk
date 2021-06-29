@@ -145,11 +145,10 @@
     <Crossgen
         SourceAssembly="%(RazorToolTargets.FullPath)"
         DestinationPath="%(RazorToolTargets.FullPath)"
-        JITPath="$(LibCLRJitPath)"
+        Architecture="$(Architecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
-        DiasymReaderPath="@(DiasymReaderPath)"
         PlatformAssemblyPaths="@(RazorToolFolders);@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
     <ItemGroup>
