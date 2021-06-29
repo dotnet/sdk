@@ -165,6 +165,9 @@ namespace Microsoft.NET.Build.Tests
                     .Should().Contain($"{appHostFullPath}: code object is not signed at all");
                 codesign.WaitForExit();
             }
+
+            var buildProjDir = Path.Combine(outputDirectory.FullName, "../..");
+            Directory.Delete(buildProjDir, true);
         }
 
         [Theory]
