@@ -83,6 +83,26 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             Assert.Equal(0, result.ExitCode);
         }
 
+        [Fact]
+        public void ValidatePackageTargetFailsWithBaselineVersion()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("PackageValidationTestProject", allowCopyIfPresent: true)
+                .WithSource();
+
+            var result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
+                .Execute($"-p:PackageOutputPath={testAsset.TestRoot}");
+
+            Assert.Equal(0, result.ExitCode);
+
+            string packageValidationBaselinePath = Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.1.0.0.nupkg");
+            result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
+                .Execute($"-p:PackageVersion=2.0.0;AddBreakingChange=true;PackageValidationBaselinePath={packageValidationBaselinePath}");
+
+            Assert.Equal(1, result.ExitCode);
+            Assert.Contains("error CP0002: Member 'PackageValidationTestProject.Program.SomeApiNotInLatestVersion()' exists on lib/net6.0/PackageValidationTestProject.dll but not on lib/net6.0/PackageValidationTestProject.dll", result.StdOut);
+            Assert.Contains("error CP0002: Member 'PackageValidationTestProject.Program.SomeApiNotInLatestVersion()' exists on lib/netstandard2.0/PackageValidationTestProject.dll but not on lib/netstandard2.0/PackageValidationTestProject.dll", result.StdOut);
+        }
 
         [Fact]
         public void ValidatePackageTargetWithIncorrectBaselinePackagePath()
@@ -97,6 +117,11 @@ namespace Microsoft.DotNet.PackageValidation.Tests
 
             Assert.Equal(1, result.ExitCode);
             Assert.Contains($"{nonExistentPackageBaselinePath} does not exist. Please check the PackageValidationBaselinePath or PackageValidationBaselineVersion.", result.StdOut);
+
+            // Disables package baseline validation.
+            result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
+                .Execute($"-p:PackageVersion=2.0.0;DisablePackageBaselineValidation=true;EnablePackageBaselineValidation=true;PackageValidationBaselinePath={nonExistentPackageBaselinePath}");
+            Assert.Equal(0, result.ExitCode);
         }
     }
 }
