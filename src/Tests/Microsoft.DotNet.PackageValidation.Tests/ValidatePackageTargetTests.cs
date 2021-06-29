@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
 
             // Disables package baseline validation.
             result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
-                .Execute($"-p:PackageVersion=2.0.0;DisablePackageBaselineValidation=true;EnablePackageBaselineValidation=true;PackageValidationBaselinePath={nonExistentPackageBaselinePath}");
+                .Execute($"-p:PackageVersion=2.0.0;DisablePackageBaselineValidation=true;PackageValidationBaselinePath={nonExistentPackageBaselinePath}");
             Assert.Equal(0, result.ExitCode);
         }
     }
