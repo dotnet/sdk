@@ -33,6 +33,8 @@
       <FSharpFilesRoot Include="$(SdkOutputDirectory)FSharp\**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll;@(FSharpFilesRuntimes)" />
       <FSharpFiles Include="@(FSharpFilesRuntimes);@(FSharpFilesRoot)" />
 
+      <RazorToolFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
+      
       <RemainingFiles Include="$(SdkOutputDirectory)**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles)" />
 
       <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error -->
@@ -45,8 +47,6 @@
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\net6.0\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\net6.0\**\*" />
-      <!-- Don't cross-gen rzc tool since it uses a consolidated assembly and only applies for tfm <= net5.0 -->
-      <!-- <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" /> -->
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\netcoreapp*\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.ILLink.Tasks\tools\net5.0\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\net6.0\**\*" />
@@ -63,9 +63,11 @@
       <!-- Don't crossgen satellite assemblies -->
       <RoslynFiles Remove="$(SdkOutputDirectory)Roslyn\bincore\**\*.resources.dll" />
       <FSharpFiles Remove="$(SdkOutputDirectory)FSharp\**\*.resources.dll" />
+      <RazorToolFiles Remove="$(SdkOutputDirectory)**\*.resources.dll" />
       <RemainingFiles Remove="$(SdkOutputDirectory)**\*.resources.dll" />
 
       <!-- Don't crossgen reference assemblies redisted with msbuild for RoslynCodeTaskFactory -->
+      <RazorToolFiles Remove="$(SdkOutputDirectory)**\ref\*.dll" />
       <RemainingFiles Remove="$(SdkOutputDirectory)**\ref\*.dll" />
 
     </ItemGroup>
@@ -76,6 +78,9 @@
     <AddMetadataIsPE Items="@(FSharpFiles)">
       <Output TaskParameter="ResultItems" ItemName="FSharpFilesWithPEMarker" />
     </AddMetadataIsPE>
+    <AddMetadataIsPE Items="@(RazorToolFiles)">
+      <Output TaskParameter="ResultItems" ItemName="RazorToolFilesWithPEMarker" />
+    </AddMetadataIsPE>
     <AddMetadataIsPE Items="@(RemainingFiles)">
       <Output TaskParameter="ResultItems" ItemName="RemainingFilesWithPEMarker" />
     </AddMetadataIsPE>
@@ -83,10 +88,12 @@
     <ItemGroup>
       <RoslynTargets Include="%(RoslynFilesWithPEMarker.FullPath)" Condition=" '%(RoslynFilesWithPEMarker.IsPE)' == 'True' " />
       <FSharpTargets Include="%(FSharpFilesWithPEMarker.FullPath)" Condition=" '%(FSharpFilesWithPEMarker.IsPE)' == 'True' " />
+      <RazorToolTargets Include="%(RazorToolFilesWithPEMarker.FullPath)" Condition=" '%(RazorToolFilesWithPEMarker.IsPE)' == 'True' " />
       <RemainingTargets Include="%(RemainingFilesWithPEMarker.FullPath)" Condition=" '%(RemainingFilesWithPEMarker.IsPE)' == 'True' " />
 
       <RoslynFolders Include="@(RoslynTargets-&gt;DirectoryName()-&gt;Distinct())" />
       <FSharpFolders Include="@(FSharpTargets-&gt;DirectoryName()-&gt;Distinct())" />
+      <RazorToolFolders Include="@(RazorToolTargets-&gt;DirectoryName()-&gt;Distinct())" />
       <RemainingFolders Include="@(RemainingTargets-&gt;DirectoryName()-&gt;Distinct())" />
 
       <!-- FSharp.Build.dll causes the FSharp folder to be included. Remove it, as we don't want other FSharp dlls being included in the crossgen. -->
@@ -134,7 +141,16 @@
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RemainingFolders);$(SharedFrameworkNameVersionPath)" />
-
+    
+    <Crossgen
+        SourceAssembly="%(RazorToolTargets.FullPath)"
+        DestinationPath="%(RazorToolTargets.FullPath)"
+        JITPath="$(LibCLRJitPath)"
+        CrossgenPath="$(CrossgenPath)"
+        ReadyToRun="True"
+        CreateSymbols="$(CreateCrossgenSymbols)"
+        DiasymReaderPath="@(DiasymReaderPath)"
+        PlatformAssemblyPaths="@(RazorToolFolders);@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
     <ItemGroup>
       <PdbsToMove Include="$(SdkOutputDirectory)**/*.pdb" />
