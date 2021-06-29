@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.RegisterOperationBlockStartAction(operationBlockStartContext =>
             {
                 if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod ||
-                    operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
+                    operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationBlockStartContext.Compilation))
                 {
                     return;
                 }
@@ -104,11 +104,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 // Local functions
                 bool ShouldAnalyze(ISymbol? symbol)
-                    => symbol != null && !operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, symbol, operationBlockStartContext.OwningSymbol, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
+                    => symbol != null && !operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, symbol, operationBlockStartContext.OwningSymbol, operationBlockStartContext.Compilation);
 
                 static bool GetUseNamingHeuristicOption(OperationAnalysisContext operationContext)
                     => operationContext.Options.GetBoolOptionValue(EditorConfigOptionNames.UseNamingHeuristic, Rule,
-                        operationContext.Operation.Syntax.SyntaxTree, operationContext.Compilation, defaultValue: false, operationContext.CancellationToken);
+                        operationContext.Operation.Syntax.SyntaxTree, operationContext.Compilation, defaultValue: false);
 
                 void AnalyzeArgument(IParameterSymbol parameter, IPropertySymbol? containingPropertySymbol, IOperation operation, Action<Diagnostic> reportDiagnostic, bool useNamingHeuristic)
                 {
@@ -165,7 +165,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartContext.Compilation);
                         return ValueContentAnalysis.TryGetOrComputeResult(cfg, containingMethod, wellKnownTypeProvider,
-                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, operationBlockStartContext.CancellationToken);
+                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties);
                     }
 
                     return null;

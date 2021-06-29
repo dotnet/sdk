@@ -59,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 compilationContext.RegisterOperationBlockAction(operationBlockContext =>
                 {
                     var owningSymbol = operationBlockContext.OwningSymbol;
-                    if (operationBlockContext.Options.IsConfiguredToSkipAnalysis(AlwaysTrueFalseOrNullRule, owningSymbol, operationBlockContext.Compilation, operationBlockContext.CancellationToken))
+                    if (operationBlockContext.Options.IsConfiguredToSkipAnalysis(AlwaysTrueFalseOrNullRule, owningSymbol, operationBlockContext.Compilation))
                     {
                         return;
                     }
@@ -90,8 +90,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             var valueContentAnalysisResult = ValueContentAnalysis.TryGetOrComputeResult(cfg, owningSymbol, wellKnownTypeProvider,
                                     operationBlockContext.Options, AlwaysTrueFalseOrNullRule,
                                     PointsToAnalysisKind.Complete,
-                                    operationBlockContext.CancellationToken,
-                                    out var copyAnalysisResultOpt, out var pointsToAnalysisResult);
+                                    out var copyAnalysisResultOpt,
+                                    out var pointsToAnalysisResult);
                             if (valueContentAnalysisResult == null ||
                                 pointsToAnalysisResult == null)
                             {

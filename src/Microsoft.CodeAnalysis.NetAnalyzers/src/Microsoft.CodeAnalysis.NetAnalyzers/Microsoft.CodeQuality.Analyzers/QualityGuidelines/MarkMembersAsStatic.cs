@@ -50,7 +50,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 // Get the list of all method' attributes for which the rule shall not be triggered.
                 ImmutableArray<INamedTypeSymbol> skippedAttributes = GetSkippedAttributes(wellKnownTypeProvider);
 
-                var isWebProject = compilationContext.Compilation.IsWebProject(compilationContext.Options, compilationContext.CancellationToken);
+                var isWebProject = compilationContext.Compilation.IsWebProject(compilationContext.Options);
 
                 compilationContext.RegisterSymbolStartAction(
                     symbolStartContext => OnSymbolStart(symbolStartContext, wellKnownTypeProvider, skippedAttributes, isWebProject),
@@ -288,7 +288,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             var hasCorrectVisibility = blockStartContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, wellKnownTypeProvider.Compilation,
-                blockStartContext.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.All);
+                defaultRequiredVisibility: SymbolVisibilityGroup.All);
             if (!hasCorrectVisibility)
             {
                 return false;

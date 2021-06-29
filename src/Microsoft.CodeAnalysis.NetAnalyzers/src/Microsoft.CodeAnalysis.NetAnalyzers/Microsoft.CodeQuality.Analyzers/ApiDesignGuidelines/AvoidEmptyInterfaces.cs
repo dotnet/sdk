@@ -46,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var symbol = (INamedTypeSymbol)context.Symbol;
 
             if (symbol.TypeKind == TypeKind.Interface &&
-                context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken) &&
+                context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation) &&
                 symbol.GetMembers().IsEmpty &&
                 !symbol.AllInterfaces.SelectMany(s => s.GetMembers()).Any())
             {

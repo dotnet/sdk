@@ -83,13 +83,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     if (operationBlockContext.OwningSymbol is not IMethodSymbol containingMethod ||
                         !disposeAnalysisHelper.HasAnyDisposableCreationDescendant(operationBlockContext.OperationBlocks, containingMethod) ||
-                        operationBlockContext.Options.IsConfiguredToSkipAnalysis(NotDisposedRule, containingMethod, operationBlockContext.Compilation, operationBlockContext.CancellationToken))
+                        operationBlockContext.Options.IsConfiguredToSkipAnalysis(NotDisposedRule, containingMethod, operationBlockContext.Compilation))
                     {
                         return;
                     }
 
                     var disposeAnalysisKind = operationBlockContext.Options.GetDisposeAnalysisKindOption(NotDisposedOnExceptionPathsRule, containingMethod,
-                        operationBlockContext.Compilation, DisposeAnalysisKind.NonExceptionPaths, operationBlockContext.CancellationToken);
+                        operationBlockContext.Compilation, DisposeAnalysisKind.NonExceptionPaths);
                     var trackExceptionPaths = disposeAnalysisKind.AreExceptionPathsEnabled();
 
                     // For non-exception paths analysis, we can skip interprocedural analysis for certain invocations.
@@ -101,9 +101,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         null;
 
                     if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockContext.OperationBlocks, containingMethod,
-                        operationBlockContext.Options, NotDisposedRule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, trackInstanceFields: false, trackExceptionPaths,
-                        operationBlockContext.CancellationToken, out var disposeAnalysisResult, out var pointsToAnalysisResult,
-                        interproceduralAnalysisPredicate))
+                        operationBlockContext.Options, NotDisposedRule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, trackInstanceFields: false, trackExceptionPaths: trackExceptionPaths,
+                        disposeAnalysisResult: out var disposeAnalysisResult, pointsToAnalysisResult: out var pointsToAnalysisResult, interproceduralAnalysisPredicate: interproceduralAnalysisPredicate))
                     {
                         using var notDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();
                         using var mayBeNotDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();

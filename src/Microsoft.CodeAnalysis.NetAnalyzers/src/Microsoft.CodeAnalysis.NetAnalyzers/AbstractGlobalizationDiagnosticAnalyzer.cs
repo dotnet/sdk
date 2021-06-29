@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags);
             context.RegisterCompilationStartAction(context =>
             {
-                var value = context.Options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.InvariantGlobalization, context.Compilation, context.CancellationToken);
+                var value = context.Options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.InvariantGlobalization, context.Compilation);
                 if (value != "true")
                 {
                     InitializeWorker(context);
