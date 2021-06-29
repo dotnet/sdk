@@ -1,0 +1,33 @@
+# Gathers and publishes the build logs for a source-build
+
+parameters:
+  # Folder to scan for source-build logs from
+  sourceFolder: $(Build.SourcesDirectory)
+
+  # The unique qualifier to append to the artifactName
+  artifactQualifier:
+
+  # Custom condition to apply to each step
+  condition: true
+
+steps:
+- task: CopyFiles@2
+  displayName: Prepare BuildLogs staging directory
+  inputs:
+    SourceFolder: '${{ parameters.sourceFolder }}'
+    Contents: |
+      **/*.log
+      **/*.binlog
+      artifacts/source-build/self/prebuilt-report/**
+    TargetFolder: '$(Build.StagingDirectory)/BuildLogs'
+    CleanTargetFolder: true
+  continueOnError: true
+  condition: and(${{ parameters.condition }}, succeededOrFailed())
+
+- task: PublishPipelineArtifact@1
+  displayName: Publish BuildLogs
+  inputs:
+    targetPath: '$(Build.StagingDirectory)/BuildLogs'
+    artifactName: BuildLogs_SourceBuild_${{ parameters.artifactQualifier }}_Attempt$(System.JobAttempt)
+  continueOnError: true
+  condition: and(${{ parameters.condition }}, succeededOrFailed())
