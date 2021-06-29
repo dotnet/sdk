@@ -19,7 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <PropertyGroup>
     <GeneratedGlobalUsingsFile Condition="'$(GeneratedGlobalUsingsFile)' ==''">$(IntermediateOutputPath)$(MSBuildProjectName).DefaultGlobalUsings$(DefaultLanguageSourceExtension)</GeneratedGlobalUsingsFile>
-    <EnableDefaultGlobalUsings_DotNet Condition="'$(EnableDefaultGlobalUsings_DotNet)' == ''">true</EnableDefaultGlobalUsings_DotNet>
+    <EnableDefaultGlobalUsings_DotNet Condition="'$(EnableDefaultGlobalUsings_DotNet)' == '' and '$(EnableDefaultGlobalUsings)' == 'true'">true</EnableDefaultGlobalUsings_DotNet>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(EnableDefaultGlobalUsings_DotNet)' == 'true'

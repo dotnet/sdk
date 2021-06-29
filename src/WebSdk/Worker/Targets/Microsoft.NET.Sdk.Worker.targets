@@ -14,7 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <EnableDefaultContentItems Condition=" '$(EnableDefaultContentItems)' == '' ">true</EnableDefaultContentItems>
     <RunWorkingDirectory Condition=" '$(RunWorkingDirectory)' == '' and '$(EnableDefaultRunWorkingDirectory)' != 'false' ">$(MSBuildProjectDirectory)</RunWorkingDirectory>
-    <EnableDeafultGlobalUsings_Worker Condition="'$(EnableDeafultGlobalUsings_Worker)' == ''">true</EnableDeafultGlobalUsings_Worker>
+    <EnableDefaultGlobalUsings_Worker Condition="'$(EnableDefaultGlobalUsings_Worker)' == '' and '$(EnableDefaultGlobalUsings)' == 'true'">true</EnableDefaultGlobalUsings_Worker>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,7 +27,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
 
-  <ItemGroup Condition=" '$(EnableDeafultGlobalUsings_Worker)' == 'true'
+  <ItemGroup Condition=" '$(EnableDefaultGlobalUsings_Worker)' == 'true'
       And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
       And $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '6.0'))">
     <DefaultGlobalUsing Include="Microsoft.Extensions.Configuration" />
