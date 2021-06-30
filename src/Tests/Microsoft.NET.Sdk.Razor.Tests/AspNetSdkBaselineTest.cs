@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -23,6 +24,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private string _baselinesFolder;
 
+
 #if GENERATE_SWA_BASELINES
         public static bool GenerateBaselines = true;
 #else
@@ -31,19 +33,30 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private bool _generateBaselines = GenerateBaselines;
 
-        public string BaselinesFolder =>
-            _baselinesFolder ??= Path.Combine(TestContext.GetRepoRoot(), "src", "Tests", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
-
-        public TestAsset ProjectDirectory { get; set; }
-
         public AspNetSdkBaselineTest(ITestOutputHelper log) : base(log)
         {
+            var assembly = Assembly.GetCallingAssembly();
+            var testAssemblyMetadata = assembly.GetCustomAttributes<AssemblyMetadataAttribute>();
+            RuntimeVersion = testAssemblyMetadata.SingleOrDefault(a => a.Key == "NetCoreAppRuntimePackageVersion").Value;
+            DefaultPackageVersion = testAssemblyMetadata.SingleOrDefault(a => a.Key == "DefaultTestBaselinePackageVersion").Value;
         }
 
-        public AspNetSdkBaselineTest(ITestOutputHelper log, bool generateBaselines) : base(log)
+        public AspNetSdkBaselineTest(ITestOutputHelper log, bool generateBaselines) : this(log)
         {
             _generateBaselines = generateBaselines;
         }
+
+        public TestAsset ProjectDirectory { get; set; }
+
+        public string RuntimeVersion { get; set; }
+
+        public string DefaultPackageVersion { get; set; }
+
+        public string BaselinesFolder =>
+            _baselinesFolder ??= ComputeBaselineFolder();
+
+        protected virtual string ComputeBaselineFolder() =>
+            Path.Combine(TestContext.GetRepoRoot(), "src", "Tests", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
 
         public StaticWebAssetsManifest LoadBuildManifest(string suffix = "", [CallerMemberName] string name = "")
         {
@@ -86,13 +99,17 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .Where(a => a.SourceType is StaticWebAsset.SourceTypes.Computed &&
                             a.AssetKind is not StaticWebAsset.AssetKinds.Publish);
 
-            // For assets that are copied to the output folder, the path is always based on
-            // the wwwroot folder and the relative path.
+            // We keep track of assets that need to be copied to the output folder.
+            // In addition to that, we copy assets that are defined somewhere different
+            // from their content root folder when the content root does not match the output folder.
+            // We do this to allow copying things like Publish assets to temporary locations during the
+            // build process if they are later on going to be transformed.
             var copyToOutputDirectoryFiles = manifest.Assets
-                .Where(a => a.SourceType is StaticWebAsset.SourceTypes.Computed or StaticWebAsset.SourceTypes.Discovered &&
-                            a.AssetKind is not StaticWebAsset.AssetKinds.Publish &&
-                            a.CopyToOutputDirectory is not StaticWebAsset.AssetCopyOptions.Never)
-                .Select(a => Path.Combine(outputFolder, "wwwroot", a.RelativePath));
+                .Where(a => a.ShouldCopyToOutputDirectory())
+                .Select(a => Path.Combine(outputFolder, "wwwroot", a.RelativePath))
+                .Concat(manifest.Assets
+                    .Where(a => !a.HasContentRoot(Path.Combine(outputFolder, "wwwroot")) && File.Exists(a.Identity) && !File.Exists(Path.Combine(a.ContentRoot, a.RelativePath)))
+                    .Select(a => Path.Combine(a.ContentRoot, a.RelativePath)));
 
             if (!_generateBaselines)
             {
@@ -114,6 +131,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                         .Distinct()
                         .OrderBy(f => f, StringComparer.Ordinal)
                         .ToArray(),
+                    TestContext.Current.NuGetCachePath,
                     outputFolder,
                     intermediateOutputPath);
 
@@ -169,6 +187,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                         .Distinct()
                         .OrderBy(f => f, StringComparer.Ordinal)
                         .ToArray(),
+                    TestContext.Current.NuGetCachePath,
                     publishFolder,
                     intermediateOutputPath);
 
@@ -190,6 +209,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 return ApplyPathsToTemplatedFilePaths(
                     JsonSerializer.Deserialize<string[]>(File.ReadAllBytes(filesBaselinePath)),
+                    TestContext.Current.NuGetCachePath,
                     buildOrPublishPath,
                     intermediateOutputPath)
                     .ToArray();
@@ -203,17 +223,25 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private IEnumerable<string> TemplatizeExpectedFiles(
             IEnumerable<string> files,
+            string restorePath,
             string buildOrPublishFolder,
             string intermediateOutputPath) =>
-                files.Select(f => f.Replace(buildOrPublishFolder, "${OutputPath}")
+                files.Select(f => f.Replace(restorePath, "${RestorePath}")
+                               .Replace(RuntimeVersion, "${RuntimeVersion}")
+                               .Replace(DefaultPackageVersion, "${PackageVersion}")
+                               .Replace(buildOrPublishFolder, "${OutputPath}")
                                .Replace(intermediateOutputPath, "${IntermediateOutputPath}")
                                .Replace(Path.DirectorySeparatorChar, '\\'));
 
         private IEnumerable<string> ApplyPathsToTemplatedFilePaths(
             IEnumerable<string> files,
+            string restorePath,
             string buildOrPublishFolder,
             string intermediateOutputPath) =>
-                files.Select(f => f.Replace("${OutputPath}", buildOrPublishFolder)
+                files.Select(f => f.Replace("${RestorePath}", restorePath)
+                                .Replace("${RuntimeVersion}", RuntimeVersion)
+                               .Replace("${PackageVersion}", DefaultPackageVersion)
+                               .Replace("${OutputPath}", buildOrPublishFolder)
                                .Replace("${IntermediateOutputPath}", intermediateOutputPath)
                                .Replace('\\', Path.DirectorySeparatorChar));
 
@@ -265,16 +293,28 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             foreach (var asset in manifest.Assets)
             {
                 asset.Identity = asset.Identity.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
-                asset.Identity = asset.Identity.Replace("${RestorePath}", restorePath).Replace('\\', Path.DirectorySeparatorChar);
+                asset.Identity = asset.Identity
+                    .Replace("${RestorePath}", restorePath)
+                    .Replace("${RuntimeVersion}", RuntimeVersion)
+                    .Replace("${PackageVersion}", DefaultPackageVersion)
+                    .Replace('\\', Path.DirectorySeparatorChar);
 
                 asset.ContentRoot = asset.ContentRoot.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
-                asset.ContentRoot = asset.ContentRoot.Replace("${RestorePath}", restorePath).Replace('\\', Path.DirectorySeparatorChar);
+                asset.ContentRoot = asset.ContentRoot
+                    .Replace("${RestorePath}", restorePath)
+                    .Replace("${RuntimeVersion}", RuntimeVersion)
+                    .Replace("${PackageVersion}", DefaultPackageVersion)
+                    .Replace('\\', Path.DirectorySeparatorChar);
             }
 
             foreach (var discovery in manifest.DiscoveryPatterns)
             {
-                discovery.ContentRoot = discovery.ContentRoot.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
-                discovery.ContentRoot = discovery.ContentRoot.Replace("${RestorePath}", restorePath).Replace('\\', Path.DirectorySeparatorChar);
+                discovery.ContentRoot = discovery.ContentRoot
+                    .Replace("${RestorePath}", restorePath)
+                    .Replace("${RuntimeVersion}", RuntimeVersion)
+                    .Replace("${PackageVersion}", DefaultPackageVersion)
+                    .Replace('\\', Path.DirectorySeparatorChar);
+                discovery.ContentRoot = discovery.ContentRoot.Replace("${ProjectRoot}", restorePath).Replace('\\', Path.DirectorySeparatorChar);
             }
 
             foreach (var relatedManifest in manifest.RelatedManifests)
@@ -283,21 +323,33 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
-        private static string Templatize(StaticWebAssetsManifest manifest, string projectRoot, string restorePath)
+        private string Templatize(StaticWebAssetsManifest manifest, string projectRoot, string restorePath)
         {
             foreach (var asset in manifest.Assets)
             {
                 asset.Identity = asset.Identity.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
-                asset.Identity = asset.Identity.Replace(restorePath, "${RestorePath}").Replace(Path.DirectorySeparatorChar, '\\');
+                asset.Identity = asset.Identity
+                    .Replace(restorePath, "${RestorePath}")
+                    .Replace(RuntimeVersion, "${RuntimeVersion}")
+                    .Replace(DefaultPackageVersion,"${PackageVersion}")
+                    .Replace(Path.DirectorySeparatorChar, '\\');
 
                 asset.ContentRoot = asset.ContentRoot.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
-                asset.ContentRoot = asset.ContentRoot.Replace(restorePath, "${RestorePath}").Replace(Path.DirectorySeparatorChar, '\\');
+                asset.ContentRoot = asset.ContentRoot
+                    .Replace(restorePath, "${RestorePath}")
+                    .Replace(RuntimeVersion, "${RuntimeVersion}")
+                    .Replace(DefaultPackageVersion, "${PackageVersion}")
+                    .Replace(Path.DirectorySeparatorChar, '\\');
             }
 
             foreach (var discovery in manifest.DiscoveryPatterns)
             {
                 discovery.ContentRoot = discovery.ContentRoot.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
-                discovery.ContentRoot = discovery.ContentRoot.Replace(restorePath, "${RestorePath}").Replace(Path.DirectorySeparatorChar, '\\');
+                discovery.ContentRoot = discovery.ContentRoot
+                    .Replace(restorePath, "${RestorePath}")
+                    .Replace(RuntimeVersion, "${RuntimeVersion}")
+                    .Replace(DefaultPackageVersion, "${PackageVersion}")
+                    .Replace(Path.DirectorySeparatorChar, '\\');
             }
 
             foreach (var relatedManifest in manifest.RelatedManifests)

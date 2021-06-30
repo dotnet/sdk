@@ -23,12 +23,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <_ManifestStaticWebAsset Include="$(_ServiceWorkerAssetsManifestFullPath)">
-        <SourceType></SourceType>
+        <SourceType>Computed</SourceType>
         <SourceId>$(PackageId)</SourceId>
         <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
         <RelativePath>$(ServiceWorkerAssetsManifest)</RelativePath>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        <AssetKind>Build</AssetKind>
+        <AssetMode>All</AssetMode>
       </_ManifestStaticWebAsset>
 
       <!-- Figure out where we're getting the content for each @(ServiceWorker) entry, depending on whether there's a PublishedContent value -->
@@ -41,12 +43,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       </_ServiceWorkerIntermediateFile>
 
       <_ServiceWorkerStaticWebAsset Include="%(_ServiceWorkerIntermediateFile.FullPath)">
-        <SourceType></SourceType>
+        <SourceType>Computed</SourceType>
         <SourceId>$(PackageId)</SourceId>
         <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
         <RelativePath>%(TargetOutputPath)</RelativePath>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        <AssetKind>Build</AssetKind>
+        <AssetMode>All</AssetMode>
       </_ServiceWorkerStaticWebAsset>
 
       <StaticWebAsset Include="

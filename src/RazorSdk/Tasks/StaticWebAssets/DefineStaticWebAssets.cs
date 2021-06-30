@@ -27,9 +27,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     public class DefineStaticWebAssets : Task
     {
         [Required]
-        public ITaskItem [] CandidateAssets { get; set; }
+        public ITaskItem[] CandidateAssets { get; set; }
 
-        public ITaskItem [] PropertyOverrides { get; set; }
+        public ITaskItem[] PropertyOverrides { get; set; }
 
         public string SourceId { get; set; }
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string RelativePathFilter { get; set; }
 
-        public string AssetKind { get; set; } = StaticWebAsset.AssetKinds.All;
+        public string AssetKind { get; set; }
 
         public string AssetMode { get; set; } = StaticWebAsset.AssetModes.All;
 
@@ -54,11 +54,16 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         [Output]
         public ITaskItem[] Assets { get; set; }
 
+        [Output]
+        public ITaskItem[] CopyCandidates { get; set; }
+
         public override bool Execute()
         {
             try
             {
                 var results = new List<ITaskItem>();
+                var copyCandidates = new List<ITaskItem>();
+
                 var matcher = !string.IsNullOrEmpty(RelativePathPattern) ? new Matcher().AddInclude(RelativePathPattern) : null;
                 var filter = !string.IsNullOrEmpty(RelativePathFilter) ? new Matcher().AddInclude(RelativePathFilter) : null;
                 for (var i = 0; i < CandidateAssets.Length; i++)
@@ -91,23 +96,34 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                         continue;
                     }
+
                     var sourceId = ComputePropertyValue(candidate, nameof(StaticWebAsset.SourceId), SourceId);
                     var sourceType = ComputePropertyValue(candidate, nameof(StaticWebAsset.SourceType), SourceType);
                     var basePath = ComputePropertyValue(candidate, nameof(StaticWebAsset.BasePath), BasePath);
                     var contentRoot = ComputePropertyValue(candidate, nameof(StaticWebAsset.ContentRoot), ContentRoot);
-                    var assetKind = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetKind), AssetKind);
-                    var assetMode = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetMode), AssetMode);
                     var copyToOutputDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToOutputDirectory), CopyToOutputDirectory);
                     var copyToPublishDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToPublishDirectory), CopyToPublishDirectory);
-                    
+                    var assetKind = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetKind), GetAssetKindDefault(AssetKind, copyToOutputDirectory, copyToPublishDirectory));
+                    var assetMode = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetMode), AssetMode);
+
                     // If we are not able to compute the value based on an existing value or a default, we produce an error and stop.
                     if (Log.HasLoggedErrors)
                     {
                         break;
                     }
 
+                    var (identity, computed) = ComputeCandidateIdentity(candidate, contentRoot, matcher);
+
+                    if (computed)
+                    {
+                        copyCandidates.Add(new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
+                        {
+                            ["TargetPath"] = identity
+                        }));
+                    }
+
                     var asset = StaticWebAsset.FromProperties(
-                        candidate.GetMetadata("FullPath"),
+                        identity,
                         sourceId,
                         sourceType,
                         basePath,
@@ -125,13 +141,61 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
 
                 Assets = results.ToArray();
+                CopyCandidates = copyCandidates.ToArray();
             }
             catch (Exception ex)
             {
-                Log.LogError(ex.Message);
+                Log.LogError(ex.ToString());
             }
 
             return !Log.HasLoggedErrors;
+        }
+
+        private (string identity, bool computed) ComputeCandidateIdentity(ITaskItem candidate, string contentRoot, Matcher matcher)
+        {
+            var normalizedContentRoot = StaticWebAsset.NormalizeContentRootPath(contentRoot);
+            var candidateFullPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
+            if (candidateFullPath.StartsWith(normalizedContentRoot))
+            {
+                return (candidateFullPath, false);
+            }
+            else
+            {
+                // We want to support assets that are part of the source codebase but that might get transformed during the build or
+                // publish processes, so we want to allow defining these assets by setting up a different content root path from their
+                // original location in the project. For example the asset can be wwwroot\my-prod-asset.js, the content root can be
+                // obj\transform and the final asset identity can be <<FullPathTo>>\obj\transform\my-prod-asset.js
+                var matchResult = matcher.Match(candidate.ItemSpec);
+                if (matchResult.HasMatches)
+                {
+                    var stem = matchResult.Files.Single().Stem;
+                    var assetIdentity = Path.Combine(normalizedContentRoot, stem);
+                    Log.LogMessage("Computed identity '{0}' for candidate '{1}'", assetIdentity, candidate.ItemSpec);
+                    
+                    return (assetIdentity, true);
+                }
+                else
+                {
+                    return (candidateFullPath, false);
+                }
+            }
+        }
+
+        private string GetAssetKindDefault(string assetKind, string copyToOutputDirectory, string copyToPublishDirectory)
+        {
+            if (assetKind != null)
+            {
+                return assetKind;
+            }
+            switch ((copyToOutputDirectory, copyToPublishDirectory))
+            {
+                case (StaticWebAsset.AssetCopyOptions.Never, not StaticWebAsset.AssetCopyOptions.Never):
+                    return StaticWebAsset.AssetKinds.Publish;
+                case (not StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
+                    return StaticWebAsset.AssetKinds.Build;
+                default:
+                    return StaticWebAsset.AssetKinds.All;
+            }
         }
 
         private string ComputePropertyValue(ITaskItem element, string metadataName, string propertyValue)
@@ -149,7 +213,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     Log.LogError("No metadata '{0}' was present for item '{1}' and no default value was provided.",
                         metadataName,
                         element.ItemSpec);
-                    
+
                     return null;
                 }
                 else
@@ -188,16 +252,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 return linkPath;
             }
 
-            var normalizedContentRoot = Path.GetFullPath(candidate.GetMetadata(nameof(StaticWebAsset.ContentRoot)) ?? ContentRoot)
-                .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
-            
-            if (!normalizedContentRoot.EndsWith(Path.DirectorySeparatorChar.ToString()))
-            {
-                normalizedContentRoot += Path.DirectorySeparatorChar;
-            }
+            var normalizedContentRoot = StaticWebAsset.NormalizeContentRootPath(string.IsNullOrEmpty(candidate.GetMetadata(nameof(StaticWebAsset.ContentRoot))) ?
+                ContentRoot : 
+                candidate.GetMetadata(nameof(StaticWebAsset.ContentRoot)));
 
             var normalizedAssetPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
-
             if (normalizedAssetPath.StartsWith(normalizedContentRoot))
             {
                 return normalizedAssetPath.Substring(normalizedContentRoot.Length);

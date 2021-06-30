@@ -63,6 +63,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
 
     <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">/</StaticWebAssetBasePath>
+    <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Root</StaticWebAssetProjectMode>
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
 
     <!-- Turn off parts of the build that do not apply to WASM projects -->
@@ -95,7 +96,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
-  <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
+  <!-- <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" /> -->
+  <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest2.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
   <Target Name="_ScrambleDotnetJsFileName" AfterTargets="ResolveRuntimePackAssets">
     <!--
@@ -313,9 +315,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       RelativePathPattern="wwwroot/**"
       SourceId="$(PackageId)"
       SourceType="Computed"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
       ContentRoot="$(TargetDir)wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
-      >
+    >
       <Output TaskParameter="Assets" ItemName="_BlazorWebAssemblyStaticWebAsset" />
     </DefineStaticWebAssets>
 

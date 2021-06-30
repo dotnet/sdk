@@ -49,8 +49,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="StaticWebAssetsBaselines\" />
-  </ItemGroup>
-
 </Project>

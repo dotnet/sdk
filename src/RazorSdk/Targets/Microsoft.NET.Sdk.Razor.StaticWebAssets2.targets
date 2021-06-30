@@ -62,6 +62,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />    
 
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.CollectStaticWebAssetsToCopy"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />    
+
   <!-- Static web assets define how web content needs to be served from web applications, class libraries and packages during
        development and what and where web contents need to be served on the published application.
 
@@ -192,7 +197,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PrepareForRunDependsOn>StaticWebAssetsPrepareForRun;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
 
-    <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);GenerateStaticWebAssetsManifest</StaticWebAssetsPrepareForRunDependsOn>
+    <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);GenerateStaticWebAssetsManifest;CopyStaticWebAssetsToOutputFolder</StaticWebAssetsPrepareForRunDependsOn>
 
     <GenerateStaticWebAssetsManifestDependsOn>$(GenerateStaticWebAssetsManifestDependsOn);ResolveStaticWebAssetsInputs</GenerateStaticWebAssetsManifestDependsOn>
 
@@ -208,7 +213,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolvePublishStaticWebAssetsDependsOn>RemoveExistingStaticWebAssets;LoadStaticWebAssetsBuildManifest;ComputeReferencedProjectsPublishAssets;$(ResolvePublishStaticWebAssetsDependsOn)</ResolvePublishStaticWebAssetsDependsOn>
 
-    <CopyStaticWebAssetsToPublishDirectoryDependsOn>LoadStaticWebAssetsPublishManifest</CopyStaticWebAssetsToPublishDirectoryDependsOn>
+    <CopyStaticWebAssetsToPublishDirectoryDependsOn>LoadStaticWebAssetsPublishManifest;$(CopyStaticWebAssetsToPublishDirectoryDependsOn)</CopyStaticWebAssetsToPublishDirectoryDependsOn>
 
 
     <!-- TMP: Pack -->
@@ -260,6 +265,29 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!-- Build -->
+
+  <Target Name="CopyStaticWebAssetsToOutputFolder">
+    <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+    </ReadStaticWebAssetsManifestFile>
+
+    <CollectStaticWebAssetsToCopy Assets="@(StaticWebAsset)" OutputPath="$(OutputPath)\wwwroot\">
+      <Output TaskParameter="AssetsToCopy" ItemName="_BuildStaticWebAssetsTargetPath" />
+    </CollectStaticWebAssetsToCopy>
+
+    <Copy SourceFiles="@(_BuildStaticWebAssetsTargetPath)"
+      DestinationFiles="@(_BuildStaticWebAssetsTargetPath->'%(TargetPath)')"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+  </Copy>
+
+  </Target>
 
   <Target Name="AddStaticWebAssetsManifest" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
     <ItemGroup>

@@ -199,9 +199,62 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public void Normalize()
         {
+            ContentRoot = NormalizeContentRootPath(ContentRoot);
             BasePath = Normalize(BasePath);
             RelativePath = Normalize(RelativePath);
         }
+
+        // Normalizes the given path to a content root path in the way we expect it:
+        // * Converts the path to absolute with Path.GetFullPath(path) which takes care of normalizing
+        //   the directory separators to use Path.DirectorySeparator
+        // * Appends a trailing directory separator at the end.
+        public static string NormalizeContentRootPath(string path) 
+            => Path.GetFullPath(path) + 
+            // We need to do .ToString because there is no EndsWith overload for chars in .net472
+            (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch {
+                (true, _) => "",
+                (false, true) => "", // Path.GetFullPath will have normalized it to Path.DirectorySeparatorChar.
+                (false, false) => Path.DirectorySeparatorChar
+            };
+
+        public bool IsComputed() 
+            => string.Equals(SourceType, SourceTypes.Computed, StringComparison.Ordinal);
+
+        public bool IsDiscovered()
+            => string.Equals(SourceType, SourceTypes.Discovered, StringComparison.Ordinal);
+
+        public bool IsProject()
+            => string.Equals(SourceType, SourceTypes.Project, StringComparison.Ordinal);
+        
+        public bool IsPackage()
+            => string.Equals(SourceType, SourceTypes.Package, StringComparison.Ordinal);
+
+        public bool IsBuildOnly()
+            => string.Equals(AssetKind, AssetKinds.Build, StringComparison.Ordinal);
+
+        public bool IsPublishOnly()
+            => string.Equals(AssetKind, AssetKinds.Publish, StringComparison.Ordinal);
+
+        public bool IsBuildAndPublish()
+            => string.Equals(AssetKind, AssetKinds.All, StringComparison.Ordinal);
+
+        public bool IsForCurrentProjectOnly()
+            => string.Equals(AssetMode, AssetModes.CurrentProject, StringComparison.Ordinal);
+
+        public bool IsForReferencedProjectsOnly()
+            => string.Equals(AssetMode, AssetModes.Reference, StringComparison.Ordinal);
+
+        public bool IsForCurrentAndReferencedProjects() 
+            => string.Equals(AssetMode, AssetModes.All, StringComparison.Ordinal);
+
+        public bool ShouldCopyToOutputDirectory()
+            => !string.Equals(CopyToOutputDirectory, AssetCopyOptions.Never, StringComparison.Ordinal);
+
+        public bool ShouldCopyToPublishDirectory()
+            => !string.Equals(CopyToPublishDirectory, AssetCopyOptions.Never, StringComparison.Ordinal);
+
+        public bool HasContentRoot(string path) => 
+            string.Equals(ContentRoot, NormalizeContentRootPath(path), StringComparison.Ordinal);
 
         public static string Normalize(string path)
         {

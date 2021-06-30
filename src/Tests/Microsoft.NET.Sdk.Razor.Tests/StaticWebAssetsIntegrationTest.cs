@@ -12,9 +12,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class StaticWebAssets2IntegrationTest : AspNetSdkBaselineTest
+    public class StaticWebAssetsIntegrationTest : AspNetSdkBaselineTest
     {
-        public StaticWebAssets2IntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
+        public StaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
 
         // Build Standalone project
         [Fact]

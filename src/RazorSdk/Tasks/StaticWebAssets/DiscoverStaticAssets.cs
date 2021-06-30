@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         [nameof(StaticWebAsset.RelativePath)] = candidateRelativePath,
                         [nameof(StaticWebAsset.AssetKind)] = StaticWebAsset.AssetKinds.All,
                         [nameof(StaticWebAsset.AssetMode)] = StaticWebAsset.AssetModes.All,
-                        [nameof(StaticWebAsset.CopyToOutputDirectory)] = ComputeCopyOption(candidate.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory))),
-                        [nameof(StaticWebAsset.CopyToPublishDirectory)] = ComputeCopyOption(candidate.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory))),
+                        [nameof(StaticWebAsset.CopyToOutputDirectory)] = ComputeCopyOption(candidate.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)), StaticWebAsset.AssetCopyOptions.Never),
+                        [nameof(StaticWebAsset.CopyToPublishDirectory)] = ComputeCopyOption(candidate.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)), StaticWebAsset.AssetCopyOptions.PreserveNewest),
                     });
 
                     assets.Add(asset);
@@ -175,9 +175,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
         }
 
-        private static string ComputeCopyOption(string copyToOutputDirectory) => string.Equals(copyToOutputDirectory, StaticWebAsset.AssetCopyOptions.Never) ? StaticWebAsset.AssetCopyOptions.Never :
-                        string.Equals(copyToOutputDirectory, StaticWebAsset.AssetCopyOptions.PreserveNewest) ? StaticWebAsset.AssetCopyOptions.PreserveNewest :
-                        string.Equals(copyToOutputDirectory, StaticWebAsset.AssetCopyOptions.Always) ? StaticWebAsset.AssetCopyOptions.Always :
-                        StaticWebAsset.AssetCopyOptions.Never;
+        private static string ComputeCopyOption(string copyOption, string defaultValue) => string.Equals(copyOption, StaticWebAsset.AssetCopyOptions.Never) ? StaticWebAsset.AssetCopyOptions.Never :
+                        string.Equals(copyOption, StaticWebAsset.AssetCopyOptions.PreserveNewest) ? StaticWebAsset.AssetCopyOptions.PreserveNewest :
+                        string.Equals(copyOption, StaticWebAsset.AssetCopyOptions.Always) ? StaticWebAsset.AssetCopyOptions.Always :
+                        defaultValue;
     }
 }
