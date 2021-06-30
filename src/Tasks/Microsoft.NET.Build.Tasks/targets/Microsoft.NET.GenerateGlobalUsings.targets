@@ -19,18 +19,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <PropertyGroup>
     <GeneratedGlobalUsingsFile Condition="'$(GeneratedGlobalUsingsFile)' ==''">$(IntermediateOutputPath)$(MSBuildProjectName).DefaultGlobalUsings$(DefaultLanguageSourceExtension)</GeneratedGlobalUsingsFile>
-    <EnableDefaultGlobalUsings_DotNet Condition="'$(EnableDefaultGlobalUsings_DotNet)' == '' and '$(EnableDefaultGlobalUsings)' == 'true'">true</EnableDefaultGlobalUsings_DotNet>
+    <DisableImplicitNamespaceImports_DotNet Condition="'$(DisableImplicitNamespaceImports_DotNet)' == '' and '$(DisableImplicitNamespaceImports)' != 'true'">false</DisableImplicitNamespaceImports_DotNet>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(EnableDefaultGlobalUsings_DotNet)' == 'true'
+  <ItemGroup Condition=" '$(DisableImplicitNamespaceImports_DotNet)' != 'true'
                       and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
                       and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '6.0'))">
-    <DefaultGlobalUsing Include="System" />
-    <DefaultGlobalUsing Include="System.Collections.Generic" />
-    <DefaultGlobalUsing Include="System.IO" />
-    <DefaultGlobalUsing Include="System.Linq" />
-    <DefaultGlobalUsing Include="System.Net.Http" />
-    <DefaultGlobalUsing Include="System.Threading.Tasks" />
+    <Import Include="System" />
+    <Import Include="System.Collections.Generic" />
+    <Import Include="System.IO" />
+    <Import Include="System.Linq" />
+    <Import Include="System.Net.Http" />
+    <Import Include="System.Threading.Tasks" />
   </ItemGroup>
 
   <!--
@@ -46,7 +46,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="GenerateGlobalUsings"
           BeforeTargets="BeforeCompile;CoreCompile"
           DependsOnTargets="PrepareForBuild;CoreGenerateGlobalUsings"
-          Condition="'$(EnableDefaultGlobalUsings)' == 'true'" />
+          Condition="'$(DisableImplicitNamespaceImports)' != 'true'" />
 
   <Target Name="CoreGenerateGlobalUsings"
           Outputs="$(GeneratedGlobalUsingsFile)">

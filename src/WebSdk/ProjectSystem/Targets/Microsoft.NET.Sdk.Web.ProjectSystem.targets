@@ -22,7 +22,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildWebTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed.Web\</MSBuildWebTargetsPath>
     <AspNetCoreHostingModel Condition="'$(AspNetCoreHostingModel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">inprocess</AspNetCoreHostingModel>
     <AspNetCoreModuleName Condition="'$(AspNetCoreModuleName)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">AspNetCoreModuleV2</AspNetCoreModuleName>
-    <EnableDefaultGlobalUsings_Web Condition="'$(EnableDefaultGlobalUsings_Web)' == '' and '$(EnableDefaultGlobalUsings)' == 'true'">true</EnableDefaultGlobalUsings_Web>
+    <DisableImplicitNamespaceImports_Web Condition="'$(DisableImplicitNamespaceImports_Web)' == '' and '$(DisableImplicitNamespaceImports)' != 'true'">false</DisableImplicitNamespaceImports_Web>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,17 +36,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Include="AspNetCoreInProcessHosting" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(EnableDefaultGlobalUsings_Web)' == 'true'
+  <ItemGroup Condition=" '$(DisableImplicitNamespaceImports_Web)' != 'true'
       And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
       And $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '6.0'))">
-    <DefaultGlobalUsing Include="Microsoft.AspNetCore.Builder" />
-    <DefaultGlobalUsing Include="Microsoft.AspNetCore.Hosting" />
-    <DefaultGlobalUsing Include="Microsoft.AspNetCore.Http" />
-    <DefaultGlobalUsing Include="Microsoft.AspNetCore.Routing" />
-    <DefaultGlobalUsing Include="Microsoft.Extensions.Configuration" />
-    <DefaultGlobalUsing Include="Microsoft.Extensions.DependencyInjection" />
-    <DefaultGlobalUsing Include="Microsoft.Extensions.Hosting" />
-    <DefaultGlobalUsing Include="Microsoft.Extensions.Logging" />
+    <Import Include="Microsoft.AspNetCore.Builder" />
+    <Import Include="Microsoft.AspNetCore.Hosting" />
+    <Import Include="Microsoft.AspNetCore.Http" />
+    <Import Include="Microsoft.AspNetCore.Routing" />
+    <Import Include="Microsoft.Extensions.Configuration" />
+    <Import Include="Microsoft.Extensions.DependencyInjection" />
+    <Import Include="Microsoft.Extensions.Hosting" />
+    <Import Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
   <PropertyGroup>
