@@ -21,8 +21,6 @@
       <CompatibilitySuppressionFilePath Condition="'$(CompatibilitySuppressionFilePath)' == '' and (Exists($(_compatibilitySuppressionFilePath)) or '$(GenerateCompatibilitySuppressionFile)' == 'true')">$(_compatibilitySuppressionFilePath)</CompatibilitySuppressionFilePath>
     </PropertyGroup>
 
-    <Error Condition="'$(DisablePackageBaselineValidation)' != 'true' and '$(PackageValidationBaselinePath)' != '' and !Exists('$(PackageValidationBaselinePath)')" Text="$(PackageValidationBaselinePath) does not exist. Please check the PackageValidationBaselinePath or PackageValidationBaselineVersion." />
-
     <!-- PackageTargetPath isn't exposed by NuGet: https://github.com/NuGet/Home/issues/6671. -->
     <Microsoft.DotNet.PackageValidation.ValidatePackage
       PackageTargetPath="$([MSBuild]::ValueOrDefault('$(PackageTargetPath)', '$([MSBuild]::NormalizePath('$(PackageOutputPath)', '$(PackageId).$(PackageVersion).nupkg'))'))"

@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
                 .Execute($"-p:PackageVersion=2.0.0;PackageValidationBaselinePath={nonExistentPackageBaselinePath}");
 
             Assert.Equal(1, result.ExitCode);
-            Assert.Contains($"{nonExistentPackageBaselinePath} does not exist. Please check the PackageValidationBaselinePath or PackageValidationBaselineVersion.", result.StdOut);
+            Assert.Contains($"Could not find file '{nonExistentPackageBaselinePath}'. ", result.StdOut);
 
             // Disables package baseline validation.
             result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
