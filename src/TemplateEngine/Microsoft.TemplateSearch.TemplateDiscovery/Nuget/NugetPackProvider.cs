@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
-    public class NugetPackProvider : IPackProvider
+    internal class NugetPackProvider : IPackProvider
     {
         // {PackageId}.{Version}.nupkg
         private const string DownloadUrlFormat = "https://api.nuget.org/v3-flatcontainer/{0}/{1}/{0}.{1}.nupkg";
@@ -23,7 +23,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
         private readonly bool _runOnlyOnePage;
         private string _searchUriFormat;
 
-        public NugetPackProvider(string name, string query, string packageTempBasePath, int pageSize, bool runOnlyOnePage, bool includePreviewPacks)
+        internal NugetPackProvider(string name, string query, string packageTempBasePath, int pageSize, bool runOnlyOnePage, bool includePreviewPacks)
         {
             Name = name;
             _pageSize = pageSize;
@@ -85,7 +85,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             while (!done && !_runOnlyOnePage);
         }
 
-        public async Task<IDownloadedPackInfo> DownloadPackageAsync(IPackInfo packinfo)
+        public async Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo)
         {
             string downloadUrl = string.Format(DownloadUrlFormat, packinfo.Id, packinfo.Version);
             string packageFileName = string.Format(DownloadPackageFileNameFormat, packinfo.Id, packinfo.Version);
@@ -97,13 +97,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
                 {
                     byte[] packageBytes = await client.GetByteArrayAsync(downloadUrl).ConfigureAwait(false);
                     File.WriteAllBytes(outputPackageFileNameFullPath, packageBytes);
-                    return new NugetPackInfo()
-                    {
-                        Id = packinfo.Id,
-                        Version = packinfo.Version,
-                        Path = outputPackageFileNameFullPath,
-                        TotalDownloads = packinfo.TotalDownloads
-                    };
+                    return new NugetPackInfo(packinfo, outputPackageFileNameFullPath);
                 }
             }
             catch (Exception e)

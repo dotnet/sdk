@@ -6,16 +6,16 @@ using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting
 {
-    public class PackSourceCheckResult
+    internal class PackSourceCheckResult
     {
-        public PackSourceCheckResult(IReadOnlyList<PackCheckResult> packCheckData, IReadOnlyList<IAdditionalDataProducer> additionalDataHandlers)
+        internal PackSourceCheckResult(IReadOnlyList<PackCheckResult> packCheckData, IReadOnlyList<IAdditionalDataProducer> additionalDataHandlers)
         {
             PackCheckData = packCheckData;
             AdditionalDataProducers = additionalDataHandlers;
         }
 
-        public IReadOnlyList<PackCheckResult> PackCheckData { get; }
+        internal IReadOnlyList<PackCheckResult> PackCheckData { get; }
 
-        public IReadOnlyList<IAdditionalDataProducer> AdditionalDataProducers { get; }
+        internal IReadOnlyList<IAdditionalDataProducer> AdditionalDataProducers { get; }
     }
 }

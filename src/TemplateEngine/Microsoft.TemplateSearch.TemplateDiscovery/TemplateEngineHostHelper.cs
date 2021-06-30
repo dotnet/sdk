@@ -5,14 +5,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
-    public static class TemplateEngineHostHelper
+    internal static class TemplateEngineHostHelper
     {
         private const string DefaultHostVersion = "1.0.0";
 
@@ -21,7 +19,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             { "prefs:language", "C#" }
         };
 
-        public static DefaultTemplateEngineHost CreateHost(string hostIdentifier, string? hostVersion = null, Dictionary<string, string>? preferences = null)
+        internal static DefaultTemplateEngineHost CreateHost(string hostIdentifier, string? hostVersion = null, Dictionary<string, string>? preferences = null)
         {
             if (string.IsNullOrEmpty(hostIdentifier))
             {

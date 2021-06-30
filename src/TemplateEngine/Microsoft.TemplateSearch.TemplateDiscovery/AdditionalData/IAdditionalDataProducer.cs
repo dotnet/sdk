@@ -7,7 +7,7 @@ using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 {
-    public interface IAdditionalDataProducer
+    internal interface IAdditionalDataProducer
     {
         string DataUniqueName { get; }
 

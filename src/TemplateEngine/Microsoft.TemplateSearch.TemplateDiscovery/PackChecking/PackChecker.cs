@@ -12,15 +12,11 @@ using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
-    public class PackChecker
+    internal class PackChecker
     {
         private const string HostIdentifierBase = "dotnetcli-discovery-";
 
-        public PackChecker()
-        {
-        }
-
-        public PackCheckResult TryGetTemplatesInPack(IDownloadedPackInfo packInfo, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, HashSet<string> alreadySeenTemplateIdentities)
+        internal PackCheckResult TryGetTemplatesInPack(IDownloadedPackInfo packInfo, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, HashSet<string> alreadySeenTemplateIdentities)
         {
             ITemplateEngineHost host = CreateHost(packInfo);
             EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true);

@@ -6,22 +6,22 @@ using System.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting
 {
-    public class PreFilterResultList
+    internal class PreFilterResultList
     {
-        public PreFilterResultList()
+        internal PreFilterResultList()
         {
             Results = new List<PreFilterResult>();
         }
 
-        public PreFilterResultList(List<PreFilterResult> results)
+        internal PreFilterResultList(List<PreFilterResult> results)
         {
             Results = results;
         }
 
-        public IReadOnlyList<PreFilterResult> Results { get; }
+        internal IReadOnlyList<PreFilterResult> Results { get; }
 
         // return true if any of the filter results have IsFiltered == true
-        public bool ShouldBeFiltered
+        internal bool ShouldBeFiltered
         {
             get
             {
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting
             }
         }
 
-        public string Reason
+        internal string Reason
         {
             get
             {

@@ -21,26 +21,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
             {
                 if (nonTemplatePacks.Contains(packInfo.Id))
                 {
-                    return new PreFilterResult()
-                    {
-                        FilterId = FilterId,
-                        IsFiltered = true,
-                        Reason = "Package was previously examined, and does not contain templates."
-                    };
+                    return new PreFilterResult(FilterId, isFiltered: true, "Package was previously examined, and does not contain templates.");
                 }
 
-                return new PreFilterResult()
-                {
-                    FilterId = FilterId,
-                    IsFiltered = false,
-                    Reason = string.Empty
-                };
+                return new PreFilterResult(FilterId, isFiltered: false);
             };
 
             return previouslyRejectedPackFilter;
         }
 
-        internal static bool TryGetPreviouslySkippedPacks(string previousRunBasePath, out HashSet<string> nonTemplatePacks)
+        internal static bool TryGetPreviouslySkippedPacks(string previousRunBasePath, out HashSet<string>? nonTemplatePacks)
         {
             if (string.IsNullOrEmpty(previousRunBasePath))
             {

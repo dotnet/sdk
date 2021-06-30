@@ -5,6 +5,7 @@
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <SignAssembly>false</SignAssembly>
     <DelaySign>false</DelaySign>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +17,10 @@
 
   <ItemGroup>
     <None Update="**\*.list" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\JExtensions.cs" Link="JExtensions.cs" />
   </ItemGroup>
 
 </Project>

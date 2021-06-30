@@ -9,13 +9,13 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 {
-    public class CliHostDataProducer : IAdditionalDataProducer
+    internal class CliHostDataProducer : IAdditionalDataProducer
     {
         private const string CliHostDataName = "cliHostData";
 
         private Dictionary<string, HostSpecificTemplateData> _hostDataForPackByTemplate = new Dictionary<string, HostSpecificTemplateData>();
 
-        public CliHostDataProducer()
+        internal CliHostDataProducer()
         {
             _hostDataForPackByTemplate = new Dictionary<string, HostSpecificTemplateData>();
         }

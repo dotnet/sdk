@@ -15,17 +15,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 {
-    public static class PackCheckResultReportWriter
+    internal static class PackCheckResultReportWriter
     {
-        public static readonly string CacheContentDirectory = "SearchCache";
-
+        internal const string CacheContentDirectory = "SearchCache";
         // All the metadata needed for searching from dotnet new.
-        public static readonly string SearchMetadataFilename = "templateSearchInfo.json";
-
+        internal const string SearchMetadataFilename = "NuGetTemplateSearchInfo.json";
         // Metadata for the scraper to skip packs known to not contain templates.
-        public static readonly string NonTemplatePacksFileName = "nonTemplatePacks.json";
+        internal const string NonTemplatePacksFileName = "nonTemplatePacks.json";
 
-        public static bool TryWriteResults(string outputBasePath, PackSourceCheckResult packSourceCheckResults)
+        internal static string WriteResults(string outputBasePath, PackSourceCheckResult packSourceCheckResults)
         {
             try
             {
@@ -123,8 +121,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 
         private class TemplateIdentityEqualityComparer : IEqualityComparer<ITemplateInfo>
         {
-            public bool Equals(ITemplateInfo x, ITemplateInfo y)
+            public bool Equals(ITemplateInfo? x, ITemplateInfo? y)
             {
+                if (x == null && y == null)
+                {
+                    return true;
+                }
+                if (x == null || y == null)
+                {
+                    return false;
+                }
                 return string.Equals(x.Identity, y.Identity, System.StringComparison.Ordinal);
             }
 

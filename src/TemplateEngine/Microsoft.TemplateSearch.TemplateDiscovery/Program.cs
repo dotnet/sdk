@@ -49,12 +49,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 return;
             }
 
-            PackSourceChecker packSourceChecker;
+            PackSourceChecker? packSourceChecker;
 
             // if or when we add other sources to scrape, input args can control which execute(s).
             if (true)
             {
-                if (!NugetPackScraper.TryCreateDefaultNugetPackScraper(config, out packSourceChecker))
+                if (!NugetPackScraper.TryCreateDefaultNugetPackScraper(config, out packSourceChecker) || packSourceChecker == null)
                 {
                     Console.WriteLine("Unable to create the NugetPackScraper.");
                     return;
@@ -93,7 +93,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             {
                 if (string.Equals(args[index], _basePathFlag, StringComparison.Ordinal))
                 {
-                    if (TryGetFlagValue(args, index, out string basePath))
+                    if (TryGetFlagValue(args, index, out string? basePath) && !string.IsNullOrWhiteSpace(basePath))
                     {
                         config.BasePath = basePath;
                         index += 2;
@@ -105,7 +105,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 }
                 else if (string.Equals(args[index], _packagesPath, StringComparison.Ordinal))
                 {
-                    if (TryGetFlagValue(args, index, out string packagesPath))
+                    if (TryGetFlagValue(args, index, out string? packagesPath) && !string.IsNullOrWhiteSpace(packagesPath))
                     {
                         if (!Directory.Exists(packagesPath))
                         {
@@ -123,7 +123,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 }
                 else if (string.Equals(args[index], _pageSizeFlag, StringComparison.Ordinal))
                 {
-                    if (TryGetFlagValue(args, index, out string pageSizeString) && int.TryParse(pageSizeString, out int pageSize))
+                    if (TryGetFlagValue(args, index, out string? pageSizeString) && int.TryParse(pageSizeString, out int pageSize))
                     {
                         config.PageSize = pageSize;
                         index += 2;
@@ -135,7 +135,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 }
                 else if (string.Equals(args[index], _previousOutputBasePathFlag, StringComparison.Ordinal))
                 {
-                    if (TryGetFlagValue(args, index, out string previousOutputBasePath))
+                    if (TryGetFlagValue(args, index, out string? previousOutputBasePath) && !string.IsNullOrWhiteSpace(previousOutputBasePath))
                     {
                         config.PreviousRunBasePath = previousOutputBasePath;
                         index += 2;
@@ -172,7 +172,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 }
                 else if (string.Equals(args[index], _providers, StringComparison.Ordinal))
                 {
-                    if (TryGetFlagValue(args, index, out string providersList))
+                    if (TryGetFlagValue(args, index, out string? providersList) && !string.IsNullOrWhiteSpace(providersList))
                     {
                         config.Providers.AddRange(providersList.Split('|', StringSplitOptions.TrimEntries));
                         foreach (string provider in config.Providers)
@@ -200,7 +200,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             return true;
         }
 
-        private static bool TryGetFlagValue(string[] args, int index, out string value)
+        private static bool TryGetFlagValue(string[] args, int index, out string? value)
         {
             if (index < args.Length && !args[index + 1].StartsWith("-"))
             {

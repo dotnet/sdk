@@ -29,9 +29,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
             //do nothing - do not remove test packs
         }
 
-        public Task<IDownloadedPackInfo> DownloadPackageAsync(IPackInfo packinfo)
+        public Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo)
         {
-            return Task.FromResult((IDownloadedPackInfo)packinfo);
+            return Task.FromResult((IDownloadedPackInfo?)packinfo);
         }
 
         public async IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync()

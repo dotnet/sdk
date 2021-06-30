@@ -3,7 +3,7 @@
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
 {
-    public interface IPackInfo
+    internal interface IPackInfo
     {
         string Id { get; }
 

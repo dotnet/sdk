@@ -5,24 +5,24 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
-    public class ScraperConfig
+    internal class ScraperConfig
     {
-        public string LocalPackagePath { get; set; }
+        internal string? LocalPackagePath { get; set; }
 
-        public string BasePath { get; set; }
+        internal string? BasePath { get; set; }
 
-        public int PageSize { get; set; }
+        internal int PageSize { get; set; }
 
-        public bool SaveCandidatePacks { get; set; }
+        internal bool SaveCandidatePacks { get; set; }
 
-        public bool RunOnlyOnePage { get; set; }
+        internal bool RunOnlyOnePage { get; set; }
 
-        public bool IncludePreviewPacks { get; set; }
+        internal bool IncludePreviewPacks { get; set; }
 
-        public string PreviousRunBasePath { get; set; }
+        internal string? PreviousRunBasePath { get; set; }
 
-        public bool DontFilterOnTemplateJson { get; set; }
+        internal bool DontFilterOnTemplateJson { get; set; }
 
-        public List<string> Providers { get; } = new List<string>();
+        internal List<string> Providers { get; } = new List<string>();
     }
 }

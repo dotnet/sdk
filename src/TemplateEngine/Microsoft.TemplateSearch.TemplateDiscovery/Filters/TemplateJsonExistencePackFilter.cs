@@ -18,7 +18,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
 
         private static ITemplateEngineHost _host = TemplateEngineHostHelper.CreateHost("filterHost");
 
-        public static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter()
+        internal static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter()
         {
             Func<IDownloadedPackInfo, PreFilterResult> filter = (packInfo) =>
             {
@@ -32,24 +32,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
 
                         if (hasTemplateJson)
                         {
-                            return new PreFilterResult()
-                            {
-                                FilterId = _FilterId,
-                                IsFiltered = false,
-                                Reason = string.Empty
-                            };
+                            return new PreFilterResult(_FilterId, isFiltered: false);
                         }
 
                         break;  // this factory mounted the pack. No more checking is needed.
                     }
                 }
 
-                return new PreFilterResult()
-                {
-                    FilterId = _FilterId,
-                    IsFiltered = true,
-                    Reason = "Package did not contain any template.json files"
-                };
+                return new PreFilterResult(_FilterId, isFiltered: true, "Package did not contain any template.json files");
             };
 
             return filter;

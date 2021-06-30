@@ -12,7 +12,7 @@ using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
-    public static class NugetPackScraper
+    internal static class NugetPackScraper
     {
         private static readonly Dictionary<string, string> SupportedProviders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -20,10 +20,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             { "query-template", "q=template" }
         };
 
-        public static IEnumerable<string> SupportedProvidersList => SupportedProviders.Keys;
+        internal static IEnumerable<string> SupportedProvidersList => SupportedProviders.Keys;
 
-        public static bool TryCreateDefaultNugetPackScraper(ScraperConfig config, out PackSourceChecker packSourceChecker)
+        internal static bool TryCreateDefaultNugetPackScraper(ScraperConfig config, out PackSourceChecker? packSourceChecker)
         {
+            if (string.IsNullOrWhiteSpace(config.BasePath))
+            {
+                throw new ArgumentException($"{nameof(config.BasePath)} should not be null or whitespace.");
+            }
             List<IPackProvider> providers = new List<IPackProvider>();
 
             if (!string.IsNullOrWhiteSpace(config.LocalPackagePath))
@@ -44,14 +48,17 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 
             List<Func<IDownloadedPackInfo, PreFilterResult>> preFilterList = new List<Func<IDownloadedPackInfo, PreFilterResult>>();
 
-            if (!PreviouslyRejectedPackFilter.TryGetPreviouslySkippedPacks(config.PreviousRunBasePath, out HashSet<string> nonTemplatePacks))
+            if (!string.IsNullOrWhiteSpace(config.PreviousRunBasePath))
             {
-                Console.WriteLine("Unable to read results from the previous run.");
-                packSourceChecker = null;
-                return false;
+                if (!PreviouslyRejectedPackFilter.TryGetPreviouslySkippedPacks(config.PreviousRunBasePath, out HashSet<string>? nonTemplatePacks) || nonTemplatePacks == null)
+                {
+                    Console.WriteLine("Unable to read results from the previous run.");
+                    packSourceChecker = null;
+                    return false;
+                }
+                preFilterList.Add(PreviouslyRejectedPackFilter.SetupPackFilter(nonTemplatePacks));
             }
 
-            preFilterList.Add(PreviouslyRejectedPackFilter.SetupPackFilter(nonTemplatePacks));
             if (!config.DontFilterOnTemplateJson)
             {
                 preFilterList.Add(TemplateJsonExistencePackFilter.SetupPackFilter());

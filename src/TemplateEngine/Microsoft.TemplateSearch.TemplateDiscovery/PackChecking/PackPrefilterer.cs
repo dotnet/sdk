@@ -8,16 +8,16 @@ using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
-    public class PackPreFilterer
+    internal class PackPreFilterer
     {
         private readonly IReadOnlyList<Func<IDownloadedPackInfo, PreFilterResult>> _preFilters;
 
-        public PackPreFilterer(IReadOnlyList<Func<IDownloadedPackInfo, PreFilterResult>> preFilters)
+        internal PackPreFilterer(IReadOnlyList<Func<IDownloadedPackInfo, PreFilterResult>> preFilters)
         {
             _preFilters = preFilters;
         }
 
-        public PreFilterResultList FilterPack(IDownloadedPackInfo packInfo)
+        internal PreFilterResultList FilterPack(IDownloadedPackInfo packInfo)
         {
             List<PreFilterResult> resultList = new List<PreFilterResult>();
 

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
 {
-    public interface IPackProvider
+    internal interface IPackProvider
     {
         string Name { get; }
 
         IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync();
 
-        Task<IDownloadedPackInfo> DownloadPackageAsync(IPackInfo packinfo);
+        Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo);
 
         Task<int> GetPackageCountAsync();
 

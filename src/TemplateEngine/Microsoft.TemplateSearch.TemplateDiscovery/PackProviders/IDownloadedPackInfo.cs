@@ -3,7 +3,7 @@
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
 {
-    public interface IDownloadedPackInfo : IPackInfo
+    internal interface IDownloadedPackInfo : IPackInfo
     {
         /// <summary>
         /// The fully qualified Id. Style may vary from source to source.

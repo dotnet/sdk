@@ -7,14 +7,27 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
     public class NugetPackInfo : IDownloadedPackInfo
     {
-        public string VersionedPackageIdentity { get; set; }
+        private IPackInfo _info;
 
-        public string Id { get; set; }
+        internal NugetPackInfo(IPackInfo info, string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new System.ArgumentException($"'{nameof(filePath)}' cannot be null or whitespace.", nameof(filePath));
+            }
 
-        public string Version { get; set; }
+            _info = info ?? throw new System.ArgumentNullException(nameof(info));
+            Path = filePath;
+        }
 
-        public string Path { get; set; }
+        public string VersionedPackageIdentity => $"{Id}::{Version}";
 
-        public long TotalDownloads { get; set; }
+        public string Id => _info.Id;
+
+        public string Version => _info.Version;
+
+        public string Path { get; private set; }
+
+        public long TotalDownloads => _info.TotalDownloads;
     }
 }

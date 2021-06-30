@@ -2,15 +2,31 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using Microsoft.TemplateEngine;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
-    public class NugetPackageSourceInfo : IPackInfo, IEquatable<IPackInfo>
+    internal class NugetPackageSourceInfo : IPackInfo, IEquatable<IPackInfo>
     {
-        [JsonIgnore]
+        internal NugetPackageSourceInfo(string id, string version)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace.", nameof(id));
+            }
+
+            if (string.IsNullOrWhiteSpace(version))
+            {
+                throw new ArgumentException($"'{nameof(version)}' cannot be null or whitespace.", nameof(version));
+            }
+
+            Id = id;
+            Version = version;
+        }
+
         public string VersionedPackageIdentity
         {
             get
@@ -19,52 +35,27 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             }
         }
 
-        [JsonProperty("@id")]
-        public string IdUrl { get; set; }
-
-        [JsonProperty("@type")]
-        public string Type { get; set; }
+        [JsonProperty]
+        public string Id { get; private set; }
 
         [JsonProperty]
-        public string Registration { get; set; }
-
-        [JsonProperty]
-        public string Id { get; set; }
-
-        [JsonProperty]
-        public string Version { get; set; }
-
-        [JsonProperty]
-        public string Description { get; set; }
-
-        [JsonProperty]
-        public string Summary { get; set; }
-
-        [JsonProperty]
-        public string Title { get; set; }
-
-        [JsonProperty]
-        public string LicenseUrl { get; set; }
-
-        [JsonProperty]
-        public string ProjectUrl { get; set; }
-
-        [JsonProperty]
-        public List<string> Tags { get; set; }
-
-        [JsonProperty]
-        public List<string> Authors { get; set; }
+        public string Version { get; private set; }
 
         [JsonProperty]
         public long TotalDownloads { get; set; }
 
-        [JsonProperty]
-        public bool Verified { get; set; }
+        internal static NugetPackageSourceInfo FromJObject (JObject entry)
+        {
+            string id = entry.ToString(nameof(Id)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Id)} property.", nameof(entry));
+            string version = entry.ToString(nameof(Version)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Version)} property.", nameof(entry));
+            NugetPackageSourceInfo sourceInfo = new NugetPackageSourceInfo(id, version);
+            sourceInfo.TotalDownloads = entry.ToInt32(nameof(TotalDownloads));
+            return sourceInfo;
+        }
 
-        [JsonProperty("versions")]
-        public List<NugetPackageVersion> PackageVersions { get; set; }
-
-        public override bool Equals(object obj)
+#pragma warning disable SA1202 // Elements should be ordered by access
+        public override bool Equals(object? obj)
+#pragma warning restore SA1202 // Elements should be ordered by access
         {
             if (obj is NugetPackageSourceInfo info)
             {
@@ -78,7 +69,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             return (Id, Version).GetHashCode();
         }
 
-        public bool Equals(IPackInfo other)
+        public bool Equals(IPackInfo? other)
         {
             if (other == null)
             {

@@ -7,29 +7,29 @@ using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting
 {
-    public class PackCheckResult
+    internal class PackCheckResult
     {
-        public PackCheckResult(IDownloadedPackInfo packInfo, PreFilterResultList preFilterResults)
+        internal PackCheckResult(IDownloadedPackInfo packInfo, PreFilterResultList preFilterResults)
         {
             PackInfo = packInfo;
             PreFilterResults = preFilterResults;
             FoundTemplates = new List<ITemplateInfo>();
         }
 
-        public PackCheckResult(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> foundTemplates)
+        internal PackCheckResult(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> foundTemplates)
         {
             PackInfo = packInfo;
             PreFilterResults = new PreFilterResultList();
             FoundTemplates = foundTemplates;
         }
 
-        public IDownloadedPackInfo PackInfo { get; }
+        internal IDownloadedPackInfo PackInfo { get; }
 
-        public PreFilterResultList PreFilterResults { get; }
+        internal PreFilterResultList PreFilterResults { get; }
 
-        public IReadOnlyList<ITemplateInfo> FoundTemplates { get; }
+        internal IReadOnlyList<ITemplateInfo> FoundTemplates { get; }
 
-        public bool AnyTemplates
+        internal bool AnyTemplates
         {
             get
             {

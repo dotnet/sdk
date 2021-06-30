@@ -12,7 +12,7 @@ using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
-    public class PackSourceChecker
+    internal class PackSourceChecker
     {
         private readonly IEnumerable<IPackProvider> _packProviders;
         private readonly PackPreFilterer _packPreFilterer;
@@ -20,7 +20,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         private readonly IReadOnlyList<IAdditionalDataProducer> _additionalDataProducers;
         private readonly bool _saveCandidatePacks;
 
-        public PackSourceChecker(IEnumerable<IPackProvider> packProviders, PackPreFilterer packPreFilterer, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, bool saveCandidatePacks)
+        internal PackSourceChecker(IEnumerable<IPackProvider> packProviders, PackPreFilterer packPreFilterer, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, bool saveCandidatePacks)
         {
             _packProviders = packProviders;
             _packPreFilterer = packPreFilterer;
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             _packChecker = new PackChecker();
         }
 
-        public async Task<PackSourceCheckResult> CheckPackagesAsync()
+        internal async Task<PackSourceCheckResult> CheckPackagesAsync()
         {
             List<PackCheckResult> checkResultList = new List<PackCheckResult>();
             HashSet<IPackInfo> alreadySeenPacks = new HashSet<IPackInfo>();
@@ -51,7 +51,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                     }
                     alreadySeenPacks.Add(sourceInfo);
 
-                    IDownloadedPackInfo packInfo = await packProvider.DownloadPackageAsync(sourceInfo).ConfigureAwait(false);
+                    IDownloadedPackInfo? packInfo = await packProvider.DownloadPackageAsync(sourceInfo).ConfigureAwait(false);
                     if (packInfo == null)
                     {
                         Console.WriteLine($"Package {sourceInfo.Id}::{sourceInfo.Version} is not processed.");

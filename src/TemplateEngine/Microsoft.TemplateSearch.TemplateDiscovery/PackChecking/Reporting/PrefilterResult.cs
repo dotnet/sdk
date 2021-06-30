@@ -3,12 +3,23 @@
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting
 {
-    public class PreFilterResult
+    internal class PreFilterResult
     {
-        public string FilterId { get; set; }
+        internal PreFilterResult(string filterId, bool isFiltered, string? reason = null)
+        {
+            if (string.IsNullOrWhiteSpace(filterId))
+            {
+                throw new System.ArgumentException($"'{nameof(filterId)}' cannot be null or whitespace.", nameof(filterId));
+            }
+            FilterId = filterId;
+            IsFiltered = isFiltered;
+            Reason = reason;
+        }
 
-        public bool IsFiltered { get; set; }
+        internal string FilterId { get; private set; }
 
-        public string Reason { get; set; }
+        internal bool IsFiltered { get; private set; }
+
+        internal string? Reason { get; private set; }
     }
 }
