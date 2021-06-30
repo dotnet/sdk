@@ -235,8 +235,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolveStaticWebAssetsConfiguration">
     <PropertyGroup>
-      <StaticWebAssetBasePath>_content/$(PackageId)</StaticWebAssetBasePath>
-      <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+      <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
+      <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Default</StaticWebAssetProjectMode>
       <StaticWebAssetBuildManifestPath>$(IntermediateOutputPath)StaticWebAssets.build.json</StaticWebAssetBuildManifestPath>
       <StaticWebAssetPublishManifestPath>$(IntermediateOutputPath)StaticWebAssets.publish.json</StaticWebAssetPublishManifestPath>
 
