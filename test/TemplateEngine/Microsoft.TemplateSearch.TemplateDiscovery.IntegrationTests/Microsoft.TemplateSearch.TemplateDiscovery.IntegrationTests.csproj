@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(SrcDir)dotnet-new3\dotnet-new3.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateSearch.TemplateDiscovery\Microsoft.TemplateSearch.TemplateDiscovery.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.Cli.TestHelper\Microsoft.TemplateEngine.Cli.TestHelper.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+</Project>

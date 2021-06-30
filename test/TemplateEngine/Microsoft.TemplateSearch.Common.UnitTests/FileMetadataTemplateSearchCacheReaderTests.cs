@@ -33,6 +33,19 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
         }
 
         [Fact]
+        public void CanReadSearchMetadata_V2()
+        {
+            using EnvironmentSettingsHelper environmentSettingsHelper = new EnvironmentSettingsHelper();
+            string content = File.ReadAllText("NuGetTemplateSearchInfo_v2.json");
+            var config = new NuGetSearchCacheConfig("NuGetTemplateSearchInfo_v2.json");
+            Assert.True(FileMetadataTemplateSearchCacheReader.TryReadDiscoveryMetadata(
+                environmentSettingsHelper.CreateEnvironment(virtualize: true),
+                content,
+                config,
+                out TemplateDiscoveryMetadata discoveryMetadata));
+        }
+
+        [Fact]
         public void CanSkipInvalidEntriesSearchMetadata()
         {
             using EnvironmentSettingsHelper environmentSettingsHelper = new EnvironmentSettingsHelper();

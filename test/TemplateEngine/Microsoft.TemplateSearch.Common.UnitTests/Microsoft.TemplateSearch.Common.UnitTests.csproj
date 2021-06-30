@@ -16,5 +16,8 @@
       <None Update="NuGetTemplateSearchInfo.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="NuGetTemplateSearchInfo_v2.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 </Project>
