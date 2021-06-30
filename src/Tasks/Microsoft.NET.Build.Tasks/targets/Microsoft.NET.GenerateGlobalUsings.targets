@@ -27,9 +27,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                       and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '6.0'))">
     <DefaultGlobalUsing Include="System" />
     <DefaultGlobalUsing Include="System.Collections.Generic" />
+    <DefaultGlobalUsing Include="System.IO" />
     <DefaultGlobalUsing Include="System.Linq" />
     <DefaultGlobalUsing Include="System.Net.Http" />
-    <DefaultGlobalUsing Include="System.Net.Http.Json" />
+    <DefaultGlobalUsing Include="System.Threading.Tasks" />
   </ItemGroup>
 
   <!--
