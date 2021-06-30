@@ -18,6 +18,8 @@
     <RedirectRepoOutputToLog Condition="'$(MinimalConsoleLogOutput)' == 'true'">&gt;&gt; $(RepoConsoleLogFile) 2&gt;&amp;1</RedirectRepoOutputToLog>
     <IsStable Condition="'$(UseStableVersions)' == 'true'">true</IsStable>
 
+    <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</PackagesOutput>
+
     <!--
       Repo specific semaphore path for incremental build
     -->
