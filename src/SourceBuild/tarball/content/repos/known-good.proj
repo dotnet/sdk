@@ -29,12 +29,16 @@
         <RepositoryReference Include="source-build-reference-packages" />
         <RepositoryReference Include="sourcelink" />
         <RepositoryReference Include="arcade" />
+
+        <!-- Tier 1 -->
+        <RepositoryReference Include="source-build" />
+
+        <!-- Tier 2 -->
         <RepositoryReference Include="linker" />
 
         <!-- Package source-build artifacts -->
-
         <RepositoryReference Include="package-source-build" />
-        
+
       </ItemGroup>
     </Otherwise>
   </Choose>
