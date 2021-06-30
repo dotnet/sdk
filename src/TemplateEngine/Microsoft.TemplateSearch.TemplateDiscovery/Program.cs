@@ -2,18 +2,24 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
 using Microsoft.TemplateSearch.TemplateDiscovery.Results;
+using Microsoft.TemplateSearch.TemplateDiscovery.Test;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
     internal class Program
     {
+        private const bool _defaultRunOnlyOnePage = false;
         private const int _defaultPageSize = 100;
+        private const bool _defaultSaveCandidatePacks = false;
+        private const bool _defaultIncludePreviewPacks = false;
+
         private const string _basePathFlag = "--basePath";
         private const string _pageSizeFlag = "--pageSize";
         private const string _includePreviewPacksFlag = "--allowPreviewPacks";
@@ -23,9 +29,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         private const string _noTemplateJsonFilterFlag = "--noTemplateJsonFilter";
         private const string _verbose = "-v";
         private const string _providers = "--providers";
-        private static readonly bool _defaultRunOnlyOnePage;
-        private static readonly bool _defaultSaveCandidatePacks;
-        private static readonly bool _defaultIncludePreviewPacks;
+        private const string _packagesPath = "--packagesPath";
 
         private static async Task Main(string[] args)
         {
@@ -92,6 +96,24 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                     if (TryGetFlagValue(args, index, out string basePath))
                     {
                         config.BasePath = basePath;
+                        index += 2;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else if (string.Equals(args[index], _packagesPath, StringComparison.Ordinal))
+                {
+                    if (TryGetFlagValue(args, index, out string packagesPath))
+                    {
+                        if (!Directory.Exists(packagesPath))
+                        {
+                            Console.WriteLine($"Directory {packagesPath} does not exist.");
+                            return false;
+                        }
+
+                        config.LocalPackagePath = packagesPath;
                         index += 2;
                     }
                     else
@@ -168,6 +190,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                         return false;
                     }
                 }
+
                 else
                 {
                     return false;

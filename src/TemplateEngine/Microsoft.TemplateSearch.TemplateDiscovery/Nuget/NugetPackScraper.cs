@@ -26,7 +26,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
         {
             List<IPackProvider> providers = new List<IPackProvider>();
 
-            if (!config.Providers.Any())
+            if (!string.IsNullOrWhiteSpace(config.LocalPackagePath))
+            {
+                providers.Add(new TestPackProvider(config.LocalPackagePath));
+            }
+            else if (!config.Providers.Any())
             {
                 providers.AddRange(SupportedProviders.Select(kvp => new NugetPackProvider(kvp.Key, kvp.Value, config.BasePath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks)));
             }

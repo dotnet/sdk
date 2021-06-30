@@ -7,6 +7,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
     public class ScraperConfig
     {
+        public string LocalPackagePath { get; set; }
+
         public string BasePath { get; set; }
 
         public int PageSize { get; set; }
