@@ -1,0 +1,229 @@
+{
+  "Version": 1,
+  "Hash": "WnXogYgpgqB6ApZcDY/W1WKAR1m4Vx4Y5SGEmwKKHLs=",
+  "Source": "blazorhosted",
+  "BasePath": "_content/blazorhosted",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "RelatedManifests": [
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
+      "Source": "blazorwasm",
+      "ManifestType": "Build",
+      "Hash": "qfpsvEE1Fubz2zmfMeiou2OiBlgKW/n9CLG0j8bk1Hw="
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
+      "Source": "blazorwasm",
+      "ManifestType": "Publish",
+      "Hash": "75YSiai3acwLn7GKKsEuf3fc5OA0ZqhTKfSRkbYfEgQ="
+    },
+    {
+      "Identity": "${ProjectRoot}\\razorclasslibrary\\obj\\Debug\\netstandard2.1\\StaticWebAssets.build.json",
+      "Source": "RazorClassLibrary",
+      "ManifestType": "Build",
+      "Hash": "rJO2vpDLeEz19FAhoXn3U4dQ\u002BQY9aeRg4AG2h7GWWsE="
+    },
+    {
+      "Identity": "${ProjectRoot}\\razorclasslibrary\\obj\\Debug\\netstandard2.1\\StaticWebAssets.publish.json",
+      "Source": "RazorClassLibrary",
+      "ManifestType": "Publish",
+      "Hash": "ul0bIOUiOFHHtLqyml5sd96qHnKR4g\u002BoqQh09D7/Sog="
+    }
+  ],
+  "DiscoveryPatterns": [],
+  "Assets": [
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\wwwroot\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "css/app.css",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\wwwroot\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "css/app.css",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\custom-service-worker-assets.js",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "custom-service-worker-assets.js",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\custom-service-worker-assets.js",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "custom-service-worker-assets.js",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\blazorwasm.bundle.scp.css",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "blazorwasm.bundle.scp.css",
+      "AssetKind": "All",
+      "AssetMode": "Reference",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\blazorwasm.bundle.scp.css",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "blazorwasm.bundle.scp.css",
+      "AssetKind": "All",
+      "AssetMode": "Reference",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\service-worker\\serviceworkers\\my-prod-service-worker.js",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\service-worker\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "serviceworkers/my-service-worker.js",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\service-worker\\serviceworkers\\my-prod-service-worker.js",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\service-worker\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "serviceworkers/my-service-worker.js",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\wwwroot\\Fake-License.txt",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\wwwroot\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "Fake-License.txt",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\wwwroot\\Fake-License.txt",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\wwwroot\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "Fake-License.txt",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\wwwroot\\index.html",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\wwwroot\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\wwwroot\\index.html",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\wwwroot\\",
+      "BasePath": "_content/blazorwasm",
+      "RelativePath": "index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\razorclasslibrary\\wwwroot\\styles.css",
+      "SourceId": "RazorClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\razorclasslibrary\\wwwroot\\",
+      "BasePath": "_content/RazorClassLibrary",
+      "RelativePath": "styles.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\razorclasslibrary\\wwwroot\\styles.css",
+      "SourceId": "RazorClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\razorclasslibrary\\wwwroot\\",
+      "BasePath": "_content/RazorClassLibrary",
+      "RelativePath": "styles.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
+      "SourceId": "RazorClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\razorclasslibrary\\wwwroot\\",
+      "BasePath": "_content/RazorClassLibrary",
+      "RelativePath": "wwwroot/exampleJsInterop.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    },
+    {
+      "Identity": "${ProjectRoot}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
+      "SourceId": "RazorClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\razorclasslibrary\\wwwroot\\",
+      "BasePath": "_content/RazorClassLibrary",
+      "RelativePath": "wwwroot/exampleJsInterop.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest"
+    }
+  ]
+}

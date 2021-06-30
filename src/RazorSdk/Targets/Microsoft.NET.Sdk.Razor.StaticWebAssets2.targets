@@ -213,8 +213,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolvePublishStaticWebAssetsDependsOn>RemoveExistingStaticWebAssets;LoadStaticWebAssetsBuildManifest;ComputeReferencedProjectsPublishAssets;$(ResolvePublishStaticWebAssetsDependsOn)</ResolvePublishStaticWebAssetsDependsOn>
 
-    <CopyStaticWebAssetsToPublishDirectoryDependsOn>LoadStaticWebAssetsPublishManifest;$(CopyStaticWebAssetsToPublishDirectoryDependsOn)</CopyStaticWebAssetsToPublishDirectoryDependsOn>
-
 
     <!-- TMP: Pack -->
     <GenerateStaticWebAssetsPackTargetsDependsOn>
@@ -424,7 +422,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ComputeReferencedProjectAssets>
   </Target>
 
-  <Target Name="CopyStaticWebAssetsToPublishDirectory" DependsOnTargets="$(CopyStaticWebAssetsToPublishDirectoryDependsOn)">
+  <Target Name="CopyStaticWebAssetsToPublishDirectory" DependsOnTargets="LoadStaticWebAssetsPublishManifest">
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="StaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>

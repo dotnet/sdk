@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 if (matchResult.HasMatches)
                 {
                     var stem = matchResult.Files.Single().Stem;
-                    var assetIdentity = Path.Combine(normalizedContentRoot, stem);
+                    var assetIdentity = Path.GetFullPath(Path.Combine(normalizedContentRoot, stem));
                     Log.LogMessage("Computed identity '{0}' for candidate '{1}'", assetIdentity, candidate.ItemSpec);
                     
                     return (assetIdentity, true);

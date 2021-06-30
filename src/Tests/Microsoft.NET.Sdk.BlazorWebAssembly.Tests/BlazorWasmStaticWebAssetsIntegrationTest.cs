@@ -62,9 +62,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorHosted";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAppName);
 
-            var blazorwasmRoot = Path.Combine(ProjectDirectory.TestRoot, "blazorwasm");
-            File.WriteAllText(Path.Combine(blazorwasmRoot, "App.razor.css"), "h1 { font-size: 16px; }");
-
             var build = new BuildCommand(ProjectDirectory, "blazorhosted");
             build.WithWorkingDirectory(ProjectDirectory.TestRoot);
             var buildResult = build.Execute("/bl");
@@ -86,6 +83,37 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             AssertBuildAssets(
                 StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
                 outputPath,
+                intermediateOutputPath);
+        }
+
+        [Fact]
+        public void Publish_Hosted_Works()
+        {
+            // Arrange
+            var testAppName = "BlazorHosted";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName);
+
+            // Check that static web assets is correctly configured by setting up a css file to triger css isolation.
+            // The list of publish files should not include bundle.scp.css and should include blazorwasm.styles.css
+            File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
+
+            var publish = new PublishCommand(ProjectDirectory, "blazorhosted");
+            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
+            var publishResult = publish.Execute("/bl");
+            publishResult.Should().Pass();
+
+            var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();
+            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.publish.json");
+            new FileInfo(path).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(manifest, LoadPublishManifest());
+
+            AssertPublishAssets(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
+                publishPath,
                 intermediateOutputPath);
         }
     }

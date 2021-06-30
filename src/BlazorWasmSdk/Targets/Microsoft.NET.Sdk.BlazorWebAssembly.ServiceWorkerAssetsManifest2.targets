@@ -15,7 +15,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);_AddServiceWorkerAssets</ResolveStaticWebAssetsInputsDependsOn>
-    <CopyStaticWebAssetsToPublishDirectoryDependsOn>$(CopyStaticWebAssetsToPublishDirectoryDependsOn);_WriteServiceWorkerAssetsManifest</CopyStaticWebAssetsToPublishDirectoryDependsOn>
   </PropertyGroup>
   
   <Target Name="_AddServiceWorkerAssets" DependsOnTargets="_ComputeServiceWorkerAssets">
@@ -72,12 +71,38 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="CopyCandidates" ItemName="_ServiceWorkerCopyCandidates" />
     </DefineStaticWebAssets>
 
+  </Target>
+
+  <Target Name="_WriteServiceWorkerAssetsManifest" DependsOnTargets="_ComputeServiceWorkerAssets" AfterTargets="GenerateStaticWebAssetsPublishManifest">
+
+    <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetPublishManifestPath)">
+      <Output TaskParameter="Assets" ItemName="_PublishStaticWebAsset" />
+    </ReadStaticWebAssetsManifestFile>    
+
+    <ComputeStaticWebAssetsTargetPaths Assets="@(_PublishStaticWebAsset)" PathPrefix="">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_AssetsForManifestWithTargetPath" />
+    </ComputeStaticWebAssetsTargetPaths>
+
     <ItemGroup>
-      <_PublishServiceWorkerFile Include="@(_ServiceWorkerCopyCandidates)" Condition="'%(Identity)' == '$(_PublishServiceWorkerSourcePath)'" />
-      <_PublishServiceWorkerStaticWebAsset Include="@(_ServiceWorkerStaticWebAsset)" Condition="'%(OriginalItemSpec)' == '$(_PublishServiceWorkerSourcePath)'" />
+      <_ServiceWorkItemExclusion Include="@(_ServiceWorkerStaticWebAsset)" />
+
+      <_ServiceWorkItem Include="@(_AssetsForManifestWithTargetPath)">
+        <AssetUrl>%(_AssetsForManifestWithTargetPath.TargetPath)</AssetUrl>
+      </_ServiceWorkItem>
+      <_ServiceWorkItem Remove="@(_ServiceWorkItemExclusion)" />
     </ItemGroup>
 
-    <!-- Copies wwwroot\service-worker-prod.js to obj\Debug\net6.0\serviceworkers\service-worker-prod.js -->
+    <GenerateServiceWorkerAssetsManifest
+      Version="$(ServiceWorkerAssetsManifestVersion)"
+      Assets="@(_ServiceWorkItem)"
+      OutputPath="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest)">
+      <Output TaskParameter="CalculatedVersion" PropertyName="_ServiceWorkerAssetsManifestVersion" />
+    </GenerateServiceWorkerAssetsManifest>
+
+    <ItemGroup>
+      <_PublishServiceWorkerFile Include="@(_ServiceWorkerCopyCandidates)" Condition="'%(Identity)' == '$(_PublishServiceWorkerSourcePath)'" />
+    </ItemGroup>
+
     <Copy SourceFiles="@(_PublishServiceWorkerFile->'%(Identity)')"
       DestinationFiles="@(_PublishServiceWorkerFile->'%(TargetPath)')"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
@@ -90,33 +115,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </Copy>
 
-  </Target>
-
-  <Target Name="_WriteServiceWorkerAssetsManifest">
-    <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
-      <Output TaskParameter="AssetsWithTargetPath" ItemName="_AssetsForManifestWithTargetPath" />
-    </ComputeStaticWebAssetsTargetPaths>
-
-    <ItemGroup>
-      <_ServiceWorkItem Include="@(_AssetsForManifestWithTargetPath)" Exclude="@(_ServiceWorkerStaticWebAsset)">
-        <AssetUrl>%(_AssetsForManifestWithTargetPath.TargetPath)</AssetUrl>
-      </_ServiceWorkItem>
-    </ItemGroup>
-
-    <GenerateServiceWorkerAssetsManifest
-      Version="$(ServiceWorkerAssetsManifestVersion)"
-      Assets="@(_ServiceWorkItem)"
-      OutputPath="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest)">
-      <Output TaskParameter="CalculatedVersion" PropertyName="_ServiceWorkerAssetsManifestVersion" />
-    </GenerateServiceWorkerAssetsManifest>
-
     <WriteLinesToFile
-      File="@(_PublishServiceWorkerStaticWebAsset->'%(Identity)')"
+      File="@(_PublishServiceWorkerFile->'%(TargetPath)')"
       Lines="/* Manifest version: $(_ServiceWorkerAssetsManifestVersion) */"
       Condition="'$(_ServiceWorkerAssetsManifestVersion)' != ''" />
 
     <ItemGroup>
-      <FileWrites Include="@(_PublishServiceWorkerStaticWebAsset)" />
+      <FileWrites Include="@(_PublishServiceWorkerFile->'%(TargetPath)')" />
       <FileWrites Include="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest)" />
     </ItemGroup>
 
