@@ -1,0 +1,23 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <BuildCommandArgs>$(StandardSourceBuildArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+
+    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
+    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</PackagesOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
