@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 string mountPointUri = entry.ToString(nameof(MountPointUri)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(MountPointUri)} property.", nameof(entry));
                 string configPlace = entry.ToString(nameof(ConfigPlace)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(ConfigPlace)} property.", nameof(entry));
                 JToken? shortNameToken = entry.Get<JToken>(nameof(ShortNameList));
-                IEnumerable<string> shortNames = JTokenStringOrArrayToCollection(shortNameToken, Array.Empty<string>());
+                IEnumerable<string> shortNames = shortNameToken.JTokenStringOrArrayToCollection(Array.Empty<string>());
 
                 TemplateInfo info = new TemplateInfo(identity, name, shortNames, mountPointUri, configPlace);
 
@@ -93,22 +93,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 info.HostData = entry.Get<JObject>(nameof(info.HostData));
 
                 return info;
-            }
-
-            private static IReadOnlyList<string> JTokenStringOrArrayToCollection(JToken? token, string[] defaultSet)
-            {
-                if (token == null)
-                {
-                    return defaultSet;
-                }
-
-                if (token.Type == JTokenType.String)
-                {
-                    string tokenValue = token.ToString();
-                    return new List<string>() { tokenValue };
-                }
-
-                return token.ArrayAsStrings();
             }
         }
     }

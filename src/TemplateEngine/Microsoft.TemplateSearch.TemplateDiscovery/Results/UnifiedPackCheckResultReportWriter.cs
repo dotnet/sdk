@@ -70,24 +70,25 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             List<ITemplateInfo> templateCache = packSourceCheckResults.PackCheckData.Where(r => r.AnyTemplates)
                                                     .SelectMany(r => r.FoundTemplates)
                                                     .Distinct(new TemplateIdentityEqualityComparer())
+                                                    .Select(t => (ITemplateInfo)new BlobStorageTemplateInfo(t))
                                                     .ToList();
 
             Dictionary<string, PackToTemplateEntry> packToTemplateMap = packSourceCheckResults.PackCheckData
-                .Where(r => r.AnyTemplates)
-                .ToDictionary(
-                            r => r.PackInfo.Id,
-                            r =>
-                            {
-                                PackToTemplateEntry packToTemplateEntry = new PackToTemplateEntry(
-                                        r.PackInfo.Version,
-                                        r.FoundTemplates.Select(t => new TemplateIdentificationEntry(t.Identity, t.GroupIdentity)).ToList());
-
-                                if (r.PackInfo is NugetPackInfo npi)
+                            .Where(r => r.AnyTemplates)
+                            .ToDictionary(
+                                r => r.PackInfo.Id,
+                                r =>
                                 {
-                                    packToTemplateEntry.TotalDownloads = npi.TotalDownloads;
-                                }
-                                return packToTemplateEntry;
-                            });
+                                    PackToTemplateEntry packToTemplateEntry = new PackToTemplateEntry(
+                                            r.PackInfo.Version,
+                                            r.FoundTemplates.Select(t => new TemplateIdentificationEntry(t.Identity, t.GroupIdentity)).ToList());
+
+                                    if (r.PackInfo is NugetPackInfo npi)
+                                    {
+                                        packToTemplateEntry.TotalDownloads = npi.TotalDownloads;
+                                    }
+                                    return packToTemplateEntry;
+                                });
 
             Dictionary<string, object> additionalData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 

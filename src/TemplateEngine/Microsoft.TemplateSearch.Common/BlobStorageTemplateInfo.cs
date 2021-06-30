@@ -16,8 +16,21 @@ namespace Microsoft.TemplateSearch.Common
     [JsonObject(Id = "TemplateInfo")]
     public class BlobStorageTemplateInfo : ITemplateInfo
     {
-        [JsonProperty(PropertyName = "BaselineInfo")]
-        private IReadOnlyDictionary<string, BaselineCacheInfo> _baselineInfo = new Dictionary<string, BaselineCacheInfo>();
+        public BlobStorageTemplateInfo(ITemplateInfo templateInfo)
+        {
+            Identity = templateInfo.Identity;
+            Name = templateInfo.Name;
+            ShortNameList = templateInfo.ShortNameList;
+            Parameters = templateInfo.Parameters.Select(p => new BlobTemplateParameter(p)).ToList();
+            Author = templateInfo.Author;
+            Classifications = templateInfo.Classifications;
+            Description = templateInfo.Description;
+            GroupIdentity = templateInfo.GroupIdentity;
+            Precedence = templateInfo.Precedence;
+            ThirdPartyNotices = templateInfo.ThirdPartyNotices;
+            TagsCollection = templateInfo.TagsCollection;
+            BaselineInfo = templateInfo.BaselineInfo;
+        }
 
         [JsonConstructor]
         private BlobStorageTemplateInfo(string identity, string name, IEnumerable<string> shortNameList)
@@ -42,7 +55,7 @@ namespace Microsoft.TemplateSearch.Common
             ShortNameList = shortNameList.ToList();
         }
 
-        [JsonIgnore]
+        [JsonProperty]
         //reading manually now to support old format
         public IReadOnlyList<ITemplateParameter> Parameters { get; private set; } = new List<ITemplateParameter>();
 
@@ -55,8 +68,8 @@ namespace Microsoft.TemplateSearch.Common
         [JsonProperty]
         public IReadOnlyList<string> Classifications { get; private set; } = new List<string>();
 
-        [JsonProperty]
-        public string? DefaultName { get; private set; }
+        [JsonIgnore]
+        public string? DefaultName => throw new NotImplementedException();
 
         [JsonProperty]
         public string? Description { get; private set; }
@@ -103,18 +116,54 @@ namespace Microsoft.TemplateSearch.Common
         [JsonProperty]
         public string? ThirdPartyNotices { get; private set; }
 
-        [JsonIgnore]
-        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo => _baselineInfo.ToDictionary(kvp => kvp.Key, kvp => (IBaselineInfo)kvp.Value);
+        [JsonProperty]
+        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; private set; } = new Dictionary<string, IBaselineInfo>();
 
         [JsonIgnore]
         [Obsolete("This property is deprecated")]
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
+        [JsonProperty]
         public IReadOnlyDictionary<string, string> TagsCollection { get; private set; } = new Dictionary<string, string>();
 
         public static BlobStorageTemplateInfo FromJObject(JObject entry)
         {
-            BlobStorageTemplateInfo info = entry.ToObject<BlobStorageTemplateInfo>();
+            string identity = entry.ToString(nameof(Identity)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Identity)} property.", nameof(entry));
+            string name = entry.ToString(nameof(Name)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Name)} property.", nameof(entry));
+            JToken? shortNameToken = entry.Get<JToken>(nameof(ShortNameList));
+            IEnumerable<string> shortNames = shortNameToken.JTokenStringOrArrayToCollection(Array.Empty<string>());
+            BlobStorageTemplateInfo info = new BlobStorageTemplateInfo(identity, name, shortNames);
+            info.Author = entry.ToString(nameof(Author));
+            JArray? classificationsArray = entry.Get<JArray>(nameof(Classifications));
+            if (classificationsArray != null)
+            {
+                List<string> classifications = new List<string>();
+                foreach (JToken item in classificationsArray)
+                {
+                    classifications.Add(item.ToString());
+                }
+                info.Classifications = classifications;
+            }
+            info.Description = entry.ToString(nameof(Description));
+            info.GroupIdentity = entry.ToString(nameof(GroupIdentity));
+            info.Precedence = entry.ToInt32(nameof(Precedence));
+            info.ThirdPartyNotices = entry.ToString(nameof(ThirdPartyNotices));
+
+            JObject? baselineJObject = entry.Get<JObject>(nameof(ITemplateInfo.BaselineInfo));
+            Dictionary<string, IBaselineInfo> baselineInfo = new Dictionary<string, IBaselineInfo>();
+            if (baselineJObject != null)
+            {
+                foreach (JProperty item in baselineJObject.Properties())
+                {
+                    IBaselineInfo baseline = new BaselineCacheInfo()
+                    {
+                        Description = item.Value.ToString(nameof(IBaselineInfo.Description)),
+                        DefaultOverrides = item.Value.ToStringDictionary(propertyName: nameof(IBaselineInfo.DefaultOverrides))
+                    };
+                    baselineInfo.Add(item.Name, baseline);
+                }
+                info.BaselineInfo = baselineInfo;
+            }
 
             //read parameters
             bool readParameters = false;
@@ -129,12 +178,20 @@ namespace Microsoft.TemplateSearch.Common
                 readParameters = true;
             }
 
-            //try read tags and parameters - for compatibility reason
-            JObject? tagsObject = entry.Get<JObject>("tags");
+            JObject? tagsObject = entry.Get<JObject>(nameof(TagsCollection));
+            Dictionary<string, string> tags = new Dictionary<string, string>();
             if (tagsObject != null)
             {
-                Dictionary<string, string> tags = new Dictionary<string, string>();
-                info.TagsCollection = tags;
+                foreach (JProperty item in tagsObject.Properties())
+                {
+                    tags.Add(item.Name.ToString(), item.Value.ToString());
+                }
+            }
+
+            //try read tags and parameters - for compatibility reason
+            tagsObject = entry.Get<JObject>("tags");
+            if (tagsObject != null)
+            {
                 foreach (JProperty item in tagsObject.Properties())
                 {
                     if (item.Value.Type == JTokenType.String)
@@ -152,14 +209,12 @@ namespace Microsoft.TemplateSearch.Common
                                 choicesAndDescriptions.Add(cdPair.Name.ToString(), new ParameterChoice(null, cdPair.Value.ToString()));
                             }
                             templateParameters.Add(
-                                new BlobTemplateParameter(item.Name.ToString(), "parameter", "choice")
+                                new BlobTemplateParameter(item.Name.ToString(), "choice")
                                 {
-                                    Choices = choicesAndDescriptions,
-                                    Description = tagObj.ToString(nameof(BlobTemplateParameter.Description)),
-                                    DefaultValue = tagObj.ToString(nameof(BlobTemplateParameter.DefaultValue)),
+                                    Choices = choicesAndDescriptions
                                 });
                         }
-                        tags[item.Name.ToString()] = tagObj.ToString(nameof(BlobTemplateParameter.DefaultValue)) ?? "";
+                        tags[item.Name.ToString()] = tagObj.ToString("defaultValue") ?? "";
                     }
                 }
             }
@@ -174,34 +229,37 @@ namespace Microsoft.TemplateSearch.Common
                         continue;
                     }
                     string dataType = paramObj.ToString(nameof(BlobTemplateParameter.DataType)) ?? "string";
-                    templateParameters.Add(
-                        new BlobTemplateParameter(item.Name.ToString(), "parameter", dataType)
-                        {
-                            Description = paramObj.ToString(nameof(BlobTemplateParameter.Description)),
-                            DefaultValue = paramObj.ToString(nameof(BlobTemplateParameter.DefaultValue)),
-                        });
+                    templateParameters.Add(new BlobTemplateParameter(item.Name.ToString(), dataType));
                 }
             }
+
+            info.TagsCollection = tags;
             info.Parameters = templateParameters;
             return info;
 
         }
 
-        internal class BaselineCacheInfo : IBaselineInfo
+        private class BaselineCacheInfo : IBaselineInfo
         {
             [JsonProperty]
-            public string? Description { get; private set; }
+            public string? Description { get; set; }
 
             [JsonProperty]
-            public IReadOnlyDictionary<string, string> DefaultOverrides { get; private set; } = new Dictionary<string, string>();
+            public IReadOnlyDictionary<string, string> DefaultOverrides { get; set; } = new Dictionary<string, string>();
         }
 
-        internal class BlobTemplateParameter : ITemplateParameter
+        private class BlobTemplateParameter : ITemplateParameter
         {
-            internal BlobTemplateParameter(string name, string type, string dataType)
+            internal BlobTemplateParameter(ITemplateParameter parameter)
+            {
+                Name = parameter.Name;
+                DataType = parameter.DataType;
+                Choices = parameter.Choices;
+            }
+
+            internal BlobTemplateParameter(string name, string dataType)
             {
                 Name = name;
-                Type = type;
                 DataType = dataType;
             }
 
@@ -214,13 +272,7 @@ namespace Microsoft.TemplateSearch.Common
                 }
 
                 Name = name!;
-                Type = jObject.ToString(nameof(Type)) ?? "parameter";
                 DataType = jObject.ToString(nameof(DataType)) ?? "string";
-                Description = jObject.ToString(nameof(Description));
-                Priority = Enum.TryParse(jObject.ToString(nameof(Priority)), out TemplateParameterPriority value) ? value : default;
-                DefaultValue = jObject.ToString(nameof(DefaultValue));
-                DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
-                DisplayName = jObject.ToString(nameof(DisplayName));
 
                 if (DataType.Equals("choice", StringComparison.OrdinalIgnoreCase))
                 {
@@ -241,28 +293,39 @@ namespace Microsoft.TemplateSearch.Common
                 }
             }
 
-            [Obsolete]
-            public string? Documentation => Description;
-
+            [JsonProperty]
             public string Name { get; internal set; }
 
-            public TemplateParameterPriority Priority { get; internal set; }
-
-            public string Type { get; internal set; }
-
-            public bool IsName => false;
-
-            public string? DefaultValue { get; internal set; }
-
+            [JsonProperty]
             public string DataType { get; internal set; }
 
-            public IReadOnlyDictionary<string, ParameterChoice> Choices { get; internal set; } = new Dictionary<string, ParameterChoice>();
+            [JsonProperty]
+            public IReadOnlyDictionary<string, ParameterChoice>? Choices { get; internal set; }
 
-            public string? DisplayName { get; internal set; }
+            [JsonIgnore]
+            public TemplateParameterPriority Priority => throw new NotImplementedException();
 
-            public string? DefaultIfOptionWithoutValue { get; internal set; }
+            [JsonIgnore]
+            string ITemplateParameter.Type => throw new NotImplementedException();
 
-            public string? Description { get; internal set; }
+            [JsonIgnore]
+            bool ITemplateParameter.IsName => false;
+
+            [JsonIgnore]
+            string? ITemplateParameter.DefaultValue => throw new NotImplementedException();
+
+            [JsonIgnore]
+            string? ITemplateParameter.DisplayName => throw new NotImplementedException();
+
+            [JsonIgnore]
+            string? ITemplateParameter.DefaultIfOptionWithoutValue => throw new NotImplementedException();
+
+            [JsonIgnore]
+            string? ITemplateParameter.Description => throw new NotImplementedException();
+
+            [Obsolete]
+            [JsonIgnore]
+            string? ITemplateParameter.Documentation => throw new NotImplementedException();
         }
     }
 }

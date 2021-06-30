@@ -326,5 +326,21 @@ namespace Microsoft.TemplateEngine
             }
         }
 
+        internal static IReadOnlyList<string> JTokenStringOrArrayToCollection(this JToken? token, string[] defaultSet)
+        {
+            if (token == null)
+            {
+                return defaultSet;
+            }
+
+            if (token.Type == JTokenType.String)
+            {
+                string tokenValue = token.ToString();
+                return new List<string>() { tokenValue };
+            }
+
+            return token.ArrayAsStrings();
+        }
+
     }
 }

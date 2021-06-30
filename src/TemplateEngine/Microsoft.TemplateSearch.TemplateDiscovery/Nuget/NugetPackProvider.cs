@@ -28,7 +28,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             Name = name;
             _pageSize = pageSize;
             _runOnlyOnePage = runOnlyOnePage;
-            _packageTempPath = Path.Combine(packageTempBasePath, DownloadedPacksDir, Name);
+            _packageTempPath = Path.GetFullPath(Path.Combine(packageTempBasePath, DownloadedPacksDir, Name));
             _searchUriFormat = $"https://api-v2v3search-0.nuget.org/query?{query}&skip={{0}}&take={{1}}&prerelease={includePreviewPacks}";
 
             if (Directory.Exists(_packageTempPath))

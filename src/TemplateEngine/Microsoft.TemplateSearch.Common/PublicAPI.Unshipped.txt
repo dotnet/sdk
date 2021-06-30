@@ -1,1 +1,1 @@
-﻿
+﻿Microsoft.TemplateSearch.Common.BlobStorageTemplateInfo.BlobStorageTemplateInfo(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! templateInfo) -> void
