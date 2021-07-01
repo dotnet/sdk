@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             foreach (var asset in assets)
             {
-                if (!string.Equals(asset.AssetKind, StaticWebAsset.AssetKinds.Build, StringComparison.Ordinal))
+                if (!asset.IsBuildOnly())
                 {
                     yield return asset;
                 }
@@ -113,9 +113,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         private StaticWebAssetsManifest.DiscoveryPattern ComputeDiscoveryPattern(ITaskItem pattern)
         {
             var name = pattern.ItemSpec;
-            var contentRoot = pattern.GetMetadata("ContentRoot");
-            var basePath = pattern.GetMetadata("BasePath");
-            var glob = pattern.GetMetadata("Pattern");
+            var contentRoot = pattern.GetMetadata(nameof(StaticWebAssetsManifest.DiscoveryPattern.ContentRoot));
+            var basePath = pattern.GetMetadata(nameof(StaticWebAssetsManifest.DiscoveryPattern.BasePath));
+            var glob = pattern.GetMetadata(nameof(StaticWebAssetsManifest.DiscoveryPattern.Pattern));
 
             return new StaticWebAssetsManifest.DiscoveryPattern(name, contentRoot, basePath, glob);
         }
@@ -123,8 +123,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         private StaticWebAssetsManifest.ManifestReference ComputeManifestReference(ITaskItem reference)
         {
             var identity = reference.GetMetadata("FullPath");
-            var source = reference.GetMetadata("Source");
-            var manifestType = reference.GetMetadata("ManifestType");
+            var source = reference.GetMetadata(nameof(StaticWebAssetsManifest.ManifestReference.Source));
+            var manifestType = reference.GetMetadata(nameof(StaticWebAssetsManifest.ManifestReference.ManifestType));
 
             if (!File.Exists(identity))
             {

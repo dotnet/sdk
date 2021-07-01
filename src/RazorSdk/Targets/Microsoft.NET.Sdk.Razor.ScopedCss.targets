@@ -236,6 +236,10 @@ Integration with static web assets:
       <RelativePath>$(PackageId).styles.css</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>CurrentProject</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName>ScopedCss</AssetTraitName>
+      <AssetTraitValue>ApplicationBundle</AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </StaticWebAsset>
@@ -248,6 +252,10 @@ Integration with static web assets:
       <RelativePath>$(PackageId).bundle.scp.css</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>Reference</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName>ScopedCss</AssetTraitName>
+      <AssetTraitValue>ProjectBundle</AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </StaticWebAsset>
@@ -290,6 +298,9 @@ Integration with static web assets:
       <RelativePath>$([MSBuild]::MakeRelative('$(_ScopedCssIntermediatePath)','%(_ScopedCss.OutputFile)'))</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <AssetTraitName>ScopedCss</AssetTraitName>
+      <AssetTraitValue>ScopedCssFile</AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </_ScopedCssStaticWebAsset>
@@ -348,6 +359,10 @@ Integration with static web assets:
       RelativePathFilter="**/*.bundle.scp.css"
       PropertyOverrides="@(_LegacyOverrides)"
       AssetMode="Reference"
+      AssetRole="Primary"
+      RelatedAsset=""
+      AssetTraitName="ScopedCss"
+      AssetTraitValue="ProjectBundle"
     >
       <Output TaskParameter="Assets" ItemName="_UpdatedLegacyProjectBundles" />
     </DefineStaticWebAssets>
@@ -357,6 +372,10 @@ Integration with static web assets:
       RelativePathFilter="**/*.styles.css"
       PropertyOverrides="@(_LegacyOverrides)"
       AssetMode="CurrentProject"
+      AssetRole="Primary"
+      RelatedAsset=""
+      AssetTraitName="ScopedCss"
+      AssetTraitValue="ApplicationBundle"
     >
     <Output TaskParameter="Assets" ItemName="_UpdatedLegacyAppBundles" />
   </DefineStaticWebAssets>

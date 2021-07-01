@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 throw new InvalidOperationException($"Related asset for '{AssetRole}' asset '{Identity}' is not defined.");
             }
 
-            if (!IsAlternativeAsset() && (string.IsNullOrEmpty(AssetTraitName) || string.IsNullOrEmpty(AssetTraitValue)))
+            if (IsAlternativeAsset() && (string.IsNullOrEmpty(AssetTraitName) || string.IsNullOrEmpty(AssetTraitValue)))
             {
                 throw new InvalidOperationException($"Alternative asset '{Identity}' does not define an asset trait name or value.");
             }
