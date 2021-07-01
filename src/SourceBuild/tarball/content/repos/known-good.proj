@@ -34,6 +34,7 @@
         <RepositoryReference Include="command-line-api" />
         <RepositoryReference Include="source-build" />
         <RepositoryReference Include="symreader" />
+        <RepositoryReference Include="test-templates" />
         <RepositoryReference Include="xdt" />
         <RepositoryReference Include="xliff-tasks" />
 
@@ -42,7 +43,6 @@
 
         <!-- Package source-build artifacts -->
         <RepositoryReference Include="package-source-build" />
-
       </ItemGroup>
     </Otherwise>
   </Choose>

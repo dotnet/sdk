@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -30,7 +31,9 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            XDocument d = XDocument.Load(NuGetConfigFile);
+            string xml = File.ReadAllText(NuGetConfigFile);
+            string newLineChars = FileUtilities.DetectNewLineChars(xml);
+            XDocument d = XDocument.Parse(xml);
             XElement packageSourcesElement = d.Root.Descendants().First(e => e.Name == "packageSources");
             XElement toAdd = new XElement("add", new XAttribute("key", SourceName), new XAttribute("value", SourcePath));
             XElement clearTag = new XElement("clear");
@@ -52,9 +55,9 @@ namespace Microsoft.DotNet.Build.Tasks
                 packageSourcesElement.AddFirst(clearTag);
             }
 
-            using (FileStream fs = new FileStream(NuGetConfigFile, FileMode.Create, FileAccess.ReadWrite))
+            using (var w = XmlWriter.Create(NuGetConfigFile, new XmlWriterSettings { NewLineChars = newLineChars, Indent = true }))
             {
-                d.Save(fs);
+                d.Save(w);
             }
 
             return true;

@@ -30,7 +30,9 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            JObject jsonObj = JObject.Parse(File.ReadAllText(JsonFilePath));
+            string json = File.ReadAllText(JsonFilePath);
+            string newLineChars = FileUtilities.DetectNewLineChars(json);
+            JObject jsonObj = JObject.Parse(json);
 
             string[] escapedPathToAttributeParts = PathToAttribute.Replace("\\.", "\x1F").Split('.');
             for (int i = 0; i < escapedPathToAttributeParts.Length; ++i)
@@ -39,7 +41,7 @@ namespace Microsoft.DotNet.Build.Tasks
             }
             UpdateAttribute(jsonObj, escapedPathToAttributeParts, NewAttributeValue);
 
-            File.WriteAllText(JsonFilePath, jsonObj.ToString());
+            File.WriteAllText(JsonFilePath, FileUtilities.NormalizeNewLineChars(jsonObj.ToString(), newLineChars));
             return true;
         }
 
