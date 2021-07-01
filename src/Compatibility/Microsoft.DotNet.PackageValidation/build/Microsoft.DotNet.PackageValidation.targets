@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <PackageValidationBaselineName Condition="'$(PackageId)' == ''">$(AssemblyName)</PackageValidationBaselineName>
-    <PackageValidationBaselineName>$([MSBuild]::ValueOrDefault('$(PackageValidationBaselineName)', '$(PackageId)'))</PackageValidationBaselineName>
+    <PackageValidationBaselineName>$([MSBuild]::ValueOrDefault('$(PackageValidationBaselineName)', '$([MSBuild]::ValueOrDefault('$(PackageId)', '$(AssemblyName)'))'))</PackageValidationBaselineName>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(PackageValidationBaselinePath)' == '' and '$(PackageValidationBaselineVersion)' != ''">
