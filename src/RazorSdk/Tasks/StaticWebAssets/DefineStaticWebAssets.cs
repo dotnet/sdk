@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     var assetKind = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetKind), AssetKind);
                     var assetMode = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetMode), AssetMode);
                     var assetRole = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetRole), AssetRole);
-                    var relatedAsset = ComputePropertyValue(candidate, nameof(StaticWebAsset.RelatedAsset), RelatedAsset);
+                    var relatedAsset = ComputePropertyValue(candidate, nameof(StaticWebAsset.RelatedAsset), RelatedAsset, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
                     var assetTraitName = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitName), AssetTraitName);
                     var assetTraitValue = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitValue), AssetTraitValue);
                     var copyToOutputDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToOutputDirectory), CopyToOutputDirectory);
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
         }
 
-        private string ComputePropertyValue(ITaskItem element, string metadataName, string propertyValue)
+        private string ComputePropertyValue(ITaskItem element, string metadataName, string propertyValue, bool isRequired = true)
         {
             if (PropertyOverrides != null && PropertyOverrides.Any(a => string.Equals(a.ItemSpec, metadataName, StringComparison.OrdinalIgnoreCase)))
             {
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var value = element.GetMetadata(metadataName);
             if (string.IsNullOrEmpty(value))
             {
-                if (propertyValue == null)
+                if (propertyValue == null && isRequired)
                 {
                     Log.LogError("No metadata '{0}' was present for item '{1}' and no default value was provided.",
                         metadataName,

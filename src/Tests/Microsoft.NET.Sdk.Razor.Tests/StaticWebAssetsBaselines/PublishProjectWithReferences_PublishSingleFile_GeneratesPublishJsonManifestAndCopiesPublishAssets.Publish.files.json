@@ -9,5 +9,9 @@
   "${OutputPath}\\wwwroot\\_content\\PackageLibraryDirectDependency\\css\\site.css",
   "${OutputPath}\\wwwroot\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js",
   "${OutputPath}\\wwwroot\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js",
+  "${OutputPath}\\wwwroot\\css\\site.css",
+  "${OutputPath}\\wwwroot\\js\\project-direct-dep.js",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.js",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.v4.js",
   "${IntermediateOutputPath}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css"
 ]

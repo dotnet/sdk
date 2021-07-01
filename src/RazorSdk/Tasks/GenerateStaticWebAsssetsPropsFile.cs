@@ -21,8 +21,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         private const string RelativePath = "RelativePath";
         private const string AssetKind = "AssetKind";
         private const string AssetMode = "AssetMode";
+        private const string AssetRole = "AssetRole";
+        private const string RelatedAsset = "RelatedAsset";
+        private const string AssetTraitName = "AssetTraitName";
+        private const string AssetTraitValue = "AssetTraitValue";
         private const string CopyToOutputDirectory = "CopyToOutputDirectory";
         private const string CopyToPublishDirectory = "CopyToPublishDirectory";
+
 
         [Required]
         public string TargetPropsFilePath { get; set; }
@@ -61,6 +66,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     new XElement(RelativePath, element.GetMetadata(RelativePath)),
                     new XElement(AssetKind, element.GetMetadata(AssetKind)),
                     new XElement(AssetMode, element.GetMetadata(AssetMode)),
+                    new XElement(AssetRole, element.GetMetadata(AssetRole)),
+                    new XElement(RelatedAsset, element.GetMetadata(RelatedAsset)),
+                    new XElement(AssetTraitName, element.GetMetadata(AssetTraitName)),
+                    new XElement(AssetTraitValue, element.GetMetadata(AssetTraitValue)),
                     new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
                     new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory))));
             }

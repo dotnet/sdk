@@ -364,6 +364,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             public const string Primary = nameof(Primary);
             public const string Related = nameof(Related);
             public const string Alternative = nameof(Alternative);
+
+            internal static bool IsPrimary(string assetRole)
+                => string.Equals(assetRole, Primary, StringComparison.Ordinal);
         }
 
         private string GetDebuggerDisplay()

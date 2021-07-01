@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "2XxzXCheErCngNY7PuipMucN\u002BI4tKvjUafJX2mQKSc0=",
+  "Hash": "P\u002BYS2KQHpALxHnyATTqsV1ET94QlmrcGnBJi7eBlR/Q=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -10,25 +10,25 @@
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
       "Source": "AnotherClassLib",
       "ManifestType": "Build",
-      "Hash": "hKRa1YthcmxPdtrZbDcPVC4Zwm1OcxHfaxN/qPNR/vk="
+      "Hash": "HJPOrGwuI3vUZSUHUdtZ8onqWRWOxlNxM0yniBRDDfk="
     },
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
       "Source": "AnotherClassLib",
       "ManifestType": "Publish",
-      "Hash": "trryu0jDGSm/C/Vdh8AXLXWJJmQR5nJkvckLN6Aku3A="
+      "Hash": "IVH\u002B\u002BVnBSxqkcW1Q38IH3QB79n9Pgc\u002BSRi2VkqlyJpQ="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
       "Source": "ClassLibrary",
       "ManifestType": "Build",
-      "Hash": "B/mrEOFhV0nHkWITBsDrqFcVz5fEUd9t56UkG2vUvmQ="
+      "Hash": "LyapAKUpf1Yth\u002BK4NPzCxHVGiJYIA6mljNi8ANToJWg="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
       "Source": "ClassLibrary",
       "ManifestType": "Publish",
-      "Hash": "\u002BJpqtsSNXK0RAcHY5o8FKcvFBggDVBuWxVCFrtLlabc="
+      "Hash": "ZZeWSmi33O1p9Lf4skD/f0ujlW/UAvIXduaSkB9NaCQ="
     }
   ],
   "DiscoveryPatterns": [],
@@ -37,11 +37,15 @@
       "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\css\\site.css",
       "SourceId": "PackageLibraryDirectDependency",
       "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\build\\..\\staticwebassets\\",
+      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\",
       "BasePath": "_content/PackageLibraryDirectDependency",
       "RelativePath": "css/site.css",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -49,11 +53,15 @@
       "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\js\\pkg-direct-dep.js",
       "SourceId": "PackageLibraryDirectDependency",
       "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\build\\..\\staticwebassets\\",
+      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\",
       "BasePath": "_content/PackageLibraryDirectDependency",
       "RelativePath": "js/pkg-direct-dep.js",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -61,11 +69,15 @@
       "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\PackageLibraryDirectDependency.bundle.scp.css",
       "SourceId": "PackageLibraryDirectDependency",
       "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\build\\..\\staticwebassets\\",
+      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\",
       "BasePath": "_content/PackageLibraryDirectDependency",
       "RelativePath": "PackageLibraryDirectDependency.bundle.scp.css",
       "AssetKind": "All",
       "AssetMode": "Reference",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "ScopedCss",
+      "AssetTraitValue": "ProjectBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -73,11 +85,15 @@
       "Identity": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\staticwebassets\\js\\pkg-transitive-dep.js",
       "SourceId": "PackageLibraryTransitiveDependency",
       "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\build\\..\\staticwebassets\\",
+      "ContentRoot": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\staticwebassets\\",
       "BasePath": "_content/PackageLibraryTransitiveDependency",
       "RelativePath": "js/pkg-transitive-dep.js",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -90,6 +106,10 @@
       "RelativePath": "css/site.css",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -102,6 +122,10 @@
       "RelativePath": "css/site.css",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -114,6 +138,10 @@
       "RelativePath": "js/project-direct-dep.js",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -126,6 +154,10 @@
       "RelativePath": "js/project-direct-dep.js",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -138,6 +170,10 @@
       "RelativePath": "AppWithPackageAndP2PReference.styles.css",
       "AssetKind": "All",
       "AssetMode": "CurrentProject",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "ScopedCss",
+      "AssetTraitValue": "ApplicationBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -150,6 +186,10 @@
       "RelativePath": "ClassLibrary.bundle.scp.css",
       "AssetKind": "All",
       "AssetMode": "Reference",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "ScopedCss",
+      "AssetTraitValue": "ProjectBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -162,6 +202,10 @@
       "RelativePath": "ClassLibrary.bundle.scp.css",
       "AssetKind": "All",
       "AssetMode": "Reference",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "ScopedCss",
+      "AssetTraitValue": "ProjectBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -174,6 +218,10 @@
       "RelativePath": "js/project-transitive-dep.js",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -186,6 +234,10 @@
       "RelativePath": "js/project-transitive-dep.js",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -198,6 +250,10 @@
       "RelativePath": "js/project-transitive-dep.v4.js",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     },
@@ -210,6 +266,10 @@
       "RelativePath": "js/project-transitive-dep.v4.js",
       "AssetKind": "All",
       "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest"
     }
