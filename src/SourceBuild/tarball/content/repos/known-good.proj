@@ -33,6 +33,7 @@
         <!-- Tier 1 -->
         <RepositoryReference Include="command-line-api" />
         <RepositoryReference Include="source-build" />
+        <RepositoryReference Include="symreader" />
         <RepositoryReference Include="xdt" />
         <RepositoryReference Include="xliff-tasks" />
 
