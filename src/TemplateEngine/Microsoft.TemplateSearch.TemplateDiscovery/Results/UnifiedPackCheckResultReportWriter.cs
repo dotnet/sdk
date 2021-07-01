@@ -25,42 +25,27 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 
         internal static string WriteResults(string outputBasePath, PackSourceCheckResult packSourceCheckResults)
         {
-            try
-            {
-                string reportPath = Path.Combine(outputBasePath, CacheContentDirectory);
+            string reportPath = Path.Combine(outputBasePath, CacheContentDirectory);
 
-                if (!Directory.Exists(reportPath))
-                {
-                    Directory.CreateDirectory(reportPath);
-                    Console.WriteLine($"Created directory:{reportPath}");
-                }
-
-                return TryWriteSearchMetadata(packSourceCheckResults, reportPath)
-                    && TryWriteNonTemplatePackList(reportPath, packSourceCheckResults.PackCheckData);
-            }
-            catch
+            if (!Directory.Exists(reportPath))
             {
-                return false;
+                Directory.CreateDirectory(reportPath);
+                Console.WriteLine($"Created directory:{reportPath}");
             }
+            WriteNonTemplatePackList(reportPath, packSourceCheckResults.PackCheckData);
+            return WriteSearchMetadata(packSourceCheckResults, reportPath);
+
         }
 
-        private static bool TryWriteSearchMetadata(PackSourceCheckResult packSourceCheckResults, string reportPath)
+        private static string WriteSearchMetadata(PackSourceCheckResult packSourceCheckResults, string reportPath)
         {
-            try
-            {
-                TemplateDiscoveryMetadata searchMetadata = CreateSearchMetadata(packSourceCheckResults);
+            TemplateDiscoveryMetadata searchMetadata = CreateSearchMetadata(packSourceCheckResults);
 
-                JObject toSerialize = JObject.FromObject(searchMetadata);
-                string outputFileName = Path.Combine(reportPath, SearchMetadataFilename);
-                File.WriteAllText(outputFileName, toSerialize.ToString());
-                Console.WriteLine($"Search cache file created: {outputFileName}");
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            JObject toSerialize = JObject.FromObject(searchMetadata);
+            string outputFileName = Path.Combine(reportPath, SearchMetadataFilename);
+            File.WriteAllText(outputFileName, toSerialize.ToString());
+            Console.WriteLine($"Search cache file created: {outputFileName}");
+            return outputFileName;
         }
 
         private static TemplateDiscoveryMetadata CreateSearchMetadata(PackSourceCheckResult packSourceCheckResults)
@@ -98,25 +83,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             return new TemplateDiscoveryMetadata("1.0.0.0", templateCache, packToTemplateMap, additionalData);
         }
 
-        private static bool TryWriteNonTemplatePackList(string reportPath, IReadOnlyList<PackCheckResult> packCheckResults)
+        private static void WriteNonTemplatePackList(string reportPath, IReadOnlyList<PackCheckResult> packCheckResults)
         {
-            try
-            {
-                List<string> packsWithoutTemplates = packCheckResults.Where(r => !r.AnyTemplates)
-                                                                    .Select(r => r.PackInfo.Id)
-                                                                    .ToList();
-                string serializedContent = JsonConvert.SerializeObject(packsWithoutTemplates, Formatting.Indented);
+            List<string> packsWithoutTemplates = packCheckResults.Where(r => !r.AnyTemplates)
+                                                                .Select(r => r.PackInfo.Id)
+                                                                .ToList();
+            string serializedContent = JsonConvert.SerializeObject(packsWithoutTemplates, Formatting.Indented);
 
-                string outputFileName = Path.Combine(reportPath, NonTemplatePacksFileName);
-                File.WriteAllText(outputFileName, serializedContent);
-                Console.WriteLine($"Non template pack list was created: {outputFileName}");
-            }
-            catch
-            {
-                return false;
-            }
-
-            return true;
+            string outputFileName = Path.Combine(reportPath, NonTemplatePacksFileName);
+            File.WriteAllText(outputFileName, serializedContent);
+            Console.WriteLine($"Non template pack list was created: {outputFileName}");
         }
 
         private class TemplateIdentityEqualityComparer : IEqualityComparer<ITemplateInfo>

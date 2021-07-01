@@ -9,7 +9,6 @@ using Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
 using Microsoft.TemplateSearch.TemplateDiscovery.Results;
-using Microsoft.TemplateSearch.TemplateDiscovery.Test;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
@@ -66,7 +65,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             }
 
             PackSourceCheckResult checkResults = await packSourceChecker.CheckPackagesAsync().ConfigureAwait(false);
-            PackCheckResultReportWriter.TryWriteResults(config.BasePath, checkResults);
+            PackCheckResultReportWriter.WriteResults(config.BasePath, checkResults);
         }
 
         private static void ShowUsageMessage()
