@@ -171,7 +171,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     m.Parameters.Length == 1 &&
                     m.Parameters[0].Type.SpecialType == SpecialType.System_String);
                 var notSupportedExceptionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNotSupportedException);
-                var crossPlatform = HasCrossPlatformProperty(context.Options, context.Compilation, context.CancellationToken);
+                var crossPlatform = HasCrossPlatformProperty(context.Options, context.Compilation);
 
                 context.RegisterOperationBlockStartAction(
                     context => AnalyzeOperationBlock(context, guardMethods, runtimeIsOSPlatformMethod, osPlatformCreateMethod, crossPlatform,
@@ -200,9 +200,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             static bool NameAndParametersValid(IMethodSymbol method) => method.Name.StartsWith(IsPrefix, StringComparison.Ordinal) &&
                     (method.Parameters.Length == 0 || method.Name.EndsWith(OptionalSuffix, StringComparison.Ordinal));
 
-            static bool HasCrossPlatformProperty(AnalyzerOptions options, Compilation compilation, CancellationToken cancellationToken)
+            static bool HasCrossPlatformProperty(AnalyzerOptions options, Compilation compilation)
             {
-                return options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.PlatformNeutralAssembly, compilation, cancellationToken) is not null;
+                return options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.PlatformNeutralAssembly, compilation) is not null;
             }
         }
 
