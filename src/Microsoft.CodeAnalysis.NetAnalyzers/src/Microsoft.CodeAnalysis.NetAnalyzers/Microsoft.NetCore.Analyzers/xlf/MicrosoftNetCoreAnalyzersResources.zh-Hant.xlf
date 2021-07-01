@@ -1902,6 +1902,11 @@
         <target state="translated">移除冗餘的呼叫</target>
         <note />
       </trans-unit>
+      <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
+        <source>Replace string literal with char literal</source>
+        <target state="new">Replace string literal with char literal</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsDescription">
         <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
         <target state="translated">會再次擲回例外狀況，並在 throw 陳述式中明確指定該例外狀況。如果在 throw 陳述式中指定例外狀況，而再次擲回了例外狀況，則方法清單會呼叫之前擲回例外狀況的原始方法，而目前的方法則會遺失。</target>
@@ -2495,6 +2500,21 @@
       <trans-unit id="UseSpanBasedStringConcatTitle">
         <source>Use span-based 'string.Concat'</source>
         <target state="new">Use span-based 'string.Concat'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersDescription">
+        <source>'string.Contains(char)' is available as a better performing overload for single char lookup.</source>
+        <target state="new">'string.Contains(char)' is available as a better performing overload for single char lookup.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersMessage">
+        <source>Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</source>
+        <target state="new">Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersTitle">
+        <source>Use char literal for a single character lookup</source>
+        <target state="new">Use char literal for a single character lookup</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
