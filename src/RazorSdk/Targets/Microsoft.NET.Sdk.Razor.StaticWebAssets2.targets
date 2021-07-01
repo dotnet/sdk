@@ -123,6 +123,11 @@ Copyright (c) .NET Foundation. All rights reserved.
         * "RelativePath": The relative path for the asset.
         * "AssetKind": The asset kind ('Build', 'Publish' or 'All') This is inferred from CopyToOutputDirectory/CopyToPublishDirectory
         * "AssetMode": The asset mode ('CurrentProject', 'Reference', 'All')
+        * "AssetRole": The asset role ('Primary', 'Related', 'Alternative')
+        * "RelatedAsset": The Identity of the asset this asset depends on.
+        * "AssetTraitName": The name of the trait or characteristic that differentiates this related or dependent asset from a primary asset.
+        * "AssetTraitValue": The value of the trait or characteristic that differentiates this related or dependent asset from a primary asset.
+        * "AssetReferenceDiscriminator": An associated value that differentiates this asset from the primary asset.
         * "CopyToBuildDirectory": Same from Content (PreserveNewest, Always)
         * "CopyToPublishDirectory": Same from Content (PreserveNewest, Always)
 
@@ -155,6 +160,20 @@ Copyright (c) .NET Foundation. All rights reserved.
       * Project: Represents assets that come from a referenced projects.
         * Discovered and Computed assets are transformed into Project assets when manifests from referenced projects get merged.
       * Package: These assets come from a referenced package.
+
+      With regards to asset roles, there are three roles that an asset can play:
+      * Primary asset: This value indicates that the asset represents a resource that will be addressable at the appropriate relative path.
+        The majority of assets will be part of this role.
+      * Related asset: This value indicates that the asset is related to another asset, while maintaining that both assets should be addressable at their own relative paths.
+      * Alternative asset: This value indicates that the asset is an alternative representation for the related asset. This can be for example, an asset that is pre-compressed
+        or an alternative format for the asset. The expectation is that an alternative asset is served from the same relative path as their related asset. Although its up to
+        the runtimes to decide if/how to implement that. At the static web asset level we just make sure we capture the information about the relationship.
+
+      For Related and Alternative assets the RelatedAsset property points to another asset that they depend on. This chain can be extended multiple levels to represent scenarios
+      where multiple representations of an asset are produced. Again, static web assets only captures this information, its up to MSBuild targets to decide what to do with it.
+
+      The AssetTraitName and AssetTraitValue define the discriminator between a related or alternative asset and their associated primary asset. In the case of globalization assemblies
+      this can capture the assembly culture, in the case of compressed asset it can capture the encoding and the specific encoding format.
 
       General build/publish flow:
       During a build for the project the following happens:

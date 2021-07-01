@@ -258,7 +258,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public static string Normalize(string path)
         {
-            return path.Replace('\\', '/').Trim('/');
+            var basePath = path.Replace('\\', '/').Trim('/');
+            return basePath.Equals("") ? "/" : basePath;
         }
 
         public override bool Equals(object obj)
