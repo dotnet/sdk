@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
@@ -64,8 +65,23 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 throw new NotImplementedException("no checker for the input options");
             }
 
-            PackSourceCheckResult checkResults = await packSourceChecker.CheckPackagesAsync().ConfigureAwait(false);
-            PackCheckResultReportWriter.WriteResults(config.BasePath, checkResults);
+            var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (s, e) =>
+            {
+                Console.WriteLine("Canceling...");
+                cts.Cancel();
+                e.Cancel = true;
+            };
+
+            try
+            {
+                PackSourceCheckResult checkResults = await packSourceChecker.CheckPackagesAsync(cts.Token).ConfigureAwait(false);
+                PackCheckResultReportWriter.WriteResults(config.BasePath, checkResults);
+            }
+            catch (TaskCanceledException)
+            {
+                Console.WriteLine("Operation was cancelled.");
+            }
         }
 
         private static void ShowUsageMessage()

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
@@ -10,12 +11,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
     {
         string Name { get; }
 
-        IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync();
+        IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync(CancellationToken token);
 
-        Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo);
+        Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo, CancellationToken token);
 
-        Task<int> GetPackageCountAsync();
+        Task<int> GetPackageCountAsync(CancellationToken token);
 
-        void DeleteDownloadedPacks();
+        Task DeleteDownloadedPacksAsync();
     }
 }

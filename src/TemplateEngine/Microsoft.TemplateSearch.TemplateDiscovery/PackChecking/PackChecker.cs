@@ -70,7 +70,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         private bool TryInstallPackage(string packageFile, IEngineEnvironmentSettings environment, out IReadOnlyList<ITemplateInfo> installedTemplates)
         {
             var scanner = new Scanner(environment);
-            var scanResult = scanner.Scan(packageFile);
+            using var scanResult = scanner.Scan(packageFile);
 
             if (scanResult.Templates.Count > 0)
             {

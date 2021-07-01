@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
@@ -24,17 +26,18 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
 
         public string Name => "TestProvider";
 
-        public void DeleteDownloadedPacks()
+        public Task DeleteDownloadedPacksAsync()
         {
             //do nothing - do not remove test packs
+            return Task.FromResult(0);
         }
 
-        public Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo)
+        public Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo, CancellationToken token)
         {
             return Task.FromResult((IDownloadedPackInfo?)packinfo);
         }
 
-        public async IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync()
+        public async IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync([EnumeratorCancellation]CancellationToken token)
         {
             var directoryInfo = new DirectoryInfo(_folder);
 
@@ -46,7 +49,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
             await Task.CompletedTask.ConfigureAwait(false);
         }
 
-        public Task<int> GetPackageCountAsync()
+        public Task<int> GetPackageCountAsync(CancellationToken token)
         {
             return Task.FromResult(new DirectoryInfo(_folder).EnumerateFiles("*.nupkg", SearchOption.AllDirectories).Count());
         }

@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
@@ -43,7 +45,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 
         public string Name { get; private set; }
 
-        public async IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync()
+        public async IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync([EnumeratorCancellation] CancellationToken token)
         {
             int skip = 0;
             bool done = false;
@@ -54,13 +56,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
                 string queryString = string.Format(_searchUriFormat, skip, _pageSize);
                 Uri queryUri = new Uri(queryString);
                 using (HttpClient client = new HttpClient())
-                using (HttpResponseMessage response = await client.GetAsync(queryUri).ConfigureAwait(false))
+                using (HttpResponseMessage response = await client.GetAsync(queryUri, token).ConfigureAwait(false))
                 {
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        string responseText = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
 
-                        NugetPackageSearchResult resultsForPage = JsonConvert.DeserializeObject<NugetPackageSearchResult>(responseText);
+                        NugetPackageSearchResult resultsForPage = NugetPackageSearchResult.FromJObject(JObject.Parse(responseText));
 
                         if (resultsForPage.Data.Count > 0)
                         {
@@ -85,7 +87,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             while (!done && !_runOnlyOnePage);
         }
 
-        public async Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo)
+        public async Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo, CancellationToken token)
         {
             string downloadUrl = string.Format(DownloadUrlFormat, packinfo.Id, packinfo.Version);
             string packageFileName = string.Format(DownloadPackageFileNameFormat, packinfo.Id, packinfo.Version);
@@ -95,10 +97,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    byte[] packageBytes = await client.GetByteArrayAsync(downloadUrl).ConfigureAwait(false);
-                    File.WriteAllBytes(outputPackageFileNameFullPath, packageBytes);
+                    byte[] packageBytes = await client.GetByteArrayAsync(downloadUrl, token).ConfigureAwait(false);
+                    await File.WriteAllBytesAsync(outputPackageFileNameFullPath, packageBytes, token).ConfigureAwait(false);
                     return new NugetPackInfo(packinfo, outputPackageFileNameFullPath);
                 }
+            }
+            catch (TaskCanceledException)
+            {
+                throw;
             }
             catch (Exception e)
             {
@@ -107,23 +113,37 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             }
         }
 
-        public async Task<int> GetPackageCountAsync()
+        public async Task<int> GetPackageCountAsync(CancellationToken token)
         {
             string queryString = string.Format(_searchUriFormat, 0, _pageSize);
             Uri queryUri = new Uri(queryString);
             using (HttpClient client = new HttpClient())
-            using (HttpResponseMessage response = await client.GetAsync(queryUri).ConfigureAwait(false))
+            using (HttpResponseMessage response = await client.GetAsync(queryUri, token).ConfigureAwait(false))
             {
                 response.EnsureSuccessStatusCode();
-                string responseText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                NugetPackageSearchResult resultsForPage = JsonConvert.DeserializeObject<NugetPackageSearchResult>(responseText);
+                string responseText = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+                NugetPackageSearchResult resultsForPage = NugetPackageSearchResult.FromJObject(JObject.Parse(responseText));
                 return resultsForPage.TotalHits;
             }
         }
 
-        public void DeleteDownloadedPacks()
+        public async Task DeleteDownloadedPacksAsync()
         {
-            Directory.Delete(_packageTempPath, true);
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    Directory.Delete(_packageTempPath, true);
+                    return;
+                }
+                catch (IOException)
+                {
+                    Console.WriteLine($"Failed to remove {_packageTempPath}, retrying in 1 sec");
+                }
+                await Task.Delay(1000).ConfigureAwait(false);
+            }
+            Console.WriteLine($"Failed to remove {_packageTempPath}, remove it manually.");
         }
+
     }
 }
