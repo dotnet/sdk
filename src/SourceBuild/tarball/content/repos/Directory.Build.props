@@ -152,6 +152,9 @@
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:CopyWipIntoInnerSourceBuildRepo=true</StandardSourceBuildArgs>
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:DotNetBuildOffline=true</StandardSourceBuildArgs>
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:DotNetPackageVersionPropsPath="$(PackageVersionPropsPath)"</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:AdditionalSourceBuiltNupkgCacheDir="$(SourceBuiltPackagesPath)"</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:ReferencePackageNupkgCacheDir="$(ReferencePackagesDir)"</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:PreviouslySourceBuiltNupkgCacheDir="$(PrebuiltSourceBuiltPackagesPath)"</StandardSourceBuildArgs>
 
     <StandardSourceBuildCommand>$(ProjectDirectory)\build$(ShellExtension)</StandardSourceBuildCommand>
   </PropertyGroup>

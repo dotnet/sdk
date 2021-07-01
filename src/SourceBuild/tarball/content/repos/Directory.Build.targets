@@ -500,6 +500,19 @@
 
   </Target>
 
+  <!-- Copy restored packages from inner build to ensure they're included in the 
+       main build prebuilt check -->
+  <Target Name="CopyInnerBuildRestoredPackages"
+          AfterTargets="Package">
+    <ItemGroup>
+      <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/source-build/self/package-cache/**/*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_InnerPackageCacheFiles)"
+          DestinationFiles="$(PackagesDir)%(RecursiveDir)%(Filename)%(Extension)"
+          Condition=" '@(_InnerPackageCacheFiles)' != '' " />
+  </Target>
+
   <Target Name="CopyPackage"
           AfterTargets="Package"
           Condition="'$(OutputPlacementRepoApiImplemented)' != 'true' AND ('$(PackagesOutput)' != '' OR '@(PackagesOutputList)' != '')"
@@ -585,13 +598,18 @@
 
     <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker 
          dev turnaround for Preview 6 -->
+    <PropertyGroup>
+      <ArcadeSDKToolPackagePath></ArcadeSDKToolPackagePath>
+      <ArcadeSDKToolPackagePath Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' ">$(ToolPackageExtractDir)%(_ToolPackage.Id)/</ArcadeSDKToolPackagePath>
+    </PropertyGroup>
     <ItemGroup>
       <OverrideArcadeFiles Include="$(ProjectDir)ArcadeOverrides/**/*" />
     </ItemGroup>
 
     <Copy
+      Condition=" '$(ArcadeSDKToolPackagePath))' != '' "
       SourceFiles="@(OverrideArcadeFiles)"
-      DestinationFiles="$(ToolPackageExtractDir)%(_ToolPackage.Id)/tools/SourceBuild/%(RecursiveDir)%(Filename)%(Extension)" />
+      DestinationFiles="$(ArcadeSDKToolPackagePath)tools/SourceBuild/%(RecursiveDir)%(Filename)%(Extension)" />
       
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)ExtractToolPackage.complete" Overwrite="true" />
   </Target>
