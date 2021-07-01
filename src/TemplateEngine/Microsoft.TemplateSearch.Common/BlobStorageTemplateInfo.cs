@@ -255,6 +255,9 @@ namespace Microsoft.TemplateSearch.Common
                 Name = parameter.Name;
                 DataType = parameter.DataType;
                 Choices = parameter.Choices;
+                Priority = parameter.Priority;
+                DefaultIfOptionWithoutValue = parameter.DefaultIfOptionWithoutValue;
+                Description = parameter.Description;
             }
 
             internal BlobTemplateParameter(string name, string dataType)
@@ -291,6 +294,9 @@ namespace Microsoft.TemplateSearch.Common
                     }
                     Choices = choices;
                 }
+                Priority = jObject.ToEnum<TemplateParameterPriority>(nameof(Priority));
+                DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
+                Description = jObject.ToString(nameof(Description));
             }
 
             [JsonProperty]
@@ -302,8 +308,8 @@ namespace Microsoft.TemplateSearch.Common
             [JsonProperty]
             public IReadOnlyDictionary<string, ParameterChoice>? Choices { get; internal set; }
 
-            [JsonIgnore]
-            public TemplateParameterPriority Priority => throw new NotImplementedException();
+            [JsonProperty]
+            public TemplateParameterPriority Priority { get; internal set; }
 
             [JsonIgnore]
             string ITemplateParameter.Type => throw new NotImplementedException();
@@ -317,11 +323,11 @@ namespace Microsoft.TemplateSearch.Common
             [JsonIgnore]
             string? ITemplateParameter.DisplayName => throw new NotImplementedException();
 
-            [JsonIgnore]
-            string? ITemplateParameter.DefaultIfOptionWithoutValue => throw new NotImplementedException();
+            [JsonProperty]
+            public string? DefaultIfOptionWithoutValue { get; internal set; }
 
-            [JsonIgnore]
-            string? ITemplateParameter.Description => throw new NotImplementedException();
+            [JsonProperty]
+            public string? Description { get; internal set; }
 
             [Obsolete]
             [JsonIgnore]

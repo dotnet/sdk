@@ -102,7 +102,9 @@ namespace Microsoft.TemplateSearch.Common
         // Attempt to get the search metadata file from cloud storage and place it in the expected search location.
         // Return true on success, false on failure.
         // Implement If-None-Match/ETag headers to avoid re-downloading the same content over and over again.
-        private async Task<bool> TryAcquireFileFromCloudAsync(IEngineEnvironmentSettings environmentSettings, string searchMetadataFileLocation)
+#pragma warning disable SA1202 // Elements should be ordered by access
+        internal async Task<bool> TryAcquireFileFromCloudAsync(IEngineEnvironmentSettings environmentSettings, string searchMetadataFileLocation)
+#pragma warning restore SA1202 // Elements should be ordered by access
         {
             try
             {
