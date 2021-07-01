@@ -3,6 +3,7 @@
   <UsingTask TaskName="Microsoft.DotNet.PackageValidation.ValidatePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
 
   <PropertyGroup>
+    <PackageValidationBaselineName Condition="'$(PackageId)' == ''">$(AssemblyName)</PackageValidationBaselineName>
     <PackageValidationBaselineName>$([MSBuild]::ValueOrDefault('$(PackageValidationBaselineName)', '$(PackageId)'))</PackageValidationBaselineName>
   </PropertyGroup>
 
