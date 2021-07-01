@@ -52,22 +52,29 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     Log.LogMessage("Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidateMatchPath, Pattern, match.Files.Single().Stem);
 
                     var candidateRelativePath = StaticWebAsset.Normalize(match.Files.Single().Stem);
-                    var asset = new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
+
+                    var asset = new StaticWebAsset
                     {
-                        [nameof(StaticWebAsset.SourceType)] = StaticWebAsset.SourceTypes.Discovered,
-                        [nameof(StaticWebAsset.SourceId)] = SourceId,
-                        [nameof(StaticWebAsset.ContentRoot)] = ContentRoot,
-                        [nameof(StaticWebAsset.BasePath)] = StaticWebAsset.Normalize(BasePath),
-                        [nameof(StaticWebAsset.RelativePath)] = candidateRelativePath,
-                        [nameof(StaticWebAsset.AssetKind)] = StaticWebAsset.AssetKinds.All,
-                        [nameof(StaticWebAsset.AssetMode)] = StaticWebAsset.AssetModes.All,
-                        [nameof(StaticWebAsset.CopyToOutputDirectory)] = ComputeCopyOption(candidate.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)), StaticWebAsset.AssetCopyOptions.Never),
-                        [nameof(StaticWebAsset.CopyToPublishDirectory)] = ComputeCopyOption(candidate.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)), StaticWebAsset.AssetCopyOptions.PreserveNewest),
-                    });
+                        Identity = candidate.GetMetadata("FullPath"),
+                        SourceId = SourceId,
+                        SourceType = StaticWebAsset.SourceTypes.Discovered,
+                        ContentRoot = ContentRoot,
+                        BasePath = BasePath,
+                        RelativePath = candidateRelativePath,
+                        AssetMode = StaticWebAsset.AssetModes.All,
+                        CopyToOutputDirectory = candidate.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)),
+                        CopyToPublishDirectory = candidate.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory))
+                    };
 
-                    assets.Add(asset);
+                    asset.ApplyDefaults();
+                    asset.Normalize();
 
-                    UpdateAssetKindIfNecessary(assetsByRelativePath, candidateRelativePath, asset);
+                    var assetItem = asset.ToTaskItem();
+
+                    assetItem.SetMetadata("OriginalItemSpec", candidate.ItemSpec);
+                    assets.Add(assetItem);
+
+                    UpdateAssetKindIfNecessary(assetsByRelativePath, candidateRelativePath, assetItem);
                     if (Log.HasLoggedErrors)
                     {
                         return false;
@@ -104,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return candidate.ItemSpec;
         }
 
-        private void UpdateAssetKindIfNecessary(Dictionary<string, List<ITaskItem>> assetsByRelativePath, string candidateRelativePath, TaskItem asset)
+        private void UpdateAssetKindIfNecessary(Dictionary<string, List<ITaskItem>> assetsByRelativePath, string candidateRelativePath, ITaskItem asset)
         {
             // We want to support content items in the form of
             // <Content Include="service-worker.development.js CopyToPublishDirectory="Never" TargetPath="wwwroot\service-worker.js" />
@@ -174,10 +181,5 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
             }
         }
-
-        private static string ComputeCopyOption(string copyOption, string defaultValue) => string.Equals(copyOption, StaticWebAsset.AssetCopyOptions.Never) ? StaticWebAsset.AssetCopyOptions.Never :
-                        string.Equals(copyOption, StaticWebAsset.AssetCopyOptions.PreserveNewest) ? StaticWebAsset.AssetCopyOptions.PreserveNewest :
-                        string.Equals(copyOption, StaticWebAsset.AssetCopyOptions.Always) ? StaticWebAsset.AssetCopyOptions.Always :
-                        defaultValue;
     }
 }

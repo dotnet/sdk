@@ -47,6 +47,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string AssetMode { get; set; } = StaticWebAsset.AssetModes.All;
 
+        public string AssetRole { get; set; }
+
+        public string RelatedAsset { get; set; }
+
+        public string AssetTraitName { get; set; }
+
+        public string AssetTraitValue { get; set; }
+
         public string CopyToOutputDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.Never;
 
         public string CopyToPublishDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.PreserveNewest;
@@ -101,10 +109,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     var sourceType = ComputePropertyValue(candidate, nameof(StaticWebAsset.SourceType), SourceType);
                     var basePath = ComputePropertyValue(candidate, nameof(StaticWebAsset.BasePath), BasePath);
                     var contentRoot = ComputePropertyValue(candidate, nameof(StaticWebAsset.ContentRoot), ContentRoot);
+                    var assetKind = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetKind), AssetKind);
+                    var assetMode = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetMode), AssetMode);
+                    var assetRole = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetRole), AssetRole);
+                    var relatedAsset = ComputePropertyValue(candidate, nameof(StaticWebAsset.RelatedAsset), RelatedAsset);
+                    var assetTraitName = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitName), AssetTraitName);
+                    var assetTraitValue = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitValue), AssetTraitValue);
                     var copyToOutputDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToOutputDirectory), CopyToOutputDirectory);
                     var copyToPublishDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToPublishDirectory), CopyToPublishDirectory);
-                    var assetKind = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetKind), GetAssetKindDefault(AssetKind, copyToOutputDirectory, copyToPublishDirectory));
-                    var assetMode = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetMode), AssetMode);
 
                     // If we are not able to compute the value based on an existing value or a default, we produce an error and stop.
                     if (Log.HasLoggedErrors)
@@ -131,6 +143,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         contentRoot,
                         assetKind,
                         assetMode,
+                        assetRole,
+                        relatedAsset,
+                        assetTraitName,
+                        assetTraitValue,
                         copyToOutputDirectory,
                         copyToPublishDirectory);
 
@@ -178,23 +194,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 {
                     return (candidateFullPath, false);
                 }
-            }
-        }
-
-        private string GetAssetKindDefault(string assetKind, string copyToOutputDirectory, string copyToPublishDirectory)
-        {
-            if (assetKind != null)
-            {
-                return assetKind;
-            }
-            switch ((copyToOutputDirectory, copyToPublishDirectory))
-            {
-                case (StaticWebAsset.AssetCopyOptions.Never, not StaticWebAsset.AssetCopyOptions.Never):
-                    return StaticWebAsset.AssetKinds.Publish;
-                case (not StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
-                    return StaticWebAsset.AssetKinds.Build;
-                default:
-                    return StaticWebAsset.AssetKinds.All;
             }
         }
 

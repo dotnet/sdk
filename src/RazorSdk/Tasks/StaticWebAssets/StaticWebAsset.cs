@@ -31,17 +31,41 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string AssetMode { get; set; }
 
+        public string AssetRole { get; set; }
+
+        public string RelatedAsset { get; set; }
+
+        public string AssetTraitName { get; set; }
+
+        public string AssetTraitValue { get; set; }
+
         public string CopyToOutputDirectory { get; set; }
 
         public string CopyToPublishDirectory { get; set; }
 
-        public static StaticWebAsset FromTaskItem(ITaskItem item) => FromTaskItemCore(item, 2);
-
-        public static StaticWebAsset FromV1TaskItem(ITaskItem item) => FromTaskItemCore(item, 1);
-
-        private static StaticWebAsset FromTaskItemCore(ITaskItem item, int version)
+        public static StaticWebAsset FromTaskItem(ITaskItem item)
         {
-            var result = new StaticWebAsset
+            var result = FromTaskItemCore(item);
+
+            result.Normalize();
+            result.Validate();
+
+            return result;
+        }
+
+        public static StaticWebAsset FromV1TaskItem(ITaskItem item)
+        {
+            var result = FromTaskItemCore(item);
+            result.ApplyDefaults();
+
+            result.Normalize();
+            result.Validate();
+
+            return result;
+        }
+
+        private static StaticWebAsset FromTaskItemCore(ITaskItem item) =>
+            new StaticWebAsset
             {
                 // Register the identity as the full path since assets might have come
                 // from packages and other sources and the identity (which is typically
@@ -54,36 +78,21 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 RelativePath = item.GetMetadata(nameof(RelativePath)),
                 AssetKind = item.GetMetadata(nameof(AssetKind)),
                 AssetMode = item.GetMetadata(nameof(AssetMode)),
+                AssetRole = item.GetMetadata(nameof(AssetRole)),
+                RelatedAsset = item.GetMetadata(nameof(RelatedAsset)),
+                AssetTraitName = item.GetMetadata(nameof(AssetTraitName)),
+                AssetTraitValue = item.GetMetadata(nameof(AssetTraitValue)),
                 CopyToOutputDirectory = item.GetMetadata(nameof(CopyToOutputDirectory)),
                 CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
             };
 
-            if (string.IsNullOrEmpty(result.CopyToOutputDirectory))
-            {
-                result.CopyToOutputDirectory = AssetCopyOptions.Never;
-            }
-
-            if (string.IsNullOrEmpty(result.CopyToPublishDirectory))
-            {
-                result.CopyToPublishDirectory = AssetCopyOptions.PreserveNewest;
-            }
-
-            if (version == 1)
-            {
-                if (string.IsNullOrEmpty(result.AssetKind))
-                {
-                    result.AssetKind = AssetKinds.All;
-                }
-                if (string.IsNullOrEmpty(result.AssetMode))
-                {
-                    result.AssetMode = AssetModes.All;
-                }
-            }
-
-            result.Validate();
-            result.Normalize();
-
-            return result;
+        public void ApplyDefaults()
+        {
+            CopyToOutputDirectory = string.IsNullOrEmpty(CopyToOutputDirectory) ? AssetCopyOptions.Never : CopyToOutputDirectory;
+            CopyToPublishDirectory = string.IsNullOrEmpty(CopyToOutputDirectory) ? AssetCopyOptions.PreserveNewest : CopyToPublishDirectory;
+            AssetKind = !string.IsNullOrEmpty(AssetKind) ? AssetKind : !ShouldCopyToPublishDirectory() ? AssetKinds.Build : AssetKinds.All;
+            AssetMode = string.IsNullOrEmpty(AssetMode) ? AssetModes.All : AssetMode;
+            AssetRole = string.IsNullOrEmpty(AssetRole) ? AssetRoles.Primary : AssetRole;
         }
 
         public string ComputeTargetPath(string pathPrefix)
@@ -105,6 +114,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             result.SetMetadata(nameof(RelativePath), RelativePath);
             result.SetMetadata(nameof(AssetKind), AssetKind);
             result.SetMetadata(nameof(AssetMode), AssetMode);
+            result.SetMetadata(nameof(AssetRole), AssetRole);
+            result.SetMetadata(nameof(RelatedAsset), RelatedAsset);
+            result.SetMetadata(nameof(AssetTraitName), AssetTraitName);
+            result.SetMetadata(nameof(AssetTraitValue), AssetTraitValue);
             result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
             result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
 
@@ -124,22 +137,22 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     throw new InvalidOperationException($"Unknown source type '{SourceType}' for '{Identity}'.");
             };
 
-            if (SourceId == null)
+            if (string.IsNullOrEmpty(SourceId))
             {
                 throw new InvalidOperationException($"The '{nameof(SourceId)}' for the asset must be defined for '{Identity}'.");
             }
 
-            if (ContentRoot == null)
+            if (string.IsNullOrEmpty(ContentRoot))
             {
                 throw new InvalidOperationException($"The '{nameof(ContentRoot)}' for the asset must be defined for '{Identity}'.");
             }
 
-            if (BasePath == null)
+            if (string.IsNullOrEmpty(BasePath))
             {
                 throw new InvalidOperationException($"The '{nameof(BasePath)}' for the asset must be defined for '{Identity}'.");
             }
 
-            if (RelativePath == null)
+            if (string.IsNullOrEmpty(RelativePath))
             {
                 throw new InvalidOperationException($"The '{nameof(RelativePath)}' for the asset must be defined for '{Identity}'.");
             }
@@ -163,6 +176,26 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 default:
                     throw new InvalidOperationException($"Unknown Asset mode '{AssetMode}' for '{Identity}'.");
             };
+
+            switch (AssetRole)
+            {
+                case AssetRoles.Primary:
+                case AssetRoles.Related:
+                case AssetRoles.Alternative:
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown Asset role '{AssetRole}' for '{Identity}'.");
+            };
+
+            if (!IsPrimaryAsset() && string.IsNullOrEmpty(RelatedAsset))
+            {
+                throw new InvalidOperationException($"Related asset for '{AssetRole}' asset '{Identity}' is not defined.");
+            }
+
+            if (!IsAlternativeAsset() && (string.IsNullOrEmpty(AssetTraitName) || string.IsNullOrEmpty(AssetTraitValue)))
+            {
+                throw new InvalidOperationException($"Alternative asset '{Identity}' does not define an asset trait name or value.");
+            }
         }
 
         internal static StaticWebAsset FromProperties(
@@ -174,6 +207,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             string contentRoot,
             string assetKind,
             string assetMode,
+            string assetRole,
+            string relatedAsset,
+            string assetTraitName,
+            string assetTraitValue,
             string copyToOutputDirectory,
             string copyToPublishDirectory)
         {
@@ -187,9 +224,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 RelativePath = relativePath,
                 AssetKind = assetKind,
                 AssetMode = assetMode,
+                AssetRole = assetRole,
+                RelatedAsset = relatedAsset,
+                AssetTraitName = assetTraitName,
+                AssetTraitValue = assetTraitValue,
                 CopyToOutputDirectory = copyToOutputDirectory,
                 CopyToPublishDirectory = copyToPublishDirectory
             };
+
+            result.ApplyDefaults();
 
             result.Normalize();
             result.Validate();
@@ -208,16 +251,17 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         // * Converts the path to absolute with Path.GetFullPath(path) which takes care of normalizing
         //   the directory separators to use Path.DirectorySeparator
         // * Appends a trailing directory separator at the end.
-        public static string NormalizeContentRootPath(string path) 
-            => Path.GetFullPath(path) + 
+        public static string NormalizeContentRootPath(string path)
+            => Path.GetFullPath(path) +
             // We need to do .ToString because there is no EndsWith overload for chars in .net472
-            (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch {
+            (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch
+            {
                 (true, _) => "",
                 (false, true) => "", // Path.GetFullPath will have normalized it to Path.DirectorySeparatorChar.
                 (false, false) => Path.DirectorySeparatorChar
             };
 
-        public bool IsComputed() 
+        public bool IsComputed()
             => string.Equals(SourceType, SourceTypes.Computed, StringComparison.Ordinal);
 
         public bool IsDiscovered()
@@ -225,7 +269,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public bool IsProject()
             => string.Equals(SourceType, SourceTypes.Project, StringComparison.Ordinal);
-        
+
         public bool IsPackage()
             => string.Equals(SourceType, SourceTypes.Package, StringComparison.Ordinal);
 
@@ -244,8 +288,17 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         public bool IsForReferencedProjectsOnly()
             => string.Equals(AssetMode, AssetModes.Reference, StringComparison.Ordinal);
 
-        public bool IsForCurrentAndReferencedProjects() 
+        public bool IsForCurrentAndReferencedProjects()
             => string.Equals(AssetMode, AssetModes.All, StringComparison.Ordinal);
+
+        public bool IsPrimaryAsset()
+            => string.Equals(AssetRole, AssetRoles.Primary, StringComparison.Ordinal);
+        
+        public bool IsRelatedAsset()
+            => string.Equals(AssetRole, AssetRoles.Related, StringComparison.Ordinal);
+
+        public bool IsAlternativeAsset()
+            => string.Equals(AssetRole, AssetRoles.Alternative, StringComparison.Ordinal);
 
         public bool ShouldCopyToOutputDirectory()
             => !string.Equals(CopyToOutputDirectory, AssetCopyOptions.Never, StringComparison.Ordinal);
@@ -253,7 +306,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         public bool ShouldCopyToPublishDirectory()
             => !string.Equals(CopyToPublishDirectory, AssetCopyOptions.Never, StringComparison.Ordinal);
 
-        public bool HasContentRoot(string path) => 
+        public bool HasContentRoot(string path) =>
             string.Equals(ContentRoot, NormalizeContentRootPath(path), StringComparison.Ordinal);
 
         public static string Normalize(string path)
@@ -306,6 +359,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             public const string Always = nameof(Always);
         }
 
+        public static class AssetRoles
+        {
+            public const string Primary = nameof(Primary);
+            public const string Related = nameof(Related);
+            public const string Alternative = nameof(Alternative);
+        }
+
         private string GetDebuggerDisplay()
         {
             return ToString();
@@ -320,6 +380,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             $"RelativePath: {RelativePath}, " +
             $"AssetKind: {AssetKind}, " +
             $"AssetMode: {AssetMode}, " +
+            $"AssetRole: {AssetRole}, " +
+            $"RelatedAsset: {RelatedAsset}, " +
+            $"AssetTraitName: {AssetTraitName}, " +
+            $"AssetTraitValue: {AssetTraitValue}, " +
             $"AssetKind: {CopyToOutputDirectory}, " +
             $"AssetKind: {CopyToPublishDirectory}";
 
@@ -335,6 +399,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             hash.Add(RelativePath);
             hash.Add(AssetKind);
             hash.Add(AssetMode);
+            hash.Add(AssetRole);
+            hash.Add(RelatedAsset);
+            hash.Add(AssetTraitName);
+            hash.Add(AssetTraitValue);
             hash.Add(CopyToOutputDirectory);
             hash.Add(CopyToPublishDirectory);
             return hash.ToHashCode();
@@ -348,6 +416,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(RelativePath);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetKind);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetMode);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetRole);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(RelatedAsset);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetTraitName);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetTraitValue);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToOutputDirectory);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToPublishDirectory);
             return hashCode;
