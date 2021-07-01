@@ -31,18 +31,18 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
         {
             var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 
-            INamedTypeSymbol type = (INamedTypeSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
+            var type = (INamedTypeSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
             var generator = editor.Generator;
 
             var defaultMethodBodyStatements = generator.DefaultMethodBody(editor.SemanticModel.Compilation).ToArray();
-            List<SyntaxNode> generatedMembers = new List<SyntaxNode>();
+            var generatedMembers = new List<SyntaxNode>();
             foreach (var iface in type.AllInterfaces)
             {
                 foreach (var member in iface.GetMembers())
                 {
                     if (!member.IsStatic && type.FindImplementationForInterfaceMember(member) is null)
                     {
-                        SyntaxNode? implementation = member.Kind switch
+                        var implementation = member.Kind switch
                         {
                             SymbolKind.Method => GenerateMethodImplementation((IMethodSymbol)member),
                             SymbolKind.Property => GeneratePropertyImplementation((IPropertySymbol)member),
@@ -60,7 +60,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             }
 
             // Explicitly use the C# syntax APIs to work around https://github.com/dotnet/roslyn/issues/53605
-            TypeDeclarationSyntax typeDeclaration = (TypeDeclarationSyntax)declaration;
+            var typeDeclaration = (TypeDeclarationSyntax)declaration;
             typeDeclaration = typeDeclaration.AddMembers(generatedMembers.Cast<MemberDeclarationSyntax>().ToArray());
 
             editor.ReplaceNode(declaration, typeDeclaration);
@@ -75,14 +75,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 {
                     return null;
                 }
-                SyntaxNode methodDecl = generator.MethodDeclaration(method);
+                var methodDecl = generator.MethodDeclaration(method);
                 methodDecl = generator.WithModifiers(methodDecl, generator.GetModifiers(declaration).WithIsAbstract(false));
                 return generator.WithStatements(methodDecl, defaultMethodBodyStatements);
             }
 
             SyntaxNode GeneratePropertyImplementation(IPropertySymbol property)
             {
-                SyntaxNode propertyDecl = property.IsIndexer
+                var propertyDecl = property.IsIndexer
                     ? generator.IndexerDeclaration(property)
                     : generator.PropertyDeclaration(property);
                 propertyDecl = generator.WithModifiers(propertyDecl, generator.GetModifiers(declaration).WithIsAbstract(false));
@@ -117,13 +117,13 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 return generator.WithSetAccessorStatements(declaration, defaultMethodBodyStatements);
             }
 
-            Accessibility setAccessorAccessibility = includeAccessibility && property.DeclaredAccessibility != property.SetMethod.DeclaredAccessibility
+            var setAccessorAccessibility = includeAccessibility && property.DeclaredAccessibility != property.SetMethod.DeclaredAccessibility
                 ? property.SetMethod.DeclaredAccessibility
                 : Accessibility.NotApplicable;
 
             var setAccessor = (AccessorDeclarationSyntax)generator.SetAccessorDeclaration(setAccessorAccessibility, defaultMethodBodyStatements);
 
-            PropertyDeclarationSyntax propDecl = (PropertyDeclarationSyntax)declaration;
+            var propDecl = (PropertyDeclarationSyntax)declaration;
 
             SyntaxNode? oldInitAccessor = null;
 
@@ -158,11 +158,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             SyntaxGenerator generator,
             SyntaxNode[] defaultMethodBodyStatements)
         {
-            SyntaxNode eventDecl = generator.CustomEventDeclaration(evt);
+            var eventDecl = generator.CustomEventDeclaration(evt);
             eventDecl = generator.WithModifiers(eventDecl, generator.GetModifiers(declaration).WithIsAbstract(false));
 
             // Explicitly use the C# syntax APIs to work around https://github.com/dotnet/roslyn/issues/53649
-            EventDeclarationSyntax eventDeclaration = (EventDeclarationSyntax)eventDecl;
+            var eventDeclaration = (EventDeclarationSyntax)eventDecl;
 
             return eventDeclaration.WithAccessorList(
                 SyntaxFactory.AccessorList(
@@ -175,19 +175,19 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
         }
 
         protected override async Task<Document> SealMemberDeclaredOnImplementationType(
-    SyntaxNode declaration,
-    Document document,
-    CancellationToken ct)
+            SyntaxNode declaration,
+            Document document,
+            CancellationToken ct)
         {
             var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
             var generator = editor.Generator;
             var defaultMethodBodyStatements = generator.DefaultMethodBody(editor.SemanticModel.Compilation).ToArray();
 
-            ISymbol symbol = editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
+            var symbol = editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
             if (declaration.IsKind(SyntaxKind.EventFieldDeclaration))
             {
                 // We'll only end up here with one event in the event field declaration syntax.
-                EventFieldDeclarationSyntax eventField = (EventFieldDeclarationSyntax)declaration;
+                var eventField = (EventFieldDeclarationSyntax)declaration;
                 symbol = editor.SemanticModel.GetDeclaredSymbol(eventField.Declaration.Variables[0], ct);
             }
 
@@ -196,54 +196,59 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
             SyntaxNode SealMemberDeclaration(SyntaxNode declaration, ISymbol symbol)
             {
-                switch (symbol.Kind)
+                return symbol.Kind switch
                 {
-                    case SymbolKind.Method:
-                        {
-                            var modifiers = GetModifiers(generator, declaration);
-                            if (symbol.IsAbstract)
-                            {
-                                declaration = generator.WithStatements(declaration, defaultMethodBodyStatements);
-                            }
-                            return generator.WithModifiers(declaration, modifiers);
-                        }
-                    case SymbolKind.Property:
-                        {
-                            DeclarationModifiers modifiers = GetModifiers(generator, declaration);
-                            if (symbol.IsAbstract)
-                            {
-                                IPropertySymbol prop = (IPropertySymbol)symbol;
-                                if (prop.GetMethod is not null)
-                                {
-                                    declaration = generator.WithGetAccessorStatements(declaration, defaultMethodBodyStatements);
-                                }
-                                if (prop.SetMethod is not null)
-                                {
-                                    declaration = AddSetAccessor(prop, declaration, generator, defaultMethodBodyStatements, includeAccessibility: true);
-                                }
-                            }
-                            return generator.WithModifiers(declaration, modifiers);
-                        }
-                    case SymbolKind.Event:
-                        {
-                            DeclarationModifiers modifiers = GetModifiers(generator, declaration);
-                            if (symbol.IsAbstract)
-                            {
-                                declaration = GenerateEventImplementation((IEventSymbol)symbol, declaration, generator, defaultMethodBodyStatements);
-                            }
-                            return generator.WithModifiers(declaration, modifiers);
-                        }
-                }
+                    SymbolKind.Method => SealMethod(symbol),
+                    SymbolKind.Property => SealProperty(symbol),
+                    SymbolKind.Event => SealEvent(symbol),
+                    _ => declaration,
+                };
+            }
 
-                return declaration;
-
-                static DeclarationModifiers GetModifiers(SyntaxGenerator generator, SyntaxNode declaration)
+            SyntaxNode SealMethod(ISymbol symbol)
+            {
+                var modifiers = GetModifiers(generator, declaration);
+                if (symbol.IsAbstract)
                 {
-                    return generator.GetModifiers(declaration)
-                                                   .WithIsAbstract(false)
-                                                   .WithIsVirtual(false)
-                                                   .WithIsSealed(true);
+                    declaration = generator.WithStatements(declaration, defaultMethodBodyStatements);
                 }
+                return generator.WithModifiers(declaration, modifiers);
+            }
+
+            SyntaxNode SealProperty(ISymbol symbol)
+            {
+                var modifiers = GetModifiers(generator, declaration);
+                if (symbol.IsAbstract)
+                {
+                    var prop = (IPropertySymbol)symbol;
+                    if (prop.GetMethod is not null)
+                    {
+                        declaration = generator.WithGetAccessorStatements(declaration, defaultMethodBodyStatements);
+                    }
+                    if (prop.SetMethod is not null)
+                    {
+                        declaration = AddSetAccessor(prop, declaration, generator, defaultMethodBodyStatements, includeAccessibility: true);
+                    }
+                }
+                return generator.WithModifiers(declaration, modifiers);
+            }
+
+            SyntaxNode SealEvent(ISymbol symbol)
+            {
+                var modifiers = GetModifiers(generator, declaration);
+                if (symbol.IsAbstract)
+                {
+                    declaration = GenerateEventImplementation((IEventSymbol)symbol, declaration, generator, defaultMethodBodyStatements);
+                }
+                return generator.WithModifiers(declaration, modifiers);
+            }
+
+            static DeclarationModifiers GetModifiers(SyntaxGenerator generator, SyntaxNode declaration)
+            {
+                return generator.GetModifiers(declaration)
+                                               .WithIsAbstract(false)
+                                               .WithIsVirtual(false)
+                                               .WithIsSealed(true);
             }
         }
 

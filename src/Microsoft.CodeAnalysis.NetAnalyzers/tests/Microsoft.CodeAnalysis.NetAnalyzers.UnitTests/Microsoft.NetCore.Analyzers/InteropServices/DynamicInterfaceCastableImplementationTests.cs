@@ -655,6 +655,47 @@ interface I2 : I
         }
 
         [Fact]
+        public async Task DynamicInterfaceCastableImplementation_DefinedMethodsImplicitPublicExplicitAbstract_CS_CodeFix()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+
+interface I
+{
+    void Method();
+}
+
+[DynamicInterfaceCastableImplementation]
+interface I2 : I
+{
+    void I.Method() {}
+
+    abstract void {|CA2254:Method2|}();
+}";
+
+            string codeFix = @"
+using System.Runtime.InteropServices;
+
+interface I
+{
+    void Method();
+}
+
+[DynamicInterfaceCastableImplementation]
+interface I2 : I
+{
+    void I.Method() {}
+
+    sealed void Method2()
+    {
+        throw new System.NotImplementedException();
+    }
+}";
+
+            await VerifyCSCodeFixAsync(source, codeFix);
+        }
+
+        [Fact]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsExplicitPublicImplicitVirtual_CS_CodeFix()
         {
             string source = @"
