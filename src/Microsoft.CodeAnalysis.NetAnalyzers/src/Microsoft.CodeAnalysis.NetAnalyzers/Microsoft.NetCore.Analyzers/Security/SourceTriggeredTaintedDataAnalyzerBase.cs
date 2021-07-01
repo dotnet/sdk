@@ -71,7 +71,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                             ISymbol owningSymbol = operationBlockStartContext.OwningSymbol;
                             AnalyzerOptions options = operationBlockStartContext.Options;
                             CancellationToken cancellationToken = operationBlockStartContext.CancellationToken;
-                            if (options.IsConfiguredToSkipAnalysis(TaintedDataEnteringSinkDescriptor, owningSymbol, compilation, cancellationToken))
+                            if (options.IsConfiguredToSkipAnalysis(TaintedDataEnteringSinkDescriptor, owningSymbol, compilation))
                             {
                                 return;
                             }
@@ -92,8 +92,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                     SupportedDiagnostics,
                                                                     controlFlowGraphFactory.Value,
                                                                     operationBlockStartContext.Compilation,
-                                                                    defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                                                    cancellationToken: cancellationToken);
+                                                                    defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive);
                                     return PointsToAnalysis.TryGetOrComputeResult(
                                                                 controlFlowGraphFactory.Value,
                                                                 owningSymbol,
@@ -116,8 +115,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                     SupportedDiagnostics,
                                                                     controlFlowGraphFactory.Value,
                                                                     operationBlockStartContext.Compilation,
-                                                                    defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                                                    cancellationToken: cancellationToken);
+                                                                    defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive);
                                     ValueContentAnalysisResult? valuecontentAnalysisResult = ValueContentAnalysis.TryGetOrComputeResult(
                                                                     controlFlowGraphFactory.Value,
                                                                     owningSymbol,
@@ -228,8 +226,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                     TaintedDataEnteringSinkDescriptor,
                                                     sourceInfoSymbolMap,
                                                     taintedDataConfig.GetSanitizerSymbolMap(this.SinkKind),
-                                                    sinkInfoSymbolMap,
-                                                    operationBlockAnalysisContext.CancellationToken);
+                                                    sinkInfoSymbolMap);
                                                 if (taintedDataAnalysisResult == null)
                                                 {
                                                     return;

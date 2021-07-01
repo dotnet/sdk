@@ -68,7 +68,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         methodSymbol.ReturnsVoid ||
                         methodSymbol.ReturnType.Kind == SymbolKind.ArrayType ||
                         !methodSymbol.Parameters.IsEmpty ||
-                        !context.Options.MatchesConfiguredVisibility(Rule, methodSymbol, context.Compilation, context.CancellationToken) ||
+                        !context.Options.MatchesConfiguredVisibility(Rule, methodSymbol, context.Compilation) ||
                         methodSymbol.IsAccessorMethod() ||
                         !IsPropertyLikeName(methodSymbol.Name))
                     {

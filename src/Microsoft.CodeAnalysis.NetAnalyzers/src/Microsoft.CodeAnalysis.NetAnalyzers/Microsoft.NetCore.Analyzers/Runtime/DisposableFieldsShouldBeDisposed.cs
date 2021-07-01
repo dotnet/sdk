@@ -86,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var namedType = (INamedTypeSymbol)symbolStartContext.Symbol;
                 return disposeAnalysisHelper.IsDisposable(namedType) &&
                     !disposeAnalysisHelper.GetDisposableFields(namedType).IsEmpty &&
-                    !symbolStartContext.Options.IsConfiguredToSkipAnalysis(Rule, namedType, symbolStartContext.Compilation, symbolStartContext.CancellationToken);
+                    !symbolStartContext.Options.IsConfiguredToSkipAnalysis(Rule, namedType, symbolStartContext.Compilation);
             }
 
             bool IsDisposeMethod(IMethodSymbol method)
@@ -167,7 +167,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationContext.Compilation);
                                 var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
-                                    operationBlockStartContext.Options, Rule, cfg, operationBlockStartContext.Compilation, InterproceduralAnalysisKind.None, operationBlockStartContext.CancellationToken);
+                                    operationBlockStartContext.Options, Rule, cfg, operationBlockStartContext.Compilation, InterproceduralAnalysisKind.None);
                                 var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(cfg,
                                     containingMethod, operationBlockStartContext.Options, wellKnownTypeProvider,
                                     PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties,
@@ -204,8 +204,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (!disposableFields.IsEmpty)
                     {
                         if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockStartContext.OperationBlocks, containingMethod,
-                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.Complete, trackInstanceFields: true, trackExceptionPaths: false, cancellationToken: operationBlockStartContext.CancellationToken,
-                            disposeAnalysisResult: out var disposeAnalysisResult, pointsToAnalysisResult: out var pointsToAnalysisResult))
+                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.Complete, trackInstanceFields: true, trackExceptionPaths: false, disposeAnalysisResult: out var disposeAnalysisResult,
+                            pointsToAnalysisResult: out var pointsToAnalysisResult))
                         {
                             RoslynDebug.Assert(disposeAnalysisResult.TrackedInstanceFieldPointsToMap != null);
 

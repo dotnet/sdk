@@ -252,8 +252,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         rule: UseAutoValidateAntiforgeryTokenRule,
                         symbolAnalysisContext.Symbol,
                         compilation,
-                        defaultValue: true,
-                        cancellationToken: cancellationToken);
+                        defaultValue: true);
 
                     var derivedControllerTypeSymbol = (INamedTypeSymbol)symbolAnalysisContext.Symbol;
                     var baseTypes = derivedControllerTypeSymbol.GetBaseTypes();

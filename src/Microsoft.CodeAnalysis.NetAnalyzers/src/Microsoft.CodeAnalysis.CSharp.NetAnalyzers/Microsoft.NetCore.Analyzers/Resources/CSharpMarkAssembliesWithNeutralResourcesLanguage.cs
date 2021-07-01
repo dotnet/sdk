@@ -15,16 +15,17 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Resources
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpMarkAssembliesWithNeutralResourcesLanguageAnalyzer : MarkAssembliesWithNeutralResourcesLanguageAnalyzer
     {
-        protected override void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound)
+        protected override void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound, INamedTypeSymbol generatedCode)
         {
-            context.RegisterSyntaxNodeAction(nc =>
+            context.RegisterSyntaxNodeAction(context =>
             {
-                if (!CheckAttribute(nc.Node))
+                var attributeSyntax = (AttributeSyntax)context.Node;
+                if (!CheckAttribute(attributeSyntax))
                 {
                     return;
                 }
 
-                if (!CheckResxGeneratedFile(nc.SemanticModel, nc.Node, ((AttributeSyntax)nc.Node).ArgumentList.Arguments[0].Expression, nc.CancellationToken))
+                if (!CheckResxGeneratedFile(context.SemanticModel, attributeSyntax, attributeSyntax.ArgumentList.Arguments[0].Expression, generatedCode, context.CancellationToken))
                 {
                     return;
                 }
@@ -33,9 +34,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Resources
             }, SyntaxKind.Attribute);
         }
 
-        private static bool CheckAttribute(SyntaxNode node)
+        private static bool CheckAttribute(AttributeSyntax attribute)
         {
-            var attribute = node as AttributeSyntax;
             return attribute?.Name?.GetLastToken().Text?.Equals(GeneratedCodeAttribute, StringComparison.Ordinal) == true &&
                 attribute.ArgumentList.Arguments.Count > 0;
         }

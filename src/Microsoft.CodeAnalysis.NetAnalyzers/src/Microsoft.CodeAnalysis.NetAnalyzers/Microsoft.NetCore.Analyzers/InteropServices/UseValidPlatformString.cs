@@ -75,7 +75,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 var knownPlatforms = PooledDictionary<string, int>.GetInstance(StringComparer.OrdinalIgnoreCase);
                 AddPlatformsAndVersionCountFromGuardMethods(operatingSystemType, knownPlatforms);
                 AddPlatformsFromMsBuildOptions(knownPlatforms, context.Options.GetMSBuildItemMetadataValues(
-                    MSBuildItemOptionNames.SupportedPlatform, context.Compilation, context.CancellationToken));
+                    MSBuildItemOptionNames.SupportedPlatform, context.Compilation));
 
                 if (knownPlatforms.TryGetValue(macOS, out var versions))
                 {
