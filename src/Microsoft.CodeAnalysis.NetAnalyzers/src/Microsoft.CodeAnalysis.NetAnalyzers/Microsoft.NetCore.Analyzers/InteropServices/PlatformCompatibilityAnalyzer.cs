@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -135,7 +134,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             context.RegisterCompilationStartAction(context =>
             {
-                if (!PlatformAnalysisAllowed(context.Options, context.Compilation, context.CancellationToken))
+                if (!PlatformAnalysisAllowed(context.Options, context.Compilation))
                 {
                     return;
                 }
@@ -156,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return;
                 }
 
-                var msBuildPlatforms = GetSupportedPlatforms(context.Options, context.Compilation, context.CancellationToken);
+                var msBuildPlatforms = GetSupportedPlatforms(context.Options, context.Compilation);
                 var runtimeIsOSPlatformMethod = runtimeInformationType?.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(m =>
                         IsOSPlatform == m.Name &&
                         m.IsStatic &&
@@ -195,8 +194,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return methods;
             }
 
-            static ImmutableArray<string> GetSupportedPlatforms(AnalyzerOptions options, Compilation compilation, CancellationToken cancellationToken) =>
-                options.GetMSBuildItemMetadataValues(MSBuildItemOptionNames.SupportedPlatform, compilation, cancellationToken);
+            static ImmutableArray<string> GetSupportedPlatforms(AnalyzerOptions options, Compilation compilation) =>
+                options.GetMSBuildItemMetadataValues(MSBuildItemOptionNames.SupportedPlatform, compilation);
 
             static bool NameAndParametersValid(IMethodSymbol method) => method.Name.StartsWith(IsPrefix, StringComparison.Ordinal) &&
                     (method.Parameters.Length == 0 || method.Name.EndsWith(OptionalSuffix, StringComparison.Ordinal));
@@ -207,9 +206,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             }
         }
 
-        private static bool PlatformAnalysisAllowed(AnalyzerOptions options, Compilation compilation, CancellationToken token)
+        private static bool PlatformAnalysisAllowed(AnalyzerOptions options, Compilation compilation)
         {
-            var tfmString = options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.TargetFramework, compilation, token);
+            var tfmString = options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.TargetFramework, compilation);
 
             if (tfmString?.Length >= 4 &&
                 tfmString.StartsWith(Net, StringComparison.OrdinalIgnoreCase) &&
@@ -220,13 +219,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             }
             else
             {
-                return LowerTargetsEnabled(options, compilation, token);
+                return LowerTargetsEnabled(options, compilation);
             }
         }
 
-        private static bool LowerTargetsEnabled(AnalyzerOptions options, Compilation compilation, CancellationToken cancellationToken) =>
+        private static bool LowerTargetsEnabled(AnalyzerOptions options, Compilation compilation) =>
             compilation.SyntaxTrees.FirstOrDefault() is { } tree &&
-            options.GetBoolOptionValue(EditorConfigOptionNames.EnablePlatformAnalyzerOnPreNet5Target, SupportedCsAllPlatforms, tree, compilation, false, cancellationToken);
+            options.GetBoolOptionValue(EditorConfigOptionNames.EnablePlatformAnalyzerOnPreNet5Target, SupportedCsAllPlatforms, tree, compilation, false);
 
         private void AnalyzeOperationBlock(
             OperationBlockStartAnalysisContext context,
@@ -277,8 +276,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         cfg, context.OwningSymbol, CreateOperationVisitor, wellKnownTypeProvider,
                         context.Options, SupportedCsAllPlatforms, performValueContentAnalysis,
                         pessimisticAnalysis: false,
-                        context.CancellationToken, out var valueContentAnalysisResult,
-                        additionalSupportedValueTypes: osPlatformTypeArray,
+                        valueContentAnalysisResult: out var valueContentAnalysisResult, additionalSupportedValueTypes: osPlatformTypeArray,
                         getValueContentValueForAdditionalSupportedValueTypeOperation: osPlatformTypeArray.IsEmpty ? null : GetValueContentValue);
 
                     if (analysisResult == null)

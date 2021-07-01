@@ -100,7 +100,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static bool ShouldAnalyze(SymbolAnalysisContext context, DiagnosticDescriptor rule)
         {
-            if (!context.Options.MatchesConfiguredVisibility(rule, context.Symbol, context.Compilation, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(rule, context.Symbol, context.Compilation))
             {
                 return false;
             }
@@ -109,7 +109,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
 
         private static ImmutableHashSet<SymbolKind> GetSymbolKindsToAnalyze(SymbolAnalysisContext context, DiagnosticDescriptor rule)
-            => context.Options.GetAnalyzedSymbolKindsOption(rule, context.Symbol, context.Compilation, s_defaultAnalyzedSymbolKinds, context.CancellationToken);
+            => context.Options.GetAnalyzedSymbolKindsOption(rule, context.Symbol, context.Compilation, s_defaultAnalyzedSymbolKinds);
 
         private sealed class NamespaceRuleAnalyzer
         {
@@ -126,7 +126,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 }
 
                 // Don't complain about a namespace unless it contains at least one public type.
-                if (!context.Options.MatchesConfiguredVisibility(NamespaceRule, type, context.Compilation, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(NamespaceRule, type, context.Compilation))
                 {
                     return;
                 }
@@ -211,7 +211,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             var method = (IMethodSymbol)context.Symbol;
             if (!GetSymbolKindsToAnalyze(context, MemberParameterRule).Contains(SymbolKind.Parameter) ||
-                !context.Options.MatchesConfiguredVisibility(MemberParameterRule, method, context.Compilation, context.CancellationToken))
+                !context.Options.MatchesConfiguredVisibility(MemberParameterRule, method, context.Compilation))
             {
                 return;
             }
