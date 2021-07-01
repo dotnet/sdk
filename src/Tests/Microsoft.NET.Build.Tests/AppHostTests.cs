@@ -16,12 +16,13 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
+using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tests
 {
     public class AppHostTests : SdkTest
     {
-        private static string[] GetExpectedFilesFromBuild(TestAsset testAsset)
+        private static string[] GetExpectedFilesFromBuild(TestAsset testAsset, string targetFramework)
         {
             var testProjectName = testAsset.TestProject?.Name ?? testAsset.Name;
             var expectedFiles = new List<string>()
@@ -33,14 +34,13 @@ namespace Microsoft.NET.Build.Tests
                 $"{testProjectName}.runtimeconfig.json"
             };
 
-            var tfm = testAsset.TargetFrameworkMoniker;
-            if (!string.IsNullOrEmpty(tfm) && (tfm.Contains("netcoreapp") || tfm.Contains("net5") || tfm.Contains("net6")))
+            if (!string.IsNullOrEmpty(targetFramework))
             {
-                var netCoreTFM = new Version(new string(tfm.Where(c => !char.IsLetter(c)).ToArray()));
-                if (netCoreTFM >= new Version(5, 0))
+                var parsedTargetFramework = NuGetFramework.Parse(targetFramework);
+                if (parsedTargetFramework.Version >= new Version(5, 0, 0, 0))
                     expectedFiles.Add($"ref/{testProjectName}.dll");
 
-                if (netCoreTFM < new Version(6, 0))
+                if (parsedTargetFramework.Version < new Version(6, 0, 0, 0))
                     expectedFiles.Add($"{testProjectName}.runtimeconfig.dev.json");
             }
 
@@ -70,7 +70,7 @@ namespace Microsoft.NET.Build.Tests
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
             var hostExecutable = $"HelloWorld{Constants.ExeSuffix}";
-            outputDirectory.Should().OnlyHaveFiles(GetExpectedFilesFromBuild(testAsset));
+            outputDirectory.Should().OnlyHaveFiles(GetExpectedFilesFromBuild(testAsset, targetFramework));
             new RunExeCommand(Log, Path.Combine(outputDirectory.FullName, hostExecutable))
                 .WithEnvironmentVariable(
                     Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)",
@@ -106,22 +106,15 @@ namespace Microsoft.NET.Build.Tests
             var appHostFullPath = Path.Combine(outputDirectory.FullName, hostExecutable);
 
             // Check that the apphost was not signed
-            var psi = new ProcessStartInfo()
-            {
-                Arguments = $"-d {appHostFullPath}",
-                FileName = @"/usr/bin/codesign",
-                RedirectStandardError = true
-            };
+            var codesignPath = @"/usr/bin/codesign";
+            new RunExeCommand(Log, codesignPath, new string[] { "-d", appHostFullPath })
+                .Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdErrContaining($"{appHostFullPath}: code object is not signed at all");
 
-            using (var codesign = Process.Start(psi))
-            {
-                codesign.Start();
-                codesign.StandardError.ReadToEnd()
-                    .Should().Contain($"{appHostFullPath}: code object is not signed at all");
-                codesign.WaitForExit();
-            }
-
-            outputDirectory.Should().OnlyHaveFiles(GetExpectedFilesFromBuild(testAsset));
+            outputDirectory.Should().OnlyHaveFiles(GetExpectedFilesFromBuild(testAsset, targetFramework));
         }
 
         [PlatformSpecificTheory(TestPlatforms.OSX)]
@@ -151,20 +144,13 @@ namespace Microsoft.NET.Build.Tests
             var appHostFullPath = Path.Combine(outputDirectory.FullName, hostExecutable);
 
             // Check that the apphost was not signed
-            var psi = new ProcessStartInfo()
-            {
-                Arguments = $"-d {appHostFullPath}",
-                FileName = @"/usr/bin/codesign",
-                RedirectStandardError = true
-            };
-
-            using (var codesign = Process.Start(psi))
-            {
-                codesign.Start();
-                codesign.StandardError.ReadToEnd()
-                    .Should().Contain($"{appHostFullPath}: code object is not signed at all");
-                codesign.WaitForExit();
-            }
+            var codesignPath = @"/usr/bin/codesign";
+            new RunExeCommand(Log, codesignPath, new string[] { "-d", appHostFullPath })
+                .Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdErrContaining($"{appHostFullPath}: code object is not signed at all");
 
             var buildProjDir = Path.Combine(outputDirectory.FullName, "../..");
             Directory.Delete(buildProjDir, true);

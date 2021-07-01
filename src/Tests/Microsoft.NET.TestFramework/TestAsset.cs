@@ -23,8 +23,6 @@ namespace Microsoft.NET.TestFramework
 
         public readonly string Name;
 
-        public string TargetFrameworkMoniker { get; private set; }
-
         public ITestOutputHelper Log { get; }
 
         //  The TestProject from which this asset was created, if any
@@ -97,7 +95,6 @@ namespace Microsoft.NET.TestFramework
 
         public TestAsset WithTargetFramework(string targetFramework, string projectName = null)
         {
-            TargetFrameworkMoniker = targetFramework;
             return WithTargetFramework(
             p =>
             {
