@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
@@ -13,10 +14,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                throw new System.ArgumentException($"'{nameof(filePath)}' cannot be null or whitespace.", nameof(filePath));
+                throw new ArgumentException($"'{nameof(filePath)}' cannot be null or whitespace.", nameof(filePath));
             }
 
-            _info = info ?? throw new System.ArgumentNullException(nameof(info));
+            _info = info ?? throw new ArgumentNullException(nameof(info));
             Path = filePath;
         }
 

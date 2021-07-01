@@ -18,18 +18,37 @@ namespace Microsoft.TemplateSearch.Common
     {
         public BlobStorageTemplateInfo(ITemplateInfo templateInfo)
         {
+            if (templateInfo is null)
+            {
+                throw new ArgumentNullException(nameof(templateInfo));
+            }
+            if (string.IsNullOrWhiteSpace(templateInfo.Identity))
+            {
+                throw new ArgumentException($"'{nameof(templateInfo.Identity)}' cannot be null or whitespace.", nameof(templateInfo));
+            }
+
+            if (string.IsNullOrWhiteSpace(templateInfo.Name))
+            {
+                throw new ArgumentException($"'{nameof(templateInfo.Name)}' cannot be null or whitespace.", nameof(templateInfo));
+            }
+
+            if (!templateInfo.ShortNameList.Any())
+            {
+                throw new ArgumentException($"'{nameof(templateInfo.ShortNameList)}' should have at least one entry", nameof(templateInfo));
+            }
+
             Identity = templateInfo.Identity;
             Name = templateInfo.Name;
             ShortNameList = templateInfo.ShortNameList;
-            Parameters = templateInfo.Parameters.Select(p => new BlobTemplateParameter(p)).ToList();
+            Parameters = templateInfo.Parameters?.Select(p => new BlobTemplateParameter(p)).ToArray() ?? Array.Empty<BlobTemplateParameter>();
             Author = templateInfo.Author;
-            Classifications = templateInfo.Classifications;
+            Classifications = templateInfo.Classifications ?? Array.Empty<string>();
             Description = templateInfo.Description;
             GroupIdentity = templateInfo.GroupIdentity;
             Precedence = templateInfo.Precedence;
             ThirdPartyNotices = templateInfo.ThirdPartyNotices;
-            TagsCollection = templateInfo.TagsCollection;
-            BaselineInfo = templateInfo.BaselineInfo;
+            TagsCollection = templateInfo.TagsCollection ?? new Dictionary<string, string>();
+            BaselineInfo = templateInfo.BaselineInfo ?? new Dictionary<string, IBaselineInfo>();
         }
 
         [JsonConstructor]
@@ -128,10 +147,15 @@ namespace Microsoft.TemplateSearch.Common
 
         public static BlobStorageTemplateInfo FromJObject(JObject entry)
         {
-            string identity = entry.ToString(nameof(Identity)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Identity)} property.", nameof(entry));
-            string name = entry.ToString(nameof(Name)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Name)} property.", nameof(entry));
+            string identity = entry.ToString(nameof(Identity))
+                ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Identity)} property.", nameof(entry));
+            string name = entry.ToString(nameof(Name))
+                ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Name)} property.", nameof(entry));
+
             JToken? shortNameToken = entry.Get<JToken>(nameof(ShortNameList));
-            IEnumerable<string> shortNames = shortNameToken.JTokenStringOrArrayToCollection(Array.Empty<string>());
+            IEnumerable<string> shortNames = shortNameToken?.JTokenStringOrArrayToCollection(Array.Empty<string>())
+                ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(ShortNameList)} property.", nameof(entry));
+
             BlobStorageTemplateInfo info = new BlobStorageTemplateInfo(identity, name, shortNames);
             info.Author = entry.ToString(nameof(Author));
             JArray? classificationsArray = entry.Get<JArray>(nameof(Classifications));
@@ -252,9 +276,24 @@ namespace Microsoft.TemplateSearch.Common
         {
             internal BlobTemplateParameter(ITemplateParameter parameter)
             {
+                if (parameter is null)
+                {
+                    throw new ArgumentNullException(nameof(parameter));
+                }
+
+                if (string.IsNullOrWhiteSpace(parameter.Name))
+                {
+                    throw new ArgumentException($"{nameof(Name)} property should not be null or whitespace", nameof(parameter));
+                }
                 Name = parameter.Name;
-                DataType = parameter.DataType;
+                DataType = !string.IsNullOrWhiteSpace(parameter.DataType) ? parameter.DataType : "string";
                 Choices = parameter.Choices;
+
+                if (DataType.Equals("choice", StringComparison.OrdinalIgnoreCase) && Choices == null)
+                {
+                    Choices = new Dictionary<string, ParameterChoice>();
+                }
+
                 Priority = parameter.Priority;
                 DefaultIfOptionWithoutValue = parameter.DefaultIfOptionWithoutValue;
                 Description = parameter.Description;
