@@ -166,6 +166,15 @@ namespace EndToEnd.Tests
         [Fact]
         public void DotnetNewShowsCuratedListCorrectly()
         {
+            string locale = System.Threading.Thread.CurrentThread.CurrentUICulture.Name;
+            if (!string.IsNullOrWhiteSpace(locale) 
+                && !locale.StartsWith("en", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"[{nameof(DotnetNewShowsCuratedListCorrectly)}] CurrentUICulture: {locale}");
+                Console.WriteLine($"[{nameof(DotnetNewShowsCuratedListCorrectly)}] Test is skipped as it supports only 'en' or invariant culture.");
+                return;
+            }
+
             string expectedOutput =
 @"[\-\s]+
 [\w \.]+webapp,razor\s+\[C#\][\w\ \/]+
