@@ -108,27 +108,33 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <ItemGroup>
-      <_DotNetJsItem Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.DestinationSubPath)' == 'dotnet.js' AND '%(ReferenceCopyLocalPaths.AssetType)' == 'native'" />
+      <_DotNetJsItem Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.DestinationSubPath)' == 'dotnet.js' AND '%(ReferenceCopyLocalPaths.AssetType)' == 'native'">
+        <RelativePath>_framework\$(_BlazorDotnetJsFileName)</RelativePath>
+      </_DotNetJsItem>
     </ItemGroup>
 
-    <Copy
-      SourceFiles="@(_DotNetJsItem)"
-      DestinationFiles="$(_BlazorDotNetJsFilePath)"
-      SkipUnchangedFiles="true"
-      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
 
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorAsset)"
-      RelativePath="_framework\$(_BlazorDotnetJsFileName)"
+    <DefineStaticWebAssets Condition="'@(_DotNetJsItem->Count())' != '0'"
+      CandidateAssets="@(_DotNetJsItem)"
       SourceId="$(PackageId)"
       SourceType="Computed"
       AssetRole="Primary"
       AssetTraitName="BlazorWebassemblyResource"
       AssetTraitValue="js"
       CopyToOutputDirectory="PreserveNewest"
-      CopyToPublishDirectory="Never"
-      ContentRoot="$(TargetDir)wwwroot\"
-      BasePath="$(StaticWebAssetBasePath)" />
+      CopyToPublishDirectory="PreserveNewest"
+      ContentRoot="$(IntermediateOutputPath)\blazor"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
+      <Output TaskParameter="Assets" ItemName="_DotnetJsStaticWebAsset" />
+      <Output TaskParameter="CopyCandidates" ItemName="_DotnetJsCopyCandidates" />
+    </DefineStaticWebAssets>
+
+    <Copy
+      SourceFiles="@(_DotnetJsCopyCandidates)"
+      DestinationFiles="@(_DotnetJsCopyCandidates->'%(TargetPath)')"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
 
     <ItemGroup Condition="'@(_DotNetJsItem->Count())' != '0'">
       <ReferenceCopyLocalPaths Remove="@(_DotNetJsItem)" />
@@ -305,6 +311,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <StaticWebAsset Include="@(_BlazorWebAssemblyStaticWebAsset)" RemoveMetadata="OriginalItemSpec" />
+      <StaticWebAsset Include="@(_DotnetJsStaticWebAsset)" RemoveMetadata="OriginalItemSpec" />
     </ItemGroup>    
 
   </Target>

@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         break;
                     }
 
-                    var (identity, computed) = ComputeCandidateIdentity(candidate, contentRoot, matcher);
+                    var (identity, computed) = ComputeCandidateIdentity(candidate, contentRoot, relativePathCandidate, matcher);
 
                     if (computed)
                     {
@@ -167,12 +167,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private (string identity, bool computed) ComputeCandidateIdentity(ITaskItem candidate, string contentRoot, Matcher matcher)
+        private (string identity, bool computed) ComputeCandidateIdentity(ITaskItem candidate, string contentRoot, string relativePath, Matcher matcher)
         {
             var normalizedContentRoot = StaticWebAsset.NormalizeContentRootPath(contentRoot);
             var candidateFullPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
             if (candidateFullPath.StartsWith(normalizedContentRoot))
             {
+                Log.LogMessage("Identity for candidate '{0}' is '{1}' because it starts with content root '{2}'.", candidate.ItemSpec, candidateFullPath, normalizedContentRoot);
                 return (candidateFullPath, false);
             }
             else
@@ -181,18 +182,30 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 // publish processes, so we want to allow defining these assets by setting up a different content root path from their
                 // original location in the project. For example the asset can be wwwroot\my-prod-asset.js, the content root can be
                 // obj\transform and the final asset identity can be <<FullPathTo>>\obj\transform\my-prod-asset.js
-                var matchResult = matcher.Match(candidate.ItemSpec);
-                if (matchResult.HasMatches)
+                var matchResult = matcher?.Match(candidate.ItemSpec);
+                if (matcher == null)
+                {
+                    // If no relative path pattern was specified, we are going to suggest that the identity is `%(ContentRoot)\RelativePath\OriginalFileName`
+                    // We don't want to use the relative path file name since multiple assets might map to that and conflicts might arise.
+                    // Alternatively, we could be explicit here and support ContentRootSubPath to indicate where it needs to go.
+                    var identitySubPath = Path.GetDirectoryName(relativePath);
+                    var itemSpecFileName = Path.GetFileName(candidateFullPath);
+                    var finalIdentity = Path.Combine(normalizedContentRoot, identitySubPath, itemSpecFileName);
+                    Log.LogMessage("Identity for candidate '{0}' is '{1}' because it did not start with the content root '{2}'", candidate.ItemSpec, finalIdentity, normalizedContentRoot);
+                    return (finalIdentity, true);
+                }
+                else if (!matchResult.HasMatches)
+                {
+                    Log.LogMessage("Identity for candidate '{0}' is '{1}' because it didn't match the relative path pattern", candidate.ItemSpec, candidateFullPath);
+                    return (candidateFullPath, false);
+                }
+                else
                 {
                     var stem = matchResult.Files.Single().Stem;
                     var assetIdentity = Path.GetFullPath(Path.Combine(normalizedContentRoot, stem));
                     Log.LogMessage("Computed identity '{0}' for candidate '{1}'", assetIdentity, candidate.ItemSpec);
-                    
+
                     return (assetIdentity, true);
-                }
-                else
-                {
-                    return (candidateFullPath, false);
                 }
             }
         }
