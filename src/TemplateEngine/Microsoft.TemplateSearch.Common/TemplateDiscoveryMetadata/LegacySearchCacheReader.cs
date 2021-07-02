@@ -4,66 +4,107 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
-    public static class FileMetadataTemplateSearchCacheReader
+    [Obsolete("Use TemplateSearchCache instead.")]
+    internal static class LegacySearchCacheReader
     {
-        public static bool TryReadDiscoveryMetadata(IEngineEnvironmentSettings environmentSettings, ISearchCacheConfig config, out TemplateDiscoveryMetadata discoveryMetadata)
+        internal static TemplateSearchCache ConvertTemplateDiscoveryMetadata(TemplateDiscoveryMetadata discoveryMetadata, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders)
         {
-            string pathToConfig = Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, config.TemplateDiscoveryFileName);
+            List<TemplatePackageSearchData> packageData = new List<TemplatePackageSearchData>();
+            foreach (var package in discoveryMetadata.PackToTemplateMap)
+            {
+                List<TemplateSearchData> templateData = new List<TemplateSearchData>();
+                foreach (var template in package.Value.TemplateIdentificationEntry)
+                {
+                    var foundTemplate = discoveryMetadata.TemplateCache.FirstOrDefault(t => t.Identity.Equals(template.Identity, StringComparison.OrdinalIgnoreCase));
+                    if (foundTemplate == null)
+                    {
+                        continue;
+                    }
+                    if (additionalDataReaders != null)
+                    {
+                        Dictionary<string, object> data = new Dictionary<string, object>();
+                        foreach (var reader in additionalDataReaders)
+                        {
+                            if (discoveryMetadata.AdditionalData.TryGetValue(reader.Key, out object? legacyData))
+                            {
+                                Type legacyDataType = legacyData.GetType();
+                                if (legacyDataType.IsGenericType
+                                    && legacyDataType.GetGenericTypeDefinition() == typeof(Dictionary<,>)
+                                    && legacyDataType.GetGenericArguments()[0] == typeof(string))
+                                {
+                                    dynamic dict = Convert.ChangeType(legacyData, legacyDataType);
+                                    if (dict.ContainsKey(template.Identity))
+                                    {
+                                        data[reader.Key] = dict[template.Identity];
+                                    }
+                                }
+                            }
+                        }
+                        templateData.Add(new TemplateSearchData(foundTemplate, data));
+                    }
+                    else
+                    {
+                        templateData.Add(new TemplateSearchData(foundTemplate));
+                    }
+                }
+                packageData.Add(new TemplatePackageSearchData(new PackInfo(package.Key, package.Value.Version, package.Value.TotalDownloads), templateData));
+            }
+            return new TemplateSearchCache(packageData);
+        }
+
+        internal static bool TryReadDiscoveryMetadata(IEngineEnvironmentSettings environmentSettings, string filePath, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders, out TemplateDiscoveryMetadata? discoveryMetadata)
+        {
+            string pathToConfig = Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, filePath);
             environmentSettings.Host.Logger.LogDebug($"Reading cache file {pathToConfig}");
             string cacheText = environmentSettings.Host.FileSystem.ReadAllText(pathToConfig);
 
-            if (TryReadDiscoveryMetadata(environmentSettings, cacheText, config, out discoveryMetadata))
-            {
-                return true;
-            }
-            discoveryMetadata = null;
-            return false;
-        }
-
-        public static bool TryReadDiscoveryMetadata(IEngineEnvironmentSettings environmentSettings, string cacheText, ISearchCacheConfig config, out TemplateDiscoveryMetadata discoveryMetadata)
-        {
             JObject cacheObject = JObject.Parse(cacheText);
 
+            return TryReadDiscoveryMetadata(cacheObject, environmentSettings.Host.Logger, additionalDataReaders, out discoveryMetadata);
+        }
+
+         internal static bool TryReadDiscoveryMetadata(JObject cacheObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders, out TemplateDiscoveryMetadata? discoveryMetadata)
+        {
             // add the reader calls, build the model objects
-            if (TryReadVersion(environmentSettings, cacheObject, out string version)
-                && TryReadTemplateList(environmentSettings, cacheObject, out IReadOnlyList<ITemplateInfo> templateList)
-                && TryReadPackToTemplateMap(environmentSettings, cacheObject, out IReadOnlyDictionary<string, PackToTemplateEntry> packToTemplateMap)
-                && TryReadAdditionalData(environmentSettings, cacheObject, config.AdditionalDataReaders, out IReadOnlyDictionary<string, object> additionalDta))
+            if (TryReadVersion(logger, cacheObject, out string? version)
+                && TryReadTemplateList(logger, cacheObject, out IReadOnlyList<ITemplateInfo>? templateList)
+                && TryReadPackToTemplateMap(logger, cacheObject, out IReadOnlyDictionary<string, PackToTemplateEntry>? packToTemplateMap)
+                && TryReadAdditionalData(logger, cacheObject, additionalDataReaders, out IReadOnlyDictionary<string, object>? additionalDta))
             {
-                discoveryMetadata = new TemplateDiscoveryMetadata(version, templateList, packToTemplateMap, additionalDta);
+                discoveryMetadata = new TemplateDiscoveryMetadata(version!, templateList!, packToTemplateMap!, additionalDta!);
                 return true;
             }
-
             discoveryMetadata = null;
             return false;
         }
 
-        private static bool TryReadVersion(IEngineEnvironmentSettings environmentSettings, JObject cacheObject, out string version)
+        private static bool TryReadVersion(ILogger logger, JObject cacheObject, out string? version)
         {
-            environmentSettings.Host.Logger.LogDebug($"Reading template metadata version");
+            logger.LogDebug($"Reading template metadata version");
             if (cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.Version), out JToken value))
             {
                 version = value.Value<string>();
-                environmentSettings.Host.Logger.LogDebug($"Version: {version}.");
+                logger.LogDebug($"Version: {version}.");
                 return true;
             }
-            environmentSettings.Host.Logger.LogDebug($"Failed to read template metadata version.");
+            logger.LogDebug($"Failed to read template metadata version.");
             version = null;
             return false;
         }
 
         private static bool TryReadTemplateList(
-            IEngineEnvironmentSettings environmentSettings,
+            ILogger logger,
             JObject cacheObject,
-            out IReadOnlyList<ITemplateInfo> templateList)
+            out IReadOnlyList<ITemplateInfo>? templateList)
         {
-            environmentSettings.Host.Logger.LogDebug($"Reading template list");
+            logger.LogDebug($"Reading template list");
             try
             {
                 // This is lifted from TemplateCache.ParseCacheContent - almost identical
@@ -83,38 +124,38 @@ namespace Microsoft.TemplateSearch.Common
                                 }
                                 catch (ArgumentException ex)
                                 {
-                                    environmentSettings.Host.Logger.LogDebug($"Failed to read template info entry, missing mandatory fields. Details: {ex}");
+                                    logger.LogDebug($"Failed to read template info entry, missing mandatory fields. Details: {ex}");
                                 }
                             }
                         }
                     }
 
-                    environmentSettings.Host.Logger.LogDebug($"Successfully read {buildingTemplateList.Count} templates.");
+                    logger.LogDebug($"Successfully read {buildingTemplateList.Count} templates.");
                     templateList = buildingTemplateList;
                     return true;
                 }
 
-                environmentSettings.Host.Logger.LogDebug($"Failed to read template info entries. Details: no TemplateCache property found.");
+                logger.LogDebug($"Failed to read template info entries. Details: no TemplateCache property found.");
                 templateList = null;
                 return false;
             }
             catch (Exception ex)
             {
-                environmentSettings.Host.Logger.LogDebug($"Failed to read template info entries. Details: {ex}");
+                logger.LogDebug($"Failed to read template info entries. Details: {ex}");
                 templateList = null;
                 return false;
             }
         }
 
-        private static bool TryReadPackToTemplateMap(IEngineEnvironmentSettings environmentSettings, JObject cacheObject, out IReadOnlyDictionary<string, PackToTemplateEntry> packToTemplateMap)
+        private static bool TryReadPackToTemplateMap(ILogger logger, JObject cacheObject, out IReadOnlyDictionary<string, PackToTemplateEntry>? packToTemplateMap)
         {
-            environmentSettings.Host.Logger.LogDebug($"Reading package information.");
+            logger.LogDebug($"Reading package information.");
             try
             {
                 if (!cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.PackToTemplateMap), out JToken packToTemplateMapToken)
                     || !(packToTemplateMapToken is JObject packToTemplateMapObject))
                 {
-                    environmentSettings.Host.Logger.LogDebug($"Failed to read package info entries. Details: no PackToTemplateMap property found.");
+                    logger.LogDebug($"Failed to read package info entries. Details: no PackToTemplateMap property found.");
                     packToTemplateMap = null;
                     return false;
                 }
@@ -155,33 +196,38 @@ namespace Microsoft.TemplateSearch.Common
                     }
                 }
 
-                environmentSettings.Host.Logger.LogDebug($"Successfully read {workingPackToTemplateMap.Count} packages.");
+                logger.LogDebug($"Successfully read {workingPackToTemplateMap.Count} packages.");
                 packToTemplateMap = workingPackToTemplateMap;
                 return true;
             }
             catch (Exception ex)
             {
-                environmentSettings.Host.Logger.LogDebug($"Failed to read package info entries. Details: {ex}");
+                logger.LogDebug($"Failed to read package info entries. Details: {ex}");
                 packToTemplateMap = null;
                 return false;
             }
         }
 
-        private static bool TryReadAdditionalData(IEngineEnvironmentSettings environmentSettings, JObject cacheObject, IReadOnlyDictionary<string, Func<JObject, object>> additionalDataReaders, out IReadOnlyDictionary<string, object> additionalData)
+        private static bool TryReadAdditionalData(ILogger logger, JObject cacheObject, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders, out IReadOnlyDictionary<string, object>? additionalData)
         {
-            environmentSettings.Host.Logger.LogDebug($"Reading additional information.");
+            if (additionalDataReaders == null)
+            {
+                additionalData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                return true;
+            }
+            logger.LogDebug($"Reading additional information.");
             // get the additional data section
             if (!cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.AdditionalData), out JToken additionalDataToken)
                 || !(additionalDataToken is JObject additionalDataObject))
             {
-                environmentSettings.Host.Logger.LogDebug($"Failed to read package info entries. Details: no AdditionalData property found.");
+                logger.LogDebug($"Failed to read package info entries. Details: no AdditionalData property found.");
                 additionalData = null;
                 return false;
             }
 
             Dictionary<string, object> workingAdditionalData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (KeyValuePair<string, Func<JObject, object>> dataReadInfo in additionalDataReaders)
+            foreach (KeyValuePair<string, Func<object, object>> dataReadInfo in additionalDataReaders)
             {
                 try
                 {
@@ -197,13 +243,13 @@ namespace Microsoft.TemplateSearch.Common
                 }
                 catch (Exception ex)
                 {
-                    environmentSettings.Host.Logger.LogDebug($"Failed to read additional info entries. Details: {ex}");
+                    logger.LogDebug($"Failed to read additional info entries. Details: {ex}");
                     // Do nothing.
                     // This piece of data failed to read, but isn't strictly necessary.
                 }
             }
 
-            environmentSettings.Host.Logger.LogDebug($"Successfully read {workingAdditionalData.Count} additional information entries.");
+            logger.LogDebug($"Successfully read {workingAdditionalData.Count} additional information entries.");
             additionalData = workingAdditionalData;
             return true;
         }

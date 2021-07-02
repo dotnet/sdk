@@ -24,8 +24,10 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
         // As desired, add more comparisons, and expand the definition of ScrapeComparisonResult
         public bool Compare(out ScrapeComparisonResult result)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             if (!TryReadScraperOutput(_config.ScraperOutputOneFile, out TemplateDiscoveryMetadata scraperOutputOne)
                 || !TryReadScraperOutput(_config.ScraperOutputTwoFile, out TemplateDiscoveryMetadata scraperOutputTwo))
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 result = null;
                 return false;
@@ -43,10 +45,11 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
             return true;
         }
 
+#pragma warning disable CS0618, CS0612 // Type or member is obsolete
         private bool TryReadScraperOutput(string scrapeFilePath, out TemplateDiscoveryMetadata discoveryMetadata)
         {
-            ISearchCacheConfig cacheConfig = new NuGetSearchCacheConfig(scrapeFilePath);
-            return FileMetadataTemplateSearchCacheReader.TryReadDiscoveryMetadata(_environmentSettings, cacheConfig, out discoveryMetadata);
+            return LegacySearchCacheReader.TryReadDiscoveryMetadata(_environmentSettings, scrapeFilePath, null, out discoveryMetadata);
         }
+#pragma warning restore CS0618, CS0612  // Type or member is obsolete
     }
 }

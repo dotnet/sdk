@@ -3,57 +3,61 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+using Microsoft.TemplateSearch.Common.Abstractions;
 
 namespace Microsoft.TemplateSearch.Common
 {
-    public class TemplateSearchCoordinator
+    public sealed class TemplateSearchCoordinator
     {
-        private bool _isSearchPerformed;
+        private readonly IEngineEnvironmentSettings _environmentSettings;
+        private readonly IReadOnlyDictionary<string, Func<object, object>> _additionalDataReaders;
+        private readonly IReadOnlyDictionary<string, ITemplateSearchProvider> _providers;
 
-        public TemplateSearchCoordinator(IEngineEnvironmentSettings environmentSettings, string inputTemplateName, string defaultLanguage, Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> matchFilter)
+        public TemplateSearchCoordinator(
+            IEngineEnvironmentSettings environmentSettings,
+            IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
-            EnvironmentSettings = environmentSettings;
-            InputTemplateName = inputTemplateName;
-            DefaultLanguage = defaultLanguage;
-            MatchFilter = matchFilter;
-            _isSearchPerformed = false;
+            _environmentSettings = environmentSettings;
+            _additionalDataReaders = additionalDataReaders ?? new Dictionary<string, Func<object, object>>();
+            Dictionary<string, ITemplateSearchProvider> configuredProviders = new Dictionary<string, ITemplateSearchProvider>();
+            foreach (ITemplateSearchProviderFactory factory in _environmentSettings.Components.OfType<ITemplateSearchProviderFactory>())
+            {
+                configuredProviders.Add(factory.DisplayName, factory.CreateProvider(_environmentSettings, _additionalDataReaders));
+            }
+            _providers = configuredProviders;
         }
 
-        protected IEngineEnvironmentSettings EnvironmentSettings { get; }
-
-        protected string InputTemplateName { get; }
-
-        protected string DefaultLanguage { get; }
-
-        protected Func<IReadOnlyList<ITemplateNameSearchResult>, IReadOnlyList<ITemplateMatchInfo>> MatchFilter { get; set; }
-
-        protected SearchResults SearchResults { get; set; }
-
-        public async Task<SearchResults> SearchAsync(IReadOnlyList<ITemplatePackage> existingTemplatePackages, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<SearchResult>> SearchAsync(
+            Func<TemplatePackageSearchData, bool> packFilter,
+            Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> matchingTemplatesFilter,
+            CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await EnsureSearchResultsAsync(existingTemplatePackages.OfType<IManagedTemplatePackage>().ToArray(), cancellationToken).ConfigureAwait(false);
-            return SearchResults;
-        }
 
-        protected async Task EnsureSearchResultsAsync(IReadOnlyList<IManagedTemplatePackage> existingTemplatePackages, CancellationToken cancellationToken)
-        {
-            if (_isSearchPerformed)
+            List<SearchResult> results = new List<SearchResult>();
+
+            foreach (ITemplateSearchProvider provider in _providers.Values)
             {
-                return;
+                try
+                {
+                    var providerResults = await provider.SearchForTemplatePackagesAsync(packFilter, matchingTemplatesFilter, cancellationToken).ConfigureAwait(false);
+                    results.Add(new SearchResult(provider, true, hits: providerResults));
+                }
+                catch (TaskCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _environmentSettings.Host.Logger.LogDebug("Search by provider {0} failed, detailes: {1}", provider.Factory.DisplayName, ex);
+                    results.Add(new SearchResult(provider, false, ex.Message));
+                }
             }
-
-            TemplateSearcher searcher = new TemplateSearcher(EnvironmentSettings, DefaultLanguage, MatchFilter);
-
-            SearchResults = await searcher.SearchForTemplatesAsync(existingTemplatePackages, InputTemplateName, cancellationToken).ConfigureAwait(false);
-
-            _isSearchPerformed = true;
+            return results;
         }
     }
 }

@@ -8,13 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 
 namespace Microsoft.TemplateSearch.Common
 {
-    internal class BlobStoreSourceFileProvider : ISearchInfoFileProvider
+    internal class BlobStoreSourceFileProvider
     {
         private const int CachedFileValidityInHours = 1;
         private const string ETagFileSuffix = ".etag";
@@ -22,62 +23,61 @@ namespace Microsoft.TemplateSearch.Common
         private const string IfNoneMatchHeaderName = "If-None-Match";
         private const string _localSourceSearchFileOverrideEnvVar = "DOTNET_NEW_SEARCH_FILE_OVERRIDE";
         private const string _useLocalSearchFileIfPresentEnvVar = "DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY";
-        private static readonly Uri _searchMetadataUri = new Uri("https://go.microsoft.com/fwlink/?linkid=2087906&clcid=0x409");
-
-        public BlobStoreSourceFileProvider()
+        private readonly IEngineEnvironmentSettings _environmentSettings;
+        private readonly Uri[] _searchMetadataUris =
         {
+            new Uri("https://go.microsoft.com/fwlink/?linkid=2087906&clcid=0x409"),         //v1
+            //link TBD                                                                      //v2
+        };
+
+        internal BlobStoreSourceFileProvider(IEngineEnvironmentSettings environmentSettings)
+        {
+            _environmentSettings = environmentSettings;
         }
 
-        public async Task<bool> TryEnsureSearchFileAsync(IEngineEnvironmentSettings environmentSettings, string metadataFileTargetLocation)
+        internal async Task<string> GetSearchFileAsync(string preferredMetadataLocation, CancellationToken cancellationToken)
         {
-            string? localOverridePath = environmentSettings.Environment.GetEnvironmentVariable(_localSourceSearchFileOverrideEnvVar);
+            string? localOverridePath = _environmentSettings.Environment.GetEnvironmentVariable(_localSourceSearchFileOverrideEnvVar);
             if (!string.IsNullOrEmpty(localOverridePath))
             {
-                if (environmentSettings.Host.FileSystem.FileExists(localOverridePath!))
+                if (_environmentSettings.Host.FileSystem.FileExists(localOverridePath!))
                 {
-                    environmentSettings.Host.FileSystem.FileCopy(localOverridePath!, metadataFileTargetLocation, true);
-                    return true;
+                    return localOverridePath!;
                 }
-
-                return false;
+                throw new Exception($"Local search cache {localOverridePath} does not exist.");
             }
 
-            string? useLocalSearchFile = environmentSettings.Environment.GetEnvironmentVariable(_useLocalSearchFileIfPresentEnvVar);
+            string? useLocalSearchFile = _environmentSettings.Environment.GetEnvironmentVariable(_useLocalSearchFileIfPresentEnvVar);
             if (!string.IsNullOrEmpty(useLocalSearchFile))
             {
                 // evn var is set, only use a local copy of the search file. Don't try to acquire one from blob storage.
-                return TryUseLocalSearchFile(environmentSettings, metadataFileTargetLocation);
+                if (_environmentSettings.Host.FileSystem.FileExists(preferredMetadataLocation))
+                {
+                    return preferredMetadataLocation;
+                }
+                else
+                {
+                    throw new Exception($"Local search cache {preferredMetadataLocation} does not exist.");
+                }
             }
             else
             {
                 // prefer a search file from cloud storage.
                 // only download the file if it's been long enough since the last time it was downloaded.
-                if (ShouldDownloadFileFromCloud(environmentSettings, metadataFileTargetLocation))
+                if (ShouldDownloadFileFromCloud(preferredMetadataLocation))
                 {
-                    bool cloudResult = await TryAcquireFileFromCloudAsync(environmentSettings, metadataFileTargetLocation).ConfigureAwait(false);
-
-                    if (cloudResult)
-                    {
-                        return true;
-                    }
+                    await AcquireFileFromCloudAsync(preferredMetadataLocation, cancellationToken).ConfigureAwait(false);
                 }
-                else
-                {
-                    // the file exists and is new enough to not download again.
-                    return true;
-                }
-
-                // no cloud store file was available. Use a local file if possible.
-                return TryUseLocalSearchFile(environmentSettings, metadataFileTargetLocation);
+                return preferredMetadataLocation;
             }
         }
 
-        private bool ShouldDownloadFileFromCloud(IEngineEnvironmentSettings environmentSettings, string metadataFileTargetLocation)
+        private bool ShouldDownloadFileFromCloud(string metadataFileTargetLocation)
         {
-            if (environmentSettings.Host.FileSystem.FileExists(metadataFileTargetLocation))
+            if (_environmentSettings.Host.FileSystem.FileExists(metadataFileTargetLocation))
             {
                 DateTime utcNow = DateTime.UtcNow;
-                DateTime lastWriteTimeUtc = environmentSettings.Host.FileSystem.GetLastWriteTimeUtc(metadataFileTargetLocation);
+                DateTime lastWriteTimeUtc = _environmentSettings.Host.FileSystem.GetLastWriteTimeUtc(metadataFileTargetLocation);
                 if (lastWriteTimeUtc.AddHours(CachedFileValidityInHours) > utcNow)
                 {
                     return false;
@@ -87,68 +87,70 @@ namespace Microsoft.TemplateSearch.Common
             return true;
         }
 
-        private bool TryUseLocalSearchFile(IEngineEnvironmentSettings environmentSettings, string metadataFileTargetLocation)
+        /// <summary>
+        /// Attempt to get the search metadata file from cloud storage and place it in the expected search location.
+        /// Return true on success, false on failure.
+        /// Implement If-None-Match/ETag headers to avoid re-downloading the same content over and over again.
+        /// </summary>
+        /// <param name="searchMetadataFileLocation"></param>
+        /// <returns></returns>
+        private async Task AcquireFileFromCloudAsync(string searchMetadataFileLocation, CancellationToken cancellationToken)
         {
-            // A previously acquired file may already be setup.
-            // It could either be from online storage, or shipped in-box.
-            // If so, fallback to using it.
-            if (environmentSettings.Host.FileSystem.FileExists(metadataFileTargetLocation))
+            foreach (Uri searchMetadataUri in _searchMetadataUris)
             {
-                return true;
-            }
-            return false;
-        }
-
-        // Attempt to get the search metadata file from cloud storage and place it in the expected search location.
-        // Return true on success, false on failure.
-        // Implement If-None-Match/ETag headers to avoid re-downloading the same content over and over again.
-#pragma warning disable SA1202 // Elements should be ordered by access
-        internal async Task<bool> TryAcquireFileFromCloudAsync(IEngineEnvironmentSettings environmentSettings, string searchMetadataFileLocation)
-#pragma warning restore SA1202 // Elements should be ordered by access
-        {
-            try
-            {
-                using (HttpClient client = new HttpClient())
+                try
                 {
-                    string etagFileLocation = searchMetadataFileLocation + ETagFileSuffix;
-                    if (environmentSettings.Host.FileSystem.FileExists(etagFileLocation))
+                    using (HttpClient client = new HttpClient())
                     {
-                        string etagValue = environmentSettings.Host.FileSystem.ReadAllText(etagFileLocation);
-                        client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, $"\"{etagValue}\"");
-                    }
-                    using (HttpResponseMessage response = client.GetAsync(_searchMetadataUri).Result)
-                    {
-                        if (response.IsSuccessStatusCode)
+                        string etagFileLocation = searchMetadataFileLocation + ETagFileSuffix;
+                        if (_environmentSettings.Host.FileSystem.FileExists(etagFileLocation))
                         {
-                            string resultText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            environmentSettings.Host.FileSystem.WriteAllText(searchMetadataFileLocation, resultText);
-
-                            IEnumerable<string> etagValues;
-                            if (response.Headers.TryGetValues(ETagHeaderName, out etagValues))
+                            string etagValue = _environmentSettings.Host.FileSystem.ReadAllText(etagFileLocation);
+                            client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, $"\"{etagValue}\"");
+                        }
+                        using (HttpResponseMessage response = await client.GetAsync(searchMetadataUri, cancellationToken).ConfigureAwait(false))
+                        {
+                            if (response.IsSuccessStatusCode)
                             {
-                                if (etagValues.Count() == 1)
+                                string resultText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                                _environmentSettings.Host.FileSystem.WriteAllText(searchMetadataFileLocation, resultText);
+
+                                IEnumerable<string> etagValues;
+                                if (response.Headers.TryGetValues(ETagHeaderName, out etagValues))
                                 {
-                                    environmentSettings.Host.FileSystem.WriteAllText(etagFileLocation, etagValues.First());
+                                    if (etagValues.Count() == 1)
+                                    {
+                                        _environmentSettings.Host.FileSystem.WriteAllText(etagFileLocation, etagValues.First());
+                                    }
                                 }
+                                return;
                             }
-
-                            return true;
+                            else if (response.StatusCode == HttpStatusCode.NotModified)
+                            {
+                                _environmentSettings.Host.FileSystem.SetLastWriteTimeUtc(searchMetadataFileLocation, DateTime.UtcNow);
+                                return;
+                            }
                         }
-                        else if (response.StatusCode == HttpStatusCode.NotModified)
-                        {
-                            IPhysicalFileSystem fileSystem = environmentSettings.Host.FileSystem;
-
-                            environmentSettings.Host.FileSystem.SetLastWriteTimeUtc(searchMetadataFileLocation, DateTime.UtcNow);
-                            return true;
-                        }
-
-                        return false;
                     }
                 }
+                catch (TaskCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    _environmentSettings.Host.Logger.LogDebug("Failed to download {0}, details: {1}", searchMetadataUri, e);
+                }
             }
-            catch
+            if (_environmentSettings.Host.FileSystem.FileExists(searchMetadataFileLocation))
             {
-                return false;
+                _environmentSettings.Host.Logger.LogWarning(
+                    "Failed to update search cache file from locations {0}. The previously downloaded search cache will be used instead.",
+                    string.Join(", ", _searchMetadataUris.Select(uri => uri.ToString())));
+            }
+            else
+            {
+                throw new Exception($"Failed to update search cache file from locations {string.Join(", ", _searchMetadataUris.Select(uri => uri.ToString()))}");
             }
         }
     }

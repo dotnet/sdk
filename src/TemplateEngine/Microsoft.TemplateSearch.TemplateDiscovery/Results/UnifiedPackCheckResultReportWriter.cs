@@ -3,11 +3,8 @@
 
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateSearch.Common;
-using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
-using Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 {
@@ -38,47 +35,43 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 
         private static string WriteSearchMetadata(PackSourceCheckResult packSourceCheckResults, string outputFileName)
         {
-            TemplateDiscoveryMetadata searchMetadata = CreateSearchMetadata(packSourceCheckResults);
-
-            JObject toSerialize = JObject.FromObject(searchMetadata);
-            File.WriteAllText(outputFileName, toSerialize.ToString());
+            TemplateSearchCache searchMetadata = CreateSearchMetadata(packSourceCheckResults);
+            File.WriteAllText(outputFileName, searchMetadata.ToJObject().ToString());
             Console.WriteLine($"Search cache file created: {outputFileName}");
             return outputFileName;
         }
 
-        private static TemplateDiscoveryMetadata CreateSearchMetadata(PackSourceCheckResult packSourceCheckResults)
+        private static TemplateSearchCache CreateSearchMetadata(PackSourceCheckResult packSourceCheckResults)
         {
-            List<ITemplateInfo> templateCache = packSourceCheckResults.PackCheckData.Where(r => r.AnyTemplates)
-                                                    .SelectMany(r => r.FoundTemplates)
-                                                    .Distinct(new TemplateIdentityEqualityComparer())
-                                                    .Select(t => (ITemplateInfo)new BlobStorageTemplateInfo(t))
-                                                    .ToList();
-
-            Dictionary<string, PackToTemplateEntry> packToTemplateMap = packSourceCheckResults.PackCheckData
-                            .Where(r => r.AnyTemplates)
-                            .ToDictionary(
-                                r => r.PackInfo.Id,
-                                r =>
-                                {
-                                    PackToTemplateEntry packToTemplateEntry = new PackToTemplateEntry(
-                                            r.PackInfo.Version,
-                                            r.FoundTemplates.Select(t => new TemplateIdentificationEntry(t.Identity, t.GroupIdentity)).ToList());
-
-                                    if (r.PackInfo is NugetPackInfo npi)
-                                    {
-                                        packToTemplateEntry.TotalDownloads = npi.TotalDownloads;
-                                    }
-                                    return packToTemplateEntry;
-                                });
-
-            Dictionary<string, object> additionalData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (IAdditionalDataProducer dataProducer in packSourceCheckResults.AdditionalDataProducers)
+            List<TemplatePackageSearchData> packages = new List<TemplatePackageSearchData>();
+            foreach (PackCheckResult package in packSourceCheckResults.PackCheckData)
             {
-                additionalData[dataProducer.DataUniqueName] = dataProducer.Data;
+                List<TemplateSearchData> templates = new List<TemplateSearchData>();
+                foreach (ITemplateInfo template in package.FoundTemplates)
+                {
+                    Dictionary<string, object> data = new Dictionary<string, object>();
+                    foreach (var producer in packSourceCheckResults.AdditionalDataProducers)
+                    {
+                        var producerData = producer.GetDataForTemplate(package.PackInfo, template.Identity);
+                        if (producerData != null)
+                        {
+                            data[producer.DataUniqueName] = producerData;
+                        }
+                    }
+                    templates.Add(new TemplateSearchData(template, data));
+                }
+                Dictionary<string, object> packData = new Dictionary<string, object>();
+                foreach (var producer in packSourceCheckResults.AdditionalDataProducers)
+                {
+                    var producerData = producer.GetDataForPack(package.PackInfo);
+                    if (producerData != null)
+                    {
+                        packData[producer.DataUniqueName] = producerData;
+                    }
+                }
+                packages.Add(new TemplatePackageSearchData(new PackInfo(package.PackInfo.Id, package.PackInfo.Version, package.PackInfo.TotalDownloads), templates, packData));
             }
-
-            return new TemplateDiscoveryMetadata("2.0.0.0", templateCache, packToTemplateMap, additionalData);
+            return new TemplateSearchCache(packages);
         }
 
         private static void WriteNonTemplatePackList(string reportPath, IReadOnlyList<PackCheckResult> packCheckResults)

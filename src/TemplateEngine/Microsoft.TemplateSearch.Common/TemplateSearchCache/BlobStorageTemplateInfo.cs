@@ -14,7 +14,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.TemplateSearch.Common
 {
     [JsonObject(Id = "TemplateInfo")]
-    public class BlobStorageTemplateInfo : ITemplateInfo
+    internal class BlobStorageTemplateInfo : ITemplateInfo
     {
         public BlobStorageTemplateInfo(ITemplateInfo templateInfo)
         {

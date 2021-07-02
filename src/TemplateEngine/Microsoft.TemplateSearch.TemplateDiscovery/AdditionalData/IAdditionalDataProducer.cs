@@ -12,8 +12,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         string Serialized { get; }
 
-        object Data { get; }
+        object? Data { get; }
 
         void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templates, IEngineEnvironmentSettings environment);
+
+        object? GetDataForPack(IPackInfo packInfo);
+
+        object? GetDataForTemplate(IPackInfo packInfo, string templateIdentity);
+
     }
 }

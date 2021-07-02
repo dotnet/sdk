@@ -6,7 +6,6 @@ using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
 using Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 {
@@ -15,12 +14,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         internal static string WriteLegacySearchMetadata(PackSourceCheckResult packSourceCheckResults, string outputFileName)
         {
             var searchMetadata = CreateLegacySearchMetadata(packSourceCheckResults);
-            JObject toSerialize = JObject.FromObject(searchMetadata);
-            File.WriteAllText(outputFileName, toSerialize.ToString());
+            File.WriteAllText(outputFileName, searchMetadata.ToJObject().ToString());
             Console.WriteLine($"Legacy search cache file created: {outputFileName}");
             return outputFileName;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private static TemplateDiscoveryMetadata CreateLegacySearchMetadata(PackSourceCheckResult packSourceCheckResults)
         {
             List<ITemplateInfo> templateCache = packSourceCheckResults.PackCheckData.Where(r => r.AnyTemplates)
@@ -50,10 +49,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 
             foreach (IAdditionalDataProducer dataProducer in packSourceCheckResults.AdditionalDataProducers)
             {
-                additionalData[dataProducer.DataUniqueName] = dataProducer.Data;
+                if (dataProducer.Data != null)
+                {
+                    additionalData[dataProducer.DataUniqueName] = dataProducer.Data;
+                }
             }
 
             return new TemplateDiscoveryMetadata("1.0.0.3", templateCache, packToTemplateMap, additionalData);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
