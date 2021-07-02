@@ -127,7 +127,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         * "RelatedAsset": The Identity of the asset this asset depends on.
         * "AssetTraitName": The name of the trait or characteristic that differentiates this related or dependent asset from a primary asset.
         * "AssetTraitValue": The value of the trait or characteristic that differentiates this related or dependent asset from a primary asset.
-        * "AssetReferenceDiscriminator": An associated value that differentiates this asset from the primary asset.
         * "CopyToBuildDirectory": Same from Content (PreserveNewest, Always)
         * "CopyToPublishDirectory": Same from Content (PreserveNewest, Always)
 

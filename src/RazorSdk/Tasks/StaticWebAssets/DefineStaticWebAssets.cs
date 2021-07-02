@@ -43,11 +43,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string RelativePathFilter { get; set; }
 
-        public string AssetKind { get; set; }
+        public string AssetKind { get; set; } = StaticWebAsset.AssetKinds.All;
 
         public string AssetMode { get; set; } = StaticWebAsset.AssetModes.All;
 
-        public string AssetRole { get; set; }
+        public string AssetRole { get; set; } = StaticWebAsset.AssetRoles.Primary;
 
         public string RelatedAsset { get; set; }
 
@@ -109,12 +109,12 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     var sourceType = ComputePropertyValue(candidate, nameof(StaticWebAsset.SourceType), SourceType);
                     var basePath = ComputePropertyValue(candidate, nameof(StaticWebAsset.BasePath), BasePath);
                     var contentRoot = ComputePropertyValue(candidate, nameof(StaticWebAsset.ContentRoot), ContentRoot);
-                    var assetKind = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetKind), AssetKind);
+                    var assetKind = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetKind), AssetKind, isRequired: false);
                     var assetMode = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetMode), AssetMode);
                     var assetRole = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetRole), AssetRole);
                     var relatedAsset = ComputePropertyValue(candidate, nameof(StaticWebAsset.RelatedAsset), RelatedAsset, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
-                    var assetTraitName = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitName), AssetTraitName);
-                    var assetTraitValue = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitValue), AssetTraitValue);
+                    var assetTraitName = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitName), AssetTraitName, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
+                    var assetTraitValue = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitValue), AssetTraitValue, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
                     var copyToOutputDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToOutputDirectory), CopyToOutputDirectory);
                     var copyToPublishDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToPublishDirectory), CopyToPublishDirectory);
 
