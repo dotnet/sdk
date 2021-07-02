@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                             "Skipping '{0}' becasue the relative path '{1}' did not match the filter '{2}'.",
                             candidate.ItemSpec,
                             relativePathCandidate,
-                            RelativePathPattern);
+                            RelativePathFilter);
 
                         continue;
                     }
@@ -151,7 +151,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         copyToPublishDirectory);
 
                     var item = asset.ToTaskItem();
-                    item.SetMetadata("OriginalItemSpec", item.ItemSpec);
+                    if (PropertyOverrides == null || PropertyOverrides.Length == 0)
+                    {
+                        // Only update the OriginalItemSpec if we are not overriding properties.
+                        // This is because we are likely using DefineStaticWebAssets to update
+                        // some properties when we are using overrides.
+                        item.SetMetadata("OriginalItemSpec", candidate.ItemSpec);
+                    }
 
                     results.Add(item);
                 }

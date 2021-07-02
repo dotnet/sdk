@@ -30,6 +30,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAsset = "BlazorWasmMinimal";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "App.razor.css"), "h1 { font-size: 16px; }");
+            File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "appsettings.development.json"), "{}");
 
             var build = new BuildCommand(ProjectDirectory);
             build.WithWorkingDirectory(ProjectDirectory.TestRoot);

@@ -14,7 +14,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class StaticWebAssetsIntegrationTest : AspNetSdkBaselineTest
     {
-        public StaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
+        public StaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log, true) { }
 
         // Build Standalone project
         [Fact]
@@ -25,7 +25,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(ProjectDirectory);
-            build.Execute().Should().Pass();
+            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
+            build.Execute("/bl").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();

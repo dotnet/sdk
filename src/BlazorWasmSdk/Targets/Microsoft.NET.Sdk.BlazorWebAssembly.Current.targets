@@ -120,9 +120,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       SourceType="Computed"
       AssetRole="Primary"
       AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="js"
+      AssetTraitValue="native"
       CopyToOutputDirectory="PreserveNewest"
-      CopyToPublishDirectory="PreserveNewest"
       ContentRoot="$(IntermediateOutputPath)\blazor"
       BasePath="$(StaticWebAssetBasePath)"
     >
@@ -158,8 +157,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSPath)" />
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSMapPath)" Condition="Exists('$(BlazorWebAssemblyJSMapPath)')" />
+      <_BlazorJsFile>
+        <RelativePath>_framework/%(Filename)%(Extension)</RelativePath>
+      </_BlazorJsFile>
 
-      <_BlazorConfigFile Include="wwwroot\appsettings*.json" />
+      <!-- A missing blazor.webassembly.js is our packaging error. Produce an error so it's discovered early. -->
+      <Error
+        Text="Unable to find BlazorWebAssembly JS files. This usually indicates a packaging error."
+        Code="RAZORSDK1007"
+        Condition="'@(_BlazorJSFile->Count())' == '0'" />
+
+      <_BlazorConfigFileCandidates Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />
 
       <!-- Clear out temporary build artifacts that the runtime packages -->
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.a'" />
@@ -185,20 +193,152 @@ Copyright (c) .NET Foundation. All rights reserved.
         <DestinationSubDirectory>%(IntermediateSatelliteAssembliesWithTargetPath.Culture)\</DestinationSubDirectory>
       </_BlazorCopyLocalPath>
 
-      <_BlazorOutputWithTargetPath Include="
-          @(_BlazorCopyLocalPath);
-          @(IntermediateAssembly);
-          @(_DebugSymbolsIntermediatePath);
-          @(_BlazorJSFile)" />
+      <_BlazorOutputWithRelativePath Include="
+          @(_BlazorCopyLocalPath)">
+          <RelativePath>_framework/%(_BlazorCopyLocalPath.DestinationSubPath)</RelativePath>
+      </_BlazorOutputWithRelativePath>
 
-      <_BlazorOutputWithTargetPath Include="@(ReferenceSatellitePaths)">
+      <_BlazorOutputWithRelativePath Include="@(IntermediateAssembly)">
+        <RelativePath>_framework/%(FileName)%(Extension)</RelativePath>
+      </_BlazorOutputWithRelativePath>  
+
+
+      <_IntermediateAssemblySymbolBlazorOutputWithRelativePath Include="@(_DebugSymbolsIntermediatePath)">
+        <RelativePath>_framework/%(FileName)%(Extension)</RelativePath>
+      </_IntermediateAssemblySymbolBlazorOutputWithRelativePath>  
+
+      <_BlazorSatelliteAssemblies Include="@(ReferenceSatellitePaths)">
         <Culture>$([System.String]::Copy('%(ReferenceSatellitePaths.DestinationSubDirectory)').Trim('\').Trim('/'))</Culture>
-      </_BlazorOutputWithTargetPath>
+      </_BlazorSatelliteAssemblies>
+      
     </ItemGroup>
 
-  </Target>
+    <DefineStaticWebAssets
+      CandidateAssets="@(_BlazorOutputWithRelativePath)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="Build"
+      AssetRole="Primary"
+      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitValue="runtime"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
+      ContentRoot="$(OutputPath)\wwwroot"
+      BasePath="$(StaticWebAssetBasePath)"
+      RelativePathFilter="**/*.dll"
+    >
+      <Output TaskParameter="Assets" ItemName="_DotnetRuntimeStaticWebAsset" />
+    </DefineStaticWebAssets>
 
-  <Target Name="_ProcessBlazorWasmOutputs" DependsOnTargets="_ResolveBlazorWasmOutputs">
+    <DefineStaticWebAssets
+      CandidateAssets="@(_BlazorOutputWithRelativePath)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="Build"
+      AssetRole="Primary"
+      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitValue="native"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
+      ContentRoot="$(OutputPath)\wwwroot"
+      BasePath="$(StaticWebAssetBasePath)"
+      RelativePathFilter="**/*.wasm"
+    >
+    <Output TaskParameter="Assets" ItemName="_WasmRuntimeStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_BlazorOutputWithRelativePath)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="Build"
+      AssetRole="Primary"
+      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitValue="native"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
+      ContentRoot="$(OutputPath)\wwwroot"
+      BasePath="$(StaticWebAssetBasePath)"
+      RelativePathFilter="**/*.blat"
+    >
+      <Output TaskParameter="Assets" ItemName="_WasmRuntimeTimezoneStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_BlazorOutputWithRelativePath)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="Build"
+      AssetRole="Primary"
+      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitValue="native"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
+      ContentRoot="$(OutputPath)\wwwroot"
+      BasePath="$(StaticWebAssetBasePath)"
+      RelativePathFilter="**/icudt*"
+    >
+      <Output TaskParameter="Assets" ItemName="_WasmRuntimeGlobalizationStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_BlazorJSFile)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="Build"
+      AssetRole="Primary"
+      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitValue="native"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
+      ContentRoot="$(OutputPath)\wwwroot"
+      BasePath="$(StaticWebAssetBasePath)"
+      RelativePathFilter="**/*.js"
+    >
+      <Output TaskParameter="Assets" ItemName="_BlazorJsStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_IntermediateAssemblySymbolBlazorOutputWithRelativePath)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="Build"
+      AssetRole="Primary"
+      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitValue="symbols"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
+      ContentRoot="$(OutputPath)\wwwroot"
+      BasePath="$(StaticWebAssetBasePath)"
+      RelativePathFilter="**/*.pdb"
+    >
+      <Output TaskParameter="Assets" ItemName="_BlazorJsDebugSymbolsStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_BlazorConfigFileCandidates)"
+      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitValue="config"
+      RelativePathFilter="appsettings*.json"
+    >
+      <Output TaskParameter="Assets" ItemName="_BlazorJsConfigStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+
+      <StaticWebAsset Remove="@(_BlazorJsConfigStaticWebAsset)" />
+      <StaticWebAsset Include="@(_BlazorJsConfigStaticWebAsset)" />
+
+      <_BlazorStaticWebAsset Include="@(_BlazorJsDebugSymbolsStaticWebAsset)" />
+      <_BlazorStaticWebAsset Include="@(_BlazorJsStaticWebAsset)" />
+      <_BlazorStaticWebAsset Include="@(_DotnetRuntimeStaticWebAsset)" />
+      <_BlazorStaticWebAsset Include="@(_WasmRuntimeStaticWebAsset)" />
+      <_BlazorStaticWebAsset Include="@(_WasmRuntimeTimezoneStaticWebAsset)" />
+      <_BlazorStaticWebAsset Include="@(_WasmRuntimeGlobalizationStaticWebAsset)" />
+        
+      <ReferenceCopyLocalPaths Remove="@(_BlazorStaticWebAsset->'%(OriginalItemSpec)')" />
+    </ItemGroup>
+
     <PropertyGroup>
       <_BlazorBuildGZipCompressDirectory>$(IntermediateOutputPath)build-gz\</_BlazorBuildGZipCompressDirectory>
     </PropertyGroup>
@@ -209,10 +349,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       has the most benefit while avoiding any ongoing costs to the dev inner loop.
     -->
     <ItemGroup>
-      <_GzipFileToCompressForBuild
-        Include="@(ReferenceCopyLocalPaths)"
-        RelativePath="$(_BlazorOutputPath)%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)"
-        Condition="'%(Extension)' == '.dll' or '%(ReferenceCopyLocalPaths.AssetType)' == 'native'" />
+      <_GzipFileToCompressForBuild Include="
+        @(_DotnetRuntimeStaticWebAsset->'%(OriginalItemSpec)');
+        @(_WasmRuntimeStaticWebAsset->'%(OriginalItemSpec)');
+        @(_WasmRuntimeTimezoneStaticWebAsset->'%(OriginalItemSpec)');
+        @(_WasmRuntimeGlobalizationStaticWebAsset->'%(OriginalItemSpec)');
+        @(_BlazorJsStaticWebAsset->'%(OriginalItemSpec)')" >
+        <RelatedAsset>%(Identity)</RelatedAsset>
+        <AssetRole>Alternative</AssetRole>
+        <AssetTraitName>Content-Encoding</AssetTraitName>
+        <AssetTraitValue>gzip</AssetTraitValue>
+      </_GzipFileToCompressForBuild>
     </ItemGroup>
 
     <GZipCompress
@@ -222,50 +369,27 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="CompressedFiles" ItemName="_BlazorBuildGZipCompressedFile" />
       <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
     </GZipCompress>
-
+    
     <ItemGroup>
-      <_BlazorWriteSatelliteAssembly Include="@(_BlazorOutputWithTargetPath->HasMetadata('Culture'))" />
+      <_BlazorBuildGZipCompressedFile>
+        <OriginalItemSpec>%(RelatedAsset)</OriginalItemSpec>
+      </_BlazorBuildGZipCompressedFile>
 
-      <!-- Retarget ReferenceCopyLocalPaths to copy to the wwwroot directory -->
-      <ReferenceCopyLocalPaths DestinationSubDirectory="$(_BlazorOutputPath)%(ReferenceCopyLocalPaths.DestinationSubDirectory)" />
+      <_BlazorGzipStaticWebAsset Include="@(_BlazorBuildGZipCompressedFile->'%(FullPath)')" />
     </ItemGroup>
 
-    <!-- A missing blazor.webassembly.js is our packaging error. Produce an error so it's discovered early. -->
-    <Error
-      Text="Unable to find BlazorWebAssembly JS files. This usually indicates a packaging error."
-      Code="RAZORSDK1007"
-      Condition="'@(_BlazorJSFile->Count())' == '0'" />
-
-    <!--
-      When building with BuildingProject=false, satellite assemblies do not get resolved (the ones for the current project and the one for
-      referenced project). BuildingProject=false is typically set for referenced projects when building inside VisualStudio.
-      To workaround this, we'll cache metadata during a regular build, and rehydrate from it when BuildingProject=false.
-    -->
-
-    <BlazorWriteSatelliteAssemblyFile
-      SatelliteAssembly="@(_BlazorWriteSatelliteAssembly)"
-      WriteFile="$(_BlazorSatelliteAssemblyCacheFile)"
-      Condition="'$(BuildingProject)' == 'true' AND '@(_BlazorWriteSatelliteAssembly->Count())' != '0'" />
-
-    <Delete
-      Files="$(_BlazorSatelliteAssemblyCacheFile)"
-      Condition="'$(BuildingProject)' == 'true' AND '@(_BlazorWriteSatelliteAssembly->Count())' == '0' and EXISTS('$(_BlazorSatelliteAssemblyCacheFile)')" />
-
-    <ItemGroup>
-      <FileWrites Include="$(_BlazorSatelliteAssemblyCacheFile)" Condition="Exists('$(_BlazorSatelliteAssemblyCacheFile)')" />
-    </ItemGroup>
-
-    <GetFileHash Files="@(_BlazorOutputWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
-      <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
-    </GetFileHash>
   </Target>
 
-  <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ProcessBlazorWasmOutputs" BeforeTargets="_RazorPrepareForRun">
+  <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ResolveBlazorWasmOutputs" BeforeTargets="_RazorPrepareForRun">
     <PropertyGroup>
       <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
       <_BlazorOutputContent>@(_BlazorOutputWithHash)</_BlazorOutputContent>
       <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
+
+    <GetFileHash Files="@(_BlazorStaticWebAsset->'%(OriginalItemSpec)')" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
+    </GetFileHash>
 
     <Error
       Text="Unable to find %(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later. Confirm that project or package references are included and the reference is used in the project."
@@ -279,7 +403,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       LinkerEnabled="false"
       CacheBootResources="$(BlazorCacheBootResources)"
       OutputPath="$(_BlazorBuildBootJsonPath)"
-      ConfigurationFiles="@(_BlazorConfigFile)"
+      ConfigurationFiles="@(_BlazorJsConfigStaticWebAsset)"
       LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
       InvariantGlobalization="$(InvariantGlobalization)"
       LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)" />
@@ -295,19 +419,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorAsset Include="$(_BlazorBuildBootJsonPath)" RelativePath="_framework/blazor.boot.json" CopyToPublishDirectory="Never"/>
       <_BlazorAsset Include="@(_BlazorOutputWithHash)" CopyToPublishDirectory="Never" />
     </ItemGroup>
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorAsset)"
-      RelativePathPattern="wwwroot/**"
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetRole="Primary"
-      CopyToOutputDirectory="PreserveNewest"
-      CopyToPublishDirectory="Never"
-      ContentRoot="$(TargetDir)wwwroot\"
-      BasePath="$(StaticWebAssetBasePath)"
-    >
-      <Output TaskParameter="Assets" ItemName="_BlazorWebAssemblyStaticWebAsset" />
-    </DefineStaticWebAssets>
 
     <ItemGroup>
       <StaticWebAsset Include="@(_BlazorWebAssemblyStaticWebAsset)" RemoveMetadata="OriginalItemSpec" />
