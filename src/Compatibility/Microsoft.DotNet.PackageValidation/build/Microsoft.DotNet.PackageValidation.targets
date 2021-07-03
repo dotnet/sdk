@@ -24,6 +24,7 @@
       RuntimeGraph="$(RuntimeIdentifierGraphPath)"
       NoWarn="$(NoWarn)"
       RunApiCompat="$([MSBuild]::ValueOrDefault('$(RunApiCompat)', 'true'))"
+      EnableStrictMode="$([MSBuild]::ValueOrDefault('$(RunApiCompat)', 'false'))"
       GenerateCompatibilitySuppressionFile="$(GenerateCompatibilitySuppressionFile)"
       CompatibilitySuppressionFilePath="$(CompatibilitySuppressionFilePath)"
       BaselinePackageTargetPath="$(PackageValidationBaselinePath)"
