@@ -90,6 +90,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Import Include="System.IO" />
     <Import Include="System.Linq" />
     <Import Include="System.Net.Http" />
+    <Import Include="System.Threading" />
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
 

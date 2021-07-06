@@ -25,6 +25,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <ItemGroup Condition=" '$(DisableImplicitNamespaceImports_Web)' != 'true'
       And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
       And $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '6.0'))">
+    <Import Include="System.Net.Http.Json" />
     <Import Include="Microsoft.AspNetCore.Builder" />
     <Import Include="Microsoft.AspNetCore.Hosting" />
     <Import Include="Microsoft.AspNetCore.Http" />
