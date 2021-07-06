@@ -22,17 +22,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DisableImplicitNamespaceImports_DotNet Condition="'$(DisableImplicitNamespaceImports_DotNet)' == '' and '$(DisableImplicitNamespaceImports)' != 'true'">false</DisableImplicitNamespaceImports_DotNet>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(DisableImplicitNamespaceImports_DotNet)' != 'true'
-                      and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-                      and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '6.0'))">
-    <Import Include="System" />
-    <Import Include="System.Collections.Generic" />
-    <Import Include="System.IO" />
-    <Import Include="System.Linq" />
-    <Import Include="System.Net.Http" />
-    <Import Include="System.Threading.Tasks" />
-  </ItemGroup>
-
   <!--
     Note that this must run before every invocation of CoreCompile to ensure that all compiler
     runs see the generated assembly info. There is at least one scenario involving Xaml

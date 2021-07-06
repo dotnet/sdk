@@ -36,19 +36,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Include="AspNetCoreInProcessHosting" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(DisableImplicitNamespaceImports_Web)' != 'true'
-      And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-      And $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '6.0'))">
-    <Import Include="Microsoft.AspNetCore.Builder" />
-    <Import Include="Microsoft.AspNetCore.Hosting" />
-    <Import Include="Microsoft.AspNetCore.Http" />
-    <Import Include="Microsoft.AspNetCore.Routing" />
-    <Import Include="Microsoft.Extensions.Configuration" />
-    <Import Include="Microsoft.Extensions.DependencyInjection" />
-    <Import Include="Microsoft.Extensions.Hosting" />
-    <Import Include="Microsoft.Extensions.Logging" />
-  </ItemGroup>
-
   <PropertyGroup>
     <!--
       ASP.NET 5.0 explicitly disables this functionality by default, requiring the app author
