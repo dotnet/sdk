@@ -161,11 +161,12 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public class ManifestReference
         {
-            public ManifestReference(string identity, string source, string manifestType, string hash)
+            public ManifestReference(string identity, string source, string manifestType, string projectFile, string hash)
             {
                 Identity = identity;
                 Source = source;
                 ManifestType = manifestType;
+                ProjectFile = projectFile;
                 Hash = hash;
             }
 
@@ -175,23 +176,39 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             public string ManifestType { get; set; }
 
+            public string ProjectFile { get; set; }
+
+            public string PublishTarget { get; set; }
+            
+            public string AdditionalPublishProperties { get; set; }
+
+            public string AdditionalPublishPropertiesToRemove { get; set; }
+
             public string Hash { get; set; }
 
             public override bool Equals(object obj) => obj is ManifestReference reference
                 && Identity == reference.Identity
                 && Source == reference.Source
                 && ManifestType == reference.ManifestType
+                && ProjectFile == reference.ProjectFile
+                && PublishTarget == reference.PublishTarget
+                && AdditionalPublishProperties == reference.AdditionalPublishProperties
+                && AdditionalPublishPropertiesToRemove == reference.AdditionalPublishPropertiesToRemove
                 && Hash == reference.Hash;
 
             public override int GetHashCode()
             {
 #if NET6_0_OR_GREATER
-                return HashCode.Combine(Identity, Source, ManifestType, Hash);
+                return HashCode.Combine(Identity, Source, ManifestType, Hash, ProjectFile, PublishTarget, AdditionalPublishProperties, AdditionalPublishPropertiesToRemove);
 #else
                 int hashCode = -868952447;
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Identity);
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Source);
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ManifestType);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ProjectFile);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(PublishTarget);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AdditionalPublishProperties);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AdditionalPublishPropertiesToRemove);
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Hash);
                 return hashCode;
 #endif
@@ -202,6 +219,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var result = new TaskItem(Identity);
                 result.SetMetadata(nameof(Source), Source);
                 result.SetMetadata(nameof(ManifestType), ManifestType);
+                result.SetMetadata(nameof(ProjectFile), ProjectFile);
+                result.SetMetadata(nameof(PublishTarget), PublishTarget);
+                result.SetMetadata(nameof(AdditionalPublishProperties), AdditionalPublishProperties);
+                result.SetMetadata(nameof(AdditionalPublishPropertiesToRemove), AdditionalPublishPropertiesToRemove);
                 result.SetMetadata(nameof(Hash), Hash);
                 return result;
             }
@@ -262,6 +283,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             public const string Build = nameof(Build);
             public const string Publish = nameof(Publish);
+
+            public static bool IsPublish(string manifestType) =>
+                string.Equals(manifestType, Publish, StringComparison.Ordinal);
         }
 
         public class ManifestModes

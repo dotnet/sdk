@@ -124,7 +124,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         break;
                     }
 
-                    var (identity, computed) = ComputeCandidateIdentity(candidate, contentRoot, relativePathCandidate, matcher);
+                    // We ignore the content root for publish only assets since it doesn't matter.
+                    var contentRootPrefix = StaticWebAsset.AssetKinds.IsPublish(assetKind) ? null : contentRoot;
+                    var (identity, computed) = ComputeCandidateIdentity(candidate, contentRootPrefix, relativePathCandidate, matcher);
 
                     if (computed)
                     {
@@ -175,8 +177,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         private (string identity, bool computed) ComputeCandidateIdentity(ITaskItem candidate, string contentRoot, string relativePath, Matcher matcher)
         {
-            var normalizedContentRoot = StaticWebAsset.NormalizeContentRootPath(contentRoot);
             var candidateFullPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
+            if (contentRoot == null)
+            {
+                Log.LogMessage("Identity for candidate '{0}' is '{1}' because content root is not defined.", candidate.ItemSpec, candidateFullPath);
+                return (candidateFullPath, false);
+            }
+
+            var normalizedContentRoot = StaticWebAsset.NormalizeContentRootPath(contentRoot);
             if (candidateFullPath.StartsWith(normalizedContentRoot))
             {
                 Log.LogMessage("Identity for candidate '{0}' is '{1}' because it starts with content root '{2}'.", candidate.ItemSpec, candidateFullPath, normalizedContentRoot);
