@@ -1,0 +1,12 @@
+[
+  "${OutputPath}\\wwwroot\\_framework\\blazor.boot.json",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.webassembly.js",
+  "${OutputPath}\\wwwroot\\_framework\\dotnet.${RuntimeVersion}.js",
+  "${OutputPath}\\wwwroot\\appsettings.development.json",
+  "${OutputPath}\\wwwroot\\blazorwasm-minimal.styles.css",
+  "${OutputPath}\\wwwroot\\css\\app.css",
+  "${OutputPath}\\wwwroot\\index.html",
+  "${IntermediateOutputPath}\\blazor\\_framework\\dotnet.js",
+  "${IntermediateOutputPath}\\scopedcss\\bundle\\blazorwasm-minimal.styles.css",
+  "${IntermediateOutputPath}\\scopedcss\\projectbundle\\blazorwasm-minimal.bundle.scp.css"
+]

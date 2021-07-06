@@ -1,19 +1,12 @@
 {
   "Version": 1,
-  "Hash": "aCyeYiy8bFGRIJKH9ntp5H3GabVpRqrWk4vBdlqF/\u002BY=",
+  "Hash": "VeTB/70MViuM5Ekg/xZGk/W7uO0iGFtWIDk8oheMdr4=",
   "Source": "blazorwasm-minimal",
   "BasePath": "/",
   "Mode": "Root",
-  "ManifestType": "Build",
+  "ManifestType": "Publish",
   "RelatedManifests": [],
-  "DiscoveryPatterns": [
-    {
-      "Name": "blazorwasm-minimal\\wwwroot",
-      "ContentRoot": "${ProjectRoot}\\wwwroot\\",
-      "BasePath": "/",
-      "Pattern": "wwwroot/**"
-    }
-  ],
+  "DiscoveryPatterns": [],
   "Assets": [
     {
       "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\blazor\\_framework\\dotnet.js",
