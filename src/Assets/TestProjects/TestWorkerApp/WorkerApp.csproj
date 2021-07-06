@@ -4,7 +4,6 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>dotnet-Worker-0F5297EC-EC9C-4ED7-BC76-A9A26AC714A9</UserSecretsId>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
