@@ -62,7 +62,7 @@ upperCase - Upper cases a value
             `identifier`  -> `upperCase` or `upperCaseInvariant`
 ```
 
-`firstLowerCase` - converts the first letter of the value to lowercase using the casing rules of the current culture. Available since version 5.0.200.
+`firstLowerCase` - converts the first letter of the value to lowercase using the casing rules of the current culture. Available since .NET 5.0.300.
 ```
     "forms": {
         "first_lc": {
@@ -70,7 +70,7 @@ upperCase - Upper cases a value
         }
     }
 ```
-`firstLowerCaseInvariant` - converts the first letter of the value to lowercase using the casing rules of the invariant culture. Available since version 5.0.200.
+`firstLowerCaseInvariant` - converts the first letter of the value to lowercase using the casing rules of the invariant culture. Available since .NET 5.0.300.
 ```
     "forms": {
         "first_lc": {
@@ -79,7 +79,7 @@ upperCase - Upper cases a value
     }
 ```
 
-`firstUpperCase` - converts the first letter of the value to uppercase using the casing rules of the current culture. Available since version 5.0.200.
+`firstUpperCase` - converts the first letter of the value to uppercase using the casing rules of the current culture. Available since .NET 5.0.300.
 ```
     "forms": {
         "first_uc": {
@@ -87,7 +87,7 @@ upperCase - Upper cases a value
         }
     }
 ```
-`firstUpperCaseInvariant` - converts the first letter of the value to uppercase using the casing rules of the invariant culture. Available since version 5.0.200.
+`firstUpperCaseInvariant` - converts the first letter of the value to uppercase using the casing rules of the invariant culture. Available since .NET 5.0.300.
 ```
     "forms": {
         "first_uc": {
@@ -96,7 +96,7 @@ upperCase - Upper cases a value
     }
 ```
 
-`titleCase` - converts the value to title case using the casing rules of the current culture. See [TextInfo.ToTitleCase(String) documentation](https://docs.microsoft.com/dotnet/api/system.globalization.textinfo.totitlecase) for more details. Available since version 5.0.200.
+`titleCase` - converts the value to title case using the casing rules of the current culture. See [TextInfo.ToTitleCase(String) documentation](https://docs.microsoft.com/dotnet/api/system.globalization.textinfo.totitlecase) for more details. Available since .NET 5.0.300.
 ```
     "forms": {
         "title": {
@@ -105,7 +105,7 @@ upperCase - Upper cases a value
     }
 ```
 
-`kebabCase` - converts the value to kebab case using the casing rules of the invariant culture. Available since version 5.0.200.
+`kebabCase` - converts the value to kebab case using the casing rules of the invariant culture. Available since .NET 5.0.300.
 ```
     "forms": {
         "kebab": {
