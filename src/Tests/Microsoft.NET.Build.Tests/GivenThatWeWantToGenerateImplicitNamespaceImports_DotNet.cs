@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
     {
         public GivenThatWeWantToGenerateImplicitNamespaceImports_DotNet(ITestOutputHelper log) : base(log) { }
 
-        [CoreMSBuildOnlyFact]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_generates_dotnet_imports_and_builds_successfully()
         {
             var tfm = "net6.0";
@@ -67,7 +67,7 @@ global using global::System.Threading.Tasks;
             outputDirectory.Should().NotHaveFile(importFileName);
         }
 
-        [CoreMSBuildOnlyFact]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_can_remove_specific_imports_in_project_file()
         {
             var tfm = "net6.0";
@@ -197,7 +197,6 @@ global using global::CustomNamespace;
                 TargetFrameworks = tfm,
                 ProjectSdk = "Microsoft.NET.Sdk"
             };
-            testProject.AdditionalProperties["LangVersion"] = "10.0";
             testProject.SourceFiles["Program.cs"] = @"
 namespace ConsoleApp
 {

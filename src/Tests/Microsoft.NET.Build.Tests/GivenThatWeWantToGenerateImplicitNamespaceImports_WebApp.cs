@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
 
         public GivenThatWeWantToGenerateImplicitNamespaceImports_WebApp(ITestOutputHelper log) : base(log) { }
 
-        [CoreMSBuildOnlyFact]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_generates_web_imports_and_builds_successfully()
         {
             var tfm = "net6.0";
@@ -96,7 +96,6 @@ global using global::System.Threading.Tasks;
                 TargetFrameworks = tfm,
                 ProjectSdk = "Microsoft.NET.Sdk.Web"
             };
-            testProject.AdditionalProperties["LangVersion"] = "10.0";
             testProject.SourceFiles["Program.cs"] = @"
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();

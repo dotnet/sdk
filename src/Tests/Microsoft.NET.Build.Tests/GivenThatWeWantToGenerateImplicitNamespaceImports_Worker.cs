@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
     {
         public GivenThatWeWantToGenerateImplicitNamespaceImports_Worker(ITestOutputHelper log) : base(log) { }
 
-        [CoreMSBuildOnlyFact]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_generates_worker_imports_and_builds_successfully()
         {
             var tfm = "net6.0";
@@ -90,7 +90,6 @@ global using global::System.Threading.Tasks;
                 TargetFrameworks = tfm,
                 ProjectSdk = "Microsoft.NET.Sdk.Worker"
             };
-            testProject.AdditionalProperties["LangVersion"] = "10.0";
             testProject.AdditionalItems["PackageReference"] = new Dictionary<string, string> { 
                 ["Include"] = "Microsoft.Extensions.Hosting", 
                 ["Version"] = "6.0.0-preview.5.21301.5"
