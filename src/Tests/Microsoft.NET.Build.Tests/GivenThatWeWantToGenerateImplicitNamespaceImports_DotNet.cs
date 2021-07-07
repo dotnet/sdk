@@ -199,6 +199,7 @@ global using global::CustomNamespace;
                 TargetFrameworks = tfm,
                 ProjectSdk = "Microsoft.NET.Sdk"
             };
+            testProject.AdditionalProperties["LangVersion"] = "10.0";
             testProject.SourceFiles["Program.cs"] = @"
 namespace ConsoleApp
 {

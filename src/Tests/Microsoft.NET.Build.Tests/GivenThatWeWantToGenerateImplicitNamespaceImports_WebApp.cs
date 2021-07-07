@@ -98,6 +98,7 @@ global using global::System.Threading.Tasks;
                 TargetFrameworks = tfm,
                 ProjectSdk = "Microsoft.NET.Sdk.Web"
             };
+            testProject.AdditionalProperties["LangVersion"] = "10.0";
             testProject.SourceFiles["Program.cs"] = @"
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
