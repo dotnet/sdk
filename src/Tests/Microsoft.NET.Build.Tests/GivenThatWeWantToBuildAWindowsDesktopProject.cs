@@ -242,6 +242,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [WindowsOnlyFact]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void UseWPFCanBeSetInDirectoryBuildTargets()
         {
             var testDir = _testAssetsManager.CreateTestDirectory();
@@ -367,7 +368,7 @@ namespace Microsoft.NET.Build.Tests
                 getValueCommand.GetValues()
                     .Should()
                     .Contain("windows");
-            } 
+            }
             else
             {
                 getValueCommand.GetValues()
