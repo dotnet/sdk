@@ -20,9 +20,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="NuGet.Configuration" Version="5.8.1" />
-    <PackageReference Include="NuGet.Credentials" Version="5.8.1" />
-    <PackageReference Include="NuGet.Protocol" Version="5.8.1" />
+    <PackageReference Include="NuGet.Configuration" />
+    <PackageReference Include="NuGet.Credentials" />
+    <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="System.IO.Compression" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFramework)' != '$(NETFullTargetFramework)'" />
