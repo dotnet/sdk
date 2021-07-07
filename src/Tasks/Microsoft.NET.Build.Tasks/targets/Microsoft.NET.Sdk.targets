@@ -1091,6 +1091,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateImplicitNamespaceImports.targets"
     Condition="'$(DisableImplicitNamespaceImports)' != 'true'
       and '$(Language)' == 'C#'
+      and '$(LangVersion)' != ''
       and ('$(LangVersion)' == 'preview'
         or '$(LangVersion)' == 'latest'
         or '$(LangVersion)' == 'latestMajor'
