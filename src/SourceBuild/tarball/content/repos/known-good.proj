@@ -42,6 +42,7 @@
 
         <!-- Tier 2 -->
         <RepositoryReference Include="linker" />
+        <RepositoryReference Include="templating" />
 
         <!-- Package source-build artifacts -->
         <RepositoryReference Include="package-source-build" />
