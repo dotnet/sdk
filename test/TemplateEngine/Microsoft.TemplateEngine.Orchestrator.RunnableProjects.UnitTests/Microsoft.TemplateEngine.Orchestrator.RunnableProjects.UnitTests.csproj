@@ -4,7 +4,7 @@
       <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworks>
     </PropertyGroup>
     <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.13" />
+      <PackageReference Include="Newtonsoft.Json.Schema" />
     </ItemGroup>
 
     <ItemGroup>
