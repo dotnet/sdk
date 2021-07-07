@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
@@ -102,8 +103,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
-            var hostExecutable = $"HelloWorld{Constants.ExeSuffix}";
-            var appHostFullPath = Path.Combine(outputDirectory.FullName, hostExecutable);
+            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
 
             // Check that the apphost was not signed
             var codesignPath = @"/usr/bin/codesign";
@@ -127,7 +127,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_does_not_try_to_codesign_non_osx_app_hosts(string targetFramework, string rid)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .CopyTestAsset("HelloWorld", identifier: targetFramework, allowCopyIfPresent: true)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
 
@@ -154,6 +154,73 @@ namespace Microsoft.NET.Build.Tests
 
             var buildProjDir = Path.Combine(outputDirectory.FullName, "../..");
             Directory.Delete(buildProjDir, true);
+        }
+
+        [PlatformSpecificTheory(TestPlatforms.OSX)]
+        [InlineData("netcoreapp3.1")]
+        [InlineData("net5.0")]
+        [InlineData("net6.0")]
+        public void It_codesigns_a_framework_dependent_app(string targetFramework)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
+            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
+
+            // Check that the apphost is signed
+            var codesignPath = @"/usr/bin/codesign";
+            new RunExeCommand(Log, codesignPath, new string[] { "-s", "-", appHostFullPath })
+                .Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdErrContaining($"{appHostFullPath}: is already signed");
+        }
+
+        [PlatformSpecificTheory(TestPlatforms.OSX)]
+        [InlineData("netcoreapp3.1", false)]
+        [InlineData("netcoreapp3.1", true)]
+        [InlineData("net5.0", false)]
+        [InlineData("net5.0", true)]
+        [InlineData("net6.0", false)]
+        [InlineData("net6.0", true)]
+        public void It_codesigns_an_app_targeting_osx(string targetFramework, bool selfContained)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}" };
+            if (!selfContained)
+                buildArgs.Add("/p:PublishSingleFile=true");
+
+            buildCommand
+                .Execute(buildArgs.ToArray())
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
+            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
+
+            // Check that the apphost is signed
+            var codesignPath = @"/usr/bin/codesign";
+            new RunExeCommand(Log, codesignPath, new string[] { "-s", "-", appHostFullPath })
+                .Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdErrContaining($"{appHostFullPath}: is already signed");
         }
 
         [Theory]
