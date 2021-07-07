@@ -206,7 +206,7 @@
                   DetectCondition="WixBundleAction >= 3"
                   Id="Finalizer"
                   InstallCondition="WixBundleAction >= 4"
-                  UninstallCommand="&quot;[WixBundleLog_Finalizer]&quot; $(var.SdkDependent)"
+                  UninstallCommand="&quot;[WixBundleLog_Finalizer]&quot; $(var.NugetVersion) $(var.Platform)"
                   Vital="no" />
     </Chain>
   </Bundle>

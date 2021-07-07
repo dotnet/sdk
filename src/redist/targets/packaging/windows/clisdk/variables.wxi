@@ -45,6 +45,4 @@
 
   <?define DependencyKey   = "$(var.DependencyKeyName)_$(var.SDKBundleVersion)_$(var.Platform)"?>
   <?define DependencyKeyId = "$(var.DependencyKey)" ?>
-  <!-- The dependent value associated with this SDK when creating reference counts for optional workloads. -->
-  <?define SdkDependent = "Microsoft.NET.SDK,$(var.NugetVersion),$(var.Platform)"?>
 </Include>
