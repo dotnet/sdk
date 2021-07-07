@@ -111,12 +111,23 @@
       Condition="$(IsRootRepo) == 'true'" />
 
     <Exec
-      Command="git clone $(CloneParam) $(RepoUri) $(SourceDir)"
-      WorkingDirectory="$(TarballSourceDir)"
+      Command="git init $(TarballRepoSourceDir)"
+      WorkingDirectory="$(RepoRoot)"
       Condition="$(IsRootRepo) != 'true'" />
 
     <Exec
-      Command="git checkout $(CloneParam) $(RepoSha)"
+      Command="git remote add origin $(RepoUri)"
+      WorkingDirectory="$(TarballRepoSourceDir)"
+      Condition="$(IsRootRepo) != 'true'" />
+
+    <!-- Fetching a sha requires git 2.5.0 or newer -->
+    <Exec
+      Command="git fetch origin $(RepoSha)"
+      WorkingDirectory="$(TarballRepoSourceDir)"
+      Condition="$(IsRootRepo) != 'true'" />
+
+    <Exec
+      Command="git reset --hard FETCH_HEAD"
       WorkingDirectory="$(TarballRepoSourceDir)"
       Condition="$(IsRootRepo) != 'true'" />
 
