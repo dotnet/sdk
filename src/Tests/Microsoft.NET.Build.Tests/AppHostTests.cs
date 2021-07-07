@@ -196,7 +196,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_codesigns_an_app_targeting_osx(string targetFramework, bool selfContained)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .CopyTestAsset("HelloWorld", identifier: targetFramework, allowCopyIfPresent: true)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
 
