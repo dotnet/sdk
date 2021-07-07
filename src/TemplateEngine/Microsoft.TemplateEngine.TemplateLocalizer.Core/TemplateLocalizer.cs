@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,11 +49,16 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
                 IReadOnlyList<TemplateString> templateJsonStrings = stringExtractor.ExtractStrings(out string templateJsonLanguage);
 
                 string targetDirectory = options.TargetDirectory ?? Path.Combine(Path.GetDirectoryName(templateJsonPath) ?? string.Empty, "localize");
+                IEnumerable<string> languages = ExportOptions.DefaultLanguages;
+                if (options.Languages?.Any() ?? false)
+                {
+                    languages = options.Languages;
+                }
 
                 await TemplateStringUpdater.UpdateStringsAsync(
                     templateJsonStrings,
                     templateJsonLanguage,
-                    options.Languages ?? ExportOptions.DefaultLanguages,
+                    languages,
                     targetDirectory,
                     options.DryRun,
                     _logger,

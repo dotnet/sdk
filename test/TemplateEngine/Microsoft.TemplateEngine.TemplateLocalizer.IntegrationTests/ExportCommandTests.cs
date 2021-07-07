@@ -153,11 +153,12 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
             string[] exportedFiles = await RunTemplateLocalizer(
                 GetTestTemplateJsonContent(),
                 _workingDirectory,
-                args: new string[] { "export", _workingDirectory, "--language", "tr" })
+                args: new string[] { "export", _workingDirectory, "--language", "tr", "de" })
                 .ConfigureAwait(false);
 
-            Assert.Single(exportedFiles);
+            Assert.Equal(2, exportedFiles.Length);
             Assert.True(File.Exists(Path.Combine(_workingDirectory, "localize", "templatestrings.tr.json")));
+            Assert.True(File.Exists(Path.Combine(_workingDirectory, "localize", "templatestrings.de.json")));
             Assert.False(File.Exists(Path.Combine(_workingDirectory, "localize", "templatestrings.es.json")));
         }
 

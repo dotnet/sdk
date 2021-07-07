@@ -33,15 +33,11 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
                 Name = "--recursive",
                 Description = LocalizableStrings.command_export_help_recursive_description,
             });
-            exportCommand.AddOption(new Option("-l")
+            exportCommand.AddOption(new Option<string>("-l")
             {
                 Name = "--language",
                 Description = LocalizableStrings.command_export_help_language_description,
-                Argument = new Argument()
-                {
-                    Arity = ArgumentArity.OneOrMore,
-                    ArgumentType = typeof(string),
-                },
+                Arity = ArgumentArity.OneOrMore
             });
             exportCommand.AddOption(new Option("-d")
             {
