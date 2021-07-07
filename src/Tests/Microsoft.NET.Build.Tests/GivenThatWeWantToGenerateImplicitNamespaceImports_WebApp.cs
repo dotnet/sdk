@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         public GivenThatWeWantToGenerateImplicitNamespaceImports_WebApp(ITestOutputHelper log) : base(log) { }
 
         [Fact]
-        public void It_generates_imports_and_builds_successfully()
+        public void It_generates_web_imports_and_builds_successfully()
         {
             var tfm = "net6.0";
             var testProject = CreateTestProject(tfm);
