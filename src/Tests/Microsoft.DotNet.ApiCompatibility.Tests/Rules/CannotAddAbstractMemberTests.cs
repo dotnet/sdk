@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -74,6 +74,99 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             {
                 Assert.NotEqual(DiagnosticIds.CannotAddAbstractMember, difference.DiagnosticId);
             }
+        }
+
+        [Fact]
+        public void MultipleRightsAreReported()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+  public class First
+  {
+    public class FirstNested
+    {
+      public class SecondNested
+      {
+        public void SomeMethod() { }
+      }
+    }
+  }
+}
+";
+
+            string[] rightSyntaxes = new[]
+            { @"
+namespace CompatTests
+{
+  public class First
+  {
+    public class FirstNested
+    {
+      public class SecondNested
+      {
+        public void SomeMethod() { }
+      }
+    }
+  }
+}
+",
+            @"
+namespace CompatTests
+{
+  public class First
+  {
+    public class FirstNested
+    {
+      public class SecondNested
+      {
+        public void SomeMethod() { }
+        public abstract void SomeAbstractMethod() { }
+      }
+    }
+  }
+}
+",
+            @"
+namespace CompatTests
+{
+  public class First
+  {
+    public class FirstNested
+    {
+      public abstract void FirstNestedAbstract() { }
+      public class SecondNested
+      {
+        public void SomeMethod() { }
+      }
+    }
+  }
+}
+"};
+
+            ApiComparer differ = new();
+            ElementContainer<IAssemblySymbol> left =
+                new(SymbolFactory.GetAssemblyFromSyntax(leftSyntax), new MetadataInformation(string.Empty, string.Empty, "ref"));
+
+            IList<ElementContainer<IAssemblySymbol>> right = SymbolFactory.GetElementContainersFromSyntaxes(rightSyntaxes);
+
+            IEnumerable<(MetadataInformation, MetadataInformation, IEnumerable<CompatDifference>)> differences =
+                differ.GetDifferences(left, right);
+
+            CompatDifference[][] expectedDiffs =
+            {
+                Array.Empty<CompatDifference>(),
+                new[]
+                {
+                    new CompatDifference(DiagnosticIds.CannotAddAbstractMember, string.Empty, DifferenceType.Added, "M:CompatTests.First.FirstNested.SecondNested.SomeAbstractMethod"),
+                },
+                new[]
+                {
+                    new CompatDifference(DiagnosticIds.CannotAddAbstractMember, string.Empty, DifferenceType.Added, "M:CompatTests.First.FirstNested.FirstNestedAbstract"),
+                },
+            };
+
+            AssertExtensions.MultiRightResult(left.MetadataInformation, expectedDiffs, differences);
         }
 
         public static IEnumerable<object[]> AddedToUnsealedTypeInRightNotReportedData()

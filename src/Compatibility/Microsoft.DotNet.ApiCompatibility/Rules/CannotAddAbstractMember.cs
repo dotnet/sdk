@@ -1,6 +1,5 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -38,7 +37,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // checking for member additions on interfaces is checked on its own rule.
                 if (leftContainingType.TypeKind != TypeKind.Interface && !leftContainingType.IsSealed && HasVisibleConstructor(leftContainingType as INamedTypeSymbol))
                 {
-                    differences.Add(new CompatDifference(DiagnosticIds.CannotAddAbstractMember, $"Cannot add abstract member '{right.ToDisplayString()}' to {rightName} because does not exist on {leftName}", DifferenceType.Added, right));
+                    differences.Add(new CompatDifference(DiagnosticIds.CannotAddAbstractMember, string.Format(Resources.CannotAddAbstractMember, right.ToDisplayString(), rightName, leftName), DifferenceType.Added, right));
                 }
             }
         }
