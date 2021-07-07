@@ -8,7 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Build.Graph;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
@@ -38,7 +37,8 @@ namespace Microsoft.DotNet.Watcher
             {
                 new MSBuildEvaluationFilter(fileSetFactory),
                 new DotNetBuildFilter(_processRunner, _reporter),
-                new LaunchBrowserFilter(_dotNetWatchOptions),
+                new LaunchBrowserFilter(dotNetWatchOptions),
+                new BrowserRefreshFilter(dotNetWatchOptions, _reporter),
             };
             _rudeEditDialog = new(reporter, _console);
         }
