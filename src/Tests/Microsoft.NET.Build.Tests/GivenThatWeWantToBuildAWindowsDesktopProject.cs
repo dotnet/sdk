@@ -241,8 +241,7 @@ namespace Microsoft.NET.Build.Tests
                 .NotHaveStdOutContaining("NETSDK1140");
         }
 
-        [WindowsOnlyFact]
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
         public void UseWPFCanBeSetInDirectoryBuildTargets()
         {
             var testDir = _testAssetsManager.CreateTestDirectory();
