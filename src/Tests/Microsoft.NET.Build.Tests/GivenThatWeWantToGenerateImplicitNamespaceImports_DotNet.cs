@@ -3,8 +3,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
@@ -19,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
     {
         public GivenThatWeWantToGenerateImplicitNamespaceImports_DotNet(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_generates_dotnet_imports_and_builds_successfully()
         {
             var tfm = "net6.0";
@@ -69,7 +67,7 @@ global using global::System.Threading.Tasks;
             outputDirectory.Should().NotHaveFile(importFileName);
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_can_remove_specific_imports_in_project_file()
         {
             var tfm = "net6.0";
