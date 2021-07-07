@@ -1088,7 +1088,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DisableStandardFrameworkResolution.targets" Condition="'$(DisableStandardFrameworkResolution)' == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DesignerSupport.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateAssemblyInfo.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'"/>
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateImplicitNamespaceImports.targets" Condition="'$(DisableImplicitNamespaceImports)' != 'true' and '$(Language)' == 'C#'"/>
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateImplicitNamespaceImports.targets"
+    Condition="'$(DisableImplicitNamespaceImports)' != 'true'
+      and '$(Language)' == 'C#'
+      and ('$(LangVersion)' == 'preview'
+        or '$(LangVersion)' == 'latest'
+        or '$(LangVersion)' == 'latestMajor'
+        or '$(LangVersion)' == 'default'
+        or ($([MSBuild]::VersionGreaterThanOrEquals('$(LangVersion)', '10.0'))))"/>
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateSupportedRuntime.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ComposeStore.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.CrossGen.targets" />
