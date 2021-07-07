@@ -22,7 +22,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildWebTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed.Web\</MSBuildWebTargetsPath>
     <AspNetCoreHostingModel Condition="'$(AspNetCoreHostingModel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">inprocess</AspNetCoreHostingModel>
     <AspNetCoreModuleName Condition="'$(AspNetCoreModuleName)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' != '' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0' ">AspNetCoreModuleV2</AspNetCoreModuleName>
-    <DisableImplicitNamespaceImports_Web Condition="'$(DisableImplicitNamespaceImports_Web)' == '' and '$(DisableImplicitNamespaceImports)' != 'true'">false</DisableImplicitNamespaceImports_Web>
   </PropertyGroup>
 
   <ItemGroup>

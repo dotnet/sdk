@@ -22,20 +22,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WarnOnPackingNonPackableProject Condition="'$(WarnOnPackingNonPackableProject)' == '' and '$(IsPackable)' == 'false'">true</WarnOnPackingNonPackableProject>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(DisableImplicitNamespaceImports_Web)' != 'true'
-      And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-      And $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '6.0'))">
-    <Import Include="System.Net.Http.Json" />
-    <Import Include="Microsoft.AspNetCore.Builder" />
-    <Import Include="Microsoft.AspNetCore.Hosting" />
-    <Import Include="Microsoft.AspNetCore.Http" />
-    <Import Include="Microsoft.AspNetCore.Routing" />
-    <Import Include="Microsoft.Extensions.Configuration" />
-    <Import Include="Microsoft.Extensions.DependencyInjection" />
-    <Import Include="Microsoft.Extensions.Hosting" />
-    <Import Include="Microsoft.Extensions.Logging" />
-  </ItemGroup>
-
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props"
       Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')"/>
 
