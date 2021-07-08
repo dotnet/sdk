@@ -22,7 +22,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("netcoreapp3.0")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
@@ -61,7 +61,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForR2RTesting(
                 targetFramework,
-                projectName, 
+                projectName,
                 "ClassLib");
 
             testProject.AdditionalProperties["PublishReadyToRun"] = "True";
@@ -73,7 +73,7 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute().Should().Pass();
 
             DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(
-                targetFramework, 
+                targetFramework,
                 "Debug",
                 testProject.RuntimeIdentifier);
 
@@ -208,7 +208,7 @@ namespace Microsoft.NET.Publish.Tests
             TestProjectPublishing_Internal("LibraryProject2", targetFramework, isSelfContained:true, makeExeProject: false, identifier: targetFramework);
         }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
         void It_can_publish_readytorun_using_crossgen2(string targetFramework)
@@ -221,7 +221,7 @@ namespace Microsoft.NET.Publish.Tests
             TestProjectPublishing_Internal("Crossgen2TestApp", targetFramework, isSelfContained: true, emitNativeSymbols: true, useCrossgen2: true, composite: false, identifier: targetFramework);
         }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
         void It_can_publish_readytorun_using_crossgen2_composite_mode(string targetFramework)
@@ -234,7 +234,7 @@ namespace Microsoft.NET.Publish.Tests
             TestProjectPublishing_Internal("Crossgen2TestApp", targetFramework, isSelfContained: true, emitNativeSymbols: false, useCrossgen2: true, composite: true, identifier: targetFramework);
         }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
         public void It_supports_libraries_when_using_crossgen2(string targetFramework)
