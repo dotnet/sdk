@@ -37,7 +37,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
             {
                 Name = "--language",
                 Description = LocalizableStrings.command_export_help_language_description,
-                Arity = ArgumentArity.OneOrMore
+                Arity = ArgumentArity.OneOrMore,
+                AllowMultipleArgumentsPerToken = true,
             });
             exportCommand.AddOption(new Option("-d")
             {
