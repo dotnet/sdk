@@ -51,7 +51,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().HaveFile("System.Private.CoreLib.dll"); // self-contained
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("netcoreapp3.0")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
@@ -94,7 +94,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().HaveFile("System.Private.CoreLib.dll"); // self-contained
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("netcoreapp3.0")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
@@ -103,7 +103,7 @@ namespace Microsoft.NET.Publish.Tests
             TestProjectPublishing_Internal("CrossgenTest3", targetFramework, emitNativeSymbols: true, composite: false, identifier: targetFramework);
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("netcoreapp3.0")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
@@ -190,7 +190,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.PublishReadyToRunRequiresVersion30);
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("netcoreapp3.0")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
@@ -199,7 +199,7 @@ namespace Microsoft.NET.Publish.Tests
             TestProjectPublishing_Internal("LibraryProject1", targetFramework, isSelfContained: false, makeExeProject: false, identifier: targetFramework);
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("netcoreapp3.0")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]

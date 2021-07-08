@@ -149,7 +149,7 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.GetValues().ShouldBeEquivalentTo(new[] { "true" });
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_builds_successfully_when_targeting_net_framework()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
