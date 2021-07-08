@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 #nullable disable
@@ -11,36 +12,27 @@ namespace Microsoft.DotNet.NativeWrapper
 {
     public static partial class Interop
     {
-        public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        static readonly string HostFxrPath;
 
         static Interop()
         {
-            if (RunningOnWindows)
-            {
-                PreloadWindowsLibrary("hostfxr.dll");
-            }
+            HostFxrPath = (string)AppContext.GetData("HOSTFXR_PATH");
+            NativeLibrary.SetDllImportResolver(typeof(Interop).Assembly, HostFxrDllImportResolver);
         }
 
-        // MSBuild SDK resolvers are required to be AnyCPU, but we have a native dependency and .NETFramework does not
-        // have a built-in facility for dynamically loading user native dlls for the appropriate platform. We therefore 
-        // preload the version with the correct architecture (from a corresponding sub-folder relative to us) on static
-        // construction so that subsequent P/Invokes can find it.
-        private static void PreloadWindowsLibrary(string dllFileName)
+        static IntPtr HostFxrDllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
         {
-            string basePath = Path.GetDirectoryName(typeof(Interop).Assembly.Location);
-            string architecture = IntPtr.Size == 8 ? "x64" : "x86";
-            string dllPath = Path.Combine(basePath, architecture, dllFileName);
+            if (libraryName == "hostfxr")
+            {
+                NativeLibrary.TryLoad(HostFxrPath, out IntPtr handle);
+                return handle;
+            }
 
-            // return value is intentionally ignored as we let the subsequent P/Invokes fail naturally.
-            LoadLibraryExW(dllPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
+            return IntPtr.Zero;
         }
-
-        // lpFileName passed to LoadLibraryEx must be a full path.
-        private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
         private static extern IntPtr LoadLibraryExW(string lpFileName, IntPtr hFile, int dwFlags);
-
 
         [Flags]
         internal enum hostfxr_resolve_sdk2_flags_t : int
