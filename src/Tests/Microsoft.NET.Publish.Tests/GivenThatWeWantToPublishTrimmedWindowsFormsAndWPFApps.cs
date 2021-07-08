@@ -66,7 +66,7 @@ namespace Microsoft.NET.Publish.Tests
                 .NotHaveStdOutContaining(Strings.@TrimmingWindowsFormsIsNotSupported);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_publishes_windows_Forms_app_with_warning()
         {
             var targetFramework = "net6.0-windows";
@@ -139,7 +139,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("NETSDK1168");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_builds_wpf_app_with_warning_Suppressed()
         {
             var targetFramework = "net6.0-windows";
