@@ -46,20 +46,22 @@
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(CompletedSemaphorePath)UnpackTarballs.complete" >
 
-    <!-- Make this directory here even though we're no
-        longer unpacking into it because some restore sources are looking
-        for it.  Keeping this because once source-build-reference-packages
-        is built, the resulting packages will be put here. -->
-    <MakeDir Directories="$(ReferencePackagesDir)" />
-
     <MakeDir Directories="$(PrebuiltSourceBuiltPackagesPath)" Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
     <Exec Command="tar -xzf $(ExternalTarballsDir)$(SourceBuiltArtifactsTarballName).*.tar.gz"
           WorkingDirectory="$(PrebuiltSourceBuiltPackagesPath)"
           Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
 
-    <Copy SourceFiles="$(PrebuiltSourceBuiltPackagesPath)PackageVersions.props" DestinationFiles="$(IntermediatePath)SourceBuiltPackageVersions.props" />
+    <!-- Move SBRP packages to reference packages location -->
+    <MakeDir Directories="$(ReferencePackagesDir)" />
+    <ItemGroup>
+      <UnpackedSourceBuildReferencePackages Include="$(PrebuiltSourceBuiltPackagesPath)SourceBuildReferencePackages/*"/>
+    </ItemGroup>
+
+    <Move SourceFiles="@(UnpackedSourceBuildReferencePackages)" DestinationFiles="$(ReferencePackagesDir)%(Filename)%(Extension)" />
 
     <!-- Setup the PackageVersions.props file to be a combination of SourceBuilt and GennedPackages -->
+    <Copy SourceFiles="$(PrebuiltSourceBuiltPackagesPath)PackageVersions.props" DestinationFiles="$(IntermediatePath)SourceBuiltPackageVersions.props" />
+
     <PropertyGroup>
       <PackageVersionsPropsFile>$(IntermediatePath)PackageVersions.props</PackageVersionsPropsFile>
       <PackageVersionsPropsContents>

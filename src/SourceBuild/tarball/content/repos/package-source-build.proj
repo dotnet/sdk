@@ -19,11 +19,39 @@
     <!-- Copy PVP to packages dir in order to package them together -->
     <Copy SourceFiles="$(IncludedPackageVersionPropsFile)" DestinationFiles="$(SourceBuiltPackagesPath)PackageVersions.props" />
 
+    <!-- Expand SBRP intermediate package into separate folder and remove intermediate package -->
+    <PropertyGroup>
+      <SourceBuildReferencePackagesDestination>$(SourceBuiltPackagesPath)SourceBuildReferencePackages/</SourceBuildReferencePackagesDestination>
+      <SBRPIntermediateWildcard>Microsoft.SourceBuild.Intermediate.source-build-reference-packages*.nupkg</SBRPIntermediateWildcard>
+    </PropertyGroup>
+    <ItemGroup>
+      <SourceBuildReferencePackagesIntermediatePackage Include="$(SourceBuiltPackagesPath)$(SBRPIntermediateWildcard)"/>
+    </ItemGroup>
+
+    <MakeDir Directories="$(SourceBuildReferencePackagesDestination)" />
+    <ZipFileExtractToDirectory Condition="'@(SourceBuildReferencePackagesIntermediatePackage)' != ''"
+                            SourceArchive="%(SourceBuildReferencePackagesIntermediatePackage.Identity)"
+                            DestinationDirectory="$(SourceBuildReferencePackagesDestination)extractArtifacts/"
+                            OverwriteDestination="true" />
+
+    <ItemGroup>
+      <SourceBuildReferencePackagesNupkgFiles Include="$(SourceBuildReferencePackagesDestination)extractArtifacts/**/*.nupkg" />
+    </ItemGroup>
+
+    <Copy
+      Condition="'@(SourceBuildReferencePackagesNupkgFiles)' != ''"
+      SourceFiles="@(SourceBuildReferencePackagesNupkgFiles)"
+      DestinationFiles="@(SourceBuildReferencePackagesNupkgFiles -> '$(SourceBuildReferencePackagesDestination)%(Filename)%(Extension)')" />
+
+    <RemoveDir
+      Condition="Exists('$(SourceBuildReferencePackagesDestination)extractArtifacts/')"
+      Directories="$(SourceBuildReferencePackagesDestination)extractArtifacts/" />
+
     <PropertyGroup>
       <SourceBuiltTarballName>$(OutputPath)$(SourceBuiltArtifactsTarballName).$(VersionPrefix)-$(VersionSuffix).tar.gz</SourceBuiltTarballName>
     </PropertyGroup>
 
-    <Exec Command="tar --numeric-owner -czf $(SourceBuiltTarballName) *.nupkg *.props" WorkingDirectory="$(SourceBuiltPackagesPath)" />
+    <Exec Command="tar --numeric-owner --exclude='$(SBRPIntermediateWildcard)' -czf $(SourceBuiltTarballName) *.nupkg *.props SourceBuildReferencePackages/" WorkingDirectory="$(SourceBuiltPackagesPath)" />
 
     <Message Importance="High" Text="Packaged source-built artifacts to $(SourceBuiltTarballName)" />
   </Target>
