@@ -151,9 +151,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_BlazorEnableTimeZoneSupport>$(BlazorEnableTimeZoneSupport)</_BlazorEnableTimeZoneSupport>
-      <_BlazorEnableTimeZoneSupport Condition="'$(_BlazorEnableTimeZoneSupport)' == ''">false</_BlazorEnableTimeZoneSupport>
+      <_BlazorEnableTimeZoneSupport Condition="'$(_BlazorEnableTimeZoneSupport)' == ''">true</_BlazorEnableTimeZoneSupport>
       <_BlazorInvariantGlobalization>$(InvariantGlobalization)</_BlazorInvariantGlobalization>
       <_BlazorInvariantGlobalization Condition="'$(_BlazorInvariantGlobalization)' == ''">true</_BlazorInvariantGlobalization>
+      <_BlazorCopyOutputSymbolsToOutputDirectory>$(CopyOutputSymbolsToOutputDirectory)</_BlazorCopyOutputSymbolsToOutputDirectory>
+      <_BlazorCopyOutputSymbolsToOutputDirectory Condition="'$(_BlazorCopyOutputSymbolsToOutputDirectory)'==''">true</_BlazorCopyOutputSymbolsToOutputDirectory>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -189,7 +191,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ProjectSatelliteAssemblies="@(IntermediateSatelliteAssembliesWithTargetPath)"
       TimeZoneSupport="$(_BlazorEnableTimeZoneSupport)"
       InvariantGlobalization="$(_BlazorInvariantGlobalization)"
-      CopySymbols="$(CopyOutputSymbolsToPublishDirectory)"
+      CopySymbols="$(_BlazorCopyOutputSymbolsToOutputDirectory)"
       OutputPath="$(OutputPath)"
     >
       <Output TaskParameter="AssetCandidates" ItemName="_BuildAssetsCandidates" />
@@ -279,18 +281,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
-      <_BlazorOutputContent>@(_BlazorOutputWithHash)</_BlazorOutputContent>
       <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
     <GetFileHash Files="@(_BlazorStaticWebAsset->'%(OriginalItemSpec)')" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
     </GetFileHash>
-
-    <Error
-      Text="Unable to find %(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later. Confirm that project or package references are included and the reference is used in the project."
-      Code="BLAZORSDK1001"
-      Condition="'@(BlazorWebAssemblyLazyLoad)' != '' And !($([System.String]::Copy('$(_BlazorOutputContent)').Contains('%(BlazorWebAssemblyLazyLoad.Identity)')))" />
 
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"
@@ -381,13 +377,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     
     <PropertyGroup>
       <_BlazorEnableTimeZoneSupport>$(BlazorEnableTimeZoneSupport)</_BlazorEnableTimeZoneSupport>
-      <_BlazorEnableTimeZoneSupport Condition="'$(_BlazorEnableTimeZoneSupport)' == ''">false</_BlazorEnableTimeZoneSupport>
+      <_BlazorEnableTimeZoneSupport Condition="'$(_BlazorEnableTimeZoneSupport)' == ''">true</_BlazorEnableTimeZoneSupport>
       <_BlazorInvariantGlobalization>$(InvariantGlobalization)</_BlazorInvariantGlobalization>
       <_BlazorInvariantGlobalization Condition="'$(_BlazorInvariantGlobalization)' == ''">true</_BlazorInvariantGlobalization>
       <_BlazorAotEnabled>$(UsingBrowserRuntimeWorkload)</_BlazorAotEnabled>
       <_BlazorAotEnabled Condition="'$(_BlazorAotEnabled)' == ''">false</_BlazorAotEnabled>
       <_BlazorLinkerEnabled>$(PublishTrimmed)</_BlazorLinkerEnabled>
-      <_BlazorLinkerEnabled Condition="'$(_BlazorLinkerEnabled)' == ''">false</_BlazorLinkerEnabled>
+      <_BlazorLinkerEnabled Condition="'$(_BlazorLinkerEnabled)' == ''">true</_BlazorLinkerEnabled>
     </PropertyGroup>
 
     <!-- The list of static web assets already contains all the assets from the build. We want to correct certain assets that might
@@ -445,15 +441,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GetFileHash Files="@(_BlazorPublishAsset)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorPublishBootResourceWithHash" />
     </GetFileHash>
-
-    <PropertyGroup>
-      <_BlazorOutputContent>@(_BlazorPublishBootResourceWithHash)</_BlazorOutputContent>
-    </PropertyGroup>
-
-    <Error
-      Text="Unable to find %(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later. Confirm that project or package references are included and the reference is used in the project."
-      Code="BLAZORSDK1001"
-      Condition="'@(BlazorWebAssemblyLazyLoad)' != '' And !($([System.String]::Copy('$(_BlazorOutputContent)').Contains('%(BlazorWebAssemblyLazyLoad.Identity)')))" />
 
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"
@@ -518,7 +505,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_BlazorCompressPublishFiles" AfterTargets="_ProcessPublishFilesForBlazor" Condition="'$(BlazorEnableCompression)' != 'false'">
+  <Target Name="_BlazorCompressPublishFiles" AfterTargets="_GeneratePublishBlazorBootJson" Condition="'$(BlazorEnableCompression)' != 'false'">
     <PropertyGroup>
       <_CompressedFileOutputPath>$(IntermediateOutputPath)compress\</_CompressedFileOutputPath>
       <_BlazorWebAssemblyBrotliIncremental>true</_BlazorWebAssemblyBrotliIncremental>

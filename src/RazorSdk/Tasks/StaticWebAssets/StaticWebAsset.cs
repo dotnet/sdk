@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             var result = FromTaskItemCore(item);
             result.ApplyDefaults();
+            result.OriginalItemSpec = item.GetMetadata("FullPath");
 
             result.Normalize();
             result.Validate();
@@ -375,6 +376,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             public const string Computed = nameof(Computed);
             public const string Project = nameof(Project);
             public const string Package = nameof(Package);
+
+            public static bool IsPackage(string sourceType) => string.Equals(Package, sourceType, StringComparison.Ordinal);
         }
 
         public static class AssetCopyOptions

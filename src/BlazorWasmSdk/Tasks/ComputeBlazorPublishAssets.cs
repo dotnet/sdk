@@ -61,8 +61,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 for (int i = 0; i < ResolvedFilesToPublish.Length; i++)
                 {
                     var candidate = ResolvedFilesToPublish[i];
-                    if (ComputeBlazorBuildAssets.ShouldFilterCandidate(candidate, TimeZoneSupport, InvariantGlobalization, CopySymbols))
+                    if (ComputeBlazorBuildAssets.ShouldFilterCandidate(candidate, TimeZoneSupport, InvariantGlobalization, CopySymbols, out var reason))
                     {
+                        Log.LogMessage("Skipping asset '{0}' becasue '{1}'", candidate.ItemSpec, reason);
                         filesToRemove.Add(candidate);
                         continue;
                     }

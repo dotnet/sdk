@@ -145,6 +145,7 @@ Integration with static web assets:
   <ItemGroup>
     <_ScopedCss Condition="'%(_ScopedCss.Identity)' != ''">
       <OutputFile>$(_ScopedCssIntermediatePath)%(RelativeDir)%(RecursiveDir)%(FileName)$(_ScopedCssExtension)</OutputFile>
+      <RelativePath>%(RelativeDir)%(RecursiveDir)%(FileName)$(_ScopedCssExtension)</RelativePath>
     </_ScopedCss>
     <_ScopedCssOutputs Include="%(_ScopedCss.OutputFile)" />
   </ItemGroup>
@@ -229,9 +230,9 @@ Integration with static web assets:
 
   <ItemGroup>
     <_ScopedCssAppBundleStaticWebAsset Include="$(_ScopedCssOutputPath)">
-      <RelativePath>"$(PackageId).styles.css"</RelativePath>
+      <RelativePath>$(PackageId).styles.css</RelativePath>
     </_ScopedCssAppBundleStaticWebAsset>
-    <_ScopedCssProjectBundleStaticWebAsset>
+    <_ScopedCssProjectBundleStaticWebAsset Include="$(_ScopedCssProjectOutputPath)">
       <RelativePath>$(PackageId).bundle.scp.css</RelativePath>
     </_ScopedCssProjectBundleStaticWebAsset>
   </ItemGroup>
@@ -298,8 +299,8 @@ Integration with static web assets:
 
 <Target Name="_ComputeScopedCssStaticWebAssets" DependsOnTargets="_ResolveScopedCssOutputs;ResolveStaticWebAssetsConfiguration">
   <ItemGroup>
-    <_ScopedCssCandidateFile Include="%(_ScopedCss->'%(OutputFile)')" Condition="@(_ScopedCss) != ''">
-      <RelativePath>"$([MSBuild]::MakeRelative('$(_ScopedCssIntermediatePath)','%(_ScopedCss.OutputFile)'))"</RelativePath>
+    <_ScopedCssCandidateFile Include="%(_ScopedCss.OutputFile)" Condition="@(_ScopedCss) != ''">
+      <RelativePath>%(_ScopedCss.RelativePath)</RelativePath>
       <OriginalItemSpec>%(_ScopedCss.Identity)</OriginalItemSpec>
     </_ScopedCssCandidateFile>
   </ItemGroup>

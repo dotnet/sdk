@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -18,19 +19,29 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         [Output]
         public ITaskItem[] UpdatedAssets { get; set; }
 
+        [Output]
+        public ITaskItem[] OriginalAssets { get; set; }
+
         public override bool Execute()
         {
             try
             {
-                UpdatedAssets = Assets
-                    .Select(c => (candidate: c, item: StaticWebAsset.FromV1TaskItem(c)))
-                    .Where(a => a.item.SourceType == StaticWebAsset.SourceTypes.Package)
-                    .Select(a =>
+                var originalAssets = new List<ITaskItem>();
+                var updatedAssets = new List<ITaskItem>();
+                for (var i = 0; i < Assets.Length; i++)
+                {
+                    var candidate = Assets[i];
+                    if (!StaticWebAsset.SourceTypes.IsPackage(candidate.GetMetadata(nameof(StaticWebAsset.SourceType))))
                     {
-                        var result = a.item.ToTaskItem();
-                        result.SetMetadata("OriginalItemSpec", a.candidate.ItemSpec);
-                        return result;
-                    }).ToArray();
+                        continue;
+                    }
+
+                    originalAssets.Add(candidate);
+                    updatedAssets.Add(StaticWebAsset.FromV1TaskItem(candidate).ToTaskItem());
+                }
+
+                OriginalAssets = originalAssets.ToArray();
+                UpdatedAssets = updatedAssets.ToArray();
             }
             catch (Exception ex)
             {

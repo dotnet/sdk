@@ -20,10 +20,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         public ITaskItem[] Candidates { get; set; }
 
         [Required]
-        public ITaskItem ProjectAssembly { get; set; }
+        public ITaskItem [] ProjectAssembly { get; set; }
 
         [Required]
-        public ITaskItem ProjectDebugSymbols { get; set; }
+        public ITaskItem [] ProjectDebugSymbols { get; set; }
 
         [Required]
         public ITaskItem[] SatelliteAssemblies { get; set; }
@@ -56,11 +56,24 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
             try
             {
+                if (ProjectAssembly.Length != 1)
+                {
+                    Log.LogError("Invalid number of project assemblies '{0}'", string.Join("," + Environment.NewLine, ProjectAssembly.Select(a => a.ItemSpec)));
+                    return true;
+                }
+
+                if (ProjectDebugSymbols.Length > 1)
+                {
+                    Log.LogError("Invalid number of symbol assemblies '{0}'", string.Join("," + Environment.NewLine, ProjectDebugSymbols.Select(a => a.ItemSpec)));
+                    return true;
+                }
+
                 for (int i = 0; i < Candidates.Length; i++)
                 {
                     var candidate = Candidates[i];
-                    if (ShouldFilterCandidate(candidate, TimeZoneSupport, InvariantGlobalization, CopySymbols))
+                    if (ShouldFilterCandidate(candidate, TimeZoneSupport, InvariantGlobalization, CopySymbols, out var reason))
                     {
+                        Log.LogMessage("Skipping asset '{0}' becasue '{1}'", candidate.ItemSpec, reason);
                         filesToRemove.Add(candidate);
                         continue;
                     }
@@ -68,10 +81,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     var satelliteAssembly = SatelliteAssemblies.FirstOrDefault(s => s.ItemSpec == candidate.ItemSpec);
                     if (satelliteAssembly != null)
                     {
+                        var inferredCulture = satelliteAssembly.GetMetadata("DestinationSubDirectory").Trim('\\', '/');
+                        Log.LogMessage("Found satellite assembly '{0}' asset for candidate '{1}' with inferred culture", satelliteAssembly.ItemSpec, candidate.ItemSpec, inferredCulture);
+
                         var assetCandidate = new TaskItem(satelliteAssembly);
                         assetCandidate.SetMetadata("AssetRole", "Related");
                         assetCandidate.SetMetadata("AssetTraitName", "Culture");
-                        var inferredCulture = assetCandidate.GetMetadata("DestinationSubDirectory").Trim('\\', '/');
                         assetCandidate.SetMetadata("AssetTraitValue", inferredCulture);
                         assetCandidate.SetMetadata("RelativePath", inferredCulture);
                         assetCandidate.SetMetadata("RelatedAsset", assetCandidate.GetMetadata("OriginalItemSpec"));
@@ -81,18 +96,25 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     }
 
                     var projectSatelliteAssembly = ProjectSatelliteAssemblies.FirstOrDefault(s => s.ItemSpec == candidate.ItemSpec);
-                    if (satelliteAssembly != null)
+                    if (projectSatelliteAssembly != null)
                     {
+                        var candidateCulture = projectSatelliteAssembly.GetMetadata("Culture");
+                        Log.LogMessage(
+                            "Found satellite assembly '{0}' asset for candidate '{1}' with culture",
+                            projectSatelliteAssembly.ItemSpec,
+                            candidate.ItemSpec,
+                            candidateCulture);
+
                         var assetCandidate = new TaskItem(projectSatelliteAssembly);
                         var projectAssemblyAssetPath = Path.GetFullPath(Path.Combine(
                             OutputPath,
                             "wwwroot",
                             "_framework",
-                            ProjectAssembly.GetMetadata("FileName") + ProjectAssembly.GetMetadata("Extension")));
+                            ProjectAssembly[0].GetMetadata("FileName") + ProjectAssembly[1].GetMetadata("Extension")));
 
                         assetCandidate.SetMetadata("AssetRole", "Related");
                         assetCandidate.SetMetadata("AssetTraitName", "Culture");
-                        assetCandidate.SetMetadata("AssetTraitValue", assetCandidate.GetMetadata("Culture"));
+                        assetCandidate.SetMetadata("AssetTraitValue", candidateCulture);
                         assetCandidate.SetMetadata("RelativePath", Path.Combine("_framework", assetCandidate.GetMetadata("TargetPath")));
                         assetCandidate.SetMetadata("RelatedAsset", projectAssemblyAssetPath);
 
@@ -123,7 +145,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                             OutputPath,
                             "wwwroot",
                             "_framework",
-                            fileName.Substring(0, suffixIndex) + ProjectAssembly.GetMetadata("Extension"));
+                            fileName.Substring(0, suffixIndex) + ProjectAssembly[0].GetMetadata("Extension"));
 
                         candidate.SetMetadata("RelatedAsset", Path.GetFullPath(relatedAssetPath));
                     }
@@ -131,13 +153,16 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     assetCandidates.Add(candidate);
                 }
 
-                var intermediateAssembly = new TaskItem(ProjectAssembly);
+                var intermediateAssembly = new TaskItem(ProjectAssembly[0]);
                 intermediateAssembly.SetMetadata("RelativePath", $"_framework/{intermediateAssembly.GetMetadata("FileName")}{intermediateAssembly.GetMetadata("Extension")}");
                 assetCandidates.Add(intermediateAssembly);
 
-                var debugSymbols = new TaskItem(ProjectDebugSymbols);
-                debugSymbols.SetMetadata("RelativePath", $"_framework/{debugSymbols.GetMetadata("FileName")}{debugSymbols.GetMetadata("Extension")}");
-                assetCandidates.Add(debugSymbols);
+                if (ProjectDebugSymbols.Length > 0)
+                {
+                    var debugSymbols = new TaskItem(ProjectDebugSymbols[0]);
+                    debugSymbols.SetMetadata("RelativePath", $"_framework/{debugSymbols.GetMetadata("FileName")}{debugSymbols.GetMetadata("Extension")}");
+                    assetCandidates.Add(debugSymbols);
+                }
 
                 for (var i = 0; i < assetCandidates.Count; i++)
                 {
@@ -179,27 +204,39 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 case ".pdb":
                     candidate.SetMetadata("AssetTraitName", "BlazorWebAssemblyResource");
                     candidate.SetMetadata("AssetTraitValue", "symbol");
+                    candidate.RemoveMetadata("OriginalItemSpec");
                     break;
                 default:
                     break;
             }
         }
 
-        public static bool ShouldFilterCandidate(ITaskItem candidate, bool timezoneSupport, bool invariantGlobalization, bool copySymbols)
+        public static bool ShouldFilterCandidate(
+            ITaskItem candidate,
+            bool timezoneSupport,
+            bool invariantGlobalization,
+            bool copySymbols,
+            out string reason)
         {
             var extension = candidate.GetMetadata("Extension");
             var fileName = candidate.GetMetadata("FileName");
-            if (extension == ".a" ||
-                (!timezoneSupport && extension == ".blat" && fileName == "dotnet.timezones") ||
-                (invariantGlobalization && extension == ".dat" && fileName.StartsWith("icudt")) ||
-                (fileName == "dotnet" && extension == ".js") ||
-                (!copySymbols && extension == ".pdb"))
+            var assetType = candidate.GetMetadata("AssetType");
+            reason = extension switch
             {
-                return true;
-            }
+                ".a" => "extension is .a is not supported.",
+                ".c" => "extension is .c is not supported.",
+                ".h" => "extension is .h is not supported.",
+                ".rsp" => "extension is .rsp is not supported.",
+                ".props" => "extension is .props is not supported.",
+                ".blat" when !timezoneSupport => "timezone support is not enabled.",
+                ".dat" when invariantGlobalization && fileName.StartsWith("icudt") => "invariant globalization is enabled",
+                ".js" when fileName == "dotnet" => "dotnet js is already processed by Blazor",
+                ".js" when assetType == "native" => "dotnet js is already processed by Blazor",
+                ".pdb" when !copySymbols => "copying symbols is disabled",
+                _ => null
+            };
 
-            return false;
+            return reason != null;
         }
-
     }
 }

@@ -250,7 +250,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- TMP: Pack -->
     <GenerateStaticWebAssetsPackTargetsDependsOn>
-      RemoveExistingStaticWebAssets;
+      LoadStaticWebAssetsBuildManifest;
       $(GenerateStaticWebAssetsPackTargetsDependsOn);
     </GenerateStaticWebAssetsPackTargetsDependsOn>
 
@@ -259,11 +259,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       GenerateStaticWebAssetsPackTargets;
       $(TargetsForTfmSpecificContentInPackage)
     </TargetsForTfmSpecificContentInPackage>
-
-    <PackDependsOn>
-      RemoveExistingStaticWebAssets;
-      $(PackDependsOn)
-    </PackDependsOn>
 
   </PropertyGroup>
 
@@ -409,12 +404,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="UpdateExistingPackageStaticWebAssets">
     <UpdatePackageStaticWebAssets Assets="@(StaticWebAsset)">
-      <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedAssets" />
+      <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
+      <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />
     </UpdatePackageStaticWebAssets>
 
     <ItemGroup>
-      <StaticWebAsset Remove="%(_UpdatedAssets.OriginalItemSpec)"/>
-      <StaticWebAsset Include="@(_UpdatedAssets)" />
+      <StaticWebAsset Remove="@(_OriginalPackageAssets)"/>
+      <StaticWebAsset Include="@(_UpdatedPackageAssets)" />
     </ItemGroup>
   </Target>
 
@@ -653,11 +649,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     Inputs="$(StaticWebAssetBuildManifestPath)"
     Outputs="$(_GeneratedStaticWebAssetsPropsFile)"
     DependsOnTargets="$(GenerateStaticWebAssetsPackTargetsDependsOn)">
-
-    <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
-      <Output TaskParameter="RelatedManifests" ItemName="StaticWebAssetManifest" />
-    </ReadStaticWebAssetsManifestFile>
 
     <ItemGroup>
       <_CurrentProjectStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(SourceId)' == '$(PackageId)'" />
