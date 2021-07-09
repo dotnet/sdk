@@ -67,7 +67,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void Build_ErrorInGeneratedCode_ReportsMSBuildError()
         {
             var testAsset = "RazorSimpleMvc";
@@ -160,15 +160,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "refs", "mscorlib.dll")).Should().Exist();
         }
 
-        [CoreMSBuildOnlyFact]
-        public void Build_AddsApplicationPartAttributes_DotnetMSBuild()
-            => Build_AddsApplicationPartAttributes("SimpleMvc", "ConsolidatedAssemblyApplicationPartFactory");
-
-        [FullMSBuildOnlyFact]
-        public void Build_AddsApplicationPartAttributes_DesktopMSBuild()
-            => Build_AddsApplicationPartAttributes("SimpleMvc.Views", "CompiledRazorAssemblyApplicationPartFactory");
-
-        private void Build_AddsApplicationPartAttributes(string assemblyName, string attributeName)
+        [Fact]
+        public void Build_AddsApplicationPartAttributes()
         {
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
@@ -178,10 +171,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
-            var assemblyPath = Path.Combine(intermediateOutputPath, $"{assemblyName}.dll");
+            var assemblyPath = Path.Combine(intermediateOutputPath, "SimpleMvc.dll");
 
-            AssemblyInfo.Get(assemblyPath)["AssemblyTitleAttribute"].Should().Be(assemblyName);
-            AssemblyInfo.Get(assemblyPath)["ProvideApplicationPartFactoryAttribute"].Should().Contain(attributeName);
+            AssemblyInfo.Get(assemblyPath)["AssemblyTitleAttribute"].Should().Be("SimpleMvc");
+            AssemblyInfo.Get(assemblyPath)["ProvideApplicationPartFactoryAttribute"].Should().Contain("ConsolidatedAssemblyApplicationPartFactory");
 
         }
 
