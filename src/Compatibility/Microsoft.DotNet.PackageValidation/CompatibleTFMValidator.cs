@@ -84,11 +84,13 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     if (_runApiCompat)
                     {
-                        _apiCompatRunner.QueueApiCompat(package.PackagePath, 
-                            compileTimeAsset.Path,
+                        MetadataInformation left = new(package.PackageId, ((NuGetFramework)compileTimeAsset.Properties["tfm"]).GetShortFolderName(), compileTimeAsset.Path);
+                        MetadataInformation right = new(package.PackageId, ((NuGetFramework)runtimeAsset.Properties["tfm"]).GetShortFolderName(), runtimeAsset.Path);
+
+                        _apiCompatRunner.QueueApiCompat(package.PackagePath,
+                            left,
                             package.PackagePath,
-                            runtimeAsset.Path,
-                            package.PackageId,
+                            right,
                             Resources.CompatibleTfmValidatorHeader,
                             string.Format(Resources.ApiCompatibilityHeader, compileTimeAsset.Path, runtimeAsset.Path));
                     }
@@ -113,11 +115,13 @@ namespace Microsoft.DotNet.PackageValidation
                     {
                         if (_runApiCompat)
                         {
+                            MetadataInformation left = new(package.PackageId, ((NuGetFramework)compileTimeAsset.Properties["tfm"]).GetShortFolderName(), compileTimeAsset.Path);
+                            MetadataInformation right = new(package.PackageId, ((NuGetFramework)runtimeAsset.Properties["tfm"]).GetShortFolderName(), runtimeAsset.Path);
+
                             _apiCompatRunner.QueueApiCompat(package.PackagePath, 
-                                compileTimeAsset.Path,
+                                left,
                                 package.PackagePath, 
-                                runtimeAsset.Path,
-                                package.PackageId,
+                                right,
                                 Resources.CompatibleTfmValidatorHeader,
                                 string.Format(Resources.ApiCompatibilityHeader, compileTimeAsset.Path, runtimeAsset.Path));
                         }

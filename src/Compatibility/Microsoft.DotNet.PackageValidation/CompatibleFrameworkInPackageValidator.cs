@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
@@ -52,11 +53,13 @@ namespace Microsoft.DotNet.PackageValidation
 
                 if (compatibleFrameworkAsset != null)
                 {
+                    MetadataInformation left = new(package.PackageId, ((NuGetFramework)compatibleFrameworkAsset.Properties["tfm"]).GetShortFolderName(), compatibleFrameworkAsset.Path);
+                    MetadataInformation right = new(package.PackageId, ((NuGetFramework)compileTimeAsset.Properties["tfm"]).GetShortFolderName(), compileTimeAsset.Path);
+
                     _apiCompatRunner.QueueApiCompat(package.PackagePath, 
-                        compatibleFrameworkAsset.Path,
+                        left,
                         package.PackagePath,
-                        compileTimeAsset.Path,
-                        package.PackageId,
+                        right,
                         string.Format(Resources.CompatibleFrameworkInPackageValidatorHeader, ((NuGetFramework)compatibleFrameworkAsset.Properties["tfm"]).ToString(), framework.ToString()),
                         string.Format(Resources.ApiCompatibilityHeader, compatibleFrameworkAsset.Path, compileTimeAsset.Path));
                 }

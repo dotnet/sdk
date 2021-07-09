@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class ApiCompatRunner
     {
-        private List<(string leftAssemblyPackagePath, string leftAssemblyRelativePath, string rightAssemblyPackagePath, string rightAssemblyRelativePath, string assemblyName, string compatibilityReason, string header)> _queue = new();
+        private List<(string leftAssemblyPackagePath, MetadataInformation leftAssembly, string rightAssemblyPackagePath, MetadataInformation rightAssembly, string compatibilityReason, string header)> _queue = new();
         private readonly ApiComparer _differ = new();
         private readonly IPackageLogger _log;
 
@@ -38,15 +38,15 @@ namespace Microsoft.DotNet.PackageValidation
             foreach (var apicompatTuples in _queue.Distinct())
             {
                 // TODO: Add optimisations tuples.
-                using (Stream leftAssemblyStream = GetFileStreamFromPackage(apicompatTuples.leftAssemblyPackagePath, apicompatTuples.leftAssemblyRelativePath))
-                using (Stream rightAssemblyStream = GetFileStreamFromPackage(apicompatTuples.rightAssemblyPackagePath, apicompatTuples.rightAssemblyRelativePath))
+                using (Stream leftAssemblyStream = GetFileStreamFromPackage(apicompatTuples.leftAssemblyPackagePath, apicompatTuples.leftAssembly.AssemblyId))
+                using (Stream rightAssemblyStream = GetFileStreamFromPackage(apicompatTuples.rightAssemblyPackagePath, apicompatTuples.rightAssembly.AssemblyId))
                 {
-                    IAssemblySymbol leftSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName, leftAssemblyStream);
-                    IAssemblySymbol rightSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.assemblyName, rightAssemblyStream);
+                    IAssemblySymbol leftSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.leftAssembly.AssemblyName, leftAssemblyStream);
+                    IAssemblySymbol rightSymbols = new AssemblySymbolLoader().LoadAssembly(apicompatTuples.rightAssembly.AssemblyName, rightAssemblyStream);
 
                     _log.LogMessage(MessageImportance.Low, apicompatTuples.header);
 
-                    string leftName = apicompatTuples.leftAssemblyRelativePath;
+                    string leftName = apicompatTuples.leftAssembly.AssemblyId;
                     bool isBaselineSuppression = false;
                     if (!apicompatTuples.leftAssemblyPackagePath.Equals(apicompatTuples.rightAssemblyPackagePath, System.StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.PackageValidation
                         leftName = Resources.Baseline + " " + leftName;
                     }
 
-                    IEnumerable<CompatDifference> differences = _differ.GetDifferences(leftSymbols, rightSymbols, leftName: leftName, rightName: apicompatTuples.rightAssemblyRelativePath);
+                    IEnumerable<CompatDifference> differences = _differ.GetDifferences(leftSymbols, rightSymbols, leftName: leftName, rightName: apicompatTuples.rightAssembly.AssemblyId);
 
                     foreach (CompatDifference difference in differences)
                     {
@@ -63,8 +63,8 @@ namespace Microsoft.DotNet.PackageValidation
                             {
                                 DiagnosticId = difference.DiagnosticId,
                                 Target = difference.ReferenceId,
-                                Left = apicompatTuples.leftAssemblyRelativePath,
-                                Right = apicompatTuples.rightAssemblyRelativePath,
+                                Left = apicompatTuples.leftAssembly.AssemblyId,
+                                Right = apicompatTuples.rightAssembly.AssemblyId,
                                 IsBaselineSuppression = isBaselineSuppression
                             },
                             difference.DiagnosticId,
@@ -79,15 +79,15 @@ namespace Microsoft.DotNet.PackageValidation
         /// Queues the api compat for 2 assemblies.
         /// </summary>
         /// <param name="leftPackagePath">Path to package containing left assembly.</param>
-        /// <param name="leftRelativePath">Relative left assembly path in package.</param>
+        /// <param name="leftMetadataInfo">Metadata information for left assembly.</param>
         /// <param name="rightPackagePath">Path to package containing right assembly.</param>
-        /// <param name="rightRelativePath">Relative right assembly path in package.</param>
+        /// <param name="rightMetdataInfo">Metadata information for right assembly.</param>
         /// <param name="assemblyName">The name of the assembly.</param>
         /// <param name="compatibilityReason">The reason for assembly compatibilty.</param>
         /// <param name="header">The header for the api compat diagnostics.</param>
-        public void QueueApiCompat(string leftPackagePath, string leftRelativePath, string rightPackagePath, string rightRelativePath, string assemblyName, string compatibilityReason, string header)
+        public void QueueApiCompat(string leftPackagePath, MetadataInformation leftMetadataInfo, string rightPackagePath, MetadataInformation rightMetdataInfo, string compatibilityReason, string header)
         {
-            _queue.Add((leftPackagePath, leftRelativePath, rightPackagePath, rightRelativePath, assemblyName, compatibilityReason, header));
+            _queue.Add((leftPackagePath, leftMetadataInfo, rightPackagePath, rightMetdataInfo, compatibilityReason, header));
         }
 
         private static Stream GetFileStreamFromPackage(string packagePath, string entry)
