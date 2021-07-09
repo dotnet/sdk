@@ -6,7 +6,6 @@ using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
@@ -17,7 +16,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact] // Running on desktop causes failures attempting to restore M.NETCore.App.WinHost.
         public void It_Configures_MetadataUpdaterSupport_InReleaseBuilds()
         {
             var targetFramework = "net6.0";
@@ -41,7 +40,7 @@ namespace Microsoft.NET.Build.Tests
             fileContents.Should().Contain("\"System.Reflection.Metadata.MetadataUpdater.IsSupported\": false");
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_Configures_MetadataUpdaterSupport_InDebugBuilds()
         {
             var targetFramework = "net6.0";
