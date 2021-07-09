@@ -97,36 +97,58 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 const int pageSize = 65536;
                 //Start off with a 64K buffer, we'll keep adding chunks to this
                 byte[] composite = new byte[pageSize];
-                int totalLength;
-
+                int totalBytesRead = 0;
                 using (Stream data = _source.SourceStreamOpener(sourceLocation))
                 {
-                    int index = composite.Length - pageSize;
-                    int nRead = data.Read(composite, index, pageSize);
+                    while (totalBytesRead < composite.Length)
+                    {
+                        int bytesRead = data.Read(composite, totalBytesRead, composite.Length - totalBytesRead);
+                        if (bytesRead == 0)
+                        {
+                            break;
+                        }
+                        totalBytesRead += bytesRead;
+                    }
+                    int bytesFromPage = totalBytesRead;
 
                     //As long as we're reading whole pages, keep allocating more space ahead
-                    while (nRead == pageSize)
+                    while (bytesFromPage == pageSize)
                     {
                         byte[] newBuffer = new byte[composite.Length + pageSize];
                         Buffer.BlockCopy(composite, 0, newBuffer, 0, composite.Length);
                         composite = newBuffer;
-                        nRead = data.Read(composite, index, pageSize);
-                    }
 
-                    totalLength = composite.Length - (pageSize - nRead);
+                        bytesFromPage = 0;
+                        while (totalBytesRead < composite.Length)
+                        {
+                            int bytesRead = data.Read(composite, totalBytesRead, composite.Length - totalBytesRead);
+                            if (bytesRead == 0)
+                            {
+                                break;
+                            }
+                            totalBytesRead += bytesRead;
+                            bytesFromPage += bytesRead;
+                        }
+                    }
                 }
 
-                byte[] bom;
-                Encoding realEncoding = EncodingUtil.Detect(composite, totalLength, out bom);
+                int offset = 0;
+                int nBytesToWrite;
+                Encoding realEncoding = EncodingUtil.Detect(composite, totalBytesRead, out byte[] bom);
 
                 if (!Equals(realEncoding, processor.Encoding))
                 {
-                    composite = Encoding.Convert(realEncoding, processor.Encoding, composite, bom.Length, totalLength - bom.Length);
-                    totalLength = composite.Length;
+                    composite = Encoding.Convert(realEncoding, processor.Encoding, composite, bom.Length, totalBytesRead - bom.Length);
+                    nBytesToWrite = composite.Length;
+                }
+                else
+                {
+                    offset = bom.Length;
+                    nBytesToWrite = totalBytesRead - bom.Length;
                 }
 
-                target.Write(composite, 0, totalLength - bom.Length);
-                return composite.Length;
+                target.Write(composite, offset, nBytesToWrite);
+                return nBytesToWrite;
             }
         }
     }
