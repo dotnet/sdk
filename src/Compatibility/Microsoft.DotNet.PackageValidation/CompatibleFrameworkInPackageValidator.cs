@@ -27,7 +27,8 @@ namespace Microsoft.DotNet.PackageValidation
         /// </summary>
         /// <param name="package">Nuget Package that needs to be validated.</param>
         public void Validate(Package package)
-        {       
+        {
+            _apiCompatRunner.InitializePaths(package.PackagePath, package.PackagePath);
             IEnumerable<ContentItem> compileAssets = package.CompileAssets.OrderByDescending(t => ((NuGetFramework)t.Properties["tfm"]).Version);
             ManagedCodeConventions conventions = new ManagedCodeConventions(null);
             Queue<ContentItem> compileAssetsQueue = new Queue<ContentItem>(compileAssets);
@@ -56,12 +57,8 @@ namespace Microsoft.DotNet.PackageValidation
                     MetadataInformation left = new(package.PackageId, ((NuGetFramework)compatibleFrameworkAsset.Properties["tfm"]).GetShortFolderName(), compatibleFrameworkAsset.Path);
                     MetadataInformation right = new(package.PackageId, ((NuGetFramework)compileTimeAsset.Properties["tfm"]).GetShortFolderName(), compileTimeAsset.Path);
 
-                    _apiCompatRunner.QueueApiCompat(package.PackagePath, 
-                        left,
-                        package.PackagePath,
-                        right,
-                        string.Format(Resources.CompatibleFrameworkInPackageValidatorHeader, ((NuGetFramework)compatibleFrameworkAsset.Properties["tfm"]).ToString(), framework.ToString()),
-                        string.Format(Resources.ApiCompatibilityHeader, compatibleFrameworkAsset.Path, compileTimeAsset.Path));
+                    string header = string.Format(Resources.ApiCompatibilityHeader, compatibleFrameworkAsset.Path, compileTimeAsset.Path);
+                    _apiCompatRunner.QueueApiCompat(left, right, header);
                 }
             }
 

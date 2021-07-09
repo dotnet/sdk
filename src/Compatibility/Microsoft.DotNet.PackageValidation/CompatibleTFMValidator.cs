@@ -41,6 +41,9 @@ namespace Microsoft.DotNet.PackageValidation
         /// <param name="package">Nuget Package that needs to be validated.</param>
         public void Validate(Package package)
         {
+            if (_runApiCompat)
+                _apiCompatRunner.InitializePaths(package.PackagePath, package.PackagePath);
+
             HashSet<NuGetFramework> compatibleTargetFrameworks = new();
             foreach (NuGetFramework item in package.FrameworksInPackage)
             {
@@ -87,12 +90,8 @@ namespace Microsoft.DotNet.PackageValidation
                         MetadataInformation left = new(package.PackageId, ((NuGetFramework)compileTimeAsset.Properties["tfm"]).GetShortFolderName(), compileTimeAsset.Path);
                         MetadataInformation right = new(package.PackageId, ((NuGetFramework)runtimeAsset.Properties["tfm"]).GetShortFolderName(), runtimeAsset.Path);
 
-                        _apiCompatRunner.QueueApiCompat(package.PackagePath,
-                            left,
-                            package.PackagePath,
-                            right,
-                            Resources.CompatibleTfmValidatorHeader,
-                            string.Format(Resources.ApiCompatibilityHeader, compileTimeAsset.Path, runtimeAsset.Path));
+                        string header = string.Format(Resources.ApiCompatibilityHeader, compileTimeAsset.Path, runtimeAsset.Path);
+                        _apiCompatRunner.QueueApiCompat(left, right, header);
                     }
                 }
  
@@ -118,12 +117,8 @@ namespace Microsoft.DotNet.PackageValidation
                             MetadataInformation left = new(package.PackageId, ((NuGetFramework)compileTimeAsset.Properties["tfm"]).GetShortFolderName(), compileTimeAsset.Path);
                             MetadataInformation right = new(package.PackageId, ((NuGetFramework)runtimeAsset.Properties["tfm"]).GetShortFolderName(), runtimeAsset.Path);
 
-                            _apiCompatRunner.QueueApiCompat(package.PackagePath, 
-                                left,
-                                package.PackagePath, 
-                                right,
-                                Resources.CompatibleTfmValidatorHeader,
-                                string.Format(Resources.ApiCompatibilityHeader, compileTimeAsset.Path, runtimeAsset.Path));
+                            string header = string.Format(Resources.ApiCompatibilityHeader, compileTimeAsset.Path, runtimeAsset.Path);
+                            _apiCompatRunner.QueueApiCompat(left, right, header);
                         }
                     }
                 }

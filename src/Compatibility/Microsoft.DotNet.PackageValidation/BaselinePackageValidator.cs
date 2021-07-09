@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
@@ -40,6 +39,9 @@ namespace Microsoft.DotNet.PackageValidation
         /// <param name="package">Nuget Package that needs to be validated.</param>
         public void Validate(Package package)
         {
+            if (_runApiCompat)
+                _apiCompatRunner.InitializePaths(_baselinePackage.PackagePath, package.PackagePath);
+
             foreach (ContentItem baselineCompileTimeAsset in _baselinePackage.RefAssets)
             {
                 NuGetFramework baselineTargetFramework = (NuGetFramework)baselineCompileTimeAsset.Properties["tfm"];
@@ -57,15 +59,11 @@ namespace Microsoft.DotNet.PackageValidation
                 }
                 else if (_runApiCompat)
                 {
-                    MetadataInformation left = new(package.PackageId, ((NuGetFramework)baselineCompileTimeAsset.Properties["tfm"]).GetShortFolderName(), baselineCompileTimeAsset.Path);
+                    MetadataInformation left = new(package.PackageId, ((NuGetFramework)baselineCompileTimeAsset.Properties["tfm"]).GetShortFolderName(), baselineCompileTimeAsset.Path, Resources.Baseline + " " + baselineCompileTimeAsset.Path);
                     MetadataInformation right = new(package.PackageId, ((NuGetFramework)latestCompileTimeAsset.Properties["tfm"]).GetShortFolderName(), latestCompileTimeAsset.Path);
 
-                    _apiCompatRunner.QueueApiCompat(_baselinePackage.PackagePath,
-                        left,
-                        package.PackagePath,
-                        right,
-                        Resources.BaselineVersionValidatorHeader,
-                        string.Format(Resources.ApiCompatibilityBaselineHeader, baselineCompileTimeAsset.Path, latestCompileTimeAsset.Path, _baselinePackage.Version, package.Version));
+                    string header = string.Format(Resources.ApiCompatibilityBaselineHeader, baselineCompileTimeAsset.Path, latestCompileTimeAsset.Path, _baselinePackage.Version, package.Version);
+                    _apiCompatRunner.QueueApiCompat(left, right, header);
                 }
             }
 
@@ -88,15 +86,11 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     if (_runApiCompat)
                     {
-                        MetadataInformation left = new(package.PackageId, ((NuGetFramework)baselineRuntimeAsset.Properties["tfm"]).GetShortFolderName(), baselineRuntimeAsset.Path);
+                        MetadataInformation left = new(package.PackageId, ((NuGetFramework)baselineRuntimeAsset.Properties["tfm"]).GetShortFolderName(), baselineRuntimeAsset.Path, Resources.Baseline + " " + baselineRuntimeAsset.Path);
                         MetadataInformation right = new(package.PackageId, ((NuGetFramework)latestRuntimeAsset.Properties["tfm"]).GetShortFolderName(), latestRuntimeAsset.Path);
 
-                        _apiCompatRunner.QueueApiCompat(_baselinePackage.PackagePath, 
-                            left,
-                            package.PackagePath, 
-                            right,
-                            Resources.BaselineVersionValidatorHeader,
-                            string.Format(Resources.ApiCompatibilityBaselineHeader, baselineRuntimeAsset.Path, latestRuntimeAsset.Path, _baselinePackage.Version, package.Version));
+                        string header = string.Format(Resources.ApiCompatibilityBaselineHeader, baselineRuntimeAsset.Path, latestRuntimeAsset.Path, _baselinePackage.Version, package.Version);
+                        _apiCompatRunner.QueueApiCompat(left, right, header);
                     }
                 }
             }
@@ -122,19 +116,15 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     if (_runApiCompat)
                     {
-                        MetadataInformation left = new(package.PackageId, ((NuGetFramework)baselineRuntimeSpecificAsset.Properties["tfm"]).GetShortFolderName(), baselineRuntimeSpecificAsset.Path);
+                        MetadataInformation left = new(package.PackageId, ((NuGetFramework)baselineRuntimeSpecificAsset.Properties["tfm"]).GetShortFolderName(), baselineRuntimeSpecificAsset.Path, Resources.Baseline + " " + baselineRuntimeSpecificAsset.Path);
                         MetadataInformation right = new(package.PackageId, ((NuGetFramework)latestRuntimeSpecificAsset.Properties["tfm"]).GetShortFolderName(), latestRuntimeSpecificAsset.Path);
 
-                        _apiCompatRunner.QueueApiCompat(_baselinePackage.PackagePath,
-                            left,
-                            package.PackagePath,
-                            right,
-                            Resources.BaselineVersionValidatorHeader,
-                            string.Format(Resources.ApiCompatibilityBaselineHeader, baselineRuntimeSpecificAsset.Path, latestRuntimeSpecificAsset.Path, _baselinePackage.Version, package.Version)); ;
+                        string header = string.Format(Resources.ApiCompatibilityBaselineHeader, baselineRuntimeSpecificAsset.Path, latestRuntimeSpecificAsset.Path, _baselinePackage.Version, package.Version);
+                        _apiCompatRunner.QueueApiCompat(left, right, header);
                     }
                 }
             }
-            
+
             _apiCompatRunner.RunApiCompat();
         }
     }
