@@ -1,0 +1,168 @@
+<UsageData>
+  <CreatedByRid>fedora.33-x64</CreatedByRid>
+  <ProjectDirectories>
+    <Dir>src/arcade.a3377cccde8639089f99107e2ba5df2c8cbe6394/</Dir>
+    <Dir>src/aspnetcore./</Dir>
+    <Dir>src/clicommandlineparser.3198bf5660cad3dab85f5475bf1fda9688146e3f/</Dir>
+    <Dir>src/command-line-api.5e855e911de7c56fe28400c4500e888fe2a3da8e/</Dir>
+    <Dir>src/diagnostics.6f48c2ae749c29b687af0353e6c2a9590d7e3d22/</Dir>
+    <Dir>src/fsharp./</Dir>
+    <Dir>src/installer.c6ec4363003b18d8e587620baa36205b80ee3074/</Dir>
+    <Dir>src/known-good-tests./</Dir>
+    <Dir>src/known-good./</Dir>
+    <Dir>src/linker.f2588193553431636b9853b0f87209fa395a72c5/</Dir>
+    <Dir>src/msbuild./</Dir>
+    <Dir>src/nuget.client./</Dir>
+    <Dir>src/package-source-build/</Dir>
+    <Dir>src/roslyn-analyzers./</Dir>
+    <Dir>src/roslyn./</Dir>
+    <Dir>src/runtime./</Dir>
+    <Dir>src/runtime./</Dir>
+    <Dir>src/sdk./</Dir>
+    <Dir>src/source-build-reference-packages.36fb56afdf0ee2fb2e0833bdef98dfde12a0837b/</Dir>
+    <Dir>src/source-build.3fb25b8db3bec654e37e71a5b2b7fde14444bc2f/</Dir>
+    <Dir>src/sourcelink.4b584dbc392bb1aad49c2eb1ab84d8b489b6dccc/</Dir>
+    <Dir>src/symreader.1968a003d845d119a9d38ac4daaeea22897f7daf/</Dir>
+    <Dir>src/templating.3bc0d90f3e450f3e4ebda128081d091fb42968e3/</Dir>
+    <Dir>src/test-templates.6898c1c70c2d14e9725ddab6e1ebe8084c4d7e27/</Dir>
+    <Dir>src/vstest./</Dir>
+    <Dir>src/xdt.6a46e7c886cdf499ba3433f665ab417be814135e/</Dir>
+    <Dir>src/xliff-tasks.71c811561ad4dcf46825a5077fbcc668ab74754f/</Dir>
+    <Dir>Tools/</Dir>
+    <Dir>tools-local/tasks/</Dir>
+    <Dir>artifacts/obj/</Dir>
+    <Dir></Dir>
+  </ProjectDirectories>
+  <Usages>
+    <Usage Id="Microsoft.AspNetCore.App.Ref" Version="3.1.10" />
+    <Usage Id="Microsoft.AspNetCore.App.Ref" Version="5.0.0" />
+    <Usage Id="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+    <Usage Id="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="Microsoft.Build" Version="16.7.0" IsDirectDependency="true" />
+    <Usage Id="Microsoft.Build.Framework" Version="16.7.0" />
+    <Usage Id="Microsoft.Build.Framework" Version="17.0.0-preview-21267-01" IsDirectDependency="true" />
+    <Usage Id="Microsoft.Build.Tasks.Core" Version="16.7.0" IsDirectDependency="true" />
+    <Usage Id="Microsoft.Build.Utilities.Core" Version="16.7.0" />
+    <Usage Id="Microsoft.Build.Utilities.Core" Version="17.0.0-preview-21267-01" IsDirectDependency="true" />
+    <Usage Id="Microsoft.CodeAnalysis.Analyzers" Version="2.6.1" />
+    <Usage Id="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" />
+    <Usage Id="Microsoft.CodeAnalysis.Common" Version="2.9.0" />
+    <Usage Id="Microsoft.CodeAnalysis.Common" Version="3.10.0-2.final" />
+    <Usage Id="Microsoft.CodeAnalysis.CSharp" Version="2.9.0" IsDirectDependency="true" />
+    <Usage Id="Microsoft.CodeAnalysis.CSharp" Version="3.10.0-2.final" />
+    <Usage Id="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="3.10.0-2.final" IsDirectDependency="true" />
+    <Usage Id="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.10.0-2.final" IsDirectDependency="true" />
+    <Usage Id="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.10.0-2.final" />
+    <Usage Id="Microsoft.CodeCoverage" Version="16.7.1" />
+    <Usage Id="Microsoft.DotNet.ApiCompat" Version="6.0.0-beta.21319.2" IsDirectDependency="true" />
+    <Usage Id="Microsoft.Extensions.Configuration" Version="2.1.1" />
+    <Usage Id="Microsoft.Extensions.Configuration" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="Microsoft.Extensions.Configuration.Abstractions" Version="2.1.1" />
+    <Usage Id="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="Microsoft.Extensions.Configuration.Binder" Version="2.1.1" />
+    <Usage Id="Microsoft.Extensions.Configuration.Binder" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="Microsoft.Extensions.DependencyInjection" Version="2.1.1" IsDirectDependency="true" />
+    <Usage Id="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
+    <Usage Id="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="Microsoft.Extensions.Logging" Version="2.1.1" IsDirectDependency="true" />
+    <Usage Id="Microsoft.Extensions.Logging" Version="6.0.0-preview.3.21164.3" IsDirectDependency="true" />
+    <Usage Id="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
+    <Usage Id="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0-preview.3.21164.3" IsDirectDependency="true" />
+    <Usage Id="Microsoft.Extensions.Logging.Configuration" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="Microsoft.Extensions.Logging.Console" Version="6.0.0-preview.3.21164.3" IsDirectDependency="true" />
+    <Usage Id="Microsoft.Extensions.Options" Version="2.1.1" />
+    <Usage Id="Microsoft.Extensions.Options" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="Microsoft.Extensions.Primitives" Version="2.1.1" />
+    <Usage Id="Microsoft.Extensions.Primitives" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="Microsoft.Net.Compilers.Toolset" Version="3.10.0-4.21310.5" IsDirectDependency="true" IsAutoReferenced="true" />
+    <Usage Id="Microsoft.NET.Sdk.WorkloadManifestReader" Version="6.0.100-preview.5.21254.11" IsDirectDependency="true" />
+    <Usage Id="Microsoft.NET.StringTools" Version="1.0.0-preview-21267-01" />
+    <Usage Id="Microsoft.NET.Test.Sdk" Version="16.7.1" IsDirectDependency="true" IsAutoReferenced="true" />
+    <Usage Id="Microsoft.NETCore.App.Host.linux-x64" Version="5.0.5" />
+    <Usage Id="Microsoft.NETCore.App.Ref" Version="5.0.0" />
+    <Usage Id="Microsoft.NETCore.DotNetAppHost" Version="2.1.0" />
+    <Usage Id="Microsoft.NETCore.DotNetHostPolicy" Version="2.1.0" />
+    <Usage Id="Microsoft.NETCore.DotNetHostResolver" Version="2.1.0" />
+    <Usage Id="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" IsDirectDependency="true" IsAutoReferenced="true" />
+    <Usage Id="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0" />
+    <Usage Id="Microsoft.NETFramework.ReferenceAssemblies.net40" Version="1.0.0" />
+    <Usage Id="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0-preview.1" IsDirectDependency="true" />
+    <Usage Id="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" />
+    <Usage Id="Microsoft.TestPlatform.ObjectModel" Version="16.7.1" />
+    <Usage Id="Microsoft.TestPlatform.TestHost" Version="16.7.1" />
+    <Usage Id="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
+    <Usage Id="Microsoft.Win32.SystemEvents" Version="4.7.0" />
+    <Usage Id="Mono.Cecil" Version="0.11.3" />
+    <Usage Id="NETStandard.Library" Version="1.6.0" />
+    <Usage Id="NETStandard.Library" Version="1.6.1" />
+    <Usage Id="Newtonsoft.Json" Version="12.0.3" />
+    <Usage Id="NuGet.Commands" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Common" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Common" Version="5.8.1+b257acfcdd76b32d4cddd549c177d99e800f4d83" />
+    <Usage Id="NuGet.Configuration" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Configuration" Version="5.8.1+b257acfcdd76b32d4cddd549c177d99e800f4d83" />
+    <Usage Id="NuGet.Credentials" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Credentials" Version="5.8.1+b257acfcdd76b32d4cddd549c177d99e800f4d83" />
+    <Usage Id="NuGet.DependencyResolver.Core" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Frameworks" Version="5.0.0+42a8779499c1d1ed2488c2e6b9e2ee6ff6107766" />
+    <Usage Id="NuGet.Frameworks" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Frameworks" Version="5.8.1+b257acfcdd76b32d4cddd549c177d99e800f4d83" />
+    <Usage Id="NuGet.LibraryModel" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Packaging" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Packaging" Version="5.8.1+b257acfcdd76b32d4cddd549c177d99e800f4d83" />
+    <Usage Id="NuGet.Packaging.Core" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.ProjectModel" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Protocol" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Protocol" Version="5.8.1+b257acfcdd76b32d4cddd549c177d99e800f4d83" />
+    <Usage Id="NuGet.Versioning" Version="5.6.0-preview.2.6489+5433d816f748d4ad78b75fc320397d8117f57771" />
+    <Usage Id="NuGet.Versioning" Version="5.8.1+b257acfcdd76b32d4cddd549c177d99e800f4d83" />
+    <Usage Id="runtime.linux-x64.Microsoft.NETCore.ILAsm" Version="5.0.0-preview.4.20202.18" Rid="linux-x64" />
+    <Usage Id="runtime.linux-x64.Microsoft.NETCore.ILDAsm" Version="5.0.0-preview.4.20202.18" Rid="linux-x64" />
+    <Usage Id="runtime.native.System" Version="4.0.0" />
+    <Usage Id="runtime.native.System" Version="4.3.0" />
+    <Usage Id="runtime.native.System.IO.Compression" Version="4.3.0" />
+    <Usage Id="System.Collections.Immutable" Version="5.0.0" />
+    <Usage Id="System.Composition" Version="1.0.31" />
+    <Usage Id="System.Composition.AttributedModel" Version="1.0.31" />
+    <Usage Id="System.Composition.Convention" Version="1.0.31" />
+    <Usage Id="System.Composition.Hosting" Version="1.0.31" />
+    <Usage Id="System.Composition.Runtime" Version="1.0.31" />
+    <Usage Id="System.Composition.TypedParts" Version="1.0.31" />
+    <Usage Id="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <Usage Id="System.Diagnostics.DiagnosticSource" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="System.Drawing.Common" Version="4.7.0" />
+    <Usage Id="System.Formats.Asn1" Version="5.0.0" />
+    <Usage Id="System.IO.Pipelines" Version="5.0.1" />
+    <Usage Id="System.Memory" Version="4.5.0" IsDirectDependency="true" />
+    <Usage Id="System.Reflection.Metadata" Version="5.0.0" />
+    <Usage Id="System.Resources.Extensions" Version="4.6.0" />
+    <Usage Id="System.Runtime.CompilerServices.Unsafe" Version="4.5.0" IsDirectDependency="true" />
+    <Usage Id="System.Runtime.CompilerServices.Unsafe" Version="4.5.1" />
+    <Usage Id="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+    <Usage Id="System.Runtime.CompilerServices.Unsafe" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="System.Security.Cryptography.Cng" Version="4.4.0" IsDirectDependency="true" />
+    <Usage Id="System.Security.Cryptography.Cng" Version="5.0.0" />
+    <Usage Id="System.Security.Cryptography.Pkcs" Version="5.0.0" />
+    <Usage Id="System.Security.Cryptography.ProtectedData" Version="4.4.0" />
+    <Usage Id="System.Security.Cryptography.ProtectedData" Version="4.7.0" />
+    <Usage Id="System.Text.Encodings.Web" Version="4.7.1" />
+    <Usage Id="System.Text.Encodings.Web" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="System.Text.Json" Version="4.7.2" IsDirectDependency="true" />
+    <Usage Id="System.Text.Json" Version="6.0.0-preview.3.21164.3" />
+    <Usage Id="System.Threading.Tasks.Dataflow" Version="4.5.24" IsDirectDependency="true" />
+    <Usage Id="System.ValueTuple" Version="4.3.0" />
+    <Usage Id="System.Windows.Extensions" Version="4.7.0" />
+    <Usage Id="WiX" Version="3.11.2" />
+    <Usage Id="xunit" Version="2.4.1" IsDirectDependency="true" IsAutoReferenced="true" />
+    <Usage Id="xunit.abstractions" Version="2.0.3" />
+    <Usage Id="xunit.analyzers" Version="0.10.0" />
+    <Usage Id="xunit.assert" Version="2.4.1" />
+    <Usage Id="xunit.core" Version="2.4.1" />
+    <Usage Id="xunit.extensibility.core" Version="2.4.1" />
+    <Usage Id="xunit.extensibility.execution" Version="2.4.1" />
+    <Usage Id="xunit.runner.console" Version="2.4.1" IsDirectDependency="true" IsAutoReferenced="true" />
+    <Usage Id="xunit.runner.visualstudio" Version="2.4.3" IsDirectDependency="true" IsAutoReferenced="true" />
+  </Usages>
+</UsageData>

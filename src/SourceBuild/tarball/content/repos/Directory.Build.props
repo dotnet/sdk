@@ -11,8 +11,7 @@
 
   <PropertyGroup>
     <SourceDirectory Condition="'$(SourceDirectory)' == ''">$(RepositoryName)</SourceDirectory>
-    <ProjectDirectory Condition="'$(ProjectDirectory)' == '' and '$(OfflineBuild)' != 'true'">$(ClonedSubmoduleDirectory)$(SourceDirectory).$(GitCommitHash)/</ProjectDirectory>
-    <ProjectDirectory Condition="'$(ProjectDirectory)' == '' and '$(OfflineBuild)' == 'true'">$(SubmoduleDirectory)$(SourceDirectory).$(GitCommitHash)/</ProjectDirectory>
+    <ProjectDirectory Condition="'$(ProjectDirectory)' == ''">$(SubmoduleDirectory)$(SourceDirectory).$(GitCommitHash)/</ProjectDirectory>
     <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == ''">true</MinimalConsoleLogOutput>
     <RepoConsoleLogFile>$(LoggingDir)$(RepositoryName).log</RepoConsoleLogFile>
     <RedirectRepoOutputToLog Condition="'$(MinimalConsoleLogOutput)' == 'true'">&gt;&gt; $(RepoConsoleLogFile) 2&gt;&amp;1</RedirectRepoOutputToLog>
@@ -41,19 +40,17 @@
 
   <!-- A human-readable description of what's building and why. -->
   <PropertyGroup>
-    <ProjectBuildReason>'$(RepositoryName)'</ProjectBuildReason>
-    <ProjectBuildReason Condition="'$(OfflineBuild)' != 'true' AND '$(ArchiveDownloadedPackages)' == 'true'">$(ProjectBuildReason) to produce tarball</ProjectBuildReason>
-    <ProjectBuildReason Condition="'$(OfflineBuild)' == 'true'">$(ProjectBuildReason) in tarball</ProjectBuildReason>
+    <ProjectBuildReason>'$(RepositoryName) in tarball'</ProjectBuildReason>
   </PropertyGroup>
 
   <ItemGroup>
     <EnvironmentVariables Include="DotNetBuildFromSource=true" />
     <EnvironmentVariables Include="DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)" />
     <EnvironmentVariables Include="DotNetRestorePackagesPath=$(PackagesDir)" />
-    <EnvironmentVariables Include="DotNetBuildOffline=true" Condition="'$(OfflineBuild)' == 'true'" />
+    <EnvironmentVariables Include="DotNetBuildOffline=true" />
 
     <!-- Ensure the SDK (Core-SDK/Installer) doesn't add an online source. -->
-    <EnvironmentVariables Include="AddDotnetfeedProjectSource=false" Condition="'$(OfflineBuild)' == 'true'" />
+    <EnvironmentVariables Include="AddDotnetfeedProjectSource=false" />
 
     <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
     <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(DotNetCliToolDir)" />
@@ -134,8 +131,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <ArcadeBootstrapDir Condition="'$(OfflineBuild)' != 'true'">$(PackagesDir)</ArcadeBootstrapDir>
-    <ArcadeBootstrapDir Condition="'$(OfflineBuild)' == 'true'">$(ArcadeBootstrapPackageDir)</ArcadeBootstrapDir>
+    <ArcadeBootstrapDir>$(ArcadeBootstrapPackageDir)</ArcadeBootstrapDir>
     <ArcadeBootstrapVersion>$(ARCADE_BOOTSTRAP_VERSION)</ArcadeBootstrapVersion>
   </PropertyGroup>
 

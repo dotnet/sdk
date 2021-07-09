@@ -5,8 +5,7 @@
     <RepoApiImplemented>false</RepoApiImplemented>
     <ProjectDirectory>$(SubmoduleDirectory)$(RepositoryName)/</ProjectDirectory>
     <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
-    <IncludedPackageVersionPropsFile Condition="'$(OfflineBuild)' != 'true'">$(PackageVersionPropsPath)</IncludedPackageVersionPropsFile>
-    <IncludedPackageVersionPropsFile Condition="'$(OfflineBuild)' == 'true'">$(GennedPackageVersionPropsPath)</IncludedPackageVersionPropsFile>
+    <IncludedPackageVersionPropsFile>$(GennedPackageVersionPropsPath)</IncludedPackageVersionPropsFile>
   </PropertyGroup>
 
   <ItemGroup>

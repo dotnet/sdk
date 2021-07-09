@@ -57,7 +57,7 @@
     <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
 
     <EnvironmentExternalRestoreSources>$(SourceBuiltPackagesPath)</EnvironmentExternalRestoreSources>
-    <EnvironmentExternalRestoreSources Condition="'$(OfflineBuild)' == 'true'">$(EnvironmentExternalRestoreSources)%3B$(ReferencePackagesDir)%3B$(PrebuiltPackagesPath)</EnvironmentExternalRestoreSources>
+    <EnvironmentExternalRestoreSources>$(EnvironmentExternalRestoreSources)%3B$(ReferencePackagesDir)%3B$(PrebuiltPackagesPath)</EnvironmentExternalRestoreSources>
 
     <!-- This project builds zips, not NuGet packages. -->
     <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>

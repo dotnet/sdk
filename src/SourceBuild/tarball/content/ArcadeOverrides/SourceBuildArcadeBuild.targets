@@ -87,8 +87,8 @@
       <InnerBuildArgs>$(InnerBuildArgs) /p:EnableSourceControlManagerQueries=false</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) /p:EnableSourceLink=false</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) /p:DeterministicSourcePaths=false</InnerBuildArgs>
+      <InnerBuildArgs >$(InnerBuildArgs) /p:DotNetBuildOffline=true</InnerBuildArgs>
       <InnerBuildArgs Condition=" '$(DotNetPackageVersionPropsPath)' != '' ">$(InnerBuildArgs) /p:DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)</InnerBuildArgs>
-      <InnerBuildArgs Condition=" '$(DotNetBuildOffline)' != '' ">$(InnerBuildArgs) /p:DotNetBuildOffline=$(DotNetBuildOffline)</InnerBuildArgs>
     </PropertyGroup>
 
     <ItemGroup>

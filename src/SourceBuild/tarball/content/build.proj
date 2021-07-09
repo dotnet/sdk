@@ -47,59 +47,6 @@
     <RemoveDir Directories="$(BaseOutputPath)" />
   </Target>
 
-  <Target Name="OutputArchiveArtifactsTextFile"
-          AfterTargets="Build"
-          Condition="'$(OfflineBuild)' != 'true' and '$(OS)' != 'Windows_NT'" >
-
-    <ItemGroup>
-      <ArtifactUrls Include="$(ReferencePackagesTarballUrl)$(ReferencePackagesTarballName).$(PrivateSourceBuildReferencePackagesPackageVersion).tar.gz" />
-      <ArtifactUrls Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltArtifactsTarballName).$(PrivateSourceBuiltArtifactsPackageVersion).tar.gz" />
-    </ItemGroup>
-    <WriteLinesToFile
-      File="$(ArchiveArtifactsTextFile)"
-      Lines="@(ArtifactUrls)"
-      Overwrite="true" />
-  </Target>
-
-
-  <Target Name="DownloadSourceBuildReferencePackages"
-          AfterTargets="Build"
-          Condition="'$(OfflineBuild)' != 'true' and '$(OS)' != 'Windows_NT' and '$(SkipDownloadingReferencePackages)' != 'true'"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(CompletedSemaphorePath)DownloadSourceBuildReferencePackages.complete" >
-    <PropertyGroup Condition="'$(DownloadSourceBuildReferencePackagesTimeoutSeconds)' == ''">
-      <DownloadSourceBuildReferencePackagesTimeoutSeconds>N/A</DownloadSourceBuildReferencePackagesTimeoutSeconds>
-    </PropertyGroup>
-
-    <DownloadFileSB
-          SourceUrl="$(ReferencePackagesTarballUrl)$(ReferencePackagesTarballName).$(PrivateSourceBuildReferencePackagesPackageVersion).tar.gz"
-          DestinationFolder="$(ExternalTarballsDir)"
-          TimeoutSeconds="$(DownloadSourceBuildReferencePackagesTimeoutSeconds)" />
-
-    <WriteLinesToFile File="$(CompletedSemaphorePath)DownloadSourceBuildReferencePackages.complete" Overwrite="true" />
-  </Target>
-
-  <Target Name="DownloadSourceBuiltArtifacts"
-          AfterTargets="Build"
-          Condition="
-            '$(OfflineBuild)' != 'true' and
-            '$(OS)' != 'Windows_NT' and
-            '$(SkipDownloadingPreviouslySourceBuiltPackages)' != 'true' and
-            '$(PrivateSourceBuiltArtifactsPackageVersion)' != ''"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(CompletedSemaphorePath)DownloadSourceBuiltArtifacts.complete" >
-    <PropertyGroup Condition="'$(DownloadSourceBuiltArtifactsTimeoutSeconds)' == ''">
-      <DownloadSourceBuiltArtifactsTimeoutSeconds>N/A</DownloadSourceBuiltArtifactsTimeoutSeconds>
-    </PropertyGroup>
-
-    <DownloadFileSB
-          SourceUrl="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltArtifactsTarballName).$(PrivateSourceBuiltArtifactsPackageVersion).tar.gz"
-          DestinationFolder="$(ExternalTarballsDir)"
-          TimeoutSeconds="$(DownloadSourceBuiltArtifactsTimeoutSeconds)" />
-
-    <WriteLinesToFile File="$(CompletedSemaphorePath)DownloadSourceBuiltArtifacts.complete" Overwrite="true" />
-  </Target>
-
   <!-- After building, generate a prebuilt usage report. -->
   <Target Name="ReportPrebuiltUsage"
           AfterTargets="Build"
@@ -119,7 +66,7 @@
 
   <Target Name="ReportPoisonUsage"
           AfterTargets="Build"
-          Condition="'$(EnablePoison)' == 'true' and '$(OfflineBuild)' == 'true'"
+          Condition="'$(EnablePoison)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(CompletedSemaphorePath)ReportPoisonUsage.complete" >
     <ItemGroup>
@@ -137,11 +84,8 @@
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(CompletedSemaphorePath)GeneratePrebuiltBurndownData.complete" >
     <WriteUsageBurndownData RootDirectory="$(ProjectDir)"
-                            PrebuiltBaselineFile="$(OnlineBaselineDataFile)"
-                            OutputFilePath="$(OnlinePrebuiltBurndownDataFile)" />
-    <WriteUsageBurndownData RootDirectory="$(ProjectDir)"
-                            PrebuiltBaselineFile="$(OfflineBaselineDataFile)"
-                            OutputFilePath="$(OfflinePrebuiltBurndownDataFile)" />
+                            PrebuiltBaselineFile="$(BaselineDataFile)"
+                            OutputFilePath="$(PrebuiltBurndownDataFile)" />
 
     <WriteLinesToFile File="$(CompletedSemaphorePath)GeneratePrebuiltBurndownData.complete" Overwrite="true" />
   </Target>

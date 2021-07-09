@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Build.Tasks
         /// <summary>
         /// Whether to work in offline mode (remove all internet sources) or online mode (remove only authenticated sources)
         /// </summary>
-        public bool OfflineBuild { get; set; }
+        public bool BuildWithOnlineSources { get; set; }
 
         /// <summary>
         /// A list of prefix strings that make the task keep a package source unconditionally. For
@@ -36,7 +37,9 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            XDocument d = XDocument.Load(NuGetConfigFile);
+            string xml = File.ReadAllText(NuGetConfigFile);
+            string newLineChars = FileUtilities.DetectNewLineChars(xml);
+            XDocument d = XDocument.Parse(xml);
             XElement packageSourcesElement = d.Root.Descendants().First(e => e.Name == "packageSources");
             XElement disabledPackageSourcesElement = d.Root.Descendants().FirstOrDefault(e => e.Name == "disabledPackageSources");
 
@@ -53,14 +56,14 @@ namespace Microsoft.DotNet.Build.Tasks
                     }
 
                     string feedUrl = e.Attribute("value").Value;
-                    if (OfflineBuild)
-                    {
-                        return !(feedUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || feedUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
-                    }
-                    else
+                    if (BuildWithOnlineSources)
                     {
                         return !( feedUrl.StartsWith("https://pkgs.dev.azure.com/dnceng/_packaging", StringComparison.OrdinalIgnoreCase) ||
                             feedUrl.StartsWith("https://pkgs.dev.azure.com/dnceng/internal/_packaging", StringComparison.OrdinalIgnoreCase) );
+                    }
+                    else
+                    {
+                        return !(feedUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || feedUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
                     }
                 }
 
@@ -72,9 +75,9 @@ namespace Microsoft.DotNet.Build.Tasks
             // Remove disabledPackageSources element so if any internal packages remain, they are used in source-build
             disabledPackageSourcesElement?.ReplaceNodes(new XElement("clear"));
 
-            using (FileStream fs = new FileStream(NuGetConfigFile, FileMode.Create, FileAccess.ReadWrite))
+            using (var w = XmlWriter.Create(NuGetConfigFile, new XmlWriterSettings { NewLineChars = newLineChars, Indent = true }))
             {
-                d.Save(fs);
+                d.Save(w);
             }
 
             return true;

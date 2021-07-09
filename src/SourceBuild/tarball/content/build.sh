@@ -5,7 +5,7 @@ IFS=$'\n\t'
 usage() {
     echo "usage: $0 [options]"
     echo "options:"
-    echo "  --with-ref-packages <dir>          use the specified directory of reference packages"
+    echo "  --online                           build using online sources"
     echo "  --with-packages <dir>              use the specified directory of previously-built packages"
     echo "  --with-sdk <dir>                   use the SDK in the specified directory for bootstrapping"
     echo "use -- to send the remaining arguments to MSBuild"
@@ -14,7 +14,7 @@ usage() {
 
 SCRIPT_ROOT="$(cd -P "$( dirname "$0" )" && pwd)"
 
-MSBUILD_ARGUMENTS=("/p:OfflineBuild=true" "/flp:v=detailed")
+MSBUILD_ARGUMENTS=("/flp:v=detailed")
 CUSTOM_REF_PACKAGES_DIR=''
 CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR=''
 alternateTarget=false
@@ -30,6 +30,9 @@ while :; do
         --run-smoke-test)
             alternateTarget=true
             MSBUILD_ARGUMENTS+=( "/t:RunSmokeTest" )
+            ;;
+        --online)
+            MSBUILD_ARGUMENTS+=( "/p:BuildWithOnlineSources=true")
             ;;
         --with-packages)
             CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR="$(cd -P "$2" && pwd)"

@@ -5,7 +5,6 @@
 
   <Import Project="$(OfflineAllRepoPropsFile)" Condition="Exists('$(OfflineAllRepoPropsFile)')" />
 
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteSourceRepoProperties" />
   <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="MarkAndCatalogPackages" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="NuGetPack" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
@@ -15,10 +14,7 @@
     <BuildTasksTarget Include="Restore;Build;InstallResolver" />
   </ItemGroup>
 
-  <!-- TODO: Don't setup these sources now.  Need a switch for building to check prebuilts. 
-       Currently, tarball build allows online restore sources.  
-       See https://github.com/dotnet/source-build/issues/2255 -->
-  <PropertyGroup Condition="'$(OfflineBuild)' == 'true' AND 'false' == 'true' ">
+  <PropertyGroup Condition=" '$(BuildWithOnlineSources)' != 'true' ">
     <BuildTasksOfflineSources>$(ReferencePackagesDir)%3B$(PrebuiltPackagesPath)</BuildTasksOfflineSources>
   </PropertyGroup>
 
@@ -42,7 +38,6 @@
   </Target>
 
   <Target Name="UnpackTarballs"
-          Condition="'$(OfflineBuild)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(CompletedSemaphorePath)UnpackTarballs.complete" >
 
@@ -115,7 +110,6 @@
   </Target>
 
   <Target Name="BuildTextOnlyPackages"
-          Condition="'$(OfflineBuild)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(CompletedSemaphorePath)BuildTextOnlyPackages.complete">
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Packing text-only packages." />
@@ -136,7 +130,6 @@
 
   <Target Name="ExtractToolPackage"
           DependsOnTargets="UnpackTarballs;BuildXPlatTasks"
-          Condition="'$(OfflineBuild)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(CompletedSemaphorePath)ExtractToolPackage.complete">
     <ZipFileExtractToDirectory SourceArchive="$(PrebuiltSourceBuiltPackagesPath)Microsoft.DotNet.Arcade.Sdk.$(ARCADE_BOOTSTRAP_VERSION).nupkg"
@@ -166,7 +159,7 @@
   </Target>
 
   <Target Name="PoisonPrebuiltPackages"
-          Condition="'$(EnablePoison)' == 'true' and '$(OfflineBuild)' == 'true'"
+          Condition="'$(EnablePoison)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(CompletedSemaphorePath)PoisonPrebuiltPackages.complete">
     <ItemGroup>

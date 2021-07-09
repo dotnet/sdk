@@ -19,7 +19,8 @@ steps:
 - script: |
     set -x
 
-    ./build.sh
+    ./build.sh \
+      --online
   workingDirectory: ${{ parameters.sourceFolder }}
   displayName: Build Tarball
   condition: and(${{ parameters.condition }}, succeeded())
