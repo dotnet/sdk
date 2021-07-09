@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.PackageValidation
         /// </summary>
         public void RunApiCompat()
         {
-            foreach (var left in _dict.Keys)
+            foreach (MetadataInformation left in _dict.Keys)
             {
                 Stream leftAssemblyStream = GetFileStreamFromPackage(_leftPackagePath, left.AssemblyId);
                 IAssemblySymbol leftSymbols = new AssemblySymbolLoader().LoadAssembly(left.AssemblyName, leftAssemblyStream);
@@ -62,9 +62,9 @@ namespace Microsoft.DotNet.PackageValidation
                 for (int i = 0; i < differences.Count(); i++)
                 {
                     (MetadataInformation, MetadataInformation, IEnumerable<CompatDifference> differences) diff = differences[i];
-                    (MetadataInformation rightAssembly, string header) rightAssembly = _dict[left][i];
+                    (MetadataInformation rightAssembly, string header) rightTuple = _dict[left][i];
 
-                    _log.LogMessage(MessageImportance.Low, rightAssembly.header);
+                    _log.LogMessage(MessageImportance.Low, rightTuple.header);
 
                     foreach (CompatDifference difference in diff.differences)
                     {
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.PackageValidation
                                 DiagnosticId = difference.DiagnosticId,
                                 Target = difference.ReferenceId,
                                 Left = left.AssemblyId,
-                                Right = rightAssembly.rightAssembly.AssemblyId,
+                                Right = rightTuple.rightAssembly.AssemblyId,
                                 IsBaselineSuppression = _isBaselineSuppression
                             },
                             difference.DiagnosticId,
