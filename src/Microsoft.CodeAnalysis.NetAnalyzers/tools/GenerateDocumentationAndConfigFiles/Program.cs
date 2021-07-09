@@ -361,8 +361,8 @@ $@"<Project>
                     }
 
                     var title = descriptor.Title.ToString(CultureInfo.InvariantCulture).Trim();
-                    // Escape generic arguments to ensure they are not considered as HTML elements
-                    title = Regex.Replace(title, "(<.+?>)", "\\$1");
+
+                    title = escapeMarkdown(title);
 
                     if (!isFirstEntry)
                     {
@@ -382,8 +382,7 @@ $@"<Project>
 
                     // Double the line breaks to ensure they are rendered properly in markdown
                     description = Regex.Replace(description, "(\r?\n)", "$1$1");
-                    // Escape generic arguments to ensure they are not considered as HTML elements
-                    description = Regex.Replace(description, "(<.+?>)", "\\$1");
+                    description = escapeMarkdown(description);
                     // Add angle brackets around links to prevent violating MD034:
                     // https://github.com/DavidAnson/markdownlint/blob/82cf68023f7dbd2948a65c53fc30482432195de4/doc/Rules.md#md034---bare-url-used
                     // Regex taken from: https://github.com/DavidAnson/markdownlint/blob/59eaa869fc749e381fe9d53d04812dfc759595c6/helpers/helpers.js#L24
@@ -411,6 +410,16 @@ $@"<Project>
                 {
                     File.WriteAllText(fileWithPath, builder.ToString());
                 }
+            }
+
+            string escapeMarkdown(string text)
+            {
+                // Escape generic arguments to ensure they are not considered as HTML elements
+                text = Regex.Replace(text, "(<.+?>)", "\\$1");
+
+                // Escape asterisks.
+                text = text.Replace("*", @"\*");
+                return text;
             }
 
             // based on https://github.com/dotnet/roslyn/blob/main/src/Compilers/Core/Portable/CommandLine/ErrorLogger.cs
