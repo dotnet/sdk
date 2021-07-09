@@ -38,26 +38,45 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            int read = 0;
+            if (count + offset > buffer.Length)
+            {
+                //cannot read more than available buffer length
+                count = buffer.Length - offset;
+            }
+
+            int totalBytesRead = 0;
             if (!_isStream1Depleted)
             {
-                read = _stream1.Read(buffer, offset, count);
-
-                if (read == count)
+                while (totalBytesRead < count)
                 {
-                    return read;
+                    int bytesRead = _stream1.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
+                    if (bytesRead == 0)
+                    {
+                        break;
+                    }
+                    totalBytesRead += bytesRead;
+                }
+                if (totalBytesRead == count)
+                {
+                    return totalBytesRead;
                 }
 
-                count -= read;
-                offset += read;
                 _isStream1Depleted = true;
                 _stream1.Dispose();
                 _reassign(_stream2);
                 _isReassigned = true;
             }
 
-            read += _stream2.Read(buffer, offset, count);
-            return read;
+            while (totalBytesRead < count)
+            {
+                int bytesRead = _stream2.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+                totalBytesRead += bytesRead;
+            }
+            return totalBytesRead;
         }
 
         public override long Seek(long offset, SeekOrigin origin)
