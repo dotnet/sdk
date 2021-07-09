@@ -166,7 +166,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var copyToPublishDirectoryFiles = manifest.Assets
                 .Where(a => !string.Equals(a.SourceId, manifest.Source, StringComparison.Ordinal) ||
                             !string.Equals(a.AssetMode, StaticWebAsset.AssetModes.Reference))
-                .Select(a => a.ComputeTargetPath(wwwRootFolder));
+                .Select(a => a.ComputeTargetPath(wwwRootFolder, Path.DirectorySeparatorChar));
 
             var existingFiles = wwwRootFiles.Concat(computedFiles.Select(f => f.Identity)).Concat(copyToPublishDirectoryFiles)
                 .Distinct()

@@ -13,12 +13,13 @@ using Microsoft.NET.Sdk.BlazorWebAssembly;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.AspNetCore.Razor.Tasks;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmBuildIntegrationTest : AspNetSdkTest
+    public class WasmBuildIntegrationTest : BlazorWasmBaselineTests
     {
-        public WasmBuildIntegrationTest(ITestOutputHelper log) : base(log) {}
+        public WasmBuildIntegrationTest(ITestOutputHelper log) : base(log, true) {}
 
         [Fact]
         public void BuildMinimal_Works()
@@ -325,9 +326,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName);
 
-            testInstance.WithProjectChanges((path, project) =>
+            ProjectDirectory.WithProjectChanges((path, project) =>
             {
                 if (path.Contains("blazorwasm")) {
                     var ns = project.Root.Name.Namespace;
@@ -340,21 +341,38 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            var resxfileInProject = Path.Combine(testInstance.TestRoot, "blazorwasm", "Resources.ja.resx.txt");
-            File.Move(resxfileInProject, Path.Combine(testInstance.TestRoot, "blazorwasm", "Resource.ja.resx"));
+            var resxfileInProject = Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "Resources.ja.resx.txt");
+            File.Move(resxfileInProject, Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "Resource.ja.resx"));
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
+            var buildCommand = new BuildCommand(ProjectDirectory, "blazorwasm");
+            buildCommand.WithWorkingDirectory(ProjectDirectory.TestRoot);
             buildCommand.Execute("/bl").Should().Pass();
 
-            var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
+            var outputPath = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
+            var intermediateOutputPath = buildCommand.GetIntermediateDirectory(DefaultTfm).ToString();
 
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "Microsoft.CodeAnalysis.CSharp.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "fr", "Microsoft.CodeAnalysis.CSharp.resources.dll")).Should().Exist();
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.build.json");
+            new FileInfo(path).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(manifest, LoadBuildManifest());
 
-            var bootJsonPath = new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "blazorwasm.staticwebassets.json");
+            new FileInfo(finalPath).Should().Exist();
+
+            AssertBuildAssets(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
+                outputPath,
+                intermediateOutputPath);
+
+
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "blazorwasm.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "Microsoft.CodeAnalysis.CSharp.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "fr", "Microsoft.CodeAnalysis.CSharp.resources.dll")).Should().Exist();
+
+            var bootJsonPath = new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "blazor.boot.json"));
             bootJsonPath.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.dll\"");
             bootJsonPath.Should().Contain("\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.dll\"");
         }
