@@ -285,7 +285,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             public const string Publish = nameof(Publish);
 
             public static bool IsPublish(string manifestType) =>
-                string.Equals(manifestType, Publish, StringComparison.Ordinal);
+                IsType(Publish, manifestType);
+
+            public static bool IsType(string manifestType, string candidate) =>
+                 string.Equals(manifestType, candidate, StringComparison.Ordinal);
         }
 
         public class ManifestModes

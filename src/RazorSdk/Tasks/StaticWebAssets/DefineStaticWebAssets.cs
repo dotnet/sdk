@@ -117,7 +117,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     var assetTraitValue = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitValue), AssetTraitValue, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
                     var copyToOutputDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToOutputDirectory), CopyToOutputDirectory);
                     var copyToPublishDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToPublishDirectory), CopyToPublishDirectory);
-
+                    var originalItemSpec = ComputePropertyValue(
+                        candidate, 
+                        nameof(StaticWebAsset.OriginalItemSpec),
+                        PropertyOverrides == null || PropertyOverrides.Length == 0 ? candidate.ItemSpec : candidate.GetMetadata("OriginalItemSpec"));
+                    
                     // If we are not able to compute the value based on an existing value or a default, we produce an error and stop.
                     if (Log.HasLoggedErrors)
                     {
@@ -150,16 +154,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         assetTraitName,
                         assetTraitValue,
                         copyToOutputDirectory,
-                        copyToPublishDirectory);
+                        copyToPublishDirectory,
+                        originalItemSpec);
 
                     var item = asset.ToTaskItem();
-                    if (PropertyOverrides == null || PropertyOverrides.Length == 0)
-                    {
-                        // Only update the OriginalItemSpec if we are not overriding properties.
-                        // This is because we are likely using DefineStaticWebAssets to update
-                        // some properties when we are using overrides.
-                        item.SetMetadata("OriginalItemSpec", candidate.ItemSpec);
-                    }
 
                     results.Add(item);
                 }
@@ -255,19 +253,19 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         private string GetCandidateMatchPath(ITaskItem candidate)
         {
-            var targetPath = candidate.GetMetadata("TargetPath");
-            if (!string.IsNullOrEmpty(targetPath))
-            {
-                Log.LogMessage("TargetPath '{0}' found for candidate '{1}' and will be used for matching.", targetPath, candidate.ItemSpec);
-                return targetPath;
-            }
-
             var relativePath = candidate.GetMetadata("RelativePath");
             if (!string.IsNullOrEmpty(relativePath))
             {
                 Log.LogMessage("RelativePath '{0}' found for candidate '{1}' and will be used for matching.", relativePath, candidate.ItemSpec);
 
                 return relativePath;
+            }
+
+            var targetPath = candidate.GetMetadata("TargetPath");
+            if (!string.IsNullOrEmpty(targetPath))
+            {
+                Log.LogMessage("TargetPath '{0}' found for candidate '{1}' and will be used for matching.", targetPath, candidate.ItemSpec);
+                return targetPath;
             }
 
             var linkPath = candidate.GetMetadata("Link");

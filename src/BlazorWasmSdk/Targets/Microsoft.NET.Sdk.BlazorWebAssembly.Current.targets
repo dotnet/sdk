@@ -49,6 +49,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BrotliCompress" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GzipCompress" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.ComputeBlazorBuildAssets" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.ComputeBlazorPublishAssets" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
 
   <PropertyGroup>
     <SelfContained>true</SelfContained>
@@ -72,9 +74,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Don't generate a NETSDK1151 error if a non self-contained Exe references a Blazor Exe -->
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
-
-    <!-- Internal properties -->
-    <_BlazorOutputPath>wwwroot\_framework\</_BlazorOutputPath>
 
     <_TargetingNET60OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0'))">true</_TargetingNET60OrLater>
   </PropertyGroup>
@@ -110,7 +109,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_DotNetJsVersion>$(BundledNETCoreAppPackageVersion)</_DotNetJsVersion>
       <_DotNetJsVersion Condition="'$(RuntimeFrameworkVersion)' != ''">$(RuntimeFrameworkVersion)</_DotNetJsVersion>
       <_BlazorDotnetJsFileName>dotnet.$(_DotNetJsVersion).js</_BlazorDotnetJsFileName>
-      <_BlazorDotNetJsFilePath>$(IntermediateOutputPath)$(_BlazorDotnetJsFileName)</_BlazorDotNetJsFilePath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -118,7 +116,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RelativePath>_framework\$(_BlazorDotnetJsFileName)</RelativePath>
       </_DotNetJsItem>
     </ItemGroup>
-
 
     <DefineStaticWebAssets Condition="'@(_DotNetJsItem->Count())' != '0'"
       CandidateAssets="@(_DotNetJsItem)"
@@ -131,7 +128,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRoot="$(IntermediateOutputPath)\blazor"
       BasePath="$(StaticWebAssetBasePath)"
     >
-      <Output TaskParameter="Assets" ItemName="_DotnetJsStaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_DotnetJsStaticWebAssetCandidate" />
       <Output TaskParameter="CopyCandidates" ItemName="_DotnetJsCopyCandidates" />
     </DefineStaticWebAssets>
 
@@ -143,16 +140,23 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="'@(_DotNetJsItem->Count())' != '0'">
       <ReferenceCopyLocalPaths Remove="@(_DotNetJsItem)" />
+      <_DotnetJsStaticWebAsset Include="@(_DotnetJsStaticWebAssetCandidate->'%(ContentRoot)_framework\dotnet.js')" />
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies">
+  <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies" BeforeTargets="_RazorPrepareForRun">
     <!--
       Calculates the outputs and the paths for Blazor WASM. This target is invoked frequently and should perform minimal work.
     -->
 
     <PropertyGroup>
-      <_BlazorSatelliteAssemblyCacheFile>$(IntermediateOutputPath)blazor.satelliteasm.props</_BlazorSatelliteAssemblyCacheFile>
+      <_BlazorEnableTimeZoneSupport>$(BlazorEnableTimeZoneSupport)</_BlazorEnableTimeZoneSupport>
+      <_BlazorEnableTimeZoneSupport Condition="'$(_BlazorEnableTimeZoneSupport)' == ''">false</_BlazorEnableTimeZoneSupport>
+      <_BlazorInvariantGlobalization>$(InvariantGlobalization)</_BlazorInvariantGlobalization>
+      <_BlazorInvariantGlobalization Condition="'$(_BlazorInvariantGlobalization)' == ''">true</_BlazorInvariantGlobalization>
+    </PropertyGroup>
+
+    <PropertyGroup>
       <!-- Workaround for https://github.com/dotnet/sdk/issues/12114-->
       <PublishDir Condition="'$(AppendRuntimeIdentifierToOutputPath)' != 'true' AND '$(PublishDir)' == '$(OutputPath)$(RuntimeIdentifier)\$(PublishDirName)\'">$(OutputPath)$(PublishDirName)\</PublishDir>
 
@@ -175,174 +179,68 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <_BlazorConfigFileCandidates Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />
 
-      <!-- Clear out temporary build artifacts that the runtime packages -->
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.a'" />
-
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
-        Condition="'$(BlazorEnableTimeZoneSupport)' == 'false' AND '%(ReferenceCopyLocalPaths.FileName)%(ReferenceCopyLocalPaths.Extension)' == 'dotnet.timezones.blat'" />
-
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
-        Condition="'$(InvariantGlobalization)' == 'true' AND '%(ReferenceCopyLocalPaths.Extension)' == '.dat' AND $([System.String]::Copy('%(ReferenceCopyLocalPaths.FileName)').StartsWith('icudt'))" />
-
-      <!--
-        ReferenceCopyLocalPaths includes satellite assemblies from referenced projects but are inexpicably missing
-        any metadata that might allow them to be differentiated. We'll explicitly add those
-        to _BlazorOutputWithTargetPath so that satellite assemblies from packages, the current project and referenced project
-        are all treated the same.
-       -->
-
-      <_BlazorCopyLocalPath
-        Include="@(ReferenceCopyLocalPaths)"
-        Exclude="@(ReferenceSatellitePaths)"/>
-
-      <_BlazorCopyLocalPath Include="@(IntermediateSatelliteAssembliesWithTargetPath)">
-        <DestinationSubDirectory>%(IntermediateSatelliteAssembliesWithTargetPath.Culture)\</DestinationSubDirectory>
-      </_BlazorCopyLocalPath>
-
-      <_BlazorOutputWithRelativePath Include="
-          @(_BlazorCopyLocalPath)">
-          <RelativePath>_framework/%(_BlazorCopyLocalPath.DestinationSubPath)</RelativePath>
-      </_BlazorOutputWithRelativePath>
-
-      <_BlazorOutputWithRelativePath Include="@(IntermediateAssembly)">
-        <RelativePath>_framework/%(FileName)%(Extension)</RelativePath>
-      </_BlazorOutputWithRelativePath>  
-
-
-      <_IntermediateAssemblySymbolBlazorOutputWithRelativePath Include="@(_DebugSymbolsIntermediatePath)">
-        <RelativePath>_framework/%(FileName)%(Extension)</RelativePath>
-      </_IntermediateAssemblySymbolBlazorOutputWithRelativePath>  
-
-      <_BlazorSatelliteAssemblies Include="@(ReferenceSatellitePaths)">
-        <Culture>$([System.String]::Copy('%(ReferenceSatellitePaths.DestinationSubDirectory)').Trim('\').Trim('/'))</Culture>
-      </_BlazorSatelliteAssemblies>
-      
     </ItemGroup>
 
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorOutputWithRelativePath)"
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="Build"
-      AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="runtime"
-      CopyToOutputDirectory="PreserveNewest"
-      CopyToPublishDirectory="Never"
-      ContentRoot="$(OutputPath)wwwroot"
-      BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/*.dll"
+    <ComputeBlazorBuildAssets
+      Candidates="@(ReferenceCopyLocalPaths)"
+      ProjectAssembly="@(IntermediateAssembly)"
+      ProjectDebugSymbols="@(_DebugSymbolsIntermediatePath)"
+      SatelliteAssemblies="@(ReferenceSatellitePaths)"
+      ProjectSatelliteAssemblies="@(IntermediateSatelliteAssembliesWithTargetPath)"
+      TimeZoneSupport="$(_BlazorEnableTimeZoneSupport)"
+      InvariantGlobalization="$(_BlazorInvariantGlobalization)"
+      CopySymbols="$(CopyOutputSymbolsToPublishDirectory)"
+      OutputPath="$(OutputPath)"
     >
-      <Output TaskParameter="Assets" ItemName="_DotnetRuntimeStaticWebAsset" />
-    </DefineStaticWebAssets>
+      <Output TaskParameter="AssetCandidates" ItemName="_BuildAssetsCandidates" />
+      <Output TaskParameter="FilesToRemove" ItemName="_BlazorBuildFilesToRemove" />
+    </ComputeBlazorBuildAssets>
 
     <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorOutputWithRelativePath)"
+      CandidateAssets="@(_BuildAssetsCandidates)"
       SourceId="$(PackageId)"
       SourceType="Computed"
-      AssetKind="Build"
+      AssetKind="All"
       AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="native"
       CopyToOutputDirectory="PreserveNewest"
-      CopyToPublishDirectory="Never"
+      CopyToPublishDirectory="PreserveNewest"
       ContentRoot="$(OutputPath)wwwroot"
       BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/*.wasm"
     >
-    <Output TaskParameter="Assets" ItemName="_WasmRuntimeStaticWebAsset" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorOutputWithRelativePath)"
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="Build"
-      AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="native"
-      CopyToOutputDirectory="PreserveNewest"
-      CopyToPublishDirectory="Never"
-      ContentRoot="$(OutputPath)wwwroot"
-      BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/*.blat"
-    >
-      <Output TaskParameter="Assets" ItemName="_WasmRuntimeTimezoneStaticWebAsset" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorOutputWithRelativePath)"
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="Build"
-      AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="native"
-      CopyToOutputDirectory="PreserveNewest"
-      CopyToPublishDirectory="Never"
-      ContentRoot="$(OutputPath)wwwroot"
-      BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/icudt*"
-    >
-      <Output TaskParameter="Assets" ItemName="_WasmRuntimeGlobalizationStaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_BlazorStaticWebAsset" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssets
       CandidateAssets="@(_BlazorJSFile)"
       SourceId="$(PackageId)"
       SourceType="Computed"
-      AssetKind="Build"
+      AssetKind="All"
       AssetRole="Primary"
       AssetTraitName="BlazorWebassemblyResource"
       AssetTraitValue="native"
       CopyToOutputDirectory="PreserveNewest"
-      CopyToPublishDirectory="Never"
+      CopyToPublishDirectory="PreserveNewest"
       ContentRoot="$(OutputPath)wwwroot"
       BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/*.js"
     >
-      <Output TaskParameter="Assets" ItemName="_BlazorJsStaticWebAsset" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_IntermediateAssemblySymbolBlazorOutputWithRelativePath)"
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="Build"
-      AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="symbols"
-      CopyToOutputDirectory="PreserveNewest"
-      CopyToPublishDirectory="Never"
-      ContentRoot="$(OutputPath)wwwroot"
-      BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/*.pdb"
-    >
-      <Output TaskParameter="Assets" ItemName="_BlazorJsDebugSymbolsStaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_BlazorStaticWebAsset" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssets
       CandidateAssets="@(_BlazorConfigFileCandidates)"
       AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="config"
+      AssetTraitValue="settings"
       RelativePathFilter="appsettings*.json"
     >
       <Output TaskParameter="Assets" ItemName="_BlazorJsConfigStaticWebAsset" />
     </DefineStaticWebAssets>
 
     <ItemGroup>
-
+      <!-- Update the config blazor static web asset since we've given it a trait -->
       <StaticWebAsset Remove="@(_BlazorJsConfigStaticWebAsset)" />
       <StaticWebAsset Include="@(_BlazorJsConfigStaticWebAsset)" />
 
-      <_BlazorStaticWebAsset Include="@(_BlazorJsDebugSymbolsStaticWebAsset)" />
-      <_BlazorStaticWebAsset Include="@(_BlazorJsStaticWebAsset)" />
-      <_BlazorStaticWebAsset Include="@(_DotnetRuntimeStaticWebAsset)" />
-      <_BlazorStaticWebAsset Include="@(_WasmRuntimeStaticWebAsset)" />
-      <_BlazorStaticWebAsset Include="@(_WasmRuntimeTimezoneStaticWebAsset)" />
-      <_BlazorStaticWebAsset Include="@(_WasmRuntimeGlobalizationStaticWebAsset)" />
-        
-      <ReferenceCopyLocalPaths Remove="@(_BlazorStaticWebAsset->'%(OriginalItemSpec)')" />
+      <ReferenceCopyLocalPaths Remove="@(_BlazorBuildFilesToRemove)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -355,12 +253,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       has the most benefit while avoiding any ongoing costs to the dev inner loop.
     -->
     <ItemGroup>
-      <_GzipFileToCompressForBuild Include="
-        @(_DotnetRuntimeStaticWebAsset->'%(OriginalItemSpec)');
-        @(_WasmRuntimeStaticWebAsset->'%(OriginalItemSpec)');
-        @(_WasmRuntimeTimezoneStaticWebAsset->'%(OriginalItemSpec)');
-        @(_WasmRuntimeGlobalizationStaticWebAsset->'%(OriginalItemSpec)');
-        @(_BlazorJsStaticWebAsset->'%(OriginalItemSpec)')" >
+      <_GzipFileToCompressForBuild Include="@(_BlazorStaticWebAsset->'%(OriginalItemSpec)')" >
         <RelatedAsset>%(Identity)</RelatedAsset>
         <AssetRole>Alternative</AssetRole>
         <AssetTraitName>Content-Encoding</AssetTraitName>
@@ -384,9 +277,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorGzipStaticWebAsset Include="@(_BlazorBuildGZipCompressedFile->'%(FullPath)')" />
     </ItemGroup>
 
-  </Target>
-
-  <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ResolveBlazorWasmOutputs" BeforeTargets="_RazorPrepareForRun">
     <PropertyGroup>
       <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
       <_BlazorOutputContent>@(_BlazorOutputWithHash)</_BlazorOutputContent>
@@ -415,20 +305,36 @@ Copyright (c) .NET Foundation. All rights reserved.
       LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)" />
 
     <ItemGroup>
-      <FileWrites Include="$(OutDir)$(_BlazorOutputPath)blazor.boot.json" />
+      <FileWrites Include="$(_BlazorBuildBootJsonPath)" />
+      <_BuildBlazorBootJson 
+        Include="$(_BlazorBuildBootJsonPath)"
+        RelativePath="_framework/blazor.boot.json" />
     </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_BuildBlazorBootJson)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="Build"
+      AssetRole="Primary"
+      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitValue="manifest"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
+      ContentRoot="$(OutDir)wwwroot"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
+      <Output TaskParameter="Assets" ItemName="_BuildBlazorBootJsonStaticWebAsset" />
+  </DefineStaticWebAssets>
 
   </Target>
 
-  <Target Name="_AddBlazorWasmStaticWebAssets" DependsOnTargets="_BlazorWasmPrepareForRun">
+  <Target Name="_AddBlazorWasmStaticWebAssets" DependsOnTargets="_ResolveBlazorWasmOutputs">
     <ItemGroup>
-      <_BlazorAsset Include="$(_BlazorBuildBootJsonPath)" RelativePath="_framework/blazor.boot.json" CopyToPublishDirectory="Never"/>
-      <_BlazorAsset Include="@(_BlazorOutputWithHash)" CopyToPublishDirectory="Never" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <StaticWebAsset Include="@(_BlazorWebAssemblyStaticWebAsset)" RemoveMetadata="OriginalItemSpec" />
-      <StaticWebAsset Include="@(_DotnetJsStaticWebAsset)" RemoveMetadata="OriginalItemSpec" />
+      <StaticWebAsset Include="@(_BlazorStaticWebAsset)" />
+      <StaticWebAsset Include="@(_DotnetJsStaticWebAsset)" />
+      <StaticWebAsset Include="@(_BlazorGzipStaticWebAsset)" />
+      <StaticWebAsset Include="@(_BuildBlazorBootJsonStaticWebAsset)" />
     </ItemGroup>    
 
   </Target>
@@ -471,169 +377,46 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_ProcessPublishFilesForBlazor" DependsOnTargets="_ResolveBlazorWasmOutputs" AfterTargets="ILLink">
-
-    <!--
-      ResolvedFileToPublish.Culture is missing for satellite assemblies from project references.
-      Since we need the culture to correctly generate blazor.boot.json, we cross-reference the culture we calculate as part of _ResolveBlazorWasmOutputs
-    -->
-    <JoinItems Left="@(ResolvedFileToPublish)"
-               Right="@(_BlazorOutputWithTargetPath->HasMetadata('Culture'))"
-               LeftMetadata="*"
-               RightMetadata="Culture"
-               ItemSpecToUse="Left">
-      <Output TaskParameter="JoinResult" ItemName="_ResolvedSatelliteToPublish" />
-    </JoinItems>
-
+  <Target Name="_ProcessPublishFilesForBlazor" DependsOnTargets="LoadStaticWebAssetsBuildManifest" AfterTargets="ILLink">
+    
     <PropertyGroup>
-      <_BlazorPublishOutputPath Condition="'$(StaticWebAssetBasePath)' != '/'">wwwroot\$(StaticWebAssetBasePath.Replace('/', '\').Trim('\'))\</_BlazorPublishOutputPath>
-      <_BlazorPublishOutputPath Condition="'$(StaticWebAssetBasePath)' == '/'">wwwroot\</_BlazorPublishOutputPath>
-      <_BlazorFrameworkPublishPath>$(_BlazorPublishOutputPath)_framework\</_BlazorFrameworkPublishPath>
+      <_BlazorEnableTimeZoneSupport>$(BlazorEnableTimeZoneSupport)</_BlazorEnableTimeZoneSupport>
+      <_BlazorEnableTimeZoneSupport Condition="'$(_BlazorEnableTimeZoneSupport)' == ''">false</_BlazorEnableTimeZoneSupport>
+      <_BlazorInvariantGlobalization>$(InvariantGlobalization)</_BlazorInvariantGlobalization>
+      <_BlazorInvariantGlobalization Condition="'$(_BlazorInvariantGlobalization)' == ''">true</_BlazorInvariantGlobalization>
+      <_BlazorAotEnabled>$(UsingBrowserRuntimeWorkload)</_BlazorAotEnabled>
+      <_BlazorAotEnabled Condition="'$(_BlazorAotEnabled)' == ''">false</_BlazorAotEnabled>
+      <_BlazorLinkerEnabled>$(PublishTrimmed)</_BlazorLinkerEnabled>
+      <_BlazorLinkerEnabled Condition="'$(_BlazorLinkerEnabled)' == ''">false</_BlazorLinkerEnabled>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ResolvedFileToPublish Remove="@(_ResolvedSatelliteToPublish)" />
-      <ResolvedFileToPublish Include="@(_ResolvedSatelliteToPublish)" />
-
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.a'" />
-
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-        Condition="'$(BlazorEnableTimeZoneSupport)' == 'false' AND '%(ResolvedFileToPublish.FileName)%(ResolvedFileToPublish.Extension)' == 'dotnet.timezones.blat'" />
-
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-        Condition="'$(InvariantGlobalization)' == 'true' AND '%(ResolvedFileToPublish.Extension)' == '.dat' AND $([System.String]::Copy('%(ResolvedFileToPublish.FileName)').StartsWith('icudt'))" />
-
-      <!-- Remove dotnet.js from publish output -->
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.RelativePath)' == 'dotnet.js'" />
-
-      <!-- Remove pdbs from the publish output -->
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'$(CopyOutputSymbolsToPublishDirectory)' != 'true' AND '%(Extension)' == '.pdb'" />
-
-      <_BlazorPublishDlls Include="@(ResolvedFileToPublish)" RemoveMetadata="RelativePath" Condition="'%(Extension)' == '.dll'" TargetPath="wwwroot/_framework/%(RelativePath)" />
-      <_BlazorPublishWasmRuntime Include="@(ResolvedFileToPublish)" RemoveMetadata="RelativePath" Condition="'%(Extension)' == '.wasm'" TargetPath="wwwroot/_framework/%(RelativePath)" />
-      <_BlazorPublishTimezone Include="@(ResolvedFileToPublish)" RemoveMetadata="RelativePath" Condition="'%(Extension)' == '.blat'" TargetPath="wwwroot/_framework/%(RelativePath)" />
-      <_BlazorPublishGlobalization Include="@(ResolvedFileToPublish)" RemoveMetadata="RelativePath" Condition="'%(Extension)' == '.dat'" TargetPath="wwwroot/_framework/%(RelativePath)" />
-      <_BlazorPublishDebugSymbols Include="@(ResolvedFileToPublish)"  RemoveMetadata="RelativePath" Condition="'%(Extension)' == '.pdb'" TargetPath="wwwroot/_framework/%(RelativePath)" />
-
-    </ItemGroup>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorPublishDlls)"
-      RelativePathPattern="wwwroot/**"
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="Publish"
-      AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="runtime"
-      CopyToOutputDirectory="Never"
-      CopyToPublishDirectory="PreserveNewest"
-      ContentRoot="$(PublishDir)wwwroot"
-      BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/*.dll"
+    <!-- The list of static web assets already contains all the assets from the build. We want to correct certain assets that might
+         have changed as part of the publish process. We are going to do so as follows:
+         * We will update Blazor runtime asset dlls if we are running PublishTrimmed
+         * We will update Blazor native runtime resources if we are using Aot
+         Other than that, we'll filter the unwanted assets from the list of resolved files to publish in the same way we did during the build.
+    -->
+    <ComputeBlazorPublishAssets 
+      ResolvedFilesToPublish="@(ResolvedFileToPublish)"
+      TimeZoneSupport="$(_BlazorEnableTimeZoneSupport)"
+      PublishPath="$(PublishDir)"
+      LinkerEnabled="$(_BlazorLinkerEnabled)"
+      AotEnabled="$(_BlazorAotEnabled)"
+      WasmAotAssets="@(WasmNativeAsset)"
+      InvariantGlobalization="$(_BlazorInvariantGlobalization)"
+      CopySymbols="$(CopyOutputSymbolsToPublishDirectory)"
+      ExistingAssets="@(StaticWebAsset)"
     >
-      <Output TaskParameter="Assets" ItemName="_DotnetRuntimePublishStaticWebAsset" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorPublishWasmRuntime)"
-      RelativePathPattern="wwwroot/**"      
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="Publish"
-      AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="native"
-      CopyToOutputDirectory="Never"
-      CopyToPublishDirectory="PreserveNewest"
-      ContentRoot="$(PublishDir)wwwroot"
-      BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/*.wasm"
-    >
-    <Output TaskParameter="Assets" ItemName="_WasmRuntimePublishStaticWebAsset" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorPublishTimezone)"
-      RelativePathPattern="wwwroot/**"      
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="Publish"
-      AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="native"
-      CopyToOutputDirectory="Never"
-      CopyToPublishDirectory="PreserveNewest"
-      ContentRoot="$(PublishDir)wwwroot"
-      BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/*.blat"
-    >
-      <Output TaskParameter="Assets" ItemName="_WasmRuntimeTimezonePublishStaticWebAsset" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorPublishGlobalization)"
-      RelativePathPattern="wwwroot/**"      
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="Publish"
-      AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="native"
-      CopyToOutputDirectory="Never"
-      CopyToPublishDirectory="PreserveNewest"
-      ContentRoot="$(PublishDir)wwwroot"
-      BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/icudt*"
-    >
-      <Output TaskParameter="Assets" ItemName="_WasmRuntimeGlobalizationPublishStaticWebAsset" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(ResolvedFileToPublish)"
-      RelativePathPattern="wwwroot/**"      
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="Publish"
-      AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="native"
-      CopyToOutputDirectory="Never"
-      CopyToPublishDirectory="PreserveNewest"
-      ContentRoot="$(PublishDir)wwwroot"
-      BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/blazor.webassembly.js"
-    >
-      <Output TaskParameter="Assets" ItemName="_BlazorJsPublishStaticWebAsset" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorPublishDebugSymbols)"
-      RelativePathPattern="wwwroot/**"      
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="Publish"
-      AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="symbols"
-      CopyToOutputDirectory="Never"
-      CopyToPublishDirectory="PreserveNewest"
-      ContentRoot="$(PublishDir)wwwroot"
-      BasePath="$(StaticWebAssetBasePath)"
-      RelativePathFilter="**/*.pdb"
-    >
-      <Output TaskParameter="Assets" ItemName="_BlazorJsDebugSymbolsPublishStaticWebAsset" />
-    </DefineStaticWebAssets>
-
-    <ItemGroup>
-      <_BlazorPublishAsset Include="@(_DotnetRuntimePublishStaticWebAsset);
-        @(_WasmRuntimePublishStaticWebAsset);
-        @(_WasmRuntimeTimezonePublishStaticWebAsset);
-        @(_WasmRuntimeGlobalizationPublishStaticWebAsset);
-        @(_BlazorJsPublishStaticWebAsset);
-        @(_BlazorJsDebugSymbolsPublishStaticWebAsset)" />
-
-      <_OtherPublishAssets Include="@(ResolvedFileToPublish)" Exclude="@(_BlazorPublishAsset->'%(OriginalItemSpec)')" />
+      <Output TaskParameter="NewCandidates" ItemName="_NewBlazorPublishStaticWebAssets" />
+      <Output TaskParameter="UpdatedCandidates" ItemName="_UpdatedBlazorStaticWebAssets" />
+      <Output TaskParameter="FilesToRemove" ItemName="_FilesToRemove" />
+    </ComputeBlazorPublishAssets>    
+    
+    <ItemGroup>      
+      <ResolvedFileToPublish Remove="@(_FilesToRemove)" />
+      <StaticWebAsset Remove="@(_UpdatedBlazorStaticWebAssets)" />
+      <StaticWebAsset Include="@(_UpdatedBlazorStaticWebAssets)" />
+      <StaticWebAsset Include="@(_NewBlazorPublishStaticWebAssets)" />
     </ItemGroup>
 
     <ItemGroup Condition="'@(ResolvedFileToPublish->AnyHaveMetadataValue('RelativePath', 'web.config'))' != 'true'">
@@ -647,14 +430,19 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_GeneratePublishBlazorBootJson" DependsOnTargets="_ProcessPublishFilesForBlazor">
-    <!-- Generate the publish boot json -->
+
     <ItemGroup>
-      <_BlazorPublishBootResource
-        Include="@(ResolvedFileToPublish)"
-        Condition="$([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith($(_BlazorFrameworkPublishPath.Replace('\', '/')))) AND '%(Extension)' != '.a'" />
+      <_BlazorPublishAsset 
+        Include="@(StaticWebAsset)" 
+        Condition="'%(AssetKind)' != 'Build' and '%(AssetTraitName)' == 'BlazorWebassemblyResource' and '%(RelativePath)' != '_framework/blazor.webassembly.js'" />
+      
+      <_BlazorPublishConfigFile 
+        Include="@(StaticWebAsset)" 
+        Condition="'%(AssetTraitName)' == 'BlazorWebassemblyResource' and '%(AssetTraitValue)' == 'settings'"/>
+    
     </ItemGroup>
 
-    <GetFileHash Files="@(_BlazorPublishBootResource)" Algorithm="SHA256" HashEncoding="base64">
+    <GetFileHash Files="@(_BlazorPublishAsset)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorPublishBootResourceWithHash" />
     </GetFileHash>
 
@@ -674,20 +462,33 @@ Copyright (c) .NET Foundation. All rights reserved.
       LinkerEnabled="$(PublishTrimmed)"
       CacheBootResources="$(BlazorCacheBootResources)"
       OutputPath="$(IntermediateOutputPath)blazor.publish.boot.json"
-      ConfigurationFiles="@(_BlazorConfigFile)"
+      ConfigurationFiles="@(_BlazorPublishConfigFile)"
       LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
       InvariantGlobalization="$(InvariantGlobalization)"
       LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)" />
 
     <ItemGroup>
-      <ResolvedFileToPublish
+      <_PublishBlazorBootJson
         Include="$(IntermediateOutputPath)blazor.publish.boot.json"
-        RelativePath="$(_BlazorFrameworkPublishPath)blazor.boot.json" />
-
-      <ResolvedFileToPublish
-        Include="@(_BlazorJSFile)"
-        RelativePath="$(_BlazorFrameworkPublishPath)%(FileName)%(Extension)" />
+        RelativePath="_framework/blazor.boot.json" />
     </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_PublishBlazorBootJson)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="Publish"
+      AssetRole="Primary"
+      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitValue="manifest"
+      CopyToOutputDirectory="Never"
+      CopyToPublishDirectory="PreserveNewest"
+      ContentRoot="$(PublishDir)wwwroot"
+      BasePath="$(StaticWebAssetBasePath)"
+      >
+    <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+  </DefineStaticWebAssets>
+
   </Target>
 
   <Target Name="_BlazorWasmNative"
@@ -696,20 +497,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'">
 
     <!--
-      Native compilation produces a copy of the dotnet.js and dotnet.wasm file that are required to run the app. Replace the regular js and wams files with the AOTed version.
+      Native compilation produces a copy of the dotnet.js and dotnet.wasm file that are required to run the app. Replace the regular js and wasm files with the AOTed version.
       But first, mangle the new dotnet.js file to include the runtime version.
     -->
 
-    <Copy SourceFiles="@(WasmNativeAsset)" DestinationFiles="%(RootDir)%(Directory)\dotnet.$(_DotNetJsVersion).js" Condition="%(FileName) == 'dotnet' AND %(Extension) == '.js'">
-      <Output TaskParameter="CopiedFiles" ItemName="_PublishNativeDotnetJsFile" />
-    </Copy>
-
     <ItemGroup>
-      <ResolvedFileToPublish Remove="$(_BlazorDotNetJSFilePath)" Condition="'@(WasmNativeAsset->Count())' != '0'"/>
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="(%(FileName) == 'dotnet' AND %(Extension) == '.wasm') AND '@(WasmNativeAsset->Count())' != '0'" />
-
-      <ResolvedFileToPublish Include="@(_PublishNativeDotnetJsFile)" AssetType="native" RelativePath="%(FileName)%(Extension)" />
-      <ResolvedFileToPublish Include="@(WasmNativeAsset)" AssetType="native" RelativePath="dotnet.wasm" Condition="%(FileName) == 'dotnet' AND %(Extension) == '.wasm'"/>
     </ItemGroup>
   </Target>
 
@@ -730,47 +523,61 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_CompressedFileOutputPath>$(IntermediateOutputPath)compress\</_CompressedFileOutputPath>
       <_BlazorWebAssemblyBrotliIncremental>true</_BlazorWebAssemblyBrotliIncremental>
     </PropertyGroup>
-
-    <ItemGroup>
-      <_FileToCompress
-        Include="@(ResolvedFileToPublish)"
-        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('wwwroot/'))" />
-    </ItemGroup>
-
-    <Message Text="Compressing Blazor WebAssembly publish artifacts. This may take a while..." Importance="High" />
-
-    <MakeDir Directories="$(_CompressedFileOutputPath)" Condition="!Exists('$(_CompressedFileOutputPath)')" />
-
+    
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <_DotNetHostDirectory>$(NetCoreRoot)</_DotNetHostDirectory>
       <_DotNetHostFileName>dotnet</_DotNetHostFileName>
       <_DotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
+    
+    <Message Text="Compressing Blazor WebAssembly publish artifacts. This may take a while..." Importance="High" />
+
+    <MakeDir Directories="$(_CompressedFileOutputPath)" Condition="!Exists('$(_CompressedFileOutputPath)')" />
+
+    <ItemGroup>
+      <_GzipFileToCompressForPublish Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build' and ('%(AssetTraitName)' == 'BlazorWebAssemblyResource' or '%(AssetTraitName)' == 'Culture')" >
+        <RelatedAsset>%(Identity)</RelatedAsset>
+        <AssetRole>Alternative</AssetRole>
+        <AssetTraitName>Content-Encoding</AssetTraitName>
+        <AssetTraitValue>gzip</AssetTraitValue>
+      </_GzipFileToCompressForPublish>
+      
+      <_BrotliFileToCompressForPublish Include="@(_GzipFileToCompressForPublish)">
+        <AssetTraitValue>br</AssetTraitValue>
+      </_BrotliFileToCompressForPublish>
+    </ItemGroup>
+
+    <GZipCompress
+      FilesToCompress="@(_GzipFileToCompressForPublish)"
+      OutputDirectory="$(_CompressedFileOutputPath)">
+
+      <Output TaskParameter="CompressedFiles" ItemName="_BlazorPublishGZipCompressedFile" />
+      <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
+    </GZipCompress>
 
     <BrotliCompress
       OutputDirectory="$(_CompressedFileOutputPath)"
-      FilesToCompress="@(_FileToCompress)"
+      FilesToCompress="@(_BrotliFileToCompressForPublish)"
       CompressionLevel="$(_BlazorBrotliCompressionLevel)"
       SkipIfOutputIsNewer="$(_BlazorWebAssemblyBrotliIncremental)"
       ToolAssembly="$(_BlazorWebAssemblySdkToolAssembly)"
       ToolExe="$(_DotNetHostFileName)"
       ToolPath="$(_DotNetHostDirectory)">
 
-      <Output TaskParameter="CompressedFiles" ItemName="_BrotliCompressedFile" />
+      <Output TaskParameter="CompressedFiles" ItemName="_BlazorPublishBrotliCompressedFile" />
       <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
     </BrotliCompress>
-
-    <GZipCompress
-      OutputDirectory="$(_CompressedFileOutputPath)"
-      FilesToCompress="@(_FileToCompress)">
-
-      <Output TaskParameter="CompressedFiles" ItemName="_BlazorPublishGZipCompressedFile" />
-      <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
-    </GZipCompress>
-
+   
     <ItemGroup>
-      <ResolvedFileToPublish Include="@(_BrotliCompressedFile)" />
-      <ResolvedFileToPublish Include="@(_BlazorPublishGZipCompressedFile)" />
+      <_BlazorPublishGZipCompressedFile>
+        <OriginalItemSpec>%(RelatedAsset)</OriginalItemSpec>
+      </_BlazorPublishGZipCompressedFile>
+      <_BlazorPublishBrotliCompressedFile>
+        <OriginalItemSpec>%(RelatedAsset)</OriginalItemSpec>
+      </_BlazorPublishBrotliCompressedFile>
+
+      <StaticWebAsset Include="@(_BlazorPublishGZipCompressedFile->'%(FullPath)')" />
+      <StaticWebAsset Include="@(_BlazorPublishBrotliCompressedFile->'%(FullPath)')" />
     </ItemGroup>
   </Target>
 

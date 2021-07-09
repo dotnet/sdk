@@ -43,6 +43,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string CopyToPublishDirectory { get; set; }
 
+        public string OriginalItemSpec { get; set; }
+
         public static StaticWebAsset FromTaskItem(ITaskItem item)
         {
             var result = FromTaskItemCore(item);
@@ -84,24 +86,32 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 AssetTraitValue = item.GetMetadata(nameof(AssetTraitValue)),
                 CopyToOutputDirectory = item.GetMetadata(nameof(CopyToOutputDirectory)),
                 CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
+                OriginalItemSpec = item.GetMetadata(nameof(OriginalItemSpec)),
             };
 
         public void ApplyDefaults()
         {
             CopyToOutputDirectory = string.IsNullOrEmpty(CopyToOutputDirectory) ? AssetCopyOptions.Never : CopyToOutputDirectory;
-            CopyToPublishDirectory = string.IsNullOrEmpty(CopyToOutputDirectory) ? AssetCopyOptions.PreserveNewest : CopyToPublishDirectory;
+            CopyToPublishDirectory = string.IsNullOrEmpty(CopyToPublishDirectory) ? AssetCopyOptions.PreserveNewest : CopyToPublishDirectory;
             AssetKind = !string.IsNullOrEmpty(AssetKind) ? AssetKind : !ShouldCopyToPublishDirectory() ? AssetKinds.Build : AssetKinds.All;
             AssetMode = string.IsNullOrEmpty(AssetMode) ? AssetModes.All : AssetMode;
             AssetRole = string.IsNullOrEmpty(AssetRole) ? AssetRoles.Primary : AssetRole;
         }
 
-        public string ComputeTargetPath(string pathPrefix)
+        public string ComputeTargetPath(string pathPrefix, char separator)
         {
             var prefix = pathPrefix != null ? Normalize(pathPrefix) : "";
             // These have been normalized already, so only contain forward slashes
-            return Path.Combine(prefix, SourceType == SourceTypes.Discovered || SourceType == SourceTypes.Computed ? "" : BasePath, RelativePath)
-                .Replace('/', Path.DirectorySeparatorChar)
-                .TrimStart(Path.DirectorySeparatorChar);
+            string computedBasePath = IsDiscovered() || IsComputed() ? "" : BasePath;
+            if (computedBasePath == "/")
+            {
+                // We need to special case the base path "/" to make sure it gets correctly combined with the prefix
+                computedBasePath = "";
+            }
+            return Path.Combine(prefix, computedBasePath, RelativePath)
+                .Replace('/', separator)
+                .Replace('\\', separator)
+                .TrimStart(separator);
         }
 
         public ITaskItem ToTaskItem()
@@ -120,7 +130,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             result.SetMetadata(nameof(AssetTraitValue), AssetTraitValue);
             result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
             result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
-
+            result.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
             return result;
         }
 
@@ -156,6 +166,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 throw new InvalidOperationException($"The '{nameof(RelativePath)}' for the asset must be defined for '{Identity}'.");
             }
+
+            if (string.IsNullOrEmpty(OriginalItemSpec))
+            {
+                throw new InvalidOperationException($"The '{nameof(OriginalItemSpec)}' for the asset must be defined for '{Identity}'.");
+            }            
 
             switch (AssetKind)
             {
@@ -212,7 +227,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             string assetTraitName,
             string assetTraitValue,
             string copyToOutputDirectory,
-            string copyToPublishDirectory)
+            string copyToPublishDirectory,
+            string originalItemSpec)
         {
             var result = new StaticWebAsset
             {
@@ -229,7 +245,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 AssetTraitName = assetTraitName,
                 AssetTraitValue = assetTraitValue,
                 CopyToOutputDirectory = copyToOutputDirectory,
-                CopyToPublishDirectory = copyToPublishDirectory
+                CopyToPublishDirectory = copyToPublishDirectory,
+                OriginalItemSpec = originalItemSpec
             };
 
             result.ApplyDefaults();
@@ -245,6 +262,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             ContentRoot = NormalizeContentRootPath(ContentRoot);
             BasePath = Normalize(BasePath);
             RelativePath = Normalize(RelativePath);
+            RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath(RelatedAsset) : RelatedAsset;
         }
 
         // Normalizes the given path to a content root path in the way we expect it:
@@ -326,8 +344,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                    RelativePath == asset.RelativePath &&
                    AssetKind == asset.AssetKind &&
                    AssetMode == asset.AssetMode &&
+                   AssetRole == asset.AssetRole &&
+                   RelatedAsset == asset.RelatedAsset &&
+                   AssetTraitName == asset.AssetTraitName &&
+                   AssetTraitValue == asset.AssetTraitValue &&
                    CopyToOutputDirectory == asset.CopyToOutputDirectory &&
-                   CopyToPublishDirectory == asset.CopyToPublishDirectory;
+                   CopyToPublishDirectory == asset.CopyToPublishDirectory &&
+                   OriginalItemSpec == asset.OriginalItemSpec;
         }
 
         public static class AssetModes
@@ -389,8 +412,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             $"RelatedAsset: {RelatedAsset}, " +
             $"AssetTraitName: {AssetTraitName}, " +
             $"AssetTraitValue: {AssetTraitValue}, " +
-            $"AssetKind: {CopyToOutputDirectory}, " +
-            $"AssetKind: {CopyToPublishDirectory}";
+            $"CopyToOutputDirectory: {CopyToOutputDirectory}, " +
+            $"CopyToPublishDirectory: {CopyToPublishDirectory}, " +
+            $"OriginalItemSpec: {OriginalItemSpec}";
 
         public override int GetHashCode()
         {
@@ -410,6 +434,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             hash.Add(AssetTraitValue);
             hash.Add(CopyToOutputDirectory);
             hash.Add(CopyToPublishDirectory);
+            hash.Add(OriginalItemSpec);
             return hash.ToHashCode();
 #else
             int hashCode = 1447485498;
@@ -427,6 +452,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetTraitValue);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToOutputDirectory);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToPublishDirectory);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(OriginalItemSpec);
             return hashCode;
 #endif
         }

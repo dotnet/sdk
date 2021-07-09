@@ -46,8 +46,28 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     {
                         // We have an asset we want to copy to the output folder.
                         fileOutputPath = Path.Combine(normalizedOutputPath, asset.RelativePath);
-                        copyToOutputFolder.Add(new TaskItem(asset.Identity, new Dictionary<string, string>
+                        string source = null;
+                        if (asset.IsComputed())
                         {
+                            if (File.Exists(asset.Identity))
+                            {
+                                Log.LogMessage("Source for asset '{0}' is '{0}' since the asset exists.", asset.Identity, asset.OriginalItemSpec);
+                                source = asset.Identity;
+                            }
+                            else
+                            {
+                                Log.LogMessage("Source for asset '{0}' is '{1}' since the asset does not exist.", asset.Identity, asset.OriginalItemSpec);
+                                source = asset.OriginalItemSpec;
+                            }
+                        }
+                        else
+                        {
+                            source = asset.Identity;
+                        }
+
+                        copyToOutputFolder.Add(new TaskItem(source, new Dictionary<string, string>
+                        {
+                            ["OriginalItemSpec"] = asset.Identity,
                             ["TargetPath"] = fileOutputPath,
                             ["CopyToOutputDirectory"] = asset.CopyToOutputDirectory
                         }));

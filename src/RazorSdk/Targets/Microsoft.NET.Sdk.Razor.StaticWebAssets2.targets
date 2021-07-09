@@ -134,6 +134,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         * "AssetTraitValue": The value of the trait or characteristic that differentiates this related or dependent asset from a primary asset.
         * "CopyToBuildDirectory": Same from Content (PreserveNewest, Always)
         * "CopyToPublishDirectory": Same from Content (PreserveNewest, Always)
+        * "OriginalItemSpec": The original spec from where the item was defined
 
       With regards to how assets are consumed in different scenarios (when they are part of the main project being built or are consumed as a reference) there are three posible options:
       * All: Which means the asset must be used in all situations.
@@ -243,7 +244,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       GenerateStaticWebAssetsPublishManifest
     </ComputeReferencedStaticWebAssetsPublishManifestDependsOn>
 
-    <ResolvePublishStaticWebAssetsDependsOn>RemoveExistingStaticWebAssets;LoadStaticWebAssetsBuildManifest;ComputeReferencedProjectsPublishAssets;$(ResolvePublishStaticWebAssetsDependsOn)</ResolvePublishStaticWebAssetsDependsOn>
+    <ResolvePublishStaticWebAssetsDependsOn>LoadStaticWebAssetsBuildManifest;ComputeReferencedProjectsPublishAssets;$(ResolvePublishStaticWebAssetsDependsOn)</ResolvePublishStaticWebAssetsDependsOn>
+
+    <CopyStaticWebAssetsToPublishDirectoryDependsOn>StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest;$(CopyStaticWebAssetsToPublishDirectoryDependsOn)</CopyStaticWebAssetsToPublishDirectoryDependsOn>
 
     <!-- TMP: Pack -->
     <GenerateStaticWebAssetsPackTargetsDependsOn>
@@ -294,6 +297,34 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!-- Build -->
+
+  <Target Name="CopyStaticWebAssetsToOutputFolder" DependsOnTargets="_RestoreBuildAssets;_SplitAssetsByCopyOptions;">
+    <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+    </ReadStaticWebAssetsManifestFile>
+    
+    <ItemGroup>
+      <Content Remove="@(StaticWebAsset->'%(OriginalItemSpec)')"/>
+      <None Remove="@(StaticWebAsset->'%(OriginalItemSpec)')"/>
+    </ItemGroup>
+
+    <CollectStaticWebAssetsToCopy Assets="@(StaticWebAsset)" OutputPath="$(OutputPath)\wwwroot\">
+      <Output TaskParameter="AssetsToCopy" ItemName="_BuildStaticWebAssetsTargetPath" />
+    </CollectStaticWebAssetsToCopy>
+
+    <Copy SourceFiles="@(_BuildStaticWebAssetsTargetPath)"
+      DestinationFiles="@(_BuildStaticWebAssetsTargetPath->'%(TargetPath)')"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+  </Copy>
+
+  </Target>
 
   <Target Name="CopyStaticWebAssetsToOutputFolder">
     <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
@@ -383,7 +414,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <StaticWebAsset Remove="%(_UpdatedAssets.OriginalItemSpec)"/>
-      <StaticWebAsset Include="@(_UpdatedAssets)" RemoveMetadata="OriginalItemSpec"/>
+      <StaticWebAsset Include="@(_UpdatedAssets)" />
     </ItemGroup>
   </Target>
 
@@ -413,23 +444,28 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="ResolvePublishStaticWebAssets" DependsOnTargets="$(ResolvePublishStaticWebAssetsDependsOn)" />
-
-  <!-- Before we load assets from the manifest we cleanup any potential existing asset that might be present by default
-       for example, assets from packages as a result of a publish (no-build) invocation. Those assets were already taken
-       into account when we built the build manifest that we are about to load for resuming the publish process. -->
-  <Target Name="RemoveExistingStaticWebAssets" BeforeTargets="LoadStaticWebAssetsBuildManifest">
+  
+  <Target Name="LoadStaticWebAssetsBuildManifest" BeforeTargets="ComputeResolvedFilesToPublishList">
+    <!-- Before we load assets from the manifest we cleanup any potential existing asset that might be present by default
+         for example, assets from packages as a result of a publish (no-build) invocation. Those assets were already taken
+         into account when we built the build manifest that we are about to load for resuming the publish process. -->
     <ItemGroup>
       <StaticWebAsset Remove="@(StaticWebAsset)" />
       <StaticWebAssetManifest Remove="@(StaticWebAssetManifest)" />
       <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
     </ItemGroup>
-  </Target>
 
-  <Target Name="LoadStaticWebAssetsBuildManifest" BeforeTargets="ComputeResolvedFilesToPublishList">
     <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
       <Output TaskParameter="RelatedManifests" ItemName="StaticWebAssetManifest" />
     </ReadStaticWebAssetsManifestFile>
+
+    <ItemGroup>
+      <Content Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+      <None Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+      <ResolvedFileToPublish Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+      <ResolvedFileToPublish Remove="@(StaticWebAsset)" />
+    </ItemGroup>
   </Target>
 
   <Target Name="ComputeReferencedStaticWebAssetsPublishManifest"
@@ -450,12 +486,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContinueOnError="!$(BuildingProject)"
       SkipNonexistentTargets="true" />
 
-    <ComputeReferencedProjectAssets Manifests="@(StaticWebAssetManifest)" AssetKind="Publish">
+    <ComputeReferencedProjectAssets Manifests="@(StaticWebAssetManifest)" ExistingAssets="@(StaticWebAsset)" AssetKind="Publish">
       <Output TaskParameter="StaticWebAssets" ItemName="StaticWebAsset" />
     </ComputeReferencedProjectAssets>
   </Target>
 
-  <Target Name="CopyStaticWebAssetsToPublishDirectory" BeforeTargets="ComputeAndCopyFilesToPublishDirectory" DependsOnTargets="StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+  <Target Name="CopyStaticWebAssetsToPublishDirectory" BeforeTargets="ComputeAndCopyFilesToPublishDirectory" DependsOnTargets="$(CopyStaticWebAssetsToPublishDirectoryDependsOn)">
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="StaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
@@ -475,9 +511,22 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="LoadStaticWebAssetsPublishManifest">
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)" />
+      <StaticWebAssetManifest Remove="@(StaticWebAssetManifest)" />
+      <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
+    </ItemGroup>
+
     <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetPublishManifestPath)">
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
-    </ReadStaticWebAssetsManifestFile>    
+    </ReadStaticWebAssetsManifestFile>
+
+    <ItemGroup>
+      <Content Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+      <None Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+      <ResolvedFileToPublish Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+      <ResolvedFileToPublish Remove="@(StaticWebAsset)" />
+    </ItemGroup>
   </Target>
 
   <Target Name="AddStaticWebAssetsToTheListOfResolvedAssetsToPublish" BeforeTargets="GetCopyToPublishDirectoryItems" DependsOnTargets="ResolvePublishStaticWebAssets" Condition="'$(StaticWebAssetTransitiveMode)' == 'SelfContained'">
@@ -493,6 +542,19 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
     <!-- References -->
+
+    <Target Name="_CleanupReferencedProjectItemGroups" BeforeTargets="GetCopyToPublishDirectoryItems" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+      <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
+        <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      </ReadStaticWebAssetsManifestFile>
+        
+      <ItemGroup>
+        <Content Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+        <None Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+        <ResolvedFileToPublish Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+      </ItemGroup>
+    </Target>
+  
 
     <Target Name="ResolveReferencedProjectsStaticWebAssets" DependsOnTargets="ResolveStaticWebAssetsConfiguration;PrepareProjectReferences">
       <ItemGroup>
@@ -522,7 +584,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Output TaskParameter="Manifests" ItemName="StaticWebAssetManifest" />
       </MergeManifestProperties>
 
-      <ComputeReferencedProjectAssets Manifests="@(StaticWebAssetManifest)" AssetKind="Build">
+      <ComputeReferencedProjectAssets Manifests="@(StaticWebAssetManifest)" ExistingAssets="@(StaticWebAsset)" AssetKind="Build">
         <Output TaskParameter="StaticWebAssets" ItemName="StaticWebAsset" />
         <Output TaskParameter="DiscoveryPatterns" ItemName="StaticWebAssetDiscoveryPattern" />
       </ComputeReferencedProjectAssets>
@@ -599,6 +661,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <_CurrentProjectStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(SourceId)' == '$(PackageId)'" />
+      <Content Remove="@(StaticWebAsset->'%(OriginalItemSpec)')"/>
+      <None Remove="@(StaticWebAsset->'%(OriginalItemSpec)')"/>
     </ItemGroup>
 
     <PropertyGroup>

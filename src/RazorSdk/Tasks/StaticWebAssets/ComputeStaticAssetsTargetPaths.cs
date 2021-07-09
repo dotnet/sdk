@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -16,6 +17,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string PathPrefix { get; set; }
 
+        public bool UseAlternatePathDirectorySeparator { get; set; }
+
         [Output]
         public ITaskItem[] AssetsWithTargetPath { get; set; }
 
@@ -23,12 +26,21 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             try
             {
-                AssetsWithTargetPath = Assets
-                    .Select(StaticWebAsset.FromTaskItem)
-                    .Select(a => new TaskItem(a.Identity, new Dictionary<string, string> {
-                        ["TargetPath"] = a.ComputeTargetPath(PathPrefix)
-                    }))
-                    .ToArray();
+                Log.LogMessage("Using path prefix '{0}'", PathPrefix);
+                AssetsWithTargetPath = new TaskItem[Assets.Length];
+
+                for (var i = 0; i < Assets.Length; i++)
+                {
+                    var staticWebAsset = StaticWebAsset.FromTaskItem(Assets[i]);
+                    var result = staticWebAsset.ToTaskItem();
+                    var targetPath = staticWebAsset.ComputeTargetPath(
+                        PathPrefix,
+                        UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar);
+
+                    result.SetMetadata("TargetPath", targetPath);
+                    
+                    AssetsWithTargetPath[i] = result;
+                }
             }
             catch (Exception ex)
             {

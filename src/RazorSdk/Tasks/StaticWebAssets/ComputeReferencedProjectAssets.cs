@@ -16,6 +16,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         public ITaskItem[] Manifests { get; set; }
 
         [Required]
+        public ITaskItem[] ExistingAssets { get; set; }
+
+        [Required]
         public string AssetKind { get; set; }
 
         [Output]
@@ -36,6 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     return false;
                 }
 
+                var existingAssets = ExistingAssets.ToDictionary(a => a.ItemSpec, a => StaticWebAsset.FromTaskItem(a));
                 var staticWebAssets = new Dictionary<string, StaticWebAsset>();
                 var discoveryPatterns = new Dictionary<string, StaticWebAssetsManifest.DiscoveryPattern>();
                 foreach (var manifest in manifests)
@@ -46,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         break;
                     }
 
-                    MergeStaticWebAssets(staticWebAssets, manifest);
+                    MergeStaticWebAssets(staticWebAssets, existingAssets, manifest);
 
                     if (Log.HasLoggedErrors)
                     {
@@ -71,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var manifest = Manifests[i];
                 var manifestType = manifest.GetMetadata("ManifestType");
-                if (!string.Equals(AssetKind, manifestType, StringComparison.OrdinalIgnoreCase))
+                if (!StaticWebAssetsManifest.ManifestTypes.IsType(manifestType, AssetKind))
                 {
                     Log.LogMessage(
                         "Skipping manifest '{0}' because manifest type '{1}' is different from asset kind '{2}'",
@@ -92,14 +96,16 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
         }
 
-        private void MergeStaticWebAssets(Dictionary<string, StaticWebAsset> staticWebAssets, StaticWebAssetsManifest manifest)
+        private void MergeStaticWebAssets(
+            Dictionary<string, StaticWebAsset> staticWebAssets,
+            Dictionary<string, StaticWebAsset> existingStaticWebAssets,
+            StaticWebAssetsManifest manifest)
         {
             foreach (var asset in manifest.Assets)
             {
                 // Discovered and computed assets only matter for the current project. When they are being
                 // used from a referenced project they get transformed into `Project` assets.
-                if (asset.SourceType == StaticWebAsset.SourceTypes.Discovered ||
-                    asset.SourceType == StaticWebAsset.SourceTypes.Computed)
+                if (asset.IsDiscovered() || asset.IsComputed())
                 {
                     asset.SourceType = StaticWebAsset.SourceTypes.Project;
                 }
@@ -120,18 +126,18 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 // * Static web assets are converted to regular publish items during the publish process as part of GetCopyToPublishDirectoryItems.
                 // * Assets from the current project are considered to be at the root and properties like the BasePath are ignored.
                 // None of the two aspects above, affects how we compute assets here.
-                if (asset.AssetMode != StaticWebAsset.AssetModes.All)
+                if (!asset.IsForCurrentAndReferencedProjects())
                 {
                     switch (manifest.Mode)
                     {
                         case StaticWebAssetsManifest.ManifestModes.Default:
-                            if (asset.AssetMode == StaticWebAsset.AssetModes.CurrentProject)
+                            if (asset.IsForReferencedProjectsOnly())
                             {
                                 continue;
                             }
                             break;
                         case StaticWebAssetsManifest.ManifestModes.Root:
-                            if (asset.AssetMode == StaticWebAsset.AssetModes.Reference)
+                            if (asset.IsForReferencedProjectsOnly())
                             {
                                 continue;
                             }
@@ -141,19 +147,33 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     }
                 }
 
-                if (string.Equals(AssetKind, StaticWebAssetsManifest.ManifestTypes.Publish, StringComparison.OrdinalIgnoreCase))
+                if (StaticWebAssetsManifest.ManifestTypes.IsPublish(AssetKind) && asset.IsBuildOnly())
                 {
-                    if (string.Equals(asset.AssetKind, StaticWebAsset.AssetKinds.Build, StringComparison.OrdinalIgnoreCase))
+                    // If we are evaluating references for publish assets, we filter down assets that are build only.
+                    // Build manifests are allowed to contain publish assets to make it easy for apps to declare them
+                    // statically on the project (via CopyToOutputDirectory and CopyToPublishDirectory), however on publish
+                    // manifests we want to avoid having the build only assets listed.
+                    continue;
+                }
+
+                if (staticWebAssets.TryGetValue(asset.Identity, out var defined))
+                {
+                    if (!asset.Equals(defined))
                     {
-                        // If we are evaluating references for publish assets, we filter down assets that are build only.
-                        // Build manifests are allowed to contain publish assets to make it easy for apps to declare them
-                        // statically on the project (via CopyToOutputDirectory and CopyToPublishDirectory), however on publish
-                        // manifests we want to avoid having the build only assets listed.
+                        Log.LogError(
+                            "Found conflicting definitions for the same asset '{0}' and '{1}'",
+                            asset.ToString(),
+                            defined.ToString());
+                        break;
+                    }
+                    else
+                    {
+                        // There's already an asset with a compatible definition, so continue.
                         continue;
                     }
                 }
 
-                if (staticWebAssets.TryGetValue(asset.Identity, out var existing))
+                if (existingStaticWebAssets.TryGetValue(asset.Identity, out var existing))
                 {
                     if (!asset.Equals(existing))
                     {

@@ -15,11 +15,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);_AddServiceWorkerAssets</ResolveStaticWebAssetsInputsDependsOn>
+    <CopyStaticWebAssetsToPublishDirectoryDependsOn>$(CopyStaticWebAssetsToPublishDirectoryDependsOn);_WriteServiceWorkerAssetsManifest</CopyStaticWebAssetsToPublishDirectoryDependsOn>
   </PropertyGroup>
   
   <Target Name="_AddServiceWorkerAssets" DependsOnTargets="_ComputeServiceWorkerAssets">
     <ItemGroup>
-      <StaticWebAsset Include="@(_ServiceWorkerStaticWebAsset)" RemoveMetadata="OriginalItemSpec" />
+      <StaticWebAsset Include="@(_ServiceWorkerStaticWebAsset)" />
     </ItemGroup>
   </Target>
 
@@ -40,23 +41,34 @@ Copyright (c) .NET Foundation. All rights reserved.
       -->
 
       <!-- This is the dev service worker, which is defined as a Build static web asset -->      
-      <_BuildServiceWorker Include="@(ServiceWorker->'%(Identity)')" SourceType="Discovered" AssetKind="Build" CopyToPublishDirectory="Never" />
+      <_BuildServiceWorker 
+        Include="@(ServiceWorker->'%(Identity)')" 
+        OriginalItemSpec="@(ServiceWorker->'%(Identity)')"
+        SourceType="Discovered"
+        AssetKind="Build"
+        CopyToPublishDirectory="Never"
+        AssetTraitName="BlazorServiceWorker"
+        AssetTraitValue="ServiceWorkerJs" />
       
       <!-- This is the publish service worker, which will be generated during publish and that is defined here as a Publish
            static web asset.
       -->
-      <_PublishServiceWorker Include="$(_PublishServiceWorkerSourcePath)" 
-        CopyToPublishDirectory="PreserveNewest">
+      <_PublishServiceWorker Include="$(_PublishServiceWorkerSourcePath)" OriginalItemSpec="$(_PublishServiceWorkerSourcePath)" CopyToPublishDirectory="PreserveNewest">
         <TargetPath>@(ServiceWorker->'%(Identity)')</TargetPath>
         <ContentRoot>$(IntermediateOutputPath)\service-worker</ContentRoot>
+        <AssetTraitName>BlazorServiceWorker</AssetTraitName>
+        <AssetTraitValue>ServiceWorkerJs</AssetTraitValue>
       </_PublishServiceWorker>
 
       <!-- This is the publish service worker manifest file -->
       <_ServiceWorkerManifest 
+        OriginalItemSpec="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest)"
         Include="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest)"
         CopyToOutputDirectory="Never"
         AssetKind="Publish"
-        TargetPath="wwwroot\$(ServiceWorkerAssetsManifest)" />
+        TargetPath="wwwroot\$(ServiceWorkerAssetsManifest)"
+        AssetTraitName="BlazorServiceWorker"
+        AssetTraitValue="ServiceWorkerManifest" />
     </ItemGroup>
 
     <DefineStaticWebAssets
@@ -73,23 +85,20 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="_WriteServiceWorkerAssetsManifest" DependsOnTargets="_ComputeServiceWorkerAssets" AfterTargets="GenerateStaticWebAssetsPublishManifest">
+  <Target Name="_WriteServiceWorkerAssetsManifest" DependsOnTargets="_ComputeServiceWorkerAssets;LoadStaticWebAssetsPublishManifest" AfterTargets="GenerateStaticWebAssetsPublishManifest">
 
-    <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetPublishManifestPath)">
-      <Output TaskParameter="Assets" ItemName="_PublishStaticWebAsset" />
-    </ReadStaticWebAssetsManifestFile>    
+    <ItemGroup>
+      <_PublishAssetsForManifest Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' != 'BlazorServiceWorker' and '%(AssetRole)' != 'Alternative'" />
+    </ItemGroup>
 
-    <ComputeStaticWebAssetsTargetPaths Assets="@(_PublishStaticWebAsset)" PathPrefix="">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(_PublishAssetsForManifest)" PathPrefix="" UseAlternatePathDirectorySeparator="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_AssetsForManifestWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 
     <ItemGroup>
-      <_ServiceWorkItemExclusion Include="@(_ServiceWorkerStaticWebAsset)" />
-
       <_ServiceWorkItem Include="@(_AssetsForManifestWithTargetPath)">
         <AssetUrl>%(_AssetsForManifestWithTargetPath.TargetPath)</AssetUrl>
       </_ServiceWorkItem>
-      <_ServiceWorkItem Remove="@(_ServiceWorkItemExclusion)" />
     </ItemGroup>
 
     <GenerateServiceWorkerAssetsManifest

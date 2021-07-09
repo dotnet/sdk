@@ -57,6 +57,36 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
+        public void PublishMinimal_Works()
+        {
+            // Arrange
+            // Minimal has no project references, service worker etc. This is pretty close to the project template.
+            var testAsset = "BlazorWasmMinimal";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "App.razor.css"), "h1 { font-size: 16px; }");
+            File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "appsettings.development.json"), "{}");
+
+            var publish = new PublishCommand(ProjectDirectory);
+            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
+            var publishResult = publish.Execute("/bl");
+            publishResult.Should().Pass();
+
+            var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();
+            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.publish.json");
+            new FileInfo(path).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(manifest, LoadPublishManifest());
+
+            AssertPublishAssets(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
+                publishPath,
+                intermediateOutputPath);
+        }
+
+        [Fact]
         public void Build_Hosted_Works()
         {
             // Arrange

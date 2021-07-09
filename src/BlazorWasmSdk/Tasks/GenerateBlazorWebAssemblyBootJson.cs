@@ -100,24 +100,24 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
                     var fileName = resource.GetMetadata("FileName");
                     var extension = resource.GetMetadata("Extension");
-                    var resourceCulture = resource.GetMetadata("Culture");
-                    var assetType = resource.GetMetadata("AssetType");
-                    var resourceName = $"{fileName}{extension}";
+                    var assetTraitName = resource.GetMetadata("AssetTraitName");
+                    var assetTraitValue = resource.GetMetadata("AssetTraitValue");
+                    var resourceName = Path.GetFileName(resource.GetMetadata("RelativePath"));
 
                     if (IsLazyLoadedAssembly(resourceName))
                     {
                         resourceData.lazyAssembly ??= new ResourceHashesByNameDictionary();
                         resourceList = resourceData.lazyAssembly;
                     }
-                    else if (!string.IsNullOrEmpty(resourceCulture))
+                    else if (string.Equals("Culture", assetTraitName))
                     {
                         resourceData.satelliteResources ??= new Dictionary<string, ResourceHashesByNameDictionary>(StringComparer.OrdinalIgnoreCase);
-                        resourceName = resourceCulture + "/" + resourceName;
+                        resourceName = assetTraitValue + "/" + resourceName;
 
-                        if (!resourceData.satelliteResources.TryGetValue(resourceCulture, out resourceList))
+                        if (!resourceData.satelliteResources.TryGetValue(assetTraitValue, out resourceList))
                         {
                             resourceList = new ResourceHashesByNameDictionary();
-                            resourceData.satelliteResources.Add(resourceCulture, resourceList);
+                            resourceData.satelliteResources.Add(assetTraitValue, resourceList);
                         }
                     }
                     else if (string.Equals(extension, ".pdb", StringComparison.OrdinalIgnoreCase))
@@ -126,7 +126,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         if (IsLazyLoadedAssembly($"{fileName}.dll"))
                         {
                             resourceList = resourceData.lazyAssembly;
-                        } else {
+                        }
+                        else
+                        {
                             resourceList = resourceData.pdb;
                         }
                     }
@@ -134,7 +136,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     {
                         resourceList = resourceData.assembly;
                     }
-                    else if (string.Equals(assetType, "native", StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(assetTraitName, "BlazorWebassemblyResource", StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(assetTraitValue, "native", StringComparison.OrdinalIgnoreCase))
                     {
                         resourceList = resourceData.runtime;
                     }
