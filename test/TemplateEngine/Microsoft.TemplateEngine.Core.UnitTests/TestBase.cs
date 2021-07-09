@@ -37,13 +37,32 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 if (preamble.Length > 0)
                 {
                     byte[] readPreamble = new byte[preamble.Length];
-                    Assert.Equal(readPreamble.Length, output.Read(readPreamble, 0, readPreamble.Length));
+                    int totalBytesRead = 0;
+                    while (totalBytesRead < readPreamble.Length)
+                    {
+                        int bytesRead = output.Read(readPreamble, totalBytesRead, readPreamble.Length - totalBytesRead);
+                        if (bytesRead == 0)
+                        {
+                            break;
+                        }
+                        totalBytesRead += bytesRead;
+                    }
                     Assert.Equal(preamble, readPreamble);
                 }
             }
 
             byte[] resultBytes = new byte[output.Length - output.Position];
-            output.Read(resultBytes, 0, resultBytes.Length);
+            int totalRead = 0;
+            while (totalRead < resultBytes.Length)
+            {
+                int bytesRead = output.Read(resultBytes, totalRead, resultBytes.Length - totalRead);
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+                totalRead += bytesRead;
+            }
+
             string actual = encoding.GetString(resultBytes);
             Assert.Equal(expected, actual);
 

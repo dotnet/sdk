@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             Config = config;
             _flushThreshold = flushThreshold;
             CurrentBuffer = new byte[bufferSize];
-            CurrentBufferLength = source.Read(CurrentBuffer, 0, CurrentBuffer.Length);
+            CurrentBufferLength = ReadExactBytes(source, CurrentBuffer, 0, CurrentBuffer.Length);
 
             Encoding encoding = EncodingUtil.Detect(CurrentBuffer, CurrentBufferLength, out byte[] bom);
             EncodingConfig = new EncodingConfig(Config, encoding);
@@ -125,7 +125,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             {
                 byte[] tmp = new byte[_trie.MaxLength + 1];
                 Buffer.BlockCopy(CurrentBuffer, CurrentBufferPosition, tmp, 0, CurrentBufferLength - CurrentBufferPosition);
-                int nRead = _source.Read(tmp, CurrentBufferLength - CurrentBufferPosition, tmp.Length - CurrentBufferLength);
+                int nRead = ReadExactBytes(_source, tmp, CurrentBufferLength - CurrentBufferPosition, tmp.Length - CurrentBufferLength);
                 CurrentBuffer = tmp;
                 CurrentBufferLength += nRead - _bomSize;
                 CurrentBufferPosition = 0;
@@ -181,7 +181,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             //Fill the remaining spaces in the buffer with new data, save how
             //  many we've read for recalculating the new effective buffer size
-            int nRead = _source.Read(CurrentBuffer, bytesToPreserveInBuffer, CurrentBufferLength - bytesToPreserveInBuffer);
+            int nRead = ReadExactBytes(_source, CurrentBuffer, bytesToPreserveInBuffer, CurrentBufferLength - bytesToPreserveInBuffer);
             CurrentBufferLength = bytesToPreserveInBuffer + nRead;
 
             //The new buffer position is set to point at the byte that buffer
@@ -368,7 +368,8 @@ namespace Microsoft.TemplateEngine.Core.Util
                     _target.Position -= buffer.Length;
                 }
 
-                int nRead = _target.Read(buffer, 0, buffer.Length);
+                int nRead = ReadExactBytes(_target, buffer, 0, buffer.Length);
+
                 int best = -1;
                 int bestPos = -1;
                 for (int i = nRead - match.MinLength; i >= 0; --i)
@@ -420,7 +421,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                     _target.Position -= buffer.Length;
                 }
 
-                int nRead = _target.Read(buffer, 0, buffer.Length);
+                int nRead = ReadExactBytes(_target, buffer, 0, buffer.Length);
                 bool anyMatch = false;
                 int token = -1;
                 int i = nRead - match.MinLength;
@@ -496,7 +497,7 @@ namespace Microsoft.TemplateEngine.Core.Util
         public void Inject(Stream staged)
         {
             _source = new CombinedStream(staged, _source, inner => _source = inner);
-            CurrentBufferLength = _source.Read(CurrentBuffer, 0, CurrentBufferLength);
+            CurrentBufferLength = ReadExactBytes(_source, CurrentBuffer, 0, CurrentBufferLength);
             CurrentBufferPosition = 0;
         }
 
@@ -537,5 +538,26 @@ namespace Microsoft.TemplateEngine.Core.Util
             //Ran out of places to check and haven't reached the actual match, consume all the way to the end
             currentBufferPosition = bufferLength;
         }
+
+        private int ReadExactBytes(Stream stream, byte[] buffer, int offset, int count)
+        {
+            if (count + offset > buffer.Length)
+            {
+                //cannot read more than available buffer length
+                count = buffer.Length - offset;
+            }
+            int totalRead = 0;
+            while (totalRead < count)
+            {
+                int bytesRead = stream.Read(buffer, totalRead + offset, count - totalRead);
+                if (bytesRead == 0)
+                {
+                    return totalRead;
+                }
+                totalRead += bytesRead;
+            }
+            return totalRead;
+        }
     }
 }
+
