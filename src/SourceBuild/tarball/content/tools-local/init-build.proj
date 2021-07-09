@@ -54,6 +54,18 @@
 
     <Move SourceFiles="@(UnpackedSourceBuildReferencePackages)" DestinationFiles="$(ReferencePackagesDir)%(Filename)%(Extension)" />
 
+    <!-- remove some reference packages that are generated incorrectly and instead use the prebuilt checked-in version instead -->
+    <!-- relevant issues: https://github.com/dotnet/runtime/issues/44646, https://github.com/dotnet/runtime/issues/45183, 
+         https://github.com/dotnet/runtime/issues/45417.   this should be fixed for the 6.0 release.                           -->
+    <ItemGroup>
+      <PrebuiltPackagesToUse Include="$(PrebuiltPackagesPath)/*.nupkg" />
+      <ReferencePackagesToOverride Include="@(PrebuiltPackagesToUse -> '$(ReferencePackagesDir)/%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+    <Message Text="Overriding @(ReferencePackagesToOverride) with @(PrebuiltPackagesToUse)" Importance="High" />
+
+    <Delete Files="@(ReferencePackagesToOverride)" />
+
     <!-- Setup the PackageVersions.props file to be a combination of SourceBuilt and GennedPackages -->
     <Copy SourceFiles="$(PrebuiltSourceBuiltPackagesPath)PackageVersions.props" DestinationFiles="$(IntermediatePath)SourceBuiltPackageVersions.props" />
 

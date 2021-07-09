@@ -203,8 +203,6 @@
       File="$(ArchiveArtifactsTextFile)"
       Lines="@(ArtifactUrls)"
       Overwrite="true" />
-
-    <MakeDir Directories="$(TarballRootDir)packages/prebuilt" />
   </Target>
 
 </Project>
