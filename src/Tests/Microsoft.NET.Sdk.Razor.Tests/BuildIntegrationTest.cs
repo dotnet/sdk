@@ -160,8 +160,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "refs", "mscorlib.dll")).Should().Exist();
         }
 
-        [Fact]
-        public void Build_AddsApplicationPartAttributes()
+        [CoreMSBuildOnlyFact]
+        public void Build_AddsApplicationPartAttributes_DotnetMSBuild()
+            => Build_AddsApplicationPartAttributes("SimpleMvc", "ConsolidatedAssemblyApplicationPartFactory");
+
+        [FullMSBuildOnlyFact]
+        public void Build_AddsApplicationPartAttributes_DesktopMSBuild()
+            => Build_AddsApplicationPartAttributes("SimpleMvc.Views", "CompiledRazorAssemblyApplicationPartFactory");
+
+        private void Build_AddsApplicationPartAttributes(string assemblyName, string attributeName)
         {
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
@@ -171,10 +178,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
-            var assemblyPath = Path.Combine(intermediateOutputPath, "SimpleMvc.dll");
+            var assemblyPath = Path.Combine(intermediateOutputPath, $"{assemblyName}.dll");
 
-            AssemblyInfo.Get(assemblyPath)["AssemblyTitleAttribute"].Should().Be("SimpleMvc");
-            AssemblyInfo.Get(assemblyPath)["ProvideApplicationPartFactoryAttribute"].Should().Contain("ConsolidatedAssemblyApplicationPartFactory");
+            AssemblyInfo.Get(assemblyPath)["AssemblyTitleAttribute"].Should().Be(assemblyName);
+            AssemblyInfo.Get(assemblyPath)["ProvideApplicationPartFactoryAttribute"].Should().Contain(attributeName);
 
         }
 
