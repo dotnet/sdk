@@ -192,4 +192,7 @@
   <data name="VisitorRightCountShouldMatchMappersSetSize" xml:space="preserve">
     <value>The provided right count when creating the visitor should match the right set size specified for the mappers.</value>
   </data>
+  <data name="CannotAddMemberToInterface" xml:space="preserve">
+    <value>Cannot add interface member '{0}' to {1} because does not exist on {2}</value>
+  </data>
 </root>
