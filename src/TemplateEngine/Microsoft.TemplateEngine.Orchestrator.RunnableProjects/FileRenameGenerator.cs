@@ -74,15 +74,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private static string ApplyRenameProcessorToFilename(IProcessor processor, string sourceFilename)
         {
-            using (Stream source = new MemoryStream(Encoding.UTF8.GetBytes(sourceFilename)))
-            using (Stream target = new MemoryStream())
+            using (MemoryStream source = new MemoryStream(Encoding.UTF8.GetBytes(sourceFilename)))
+            using (MemoryStream target = new MemoryStream())
             {
                 processor.Run(source, target);
-
-                byte[] targetData = new byte[target.Length];
-                target.Position = 0;
-                target.Read(targetData, 0, targetData.Length);
-                return Encoding.UTF8.GetString(targetData);
+                return Encoding.UTF8.GetString(target.ToArray());
             }
         }
 

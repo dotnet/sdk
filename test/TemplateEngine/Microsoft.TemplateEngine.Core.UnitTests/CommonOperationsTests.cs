@@ -38,14 +38,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There");
             Stream d = new MemoryStream(data);
-            Stream result = new MemoryStream();
+            MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
             Assert.True(modified);
-            result.Position = 0;
-            byte[] outcome = new byte[result.Length];
-            result.Read(outcome, 0, outcome.Length);
-            string outcomeString = Encoding.UTF8.GetString(outcome);
+            string outcomeString = Encoding.UTF8.GetString(result.ToArray());
             Assert.Equal("    There", outcomeString);
         }
 
@@ -66,14 +63,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There");
             Stream d = new MemoryStream(data);
-            Stream result = new MemoryStream();
+            MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
             Assert.True(modified);
-            result.Position = 0;
-            byte[] outcome = new byte[result.Length];
-            result.Read(outcome, 0, outcome.Length);
-            string outcomeString = Encoding.UTF8.GetString(outcome);
+            string outcomeString = Encoding.UTF8.GetString(result.ToArray());
             Assert.Equal("Hello    \r\n", outcomeString);
         }
 
@@ -94,14 +88,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream d = new MemoryStream(data);
-            Stream result = new MemoryStream();
+            MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
             Assert.True(modified);
-            result.Position = 0;
-            byte[] outcome = new byte[result.Length];
-            result.Read(outcome, 0, outcome.Length);
-            string outcomeString = Encoding.UTF8.GetString(outcome);
+            string outcomeString = Encoding.UTF8.GetString(result.ToArray());
             Assert.Equal("Hello    \r\n    You", outcomeString);
         }
 
@@ -122,14 +113,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream d = new MemoryStream(data);
-            Stream result = new MemoryStream();
+            MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
             Assert.True(modified);
-            result.Position = 0;
-            byte[] outcome = new byte[result.Length];
-            result.Read(outcome, 0, outcome.Length);
-            string outcomeString = Encoding.UTF8.GetString(outcome);
+            string outcomeString = Encoding.UTF8.GetString(result.ToArray());
             Assert.Equal("Hello    \r\n        \r\n    You", outcomeString);
         }
 
@@ -150,14 +138,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream d = new MemoryStream(data);
-            Stream result = new MemoryStream();
+            MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
             Assert.True(modified);
-            result.Position = 0;
-            byte[] outcome = new byte[result.Length];
-            result.Read(outcome, 0, outcome.Length);
-            string outcomeString = Encoding.UTF8.GetString(outcome);
+            string outcomeString = Encoding.UTF8.GetString(result.ToArray());
             Assert.Equal("Hello    \r\n    You", outcomeString);
         }
 
@@ -186,14 +171,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream d = new MemoryStream(data);
-            Stream result = new MemoryStream();
+            MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
             Assert.True(modified);
-            result.Position = 0;
-            byte[] outcome = new byte[result.Length];
-            result.Read(outcome, 0, outcome.Length);
-            string outcomeString = Encoding.UTF8.GetString(outcome);
+            string outcomeString = Encoding.UTF8.GetString(result.ToArray());
             Assert.Equal("Hello    \r\n    You", outcomeString);
         }
 
@@ -218,14 +200,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream d = new MemoryStream(data);
-            Stream result = new MemoryStream();
+            MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
             Assert.True(modified);
             result.Position = 0;
-            byte[] outcome = new byte[result.Length];
-            result.Read(outcome, 0, outcome.Length);
-            string outcomeString = Encoding.UTF8.GetString(outcome);
+            string outcomeString = Encoding.UTF8.GetString(result.ToArray());
             Assert.Equal("Hello    \r\n    You", outcomeString);
         }
 
@@ -246,14 +226,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There     \r\n    You");
             Stream d = new MemoryStream(data);
-            Stream result = new MemoryStream();
+            MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
             Assert.True(modified);
-            result.Position = 0;
-            byte[] outcome = new byte[result.Length];
-            result.Read(outcome, 0, outcome.Length);
-            string outcomeString = Encoding.UTF8.GetString(outcome);
+            string outcomeString = Encoding.UTF8.GetString(result.ToArray());
             Assert.Equal("Hello    \r\n        You", outcomeString);
         }
 
@@ -274,14 +251,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There     \r\n    You");
             Stream d = new MemoryStream(data);
-            Stream result = new MemoryStream();
+            MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
             Assert.True(modified);
-            result.Position = 0;
-            byte[] outcome = new byte[result.Length];
-            result.Read(outcome, 0, outcome.Length);
-            string outcomeString = Encoding.UTF8.GetString(outcome);
+            string outcomeString = Encoding.UTF8.GetString(result.ToArray());
             Assert.Equal("Hello    \r\n     \r\n    You", outcomeString);
         }
 
@@ -302,14 +276,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There     \r\n    You");
             Stream d = new MemoryStream(data);
-            Stream result = new MemoryStream();
+            MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
             Assert.True(modified);
-            result.Position = 0;
-            byte[] outcome = new byte[result.Length];
-            result.Read(outcome, 0, outcome.Length);
-            string outcomeString = Encoding.UTF8.GetString(outcome);
+            string outcomeString = Encoding.UTF8.GetString(result.ToArray());
             Assert.Equal("Hello    \r\n    You", outcomeString);
         }
     }

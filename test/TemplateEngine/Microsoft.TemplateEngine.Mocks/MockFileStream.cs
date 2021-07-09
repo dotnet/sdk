@@ -17,9 +17,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public override void Flush()
         {
-            byte[] buffer = new byte[Length];
-            Read(buffer, 0, buffer.Length);
-            _onFlush(buffer);
+            _onFlush(ToArray());
         }
     }
 }
