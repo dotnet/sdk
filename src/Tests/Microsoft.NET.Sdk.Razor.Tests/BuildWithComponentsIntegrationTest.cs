@@ -20,7 +20,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks();
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/aspnetcore/issues/33796")]
+        [FullMSBuildOnlyFact]
         public void Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks();
 
         [Fact]

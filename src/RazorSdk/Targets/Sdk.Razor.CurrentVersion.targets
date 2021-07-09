@@ -52,8 +52,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <UseRazorSourceGenerator Condition="'$(UseRazorSourceGenerator)' == '' ">true</UseRazorSourceGenerator>
         <!-- The incremental source generator API is disabled on VS 16.11 and below so we disable it there. -->
         <UseRazorSourceGenerator Condition="'$(VisualStudioVersion)' &lt; '17.0'">false</UseRazorSourceGenerator>
-        <!-- Required to support incremental source generator -->
-        <LangVersion Condition="'$(UseRazorSourceGenerator)' != '' ">preview</LangVersion>
         <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">6.0</RazorLangVersion>
       </PropertyGroup>
     </When>
