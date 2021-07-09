@@ -651,7 +651,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="$(GenerateStaticWebAssetsPackTargetsDependsOn)">
 
     <ItemGroup>
-      <_CurrentProjectStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(SourceId)' == '$(PackageId)'" />
+      <_CurrentProjectStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(SourceId)' == '$(PackageId)' and '%(AssetMode)' != 'CurrentProject'" />
       <Content Remove="@(StaticWebAsset->'%(OriginalItemSpec)')"/>
       <None Remove="@(StaticWebAsset->'%(OriginalItemSpec)')"/>
     </ItemGroup>

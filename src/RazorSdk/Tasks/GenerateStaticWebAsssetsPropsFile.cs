@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         private const string AssetTraitValue = "AssetTraitValue";
         private const string CopyToOutputDirectory = "CopyToOutputDirectory";
         private const string CopyToPublishDirectory = "CopyToPublishDirectory";
+        private const string OriginalItemSpec = "OriginalItemSpec";
 
 
         [Required]
@@ -57,8 +58,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
             foreach(var element in orderedAssets)
             {
+                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\{Normalize(element.GetMetadata(RelativePath))}')";
                 itemGroup.Add(new XElement("StaticWebAsset",
-                    new XAttribute("Include", @$"$(MSBuildThisFileDirectory)..\staticwebassets\{Normalize(element.GetMetadata(RelativePath))}"),
+                    new XAttribute("Include", fullPathExpression),
                     new XElement(SourceType, "Package"),
                     new XElement(SourceId, element.GetMetadata(SourceId)),
                     new XElement(ContentRoot, @"$(MSBuildThisFileDirectory)..\staticwebassets\"),
@@ -71,7 +73,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     new XElement(AssetTraitName, element.GetMetadata(AssetTraitName)),
                     new XElement(AssetTraitValue, element.GetMetadata(AssetTraitValue)),
                     new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
-                    new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory))));
+                    new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory))),
+                    new XElement(OriginalItemSpec, fullPathExpression));
             }
 
             var document = new XDocument(new XDeclaration("1.0", "utf-8", "yes"));
