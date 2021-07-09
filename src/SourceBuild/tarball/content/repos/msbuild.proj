@@ -2,29 +2,16 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <ShippingPackagesOutput>$(ProjectDirectory)/artifacts/packages/$(Configuration)/Shipping</ShippingPackagesOutput>
-    <NonShippingPackagesOutput>$(ProjectDirectory)/artifacts/packages/$(Configuration)/NonShipping</NonShippingPackagesOutput>
 
     <OutputVersionArgs>$(OutputVersionArgs) /p:DisableNerdbankVersioning=true</OutputVersionArgs>
 
-    <BuildCommandArgs>--build --publish --pack</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetBuildFromSource=true</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetCoreSdkDir=$(DotNetCliToolDir)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) --configuration $(Configuration)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) --projects $(ProjectDirectory)MSBuild.SourceBuild.slnf</BuildCommandArgs>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <BuildCommandArgs>$(StandardSourceBuildArgs) -v $(LogVerbosity)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) $(OutputVersionArgs)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetCoreSdkDir=$(DotNetCliToolDir)</BuildCommandArgs>
 
-    <!-- all repos that build with arcade currently have a warning about including RestoreSources twice -->
-    <BuildCommandArgs>$(BuildCommandArgs) --warnAsError false</BuildCommandArgs>
-
-    <LogVerbosityOptOut>true</LogVerbosityOptOut>
-    <BuildCommandArgs>$(BuildCommandArgs) -v $(LogVerbosity)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -bl</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -ci</BuildCommandArgs>
-
-    <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
 
     <!-- NuGet SDK resolver only checks nuget.config files. https://github.com/Microsoft/msbuild/issues/2914 -->
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
@@ -33,10 +20,6 @@
     <RepoApiImplemented>false</RepoApiImplemented>
 
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
-
-    <EnvironmentRestoreSources>$(SourceBuiltPackagesPath)</EnvironmentRestoreSources>
-    <EnvironmentRestoreSources>$(EnvironmentRestoreSources)%3B$(ReferencePackagesDir)%3B$(PrebuiltPackagesPath)</EnvironmentRestoreSources>
-    <EnvironmentRestoreSources Condition="'$(BuildWithOnlineSources)' == 'true'">$(EnvironmentRestoreSources)%3Bhttps://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public%40Local/nuget/v3/index.json</EnvironmentRestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -46,20 +29,11 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="runtime" />
-    <RepositoryReference Include="roslyn" />
+    <!-- TODO:  Enable with https://github.com/dotnet/source-build/issues/2274
+    <RepositoryReference Include="runtime" /> -->
+    <!-- TODO:  Enable with https://github.com/dotnet/source-build/issues/2272 
+    <RepositoryReference Include="roslyn" /> -->
   </ItemGroup>
-
-  <ItemGroup>
-    <EnvironmentVariables Include="RestoreSources=$(EnvironmentRestoreSources)" />
-  </ItemGroup>
-
-  <Target Name="SetOutputList" AfterTargets="Package" BeforeTargets="GatherBuiltPackages">
-    <ItemGroup>
-      <PackagesOutputList Include="$(ShippingPackagesOutput)" />
-      <PackagesOutputList Include="$(NonShippingPackagesOutput)" />
-    </ItemGroup>
-  </Target>
 
   <!--
     Begin workaround: https://github.com/dotnet/source-build/issues/933
