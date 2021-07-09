@@ -394,7 +394,7 @@
 
     <WriteLinesToFile
       Lines="&lt;Project /&gt;"
-      File="$([MSBuild]::NormalizePath('$(ClonedSubmoduleDirectory)', '%(DirectoryBuildFilename.Identity)'))"
+      File="$([MSBuild]::NormalizePath('$(SubmoduleDirectory)', '%(DirectoryBuildFilename.Identity)'))"
       Overwrite="True" />
 
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)PreventDirectoryBuildPropsTargetsEscape.complete" Overwrite="true" />
@@ -728,7 +728,7 @@
       ProjectAssetsJsonArchiveFile="$(ProjectAssetsJsonArchiveFile)" />
 
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)WritePrebuiltUsageData.complete" Overwrite="true" />
-</Target>
+  </Target>
 
   <Target Name="GetAllProjectDirectories">
     <ItemGroup>

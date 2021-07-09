@@ -28,4 +28,4 @@ steps:
   parameters:
     sourceFolder: ${{ parameters.sourceFolder }}
     artifactQualifier: TarballBuild
-    condition: and(${{ parameters.condition }}, succeeded())
+    condition: and(${{ parameters.condition }}, succeededOrFailed())
