@@ -131,7 +131,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
 
             var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path, "PackageLibraryDirectDependency");
-            var result = pack.Execute();
+            pack.WithWorkingDirectory(projectDirectory.TestRoot);
+            var result = pack.Execute("/bl");
 
             result.Should().Pass();
 

@@ -175,8 +175,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var extension = Path.GetExtension(file);
                 if (extension != ".br" && extension != ".gz")
                 {
-                    Assert.True(File.Exists($"{file}.gz"));
-                    Assert.True(File.Exists($"{file}.br"));
+                    Assert.True(File.Exists($"{file}.gz"), $"Expected file {$"{file}.gz"} to exist, but it did not.");
+                    Assert.True(File.Exists($"{file}.br"), $"Expected file {$"{file}.br"} to exist, but it did not.");
                 }
             }
         }

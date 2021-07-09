@@ -213,7 +213,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should().Pass();
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorwasm"));
-            publishCommand.Execute("/p:NoBuild=true").Should().Pass();
+            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
+            publishCommand.Execute("/p:NoBuild=true", "/bl").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -630,7 +631,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             File.Move(resxfileInProject, Path.Combine(testInstance.TestRoot, "blazorwasm", "Resource.ja.resx"));
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
-            publishCommand.Execute().Should().Pass();
+            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
+            publishCommand.Execute("/bl").Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -784,8 +786,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Verify static web assets from referenced projects are copied.
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_content/RazorClassLibrary/wwwroot/exampleJsInterop.js.br",
-                "wwwroot/_content/RazorClassLibrary/styles.css.br",
+                "wwwroot/_content/RazorClassLibrary/wwwroot/exampleJsInterop.js",
+                "wwwroot/_content/RazorClassLibrary/styles.css",
             });
 
             // Verify web.config
@@ -1087,14 +1089,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Verify static assets are in the publish directory
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/index.html.br"
+                "wwwroot/index.html"
             });
 
             // Verify static web assets from referenced projects are copied.
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_content/RazorClassLibrary/wwwroot/exampleJsInterop.js.br",
-                "wwwroot/_content/RazorClassLibrary/styles.css.br",
+                "wwwroot/_content/RazorClassLibrary/wwwroot/exampleJsInterop.js",
+                "wwwroot/_content/RazorClassLibrary/styles.css",
             });
             // Verify web.config
             publishDirectory.Should().HaveFiles(new[]
