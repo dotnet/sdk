@@ -264,7 +264,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolveStaticWebAssetsConfiguration">
     <PropertyGroup>
-      <_StaticWebAssetsManifestBase>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework.ToLowerInvariant())</_StaticWebAssetsManifestBase>
+      <_StaticWebAssetsManifestBase>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework.ToLowerInvariant())\</_StaticWebAssetsManifestBase>
       <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
       <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Default</StaticWebAssetProjectMode>
       <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)StaticWebAssets.build.json</StaticWebAssetBuildManifestPath>

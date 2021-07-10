@@ -164,9 +164,21 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
                 if (remainingLazyLoadAssemblies.Count > 0)
                 {
+                    const string message = "Unable to find '{0}' to be lazy loaded later. Confirm that project or " +
+                        "package references are included and the reference is used in the project.";
+
                     Log.LogError(
-                        "Unable to find '{0}' to be lazy loaded later.Confirm that project or package references are included and the reference is used in the project.",
+                        subcategory: null,
+                        errorCode: "BLAZORSDK1001",
+                        helpKeyword: null,
+                        file: null,
+                        lineNumber: 0,
+                        columnNumber: 0,
+                        endLineNumber: 0,
+                        endColumnNumber: 0,
+                        message: message,
                         string.Join(";", LazyLoadedAssemblies.Select(a => a.ItemSpec)));
+
                     return;
                 }
             }

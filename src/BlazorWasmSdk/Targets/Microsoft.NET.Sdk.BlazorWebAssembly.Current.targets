@@ -420,13 +420,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="_AddBlazorWebConfigFile" BeforeTargets="GetCopyToPublishDirectoryItems">
+  <Target Name="_AddBlazorWebConfigFile"  AfterTargets="ILLink">
     <ItemGroup Condition="'@(ResolvedFileToPublish->AnyHaveMetadataValue('RelativePath', 'web.config'))' != 'true'">
-      <AllPublishItemsFullPathWithTargetPath
+      <ResolvedFileToPublish
          Include="$(MSBuildThisFileDirectory)BlazorWasm.web.config"
          ExcludeFromSingleFile="true"
          CopyToPublishDirectory="PreserveNewest"
-         TargetPath="web.config" />
+         RelativePath="web.config" />
     </ItemGroup>
   </Target>
 
