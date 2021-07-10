@@ -489,7 +489,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="CopyStaticWebAssetsToPublishDirectory" BeforeTargets="ComputeAndCopyFilesToPublishDirectory" DependsOnTargets="$(CopyStaticWebAssetsToPublishDirectoryDependsOn)">
-    <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
+    <PropertyGroup>
+      <_StaticWebAssetsPublishPathPrefix>wwwroot</_StaticWebAssetsPublishPathPrefix>
+      <_StaticWebAssetsPublishPathPrefix Condition="'$(StaticWebAssetProjectMode)' != 'Default'">wwwroot/$(StaticWebAssetBasePath)</_StaticWebAssetsPublishPathPrefix>      
+    </PropertyGroup>
+    <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="$(_StaticWebAssetsPublishPathPrefix)">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="StaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 
@@ -526,7 +530,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="AddStaticWebAssetsToTheListOfResolvedAssetsToPublish" BeforeTargets="GetCopyToPublishDirectoryItems" DependsOnTargets="ResolvePublishStaticWebAssets" Condition="'$(StaticWebAssetTransitiveMode)' == 'SelfContained'">
+  <Target Name="AddStaticWebAssetsToTheListOfResolvedAssetsToPublish" BeforeTargets="GetCopyToPublishDirectoryItems" DependsOnTargets="ResolvePublishStaticWebAssets" Condition="'$(StaticWebAssetProjectMode)' == 'SelfContained'">
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="StaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>

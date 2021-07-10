@@ -91,7 +91,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_PublishAssetsForManifest Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' != 'BlazorServiceWorker' and '%(AssetRole)' != 'Alternative'" />
     </ItemGroup>
 
-    <ComputeStaticWebAssetsTargetPaths Assets="@(_PublishAssetsForManifest)" PathPrefix="" UseAlternatePathDirectorySeparator="true">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(_PublishAssetsForManifest)" PathPrefix="$(StaticWebAssetBasePath)" UseAlternatePathDirectorySeparator="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_AssetsForManifestWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 
