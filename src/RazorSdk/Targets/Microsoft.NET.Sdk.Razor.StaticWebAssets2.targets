@@ -264,10 +264,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolveStaticWebAssetsConfiguration">
     <PropertyGroup>
+      <_StaticWebAssetsManifestBase>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework.ToLowerInvariant())</_StaticWebAssetsManifestBase>
       <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
       <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Default</StaticWebAssetProjectMode>
-      <StaticWebAssetBuildManifestPath>$(IntermediateOutputPath)StaticWebAssets.build.json</StaticWebAssetBuildManifestPath>
-      <StaticWebAssetPublishManifestPath>$(IntermediateOutputPath)StaticWebAssets.publish.json</StaticWebAssetPublishManifestPath>
+      <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)StaticWebAssets.build.json</StaticWebAssetBuildManifestPath>
+      <StaticWebAssetPublishManifestPath>$(_StaticWebAssetsManifestBase)StaticWebAssets.publish.json</StaticWebAssetPublishManifestPath>
 
       <_StaticWebAssetsIntermediateOutputPath>$(IntermediateOutputPath)staticwebassets\</_StaticWebAssetsIntermediateOutputPath>
 

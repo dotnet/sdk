@@ -31,7 +31,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
             var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute("/p:ServiceWorkerAssetsManifest=service-worker-assets.js")
+            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
+            buildCommand.Execute("/p:ServiceWorkerAssetsManifest=service-worker-assets.js", "/bl")
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();

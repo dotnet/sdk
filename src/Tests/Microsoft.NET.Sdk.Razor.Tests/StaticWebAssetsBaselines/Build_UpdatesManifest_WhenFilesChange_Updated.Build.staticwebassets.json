@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "qM2DR1Kk4rcSrrl7QXa7jpkYChb4EFt3mWlkRM\u002BsnbY=",
+  "Hash": "4bKi7t0TUuBcoPqXz6fjThaORQL9B4\u002ButoHrXDSXNgA=",
   "Source": "ComponentApp",
   "BasePath": "_content/ComponentApp",
   "Mode": "Default",
@@ -16,38 +16,6 @@
   ],
   "Assets": [
     {
-      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\scopedcss\\bundle\\ComponentApp.styles.css",
-      "SourceId": "ComponentApp",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectRoot}\\obj\\Debug\\net6.0\\scopedcss\\bundle\\",
-      "BasePath": "_content/ComponentApp",
-      "RelativePath": "ComponentApp.styles.css",
-      "AssetKind": "All",
-      "AssetMode": "CurrentProject",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "ScopedCss",
-      "AssetTraitValue": "ApplicationBundle",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest"
-    },
-    {
-      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
-      "SourceId": "ComponentApp",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectRoot}\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\",
-      "BasePath": "_content/ComponentApp",
-      "RelativePath": "ComponentApp.bundle.scp.css",
-      "AssetKind": "All",
-      "AssetMode": "Reference",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "ScopedCss",
-      "AssetTraitValue": "ProjectBundle",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest"
-    },
-    {
       "Identity": "${ProjectRoot}\\wwwroot\\index.html",
       "SourceId": "ComponentApp",
       "SourceType": "Discovered",
@@ -61,7 +29,8 @@
       "AssetTraitName": "",
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest"
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\index.html"
     }
   ]
 }

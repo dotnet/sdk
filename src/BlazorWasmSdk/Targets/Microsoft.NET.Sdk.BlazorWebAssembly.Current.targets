@@ -376,6 +376,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_ProcessPublishFilesForBlazor" DependsOnTargets="LoadStaticWebAssetsBuildManifest" AfterTargets="ILLink">
     
     <PropertyGroup>
+      <!-- Workaround for https://github.com/dotnet/sdk/issues/12114-->
+      <PublishDir Condition="'$(AppendRuntimeIdentifierToOutputPath)' != 'true' AND '$(PublishDir)' == '$(OutputPath)$(RuntimeIdentifier)\$(PublishDirName)\'">$(OutputPath)$(PublishDirName)\</PublishDir>
+
       <_BlazorEnableTimeZoneSupport>$(BlazorEnableTimeZoneSupport)</_BlazorEnableTimeZoneSupport>
       <_BlazorEnableTimeZoneSupport Condition="'$(_BlazorEnableTimeZoneSupport)' == ''">true</_BlazorEnableTimeZoneSupport>
       <_BlazorInvariantGlobalization>$(InvariantGlobalization)</_BlazorInvariantGlobalization>
@@ -415,14 +418,16 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Include="@(_NewBlazorPublishStaticWebAssets)" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="_AddBlazorWebConfigFile" BeforeTargets="GetCopyToPublishDirectoryItems">
     <ItemGroup Condition="'@(ResolvedFileToPublish->AnyHaveMetadataValue('RelativePath', 'web.config'))' != 'true'">
-      <ResolvedFileToPublish
+      <AllPublishItemsFullPathWithTargetPath
          Include="$(MSBuildThisFileDirectory)BlazorWasm.web.config"
          ExcludeFromSingleFile="true"
          CopyToPublishDirectory="PreserveNewest"
-         RelativePath="web.config" />
+         TargetPath="web.config" />
     </ItemGroup>
-
   </Target>
 
   <Target Name="_GeneratePublishBlazorBootJson" DependsOnTargets="_ProcessPublishFilesForBlazor">

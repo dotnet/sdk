@@ -1,5 +1,1 @@
-[
-  "${OutputPath}\\wwwroot\\ComponentApp.styles.css",
-  "${IntermediateOutputPath}\\scopedcss\\bundle\\ComponentApp.styles.css",
-  "${IntermediateOutputPath}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css"
-]
+[]

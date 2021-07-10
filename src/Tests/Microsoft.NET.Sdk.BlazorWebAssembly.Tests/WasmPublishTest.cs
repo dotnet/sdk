@@ -762,7 +762,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             buildCommand.Execute().Should().Pass();
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
-            publishCommand.Execute("/p:NoBuild=true").Should().Pass();
+            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
+            publishCommand.Execute("/p:NoBuild=true", "/bl").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             // Make sure the main project exists
@@ -1034,7 +1035,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
-            publishCommand.Execute("/p:RuntimeIdentifier=linux-x64").Should().Pass();
+            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
+            publishCommand.Execute("/p:RuntimeIdentifier=linux-x64", "/bl").Should().Pass();
 
             AssertRIDPublishOuput(publishCommand, testInstance);
         }
@@ -1047,7 +1049,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
-            publishCommand.Execute().Should().Pass();
+            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
+            publishCommand.Execute("/bl").Should().Pass();
 
             AssertRIDPublishOuput(publishCommand, testInstance);
         }
