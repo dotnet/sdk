@@ -233,6 +233,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);AddStaticWebAssetsManifest</GetCopyToOutputDirectoryItemsDependsOn>
 
+    <CopyStaticWebAssetsToOutputFolderDependsOn>_RestoreStaticWebAssetsBuildAssets;$(CopyStaticWebAssetsToOutputFolderDependsOn)</CopyStaticWebAssetsToOutputFolderDependsOn>
+    
     <!-- StaticWebAssetsPrepareForPublish -> ComputeFilesToPublish -->
 
     <StaticWebAssetsPrepareForPublishDependsOn>$(StaticWebAssetsPrepareForPublishDependsOn);ResolveStaticWebAssetsConfiguration;GenerateStaticWebAssetsPublishManifest</StaticWebAssetsPrepareForPublishDependsOn>
@@ -294,45 +296,46 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Build -->
 
-  <Target Name="CopyStaticWebAssetsToOutputFolder" DependsOnTargets="_RestoreBuildAssets;_SplitAssetsByCopyOptions;">
-    <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
-    </ReadStaticWebAssetsManifestFile>
-    
+  <Target Name="_RestoreStaticWebAssetsBuildAssets">
     <ItemGroup>
-      <Content Remove="@(StaticWebAsset->'%(OriginalItemSpec)')"/>
-      <None Remove="@(StaticWebAsset->'%(OriginalItemSpec)')"/>
+      <StaticWebAsset Remove="@(StaticWebAsset)" />
+      <StaticWebAssetManifest Remove="@(StaticWebAssetManifest)" />
+      <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
     </ItemGroup>
 
-    <CollectStaticWebAssetsToCopy Assets="@(StaticWebAsset)" OutputPath="$(OutputPath)\wwwroot\">
-      <Output TaskParameter="AssetsToCopy" ItemName="_BuildStaticWebAssetsTargetPath" />
-    </CollectStaticWebAssetsToCopy>
-
-    <Copy SourceFiles="@(_BuildStaticWebAssetsTargetPath)"
-      DestinationFiles="@(_BuildStaticWebAssetsTargetPath->'%(TargetPath)')"
-      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-      Retries="$(CopyRetryCount)"
-      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-      UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
-      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
-
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-
-  </Copy>
-
-  </Target>
-
-  <Target Name="CopyStaticWebAssetsToOutputFolder">
     <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
     </ReadStaticWebAssetsManifestFile>
 
+    <ItemGroup>
+      <Content Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+      <None Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyStaticWebAssetsToOutputFolder" DependsOnTargets="$(CopyStaticWebAssetsToOutputFolderDependsOn)" />
+  
+  <Target Name="_SplitStaticWebAssetsByCopyOptions" AfterTargets="CopyStaticWebAssetsToOutputFolder">
+
     <CollectStaticWebAssetsToCopy Assets="@(StaticWebAsset)" OutputPath="$(OutputPath)\wwwroot\">
       <Output TaskParameter="AssetsToCopy" ItemName="_BuildStaticWebAssetsTargetPath" />
     </CollectStaticWebAssetsToCopy>
 
-    <Copy SourceFiles="@(_BuildStaticWebAssetsTargetPath)"
-      DestinationFiles="@(_BuildStaticWebAssetsTargetPath->'%(TargetPath)')"
+    <ItemGroup>
+      <_BuildStaticWebAssetsCopyAlways Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'Always'" />
+      <_BuildStaticWebAssetsPreserveNewest Include="@(_BuildStaticWebAssetsTargetPath)" Condition="'%(CopyToOutputDirectory)' == 'PreserveNewest'" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target 
+    Name="_BuildCopyStaticWebAssetsPreserveNewest"
+    Inputs="@(_BuildStaticWebAssetsPreserveNewest)"
+    Outputs="@(_BuildStaticWebAssetsPreserveNewest->'%(TargetPath)')"
+    AfterTargets="_SplitStaticWebAssetsByCopyOptions">
+
+    <Copy SourceFiles="@(_BuildStaticWebAssetsPreserveNewest)"
+      DestinationFiles="@(_BuildStaticWebAssetsPreserveNewest->'%(TargetPath)')"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
       Retries="$(CopyRetryCount)"
       RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -341,9 +344,27 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
 
-  </Copy>
+    </Copy>
 
   </Target>
+
+  <Target 
+    Name="_BuildCopyStaticWebAssetsAlways"
+    AfterTargets="_SplitStaticWebAssetsByCopyOptions">
+
+    <Copy SourceFiles="@(_BuildStaticWebAssetsCopyAlways)"
+      DestinationFiles="@(_BuildStaticWebAssetsCopyAlways->'%(TargetPath)')"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+
+  </Target>  
 
   <Target Name="AddStaticWebAssetsManifest" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
     <ItemGroup>

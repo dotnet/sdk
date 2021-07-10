@@ -49,9 +49,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         string source = null;
                         if (asset.IsComputed())
                         {
-                            if (File.Exists(asset.Identity))
+                            if (asset.Identity.StartsWith(normalizedOutputPath, StringComparison.Ordinal))
                             {
-                                Log.LogMessage("Source for asset '{0}' is '{0}' since the asset exists.", asset.Identity, asset.OriginalItemSpec);
+                                Log.LogMessage("Source for asset '{0}' is '{1}' since the identity points to the output path.", asset.Identity, asset.OriginalItemSpec);
+                                source = asset.OriginalItemSpec;
+                            }
+                            else if (File.Exists(asset.Identity))
+                            {
+                                Log.LogMessage("Source for asset '{0}' is '{0}' since the asset exists.", asset.Identity);
                                 source = asset.Identity;
                             }
                             else

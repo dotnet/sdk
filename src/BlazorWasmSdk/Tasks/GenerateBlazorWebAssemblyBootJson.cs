@@ -158,6 +158,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
                     if (!resourceList.ContainsKey(resourceName))
                     {
+                        Log.LogMessage("Added resource '{0}' to the manifest.", resource.ItemSpec);
                         resourceList.Add(resourceName, $"sha256-{resource.GetMetadata("FileHash")}");
                     }
                 }
@@ -191,6 +192,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 }
             }
 
+            ListManifestContents(result);
+
             var serializer = new DataContractJsonSerializer(typeof(BootJsonData), new DataContractJsonSerializerSettings
             {
                 UseSimpleDictionaryFormat = true
@@ -198,6 +201,81 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
             using var writer = JsonReaderWriterFactory.CreateJsonWriter(output, Encoding.UTF8, ownsStream: false, indent: true);
             serializer.WriteObject(writer, result);
+        }
+
+        private void ListManifestContents(BootJsonData result)
+        {
+            if (result.resources.assembly == null || result.resources.assembly.Count == 0)
+            {
+                Log.LogMessage("No assemblies defined.");
+            }
+            else
+            {
+                foreach (var assembly in result.resources.assembly)
+                {
+                    Log.LogMessage("Assembly: '{0}' with hash '{1}'", assembly.Key, assembly.Value);
+                }
+            }
+
+            if (result.resources.lazyAssembly == null || result.resources.lazyAssembly.Count == 0)
+            {
+                Log.LogMessage("No lazy loaded assemblies defined.");
+            }
+            else
+            {
+                foreach (var lazyAssembly in result.resources.lazyAssembly)
+                {
+                    Log.LogMessage("Lazy loaded assembly: '{0}' with hash '{1}'", lazyAssembly.Key, lazyAssembly.Value);
+                }
+            }
+
+            if (result.resources.pdb == null || result.resources.pdb.Count == 0)
+            {
+                Log.LogMessage("No debug symbol files defined.");
+            }
+            else
+            {
+                foreach (var symbol in result.resources.pdb)
+                {
+                    Log.LogMessage("Lazy loaded assembly: '{0}' with hash '{1}'", symbol.Key, symbol.Value);
+                }
+            }
+
+            if (result.resources.runtime == null || result.resources.runtime.Count == 0)
+            {
+                Log.LogMessage("No runtime resources defined.");
+            }
+            else
+            {
+                foreach (var native in result.resources.runtime)
+                {
+                    Log.LogMessage("Runtime resource: '{0}' with hash '{1}'", native.Key, native.Value);
+                }
+            }
+
+            if (result.resources.satelliteResources == null || result.resources.satelliteResources.Count == 0)
+            {
+                Log.LogMessage("No satellite resources defined.");
+            }
+            else
+            {
+                foreach (var pair in result.resources.satelliteResources)
+                {
+                    var language = pair.Key;
+                    var resources = pair.Value;
+                    if (resources.Count == 0)
+                    {
+                        Log.LogMessage("No satellite resources defined for '{0}'.", language);
+                    }
+                    else
+                    {
+                        foreach (var assembly in resources)
+                        {
+                            Log.LogMessage("Satellite assembly: '{0}' with hash '{1}' for culture '{2}'", assembly.Key, assembly.Value, language);
+                        }
+                    }
+                }
+            }
         }
 
         private bool TryGetLazyLoadedAssembly(string fileName, out ITaskItem lazyLoadedAssembly)

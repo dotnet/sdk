@@ -82,41 +82,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     if (satelliteAssembly != null)
                     {
                         var inferredCulture = satelliteAssembly.GetMetadata("DestinationSubDirectory").Trim('\\', '/');
-                        Log.LogMessage("Found satellite assembly '{0}' asset for candidate '{1}' with inferred culture", satelliteAssembly.ItemSpec, candidate.ItemSpec, inferredCulture);
+                        Log.LogMessage("Found satellite assembly '{0}' asset for candidate '{1}' with inferred culture '{2}'", satelliteAssembly.ItemSpec, candidate.ItemSpec, inferredCulture);
 
                         var assetCandidate = new TaskItem(satelliteAssembly);
                         assetCandidate.SetMetadata("AssetRole", "Related");
                         assetCandidate.SetMetadata("AssetTraitName", "Culture");
                         assetCandidate.SetMetadata("AssetTraitValue", inferredCulture);
-                        assetCandidate.SetMetadata("RelativePath", inferredCulture);
+                        assetCandidate.SetMetadata("RelativePath", $"_framework/{inferredCulture}/{satelliteAssembly.GetMetadata("FileName")}{satelliteAssembly.GetMetadata("Extension")}");
                         assetCandidate.SetMetadata("RelatedAsset", assetCandidate.GetMetadata("OriginalItemSpec"));
-
-                        assetCandidates.Add(assetCandidate);
-                        continue;
-                    }
-
-                    var projectSatelliteAssembly = ProjectSatelliteAssemblies.FirstOrDefault(s => s.ItemSpec == candidate.ItemSpec);
-                    if (projectSatelliteAssembly != null)
-                    {
-                        var candidateCulture = projectSatelliteAssembly.GetMetadata("Culture");
-                        Log.LogMessage(
-                            "Found satellite assembly '{0}' asset for candidate '{1}' with culture",
-                            projectSatelliteAssembly.ItemSpec,
-                            candidate.ItemSpec,
-                            candidateCulture);
-
-                        var assetCandidate = new TaskItem(projectSatelliteAssembly);
-                        var projectAssemblyAssetPath = Path.GetFullPath(Path.Combine(
-                            OutputPath,
-                            "wwwroot",
-                            "_framework",
-                            ProjectAssembly[0].GetMetadata("FileName") + ProjectAssembly[1].GetMetadata("Extension")));
-
-                        assetCandidate.SetMetadata("AssetRole", "Related");
-                        assetCandidate.SetMetadata("AssetTraitName", "Culture");
-                        assetCandidate.SetMetadata("AssetTraitValue", candidateCulture);
-                        assetCandidate.SetMetadata("RelativePath", Path.Combine("_framework", assetCandidate.GetMetadata("TargetPath")));
-                        assetCandidate.SetMetadata("RelatedAsset", projectAssemblyAssetPath);
 
                         assetCandidates.Add(assetCandidate);
                         continue;
@@ -141,13 +114,15 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         candidate.SetMetadata("AssetTraitValue", culture);
                         var fileName = candidate.GetMetadata("FileName");
                         var suffixIndex = fileName.Length - ".resources".Length;
-                        var relatedAssetPath = Path.Combine(
+                        var relatedAssetPath = Path.GetFullPath(Path.Combine(
                             OutputPath,
                             "wwwroot",
                             "_framework",
-                            fileName.Substring(0, suffixIndex) + ProjectAssembly[0].GetMetadata("Extension"));
+                            fileName.Substring(0, suffixIndex) + ProjectAssembly[0].GetMetadata("Extension")));
 
-                        candidate.SetMetadata("RelatedAsset", Path.GetFullPath(relatedAssetPath));
+                        candidate.SetMetadata("RelatedAsset", relatedAssetPath);
+
+                        Log.LogMessage("Found satellite assembly '{0}' asset for inferred candidate '{1}' with culture '{2}'", candidate.ItemSpec, relatedAssetPath, culture);
                     }
 
                     assetCandidates.Add(candidate);
@@ -162,6 +137,32 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     var debugSymbols = new TaskItem(ProjectDebugSymbols[0]);
                     debugSymbols.SetMetadata("RelativePath", $"_framework/{debugSymbols.GetMetadata("FileName")}{debugSymbols.GetMetadata("Extension")}");
                     assetCandidates.Add(debugSymbols);
+                }
+
+                for (int i = 0; i < ProjectSatelliteAssemblies.Length; i++)
+                {
+                    var projectSatelliteAssembly = ProjectSatelliteAssemblies[i];
+                    var candidateCulture = projectSatelliteAssembly.GetMetadata("Culture");
+                    Log.LogMessage(
+                        "Found satellite assembly '{0}' asset for project '{1}' with culture '{2}'",
+                        projectSatelliteAssembly.ItemSpec,
+                        intermediateAssembly.ItemSpec,
+                        candidateCulture);
+
+                    var assetCandidate = new TaskItem(projectSatelliteAssembly);
+                    var projectAssemblyAssetPath = Path.GetFullPath(Path.Combine(
+                        OutputPath,
+                        "wwwroot",
+                        "_framework",
+                        ProjectAssembly[0].GetMetadata("FileName") + ProjectAssembly[0].GetMetadata("Extension")));
+
+                    assetCandidate.SetMetadata("AssetRole", "Related");
+                    assetCandidate.SetMetadata("AssetTraitName", "Culture");
+                    assetCandidate.SetMetadata("AssetTraitValue", candidateCulture);
+                    assetCandidate.SetMetadata("RelativePath", Path.Combine("_framework", assetCandidate.GetMetadata("TargetPath")));
+                    assetCandidate.SetMetadata("RelatedAsset", projectAssemblyAssetPath);
+
+                    assetCandidates.Add(assetCandidate);
                 }
 
                 for (var i = 0; i < assetCandidates.Count; i++)

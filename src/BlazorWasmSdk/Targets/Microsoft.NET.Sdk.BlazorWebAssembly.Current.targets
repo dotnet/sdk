@@ -284,6 +284,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
+    <ItemGroup>
+      <_BlazorStaticWebAssetByOriginalItemSpec Include="@(_BlazorStaticWebAsset->'%(OriginalItemSpec)')">
+        <OriginalItemSpec>%(Identity)</OriginalItemSpec>
+      </_BlazorStaticWebAssetByOriginalItemSpec>
+    </ItemGroup>
+
     <GetFileHash Files="@(_BlazorStaticWebAsset->'%(OriginalItemSpec)')" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
     </GetFileHash>
@@ -317,7 +323,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetTraitValue="manifest"
       CopyToOutputDirectory="PreserveNewest"
       CopyToPublishDirectory="Never"
-      ContentRoot="$(OutDir)wwwroot"
+      ContentRoot="$(OutputPath)wwwroot"
       BasePath="$(StaticWebAssetBasePath)"
     >
       <Output TaskParameter="Assets" ItemName="_BuildBlazorBootJsonStaticWebAsset" />
@@ -435,8 +441,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_BlazorPublishAsset 
         Include="@(StaticWebAsset)" 
-        Condition="'%(AssetKind)' != 'Build' and '%(AssetTraitName)' == 'BlazorWebassemblyResource' and '%(RelativePath)' != '_framework/blazor.webassembly.js'" />
-      
+        Condition="'%(AssetKind)' != 'Build' and ('%(AssetTraitName)' == 'BlazorWebassemblyResource' or '%(AssetTraitName)' == 'Culture') and '%(RelativePath)' != '_framework/blazor.webassembly.js'" />
+
       <_BlazorPublishConfigFile 
         Include="@(StaticWebAsset)" 
         Condition="'%(AssetTraitName)' == 'BlazorWebassemblyResource' and '%(AssetTraitValue)' == 'settings'"/>
@@ -527,7 +533,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MakeDir Directories="$(_CompressedFileOutputPath)" Condition="!Exists('$(_CompressedFileOutputPath)')" />
 
     <ItemGroup>
-      <_GzipFileToCompressForPublish Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build' and ('%(AssetTraitName)' == 'BlazorWebAssemblyResource' or '%(AssetTraitName)' == 'Culture')" >
+      <_GzipFileToCompressForPublish Include="@(StaticWebAsset)" 
+        Condition="'%(AssetKind)' != 'Build' and ('%(AssetTraitName)' == 'BlazorWebAssemblyResource' or '%(AssetTraitName)' == 'Culture')" >
         <RelatedAsset>%(Identity)</RelatedAsset>
         <AssetRole>Alternative</AssetRole>
         <AssetTraitName>Content-Encoding</AssetTraitName>
@@ -537,6 +544,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BrotliFileToCompressForPublish Include="@(_GzipFileToCompressForPublish)">
         <AssetTraitValue>br</AssetTraitValue>
       </_BrotliFileToCompressForPublish>
+
+      <!-- We compressed a bunch of assets that were not modified since the build process. We can reuse those and avoid the extra compression we just
+           need to check that they are still relevant (we have updated existing assets to account for linking) -->
+      <_AlreadyGzipCompressedAssets 
+        Include="@(StaticWebAsset)"
+        Condition="'%(AssetKind)' == 'All' and ('%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip')" />
+      <_GzipFileToCompressForPublish Remove="@(_AlreadyGzipCompressedAssets->'%(RelatedAsset)')" />
     </ItemGroup>
 
     <GZipCompress
