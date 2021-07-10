@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "ZHwZ9nNYT4Hgzo3ErGLAgUqbgYcbXZEDjFVTA3eMEGw=",
+  "Hash": "Mgbf\u002BXLBuP9z6EjA8ZS6wBADlats7mkZfUZIaCf8uNI=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -14,7 +14,7 @@
       "PublishTarget": "",
       "AdditionalPublishProperties": ";",
       "AdditionalPublishPropertiesToRemove": ";WebPublishProfileFile",
-      "Hash": "zUyV/384OSghx5r883xfE7oXHgT9MlDDS1eRk6jf90A="
+      "Hash": "2uYA9wbA6NL7ZZ4IQS6JBA/ayT5LC/2IcqnlmnrtDSE="
     },
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
@@ -24,7 +24,7 @@
       "PublishTarget": "ComputeReferencedStaticWebAssetsPublishManifest",
       "AdditionalPublishProperties": ";",
       "AdditionalPublishPropertiesToRemove": ";WebPublishProfileFile",
-      "Hash": "Cb/Bi2kHWNiNEsaqJ2iQ\u002BSoaGidTTYAMM9VtfyDH2TU="
+      "Hash": "hN1n7suG5LWbwRybZa3sjmwsdVqlLqj\u002BqCAtUETSBxY="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.build.json",
@@ -34,7 +34,7 @@
       "PublishTarget": "",
       "AdditionalPublishProperties": ";",
       "AdditionalPublishPropertiesToRemove": ";WebPublishProfileFile",
-      "Hash": "OfW3\u002BML2cjZzQSqPfVGCi7W3\u002Bqq8DxdlbzB17YQKaA4="
+      "Hash": "ayFwh0NUHF6VaJBouf0j8YYSUt6rHVeWWuNPK6YhuUY="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
@@ -44,7 +44,7 @@
       "PublishTarget": "ComputeReferencedStaticWebAssetsPublishManifest",
       "AdditionalPublishProperties": ";",
       "AdditionalPublishPropertiesToRemove": ";WebPublishProfileFile",
-      "Hash": "OT5deN\u002B7Z3j\u002BVWfgxur3X2XkjTA0f7ap7mNk2xbO68Y="
+      "Hash": "BqBhKqFMwZGmjGCwxthQuyDk3lmqFP23I4J2Ww0qicA="
     }
   ],
   "DiscoveryPatterns": [],
@@ -167,6 +167,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\PublishProjec---99F8031C\\AppWithPackageAndP2PReference\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css"
+    },
+    {
+      "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\scopedcss\\bundle\\ClassLibrary.styles.css",
+      "SourceId": "ClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\scopedcss\\bundle\\",
+      "BasePath": "_content/ClassLibrary",
+      "RelativePath": "ClassLibrary.styles.css",
+      "AssetKind": "All",
+      "AssetMode": "CurrentProject",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "ScopedCss",
+      "AssetTraitValue": "ApplicationBundle",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\PublishProjec---99F8031C\\ClassLibrary\\obj\\Debug\\net6.0\\scopedcss\\bundle\\ClassLibrary.styles.css"
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
