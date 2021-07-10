@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);_AddServiceWorkerAssets</ResolveStaticWebAssetsInputsDependsOn>
-    <CopyStaticWebAssetsToPublishDirectoryDependsOn>$(CopyStaticWebAssetsToPublishDirectoryDependsOn);_WriteServiceWorkerAssetsManifest</CopyStaticWebAssetsToPublishDirectoryDependsOn>
+    <CopyStaticWebAssetsToPublishDirectoryDependsOn>$(CopyStaticWebAssetsToPublishDirectoryDependsOn);_WritePublishServiceWorkerAssetsManifest</CopyStaticWebAssetsToPublishDirectoryDependsOn>
   </PropertyGroup>
   
   <Target Name="_AddServiceWorkerAssets" DependsOnTargets="_ComputeServiceWorkerAssets">
@@ -28,6 +28,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_PublishServiceWorkerSourcePath>@(ServiceWorker->'%(PublishedContent)')</_PublishServiceWorkerSourcePath>
+      <_BuildServiceWorkerSourcePath>%(ServiceWorker.Identity)</_BuildServiceWorkerSourcePath>
     </PropertyGroup>
 
     <ItemGroup Condition="'@(ServiceWorker)' != ''">
@@ -61,7 +62,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </_PublishServiceWorker>
 
       <!-- This is the publish service worker manifest file -->
-      <_ServiceWorkerManifest 
+      <_PublishServiceWorkerManifest 
         OriginalItemSpec="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest)"
         Include="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest)"
         CopyToOutputDirectory="Never"
@@ -69,10 +70,22 @@ Copyright (c) .NET Foundation. All rights reserved.
         TargetPath="wwwroot\$(ServiceWorkerAssetsManifest)"
         AssetTraitName="BlazorServiceWorker"
         AssetTraitValue="ServiceWorkerManifest" />
+
+      <!-- This is the build service worker manifest file -->
+      <_BuildServiceWorkerManifest 
+        OriginalItemSpec="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest).build"
+        Include="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest).build"
+        CopyToOutputDirectory="PreserveNewest"
+        CopyToPublishDirectory="Never"
+        AssetKind="Build"
+        ContentRoot="$(OutputPath)wwwroot\"
+        TargetPath="wwwroot\$(ServiceWorkerAssetsManifest)"
+        AssetTraitName="BlazorServiceWorker"
+        AssetTraitValue="ServiceWorkerManifest" />
     </ItemGroup>
 
     <DefineStaticWebAssets
-      CandidateAssets="@(_BuildServiceWorker);@(_PublishServiceWorker);@(_ServiceWorkerManifest)"
+      CandidateAssets="@(_BuildServiceWorker);@(_BuildServiceWorkerManifest);@(_PublishServiceWorker);@(_PublishServiceWorkerManifest)"
       RelativePathPattern="wwwroot/**"
       SourceType="Computed"
       SourceId="$(PackageId)"
@@ -85,7 +98,59 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="_WriteServiceWorkerAssetsManifest" DependsOnTargets="_ComputeServiceWorkerAssets;LoadStaticWebAssetsPublishManifest" AfterTargets="GenerateStaticWebAssetsPublishManifest">
+  <Target Name="_WriteBuildServiceWorkerAssetsManifest" DependsOnTargets="_ComputeServiceWorkerAssets;LoadStaticWebAssetsBuildManifest" AfterTargets="GenerateStaticWebAssetsManifest">
+
+    <ItemGroup>
+      <_BuildAssetsForManifest Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' != 'BlazorServiceWorker' and '%(AssetRole)' != 'Alternative' and '%(AssetKind)' != 'Publish' and Exists('%(Identity)')" />
+      <_BuildAssetsForManifest Include="@(StaticWebAsset->'%(OriginalItemSpec)')" Condition="'%(AssetTraitName)' != 'BlazorServiceWorker' and '%(AssetRole)' != 'Alternative' and '%(AssetKind)' != 'Publish' and !Exists('%(Identity)')" />
+    </ItemGroup>
+
+    <ComputeStaticWebAssetsTargetPaths Assets="@(_BuildAssetsForManifest)" PathPrefix="$(StaticWebAssetBasePath)" UseAlternatePathDirectorySeparator="true">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_BuildAssetsForManifestWithTargetPath" />
+    </ComputeStaticWebAssetsTargetPaths>
+
+    <ItemGroup>
+      <_BuildServiceWorkItem Include="@(_BuildAssetsForManifestWithTargetPath)">
+        <AssetUrl>%(_BuildAssetsForManifestWithTargetPath.TargetPath)</AssetUrl>
+      </_BuildServiceWorkItem>
+    </ItemGroup>
+
+    <GenerateServiceWorkerAssetsManifest
+      Version="$(ServiceWorkerAssetsManifestVersion)"
+      Assets="@(_BuildServiceWorkItem)"
+      OutputPath="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest).build">
+      <Output TaskParameter="CalculatedVersion" PropertyName="_BuildServiceWorkerAssetsManifestVersion" />
+    </GenerateServiceWorkerAssetsManifest>
+
+    <ItemGroup>
+      <_BuildServiceWorkerFile Include="@(_ServiceWorkerCopyCandidates)" Condition="'%(Identity)' == '$(_BuildServiceWorkerSourcePath)'" />      
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_BuildServiceWorkerFile->'%(Identity)')"
+      DestinationFiles="@(_BuildServiceWorkerFile->'%(TargetPath)')"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+
+    <WriteLinesToFile
+      File="@(_BuildServiceWorkerFile->'%(TargetPath)')"
+      Lines="/* Manifest version: $(_BuildServiceWorkerAssetsManifestVersion) */"
+      Condition="'$(_BuildServiceWorkerAssetsManifestVersion)' != ''" />
+
+    <ItemGroup>
+      <FileWrites Include="@(_BuildServiceWorkerFile->'%(TargetPath)')" />
+      <FileWrites Include="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest).build" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_WritePublishServiceWorkerAssetsManifest" DependsOnTargets="_ComputeServiceWorkerAssets;LoadStaticWebAssetsPublishManifest" AfterTargets="GenerateStaticWebAssetsPublishManifest">
 
     <ItemGroup>
       <_PublishAssetsForManifest Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' != 'BlazorServiceWorker' and '%(AssetRole)' != 'Alternative'" />
