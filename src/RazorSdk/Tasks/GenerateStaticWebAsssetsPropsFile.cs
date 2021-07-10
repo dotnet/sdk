@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     new XElement(AssetTraitName, element.GetMetadata(AssetTraitName)),
                     new XElement(AssetTraitValue, element.GetMetadata(AssetTraitValue)),
                     new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
-                    new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory))),
-                    new XElement(OriginalItemSpec, fullPathExpression));
+                    new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory)),
+                    new XElement(OriginalItemSpec, fullPathExpression)));
             }
 
             var document = new XDocument(new XDeclaration("1.0", "utf-8", "yes"));

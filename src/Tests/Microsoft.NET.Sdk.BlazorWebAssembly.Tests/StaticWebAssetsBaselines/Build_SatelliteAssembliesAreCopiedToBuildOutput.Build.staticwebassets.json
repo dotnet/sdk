@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "cbTJzM77tcWgvVgyCxKx0HtClkVeg6vtPDBPkggzrmo=",
+  "Hash": "D1n3XkW5k5BGxGcLdn35KaD/q187sakSYLmzHUSazYg=",
   "Source": "blazorwasm",
   "BasePath": "/",
   "Mode": "Root",
@@ -273,6 +273,23 @@
       "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\.nuget\\packages\\microsoft.netcore.app.runtime.mono.browser-wasm\\6.0.0-preview.7.21324.1\\runtimes\\browser-wasm\\native\\dotnet.wasm"
     },
     {
+      "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\es-ES\\classlibrarywithsatelliteassemblies.resources.dll",
+      "SourceId": "blazorwasm",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/es-ES/classlibrarywithsatelliteassemblies.resources.dll",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Related",
+      "RelatedAsset": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\classlibrarywithsatelliteassemblies\\bin\\Debug\\netstandard2.1\\es-ES\\classlibrarywithsatelliteassemblies.resources.dll",
+      "AssetTraitName": "Culture",
+      "AssetTraitValue": "es-ES",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\classlibrarywithsatelliteassemblies\\bin\\Debug\\netstandard2.1\\es-ES\\classlibrarywithsatelliteassemblies.resources.dll"
+    },
+    {
       "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\es\\Microsoft.CodeAnalysis.CSharp.resources.dll",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
@@ -441,6 +458,23 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\.nuget\\packages\\microsoft.codeanalysis.common\\3.4.0\\lib\\netstandard2.0\\it\\Microsoft.CodeAnalysis.resources.dll"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\ja\\blazorwasm.resources.dll",
+      "SourceId": "blazorwasm",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/ja/blazorwasm.resources.dll",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Related",
+      "RelatedAsset": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\blazorwasm.dll",
+      "AssetTraitName": "Culture",
+      "AssetTraitValue": "ja",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "obj\\Debug\\net6.0\\ja\\blazorwasm.resources.dll"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\ja\\Microsoft.CodeAnalysis.CSharp.resources.dll",
@@ -3996,23 +4030,6 @@
       "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\.nuget\\packages\\microsoft.codeanalysis.common\\3.4.0\\lib\\netstandard2.0\\zh-Hant\\Microsoft.CodeAnalysis.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\classlibrarywithsatelliteassemblies.resources.dll",
-      "SourceId": "blazorwasm",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\",
-      "BasePath": "/",
-      "RelativePath": "es-ES",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Related",
-      "RelatedAsset": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\classlibrarywithsatelliteassemblies\\bin\\Debug\\netstandard2.1\\es-ES\\classlibrarywithsatelliteassemblies.resources.dll",
-      "AssetTraitName": "Culture",
-      "AssetTraitValue": "es-ES",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\classlibrarywithsatelliteassemblies\\bin\\Debug\\netstandard2.1\\es-ES\\classlibrarywithsatelliteassemblies.resources.dll"
-    },
-    {
       "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\serviceworkers\\my-service-worker.js",
       "SourceId": "blazorwasm",
       "SourceType": "Discovered",
@@ -6007,16 +6024,16 @@
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "es-ES.gz",
+      "RelativePath": "_framework/es-ES/classlibrarywithsatelliteassemblies.resources.dll.gz",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Alternative",
-      "RelatedAsset": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\classlibrarywithsatelliteassemblies.resources.dll",
+      "RelatedAsset": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\es-ES\\classlibrarywithsatelliteassemblies.resources.dll",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\classlibrarywithsatelliteassemblies.resources.dll"
+      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\es-ES\\classlibrarywithsatelliteassemblies.resources.dll"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\L\u002Bmuk626.gz",
@@ -6119,6 +6136,23 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\Microsoft.Extensions.DependencyInjection.dll"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\lsuoKtvu.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/ja/blazorwasm.resources.dll.gz",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "RelatedAsset": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\ja\\blazorwasm.resources.dll",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\ja\\blazorwasm.resources.dll"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\lvQ9cJQr.gz",
@@ -8006,6 +8040,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "obj\\Debug\\net6.0\\custom-service-worker-assets.js"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\custom-service-worker-assets.js.build",
+      "SourceId": "blazorwasm",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "custom-service-worker-assets.js",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "BlazorServiceWorker",
+      "AssetTraitValue": "ServiceWorkerManifest",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "obj\\Debug\\net6.0\\custom-service-worker-assets.js.build"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\service-worker\\serviceworkers\\my-prod-service-worker.js",

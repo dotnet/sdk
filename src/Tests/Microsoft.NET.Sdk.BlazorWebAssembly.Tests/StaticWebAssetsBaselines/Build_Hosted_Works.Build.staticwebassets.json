@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "bO7OszDPJTZ8\u002BPTLsd0G4LFndZkl7tvwQToQPtuyRSw=",
+  "Hash": "n4vTOQAGrRb2ujy2EiblMFPu7A64nI\u002B0pXG\u002Bne0xiyo=",
   "Source": "blazorhosted",
   "BasePath": "_content/blazorhosted",
   "Mode": "Default",
@@ -14,7 +14,7 @@
       "PublishTarget": "",
       "AdditionalPublishProperties": ";",
       "AdditionalPublishPropertiesToRemove": ";WebPublishProfileFile",
-      "Hash": "f/HQFeHUinf\u002BVcFHTGI8j1EsH8BIW3vFCh68RaZ33og="
+      "Hash": "TipGkU0O5CV3rse3Ux\u002B900Js0szOPKC8dx\u002Bzu2SNPIg="
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
@@ -6952,6 +6952,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "obj\\Debug\\net6.0\\custom-service-worker-assets.js"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\custom-service-worker-assets.js.build",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "custom-service-worker-assets.js",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "BlazorServiceWorker",
+      "AssetTraitValue": "ServiceWorkerManifest",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "obj\\Debug\\net6.0\\custom-service-worker-assets.js.build"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\service-worker\\serviceworkers\\my-prod-service-worker.js",

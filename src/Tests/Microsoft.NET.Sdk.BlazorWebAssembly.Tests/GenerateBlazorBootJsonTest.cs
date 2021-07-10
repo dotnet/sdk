@@ -135,6 +135,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Test
         {
             // Arrange
             var taskInstance = new GenerateBlazorWebAssemblyBootJson { CacheBootResources = flagValue };
+            taskInstance.BuildEngine = Mock.Of<IBuildEngine>();
             using var stream = new MemoryStream();
 
             // Act
@@ -152,6 +153,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Test
         {
             // Arrange
             var taskInstance = new GenerateBlazorWebAssemblyBootJson { DebugBuild = flagValue };
+            taskInstance.BuildEngine = Mock.Of<IBuildEngine>();
+            
             using var stream = new MemoryStream();
 
             // Act
@@ -169,6 +172,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Test
         {
             // Arrange
             var taskInstance = new GenerateBlazorWebAssemblyBootJson { LinkerEnabled = flagValue };
+            taskInstance.BuildEngine = Mock.Of<IBuildEngine>();
+
             using var stream = new MemoryStream();
 
             // Act

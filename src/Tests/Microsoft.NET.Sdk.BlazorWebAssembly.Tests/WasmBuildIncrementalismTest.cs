@@ -150,7 +150,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory, "blazorwasm");
-            build.Execute()
+            build.WithWorkingDirectory(projectDirectory.TestRoot);
+            build.Execute("/bl:build1-msbuild.binlog")
                 .Should()
                 .Pass();
 
@@ -158,7 +159,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJson = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "blazor.boot.json");
 
             build = new BuildCommand(projectDirectory, "blazorwasm");
-            build.Execute()
+            build.WithWorkingDirectory(projectDirectory.TestRoot);
+            build.Execute("/bl:build2-msbuild.binlog")
                 .Should()
                 .Pass();
 
@@ -170,7 +172,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             File.Move(Path.Combine(projectDirectory.TestRoot, "blazorwasm", "Resources.ja.resx.txt"), Path.Combine(projectDirectory.TestRoot, "blazorwasm", "Resource.ja.resx"));
             build = new BuildCommand(projectDirectory, "blazorwasm");
-            build.Execute()
+            build.WithWorkingDirectory(projectDirectory.TestRoot);
+            build.Execute("/bl:build3-msbuild.binlog")
                 .Should()
                 .Pass();
 

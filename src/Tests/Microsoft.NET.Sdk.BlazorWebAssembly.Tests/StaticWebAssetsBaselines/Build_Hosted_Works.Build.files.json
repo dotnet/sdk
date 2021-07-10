@@ -401,5 +401,6 @@
   "${OutputPath}\\wwwroot\\_framework/mscorlib.dll.gz",
   "${OutputPath}\\wwwroot\\_framework/netstandard.dll",
   "${OutputPath}\\wwwroot\\_framework/netstandard.dll.gz",
+  "${OutputPath}\\wwwroot\\custom-service-worker-assets.js",
   "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Build_Hosted_---6B101FC4\\blazorwasm\\obj\\Debug\\net6.0\\blazor\\_framework/dotnet.${RuntimeVersion}.js"
 ]

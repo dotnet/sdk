@@ -426,7 +426,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="_AddBlazorWebConfigFile"  AfterTargets="ILLink">
+  <Target Name="_AddBlazorWebConfigFile" AfterTargets="ILLink">
     <ItemGroup Condition="'@(ResolvedFileToPublish->AnyHaveMetadataValue('RelativePath', 'web.config'))' != 'true'">
       <ResolvedFileToPublish
          Include="$(MSBuildThisFileDirectory)BlazorWasm.web.config"
