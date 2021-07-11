@@ -72,6 +72,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.ComputePublishStaticWebAssetsList"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+
   <!-- Static web assets define how web content needs to be served from web applications, class libraries and packages during
        development and what and where web contents need to be served on the published application.
 
@@ -443,6 +448,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="$(StaticWebAssetsPrepareForPublishDependsOn)" />
 
   <Target Name="GenerateStaticWebAssetsPublishManifest" DependsOnTargets="$(GenerateStaticWebAssetsPublishManifestDependsOn)">
+    <ComputePublishStaticWebAssetsList Assets="@(StaticWebAsset)">
+      <Output TaskParameter="PublishAssets" ItemName="_FinalPublishStaticWebAsset"/>
+    </ComputePublishStaticWebAssetsList>
     <GenerateStaticWebAssetsManifest
       Source="$(PackageId)"
       BasePath="$(StaticWebAssetBasePath)"
@@ -450,7 +458,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestType="Publish"
       RelatedManifests="@(StaticWebAssetManifest)"
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"  
-      Assets="@(StaticWebAsset)"
+      Assets="@(_FinalPublishStaticWebAsset)"
       ManifestPath="$(StaticWebAssetPublishManifestPath)">
     </GenerateStaticWebAssetsManifest>
     <ItemGroup>

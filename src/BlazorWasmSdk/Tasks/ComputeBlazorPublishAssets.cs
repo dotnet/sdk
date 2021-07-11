@@ -12,6 +12,16 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly
 {
+    // This target computes the list of publish static web assets based
+    // on the changes that happen during publish and the list of build static
+    // web assets.
+    // In this target we need to do 3 things:
+    // * Look at all the existing Build static web assets with AssetTraitName `BlazorWebassemblyResource` and AssetTraitValue `runtime`.
+    //   * If linking is enabled we need to add a publish asset that represents the linked version of the assembly.
+    // * Look at the list of "native" assets see the ones that need updating
+    //   * This is dotnet.js and dotnet.wasm when AOT builds are enabled.
+    // * Look at the list of "alternative" assets and make sure we update them accordingly if their related asset is in the list of assets
+    //   to update.
     public class ComputeBlazorPublishAssets : Task
     {
         [Required]
@@ -164,7 +174,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         private ITaskItem FindCandidateAsset(ITaskItem candidate, string traitValue)
         {
             var fileName = Path.GetFileName(candidate.ItemSpec);
+#if TRACE
             Log.LogMessage("Looking for assets for candidate '{0}'", candidate.ItemSpec);
+#endif
             ITaskItem specCandidate = null;
             var multipleSpecMatch = false;
 
@@ -177,7 +189,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     string.Equals(assetTraitValue, traitValue, StringComparison.Ordinal)) &&
                     !string.Equals(assetTraitName, "Culture", StringComparison.Ordinal))
                 {
+#if TRACE
                     Log.LogMessage("Skipping asset '{0}' becasue AssetTraitName '{1}' or AssetTraitValue '{2}' do not match.", asset.ItemSpec, assetTraitName, assetTraitValue);
+#endif
                     continue;
                 }
 
@@ -187,12 +201,16 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     var assetFileName = Path.GetFileName(asset.GetMetadata("RelativePath"));
                     if (string.Equals(fileName, assetFileName, StringComparison.Ordinal))
                     {
+#if TRACE
                         Log.LogMessage("Found asset '{0}' with relative path file name match '{1}' for file '{2}'.", asset.ItemSpec, relativePath, fileName);
+#endif
                         return asset;
                     }
                     else
                     {
+#if TRACE
                         Log.LogMessage("Skipping asset '{0}' becasue file name '{1}' does not match '{2}'.", asset.ItemSpec, assetFileName, fileName);
+#endif
                     }
 
                     // We fallback to matching on the spec filename only if we find an unique candidate.
@@ -201,13 +219,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     {
                         if (specCandidate != null)
                         {
+#if TRACE
                             Log.LogMessage("Found multiple spec matches for '{0}' so results will be ignored.", fileName);
+#endif
                             multipleSpecMatch = true;
                             specCandidate = null;
                         }
                         else
                         {
+#if TRACE
                             Log.LogMessage("Found asset '{0}' match '{1}' based on ItemSpec'.", asset.ItemSpec, assetSpecFileName);
+#endif
                             specCandidate = asset;
                         }
                     }

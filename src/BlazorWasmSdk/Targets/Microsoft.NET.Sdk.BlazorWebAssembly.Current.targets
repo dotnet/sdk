@@ -202,7 +202,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateAssets="@(_BuildAssetsCandidates)"
       SourceId="$(PackageId)"
       SourceType="Computed"
-      AssetKind="Build"
+      AssetKind="All"
       AssetRole="Primary"
       CopyToOutputDirectory="PreserveNewest"
       CopyToPublishDirectory="PreserveNewest"
@@ -284,12 +284,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
-    <ItemGroup>
-      <_BlazorStaticWebAssetByOriginalItemSpec Include="@(_BlazorStaticWebAsset->'%(OriginalItemSpec)')">
-        <OriginalItemSpec>%(Identity)</OriginalItemSpec>
-      </_BlazorStaticWebAssetByOriginalItemSpec>
-    </ItemGroup>
-
     <GetFileHash Files="@(_BlazorStaticWebAsset->'%(OriginalItemSpec)')" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
     </GetFileHash>
@@ -323,7 +317,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetTraitValue="manifest"
       CopyToOutputDirectory="PreserveNewest"
       CopyToPublishDirectory="Never"
-      ContentRoot="$(OutputPath)wwwroot"
+      ContentRoot="$(OutDir)wwwroot"
       BasePath="$(StaticWebAssetBasePath)"
     >
       <Output TaskParameter="Assets" ItemName="_BuildBlazorBootJsonStaticWebAsset" />
