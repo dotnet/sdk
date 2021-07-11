@@ -202,7 +202,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateAssets="@(_BuildAssetsCandidates)"
       SourceId="$(PackageId)"
       SourceType="Computed"
-      AssetKind="All"
+      AssetKind="Build"
       AssetRole="Primary"
       CopyToOutputDirectory="PreserveNewest"
       CopyToPublishDirectory="PreserveNewest"

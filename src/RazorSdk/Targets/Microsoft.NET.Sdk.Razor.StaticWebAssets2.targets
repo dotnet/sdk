@@ -567,13 +567,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <Target Name="_CleanupReferencedProjectItemGroups" BeforeTargets="GetCopyToPublishDirectoryItems" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
       <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)">
-        <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+        <Output TaskParameter="Assets" ItemName="_CleanupStaticWebAsset" />
       </ReadStaticWebAssetsManifestFile>
         
       <ItemGroup>
-        <Content Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
-        <None Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
-        <ResolvedFileToPublish Remove="@(StaticWebAsset->'%(OriginalItemSpec)')" />
+        <Content Remove="@(_CleanupStaticWebAsset->'%(OriginalItemSpec)')" />
+        <ContentWithTargetPath Remove="@(_CleanupStaticWebAsset->'%(OriginalItemSpec)')" />
+        <None Remove="@(_CleanupStaticWebAsset->'%(OriginalItemSpec)')" />
+        <_NoneWithTargetPath Remove="@(_CleanupStaticWebAsset->'%(OriginalItemSpec)')" />
+        <ResolvedFileToPublish Remove="@(_CleanupStaticWebAsset->'%(OriginalItemSpec)')" />
       </ItemGroup>
     </Target>
   

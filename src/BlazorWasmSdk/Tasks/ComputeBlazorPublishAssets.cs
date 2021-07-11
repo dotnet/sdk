@@ -156,7 +156,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 newAsset.SetMetadata("OriginalItemSpec", candidate.ItemSpec);
                 newAssets.Add(newAsset);
 
-                existingCandidateAsset.SetMetadata("AssetKind", "Build");
                 existingCandidateAsset.SetMetadata("CopyToPublishDirectory", "Never");
                 updatedAssets.Add(existingCandidateAsset.ItemSpec, existingCandidateAsset);
             }
