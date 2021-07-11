@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
-using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
@@ -104,7 +103,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 context.Diagnostics);
         }
 
-        private SyntaxNode TryGenerateNewDocumentRoot(
+        private static SyntaxNode TryGenerateNewDocumentRoot(
             Document doc,
             SyntaxNode root,
             IInvocationOperation invocation,
@@ -128,30 +127,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             newArguments = newArguments.Add(cancellationTokenArgument);
 
-            SyntaxNode newInstance;
-            // The instance is null when calling a static method from another type
-            switch (invocation.Instance)
-            {
-                case null:
-                    newInstance = expression;
-                    break;
-                case IConditionalAccessInstanceOperation:
-                    newInstance = GetConditionalOperationInvocationExpression(invocation.Syntax);
-                    break;
-                default:
-                    if (invocation.Instance.IsImplicit)
-                    {
-                        newInstance = invocation.GetInstanceSyntax()!;
-                    }
-                    // Calling a method from an object, we must include the instance variable name
-                    else
-                    {
-                        newInstance = generator.MemberAccessExpression(invocation.GetInstanceSyntax(), invocation.TargetMethod.Name);
-                    }
-                    break;
-            }
             // Insert the new arguments to the new invocation
-            SyntaxNode newInvocationWithArguments = generator.InvocationExpression(newInstance, newArguments).WithTriviaFrom(invocation.Syntax);
+            SyntaxNode newInvocationWithArguments = generator.InvocationExpression(expression, newArguments).WithTriviaFrom(invocation.Syntax);
 
             return generator.ReplaceNode(root, invocation.Syntax, newInvocationWithArguments);
         }
