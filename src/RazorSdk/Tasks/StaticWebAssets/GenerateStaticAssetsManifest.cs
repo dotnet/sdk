@@ -53,13 +53,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem);
 
-                // On a publish manifest we don't care about build only assets, so filter them out.
-                if (string.Equals(ManifestType, StaticWebAssetsManifest.ManifestTypes.Publish, StringComparison.Ordinal))
-                {
-                    Log.LogMessage("Filtering build assets from the publish manifest.");
-                    assets = FilterBuildAssets(assets);
-                }
-
                 var relatedManifests = RelatedManifests.OrderBy(a => a.GetMetadata("FullPath"))
                     .Select(ComputeManifestReference)
                     .Where(r => r != null)
@@ -91,23 +84,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 Log.LogErrorFromException(ex);
             }
             return !Log.HasLoggedErrors;
-        }
-
-        private IEnumerable<StaticWebAsset> FilterBuildAssets(IEnumerable<StaticWebAsset> assets)
-        {
-            foreach (var asset in assets)
-            {
-                if (!asset.IsBuildOnly())
-                {
-                    yield return asset;
-                }
-                else
-                {
-                    Log.LogMessage("Skipping asset '{0}' because its asset kind is '{1}'",
-                        asset.Identity,
-                        asset.AssetKind);
-                }
-            }
         }
 
         private StaticWebAssetsManifest.DiscoveryPattern ComputeDiscoveryPattern(ITaskItem pattern)
