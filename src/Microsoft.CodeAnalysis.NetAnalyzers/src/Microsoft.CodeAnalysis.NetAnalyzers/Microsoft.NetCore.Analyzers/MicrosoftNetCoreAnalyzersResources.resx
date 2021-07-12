@@ -1707,4 +1707,19 @@
   <data name="ReplaceStringLiteralWithCharLiteralCodeActionTitle" xml:space="preserve">
     <value>Replace string literal with char literal</value>
   </data>
+  <data name="DetectPreviewFeaturesDescription" xml:space="preserve">
+    <value>An assembly has to opt into preview features before using them.</value>
+  </data>
+  <data name="DetectPreviewFeaturesMessage" xml:space="preserve">
+    <value>Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="DetectPreviewFeaturesTitle" xml:space="preserve">
+    <value>This API requires opting into preview features</value>
+  </data>
+  <data name="ImplementsEmptyPreviewInterfaceMessage" xml:space="preserve">
+    <value>'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="StaticAndAbstractRequiresPreviewFeatures" xml:space="preserve">
+    <value>Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
 </root>

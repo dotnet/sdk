@@ -837,7 +837,7 @@ By convention, identifier names do not contain the underscore (_) character. Thi
 |Category|Naming|
 |Enabled|True|
 |Severity|Hidden|
-|CodeFix|False|
+|CodeFix|True|
 ---
 
 ## [CA1708](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1708): Identifiers should differ by more than case
@@ -2004,15 +2004,15 @@ It is both clearer and likely faster to use 'string.Equals' instead of comparing
 |CodeFix|True|
 ---
 
-## [CA2252](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252): Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported
+## [CA2252](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252): This API requires opting into preview features
 
-Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.
+An assembly has to opt into preview features before using them.
 
 |Item|Value|
 |-|-|
 |Category|Usage|
 |Enabled|True|
-|Severity|Warning|
+|Severity|Info|
 |CodeFix|False|
 ---
 
@@ -2038,6 +2038,18 @@ Since a type that implements 'IDynamicInterfaceCastable' will conventionally not
 |Enabled|True|
 |Severity|Warning|
 |CodeFix|True|
+---
+
+## [CA2255](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255): Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported
+
+Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
 ---
 
 ## [CA2300](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2300): Do not use insecure deserializer BinaryFormatter

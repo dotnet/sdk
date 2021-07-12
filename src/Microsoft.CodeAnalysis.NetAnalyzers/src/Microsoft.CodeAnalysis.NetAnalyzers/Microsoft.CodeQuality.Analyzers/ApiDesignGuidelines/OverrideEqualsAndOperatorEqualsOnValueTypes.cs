@@ -68,7 +68,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (!namedType.IsValueType ||
                         namedType.TypeKind == TypeKind.Enum ||
                         (namedType.TypeKind == TypeKind.Struct && namedType.IsRefLikeType) ||
-                        !context.Options.MatchesConfiguredVisibility(EqualsRule, namedType, context.Compilation, context.CancellationToken) ||
+                        !context.Options.MatchesConfiguredVisibility(EqualsRule, namedType, context.Compilation) ||
                         !namedType.GetMembers().Any(m => !m.IsConstructor()))
                     {
                         return;

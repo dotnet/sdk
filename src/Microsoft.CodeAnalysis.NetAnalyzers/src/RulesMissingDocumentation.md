@@ -8,11 +8,8 @@ CA1839 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-r
 CA1840 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840> | Use 'Environment.CurrentManagedThreadId' |
 CA1842 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842> | Do not use 'WhenAll' with a single task |
 CA1843 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843> | Do not use 'WaitAll' with a single task |
-CA1844 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844> | Provide memory-based overrides of async methods when subclassing 'Stream' |
-CA1846 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846> | Prefer 'AsSpan' over 'Substring' |
-CA1847 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1847> | Use char literal for a single character lookup |
-CA2250 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250> | Use 'ThrowIfCancellationRequested' |
 CA2251 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251> | Use 'string.Equals' |
-CA2252 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252> | Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported |
+CA2252 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252> | This API requires opting into preview features |
 CA2253 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253> | All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface |
 CA2254 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254> | Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed' |
+CA2255 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255> | Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported |

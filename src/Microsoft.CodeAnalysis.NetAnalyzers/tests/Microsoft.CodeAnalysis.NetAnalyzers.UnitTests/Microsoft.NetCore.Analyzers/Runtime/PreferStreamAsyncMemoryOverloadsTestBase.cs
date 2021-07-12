@@ -485,5 +485,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             yield return new object[] { "cancellationToken:=CancellationToken.None, offset:=0, count:=buffer.Length, buffer:=buffer",
                                         "buffer:=buffer, cancellationToken:=CancellationToken.None" };
         }
+
+        public static IEnumerable<object[]> VisualBasicNamedArgumentsWrongCaseTestData()
+        {
+            yield return new object[] { "cOUnt:=buffer.Length, BUFFER:=buffer, offSET:=1",
+                                        "buffer:=buffer.AsMemory(start:=1, length:=buffer.Length)" };
+            yield return new object[] { "OffSet:=0, cOUNT:=buffer.Length, BuFfEr:=buffer",
+                                        "buffer:=buffer" };
+            yield return new object[] { "COUNT:=buffer.Length, oFFSeT:=1, bUffEr:=buffer, CANCELlationtOKEN:=New CancellationToken()",
+                                        "buffer:=buffer.AsMemory(start:=1, length:=buffer.Length), cancellationToken:=New CancellationToken()" };
+            yield return new object[] { "CANCELLATIONTOKEN:=New CancellationToken(), OffsEt:=1, BUFFEr:=buffer, cOUnt:=buffer.Length",
+                                        "buffer:=buffer.AsMemory(start:=1, length:=buffer.Length), cancellationToken:=New CancellationToken()" };
+            yield return new object[] { "COUNT:=buffer.Length, BUFFER:=buffer, CANCELLATIONTOKEN:=CancellationToken.None, OFFSET:=0",
+                                        "buffer:=buffer, cancellationToken:=CancellationToken.None" };
+        }
     }
 }

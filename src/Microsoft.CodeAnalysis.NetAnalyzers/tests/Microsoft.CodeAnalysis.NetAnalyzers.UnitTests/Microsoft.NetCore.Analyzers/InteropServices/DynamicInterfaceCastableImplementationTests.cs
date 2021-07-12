@@ -25,7 +25,7 @@ Interface I
 End Interface
 
 <DynamicInterfaceCastableImplementation>
-Interface {|CA2252:I2|} : Inherits I
+Interface {|CA2255:I2|} : Inherits I
 End Interface";
 
             await VerifyVBAnalyzerAsync(source);

@@ -43,7 +43,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             var symbol = (INamedTypeSymbol)context.Symbol;
             if (symbol.IsAbstract &&
-                context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
+                context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation))
             {
                 bool hasAnyPublicConstructors =
                     symbol.InstanceConstructors.Any(

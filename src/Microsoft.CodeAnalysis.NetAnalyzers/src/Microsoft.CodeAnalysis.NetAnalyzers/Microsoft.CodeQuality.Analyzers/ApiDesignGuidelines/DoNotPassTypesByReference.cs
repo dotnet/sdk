@@ -44,7 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     var methodSymbol = (IMethodSymbol)context.Symbol;
 
                     // FxCop compat: only analyze externally visible symbols by default.
-                    if (!context.Options.MatchesConfiguredVisibility(Rule, methodSymbol, context.Compilation, context.CancellationToken))
+                    if (!context.Options.MatchesConfiguredVisibility(Rule, methodSymbol, context.Compilation))
                     {
                         return;
                     }

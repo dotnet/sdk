@@ -107,23 +107,23 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterSymbolAction((saContext) =>
             {
                 var namedTypeSymbol = (INamedTypeSymbol)saContext.Symbol;
-                if (!saContext.Options.MatchesConfiguredVisibility(DefaultRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken))
+                if (!saContext.Options.MatchesConfiguredVisibility(DefaultRule, namedTypeSymbol, saContext.Compilation))
                 {
-                    Debug.Assert(!saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
+                    Debug.Assert(!saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation));
                     return;
                 }
 
-                Debug.Assert(saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
+                Debug.Assert(saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation));
 
                 var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, DefaultRule,
-                   namedTypeSymbol, context.Compilation, defaultValue: true, cancellationToken: context.CancellationToken);
+                   namedTypeSymbol, context.Compilation, defaultValue: true);
 
                 var baseTypes = excludeIndirectBaseTypes
                     ? namedTypeSymbol.BaseType != null ? ImmutableArray.Create(namedTypeSymbol.BaseType) : ImmutableArray<INamedTypeSymbol>.Empty
                     : namedTypeSymbol.GetBaseTypes();
 
                 var userTypeSuffixMap = context.Options.GetAdditionalRequiredSuffixesOption(DefaultRule, saContext.Symbol,
-                    context.Compilation, context.CancellationToken);
+                    context.Compilation);
 
                 if (TryGetTypeSuffix(baseTypes, baseTypeSuffixMap, userTypeSuffixMap, out var typeSuffixInfo))
                 {

@@ -87,7 +87,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
             if (namedTypeSymbol.TypeKind == TypeKind.Interface ||
                 namedTypeSymbol.TypeKind == TypeKind.Enum ||
-                !context.Options.MatchesConfiguredVisibility(RuleBoth, namedTypeSymbol, context.Compilation, context.CancellationToken))
+                !context.Options.MatchesConfiguredVisibility(RuleBoth, namedTypeSymbol, context.Compilation))
             {
                 return;
             }

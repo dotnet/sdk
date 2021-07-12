@@ -140,13 +140,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                             // will always have identical configured visibility.
-                            if (!symbolAnalysisContext.Options.MatchesConfiguredVisibility(TypeNoAlternateRule, namedTypeSymbol, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
+                            if (!symbolAnalysisContext.Options.MatchesConfiguredVisibility(TypeNoAlternateRule, namedTypeSymbol, symbolAnalysisContext.Compilation))
                             {
                                 return;
                             }
 
                             var allowedSuffixes = symbolAnalysisContext.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule,
-                                    namedTypeSymbol.Locations[0].SourceTree, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken)
+                                    namedTypeSymbol.Locations[0].SourceTree, symbolAnalysisContext.Compilation)
                                 .Split('|')
                                 .ToImmutableHashSet();
 
@@ -225,7 +225,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                     // will always have identical configured visibility.
-                    if (!context.Options.MatchesConfiguredVisibility(TypeNoAlternateRule, memberSymbol, context.Compilation, context.CancellationToken))
+                    if (!context.Options.MatchesConfiguredVisibility(TypeNoAlternateRule, memberSymbol, context.Compilation))
                     {
                         return;
                     }
@@ -245,7 +245,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     string name = memberSymbol.Name;
 
                     var allowedSuffixes = context.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule,
-                            memberSymbol.Locations[0].SourceTree, context.Compilation, context.CancellationToken)
+                            memberSymbol.Locations[0].SourceTree, context.Compilation)
                         .Split('|')
                         .ToImmutableHashSet();
 

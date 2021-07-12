@@ -66,7 +66,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 var excludeOrDefaultMethods = operationContext.Options.GetBoolOptionValue(
                     EditorConfigOptionNames.ExcludeOrDefaultMethods, Rule, invocation.Syntax.SyntaxTree,
-                    operationContext.Compilation, defaultValue: false, operationContext.CancellationToken);
+                    operationContext.Compilation, defaultValue: false);
 
                 if (!IsPossibleLinqInvocation(invocation, excludeOrDefaultMethods))
                 {

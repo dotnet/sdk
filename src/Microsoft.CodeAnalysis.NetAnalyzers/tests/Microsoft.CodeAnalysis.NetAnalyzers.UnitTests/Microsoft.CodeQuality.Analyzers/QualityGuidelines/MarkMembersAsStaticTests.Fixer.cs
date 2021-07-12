@@ -1415,5 +1415,104 @@ Public Class C
     End Function
 End Class");
         }
+
+        [Fact]
+        [WorkItem(4733, "https://github.com/dotnet/roslyn-analyzers/issues/4733")]
+        [WorkItem(5168, "https://github.com/dotnet/roslyn-analyzers/issues/5168")]
+        public async Task CA1822_PartialMethod_CannotBeStatic()
+        {
+            string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+public partial class Class1
+{
+    public partial Task Example(CancellationToken token = default);
+}
+
+partial class Class1
+{
+    private readonly int timeout;
+
+    public Class1(int timeout)
+    {
+        this.timeout = timeout;
+    }
+    
+    public async partial Task Example(CancellationToken token)
+    {
+        await Task.Delay(timeout, token);
+    }
+}
+";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                TestCode = source,
+                FixedCode = source,
+            }.RunAsync();
+        }
+
+        [Fact]
+        [WorkItem(4733, "https://github.com/dotnet/roslyn-analyzers/issues/4733")]
+        [WorkItem(5168, "https://github.com/dotnet/roslyn-analyzers/issues/5168")]
+        public async Task CA1822_PartialMethod_CanBeStatic()
+        {
+            string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+public partial class Class1
+{
+    public partial Task Example(CancellationToken token = default);
+}
+
+partial class Class1
+{
+    private readonly int timeout;
+
+    public Class1(int timeout)
+    {
+        this.timeout = timeout;
+    }
+
+    public async partial Task [|Example|](CancellationToken token)
+    {
+        await Task.Delay(0);
+    }
+}
+";
+            // The fixed source shouldn't have diagnostics. Tracked by https://github.com/dotnet/roslyn-analyzers/issues/5171.
+            string fixedSource = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+public partial class Class1
+{
+    public partial Task Example(CancellationToken token = default);
+}
+
+partial class Class1
+{
+    private readonly int timeout;
+
+    public Class1(int timeout)
+    {
+        this.timeout = timeout;
+    }
+
+    public static async partial Task {|CS0763:Example|}(CancellationToken token)
+    {
+        await Task.Delay(0);
+    }
+}
+";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                TestCode = source,
+                FixedCode = fixedSource,
+            }.RunAsync();
+        }
     }
 }

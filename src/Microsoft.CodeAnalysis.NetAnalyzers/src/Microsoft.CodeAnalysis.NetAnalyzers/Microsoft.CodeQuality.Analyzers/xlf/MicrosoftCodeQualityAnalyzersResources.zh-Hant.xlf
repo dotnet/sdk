@@ -232,6 +232,11 @@
         <target state="translated">事件開頭不應出現 'Before' 或 'After'</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
+        <source>Remove underscores</source>
+        <target state="new">Remove underscores</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">從類型 '{0}' 移除完成項，覆寫 Dispose(bool disposing)，然後在程式碼路徑中放置完成項邏輯，其中 'disposing' 為 false。否則這可能導致 Dispose 引動過程重複，原因是基底類型 ‘{1}’ 也提供了完成項。</target>
