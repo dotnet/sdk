@@ -188,18 +188,16 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             ApiComparer differ = new();
             differ.StrictMode = strictMode;
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbols, rightSymbols);
 
             if (strictMode)
             {
-                IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbols, rightSymbols);
                 Assert.Single(differences);
-
                 CompatDifference expected = new CompatDifference(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, "PublicKeyTokenValidation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
                 Assert.Equal(expected, differences.First(), CompatDifferenceComparer.Default);
             }
             else
             {
-                IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbols, rightSymbols);
                 Assert.Empty(differences);
             }
         }
