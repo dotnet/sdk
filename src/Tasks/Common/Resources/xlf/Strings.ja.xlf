@@ -38,8 +38,8 @@
         <note>{StrBegin="NETSDK1072: "}</note>
       </trans-unit>
       <trans-unit id="AppHostSigningFailed">
-        <source>NETSDK1177: Failed to sign apphost: {0}</source>
-        <target state="new">NETSDK1177: Failed to sign apphost: {0}</target>
+        <source>NETSDK1177: Failed to sign apphost with error code {1}: {0}</source>
+        <target state="new">NETSDK1177: Failed to sign apphost with error code {1}: {0}</target>
         <note>{StrBegin="NETSDK1177: "}</note>
       </trans-unit>
       <trans-unit id="AspNetCoreAllNotSupported">

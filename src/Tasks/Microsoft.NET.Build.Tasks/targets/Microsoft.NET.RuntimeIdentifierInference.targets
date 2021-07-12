@@ -136,7 +136,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- If we are running on an M1 with a native SDK and the TFM is < 6.0, we have to use a x64 apphost since there are no osx-arm64 apphosts previous to .NET 6.0. -->
     <DefaultAppHostRuntimeIdentifier Condition="$(DefaultAppHostRuntimeIdentifier.EndsWith('arm64')) and
                                   $(DefaultAppHostRuntimeIdentifier.StartsWith('osx')) and
-                                  '$(_TargetFrameworkVersionWithoutV)' &lt; '6.0'">$(DefaultAppHostRuntimeIdentifier.Replace("arm64", "x64"))</DefaultAppHostRuntimeIdentifier>
+                                  $([MSBuild]::VersionLessThan('$(_TargetFrameworkVersionWithoutV)', '6.0'))">$(DefaultAppHostRuntimeIdentifier.Replace("arm64", "x64"))</DefaultAppHostRuntimeIdentifier>
   </PropertyGroup>
 
   <Target Name="_CheckForUnsupportedAppHostUsage"

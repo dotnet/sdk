@@ -38,10 +38,10 @@ namespace Microsoft.NET.Build.Tests
             if (!string.IsNullOrEmpty(targetFramework))
             {
                 var parsedTargetFramework = NuGetFramework.Parse(targetFramework);
-                if (parsedTargetFramework.Version >= new Version(5, 0, 0, 0))
+                if (parsedTargetFramework.Version.Major >= 5)
                     expectedFiles.Add($"ref/{testProjectName}.dll");
 
-                if (parsedTargetFramework.Version < new Version(6, 0, 0, 0))
+                if (parsedTargetFramework.Version.Major < 6)
                     expectedFiles.Add($"{testProjectName}.runtimeconfig.dev.json");
             }
 
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.Linux | TestPlatforms.FreeBSD | TestPlatforms.OSX)]
+        [Theory]
         [InlineData("netcoreapp3.1")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
