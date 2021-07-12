@@ -863,7 +863,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
-  <Target Name="BeforeBundle"
+  <Target Name="PrepareForBundle"
       DependsOnTargets="_ComputeFilesToBundle"
       Condition="'$(PublishSingleFile)' == 'true'">
 
@@ -879,8 +879,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="GenerateSingleFileBundle"
           Condition="'$(PublishSingleFile)' == 'true'"
-          DependsOnTargets="_ComputeFilesToBundle;BeforeBundle"
-          Inputs="@(_FilesToBundle)"
+          DependsOnTargets="_ComputeFilesToBundle;PrepareForBundle"
+          Inputs="@(FilesToBundle)"
           Outputs="$(PublishedSingleFilePath)">
 
     <PropertyGroup>
@@ -894,7 +894,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'$(IncludeAllContentForSelfExtract)' == 'true' And '$(IncludeNativeLibrariesForSelfExtract)' != 'true'"
                  ResourceName="CannotIncludeAllContentButNotNativeLibrariesInSingleFile" />
 
-    <GenerateBundle FilesToBundle="@(_FilesToBundle)"
+    <GenerateBundle FilesToBundle="@(FilesToBundle)"
                     AppHostName="$(PublishedSingleFileName)"
                     IncludeSymbols="$(IncludeSymbolsInSingleFile)"
                     EnableCompressionInSingleFile="$(EnableCompressionInSingleFile)"

@@ -8,6 +8,8 @@ using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
+using System.Linq;
+using System.Xml.Linq;
 using Xunit;
 using Xunit.Abstractions;
 using System;
@@ -826,6 +828,55 @@ class C
             var compressedSize = new FileInfo(singleFilePath).Length;
 
             uncompressedSize.Should().Be(compressedSize);
+        }
+
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        public void User_can_intervene_before_bundling()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = "net6.0",
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", "true");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => VerifyPrepareForBundle(project));
+
+            var publishCommand = new PublishCommand(testAsset);
+            var singleFilePath = Path.Combine(GetPublishDirectory(publishCommand, "net6.0").FullName, $"SingleFileTest{Constants.ExeSuffix}");
+
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier)
+                .Should()
+                .Pass();
+
+            var command = new RunExeCommand(Log, singleFilePath);
+            command.Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("Hello World");
+
+            void VerifyPrepareForBundle(XDocument project)
+            {
+                var ns = project.Root.Name.Namespace;
+                var targetName = "CheckPrepareForBundleData";
+
+                var target = new XElement(ns + "Target",
+                        new XAttribute("Name", targetName),
+                        new XAttribute("BeforeTargets", "GenerateSingleFileBundle"),
+                        new XAttribute("DependsOnTargets", "PrepareForBundle"));
+
+                var host = $"SingleFileTest{Constants.ExeSuffix}";
+
+                //     <Error Condition="'$(AppHostFile)' != 'SingleFileTest.exe'" Text="AppHostFile expected to be: 'SingleFileTest.exe' actually: '$(AppHostFile)'" />
+                target.Add(
+                    new XElement("Error",
+                        new XAttribute("Condition", $"'$(AppHostFile)' != '{host}'"),
+                        new XAttribute("Text", $"AppHostFile expected to be: '{host}' actually: '$(AppHostFile)'")));
+            }
         }
     }
 }
