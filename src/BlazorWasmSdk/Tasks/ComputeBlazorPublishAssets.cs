@@ -107,12 +107,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     nativeAssets,
                     resolvedFilesToPublishToRemove,
                     resolvedNativeAssetToPublish,
+                    compressedRepresentations,
                     filesToRemove);
 
                 newAssets.AddRange(nativeStaticWebAssets);
 
                 var symbolStaticWebAssets = ProcessSymbolAssets(
                     symbolAssets,
+                    compressedRepresentations,
                     resolvedFilesToPublishToRemove,
                     resolvedSymbolsToPublish,
                     filesToRemove);
@@ -141,9 +143,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
             Dictionary<string, ITaskItem> nativeAssets,
             IDictionary<string, ITaskItem> resolvedPublishFilesToRemove,
             Dictionary<string, ITaskItem> resolvedNativeAssetToPublish,
+            Dictionary<string, ITaskItem> compressedRepresentations,
             List<ITaskItem> filesToRemove)
         {
             var nativeStaticWebAssets = new List<ITaskItem>();
+
+            // Keep track of the updated assets to determine what compressed assets we can reuse
+            var updateMap = new Dictionary<string, ITaskItem>();
 
             foreach (var kvp in nativeAssets)
             {
@@ -163,6 +169,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                             ApplyPublishProperties(newAsset);
                             nativeStaticWebAssets.Add(newAsset);
                             filesToRemove.Add(existing);
+                            updateMap.Add(asset.ItemSpec, newAsset);
                         }
                         else
                         {
@@ -185,6 +192,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     {
                         newDotNetJs = new TaskItem(Path.GetFullPath(aotDotNetJs.ItemSpec), asset.CloneCustomMetadata());
                         newDotNetJs.SetMetadata("OriginalItemSpec", aotDotNetJs.ItemSpec);
+                        updateMap.Add(asset.ItemSpec, newDotNetJs);
                     }
                     else
                     {
@@ -208,6 +216,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     {
                         newDotNetWasm = new TaskItem(Path.GetFullPath(aotDotNetWasm.ItemSpec), asset.CloneCustomMetadata());
                         newDotNetWasm.SetMetadata("OriginalItemSpec", aotDotNetWasm.ItemSpec);
+                        updateMap.Add(asset.ItemSpec, newDotNetWasm);
                     }
                     else
                     {
@@ -224,6 +233,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 }
             }
 
+            var compressedUpdatedFiles = ProcessCompressedAssets(compressedRepresentations, nativeAssets, updateMap);
+            foreach (var f in compressedUpdatedFiles)
+            {
+                nativeStaticWebAssets.Add(f);
+            }
+
             return nativeStaticWebAssets;
 
             static bool IsDotNetJs(string key) => string.Equals("dotnet.js", Path.GetFileName(key), StringComparison.Ordinal);
@@ -233,11 +248,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
         private List<ITaskItem> ProcessSymbolAssets(
             Dictionary<string, ITaskItem> symbolAssets,
-            IDictionary<string, ITaskItem> resolvedPublishFilesToRemove,
+            Dictionary<string, ITaskItem> compressedRepresentations,
+            Dictionary<string, ITaskItem> resolvedPublishFilesToRemove,
             Dictionary<string, ITaskItem> resolvedSymbolAssetToPublish,
             List<ITaskItem> filesToRemove)
         {
             var symbolStaticWebAssets = new List<ITaskItem>();
+            var updateMap = new Dictionary<string, ITaskItem>();
 
             foreach (var kvp in symbolAssets)
             {
@@ -252,6 +269,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         var newAsset = new TaskItem(asset);
                         ApplyPublishProperties(newAsset);
                         symbolStaticWebAssets.Add(newAsset);
+                        updateMap.Add(newAsset.ItemSpec, newAsset);
                         filesToRemove.Add(existing);
                     }
                     else
@@ -263,6 +281,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         resolvedPublishFilesToRemove.Remove(existing.ItemSpec);
                     }
                 }
+            }
+
+            var compressedFiles = ProcessCompressedAssets(compressedRepresentations, symbolAssets, updateMap);
+
+            foreach (var file in compressedFiles)
+            {
+                symbolStaticWebAssets.Add(file);
             }
 
             return symbolStaticWebAssets;
@@ -314,21 +339,18 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     }
                     else
                     {
-                        //var message = $"Can't find the original satellite assembly in the list of resolved files to " +
-                        //    $"publish for asset '{satelliteAssembly.ItemSpec}'.";
-                        //throw new InvalidOperationException(message);
+                        var message = $"Can't find the original satellite assembly in the list of resolved files to " +
+                            $"publish for asset '{satelliteAssembly.ItemSpec}'.";
+                        throw new InvalidOperationException(message);
                     }
                 }
             }
 
-            foreach (var kvp in compressedRepresentations)
+            var compressedFiles = ProcessCompressedAssets(compressedRepresentations, assetsToUpdate, linkedAssets);
+
+            foreach (var file in compressedFiles)
             {
-                var compressedAsset = kvp.Value;
-                var relatedAsset = compressedAsset.GetMetadata("RelatedAsset");
-                if (assetsToUpdate.ContainsKey(relatedAsset) && !linkedAssets.ContainsKey(relatedAsset))
-                {
-                    assetsToUpdate.Add(compressedAsset.ItemSpec, compressedAsset);
-                }
+                assetsToUpdate.Add(file.ItemSpec, file);
             }
 
             var updatedAssetsMap = new Dictionary<string, ITaskItem>(StringComparer.Ordinal);
@@ -358,15 +380,53 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         break;
                     default:
                         // Satellite assembliess and compressed assets
-                        var newCompressetAsset = new TaskItem(asset);
-                        ApplyPublishProperties(newCompressetAsset);
-                        UpdateRelatedAssetProperty(asset, newCompressetAsset, updatedAssetsMap);
-                        updatedAssetsMap.Add(asset.ItemSpec, newCompressetAsset);
+                        var dependentAsset = new TaskItem(asset);
+                        ApplyPublishProperties(dependentAsset);
+                        UpdateRelatedAssetProperty(asset, dependentAsset, updatedAssetsMap);
+                        Log.LogMessage("Promoting asset '{0}' to Publish asset.", asset.ItemSpec);
+
+                        updatedAssetsMap.Add(asset.ItemSpec, dependentAsset);
                         break;
                 }
             }
 
             return updatedAssetsMap.Values.ToList();
+        }
+
+        private List<ITaskItem> ProcessCompressedAssets(
+            Dictionary<string, ITaskItem> compressedRepresentations,
+            Dictionary<string, ITaskItem> assetsToUpdate,
+            Dictionary<string, ITaskItem> updatedAssets)
+        {
+            var processed = new List<string>();
+            var additionalAssetsToUpdate = new List<ITaskItem>();
+            foreach (var kvp in compressedRepresentations)
+            {
+                var compressedAsset = kvp.Value;
+                var relatedAsset = compressedAsset.GetMetadata("RelatedAsset");
+                if (assetsToUpdate.ContainsKey(relatedAsset))
+                {
+                    if (!updatedAssets.ContainsKey(relatedAsset))
+                    {
+                        Log.LogMessage("Related assembly for '{0}' was not updated and the compressed asset can be reused.");
+                        additionalAssetsToUpdate.Add(compressedAsset);
+                    }
+                    else
+                    {
+                        Log.LogMessage("Related assembly for '{0}' was updated and the compressed asset will be discarded.");
+                    }
+
+                    processed.Add(kvp.Key);
+                }
+            }
+
+            // Remove all the elements we've found to avoid having to iterate over them when we process other assets.
+            foreach (var element in processed)
+            {
+                compressedRepresentations.Remove(element);
+            }
+
+            return additionalAssetsToUpdate;
         }
 
         private static void UpdateRelatedAssetProperty(ITaskItem asset, TaskItem newAsset, Dictionary<string, ITaskItem> updatedAssetsMap)
@@ -423,7 +483,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     else if (IsNativeAsset(traitValue))
                     {
                         nativeAssets.Add(asset.ItemSpec, asset);
-                    }else if (IsSymbolAsset(traitValue))
+                    }
+                    else if (IsSymbolAsset(traitValue))
                     {
                         symbolAssets.Add(asset.ItemSpec, asset);
                     }
@@ -496,7 +557,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         private static bool IsAlternative(ITaskItem asset) => string.Equals(asset.GetMetadata("AssetRole"), "Alternative", StringComparison.Ordinal);
 
         private static bool IsCulture(string traitName) => string.Equals(traitName, "Culture", StringComparison.Ordinal);
-        
+
         private static bool IsWebAssemblyResource(string traitName) => string.Equals(traitName, "BlazorWebAssemblyResource", StringComparison.Ordinal);
     }
 }
