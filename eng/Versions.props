@@ -114,14 +114,14 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>5.0.8-servicing.21318.5</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
-    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>5.0.8</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>5.0.8-servicing.21318.5</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>5.0.8-servicing.21318.5</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzersPackageVersion>5.0.8-servicing.21318.5</MicrosoftAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>5.0.8</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>5.0.8-servicing.21318.5</MicrosoftNETSdkRazorPackageVersion>
-    <MicrosoftNETSdkBlazorWebAssemblyPackageVersion>5.0.8-servicing.21318.5</MicrosoftNETSdkBlazorWebAssemblyPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>5.0.9-servicing.21359.9</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>5.0.9</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>5.0.9-servicing.21359.9</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>5.0.9-servicing.21359.9</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzersPackageVersion>5.0.9-servicing.21359.9</MicrosoftAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>5.0.9</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>5.0.9-servicing.21359.9</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkBlazorWebAssemblyPackageVersion>5.0.9-servicing.21359.9</MicrosoftNETSdkBlazorWebAssemblyPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
