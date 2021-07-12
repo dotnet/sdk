@@ -80,7 +80,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             ISymbol owningSymbol = operationBlockStartAnalysisContext.OwningSymbol;
 
-                            if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(Rule, owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
+                            if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(Rule, owningSymbol, operationBlockStartAnalysisContext.Compilation))
                             {
                                 return;
                             }
@@ -164,8 +164,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             SupportedDiagnostics,
                                             rootOperationsNeedingAnalysis.First().Operation,
                                             compilationAnalysisContext.Compilation,
-                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                            cancellationToken: compilationAnalysisContext.CancellationToken));
+                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive));
                                 }
 
                                 if (allResults == null)

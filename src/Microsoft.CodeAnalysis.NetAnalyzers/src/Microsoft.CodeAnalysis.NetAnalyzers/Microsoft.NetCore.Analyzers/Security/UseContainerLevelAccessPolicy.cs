@@ -102,7 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 compilationStartAnalysisContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
                     var owningSymbol = operationBlockStartContext.OwningSymbol;
-                    if (operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, owningSymbol, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
+                    if (operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, owningSymbol, operationBlockStartContext.Compilation))
                     {
                         return;
                     }
@@ -143,7 +143,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                                 operationAnalysisContext.Operation,
                                                                                 operationAnalysisContext.Compilation,
                                                                                 defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
-                                                                                cancellationToken: operationAnalysisContext.CancellationToken,
                                                                                 defaultMaxInterproceduralMethodCallChain: 1);
                                         var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(
                                                                         cfg,

@@ -70,8 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     rule: DoNotUseUnsafeDllImportSearchPathRule,
                     tree,
                     compilationStartAnalysisContext.Compilation,
-                    defaultValue: UnsafeBits,
-                    cancellationToken: cancellationToken);
+                    defaultValue: UnsafeBits);
                 var defaultDllImportSearchPathsAttributeOnAssembly = compilation.Assembly.GetAttributes().FirstOrDefault(o => o.AttributeClass.Equals(defaultDllImportSearchPathsAttributeTypeSymbol));
 
                 compilationStartAnalysisContext.RegisterSymbolAction(symbolAnalysisContext =>

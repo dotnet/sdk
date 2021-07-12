@@ -837,7 +837,7 @@ By convention, identifier names do not contain the underscore (_) character. Thi
 |Category|Naming|
 |Enabled|True|
 |Severity|Hidden|
-|CodeFix|False|
+|CodeFix|True|
 ---
 
 ## [CA1708](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1708): Identifiers should differ by more than case

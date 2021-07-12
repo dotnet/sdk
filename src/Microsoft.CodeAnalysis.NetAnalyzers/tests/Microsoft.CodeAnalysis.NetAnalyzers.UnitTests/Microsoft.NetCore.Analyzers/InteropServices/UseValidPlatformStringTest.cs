@@ -15,7 +15,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
     public class UseValidPlatformStringTest
     {
-        private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=CustomPlatform";
+        private const string s_msBuildPlatforms = @"is_global = true
+build_property._SupportedPlatformList=CustomPlatform";
 
         [Fact]
         public async Task ValidPlatformStringUsedNotWarn()
@@ -447,7 +448,7 @@ public class Test
         private static async Task VerifyAnalyzerAsyncCs(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestCs(sourceCode);
-            test.TestState.AdditionalFiles.Add((".editorconfig", editorconfigText));
+            test.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", editorconfigText));
             await test.RunAsync();
         }
 
@@ -470,7 +471,7 @@ public class Test
         private static async Task VerifyAnalyzerAsyncVb(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestVb(sourceCode);
-            test.TestState.AdditionalFiles.Add((".editorconfig", editorconfigText));
+            test.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", editorconfigText));
             await test.RunAsync();
         }
 
