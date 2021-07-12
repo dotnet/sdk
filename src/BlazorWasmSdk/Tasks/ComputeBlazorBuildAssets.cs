@@ -20,10 +20,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         public ITaskItem[] Candidates { get; set; }
 
         [Required]
-        public ITaskItem [] ProjectAssembly { get; set; }
+        public ITaskItem[] ProjectAssembly { get; set; }
 
         [Required]
-        public ITaskItem [] ProjectDebugSymbols { get; set; }
+        public ITaskItem[] ProjectDebugSymbols { get; set; }
 
         [Required]
         public ITaskItem[] SatelliteAssemblies { get; set; }
@@ -90,7 +90,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         assetCandidate.SetMetadata("AssetTraitName", "Culture");
                         assetCandidate.SetMetadata("AssetTraitValue", inferredCulture);
                         assetCandidate.SetMetadata("RelativePath", $"_framework/{inferredCulture}/{satelliteAssembly.GetMetadata("FileName")}{satelliteAssembly.GetMetadata("Extension")}");
-                        assetCandidate.SetMetadata("RelatedAsset", assetCandidate.GetMetadata("OriginalItemSpec"));
+                        assetCandidate.SetMetadata("RelatedAsset", Path.GetFullPath(Path.Combine(OutputPath, "wwwroot", "_framework", Path.GetFileName(assetCandidate.GetMetadata("ResolvedFrom")))));
 
                         assetCandidates.Add(assetCandidate);
                         continue;

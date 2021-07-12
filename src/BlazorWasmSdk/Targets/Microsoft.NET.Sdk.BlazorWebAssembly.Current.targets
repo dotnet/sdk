@@ -346,7 +346,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Make sure that ResolveAssemblyReferences runs early enough to ensure satellite assemblies are populated in the ResolvedFilesToPublish -->
   <Target Name="_BlazorPrepareForPublish" 
-    DependsOnTargets="ResolveAssemblyReferences"
+    DependsOnTargets="PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;ResolveAssemblyReferences"
     BeforeTargets="PrepareForPublish" />
 
   <!--
@@ -536,7 +536,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <AssetTraitValue>gzip</AssetTraitValue>
       </_GzipFileToCompressForPublish>
       
-      <_BrotliFileToCompressForPublish Include="@(_GzipFileToCompressForPublish)" Condition="'%(AssetKind)' == 'Publish'">
+      <_BrotliFileToCompressForPublish Include="@(_GzipFileToCompressForPublish)" Condition="'%(AssetKind)' != 'Build'">
         <AssetTraitValue>br</AssetTraitValue>
       </_BrotliFileToCompressForPublish>
 
@@ -544,7 +544,7 @@ Copyright (c) .NET Foundation. All rights reserved.
            need to check that they are still relevant (we have updated existing assets to account for linking) -->
       <_AlreadyGzipCompressedAssets 
         Include="@(StaticWebAsset)"
-        Condition="'%(AssetKind)' == 'Publish' and ('%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip')" />
+        Condition="'%(AssetKind)' != 'Build' and ('%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip')" />
       <_GzipFileToCompressForPublish Remove="@(_AlreadyGzipCompressedAssets->'%(RelatedAsset)')" />
     </ItemGroup>
 
