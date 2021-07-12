@@ -47,6 +47,7 @@
 
         <!-- Tier 4 -->
         <RepositoryReference Include="fsharp" />
+        <RepositoryReference Include="vstest" />
 
         <!-- Package source-build artifacts -->
         <RepositoryReference Include="package-source-build" />
