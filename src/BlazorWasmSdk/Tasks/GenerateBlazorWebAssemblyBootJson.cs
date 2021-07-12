@@ -143,7 +143,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         Log.LogMessage("Candidate '{0}' is defined as an app assembly.", resource.ItemSpec);
                         resourceList = resourceData.assembly;
                     }
-                    else if (string.Equals(assetTraitName, "BlazorWebassemblyResource", StringComparison.OrdinalIgnoreCase) &&
+                    else if (string.Equals(assetTraitName, "BlazorWebAssemblyResource", StringComparison.OrdinalIgnoreCase) &&
                             string.Equals(assetTraitValue, "native", StringComparison.OrdinalIgnoreCase))
                     {
                         Log.LogMessage("Candidate '{0}' is defined as a native application resource.", resource.ItemSpec);

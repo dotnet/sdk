@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,16 +13,20 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly
 {
-    // This target computes the list of publish static web assets based
-    // on the changes that happen during publish and the list of build static
+    // This target computes the list of publish static web assets based on the changes that happen during publish and the list of build static
     // web assets.
-    // In this target we need to do 3 things:
-    // * Look at all the existing Build static web assets with AssetTraitName `BlazorWebassemblyResource` and AssetTraitValue `runtime`.
-    //   * If linking is enabled we need to add a publish asset that represents the linked version of the assembly.
-    // * Look at the list of "native" assets see the ones that need updating
-    //   * This is dotnet.js and dotnet.wasm when AOT builds are enabled.
-    // * Look at the list of "alternative" assets and make sure we update them accordingly if their related asset is in the list of assets
-    //   to update.
+    // In this target we need to do 2 things:
+    // * Harmonize the list of dlls produced at build time with the list of resolved files to publish.
+    //   * We iterate over the list of existing static web assets and do as follows:
+    //     * If we find the assembly in the resolved files to publish and points to the original assembly (linker disabled or assembly not linked)
+    //       we create a new "Publish" static web asset for the assembly.
+    //     * If we find the assembly in the resolved files to publish and points to a new location, we assume this assembly has been updated (as part of linking)
+    //       and we create a new "Publish" static web asset for the asembly pointing to the new location.
+    //     * If we don't find the assembly on the resolved files to publish it has been linked out from the app, so we don't add any new static web asset and we
+    //       also avoid adding any existing related static web asset (satellite assemblies and compressed versions).
+    //   * We update static web assets for satellite assemblies and compressed assets accordingly.
+    // * Look at the list of "native" assets and determine whether we need to create new publish assets for the current build assets or if we need to
+    //   update the native assets because the app was ahead of time compiled.
     public class ComputeBlazorPublishAssets : Task
     {
         [Required]
@@ -45,17 +50,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         [Required]
         public string PublishPath { get; set; }
 
-        [Required]
-        public bool LinkerEnabled { get; set; }
-
-        [Required]
-        public bool AotEnabled { get; set; }
-
         [Output]
         public ITaskItem[] NewCandidates { get; set; }
-
-        [Output]
-        public ITaskItem[] UpdatedCandidates { get; set; }
 
         [Output]
         public ITaskItem[] FilesToRemove { get; set; }
@@ -64,63 +60,69 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         {
             var filesToRemove = new List<ITaskItem>();
             var newAssets = new List<ITaskItem>();
-            var updatedAssets = new Dictionary<string, ITaskItem>();
 
             try
             {
-                for (int i = 0; i < ResolvedFilesToPublish.Length; i++)
+                // We'll do a first pass over the resolved files to publish to figure out what files need to be removed
+                // as well as categorize resolved files into different groups.
+                var resolvedFilesToPublishToRemove = new Dictionary<string, ITaskItem>(StringComparer.Ordinal);
+
+                // These assemblies are keyed of the assembly name "computed" based on the relative path, which must be
+                // unique.
+                var resolvedAssembliesToPublish = new Dictionary<string, ITaskItem>(StringComparer.Ordinal);
+                var resolvedSymbolsToPublish = new Dictionary<string, ITaskItem>(StringComparer.Ordinal);
+                var satelliteAssemblyToPublish = new Dictionary<(string, string), ITaskItem>(EqualityComparer<(string, string)>.Default);
+                var resolvedNativeAssetToPublish = new Dictionary<string, ITaskItem>(StringComparer.Ordinal);
+                GroupResolvedFilesToPublish(
+                    resolvedFilesToPublishToRemove,
+                    resolvedAssembliesToPublish,
+                    satelliteAssemblyToPublish,
+                    resolvedSymbolsToPublish,
+                    resolvedNativeAssetToPublish);
+
+                // Group candidate static web assets
+                var assemblyAssets = new Dictionary<string, ITaskItem>();
+                var symbolAssets = new Dictionary<string, ITaskItem>();
+                var nativeAssets = new Dictionary<string, ITaskItem>();
+                var satelliteAssemblyAssets = new Dictionary<string, ITaskItem>();
+                var compressedRepresentations = new Dictionary<string, ITaskItem>();
+                GroupExistingStaticWebAssets(
+                    assemblyAssets,
+                    nativeAssets,
+                    satelliteAssemblyAssets,
+                    symbolAssets,
+                    compressedRepresentations);
+
+                var newStaticWebAssets = ComputeUpdatedAssemblies(
+                    satelliteAssemblyToPublish,
+                    filesToRemove,
+                    resolvedAssembliesToPublish,
+                    assemblyAssets,
+                    satelliteAssemblyAssets,
+                    compressedRepresentations);
+
+                newAssets.AddRange(newStaticWebAssets);
+
+                var nativeStaticWebAssets = ProcessNativeAssets(
+                    nativeAssets,
+                    resolvedFilesToPublishToRemove,
+                    resolvedNativeAssetToPublish,
+                    filesToRemove);
+
+                newAssets.AddRange(nativeStaticWebAssets);
+
+                var symbolStaticWebAssets = ProcessSymbolAssets(
+                    symbolAssets,
+                    resolvedFilesToPublishToRemove,
+                    resolvedSymbolsToPublish,
+                    filesToRemove);
+
+                newAssets.AddRange(symbolStaticWebAssets);
+
+                foreach (var kvp in resolvedFilesToPublishToRemove)
                 {
-                    var candidate = ResolvedFilesToPublish[i];
-                    if (ComputeBlazorBuildAssets.ShouldFilterCandidate(candidate, TimeZoneSupport, InvariantGlobalization, CopySymbols, out var reason))
-                    {
-                        Log.LogMessage("Skipping asset '{0}' becasue '{1}'", candidate.ItemSpec, reason);
-                        filesToRemove.Add(candidate);
-                        continue;
-                    }
-
-                    if (LinkerEnabled && candidate.GetMetadata("Extension") == ".dll")
-                    {
-                        var culture = candidate.GetMetadata("Culture");
-                        string inferredCulture = candidate.GetMetadata("DestinationSubDirectory").Replace("\\","/").Trim('/');
-                        if (!string.IsNullOrEmpty(culture))
-                        {
-                            // We can ignore resource assemblies since they don't participate in the linking process.
-                            Log.LogMessage("Skipping candidate '{0}' because it is a satellite assembly with culture '{1}'", candidate.ItemSpec, culture);
-                            continue;
-                        }
-                        if (!string.IsNullOrEmpty(inferredCulture))
-                        {
-                            // We can ignore resource assemblies since they don't participate in the linking process.
-                            Log.LogMessage("Skipping candidate '{0}' because it is a satellite assembly with inferred culture '{1}'", candidate.ItemSpec, inferredCulture);
-                            continue;
-                        }
-
-                        var existingCandidateAsset = FindCandidateAsset(candidate, "runtime");
-                        UpdateAssetLists(filesToRemove, newAssets, updatedAssets, candidate, existingCandidateAsset);
-                    }
-                }
-
-                if (AotEnabled)
-                {
-                    foreach (var aotAsset in WasmAotAssets)
-                    {
-                        var existingCandidateAsset = FindCandidateAsset(aotAsset, "native");
-                        UpdateAssetLists(filesToRemove, newAssets, updatedAssets, aotAsset, existingCandidateAsset);
-                    }
-                }
-
-                for (var i = 0; i < ExistingAssets.Length; i++)
-                {
-                    // This makes sure that we update the list of Gzip asset compressed at build to avoid a double copy.
-                    var asset = ExistingAssets[i];
-                    if (string.Equals("Alternative", asset.GetMetadata("AssetRole"), StringComparison.Ordinal) &&
-                        updatedAssets.TryGetValue(asset.GetMetadata("RelatedAsset"), out var related))
-                    {
-                        Log.LogMessage("Updating alternative asset '{0}' for candidate '{1}'", asset.ItemSpec, related.ItemSpec);
-                        asset.SetMetadata("AssetKind", "Build");
-                        asset.SetMetadata("CopyToPublishDirectory", "Never");
-                        updatedAssets.Add(asset.ItemSpec, asset);
-                    }
+                    var resolvedPublishFileToRemove = kvp.Value;
+                    filesToRemove.Add(resolvedPublishFileToRemove);
                 }
             }
             catch (Exception ex)
@@ -131,112 +133,366 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
             FilesToRemove = filesToRemove.ToArray();
             NewCandidates = newAssets.ToArray();
-            UpdatedCandidates = updatedAssets.Select(kvp => kvp.Value).ToArray();
 
             return !Log.HasLoggedErrors;
         }
 
-        private void UpdateAssetLists(
-            List<ITaskItem> filesToRemove,
-            List<ITaskItem> newAssets,
-            Dictionary<string, ITaskItem> updatedAssets,
-            ITaskItem candidate,
-            ITaskItem existingCandidateAsset)
+        private List<ITaskItem> ProcessNativeAssets(
+            Dictionary<string, ITaskItem> nativeAssets,
+            IDictionary<string, ITaskItem> resolvedPublishFilesToRemove,
+            Dictionary<string, ITaskItem> resolvedNativeAssetToPublish,
+            List<ITaskItem> filesToRemove)
         {
-            if (existingCandidateAsset == null)
+            var nativeStaticWebAssets = new List<ITaskItem>();
+
+            foreach (var kvp in nativeAssets)
             {
-                Log.LogError($"Unable to find existing static web asset for candidate '{candidate.ItemSpec}'.");
-            }
-            else
-            {
-                Log.LogMessage("Found existing static web asset '{0}' for candidate '{1}'.", existingCandidateAsset.ItemSpec, candidate.ItemSpec);
-
-                // Since we found the original asset, we want to do three things:
-                // * Remove the asset from the list of assets to publish
-                // * Create a new asset that represents the linked dll.
-                // * Update the existing static web asset to be Kind=Build so that it doesn't get included in the manifest
-
-                filesToRemove.Add(candidate);
-
-                var newAsset = new TaskItem(candidate.GetMetadata("FullPath"), existingCandidateAsset.CloneCustomMetadata());
-                newAsset.SetMetadata("AssetKind", "Publish");
-                newAsset.SetMetadata("ContentRoot", Path.Combine(PublishPath, "wwwroot"));
-                newAsset.SetMetadata("CopyToOutputDirectory", "Never");
-                newAsset.SetMetadata("CopyToPublishDirectory", "PreserveNewest");
-                newAsset.SetMetadata("OriginalItemSpec", candidate.ItemSpec);
-                newAssets.Add(newAsset);
-
-                existingCandidateAsset.SetMetadata("CopyToPublishDirectory", "Never");
-                updatedAssets.Add(existingCandidateAsset.ItemSpec, existingCandidateAsset);
-            }
-        }
-
-        private ITaskItem FindCandidateAsset(ITaskItem candidate, string traitValue)
-        {
-            var fileName = Path.GetFileName(candidate.ItemSpec);
-#if TRACE
-            Log.LogMessage("Looking for assets for candidate '{0}'", candidate.ItemSpec);
-#endif
-            ITaskItem specCandidate = null;
-            var multipleSpecMatch = false;
-
-            foreach (var asset in ExistingAssets)
-            {
-                var assetTraitName = asset.GetMetadata("AssetTraitName");
-                var assetTraitValue = asset.GetMetadata("AssetTraitValue");
-
-                if (!(string.Equals(assetTraitName, "BlazorWebAssemblyResource", StringComparison.Ordinal) &&
-                    string.Equals(assetTraitValue, traitValue, StringComparison.Ordinal)) &&
-                    !string.Equals(assetTraitName, "Culture", StringComparison.Ordinal))
+                var key = kvp.Key;
+                var asset = kvp.Value;
+                var isDotNetJs = IsDotNetJs(key);
+                var isDotNetWasm = IsDotNetWasm(key);
+                if (!isDotNetJs && !isDotNetWasm)
                 {
-#if TRACE
-                    Log.LogMessage("Skipping asset '{0}' becasue AssetTraitName '{1}' or AssetTraitValue '{2}' do not match.", asset.ItemSpec, assetTraitName, assetTraitValue);
-#endif
-                    continue;
-                }
-
-                if (!string.Equals(assetTraitName, "Culture"))
-                {
-                    var relativePath = asset.GetMetadata("RelativePath");
-                    var assetFileName = Path.GetFileName(asset.GetMetadata("RelativePath"));
-                    if (string.Equals(fileName, assetFileName, StringComparison.Ordinal))
+                    if (resolvedNativeAssetToPublish.TryGetValue(Path.GetFileName(asset.GetMetadata("OriginalItemSpec")), out var existing))
                     {
-#if TRACE
-                        Log.LogMessage("Found asset '{0}' with relative path file name match '{1}' for file '{2}'.", asset.ItemSpec, relativePath, fileName);
-#endif
-                        return asset;
-                    }
-                    else
-                    {
-#if TRACE
-                        Log.LogMessage("Skipping asset '{0}' becasue file name '{1}' does not match '{2}'.", asset.ItemSpec, assetFileName, fileName);
-#endif
-                    }
-
-                    // We fallback to matching on the spec filename only if we find an unique candidate.
-                    var assetSpecFileName = Path.GetFileName(asset.ItemSpec);
-                    if (!multipleSpecMatch && string.Equals(fileName, assetSpecFileName, StringComparison.Ordinal))
-                    {
-                        if (specCandidate != null)
+                        if (!resolvedPublishFilesToRemove.TryGetValue(existing.ItemSpec, out var removed))
                         {
-#if TRACE
-                            Log.LogMessage("Found multiple spec matches for '{0}' so results will be ignored.", fileName);
-#endif
-                            multipleSpecMatch = true;
-                            specCandidate = null;
+                            // This is a native asset like timezones.blat or similar that was not filtered and that needs to be updated
+                            // to a publish asset.
+                            var newAsset = new TaskItem(asset);
+                            ApplyPublishProperties(newAsset);
+                            nativeStaticWebAssets.Add(newAsset);
+                            filesToRemove.Add(existing);
                         }
                         else
                         {
-#if TRACE
-                            Log.LogMessage("Found asset '{0}' match '{1}' based on ItemSpec'.", asset.ItemSpec, assetSpecFileName);
-#endif
-                            specCandidate = asset;
+                            // This was a file that was filtered, so just remove it, we don't need to add any publish static web asset
+                            filesToRemove.Add(removed);
+
+                            // Remove the file from the list to avoid double processing later when we process other files we filtered.
+                            resolvedPublishFilesToRemove.Remove(existing.ItemSpec);
                         }
+                    }
+
+                    continue;
+                }
+
+                if (isDotNetJs)
+                {
+                    var aotDotNetJs = WasmAotAssets.SingleOrDefault(a => $"{a.GetMetadata("FileName")}{a.GetMetadata("Extension")}" == "dotnet.js");
+                    ITaskItem newDotNetJs = null;
+                    if (aotDotNetJs != null)
+                    {
+                        newDotNetJs = new TaskItem(Path.GetFullPath(aotDotNetJs.ItemSpec), asset.CloneCustomMetadata());
+                        newDotNetJs.SetMetadata("OriginalItemSpec", aotDotNetJs.ItemSpec);
+                    }
+                    else
+                    {
+                        newDotNetJs = new TaskItem(asset);
+                    }
+
+                    ApplyPublishProperties(newDotNetJs);
+                    nativeStaticWebAssets.Add(newDotNetJs);
+                    if (resolvedNativeAssetToPublish.TryGetValue("dotnet.js", out var resolved))
+                    {
+                        filesToRemove.Add(resolved);
+                    }
+                    continue;
+                }
+
+                if (isDotNetWasm)
+                {
+                    var aotDotNetWasm = WasmAotAssets.SingleOrDefault(a => $"{a.GetMetadata("FileName")}{a.GetMetadata("Extension")}" == "dotnet.wasm");
+                    ITaskItem newDotNetWasm = null;
+                    if (aotDotNetWasm != null)
+                    {
+                        newDotNetWasm = new TaskItem(Path.GetFullPath(aotDotNetWasm.ItemSpec), asset.CloneCustomMetadata());
+                        newDotNetWasm.SetMetadata("OriginalItemSpec", aotDotNetWasm.ItemSpec);
+                    }
+                    else
+                    {
+                        newDotNetWasm = new TaskItem(asset);
+                    }
+
+                    ApplyPublishProperties(newDotNetWasm);
+                    nativeStaticWebAssets.Add(newDotNetWasm);
+                    if (resolvedNativeAssetToPublish.TryGetValue("dotnet.wasm", out var resolved))
+                    {
+                        filesToRemove.Add(resolved);
+                    }
+                    continue;
+                }
+            }
+
+            return nativeStaticWebAssets;
+
+            static bool IsDotNetJs(string key) => string.Equals("dotnet.js", Path.GetFileName(key), StringComparison.Ordinal);
+
+            static bool IsDotNetWasm(string key) => string.Equals("dotnet.wasm", Path.GetFileName(key), StringComparison.Ordinal);
+        }
+
+        private List<ITaskItem> ProcessSymbolAssets(
+            Dictionary<string, ITaskItem> symbolAssets,
+            IDictionary<string, ITaskItem> resolvedPublishFilesToRemove,
+            Dictionary<string, ITaskItem> resolvedSymbolAssetToPublish,
+            List<ITaskItem> filesToRemove)
+        {
+            var symbolStaticWebAssets = new List<ITaskItem>();
+
+            foreach (var kvp in symbolAssets)
+            {
+                var key = kvp.Key;
+                var asset = kvp.Value;
+                if (resolvedSymbolAssetToPublish.TryGetValue(Path.GetFileName(asset.GetMetadata("OriginalItemSpec")), out var existing))
+                {
+                    if (!resolvedPublishFilesToRemove.TryGetValue(existing.ItemSpec, out var removed))
+                    {
+                        // This is a symbol asset like classlibrary.pdb or similar that was not filtered and that needs to be updated
+                        // to a publish asset.
+                        var newAsset = new TaskItem(asset);
+                        ApplyPublishProperties(newAsset);
+                        symbolStaticWebAssets.Add(newAsset);
+                        filesToRemove.Add(existing);
+                    }
+                    else
+                    {
+                        // This was a file that was filtered, so just remove it, we don't need to add any publish static web asset
+                        filesToRemove.Add(removed);
+
+                        // Remove the file from the list to avoid double processing later when we process other files we filtered.
+                        resolvedPublishFilesToRemove.Remove(existing.ItemSpec);
                     }
                 }
             }
 
-            return specCandidate;
+            return symbolStaticWebAssets;
         }
+
+        private List<ITaskItem> ComputeUpdatedAssemblies(
+            IDictionary<(string, string assemblyName), ITaskItem> satelliteAssemblies,
+            List<ITaskItem> filesToRemove,
+            Dictionary<string, ITaskItem> resolvedAssembliesToPublish,
+            Dictionary<string, ITaskItem> assemblyAssets,
+            Dictionary<string, ITaskItem> satelliteAssemblyAssets,
+            Dictionary<string, ITaskItem> compressedRepresentations)
+        {
+            // All assemblies, satellite assemblies and gzip files are initially defined as build assets.
+            // We need to update them to publish assets when they haven't changed or when they have been linked.
+            // For satellite assemblies and compressed files, we won't include them in the list of assets to update
+            // when the original assembly they depend on has been linked out.
+            var assetsToUpdate = new Dictionary<string, ITaskItem>();
+            var linkedAssets = new Dictionary<string, ITaskItem>();
+
+            foreach (var kvp in assemblyAssets)
+            {
+                var asset = kvp.Value;
+                var fileName = Path.GetFileName(asset.GetMetadata("RelativePath"));
+                if (resolvedAssembliesToPublish.TryGetValue(fileName, out var existing))
+                {
+                    // We found the assembly, so it'll have to be updated.
+                    assetsToUpdate.Add(asset.ItemSpec, asset);
+                    filesToRemove.Add(existing);
+                    if (!string.Equals(asset.ItemSpec, existing.GetMetadata("FullPath"), StringComparison.Ordinal))
+                    {
+                        linkedAssets.Add(asset.ItemSpec, asset);
+                    }
+                }
+            }
+
+            foreach (var kvp in satelliteAssemblyAssets)
+            {
+                var satelliteAssembly = kvp.Value;
+                var relatedAsset = satelliteAssembly.GetMetadata("RelatedAsset");
+                if (assetsToUpdate.ContainsKey(relatedAsset))
+                {
+                    assetsToUpdate.Add(satelliteAssembly.ItemSpec, satelliteAssembly);
+                    var culture = satelliteAssembly.GetMetadata("AssetTraitValue");
+                    var fileName = Path.GetFileName(satelliteAssembly.GetMetadata("RelativePath"));
+                    if (satelliteAssemblies.TryGetValue((culture, fileName), out var existing))
+                    {
+                        filesToRemove.Add(existing);
+                    }
+                    else
+                    {
+                        //var message = $"Can't find the original satellite assembly in the list of resolved files to " +
+                        //    $"publish for asset '{satelliteAssembly.ItemSpec}'.";
+                        //throw new InvalidOperationException(message);
+                    }
+                }
+            }
+
+            foreach (var kvp in compressedRepresentations)
+            {
+                var compressedAsset = kvp.Value;
+                var relatedAsset = compressedAsset.GetMetadata("RelatedAsset");
+                if (assetsToUpdate.ContainsKey(relatedAsset) && !linkedAssets.ContainsKey(relatedAsset))
+                {
+                    assetsToUpdate.Add(compressedAsset.ItemSpec, compressedAsset);
+                }
+            }
+
+            var updatedAssetsMap = new Dictionary<string, ITaskItem>(StringComparer.Ordinal);
+            foreach (var asset in assetsToUpdate.Select(a => a.Value).OrderBy(a => a.GetMetadata("AssetRole"), Comparer<string>.Create(OrderByAssetRole)))
+            {
+                var assetTraitName = asset.GetMetadata("AssetTraitName");
+                switch (assetTraitName)
+                {
+                    case "BlazorWebAssemblyResource":
+                        ITaskItem newAsemblyAsset = null;
+                        if (linkedAssets.TryGetValue(asset.ItemSpec, out var linked))
+                        {
+                            newAsemblyAsset = new TaskItem(linked.GetMetadata("FullPath"), asset.CloneCustomMetadata());
+                            newAsemblyAsset.SetMetadata("OriginalItemSpec", linked.ItemSpec);
+                        }
+                        else
+                        {
+                            newAsemblyAsset = new TaskItem(asset);
+                        }
+                        ApplyPublishProperties(newAsemblyAsset);
+
+                        updatedAssetsMap.Add(asset.ItemSpec, newAsemblyAsset);
+                        break;
+                    default:
+                        // Satellite assembliess and compressed assets
+                        var newCompressetAsset = new TaskItem(asset);
+                        ApplyPublishProperties(newCompressetAsset);
+                        UpdateRelatedAssetProperty(asset, newCompressetAsset, updatedAssetsMap);
+                        updatedAssetsMap.Add(asset.ItemSpec, newCompressetAsset);
+                        break;
+                }
+            }
+
+            return updatedAssetsMap.Values.ToList();
+        }
+
+        private static void UpdateRelatedAssetProperty(ITaskItem asset, TaskItem newAsset, Dictionary<string, ITaskItem> updatedAssetsMap)
+        {
+            if (!updatedAssetsMap.TryGetValue(asset.GetMetadata("RelatedAsset"), out var updatedRelatedAsset))
+            {
+                throw new InvalidOperationException("Related asset not found.");
+            }
+
+            newAsset.SetMetadata("RelatedAsset", updatedRelatedAsset.ItemSpec);
+        }
+
+        private int OrderByAssetRole(string left, string right)
+        {
+            var leftScore = GetScore(left);
+            var rightScore = GetScore(right);
+
+            return leftScore - rightScore;
+
+            static int GetScore(string candidate) => candidate switch
+            {
+                "Primary" => 0,
+                "Related" => 1,
+                "Alternative" => 2,
+                _ => throw new InvalidOperationException("Invalid asset role"),
+            };
+        }
+
+        private void ApplyPublishProperties(ITaskItem newAsemblyAsset)
+        {
+            newAsemblyAsset.SetMetadata("AssetKind", "Publish");
+            newAsemblyAsset.SetMetadata("ContentRoot", Path.Combine(PublishPath, "wwwroot"));
+            newAsemblyAsset.SetMetadata("CopyToOutputDirectory", "Never");
+            newAsemblyAsset.SetMetadata("CopyToPublishDirectory", "PreserveNewest");
+        }
+
+        private void GroupExistingStaticWebAssets(
+            Dictionary<string, ITaskItem> assemblyAssets,
+            Dictionary<string, ITaskItem> nativeAssets,
+            Dictionary<string, ITaskItem> satelliteAssemblyAssets,
+            Dictionary<string, ITaskItem> symbolAssets,
+            Dictionary<string, ITaskItem> compressedRepresentations)
+        {
+            foreach (var asset in ExistingAssets)
+            {
+                var traitName = asset.GetMetadata("AssetTraitName");
+                if (IsWebAssemblyResource(traitName))
+                {
+                    var traitValue = asset.GetMetadata("AssetTraitValue");
+                    if (IsRuntimeAsset(traitValue))
+                    {
+                        assemblyAssets.Add(asset.ItemSpec, asset);
+                    }
+                    else if (IsNativeAsset(traitValue))
+                    {
+                        nativeAssets.Add(asset.ItemSpec, asset);
+                    }else if (IsSymbolAsset(traitValue))
+                    {
+                        symbolAssets.Add(asset.ItemSpec, asset);
+                    }
+                }
+                else if (IsCulture(traitName))
+                {
+                    satelliteAssemblyAssets.Add(asset.ItemSpec, asset);
+                }
+                else if (IsAlternative(asset))
+                {
+                    compressedRepresentations.Add(asset.ItemSpec, asset);
+                }
+            }
+        }
+
+        private void GroupResolvedFilesToPublish(
+            Dictionary<string, ITaskItem> resolvedFilesToPublishToRemove,
+            Dictionary<string, ITaskItem> resolvedAssemblyToPublish,
+            Dictionary<(string, string), ITaskItem> satelliteAssemblyToPublish,
+            Dictionary<string, ITaskItem> resolvedSymbolsToPublish,
+            Dictionary<string, ITaskItem> resolvedNativeAssetToPublish)
+        {
+            foreach (var candidate in ResolvedFilesToPublish)
+            {
+                if (ComputeBlazorBuildAssets.ShouldFilterCandidate(candidate, TimeZoneSupport, InvariantGlobalization, CopySymbols, out var reason))
+                {
+                    Log.LogMessage("Skipping asset '{0}' becasue '{1}'", candidate.ItemSpec, reason);
+                    resolvedFilesToPublishToRemove.Add(candidate.ItemSpec, candidate);
+                    continue;
+                }
+
+                var extension = candidate.GetMetadata("Extension");
+                if (string.Equals(extension, ".dll", StringComparison.Ordinal))
+                {
+                    var culture = candidate.GetMetadata("Culture");
+                    var inferredCulture = candidate.GetMetadata("DestinationSubDirectory").Replace("\\", "/").Trim('/');
+                    if (!string.IsNullOrEmpty(culture) || !string.IsNullOrEmpty(inferredCulture))
+                    {
+                        var finalCulture = !string.IsNullOrEmpty(culture) ? culture : inferredCulture;
+                        var assemblyName = Path.GetFileName(candidate.GetMetadata("RelativePath"));
+                        satelliteAssemblyToPublish.Add((finalCulture, assemblyName), candidate);
+                        continue;
+                    }
+
+                    resolvedAssemblyToPublish.Add(Path.GetFileName(candidate.GetMetadata("RelativePath")), candidate);
+                    continue;
+                }
+                if (string.Equals(extension, " .pdb", StringComparison.Ordinal))
+                {
+                    resolvedSymbolsToPublish.Add(Path.GetFileName(candidate.GetMetadata("RelativePath")), candidate);
+                    continue;
+                }
+
+                // Capture all the native unfiltered assets since we need to process them to determine what static web assets need to get
+                // upgraded
+                if (string.Equals(candidate.GetMetadata("AssetType"), "native", StringComparison.Ordinal))
+                {
+                    resolvedNativeAssetToPublish.Add($"{candidate.GetMetadata("FileName")}{extension}", candidate);
+                    continue;
+                }
+            }
+        }
+
+        private static bool IsNativeAsset(string traitValue) => string.Equals(traitValue, "native", StringComparison.Ordinal);
+
+        private static bool IsRuntimeAsset(string traitValue) => string.Equals(traitValue, "runtime", StringComparison.Ordinal);
+
+        private static bool IsSymbolAsset(string traitValue) => string.Equals(traitValue, "symbol", StringComparison.Ordinal);
+
+        private static bool IsAlternative(ITaskItem asset) => string.Equals(asset.GetMetadata("AssetRole"), "Alternative", StringComparison.Ordinal);
+
+        private static bool IsCulture(string traitName) => string.Equals(traitName, "Culture", StringComparison.Ordinal);
+        
+        private static bool IsWebAssemblyResource(string traitName) => string.Equals(traitName, "BlazorWebAssemblyResource", StringComparison.Ordinal);
     }
 }

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     var targetPath = asset.ComputeTargetPath("", Path.AltDirectorySeparatorChar);
                     if (publishAssets.TryGetValue(targetPath, out var existing))
                     {
-                        if (string.Equals(asset.SourceId, existing.SourceId, StringComparison.Ordinal))
+                        if (!string.Equals(asset.SourceId, existing.SourceId, StringComparison.Ordinal))
                         {
                             Log.LogError("Detected incompatible set of assets '{0}' and '{1}' with different sources '{2}' and '{3}' respectively.",
                                 existing.Identity,
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         {
                             if (existing.IsBuildAndPublish())
                             {
-                                Log.LogError("Updating asset '{0}' for '{1}' publish specific asset at '{2}'",
+                                Log.LogMessage("Updating asset '{0}' for '{1}' publish specific asset at '{2}'",
                                     existing.Identity,
                                     asset.Identity,
                                     targetPath);
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                             else
                             {
                                 // Even though we found the publish asset first, we want to acknowledge the upgrade in the logs.
-                                Log.LogError("Updating asset '{0}' for '{1}' publish specific asset at '{2}'",
+                                Log.LogMessage("Updating asset '{0}' for '{1}' publish specific asset at '{2}'",
                                     asset.Identity,
                                     existing.Identity,
                                     targetPath);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 (asset.AssetKind, existing.AssetKind) switch
                 {
                     (StaticWebAsset.AssetKinds.All, StaticWebAsset.AssetKinds.Publish) => true,
-                    (StaticWebAsset.AssetKinds.All, StaticWebAsset.AssetKinds.All) => false,
+                    (StaticWebAsset.AssetKinds.All, StaticWebAsset.AssetKinds.All) => true,
                     (StaticWebAsset.AssetKinds.Publish, StaticWebAsset.AssetKinds.Publish) => false,
                     (StaticWebAsset.AssetKinds.Publish, StaticWebAsset.AssetKinds.All) => true,
                     _ => throw new InvalidOperationException($"One or more kinds are not valid for '{existing.Identity}' and " +

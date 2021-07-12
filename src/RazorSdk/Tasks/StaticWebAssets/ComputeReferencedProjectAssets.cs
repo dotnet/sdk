@@ -39,8 +39,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     return false;
                 }
 
-                var existingAssets = ExistingAssets.ToDictionary(a => a.ItemSpec, a => StaticWebAsset.FromTaskItem(a));
-                var staticWebAssets = new Dictionary<string, StaticWebAsset>();
+                var existingAssets = ExistingAssets
+                    .ToDictionary(a => (a.GetMetadata("AssetKind"), a.ItemSpec), a => StaticWebAsset.FromTaskItem(a));
+
+                var staticWebAssets = new Dictionary<(string, string), StaticWebAsset>();
                 var discoveryPatterns = new Dictionary<string, StaticWebAssetsManifest.DiscoveryPattern>();
                 foreach (var manifest in manifests)
                 {
@@ -97,8 +99,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         }
 
         private void MergeStaticWebAssets(
-            Dictionary<string, StaticWebAsset> staticWebAssets,
-            Dictionary<string, StaticWebAsset> existingStaticWebAssets,
+            Dictionary<(string, string), StaticWebAsset> staticWebAssets,
+            Dictionary<(string, string), StaticWebAsset> existingStaticWebAssets,
             StaticWebAssetsManifest manifest)
         {
             foreach (var asset in manifest.Assets)
@@ -156,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     continue;
                 }
 
-                if (staticWebAssets.TryGetValue(asset.Identity, out var defined))
+                if (staticWebAssets.TryGetValue((asset.AssetKind, asset.Identity), out var defined))
                 {
                     if (!asset.Equals(defined))
                     {
@@ -173,7 +175,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     }
                 }
 
-                if (existingStaticWebAssets.TryGetValue(asset.Identity, out var existing))
+                if (existingStaticWebAssets.TryGetValue((asset.AssetKind, asset.Identity), out var existing))
                 {
                     if (!asset.Equals(existing))
                     {
@@ -190,7 +192,20 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     }
                 }
 
-                staticWebAssets.Add(asset.Identity, asset);
+                staticWebAssets.Add((asset.AssetKind, asset.Identity), asset);
+            }
+        }
+
+        private IEnumerable<StaticWebAsset> FindExistingAssetsWithIdentity(Dictionary<string, Dictionary<string, StaticWebAsset>> existingStaticWebAssets, StaticWebAsset asset)
+        {
+            foreach (var assetGroup in existingStaticWebAssets)
+            {
+                var kind = assetGroup.Key;
+                var group = assetGroup.Value;
+                if (group.TryGetValue(asset.Identity, out var existing))
+                {
+                    yield return existing;
+                }
             }
         }
 

@@ -369,6 +369,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             public static bool IsPublish(string assetKind) => string.Equals(Publish, assetKind, StringComparison.Ordinal);
             public static bool IsBuild(string assetKind) => string.Equals(Build, assetKind, StringComparison.Ordinal);
+            internal static bool IsKind(string candidate, string assetKind) => string.Equals(candidate, assetKind, StringComparison.Ordinal);
+            internal static bool IsAll(string assetKind) => string.Equals(All, assetKind, StringComparison.Ordinal);
         }
 
         public static class SourceTypes

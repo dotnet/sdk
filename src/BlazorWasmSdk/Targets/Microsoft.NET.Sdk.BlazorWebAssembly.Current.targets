@@ -121,10 +121,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateAssets="@(_DotNetJsItem)"
       SourceId="$(PackageId)"
       SourceType="Computed"
+      AssetKind="Build"
       AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitName="BlazorWebAssemblyResource"
       AssetTraitValue="native"
       CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
       ContentRoot="$(IntermediateOutputPath)\blazor"
       BasePath="$(StaticWebAssetBasePath)"
     >
@@ -202,10 +204,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateAssets="@(_BuildAssetsCandidates)"
       SourceId="$(PackageId)"
       SourceType="Computed"
-      AssetKind="All"
+      AssetKind="Build"
       AssetRole="Primary"
       CopyToOutputDirectory="PreserveNewest"
-      CopyToPublishDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
       ContentRoot="$(OutputPath)wwwroot"
       BasePath="$(StaticWebAssetBasePath)"
     >
@@ -218,8 +220,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       SourceType="Computed"
       AssetKind="All"
       AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
-      AssetTraitValue="native"
+      AssetTraitName="BlazorWebAssemblyResource"
+      AssetTraitValue="boot"
       CopyToOutputDirectory="PreserveNewest"
       CopyToPublishDirectory="PreserveNewest"
       ContentRoot="$(OutputPath)wwwroot"
@@ -230,7 +232,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <DefineStaticWebAssets
       CandidateAssets="@(_BlazorConfigFileCandidates)"
-      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitName="BlazorWebAssemblyResource"
       AssetTraitValue="settings"
       RelativePathFilter="appsettings*.json"
     >
@@ -313,7 +315,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       SourceType="Computed"
       AssetKind="Build"
       AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitName="BlazorWebAssemblyResource"
       AssetTraitValue="manifest"
       CopyToOutputDirectory="PreserveNewest"
       CopyToPublishDirectory="Never"
@@ -395,26 +397,28 @@ Copyright (c) .NET Foundation. All rights reserved.
          * We will update Blazor native runtime resources if we are using Aot
          Other than that, we'll filter the unwanted assets from the list of resolved files to publish in the same way we did during the build.
     -->
+
+    <ItemGroup>
+      <_BlazorPublishPrefilteredAssets 
+        Include="@(StaticWebAsset)" 
+        Condition="'%(AssetTraitName)' == 'BlazorWebAssemblyResource' or '%(AssetTraitName)' == 'Culture' or '%(AssetRole)' == 'Alternative'" />
+    </ItemGroup>
+
     <ComputeBlazorPublishAssets 
       ResolvedFilesToPublish="@(ResolvedFileToPublish)"
       TimeZoneSupport="$(_BlazorEnableTimeZoneSupport)"
       PublishPath="$(PublishDir)"
-      LinkerEnabled="$(_BlazorLinkerEnabled)"
-      AotEnabled="$(_BlazorAotEnabled)"
       WasmAotAssets="@(WasmNativeAsset)"
       InvariantGlobalization="$(_BlazorInvariantGlobalization)"
       CopySymbols="$(CopyOutputSymbolsToPublishDirectory)"
-      ExistingAssets="@(StaticWebAsset)"
+      ExistingAssets="@(_BlazorPublishPrefilteredAssets)"
     >
       <Output TaskParameter="NewCandidates" ItemName="_NewBlazorPublishStaticWebAssets" />
-      <Output TaskParameter="UpdatedCandidates" ItemName="_UpdatedBlazorStaticWebAssets" />
-      <Output TaskParameter="FilesToRemove" ItemName="_FilesToRemove" />
+      <Output TaskParameter="FilesToRemove" ItemName="_PublishResolvedFilesToRemove" />
     </ComputeBlazorPublishAssets>    
     
     <ItemGroup>      
-      <ResolvedFileToPublish Remove="@(_FilesToRemove)" />
-      <StaticWebAsset Remove="@(_UpdatedBlazorStaticWebAssets)" />
-      <StaticWebAsset Include="@(_UpdatedBlazorStaticWebAssets)" />
+      <ResolvedFileToPublish Remove="@(_PublishResolvedFilesToRemove)" />
       <StaticWebAsset Include="@(_NewBlazorPublishStaticWebAssets)" />
     </ItemGroup>
 
@@ -435,11 +439,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_BlazorPublishAsset 
         Include="@(StaticWebAsset)" 
-        Condition="'%(AssetKind)' != 'Build' and ('%(AssetTraitName)' == 'BlazorWebassemblyResource' or '%(AssetTraitName)' == 'Culture') and '%(RelativePath)' != '_framework/blazor.webassembly.js'" />
+        Condition="'%(AssetKind)' != 'Build' and ('%(AssetTraitName)' == 'BlazorWebAssemblyResource' or '%(AssetTraitName)' == 'Culture') and '%(RelativePath)' != '_framework/blazor.webassembly.js'" />
 
       <_BlazorPublishConfigFile 
         Include="@(StaticWebAsset)" 
-        Condition="'%(AssetTraitName)' == 'BlazorWebassemblyResource' and '%(AssetTraitValue)' == 'settings'"/>
+        Condition="'%(AssetTraitName)' == 'BlazorWebAssemblyResource' and '%(AssetTraitValue)' == 'settings'"/>
     
     </ItemGroup>
 
@@ -471,7 +475,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       SourceType="Computed"
       AssetKind="Publish"
       AssetRole="Primary"
-      AssetTraitName="BlazorWebassemblyResource"
+      AssetTraitName="BlazorWebAssemblyResource"
       AssetTraitValue="manifest"
       CopyToOutputDirectory="Never"
       CopyToPublishDirectory="PreserveNewest"
@@ -486,17 +490,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_BlazorWasmNative"
       DependsOnTargets="_EnsureWasmRuntimeWorkload;_GatherWasmFilesToBuild;WasmBuildApp"
       BeforeTargets="_ProcessPublishFilesForBlazor"
-      Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'">
-
-    <!--
-      Native compilation produces a copy of the dotnet.js and dotnet.wasm file that are required to run the app. Replace the regular js and wasm files with the AOTed version.
-      But first, mangle the new dotnet.js file to include the runtime version.
-    -->
-
-    <ItemGroup>
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="(%(FileName) == 'dotnet' AND %(Extension) == '.wasm') AND '@(WasmNativeAsset->Count())' != '0'" />
-    </ItemGroup>
-  </Target>
+      Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'" />
 
   <Target Name="_EnsureWasmRuntimeWorkload" Condition="'$(UsingBlazorAOTWorkloadManifest)' != 'true'">
     <Error
