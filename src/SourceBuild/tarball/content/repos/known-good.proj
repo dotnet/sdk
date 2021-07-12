@@ -45,6 +45,9 @@
         <RepositoryReference Include="msbuild" />
         <RepositoryReference Include="templating" />
 
+        <!-- Tier 4 -->
+        <RepositoryReference Include="fsharp" />
+
         <!-- Package source-build artifacts -->
         <RepositoryReference Include="package-source-build" />
       </ItemGroup>

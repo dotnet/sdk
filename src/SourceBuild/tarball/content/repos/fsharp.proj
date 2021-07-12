@@ -2,14 +2,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <BuildCommandArgs>--restore --build --pack --publish</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) --configuration $(Configuration)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) --binaryLog</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) --ci</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:FSharpSourceBuild=true</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetBuildFromSource=true</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:TreatWarningsAsErrors=false</BuildCommandArgs>
-    <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
 
     <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
@@ -19,19 +12,13 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="msbuild" />
-    <RepositoryReference Include="newtonsoft-json901" />
-    <RepositoryReference Include="newtonsoft-json" />
+    <RepositoryReference Include="msbuild" /> 
+    <RepositoryReference Include="source-build" />
     <RepositoryReference Include="xliff-tasks" />
   </ItemGroup>
 
   <ItemGroup>
     <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EnvironmentVariables Include="DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)" />
-    <EnvironmentVariables Include="DOTNET_TOOL_DIR=$(DotNetCliToolDir)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
