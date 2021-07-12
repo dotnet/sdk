@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility;
@@ -42,28 +41,31 @@ namespace Microsoft.DotNet.PackageValidation
         {
             foreach (MetadataInformation left in _dict.Keys)
             {
-                Stream leftAssemblyStream = GetFileStreamFromPackage(_leftPackagePath, left.AssemblyId);
-                IAssemblySymbol leftSymbols = new AssemblySymbolLoader().LoadAssembly(left.AssemblyName, leftAssemblyStream);
-                leftAssemblyStream.Close();
-                ElementContainer<IAssemblySymbol> leftContainer = new(leftSymbols, left); ;
+                IAssemblySymbol leftSymbols;
+                using(Stream leftAssemblyStream = GetFileStreamFromPackage(_leftPackagePath, left.AssemblyId))
+                {
+                    leftSymbols = new AssemblySymbolLoader().LoadAssembly(left.AssemblyName, leftAssemblyStream);
+                }
+                ElementContainer<IAssemblySymbol> leftContainer = new(leftSymbols, left);
 
                 List<ElementContainer<IAssemblySymbol>> rightContainerList = new();
                 foreach (var rightTuple in _dict[left])
                 {
-                    Stream rightAssemblyStream = GetFileStreamFromPackage(_rightPackagePath, rightTuple.rightAssembly.AssemblyId);
-                    IAssemblySymbol rightSymbols = new AssemblySymbolLoader().LoadAssembly(rightTuple.rightAssembly.AssemblyName, rightAssemblyStream);
-                    rightAssemblyStream.Close();
+                    IAssemblySymbol rightSymbols;
+                    using (Stream rightAssemblyStream = GetFileStreamFromPackage(_rightPackagePath, rightTuple.rightAssembly.AssemblyId))
+                    {
+                        rightSymbols = new AssemblySymbolLoader().LoadAssembly(rightTuple.rightAssembly.AssemblyName, rightAssemblyStream);
+                    }
                     rightContainerList.Add(new ElementContainer<IAssemblySymbol>(rightSymbols, rightTuple.rightAssembly));
                 }
 
-                IList<(MetadataInformation, MetadataInformation, IEnumerable<CompatDifference>)> differences =
-                    _differ.GetDifferences(leftContainer, rightContainerList).ToList();
+                IEnumerable<(MetadataInformation, MetadataInformation, IEnumerable<CompatDifference>)> differences =
+                    _differ.GetDifferences(leftContainer, rightContainerList);
 
-                for (int i = 0; i < differences.Count(); i++)
+                int counter = 0;
+                foreach ((MetadataInformation, MetadataInformation, IEnumerable<CompatDifference> differences) diff in differences)
                 {
-                    (MetadataInformation, MetadataInformation, IEnumerable<CompatDifference> differences) diff = differences[i];
-                    (MetadataInformation rightAssembly, string header) rightTuple = _dict[left][i];
-
+                    (MetadataInformation rightAssembly, string header) rightTuple = _dict[left][counter];
                     _log.LogMessage(MessageImportance.Low, rightTuple.header);
 
                     foreach (CompatDifference difference in diff.differences)
@@ -80,6 +82,7 @@ namespace Microsoft.DotNet.PackageValidation
                             difference.DiagnosticId,
                             difference.Message);
                     }
+                    counter++;
                 }
             }
             _dict.Clear();
@@ -114,7 +117,7 @@ namespace Microsoft.DotNet.PackageValidation
             _leftPackagePath = leftPackagePath;
             _rightPackagePath = rightPackagePath;
 
-            if (!_leftPackagePath.Equals(rightPackagePath, System.StringComparison.InvariantCultureIgnoreCase))
+            if (!_leftPackagePath.Equals(rightPackagePath, StringComparison.InvariantCultureIgnoreCase))
             {
                 _isBaselineSuppression = true;
             }
