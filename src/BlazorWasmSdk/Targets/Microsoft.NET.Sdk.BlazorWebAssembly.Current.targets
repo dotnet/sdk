@@ -342,6 +342,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Message Importance="High" Text="$(MSBuildProjectName) (Blazor output) -&gt; $(TargetDir)wwwroot" Condition="'$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
   </Target>
 
+  <!-- Publish starts here -->
+
+  <!-- Make sure that ResolveAssemblyReferences runs early enough to ensure satellite assemblies are populated in the ResolvedFilesToPublish -->
+  <Target Name="_BlazorPrepareForPublish" 
+    DependsOnTargets="ResolveAssemblyReferences"
+    BeforeTargets="PrepareForPublish" />
+
   <!--
     This target configures special trimming for Microsoft.Extensions.* and Microsoft.AspNetCore.* assemblies.
     We only need this for net5.0 projects since trimmablity is declared using assembly attributes in net6.0 and later.
@@ -529,7 +536,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <AssetTraitValue>gzip</AssetTraitValue>
       </_GzipFileToCompressForPublish>
       
-      <_BrotliFileToCompressForPublish Include="@(_GzipFileToCompressForPublish)">
+      <_BrotliFileToCompressForPublish Include="@(_GzipFileToCompressForPublish)" Condition="'%(AssetKind)' == 'Publish'">
         <AssetTraitValue>br</AssetTraitValue>
       </_BrotliFileToCompressForPublish>
 
@@ -537,7 +544,7 @@ Copyright (c) .NET Foundation. All rights reserved.
            need to check that they are still relevant (we have updated existing assets to account for linking) -->
       <_AlreadyGzipCompressedAssets 
         Include="@(StaticWebAsset)"
-        Condition="'%(AssetKind)' == 'All' and ('%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip')" />
+        Condition="'%(AssetKind)' == 'Publish' and ('%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip')" />
       <_GzipFileToCompressForPublish Remove="@(_AlreadyGzipCompressedAssets->'%(RelatedAsset)')" />
     </ItemGroup>
 

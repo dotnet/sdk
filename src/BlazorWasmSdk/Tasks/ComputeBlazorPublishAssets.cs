@@ -294,7 +294,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     filesToRemove.Add(existing);
                     if (!string.Equals(asset.ItemSpec, existing.GetMetadata("FullPath"), StringComparison.Ordinal))
                     {
-                        linkedAssets.Add(asset.ItemSpec, asset);
+                        linkedAssets.Add(asset.ItemSpec, existing);
                     }
                 }
             }
@@ -343,9 +343,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         {
                             newAsemblyAsset = new TaskItem(linked.GetMetadata("FullPath"), asset.CloneCustomMetadata());
                             newAsemblyAsset.SetMetadata("OriginalItemSpec", linked.ItemSpec);
+                            Log.LogMessage("Replacing asset '{0}' with linked version '{1}'",
+                                asset.ItemSpec,
+                                newAsemblyAsset.ItemSpec);
                         }
                         else
                         {
+                            Log.LogMessage("Linked asset not found for asset '{0}'", asset.ItemSpec);
                             newAsemblyAsset = new TaskItem(asset);
                         }
                         ApplyPublishProperties(newAsemblyAsset);

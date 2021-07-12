@@ -85,7 +85,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         Log.LogMessage("Found satellite assembly '{0}' asset for candidate '{1}' with inferred culture '{2}'", satelliteAssembly.ItemSpec, candidate.ItemSpec, inferredCulture);
 
                         var assetCandidate = new TaskItem(satelliteAssembly);
-                        assetCandidate.SetMetadata("AssetKind", "All");
+                        assetCandidate.SetMetadata("AssetKind", "Build");
                         assetCandidate.SetMetadata("AssetRole", "Related");
                         assetCandidate.SetMetadata("AssetTraitName", "Culture");
                         assetCandidate.SetMetadata("AssetTraitValue", inferredCulture);
@@ -110,7 +110,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     var culture = candidate.GetMetadata("Culture");
                     if (!string.IsNullOrEmpty(culture))
                     {
-                        candidate.SetMetadata("AssetKind", "All");
+                        candidate.SetMetadata("AssetKind", "Build");
                         candidate.SetMetadata("AssetRole", "Related");
                         candidate.SetMetadata("AssetTraitName", "Culture");
                         candidate.SetMetadata("AssetTraitValue", culture);
@@ -158,7 +158,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         "_framework",
                         ProjectAssembly[0].GetMetadata("FileName") + ProjectAssembly[0].GetMetadata("Extension")));
 
-                    assetCandidate.SetMetadata("AssetKind", "All");
+                    assetCandidate.SetMetadata("AssetKind", "Build");
                     assetCandidate.SetMetadata("AssetRole", "Related");
                     assetCandidate.SetMetadata("AssetTraitName", "Culture");
                     assetCandidate.SetMetadata("AssetTraitValue", candidateCulture);
