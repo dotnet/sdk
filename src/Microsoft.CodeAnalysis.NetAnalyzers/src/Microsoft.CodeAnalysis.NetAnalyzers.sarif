@@ -3530,6 +3530,26 @@
             ]
           }
         },
+        "CA2252": {
+          "id": "CA2252",
+          "shortDescription": "This API requires opting into preview features",
+          "fullDescription": "An assembly has to opt into preview features before using them.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "DetectPreviewFeatureAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2300": {
           "id": "CA2300",
           "shortDescription": "Do not use insecure deserializer BinaryFormatter",

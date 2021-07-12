@@ -322,6 +322,21 @@
         <target state="translated">SslProtocols の非推奨の値を使用しない</target>
         <note />
       </trans-unit>
+      <trans-unit id="DetectPreviewFeaturesDescription">
+        <source>An assembly has to opt into preview features before using them.</source>
+        <target state="new">An assembly has to opt into preview features before using them.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetectPreviewFeaturesMessage">
+        <source>Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetectPreviewFeaturesTitle">
+        <source>This API requires opting into preview features</source>
+        <target state="new">This API requires opting into preview features</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DisposableFieldsShouldBeDisposedDescription">
         <source>A type that implements System.IDisposable declares fields that are of types that also implement IDisposable. The Dispose method of the field is not called by the Dispose method of the declaring type. To fix a violation of this rule, call Dispose on fields that are of types that implement IDisposable if you are responsible for allocating and releasing the unmanaged resources held by the field.</source>
         <target state="translated">System.IDisposable を実装する型は、IDisposable も実装する型のフィールドを宣言します。フィールドの Dispose メソッドは、宣言する型の Dispose メソッドによって呼び出されません。フィールドが保持する管理されていないリソースの割り当てと解放を自分が担当している場合、このルールの違反を修正するには、IDisposable を実装する型のフィールドに Dispose を呼び出します。</target>
@@ -1165,6 +1180,11 @@
       <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
         <source>Implement serialization methods correctly</source>
         <target state="translated">シリアル化メソッドを正しく実装します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsEmptyPreviewInterfaceMessage">
+        <source>'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -2140,6 +2160,11 @@
       <trans-unit id="SpecifyStringComparisonCA1310Title">
         <source>Specify StringComparison for correctness</source>
         <target state="translated">正確さのために StringComparison を指定する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StaticAndAbstractRequiresPreviewFeatures">
+        <source>Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
