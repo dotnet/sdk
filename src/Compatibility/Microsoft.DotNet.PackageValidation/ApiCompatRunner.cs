@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.PackageValidation
                 int counter = 0;
                 foreach ((MetadataInformation, MetadataInformation, IEnumerable<CompatDifference> differences) diff in differences)
                 {
-                    (MetadataInformation rightAssembly, string header) rightTuple = _dict[left][counter];
+                    (MetadataInformation rightAssembly, string header) rightTuple = _dict[left][counter++];
                     _log.LogMessage(MessageImportance.Low, rightTuple.header);
 
                     foreach (CompatDifference difference in diff.differences)
@@ -82,7 +82,6 @@ namespace Microsoft.DotNet.PackageValidation
                             difference.DiagnosticId,
                             difference.Message);
                     }
-                    counter++;
                 }
             }
             _dict.Clear();
@@ -109,10 +108,10 @@ namespace Microsoft.DotNet.PackageValidation
         internal void InitializePaths(string leftPackagePath, string rightPackagePath)
         {
             if (string.IsNullOrEmpty(leftPackagePath))
-                throw new ArgumentException(string.Format(Resources.InvalidPackagePath, leftPackagePath));
+                throw new ArgumentException(nameof(leftPackagePath));
 
             if (string.IsNullOrEmpty(rightPackagePath))
-                throw new ArgumentException(string.Format(Resources.InvalidPackagePath, rightPackagePath));
+                throw new ArgumentException(nameof(rightPackagePath));
 
             _leftPackagePath = leftPackagePath;
             _rightPackagePath = rightPackagePath;

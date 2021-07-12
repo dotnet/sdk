@@ -54,11 +54,8 @@ namespace Microsoft.DotNet.PackageValidation
 
                 if (compatibleFrameworkAsset != null)
                 {
-                    MetadataInformation left = new(package.PackageId, ((NuGetFramework)compatibleFrameworkAsset.Properties["tfm"]).GetShortFolderName(), compatibleFrameworkAsset.Path);
-                    MetadataInformation right = new(package.PackageId, ((NuGetFramework)compileTimeAsset.Properties["tfm"]).GetShortFolderName(), compileTimeAsset.Path);
-
                     string header = string.Format(Resources.ApiCompatibilityHeader, compatibleFrameworkAsset.Path, compileTimeAsset.Path);
-                    _apiCompatRunner.QueueApiCompat(left, right, header);
+                    _apiCompatRunner.QueueApiCompatFromContentItem(package.PackageId, compatibleFrameworkAsset, compileTimeAsset, header);
                 }
             }
 
