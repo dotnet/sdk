@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         public void LeftAssemblyKeyTokenNull(bool strictMode)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PublicKeyTokenValidation")
+                .CopyTestAsset("PublicKeyTokenValidation", allowCopyIfPresent: true)
                 .WithSource();
 
             BuildCommand buildCommand = new(testAsset);
@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         public void RightAssemblyKeyTokenNull(bool strictMode)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PublicKeyTokenValidation")
+                .CopyTestAsset("PublicKeyTokenValidation", allowCopyIfPresent: true)
                 .WithSource();
 
             BuildCommand buildCommand = new(testAsset);
@@ -235,7 +235,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         public void RetargetableFlagSet(bool strictMode)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PublicKeyTokenValidation")
+                .CopyTestAsset("PublicKeyTokenValidation", allowCopyIfPresent: true)
                 .WithSource();
 
             BuildCommand buildCommand = new(testAsset);
