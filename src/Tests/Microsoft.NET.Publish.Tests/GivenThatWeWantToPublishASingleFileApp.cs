@@ -831,7 +831,7 @@ class C
         }
 
         [RequiresMSBuildVersionFact("17.0.0.32901")]
-        public void User_can_intervene_before_bundling()
+        public void User_can_get_bundle_info_before_bundling()
         {
             var testProject = new TestProject()
             {
@@ -869,11 +869,20 @@ class C
                         new XAttribute("BeforeTargets", "GenerateSingleFileBundle"),
                         new XAttribute("DependsOnTargets", "PrepareForBundle"));
 
+                project.Root.Add(target);
+
+                //     <Error Condition = "'@(FilesToBundle->AnyHaveMetadataValue('RelativePath', 'System.Private.CoreLib.dll'))' != 'true'" Text="System.Private.CoreLib.dll is not in FilesToBundle list">
+                target.Add(
+                    new XElement(ns + "Error",
+                        new XAttribute("Condition", "'@(FilesToBundle->AnyHaveMetadataValue('RelativePath', 'System.Private.CoreLib.dll'))' != 'true'"),
+                        new XAttribute("Text", "System.Private.CoreLib.dll is not in FilesToBundle list")));
+
+
                 var host = $"SingleFileTest{Constants.ExeSuffix}";
 
                 //     <Error Condition="'$(AppHostFile)' != 'SingleFileTest.exe'" Text="AppHostFile expected to be: 'SingleFileTest.exe' actually: '$(AppHostFile)'" />
                 target.Add(
-                    new XElement("Error",
+                    new XElement(ns + "Error",
                         new XAttribute("Condition", $"'$(AppHostFile)' != '{host}'"),
                         new XAttribute("Text", $"AppHostFile expected to be: '{host}' actually: '$(AppHostFile)'")));
             }
