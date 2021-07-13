@@ -698,7 +698,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(finalPath).Should().NotExist();
         }
 
-        [Fact]
+        [Fact(Skip = "Pending new implementation")]
         public void Build_Fails_WhenConflictingAssetsFoundBetweenAStaticWebAssetAndAFileInTheWebRootFolder()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";

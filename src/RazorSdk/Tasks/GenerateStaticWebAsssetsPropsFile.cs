@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
             foreach(var element in orderedAssets)
             {
-                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\{Normalize(element.GetMetadata(RelativePath))}'))";
+                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\{Normalize(element.GetMetadata(RelativePath))}))";
                 itemGroup.Add(new XElement("StaticWebAsset",
                     new XAttribute("Include", fullPathExpression),
                     new XElement(SourceType, "Package"),

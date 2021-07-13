@@ -376,7 +376,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             var file = Path.GetTempFileName();
             var expectedDocument = @"<Project>
   <ItemGroup>
-    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))"">
+    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js))"">
       <SourceType>Package</SourceType>
       <SourceId>MyLibrary</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
@@ -390,7 +390,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
       <AssetTraitValue></AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>
 </Project>";
@@ -448,7 +448,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             var file = Path.GetTempFileName();
             var expectedDocument = @"<Project>
   <ItemGroup>
-    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css'))"">
+    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css))"">
       <SourceType>Package</SourceType>
       <SourceId>MyLibrary</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
@@ -462,9 +462,9 @@ namespace Microsoft.NET.Sdk.Razor.Test
       <AssetTraitValue></AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css'))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))"">
+    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js))"">
       <SourceType>Package</SourceType>
       <SourceId>MyLibrary</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
@@ -478,7 +478,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
       <AssetTraitValue></AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>
 </Project>";
