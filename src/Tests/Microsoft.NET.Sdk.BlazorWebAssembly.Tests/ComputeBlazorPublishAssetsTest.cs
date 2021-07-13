@@ -12,7 +12,7 @@ using Microsoft.Build.Utilities;
 using Moq;
 using Xunit;
 
-namespace Microsoft.NET.Sdk.BlazorWebAssembly.Test
+namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class ComputeBlazorPublishAssetsTest
     {

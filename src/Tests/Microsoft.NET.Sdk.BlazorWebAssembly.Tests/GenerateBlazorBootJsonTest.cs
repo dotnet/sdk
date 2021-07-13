@@ -11,7 +11,7 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.NET.Sdk.BlazorWebAssembly.Test
+namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class GenerateBlazorWebAssemblyBootJsonTest
     {

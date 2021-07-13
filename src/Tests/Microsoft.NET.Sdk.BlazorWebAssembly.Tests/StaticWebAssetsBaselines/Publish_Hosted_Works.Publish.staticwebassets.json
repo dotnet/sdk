@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "WC\u002BJWU4nbvvcPVv2qseRIcYmIUg4d3m6IpnZ92T/xCg=",
+  "Hash": "zh1W1qdOVxU/y92gQuFkGJuqkJUWIKNjDE0B3zOEzsU=",
   "Source": "blazorhosted",
   "BasePath": "_content/blazorhosted",
   "Mode": "Default",
@@ -14,7 +14,7 @@
       "PublishTarget": "",
       "AdditionalPublishProperties": ";",
       "AdditionalPublishPropertiesToRemove": ";WebPublishProfileFile",
-      "Hash": "JlV5j1KjqSMlg8alRG7ldNS3ChcrILGjnHhheY2JzQs="
+      "Hash": "IYUdaFP92VR00XPU2Zl2yWj24ylkBdLvV5weZ97YbZs="
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
@@ -24,7 +24,7 @@
       "PublishTarget": "ComputeFilesToPublish",
       "AdditionalPublishProperties": ";BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true;_PublishingBlazorWasmProject=true;",
       "AdditionalPublishPropertiesToRemove": ";NoBuild;RuntimeIdentifier;WebPublishProfileFile",
-      "Hash": "Ph7qE0KM9uC6tCsdYaicsnn5Nd7VS3PRfXPBd6icBgE="
+      "Hash": "eMSJ4stZLq1D9TlUyQ83BPA5TmfAF9TelgeMxM2iXOM="
     },
     {
       "Identity": "${ProjectRoot}\\razorclasslibrary\\obj\\Debug\\netstandard2.1\\StaticWebAssets.build.json",
@@ -208,7 +208,7 @@
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21324.1.js",
+      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -218,6 +218,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Publish_Hoste---6903C871\\blazorwasm\\obj\\Debug\\net6.0\\blazor\\_framework\\dotnet.js"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\hD7Bmvjp.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet.wasm.gz",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "RelatedAsset": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Publish_Hoste---6903C871\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\dotnet.wasm",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Publish_Hoste---6903C871\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\hD7Bmvjp.gz"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\I6ix89VI.gz",
@@ -252,23 +269,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Publish_Hoste---6903C871\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\Jyolzy7s.gz"
-    },
-    {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\KROe\u002BFDU.gz",
-      "SourceId": "blazorwasm",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.wasm.gz",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "RelatedAsset": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Publish_Hoste---6903C871\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\dotnet.wasm",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\Publish_Hoste---6903C871\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\KROe\u002BFDU.gz"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\s49JonxW.gz",
@@ -1925,7 +1925,7 @@
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21324.1.js.br",
+      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js.br",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
@@ -1942,7 +1942,7 @@
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21324.1.js.gz",
+      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js.gz",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
