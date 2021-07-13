@@ -137,7 +137,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 var expected = LoadExpectedFilesBaseline(manifest.ManifestType, outputFolder, intermediateOutputPath, suffix, name);
 
-                var existingFiles = wwwRootFiles.Concat(computedFiles.Select(f => f.Identity)).Concat(copyToOutputDirectoryFiles)
+                var existingFiles = wwwRootFiles.Concat(computedFiles.Select(a => PathTemplatizer(a, a.Identity, null) ?? a.Identity)).Concat(copyToOutputDirectoryFiles)
                     .Distinct()
                     .OrderBy(f => f, StringComparer.Ordinal)
                     .ToArray();
@@ -148,7 +148,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 var templatizedFiles = TemplatizeExpectedFiles(
                     wwwRootFiles
-                        .Concat(computedFiles.Select(f => f.Identity))
+                        .Concat(computedFiles.Select(a => PathTemplatizer(a, a.Identity, null) ?? a.Identity))
                         .Concat(copyToOutputDirectoryFiles)
                         .Distinct()
                         .OrderBy(f => f, StringComparer.Ordinal)
@@ -156,7 +156,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     TestContext.Current.NuGetCachePath,
                     outputFolder,
                     ProjectDirectory.TestRoot,
-                    intermediateOutputPath);
+                    intermediateOutputPath)
+                    .OrderBy(o => o, StringComparer.Ordinal);
 
                 File.WriteAllText(
                     GetExpectedFilesPath(suffix, name, manifest.ManifestType),
@@ -261,7 +262,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             foreach (var f in files)
             {
-                var updated =  f.Replace(restorePath, "${RestorePath}")
+                var updated = f.Replace(restorePath, "${RestorePath}")
                     .Replace(RuntimeVersion, "${RuntimeVersion}")
                     .Replace(DefaultPackageVersion, "${PackageVersion}")
                     .Replace(buildOrPublishFolder, "${OutputPath}")
@@ -387,7 +388,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 asset.Identity = asset.Identity
                     .Replace(restorePath, "${RestorePath}")
                     .Replace(RuntimeVersion, "${RuntimeVersion}")
-                    .Replace(DefaultPackageVersion,"${PackageVersion}")
+                    .Replace(DefaultPackageVersion, "${PackageVersion}")
                     .Replace(Path.DirectorySeparatorChar, '\\');
                 asset.Identity = PathTemplatizer(asset, asset.Identity, null) ?? asset.Identity;
 
@@ -435,6 +436,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             foreach (var relatedManifest in manifest.RelatedManifests)
             {
                 relatedManifest.Identity = relatedManifest.Identity.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
+                relatedManifest.ProjectFile = relatedManifest.ProjectFile.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
             }
 
             // Sor everything now to ensure we produce stable baselines independent of the machine they were generated on.
