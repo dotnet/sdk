@@ -150,7 +150,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         public void AssemblyKeyTokenMustBeCompatible(bool strictMode)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("PublicKeyTokenValidation")
+                .CopyTestAsset("PublicKeyTokenValidation", allowCopyIfPresent: true)
                 .WithSource();
 
             BuildCommand buildCommand = new(testAsset);
