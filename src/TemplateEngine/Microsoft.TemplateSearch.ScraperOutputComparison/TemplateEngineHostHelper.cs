@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.TemplateSearch.ScraperOutputComparison

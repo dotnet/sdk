@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit.Abstractions;
 

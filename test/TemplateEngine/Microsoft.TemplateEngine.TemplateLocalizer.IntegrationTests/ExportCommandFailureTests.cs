@@ -3,10 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.TemplateEngine.TestHelper;
