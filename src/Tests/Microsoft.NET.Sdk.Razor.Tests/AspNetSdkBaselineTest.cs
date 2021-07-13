@@ -296,7 +296,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             if (!_generateBaselines)
             {
-                ApplyPathsToAssets(expected, ProjectDirectory.Path, TestContext.Current.NuGetCachePath);
+                ApplyPathsToAssets(expected, ProjectDirectory.TestRoot, TestContext.Current.NuGetCachePath);
                 //Many of the properties in the manifest contain full paths, to avoid flakiness on the tests, we don't compare the full paths.
                 manifest.Version.Should().Be(expected.Version);
                 manifest.Source.Should().Be(expected.Source);
@@ -365,12 +365,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             foreach (var discovery in manifest.DiscoveryPatterns)
             {
+                discovery.ContentRoot = discovery.ContentRoot.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
                 discovery.ContentRoot = discovery.ContentRoot
                     .Replace("${RestorePath}", restorePath)
                     .Replace("${RuntimeVersion}", RuntimeVersion)
                     .Replace("${PackageVersion}", DefaultPackageVersion)
                     .Replace('\\', Path.DirectorySeparatorChar);
-                discovery.ContentRoot = discovery.ContentRoot.Replace("${ProjectRoot}", restorePath).Replace('\\', Path.DirectorySeparatorChar);
             }
 
             foreach (var relatedManifest in manifest.RelatedManifests)
