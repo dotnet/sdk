@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="5.0.205-servicing.21309.7">
+    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="5.0.206-servicing.21357.15">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>0b9d7e76776557d0ea6e425ddc6deafb021118e8</Sha>
+      <Sha>8454db9dc326006c121bcf5fa8424759ccfdc199</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="5.0.205">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="5.0.206">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>0b9d7e76776557d0ea6e425ddc6deafb021118e8</Sha>
+      <Sha>8454db9dc326006c121bcf5fa8424759ccfdc199</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Cli.Localization" Version="5.0.205-servicing.21309.7">
+    <Dependency Name="Microsoft.TemplateEngine.Cli.Localization" Version="5.0.206-servicing.21357.15">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>0b9d7e76776557d0ea6e425ddc6deafb021118e8</Sha>
+      <Sha>8454db9dc326006c121bcf5fa8424759ccfdc199</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="5.0.205">
+    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="5.0.206">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>0b9d7e76776557d0ea6e425ddc6deafb021118e8</Sha>
+      <Sha>8454db9dc326006c121bcf5fa8424759ccfdc199</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="5.0.205">
+    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="5.0.206">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>0b9d7e76776557d0ea6e425ddc6deafb021118e8</Sha>
+      <Sha>8454db9dc326006c121bcf5fa8424759ccfdc199</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.Common" Version="5.0.205">
+    <Dependency Name="Microsoft.TemplateSearch.Common" Version="5.0.206">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>0b9d7e76776557d0ea6e425ddc6deafb021118e8</Sha>
+      <Sha>8454db9dc326006c121bcf5fa8424759ccfdc199</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Common.ItemTemplates" Version="5.0.205">
+    <Dependency Name="Microsoft.DotNet.Common.ItemTemplates" Version="5.0.206">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>0b9d7e76776557d0ea6e425ddc6deafb021118e8</Sha>
+      <Sha>8454db9dc326006c121bcf5fa8424759ccfdc199</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -207,25 +207,25 @@
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="5.0.2">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>755ceda71eaa7f2356fa0f310fea13bb529266f5</Sha>
+      <Sha>4e2e1ade9b458ce88e083bc2ae4c533cf5882410</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.21262.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.21328.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>dad4f3c62e24b94b1514427674af8ca899cddd5f</Sha>
+      <Sha>5266aa9856457785b84739fda2616f21da7ee6b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.21262.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.21328.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>dad4f3c62e24b94b1514427674af8ca899cddd5f</Sha>
+      <Sha>5266aa9856457785b84739fda2616f21da7ee6b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="5.0.0-beta.21262.2">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="5.0.0-beta.21328.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>dad4f3c62e24b94b1514427674af8ca899cddd5f</Sha>
+      <Sha>5266aa9856457785b84739fda2616f21da7ee6b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="5.0.0-beta.21262.2">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="5.0.0-beta.21328.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>dad4f3c62e24b94b1514427674af8ca899cddd5f</Sha>
+      <Sha>5266aa9856457785b84739fda2616f21da7ee6b4</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
