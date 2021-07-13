@@ -57,6 +57,7 @@
     </None>
     <None Include="StaticWebAssetsBaselines\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 

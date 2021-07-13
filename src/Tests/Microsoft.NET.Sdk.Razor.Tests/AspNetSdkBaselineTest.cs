@@ -8,9 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Razor.Tasks;
 using Microsoft.NET.TestFramework;
@@ -56,7 +54,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             _baselinesFolder ??= ComputeBaselineFolder();
 
         protected virtual string ComputeBaselineFolder() =>
-            Path.Combine(TestContext.GetRepoRoot(), "src", "Tests", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
+            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "src", "Tests", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
 
         public StaticWebAssetsManifest LoadBuildManifest(string suffix = "", [CallerMemberName] string name = "")
         {
@@ -305,6 +303,20 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Replace("${RuntimeVersion}", RuntimeVersion)
                     .Replace("${PackageVersion}", DefaultPackageVersion)
                     .Replace('\\', Path.DirectorySeparatorChar);
+
+                asset.RelatedAsset = asset.RelatedAsset.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
+                asset.RelatedAsset = asset.RelatedAsset
+                    .Replace("${RestorePath}", restorePath)
+                    .Replace("${RuntimeVersion}", RuntimeVersion)
+                    .Replace("${PackageVersion}", DefaultPackageVersion)
+                    .Replace('\\', Path.DirectorySeparatorChar);
+
+                asset.OriginalItemSpec = asset.OriginalItemSpec.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
+                asset.OriginalItemSpec = asset.OriginalItemSpec
+                    .Replace("${RestorePath}", restorePath)
+                    .Replace("${RuntimeVersion}", RuntimeVersion)
+                    .Replace("${PackageVersion}", DefaultPackageVersion)
+                    .Replace('\\', Path.DirectorySeparatorChar);
             }
 
             foreach (var discovery in manifest.DiscoveryPatterns)
@@ -325,6 +337,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private string Templatize(StaticWebAssetsManifest manifest, string projectRoot, string restorePath)
         {
+            Array.Sort(manifest.Assets, (l, r) => StringComparer.Ordinal.Compare(l.Identity, r.Identity));
             foreach (var asset in manifest.Assets)
             {
                 asset.Identity = asset.Identity.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
@@ -340,8 +353,23 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Replace(RuntimeVersion, "${RuntimeVersion}")
                     .Replace(DefaultPackageVersion, "${PackageVersion}")
                     .Replace(Path.DirectorySeparatorChar, '\\');
+
+                asset.RelatedAsset = asset.RelatedAsset.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
+                asset.RelatedAsset = asset.RelatedAsset
+                    .Replace(restorePath, "${RestorePath}")
+                    .Replace(RuntimeVersion, "${RuntimeVersion}")
+                    .Replace(DefaultPackageVersion, "${PackageVersion}")
+                    .Replace(Path.DirectorySeparatorChar, '\\');
+
+                asset.OriginalItemSpec = asset.OriginalItemSpec.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
+                asset.OriginalItemSpec = asset.OriginalItemSpec
+                    .Replace(restorePath, "${RestorePath}")
+                    .Replace(RuntimeVersion, "${RuntimeVersion}")
+                    .Replace(DefaultPackageVersion, "${PackageVersion}")
+                    .Replace(Path.DirectorySeparatorChar, '\\');
             }
 
+            Array.Sort(manifest.DiscoveryPatterns, (l, r) => StringComparer.Ordinal.Compare(l.Name, r.Name));
             foreach (var discovery in manifest.DiscoveryPatterns)
             {
                 discovery.ContentRoot = discovery.ContentRoot.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
@@ -352,6 +380,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Replace(Path.DirectorySeparatorChar, '\\');
             }
 
+            Array.Sort(manifest.RelatedManifests, (l, r) => StringComparer.Ordinal.Compare(l.Identity, r.Identity));
             foreach (var relatedManifest in manifest.RelatedManifests)
             {
                 relatedManifest.Identity = relatedManifest.Identity.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');

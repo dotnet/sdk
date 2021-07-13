@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "qw095RsBRn7pjRo51sz5DQX9H7NJgTLkS8C95hKwv/s=",
+  "Hash": "eAehUjkHqWezH81v\u002BJBF14ECxU\u002B6JTq4XBdxHVxufhY=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -69,7 +69,7 @@
   ],
   "Assets": [
     {
-      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\PackageLibraryDirectDependency.bundle.scp.css\u0027)",
+      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\PackageLibraryDirectDependency.bundle.scp.css",
       "SourceId": "PackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\",
@@ -83,7 +83,58 @@
       "AssetTraitValue": "ProjectBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\BuildProjectW---8B9BE193\\AppWithPackageAndP2PReference\\$([System.IO.Path]::GetFullPath(\u0027$(MSBuildThisFileDirectory)..\\staticwebassets\\PackageLibraryDirectDependency.bundle.scp.css\u0027)"
+      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\PackageLibraryDirectDependency.bundle.scp.css"
+    },
+    {
+      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\css\\site.css",
+      "SourceId": "PackageLibraryDirectDependency",
+      "SourceType": "Package",
+      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\",
+      "BasePath": "_content/PackageLibraryDirectDependency",
+      "RelativePath": "css/site.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\css\\site.css"
+    },
+    {
+      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\js\\pkg-direct-dep.js",
+      "SourceId": "PackageLibraryDirectDependency",
+      "SourceType": "Package",
+      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\",
+      "BasePath": "_content/PackageLibraryDirectDependency",
+      "RelativePath": "js/pkg-direct-dep.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\js\\pkg-direct-dep.js"
+    },
+    {
+      "Identity": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\staticwebassets\\js\\pkg-transitive-dep.js",
+      "SourceId": "PackageLibraryTransitiveDependency",
+      "SourceType": "Package",
+      "ContentRoot": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\staticwebassets\\",
+      "BasePath": "_content/PackageLibraryTransitiveDependency",
+      "RelativePath": "js/pkg-transitive-dep.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\staticwebassets\\js\\pkg-transitive-dep.js"
     },
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\css\\site.css",
@@ -120,57 +171,6 @@
       "OriginalItemSpec": "wwwroot\\js\\project-direct-dep.js"
     },
     {
-      "Identity": "${ProjectRoot}\\AppWithPackageAndP2PReference\\$([System.IO.Path]::GetFullPath(\u0027$(MSBuildThisFileDirectory)..\\staticwebassets\\css\\site.css\u0027)",
-      "SourceId": "PackageLibraryDirectDependency",
-      "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "css/site.css",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\BuildProjectW---8B9BE193\\AppWithPackageAndP2PReference\\$([System.IO.Path]::GetFullPath(\u0027$(MSBuildThisFileDirectory)..\\staticwebassets\\css\\site.css\u0027)"
-    },
-    {
-      "Identity": "${ProjectRoot}\\AppWithPackageAndP2PReference\\$([System.IO.Path]::GetFullPath(\u0027$(MSBuildThisFileDirectory)..\\staticwebassets\\js\\pkg-direct-dep.js\u0027)",
-      "SourceId": "PackageLibraryDirectDependency",
-      "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "js/pkg-direct-dep.js",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\BuildProjectW---8B9BE193\\AppWithPackageAndP2PReference\\$([System.IO.Path]::GetFullPath(\u0027$(MSBuildThisFileDirectory)..\\staticwebassets\\js\\pkg-direct-dep.js\u0027)"
-    },
-    {
-      "Identity": "${ProjectRoot}\\AppWithPackageAndP2PReference\\$([System.IO.Path]::GetFullPath(\u0027$(MSBuildThisFileDirectory)..\\staticwebassets\\js\\pkg-transitive-dep.js\u0027)",
-      "SourceId": "PackageLibraryTransitiveDependency",
-      "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarytransitivedependency\\1.0.0\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryTransitiveDependency",
-      "RelativePath": "js/pkg-transitive-dep.js",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\BuildProjectW---8B9BE193\\AppWithPackageAndP2PReference\\$([System.IO.Path]::GetFullPath(\u0027$(MSBuildThisFileDirectory)..\\staticwebassets\\js\\pkg-transitive-dep.js\u0027)"
-    },
-    {
       "Identity": "${ProjectRoot}\\AppWithPackageAndP2PReference\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css",
       "SourceId": "AppWithPackageAndP2PReference",
       "SourceType": "Computed",
@@ -185,7 +185,7 @@
       "AssetTraitValue": "ApplicationBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\BuildProjectW---8B9BE193\\AppWithPackageAndP2PReference\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css"
+      "OriginalItemSpec": "${ProjectRoot}\\AppWithPackageAndP2PReference\\obj\\Debug\\net6.0\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css"
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\scopedcss\\bundle\\ClassLibrary.styles.css",
@@ -202,7 +202,7 @@
       "AssetTraitValue": "ApplicationBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\work\\dotnet-sdk2\\artifacts\\tmp\\Debug\\BuildProjectW---8B9BE193\\ClassLibrary\\obj\\Debug\\net6.0\\scopedcss\\bundle\\ClassLibrary.styles.css"
+      "OriginalItemSpec": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\scopedcss\\bundle\\ClassLibrary.styles.css"
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
