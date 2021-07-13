@@ -148,8 +148,6 @@ namespace EndToEnd.Tests
         [InlineData("classlib", "C#")]
         [InlineData("classlib", "VB")]
         [InlineData("classlib", "F#")]
-        [InlineData("app")]
-        [InlineData("app", "C#")]
 
         [InlineData("mstest")]
         [InlineData("nunit")]
@@ -181,7 +179,6 @@ namespace EndToEnd.Tests
 [\w \.]+blazorwasm\s+\[C#\][\w\ \/]+
 [\w \.]+classlib\s+\[C#\],F#,VB[\w\ \/]+
 [\w \.]+console\s+\[C#\],F#,VB[\w\ \/]+
-[\w \.]+app\s+\[C#\][\w\ \/]+
 ";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -257,8 +254,6 @@ namespace EndToEnd.Tests
         [InlineData("console", "C#")]
         [InlineData("console", "VB")]
         [InlineData("console", "F#")]
-        [InlineData("app")]
-        [InlineData("app", "C#")]
         [InlineData("classlib")]
         [InlineData("classlib", "C#")]
         [InlineData("classlib", "VB")]
