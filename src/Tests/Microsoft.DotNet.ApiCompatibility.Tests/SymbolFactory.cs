@@ -68,15 +68,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
         private static SyntaxTree GetSyntaxTree(string syntax)
         {
-            IEnumerable<string> defineConstants =
-#if NETFRAMEWORK
-                new string[] { "NETFRAMEWORK" };
-#else
-                Array.Empty<string>();
-#endif
-            CSharpParseOptions options = new(preprocessorSymbols: defineConstants);
-
-            return CSharpSyntaxTree.ParseText(syntax, options);
+            return CSharpSyntaxTree.ParseText(syntax, ParseOptions);
         }
 
         private static CSharpCompilation CreateCSharpCompilation(string name, bool enableNullable)
@@ -85,13 +77,23 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
                                                                   nullableContextOptions: enableNullable ? NullableContextOptions.Enable : NullableContextOptions.Disable);
 
             // Suppress diagnostics that we don't care about in the tests.
-            compilationOptions = compilationOptions.WithSpecificDiagnosticOptions(new[]
-            {
-                // Suppress warning for unused fields.
-                new KeyValuePair<string, ReportDiagnostic>("CS0067", ReportDiagnostic.Suppress)
-            });
+            compilationOptions = compilationOptions.WithSpecificDiagnosticOptions(DiagnosticOptions);
             return CSharpCompilation.Create(name, options: compilationOptions, references: DefaultReferences);
         }
+
+        private static CSharpParseOptions ParseOptions { get; } = new(preprocessorSymbols:
+#if NETFRAMEWORK
+                new string[] { "NETFRAMEWORK" }
+#else
+                Array.Empty<string>()
+#endif
+        ); 
+
+        private static IEnumerable<KeyValuePair<string, ReportDiagnostic>> DiagnosticOptions { get; } = new[]
+        {
+            // Suppress warning for unused fields.
+            new KeyValuePair<string, ReportDiagnostic>("CS0067", ReportDiagnostic.Suppress)
+        };
 
         private static IEnumerable<MetadataReference> DefaultReferences { get; } = new[]
         {
