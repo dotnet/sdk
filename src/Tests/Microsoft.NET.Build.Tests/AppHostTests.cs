@@ -18,6 +18,7 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
 using NuGet.Frameworks;
+using System.Xml.Linq;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -61,7 +62,17 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
-                .WithTargetFramework(targetFramework);
+                .WithTargetFramework(targetFramework)
+                // Windows Server requires setting on preview features for
+                // global using directives.
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    project.Root.Add(
+                        new XElement(ns + "PropertyGroup",
+                            new XElement(ns + "LangVersion", "preview")));
+                });
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
