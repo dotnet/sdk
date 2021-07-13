@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
+using System;
 using System.IO;
 using Microsoft.NET.Sdk.Razor.Tests;
 using Microsoft.NET.TestFramework;
@@ -16,6 +17,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         protected override string ComputeBaselineFolder() =>
-            Path.Combine(TestContext.GetRepoRoot(), "src", "Tests", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
+            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "src", "Tests", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
     }
 }
