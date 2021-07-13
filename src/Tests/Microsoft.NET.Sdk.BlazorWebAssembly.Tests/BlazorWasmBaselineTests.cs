@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Razor.Tasks;
 using Microsoft.NET.Sdk.Razor.Tests;
 using Microsoft.NET.TestFramework;
 using Xunit.Abstractions;
@@ -14,6 +15,23 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public BlazorWasmBaselineTests(ITestOutputHelper log, bool generateBaselines) : base(log, generateBaselines)
         {
+            PathTemplatizer = TemplatizeCompressedAssets;
+        }
+
+        private string TemplatizeCompressedAssets(StaticWebAsset asset, string originalValue, StaticWebAsset relatedAsset)
+        {
+            if (!asset.IsAlternativeAsset())
+            {
+                return null;
+            }
+            
+            if (asset.RelatedAsset == originalValue)
+            {
+                return null;
+            }
+
+            return Path.Combine(Path.GetDirectoryName(asset.Identity), "{" + asset.RelativePath + "}");
+
         }
 
         protected override string ComputeBaselineFolder() =>

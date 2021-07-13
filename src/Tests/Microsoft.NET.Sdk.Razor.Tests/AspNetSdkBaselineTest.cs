@@ -26,10 +26,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 #if GENERATE_SWA_BASELINES
         public static bool GenerateBaselines = true;
 #else
-        public static bool GenerateBaselines = false;
+        public static bool GenerateBaselines = true;
 #endif
 
         private bool _generateBaselines = GenerateBaselines;
+
+        // This allows templatizing paths that don't have a deterministic name, for example the files we gzip or brotli as part
+        // of Blazor compilations.  We only need to do this for the manifest since the tests for files don't use the original
+        // path. Returning null avoids any transformation
+        protected Func<StaticWebAsset, string, StaticWebAsset, string> PathTemplatizer { get; set; } = (asset, originalValue, related) => null;
 
         public AspNetSdkBaselineTest(ITestOutputHelper log) : base(log)
         {
@@ -64,7 +69,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
             else
             {
-                return StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(GetManifestPath(suffix, name, "Build")));
+                var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(GetManifestPath(suffix, name, "Build")));
+                ApplyTemplatizerToAssets(manifest);
+                return manifest;
             }
         }
 
@@ -76,7 +83,24 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
             else
             {
-                return StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(GetManifestPath(suffix, name, "Publish")));
+                var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(GetManifestPath(suffix, name, "Publish")));
+                ApplyTemplatizerToAssets(manifest);
+                return manifest;
+            }
+        }
+
+        private void ApplyTemplatizerToAssets(StaticWebAssetsManifest manifest)
+        {
+            var assets = manifest.Assets;
+            var assetsById = manifest.Assets.ToDictionary(a => a.Identity);
+            for (int i = 0; i < assets.Length; i++)
+            {
+                var asset = assets[i];
+                var relatedAsset = string.IsNullOrEmpty(asset.RelatedAsset) || !assetsById.TryGetValue(asset.RelatedAsset, out var related) ?
+                    null : related;
+                asset.Identity = PathTemplatizer(asset, asset.Identity, null) ?? asset.Identity;
+                asset.RelatedAsset = PathTemplatizer(asset, asset.RelatedAsset, relatedAsset) ?? asset.RelatedAsset;
+                asset.OriginalItemSpec = PathTemplatizer(asset, asset.OriginalItemSpec, null) ?? asset.OriginalItemSpec;
             }
         }
 
@@ -131,6 +155,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                         .ToArray(),
                     TestContext.Current.NuGetCachePath,
                     outputFolder,
+                    ProjectDirectory.TestRoot,
                     intermediateOutputPath);
 
                 File.WriteAllText(
@@ -152,6 +177,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 Directory.GetFiles(wwwRootFolder, "*", fileEnumerationOptions) :
                 Array.Empty<string>();
 
+            for (var i = 0; i < wwwRootFiles.Length; i++)
+            {
+                var file = wwwRootFiles[i];
+                wwwRootFiles[i] = file.Replace(Path.DirectorySeparatorChar, '\\');
+            }
+
             // Computed publish assets must exist on disk (we do this check to quickly identify when something is not being
             // generated vs when its being copied to the wrong place)
             var computedFiles = manifest.Assets
@@ -164,9 +195,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var copyToPublishDirectoryFiles = manifest.Assets
                 .Where(a => !string.Equals(a.SourceId, manifest.Source, StringComparison.Ordinal) ||
                             !string.Equals(a.AssetMode, StaticWebAsset.AssetModes.Reference))
-                .Select(a => a.ComputeTargetPath(wwwRootFolder, Path.DirectorySeparatorChar));
+                .Select(a => a.ComputeTargetPath(wwwRootFolder, '\\'));
 
-            var existingFiles = wwwRootFiles.Concat(computedFiles.Select(f => f.Identity)).Concat(copyToPublishDirectoryFiles)
+            var existingFiles = wwwRootFiles.Concat(computedFiles.Select(f => PathTemplatizer(f, f.Identity, null) ?? f.Identity)).Concat(copyToPublishDirectoryFiles)
                 .Distinct()
                 .OrderBy(f => f, StringComparer.Ordinal)
                 .ToArray();
@@ -180,13 +211,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 var templatizedFiles = TemplatizeExpectedFiles(
                     wwwRootFiles
-                        .Concat(computedFiles.Select(f => f.Identity))
+                        .Concat(computedFiles.Select(f => PathTemplatizer(f, f.Identity, null) ?? f.Identity))
                         .Concat(copyToPublishDirectoryFiles)
                         .Distinct()
                         .OrderBy(f => f, StringComparer.Ordinal)
                         .ToArray(),
                     TestContext.Current.NuGetCachePath,
                     publishFolder,
+                    ProjectDirectory.TestRoot,
                     intermediateOutputPath);
 
                 File.WriteAllText(
@@ -209,6 +241,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     JsonSerializer.Deserialize<string[]>(File.ReadAllBytes(filesBaselinePath)),
                     TestContext.Current.NuGetCachePath,
                     buildOrPublishPath,
+                    ProjectDirectory.TestRoot,
                     intermediateOutputPath)
                     .ToArray();
             }
@@ -223,24 +256,34 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             IEnumerable<string> files,
             string restorePath,
             string buildOrPublishFolder,
-            string intermediateOutputPath) =>
-                files.Select(f => f.Replace(restorePath, "${RestorePath}")
-                               .Replace(RuntimeVersion, "${RuntimeVersion}")
-                               .Replace(DefaultPackageVersion, "${PackageVersion}")
-                               .Replace(buildOrPublishFolder, "${OutputPath}")
-                               .Replace(intermediateOutputPath, "${IntermediateOutputPath}")
-                               .Replace(Path.DirectorySeparatorChar, '\\'));
+            string projectPath,
+            string intermediateOutputPath)
+        {
+            foreach (var f in files)
+            {
+                var updated =  f.Replace(restorePath, "${RestorePath}")
+                    .Replace(RuntimeVersion, "${RuntimeVersion}")
+                    .Replace(DefaultPackageVersion, "${PackageVersion}")
+                    .Replace(buildOrPublishFolder, "${OutputPath}")
+                    .Replace(projectPath, "${ProjectPath}")
+                    .Replace(intermediateOutputPath, "${IntermediateOutputPath}")
+                    .Replace(Path.DirectorySeparatorChar, '\\');
+                yield return updated;
+            }
+        }
 
         private IEnumerable<string> ApplyPathsToTemplatedFilePaths(
             IEnumerable<string> files,
             string restorePath,
             string buildOrPublishFolder,
+            string projectPath,
             string intermediateOutputPath) =>
                 files.Select(f => f.Replace("${RestorePath}", restorePath)
                                 .Replace("${RuntimeVersion}", RuntimeVersion)
                                .Replace("${PackageVersion}", DefaultPackageVersion)
                                .Replace("${OutputPath}", buildOrPublishFolder)
                                .Replace("${IntermediateOutputPath}", intermediateOutputPath)
+                               .Replace("${ProjectPath}", projectPath)
                                .Replace('\\', Path.DirectorySeparatorChar));
 
 
@@ -337,7 +380,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private string Templatize(StaticWebAssetsManifest manifest, string projectRoot, string restorePath)
         {
-            Array.Sort(manifest.Assets, (l, r) => StringComparer.Ordinal.Compare(l.Identity, r.Identity));
+            var assetsByIdentity = manifest.Assets.ToDictionary(a => a.Identity);
             foreach (var asset in manifest.Assets)
             {
                 asset.Identity = asset.Identity.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
@@ -346,6 +389,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Replace(RuntimeVersion, "${RuntimeVersion}")
                     .Replace(DefaultPackageVersion,"${PackageVersion}")
                     .Replace(Path.DirectorySeparatorChar, '\\');
+                asset.Identity = PathTemplatizer(asset, asset.Identity, null) ?? asset.Identity;
 
                 asset.ContentRoot = asset.ContentRoot.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
                 asset.ContentRoot = asset.ContentRoot
@@ -354,12 +398,20 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Replace(DefaultPackageVersion, "${PackageVersion}")
                     .Replace(Path.DirectorySeparatorChar, '\\');
 
-                asset.RelatedAsset = asset.RelatedAsset.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
-                asset.RelatedAsset = asset.RelatedAsset
-                    .Replace(restorePath, "${RestorePath}")
-                    .Replace(RuntimeVersion, "${RuntimeVersion}")
-                    .Replace(DefaultPackageVersion, "${PackageVersion}")
-                    .Replace(Path.DirectorySeparatorChar, '\\');
+                if (!string.IsNullOrEmpty(asset.RelatedAsset))
+                {
+                    var relatedAsset = string.IsNullOrEmpty(asset.RelatedAsset) || !assetsByIdentity.TryGetValue(asset.RelatedAsset, out var related) ?
+                        null : related;
+
+                    asset.RelatedAsset = asset.RelatedAsset.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
+                    asset.RelatedAsset = asset.RelatedAsset
+                        .Replace(restorePath, "${RestorePath}")
+                        .Replace(RuntimeVersion, "${RuntimeVersion}")
+                        .Replace(DefaultPackageVersion, "${PackageVersion}")
+                        .Replace(Path.DirectorySeparatorChar, '\\');
+
+                    asset.RelatedAsset = PathTemplatizer(asset, asset.RelatedAsset, relatedAsset) ?? asset.RelatedAsset;
+                }
 
                 asset.OriginalItemSpec = asset.OriginalItemSpec.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
                 asset.OriginalItemSpec = asset.OriginalItemSpec
@@ -367,9 +419,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Replace(RuntimeVersion, "${RuntimeVersion}")
                     .Replace(DefaultPackageVersion, "${PackageVersion}")
                     .Replace(Path.DirectorySeparatorChar, '\\');
+                asset.OriginalItemSpec = PathTemplatizer(asset, asset.OriginalItemSpec, null) ?? asset.OriginalItemSpec;
             }
 
-            Array.Sort(manifest.DiscoveryPatterns, (l, r) => StringComparer.Ordinal.Compare(l.Name, r.Name));
             foreach (var discovery in manifest.DiscoveryPatterns)
             {
                 discovery.ContentRoot = discovery.ContentRoot.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
@@ -380,12 +432,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Replace(Path.DirectorySeparatorChar, '\\');
             }
 
-            Array.Sort(manifest.RelatedManifests, (l, r) => StringComparer.Ordinal.Compare(l.Identity, r.Identity));
             foreach (var relatedManifest in manifest.RelatedManifests)
             {
                 relatedManifest.Identity = relatedManifest.Identity.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
             }
 
+            // Sor everything now to ensure we produce stable baselines independent of the machine they were generated on.
+            Array.Sort(manifest.DiscoveryPatterns, (l, r) => StringComparer.Ordinal.Compare(l.Name, r.Name));
+            Array.Sort(manifest.Assets, (l, r) => StringComparer.Ordinal.Compare(l.Identity, r.Identity));
+            Array.Sort(manifest.RelatedManifests, (l, r) => StringComparer.Ordinal.Compare(l.Identity, r.Identity));
             return JsonSerializer.Serialize(manifest, BaselineSerializationOptions);
         }
 

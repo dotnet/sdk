@@ -2,12 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Tasks;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -18,7 +13,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class BlazorWasmStaticWebAssetsIntegrationTest : BlazorWasmBaselineTests
     {
-        public BlazorWasmStaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log, generateBaselines: true)
+        public BlazorWasmStaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines)
         {
         }
 
