@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
         private static IEnumerable<KeyValuePair<string, ReportDiagnostic>> DiagnosticOptions { get; } = new[]
         {
-            // Suppress warning for unused fields.
+            // Suppress warning for unused events.
             new KeyValuePair<string, ReportDiagnostic>("CS0067", ReportDiagnostic.Suppress)
         };
 
