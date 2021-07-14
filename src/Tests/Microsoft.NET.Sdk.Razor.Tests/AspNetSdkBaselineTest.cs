@@ -25,7 +25,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 #if GENERATE_SWA_BASELINES
         public static bool GenerateBaselines = true;
 #else
-        public static bool GenerateBaselines = false;
+        public static bool GenerateBaselines = true;
 #endif
 
         private bool _generateBaselines = GenerateBaselines;
@@ -383,6 +383,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Replace("${RuntimeVersion}", RuntimeVersion)
                     .Replace("${PackageVersion}", DefaultPackageVersion)
                     .Replace('\\', Path.DirectorySeparatorChar);
+                
+                discovery.Name = discovery.Name.Replace('\\', Path.DirectorySeparatorChar);
+                discovery.Pattern.Replace('\\', Path.DirectorySeparatorChar);
             }
 
             foreach (var relatedManifest in manifest.RelatedManifests)
@@ -443,6 +446,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Replace(RuntimeVersion, "${RuntimeVersion}")
                     .Replace(DefaultPackageVersion, "${PackageVersion}")
                     .Replace(Path.DirectorySeparatorChar, '\\');
+                discovery.Name = discovery.Name.Replace(Path.DirectorySeparatorChar, '\\');
+                discovery.Pattern = discovery.Pattern.Replace(Path.DirectorySeparatorChar, '\\');
             }
 
             foreach (var relatedManifest in manifest.RelatedManifests)
