@@ -141,7 +141,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             if (!_generateBaselines)
             {
-                var expected = LoadExpectedFilesBaseline(manifest.ManifestType, outputFolder, intermediateOutputPath, suffix, name);
+                var expected = LoadExpectedFilesBaseline(manifest.ManifestType, outputFolder, intermediateOutputPath, suffix, name)
+                    .OrderBy(f => f, StringComparer.Ordinal);
 
                 var existingFiles = wwwRootFiles.Concat(computedFiles.Select(a => PathTemplatizer(a, a.Identity, null) ?? a.Identity)).Concat(copyToOutputDirectoryFiles)
                     .Distinct()
@@ -309,10 +310,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 manifest.BasePath.Should().Be(expected.BasePath);
                 manifest.Mode.Should().Be(expected.Mode);
                 manifest.ManifestType.Should().Be(expected.ManifestType);
-                manifest.RelatedManifests.Select(rm => new ComparableManifest(rm.Identity, rm.Source, rm.ManifestType))
+                manifest.RelatedManifests.Select(rm => new ComparableManifest(rm.Identity, rm.Source, rm.ManifestType)).OrderBy(cm => cm.Source).ThenBy(cm => cm.Type)
                     .Should()
-                    .BeEquivalentTo(expected.RelatedManifests.Select(rm => new ComparableManifest(rm.Identity, rm.Source, rm.ManifestType)));
-                manifest.DiscoveryPatterns.ShouldBeEquivalentTo(expected.DiscoveryPatterns);
+                    .BeEquivalentTo(expected.RelatedManifests.Select(rm => new ComparableManifest(rm.Identity, rm.Source, rm.ManifestType)).OrderBy(cm => cm.Source).ThenBy(cm => cm.Type));
+                manifest.DiscoveryPatterns.OrderBy(dp => dp.Name).ShouldBeEquivalentTo(expected.DiscoveryPatterns.OrderBy(dp => dp.Name));
+                manifest.Assets.OrderBy(a => a.BasePath).ThenBy(a => a.RelativePath).ThenBy(a => a.AssetKind)
+                    .ShouldBeEquivalentTo(expected.Assets.OrderBy(a => a.BasePath).ThenBy(a => a.RelativePath).ThenBy(a => a.AssetKind));
             }
             else
             {
