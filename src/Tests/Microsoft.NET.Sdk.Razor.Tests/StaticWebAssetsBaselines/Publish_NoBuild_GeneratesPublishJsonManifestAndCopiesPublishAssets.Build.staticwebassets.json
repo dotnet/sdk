@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "2fmdfZWzTNfd9/8C7AyoUFknkPJv8dsDfBKMrr4o6NY=",
+  "Hash": "A/G8suxn085A\u002BT3W6W8HBuQIJQHxaiNAH20nAYzyZ\u002BE=",
   "Source": "ComponentApp",
   "BasePath": "_content/ComponentApp",
   "Mode": "Default",
@@ -11,7 +11,7 @@
       "Name": "ComponentApp\\wwwroot",
       "ContentRoot": "${ProjectRoot}\\wwwroot\\",
       "BasePath": "_content/ComponentApp",
-      "Pattern": "wwwroot/**"
+      "Pattern": "**"
     }
   ],
   "Assets": [

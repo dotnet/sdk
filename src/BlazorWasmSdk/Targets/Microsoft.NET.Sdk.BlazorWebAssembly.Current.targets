@@ -113,7 +113,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <_DotNetJsItem Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.DestinationSubPath)' == 'dotnet.js' AND '%(ReferenceCopyLocalPaths.AssetType)' == 'native'">
-        <RelativePath>_framework\$(_BlazorDotnetJsFileName)</RelativePath>
+        <RelativePath>_framework/$(_BlazorDotnetJsFileName)</RelativePath>
       </_DotNetJsItem>
     </ItemGroup>
 

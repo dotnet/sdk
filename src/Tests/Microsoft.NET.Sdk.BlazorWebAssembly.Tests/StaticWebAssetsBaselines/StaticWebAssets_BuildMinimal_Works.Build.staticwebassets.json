@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "hTrHsbVBkf3jR2U5wrF0mDf8YgLHzLXIpm\u002B5yZOo\u002BSc=",
+  "Hash": "lebCGlaqMdV\u002BuHWBFTzfEAYt/tQ/79nD2d/HMCixW3w=",
   "Source": "blazorwasm-minimal",
   "BasePath": "/",
   "Mode": "Root",
@@ -11,7 +11,7 @@
       "Name": "blazorwasm-minimal\\wwwroot",
       "ContentRoot": "${ProjectRoot}\\wwwroot\\",
       "BasePath": "/",
-      "Pattern": "wwwroot/**"
+      "Pattern": "**"
     }
   ],
   "Assets": [

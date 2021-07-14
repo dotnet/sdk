@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "UnNYqhGcJT1\u002BhiM4KCh5B0w5cohF0Ur\u002B731rEeqbgMg=",
+  "Hash": "5st/GN7kJrOCn6S/Tdr1mclF7UKttkN7Fl6jNXqjCxM=",
   "Source": "AppWithPackageAndP2PReference",
   "BasePath": "_content/AppWithPackageAndP2PReference",
   "Mode": "Default",
@@ -14,7 +14,7 @@
       "PublishTarget": "",
       "AdditionalPublishProperties": ";",
       "AdditionalPublishPropertiesToRemove": ";WebPublishProfileFile",
-      "Hash": "2uYA9wbA6NL7ZZ4IQS6JBA/ayT5LC/2IcqnlmnrtDSE="
+      "Hash": "evBjY8KqOEq/pczqDzkzE2omsdhQfIEkZFErVPPdicc="
     },
     {
       "Identity": "${ProjectRoot}\\AnotherClassLib\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
@@ -34,7 +34,7 @@
       "PublishTarget": "",
       "AdditionalPublishProperties": ";",
       "AdditionalPublishPropertiesToRemove": ";WebPublishProfileFile",
-      "Hash": "ayFwh0NUHF6VaJBouf0j8YYSUt6rHVeWWuNPK6YhuUY="
+      "Hash": "BYF\u002BR8uNvhzUEtS10sjBLU5NtidqsZ1Hqah59b3UsMA="
     },
     {
       "Identity": "${ProjectRoot}\\ClassLibrary\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
@@ -52,19 +52,19 @@
       "Name": "AnotherClassLib\\wwwroot",
       "ContentRoot": "${ProjectRoot}\\AnotherClassLib\\wwwroot\\",
       "BasePath": "_content/AnotherClassLib",
-      "Pattern": "wwwroot/**"
+      "Pattern": "**"
     },
     {
       "Name": "AppWithPackageAndP2PReference\\wwwroot",
       "ContentRoot": "${ProjectRoot}\\AppWithPackageAndP2PReference\\wwwroot\\",
       "BasePath": "_content/AppWithPackageAndP2PReference",
-      "Pattern": "wwwroot/**"
+      "Pattern": "**"
     },
     {
       "Name": "ClassLibrary\\wwwroot",
       "ContentRoot": "${ProjectRoot}\\ClassLibrary\\wwwroot\\",
       "BasePath": "_content/ClassLibrary",
-      "Pattern": "wwwroot/**"
+      "Pattern": "**"
     }
   ],
   "Assets": [
