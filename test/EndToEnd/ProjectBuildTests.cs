@@ -40,7 +40,7 @@ namespace EndToEnd.Tests
             var runCommand = new RunCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .ExecuteWithCapturedOutput()
-                .Should().Pass().And.HaveStdOutContaining("Hello World!");
+                .Should().Pass().And.HaveStdOutContaining("Hello, World!");
 
             var binDirectory = new DirectoryInfo(projectDirectory).Sub("bin");
             binDirectory.Should().HaveFilesMatching("*.dll", SearchOption.AllDirectories);
@@ -82,7 +82,7 @@ namespace EndToEnd.Tests
             var runCommand = new RunCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .ExecuteWithCapturedOutput()
-                .Should().Pass().And.HaveStdOutContaining("Hello World!");
+                .Should().Pass().And.HaveStdOutContaining("Hello, World!");
         }
 
         [WindowsOnlyFact]
