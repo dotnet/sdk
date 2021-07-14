@@ -164,7 +164,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     assetCandidate.SetMetadata("AssetRole", "Related");
                     assetCandidate.SetMetadata("AssetTraitName", "Culture");
                     assetCandidate.SetMetadata("AssetTraitValue", candidateCulture);
-                    assetCandidate.SetMetadata("RelativePath", Path.Combine("_framework", candidateCulture, normalizedPath));
+                    assetCandidate.SetMetadata("RelativePath", Path.Combine("_framework", normalizedPath));
                     assetCandidate.SetMetadata("RelatedAsset", projectAssemblyAssetPath);
 
                     assetCandidates.Add(assetCandidate);
