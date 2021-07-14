@@ -67,15 +67,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string BasePath { get; set; }
 
-        public string Mode { get; private set; }
+        public string Mode { get; set; }
 
-        public string ManifestType { get; private set; }
+        public string ManifestType { get; set; }
 
-        public ManifestReference[] RelatedManifests { get; private set; }
+        public ManifestReference[] RelatedManifests { get; set; }
 
-        public DiscoveryPattern[] DiscoveryPatterns { get; private set; }
+        public DiscoveryPattern[] DiscoveryPatterns { get; set; }
 
-        public StaticWebAsset[] Assets { get; private set; }
+        public StaticWebAsset[] Assets { get; set; }
 
         public static StaticWebAssetsManifest FromJsonBytes(byte[] jsonBytes)
         {
