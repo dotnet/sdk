@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "lebCGlaqMdV\u002BuHWBFTzfEAYt/tQ/79nD2d/HMCixW3w=",
+  "Hash": "8ePzgrWdnZu73jCuaEqP67mDDFH\u002BE/OUt66KL9CQSCU=",
   "Source": "blazorwasm-minimal",
   "BasePath": "/",
   "Mode": "Root",
@@ -3404,7 +3404,7 @@
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\obj\\Debug\\net6.0\\blazor\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js",
+      "RelativePath": "_framework/dotnet.${RuntimeVersion}.js",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Primary",

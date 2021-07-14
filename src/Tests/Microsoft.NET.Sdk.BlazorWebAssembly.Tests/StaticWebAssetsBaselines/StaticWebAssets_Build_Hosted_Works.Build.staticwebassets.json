@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "19JFC2FBk\u002B5L/mVlvk4\u002BWEzaYRxq18PP2h/4PGUvax0=",
+  "Hash": "R9f2eZ3h20Ca38OzaCl7USovUJq4IewkEm1QQhT70tY=",
   "Source": "blazorhosted",
   "BasePath": "_content/blazorhosted",
   "Mode": "Default",
@@ -14,7 +14,7 @@
       "PublishTarget": "",
       "AdditionalPublishProperties": ";",
       "AdditionalPublishPropertiesToRemove": ";WebPublishProfileFile",
-      "Hash": "D8Ll7okp5JYaOIkWAWrLS86ozj1CZM0sIwVKMnREQCY="
+      "Hash": "L3njoXOP8yDjPJ\u002B7FCZa9qCYW1DTCSfZunZTlzeAkcQ="
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
@@ -3525,7 +3525,7 @@
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\blazor\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js",
+      "RelativePath": "_framework/dotnet.${RuntimeVersion}.js",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Primary",

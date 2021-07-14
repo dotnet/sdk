@@ -346,28 +346,30 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             foreach (var asset in manifest.Assets)
             {
-                asset.Identity = asset.Identity.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
+                asset.Identity = asset.Identity.Replace("${ProjectRoot}", projectRoot);
                 asset.Identity = asset.Identity
                     .Replace("${RestorePath}", restorePath)
                     .Replace("${RuntimeVersion}", RuntimeVersion)
                     .Replace("${PackageVersion}", DefaultPackageVersion)
                     .Replace('\\', Path.DirectorySeparatorChar);
 
-                asset.ContentRoot = asset.ContentRoot.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
+                asset.RelativePath = asset.RelativePath.Replace("${RuntimeVersion}", RuntimeVersion);
+
+                asset.ContentRoot = asset.ContentRoot.Replace("${ProjectRoot}", projectRoot);
                 asset.ContentRoot = asset.ContentRoot
                     .Replace("${RestorePath}", restorePath)
                     .Replace("${RuntimeVersion}", RuntimeVersion)
                     .Replace("${PackageVersion}", DefaultPackageVersion)
                     .Replace('\\', Path.DirectorySeparatorChar);
 
-                asset.RelatedAsset = asset.RelatedAsset.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
+                asset.RelatedAsset = asset.RelatedAsset.Replace("${ProjectRoot}", projectRoot);
                 asset.RelatedAsset = asset.RelatedAsset
                     .Replace("${RestorePath}", restorePath)
                     .Replace("${RuntimeVersion}", RuntimeVersion)
                     .Replace("${PackageVersion}", DefaultPackageVersion)
                     .Replace('\\', Path.DirectorySeparatorChar);
 
-                asset.OriginalItemSpec = asset.OriginalItemSpec.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
+                asset.OriginalItemSpec = asset.OriginalItemSpec.Replace("${ProjectRoot}", projectRoot);
                 asset.OriginalItemSpec = asset.OriginalItemSpec
                     .Replace("${RestorePath}", restorePath)
                     .Replace("${RuntimeVersion}", RuntimeVersion)
@@ -377,7 +379,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             foreach (var discovery in manifest.DiscoveryPatterns)
             {
-                discovery.ContentRoot = discovery.ContentRoot.Replace("${ProjectRoot}", projectRoot).Replace('\\', Path.DirectorySeparatorChar);
+                discovery.ContentRoot = discovery.ContentRoot.Replace("${ProjectRoot}", projectRoot);
                 discovery.ContentRoot = discovery.ContentRoot
                     .Replace("${RestorePath}", restorePath)
                     .Replace("${RuntimeVersion}", RuntimeVersion)
@@ -399,7 +401,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var assetsByIdentity = manifest.Assets.ToDictionary(a => a.Identity);
             foreach (var asset in manifest.Assets)
             {
-                asset.Identity = asset.Identity.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
+                asset.Identity = asset.Identity.Replace(projectRoot, "${ProjectRoot}");
                 asset.Identity = asset.Identity
                     .Replace(restorePath, "${RestorePath}")
                     .Replace(RuntimeVersion, "${RuntimeVersion}")
@@ -407,7 +409,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Replace(Path.DirectorySeparatorChar, '\\');
                 asset.Identity = PathTemplatizer(asset, asset.Identity, null) ?? asset.Identity;
 
-                asset.ContentRoot = asset.ContentRoot.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
+                asset.RelativePath = asset.RelativePath.Replace(RuntimeVersion, "${RuntimeVersion}");
+
+                asset.ContentRoot = asset.ContentRoot.Replace(projectRoot, "${ProjectRoot}");
                 asset.ContentRoot = asset.ContentRoot
                     .Replace(restorePath, "${RestorePath}")
                     .Replace(RuntimeVersion, "${RuntimeVersion}")
@@ -419,7 +423,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     var relatedAsset = string.IsNullOrEmpty(asset.RelatedAsset) || !assetsByIdentity.TryGetValue(asset.RelatedAsset, out var related) ?
                         null : related;
 
-                    asset.RelatedAsset = asset.RelatedAsset.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
+                    asset.RelatedAsset = asset.RelatedAsset.Replace(projectRoot, "${ProjectRoot}");
                     asset.RelatedAsset = asset.RelatedAsset
                         .Replace(restorePath, "${RestorePath}")
                         .Replace(RuntimeVersion, "${RuntimeVersion}")
@@ -429,7 +433,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     asset.RelatedAsset = PathTemplatizer(asset, asset.RelatedAsset, relatedAsset) ?? asset.RelatedAsset;
                 }
 
-                asset.OriginalItemSpec = asset.OriginalItemSpec.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
+                asset.OriginalItemSpec = asset.OriginalItemSpec.Replace(projectRoot, "${ProjectRoot}");
                 asset.OriginalItemSpec = asset.OriginalItemSpec
                     .Replace(restorePath, "${RestorePath}")
                     .Replace(RuntimeVersion, "${RuntimeVersion}")
@@ -440,7 +444,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             foreach (var discovery in manifest.DiscoveryPatterns)
             {
-                discovery.ContentRoot = discovery.ContentRoot.Replace(projectRoot, "${ProjectRoot}").Replace(Path.DirectorySeparatorChar, '\\');
+                discovery.ContentRoot = discovery.ContentRoot.Replace(projectRoot, "${ProjectRoot}");
                 discovery.ContentRoot = discovery.ContentRoot
                     .Replace(restorePath, "${RestorePath}")
                     .Replace(RuntimeVersion, "${RuntimeVersion}")

@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "H52uOROdkVH2kjLPVDJnQEX0Smsw6WKSjpoy\u002BTFVO20=",
+  "Hash": "RC/wjqNleOFSEOIHG3GIiXXDP5mxGxOOvj4osP\u002BxZ/Q=",
   "Source": "blazorhosted",
   "BasePath": "_content/blazorhosted",
   "Mode": "Default",
@@ -14,7 +14,7 @@
       "PublishTarget": "",
       "AdditionalPublishProperties": ";",
       "AdditionalPublishPropertiesToRemove": ";WebPublishProfileFile",
-      "Hash": "X3BtHl7VKlVvIlPvMUivsgD2g8HoaxEm\u002BL2eUGTKPSA="
+      "Hash": "IDc30eJznRQLjGed/Nt90A7yk7nmxZ\u002B9iiGfJDOvuik="
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\StaticWebAssets.publish.json",
@@ -24,7 +24,7 @@
       "PublishTarget": "ComputeFilesToPublish",
       "AdditionalPublishProperties": ";BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true;_PublishingBlazorWasmProject=true;",
       "AdditionalPublishPropertiesToRemove": ";NoBuild;RuntimeIdentifier;WebPublishProfileFile",
-      "Hash": "nD7zhVt2LNxtWLcDdPAn91uePplp/aX02HOgOnIXY9s="
+      "Hash": "hHcJXC4CDkacK2c9hO1J8xZgWgtqDb6omjM2fyQFTiw="
     },
     {
       "Identity": "${ProjectRoot}\\razorclasslibrary\\obj\\Debug\\netstandard2.1\\StaticWebAssets.build.json",
@@ -208,7 +208,7 @@
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js",
+      "RelativePath": "_framework/dotnet.${RuntimeVersion}.js",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -2549,12 +2549,12 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\linked\\blazorwasm.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\compress\\{_framework/dotnet.6.0.0-preview.7.21360.10.js.br}",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\compress\\{_framework/dotnet.6.0.0-preview.7.21363.9.js.br}",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js.br",
+      "RelativePath": "_framework/dotnet.${RuntimeVersion}.js.br",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
@@ -2566,12 +2566,12 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\blazor\\_framework\\dotnet.js"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\compress\\{_framework/dotnet.6.0.0-preview.7.21360.10.js.gz}",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\compress\\{_framework/dotnet.6.0.0-preview.7.21363.9.js.gz}",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js.gz",
+      "RelativePath": "_framework/dotnet.${RuntimeVersion}.js.gz",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",

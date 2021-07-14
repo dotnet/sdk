@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "INK3GebOy0iP/HJ6UK20nsMsradP\u002B\u002BgFCH722dRM71Y=",
+  "Hash": "hLKfxwlsvCwkDuvw2zK6f9HwmZSy4nA3mYQJ4SSxxLY=",
   "Source": "blazorwasm-minimal",
   "BasePath": "/",
   "Mode": "Root",
@@ -150,7 +150,7 @@
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js",
+      "RelativePath": "_framework/dotnet.${RuntimeVersion}.js",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -2440,12 +2440,12 @@
       "OriginalItemSpec": "${ProjectRoot}\\obj\\Debug\\net6.0\\linked\\blazorwasm-minimal.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\compress\\{_framework/dotnet.6.0.0-preview.7.21360.10.js.br}",
+      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\compress\\{_framework/dotnet.6.0.0-preview.7.21363.9.js.br}",
       "SourceId": "blazorwasm-minimal",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js.br",
+      "RelativePath": "_framework/dotnet.${RuntimeVersion}.js.br",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
@@ -2457,12 +2457,12 @@
       "OriginalItemSpec": "${ProjectRoot}\\obj\\Debug\\net6.0\\blazor\\_framework\\dotnet.js"
     },
     {
-      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\compress\\{_framework/dotnet.6.0.0-preview.7.21360.10.js.gz}",
+      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\compress\\{_framework/dotnet.6.0.0-preview.7.21363.9.js.gz}",
       "SourceId": "blazorwasm-minimal",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.0-preview.7.21360.10.js.gz",
+      "RelativePath": "_framework/dotnet.${RuntimeVersion}.js.gz",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
