@@ -421,7 +421,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetDiscoveryPattern Include="$(PackageId)\wwwroot">
         <ContentRoot>$(MSBuildProjectDirectory)\wwwroot\</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <Pattern>wwwroot/**</Pattern>
+        <Pattern>**</Pattern>
       </StaticWebAssetDiscoveryPattern>
 
       <Content Remove="@(StaticWebAsset)" />
