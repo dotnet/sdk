@@ -22,7 +22,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private string _baselinesFolder;
 
-
 #if GENERATE_SWA_BASELINES
         public static bool GenerateBaselines = true;
 #else
@@ -38,8 +37,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         public AspNetSdkBaselineTest(ITestOutputHelper log) : base(log)
         {
-            var assembly = Assembly.GetCallingAssembly();
-            var testAssemblyMetadata = assembly.GetCustomAttributes<AssemblyMetadataAttribute>();
+            TestAssembly = Assembly.GetCallingAssembly();
+            var testAssemblyMetadata = TestAssembly.GetCustomAttributes<AssemblyMetadataAttribute>();
             RuntimeVersion = testAssemblyMetadata.SingleOrDefault(a => a.Key == "NetCoreAppRuntimePackageVersion").Value;
             DefaultPackageVersion = testAssemblyMetadata.SingleOrDefault(a => a.Key == "DefaultTestBaselinePackageVersion").Value;
         }
@@ -57,9 +56,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         public string BaselinesFolder =>
             _baselinesFolder ??= ComputeBaselineFolder();
+        
+        protected Assembly TestAssembly { get; }
 
         protected virtual string ComputeBaselineFolder() =>
             Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "src", "Tests", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
+
+        protected virtual string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
+
 
         public StaticWebAssetsManifest LoadBuildManifest(string suffix = "", [CallerMemberName] string name = "")
         {
@@ -69,7 +73,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
             else
             {
-                var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(GetManifestPath(suffix, name, "Build")));
+                using var stream = GetManifestEmbeddedResource(suffix, name, "Build");
+                var manifest = StaticWebAssetsManifest.FromStream(stream);
                 ApplyTemplatizerToAssets(manifest);
                 return manifest;
             }
@@ -83,7 +88,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
             else
             {
-                var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(GetManifestPath(suffix, name, "Publish")));
+                using var stream = GetManifestEmbeddedResource(suffix, name, "Publish");
+                var manifest = StaticWebAssetsManifest.FromStream(stream);
                 ApplyTemplatizerToAssets(manifest);
                 return manifest;
             }
@@ -235,11 +241,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             string suffix,
             string name)
         {
-            var filesBaselinePath = GetExpectedFilesPath(suffix, name, type);
             if (!_generateBaselines)
             {
+                using var filesBaselineStream = GetExpectedFilesEmbeddedResource(suffix, name, type);
                 return ApplyPathsToTemplatedFilePaths(
-                    JsonSerializer.Deserialize<string[]>(File.ReadAllBytes(filesBaselinePath)),
+                    JsonSerializer.Deserialize<string[]>(filesBaselineStream),
                     TestContext.Current.NuGetCachePath,
                     buildOrPublishPath,
                     ProjectDirectory.TestRoot,
@@ -323,9 +329,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         private string GetManifestPath(string suffix, string name, string manifestType)
             => Path.Combine(BaselinesFolder, $"{name}{(!string.IsNullOrEmpty(suffix) ? $"_{suffix}" : "")}.{manifestType}.staticwebassets.json");
 
+        private Stream GetManifestEmbeddedResource(string suffix, string name, string manifestType)
+            =>  TestAssembly.GetManifestResourceStream(string.Join('.', EmbeddedResourcePrefix, $"{name}{(!string.IsNullOrEmpty(suffix) ? $"_{suffix}" : "")}.{manifestType}.staticwebassets.json"));
+
+
         private string GetExpectedFilesPath(string suffix, string name, string manifestType)
             => Path.Combine(BaselinesFolder, $"{name}{(!string.IsNullOrEmpty(suffix) ? $"_{suffix}" : "")}.{manifestType}.files.json");
 
+        private Stream GetExpectedFilesEmbeddedResource(string suffix, string name, string manifestType)
+            => TestAssembly.GetManifestResourceStream(string.Join('.', EmbeddedResourcePrefix, $"{name}{(!string.IsNullOrEmpty(suffix) ? $"_{suffix}" : "")}.{manifestType}.files.json"));
 
         private void ApplyPathsToAssets(
             StaticWebAssetsManifest manifest,

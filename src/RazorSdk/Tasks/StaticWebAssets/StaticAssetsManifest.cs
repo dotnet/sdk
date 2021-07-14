@@ -88,6 +88,21 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return manifest;
         }
 
+        public static StaticWebAssetsManifest FromStream(Stream stream)
+        {
+            // Unfortunately the Stream overloads are not available on .net 472 so we need to do it this way.
+            // That said, it doesn't matter since this method is only used for test purposes.
+            using var memoryStream = new MemoryStream();
+            stream.CopyTo(memoryStream);
+            var manifest = JsonSerializer.Deserialize<StaticWebAssetsManifest>(memoryStream.ToArray());
+            if (manifest.Version != 1)
+            {
+                throw new InvalidOperationException($"Invalid manifest version. Expected manifest version '1' and found version '{manifest.Version}'.");
+            }
+
+            return manifest;
+        }
+
         public static StaticWebAssetsManifest FromJsonString(string jsonManifest)
         {
             var manifest = JsonSerializer.Deserialize<StaticWebAssetsManifest>(jsonManifest);

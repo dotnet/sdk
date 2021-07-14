@@ -53,9 +53,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="StaticWebAssetsBaselines\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
+    <EmbeddedResource Include="StaticWebAssetsBaselines\**" />
   </ItemGroup>
 </Project>

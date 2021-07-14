@@ -31,8 +31,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
 
             return Path.Combine(Path.GetDirectoryName(asset.Identity), "{" + asset.RelativePath + "}");
-
         }
+
+        protected override string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
 
         protected override string ComputeBaselineFolder() =>
             Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "src", "Tests", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
