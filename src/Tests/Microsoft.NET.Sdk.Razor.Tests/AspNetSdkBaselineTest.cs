@@ -185,12 +185,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 Directory.GetFiles(wwwRootFolder, "*", fileEnumerationOptions) :
                 Array.Empty<string>();
 
-            for (var i = 0; i < wwwRootFiles.Length; i++)
-            {
-                var file = wwwRootFiles[i];
-                wwwRootFiles[i] = file.Replace(Path.DirectorySeparatorChar, '\\');
-            }
-
             // Computed publish assets must exist on disk (we do this check to quickly identify when something is not being
             // generated vs when its being copied to the wrong place)
             var computedFiles = manifest.Assets
@@ -203,7 +197,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var copyToPublishDirectoryFiles = manifest.Assets
                 .Where(a => !string.Equals(a.SourceId, manifest.Source, StringComparison.Ordinal) ||
                             !string.Equals(a.AssetMode, StaticWebAsset.AssetModes.Reference))
-                .Select(a => a.ComputeTargetPath(wwwRootFolder, '\\'));
+                .Select(a => a.ComputeTargetPath(wwwRootFolder, Path.DirectorySeparatorChar));
 
             var existingFiles = wwwRootFiles.Concat(computedFiles.Select(f => PathTemplatizer(f, f.Identity, null) ?? f.Identity)).Concat(copyToPublishDirectoryFiles)
                 .Distinct()
