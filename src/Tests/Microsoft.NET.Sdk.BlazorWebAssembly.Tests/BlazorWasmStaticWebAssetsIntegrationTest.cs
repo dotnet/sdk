@@ -18,7 +18,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void BuildMinimal_Works()
+        public void StaticWebAssets_BuildMinimal_Works()
         {
             // Arrange
             // Minimal has no project references, service worker etc. This is pretty close to the project template.
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void PublishMinimal_Works()
+        public void StaticWebAssets_PublishMinimal_Works()
         {
             // Arrange
             // Minimal has no project references, service worker etc. This is pretty close to the project template.
@@ -82,7 +82,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Build_Hosted_Works()
+        public void StaticWebAssets_Build_Hosted_Works()
         {
             // Arrange
             var testAppName = "BlazorHosted";
@@ -113,7 +113,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_Hosted_Works()
+        public void StaticWebAssets_Publish_Hosted_Works()
         {
             // Arrange
             var testAppName = "BlazorHosted";

@@ -55,4 +55,8 @@
   <ItemGroup>
     <EmbeddedResource Include="StaticWebAssetsBaselines\**" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="StaticWebAssetsBaselines\" />
+  </ItemGroup>
 </Project>
