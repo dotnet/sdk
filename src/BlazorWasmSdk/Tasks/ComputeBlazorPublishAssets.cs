@@ -532,7 +532,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     if (!string.IsNullOrEmpty(culture) || !string.IsNullOrEmpty(inferredCulture))
                     {
                         var finalCulture = !string.IsNullOrEmpty(culture) ? culture : inferredCulture;
-                        var assemblyName = Path.GetFileName(candidate.GetMetadata("RelativePath"));
+                        var assemblyName = Path.GetFileName(candidate.GetMetadata("RelativePath").Replace("\\", "/"));
                         satelliteAssemblyToPublish.Add((finalCulture, assemblyName), candidate);
                         continue;
                     }
