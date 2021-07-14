@@ -75,7 +75,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 using var stream = GetManifestEmbeddedResource(suffix, name, "Build");
                 var manifest = StaticWebAssetsManifest.FromStream(stream);
-                ApplyTemplatizerToAssets(manifest);
                 return manifest;
             }
         }
@@ -90,7 +89,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 using var stream = GetManifestEmbeddedResource(suffix, name, "Publish");
                 var manifest = StaticWebAssetsManifest.FromStream(stream);
-                ApplyTemplatizerToAssets(manifest);
                 return manifest;
             }
         }
@@ -298,6 +296,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             if (!_generateBaselines)
             {
                 ApplyPathsToAssets(expected, ProjectDirectory.TestRoot, TestContext.Current.NuGetCachePath);
+                ApplyTemplatizerToAssets(manifest);
                 //Many of the properties in the manifest contain full paths, to avoid flakiness on the tests, we don't compare the full paths.
                 manifest.Version.Should().Be(expected.Version);
                 manifest.Source.Should().Be(expected.Source);
