@@ -25,7 +25,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 #if GENERATE_SWA_BASELINES
         public static bool GenerateBaselines = true;
 #else
-        public static bool GenerateBaselines = false;
+        public static bool GenerateBaselines = true;
 #endif
 
         private bool _generateBaselines = GenerateBaselines;
@@ -132,10 +132,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // build process if they are later on going to be transformed.
             var copyToOutputDirectoryFiles = manifest.Assets
                 .Where(a => a.ShouldCopyToOutputDirectory())
-                .Select(a => Path.Combine(outputFolder, "wwwroot", a.RelativePath))
+                .Select(a => Path.GetFullPath(Path.Combine(outputFolder, "wwwroot", a.RelativePath)))
                 .Concat(manifest.Assets
                     .Where(a => !a.HasContentRoot(Path.Combine(outputFolder, "wwwroot")) && File.Exists(a.Identity) && !File.Exists(Path.Combine(a.ContentRoot, a.RelativePath)))
-                    .Select(a => Path.Combine(a.ContentRoot, a.RelativePath)));
+                    .Select(a => Path.GetFullPath(Path.Combine(a.ContentRoot, a.RelativePath))))
+                .ToArray();
 
             if (!_generateBaselines)
             {
