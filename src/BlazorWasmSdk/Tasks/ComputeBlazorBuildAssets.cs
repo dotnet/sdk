@@ -151,18 +151,20 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         intermediateAssembly.ItemSpec,
                         candidateCulture);
 
-                    var assetCandidate = new TaskItem(projectSatelliteAssembly);
+                    var assetCandidate = new TaskItem(Path.GetFullPath(projectSatelliteAssembly.ItemSpec), projectSatelliteAssembly.CloneCustomMetadata());
                     var projectAssemblyAssetPath = Path.GetFullPath(Path.Combine(
                         OutputPath,
                         "wwwroot",
                         "_framework",
                         ProjectAssembly[0].GetMetadata("FileName") + ProjectAssembly[0].GetMetadata("Extension")));
 
+                    var normalizedPath = assetCandidate.GetMetadata("TargetPath").Replace('\\',  '/');
+
                     assetCandidate.SetMetadata("AssetKind", "Build");
                     assetCandidate.SetMetadata("AssetRole", "Related");
                     assetCandidate.SetMetadata("AssetTraitName", "Culture");
                     assetCandidate.SetMetadata("AssetTraitValue", candidateCulture);
-                    assetCandidate.SetMetadata("RelativePath", Path.Combine("_framework", assetCandidate.GetMetadata("TargetPath")));
+                    assetCandidate.SetMetadata("RelativePath", Path.Combine("_framework", candidateCulture, normalizedPath));
                     assetCandidate.SetMetadata("RelatedAsset", projectAssemblyAssetPath);
 
                     assetCandidates.Add(assetCandidate);

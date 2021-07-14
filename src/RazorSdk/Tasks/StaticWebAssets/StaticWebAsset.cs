@@ -328,10 +328,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         public bool HasContentRoot(string path) =>
             string.Equals(ContentRoot, NormalizeContentRootPath(path), StringComparison.Ordinal);
 
-        public static string Normalize(string path)
+        public static string Normalize(string path, bool allowEmpyPath = false)
         {
-            var basePath = path.Replace('\\', '/').Trim('/');
-            return basePath.Equals("") ? "/" : basePath;
+            var normalizedPath = path.Replace('\\', '/').Trim('/');
+            return !allowEmpyPath && normalizedPath.Equals("") ? "/" : normalizedPath;
         }
 
         public override bool Equals(object obj)

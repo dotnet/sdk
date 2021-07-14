@@ -256,22 +256,24 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var relativePath = candidate.GetMetadata("RelativePath");
             if (!string.IsNullOrEmpty(relativePath))
             {
-                Log.LogMessage("RelativePath '{0}' found for candidate '{1}' and will be used for matching.", relativePath, candidate.ItemSpec);
-
-                return relativePath;
+                var normalizedPath = StaticWebAsset.Normalize(relativePath, allowEmpyPath: true);
+                Log.LogMessage("RelativePath '{0}' normalized to '{1}' found for candidate '{2}' and will be used for matching.", relativePath, normalizedPath, candidate.ItemSpec);
+                return normalizedPath;
             }
 
             var targetPath = candidate.GetMetadata("TargetPath");
             if (!string.IsNullOrEmpty(targetPath))
             {
-                Log.LogMessage("TargetPath '{0}' found for candidate '{1}' and will be used for matching.", targetPath, candidate.ItemSpec);
-                return targetPath;
+                var normalizedPath = StaticWebAsset.Normalize(targetPath, allowEmpyPath: true);
+                Log.LogMessage("TargetPath '{0}' normalized to '{1}' found for candidate '{2}' and will be used for matching.", targetPath, normalizedPath, candidate.ItemSpec);
+                return normalizedPath;
             }
 
             var linkPath = candidate.GetMetadata("Link");
             if (!string.IsNullOrEmpty(linkPath))
             {
-                Log.LogMessage("Link '{0}' found for candidate '{1}' and will be used for matching.", linkPath, candidate.ItemSpec);
+                var normalizedPath = StaticWebAsset.Normalize(linkPath, allowEmpyPath: true);
+                Log.LogMessage("Link '{0}'  normalized to '{1}' found for candidate '{2}' and will be used for matching.", linkPath, normalizedPath, candidate.ItemSpec);
 
                 return linkPath;
             }
