@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifest>
     {
-        internal StaticWebAssetsManifest(
+        internal static StaticWebAssetsManifest Create(
             string source,
             string basePath,
             string mode,
@@ -24,37 +24,19 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             DiscoveryPattern[] discoveryPatterns,
             StaticWebAsset[] assets)
         {
-            Version = 1;
-            Source = source;
-            BasePath = basePath;
-            Mode = mode;
-            ManifestType = manifestType;
-            RelatedManifests = relatedManifests;
-            DiscoveryPatterns = discoveryPatterns;
-            Assets = assets;
-
-            Hash = ComputeManifestHash();
-        }
-
-        public StaticWebAssetsManifest(
-            string hash,
-            string source,
-            string basePath,
-            string mode,
-            string manifestType,
-            ManifestReference[] relatedManifests,
-            DiscoveryPattern[] discoveryPatterns,
-            StaticWebAsset[] assets)
-        {
-            Version = 1;
-            Hash = hash;
-            Source = source;
-            BasePath = basePath;
-            Mode = mode;
-            ManifestType = manifestType;
-            RelatedManifests = relatedManifests;
-            DiscoveryPatterns = discoveryPatterns;
-            Assets = assets;
+            var result = new StaticWebAssetsManifest()
+            {
+                Version = 1,
+                Source = source,
+                BasePath = basePath,
+                Mode = mode,
+                ManifestType = manifestType,
+                RelatedManifests = relatedManifests,
+                DiscoveryPatterns = discoveryPatterns,
+                Assets = assets
+            };
+            result.Hash = result.ComputeManifestHash();
+            return result;
         }
 
         private string ComputeManifestHash()
@@ -77,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return Convert.ToBase64String(sha256.ComputeHash(stream));
         }
 
-        public int Version { get; set; }
+        public int Version { get; set; } = 1;
 
         public string Hash { get; set; }
 
@@ -85,15 +67,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string BasePath { get; set; }
 
-        public string Mode { get; }
+        public string Mode { get; private set; }
 
-        public string ManifestType { get; }
+        public string ManifestType { get; private set; }
 
-        public ManifestReference[] RelatedManifests { get; }
+        public ManifestReference[] RelatedManifests { get; private set; }
 
-        public DiscoveryPattern[] DiscoveryPatterns { get; }
+        public DiscoveryPattern[] DiscoveryPatterns { get; private set; }
 
-        public StaticWebAsset[] Assets { get; }
+        public StaticWebAsset[] Assets { get; private set; }
 
         public static StaticWebAssetsManifest FromJsonBytes(byte[] jsonBytes)
         {
@@ -161,13 +143,16 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public class ManifestReference
         {
-            public ManifestReference(string identity, string source, string manifestType, string projectFile, string hash)
+            internal static ManifestReference Create(string identity, string source, string manifestType, string projectFile, string hash)
             {
-                Identity = identity;
-                Source = source;
-                ManifestType = manifestType;
-                ProjectFile = projectFile;
-                Hash = hash;
+                return new ManifestReference()
+                {
+                    Identity = identity,
+                    Source = source,
+                    ManifestType = manifestType,
+                    ProjectFile = projectFile,
+                    Hash = hash,
+                };
             }
 
             public string Identity { get; set; }
@@ -230,12 +215,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public class DiscoveryPattern
         {
-            public DiscoveryPattern(string name, string contentRoot, string basePath, string pattern)
+            public static DiscoveryPattern Create(string name, string contentRoot, string basePath, string pattern)
             {
-                Name = name;
-                ContentRoot = contentRoot;
-                BasePath = basePath;
-                Pattern = pattern;
+                return new DiscoveryPattern
+                {
+                    Name = name,
+                    ContentRoot = contentRoot,
+                    BasePath = basePath,
+                    Pattern = pattern,
+                };
             }
 
             public string Name { get; set; }

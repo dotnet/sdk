@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     .ToArray();
 
                 PersistManifest(
-                    new StaticWebAssetsManifest(
+                    StaticWebAssetsManifest.Create(
                         Source,
                         BasePath,
                         Mode,
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var basePath = pattern.GetMetadata(nameof(StaticWebAssetsManifest.DiscoveryPattern.BasePath));
             var glob = pattern.GetMetadata(nameof(StaticWebAssetsManifest.DiscoveryPattern.Pattern));
 
-            return new StaticWebAssetsManifest.DiscoveryPattern(name, contentRoot, basePath, glob);
+            return StaticWebAssetsManifest.DiscoveryPattern.Create(name, contentRoot, basePath, glob);
         }
 
         private StaticWebAssetsManifest.ManifestReference ComputeManifestReference(ITaskItem reference)
@@ -114,22 +114,22 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     return null;
                 }
 
-                return new StaticWebAssetsManifest.ManifestReference(identity, source, manifestType, projectFile, "") 
-                { 
-                    PublishTarget = publishTarget,
-                    AdditionalPublishProperties = additionalPublishProperties,
-                    AdditionalPublishPropertiesToRemove = additionalPublishPropertiesToRemove
-                };
+                var publishManifest = StaticWebAssetsManifest.ManifestReference.Create(identity, source, manifestType, projectFile, "");
+                publishManifest.PublishTarget = publishTarget;
+                publishManifest.AdditionalPublishProperties = additionalPublishProperties;
+                publishManifest.AdditionalPublishPropertiesToRemove = additionalPublishPropertiesToRemove;
+
+                return publishManifest;
             }
 
             var relatedManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(identity));
 
-            return new StaticWebAssetsManifest.ManifestReference(identity, source, manifestType, projectFile, relatedManifest.Hash)
-            {
-                PublishTarget = publishTarget,
-                AdditionalPublishProperties = additionalPublishProperties,
-                AdditionalPublishPropertiesToRemove = additionalPublishPropertiesToRemove
-            };
+            var result = StaticWebAssetsManifest.ManifestReference.Create(identity, source, manifestType, projectFile, relatedManifest.Hash);
+            result.PublishTarget = publishTarget;
+            result.AdditionalPublishProperties = additionalPublishProperties;
+            result.AdditionalPublishPropertiesToRemove = additionalPublishPropertiesToRemove;
+
+            return result;
         }
 
         private void PersistManifest(StaticWebAssetsManifest manifest)
