@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.NativeWrapper
 {
     public static partial class Interop
     {
+        public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         static readonly string HostFxrPath;
 
         static Interop()
