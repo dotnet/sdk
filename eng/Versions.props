@@ -114,14 +114,14 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>5.0.9-servicing.21363.11</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>5.0.9-servicing.21363.13</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
     <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>5.0.9</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>5.0.9-servicing.21363.11</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>5.0.9-servicing.21363.11</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzersPackageVersion>5.0.9-servicing.21363.11</MicrosoftAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>5.0.9-servicing.21363.13</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>5.0.9-servicing.21363.13</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzersPackageVersion>5.0.9-servicing.21363.13</MicrosoftAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>5.0.9</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>5.0.9-servicing.21363.11</MicrosoftNETSdkRazorPackageVersion>
-    <MicrosoftNETSdkBlazorWebAssemblyPackageVersion>5.0.9-servicing.21363.11</MicrosoftNETSdkBlazorWebAssemblyPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>5.0.9-servicing.21363.13</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkBlazorWebAssemblyPackageVersion>5.0.9-servicing.21363.13</MicrosoftNETSdkBlazorWebAssemblyPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
