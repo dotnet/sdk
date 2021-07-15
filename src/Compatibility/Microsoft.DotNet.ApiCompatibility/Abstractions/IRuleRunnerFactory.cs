@@ -1,6 +1,9 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.s
 
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+
 namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 {
     /// <summary>
@@ -8,6 +11,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
     /// </summary>
     public interface IRuleRunnerFactory
     {
-        IRuleRunner GetRuleRunner();
+        IRuleRunner GetRuleRunner(IEqualityComparer<ISymbol> symbolComparer);
     }
 }

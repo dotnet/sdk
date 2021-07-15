@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.s
 
 using System;
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
@@ -38,10 +40,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             }
         }
 
-        public IRuleRunner GetRuleRunner()
+        public IRuleRunner GetRuleRunner(IEqualityComparer<ISymbol> symbolComparer)
         {
             if (_runner == null)
-                _runner = new RuleRunner(_leftName, _rightNames, _strictMode);
+                _runner = new RuleRunner(_leftName, _rightNames, _strictMode, symbolComparer);
 
             return _runner;
         }

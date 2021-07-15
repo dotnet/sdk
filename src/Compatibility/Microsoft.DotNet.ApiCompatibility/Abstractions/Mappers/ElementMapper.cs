@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// One list of <see cref="CompatDifference"/> per the number of right elements that the <see cref="ElementMapper{T}"/> contains.</returns>
         public IReadOnlyList<IEnumerable<CompatDifference>> GetDifferences()
         {
-            return _differences ??= Settings.RuleRunnerFactory.GetRuleRunner().Run(this);
+            return _differences ??= Settings.RuleRunnerFactory.GetRuleRunner(Settings.EqualityComparer).Run(this);
         }
 
         internal T GetElement(ElementSide side, int setIndex)

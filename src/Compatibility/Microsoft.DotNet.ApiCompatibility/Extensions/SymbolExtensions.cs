@@ -46,6 +46,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Extensions
             }
         }
 
+        internal static IEnumerable<ITypeSymbol> GetAllBaseInterfaces(this ITypeSymbol type)
+        {
+            foreach (ITypeSymbol @interface in type.Interfaces)
+            {
+                yield return @interface;
+                foreach (ITypeSymbol baseInterface in @interface.GetAllBaseInterfaces())
+                    yield return baseInterface;
+            }
+
+            foreach (ITypeSymbol baseType in type.GetAllBaseTypes())
+                foreach (ITypeSymbol baseInterface in baseType.GetAllBaseInterfaces())
+                    yield return baseInterface;
+        }
+
         internal static bool IsVisibleOutsideOfAssembly(this ISymbol symbol) =>
             symbol.DeclaredAccessibility == Accessibility.Public ||
             symbol.DeclaredAccessibility == Accessibility.Protected ||
