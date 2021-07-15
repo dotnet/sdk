@@ -28,6 +28,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateV1StaticWebAssetsManifest"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+
+    <UsingTask
     TaskName="Microsoft.AspNetCore.Razor.Tasks.ReadStaticWebAssetsManifestFile"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
@@ -228,6 +233,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
 
+    <!-- For preview only, to ease in the new implementation -->
+    <_GenerateLegacyManifestFormat>true</_GenerateLegacyManifestFormat>
+
     <PrepareForRunDependsOn>StaticWebAssetsPrepareForRun;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
 
     <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);GenerateStaticWebAssetsManifest;CopyStaticWebAssetsToOutputFolder</StaticWebAssetsPrepareForRunDependsOn>
@@ -379,6 +387,17 @@ Copyright (c) .NET Foundation. All rights reserved.
         CopyToOutputDirectory="PreserveNewest"
         CopyToPublishDirectory="Never" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ContentWithTargetPath
+        Include="$(IntermediateOutputPath)$(TargetName).StaticWebAssets.xml"
+        Condition="Exists('$(IntermediateOutputPath)$(TargetName).StaticWebAssets.xml') and '$(_GenerateLegacyManifestFormat)' == 'true'">
+        <Pack>false</Pack>
+        <TargetPath>$(TargetName).StaticWebAssets.xml</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+      </ContentWithTargetPath>
+    </ItemGroup>
   </Target>
 
   <Target Name="StaticWebAssetsPrepareForRun" DependsOnTargets="$(StaticWebAssetsPrepareForRunDependsOn)" />
@@ -394,12 +413,24 @@ Copyright (c) .NET Foundation. All rights reserved.
       Assets="@(StaticWebAsset)"
       ManifestPath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetsManifest>
+
+    <ItemGroup Condition="'$(_GenerateLegacyManifestFormat)' == 'true'">
+      <_LegacyContentRootDefinition Include="@(StaticWebAsset)" Condition="'%(SourceType)' != 'Discovered'"></_LegacyContentRootDefinition>
+    </ItemGroup>
+
+    <GenerateV1StaticWebAssetsManifest
+      Condition="'$(_GenerateLegacyManifestFormat)' == 'true'"
+      ContentRootDefinitions="@(_LegacyContentRootDefinition)"
+      TargetManifestPath="$(IntermediateOutputPath)$(TargetName).StaticWebAssets.xml" />
+
     <ItemGroup>
+      <FileWrites Include="$(IntermediateOutputPath)$(TargetName).StaticWebAssets.xml" Condition="'$(_GenerateLegacyManifestFormat)' == 'true'" />
       <StaticWebAsset Remove="@(StaticWebAsset)" />
       <StaticWebAssetManifest Remove="@(StaticWebAssetManifest)" />
       <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
     </ItemGroup>
+    
   </Target>
 
   <Target Name="ResolveStaticWebAssetsInputs" DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)" />

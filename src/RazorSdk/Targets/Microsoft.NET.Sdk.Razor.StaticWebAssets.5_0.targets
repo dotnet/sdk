@@ -28,7 +28,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
 
   <UsingTask
-    TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateStaticWebAssetsManifest"
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateV1StaticWebAssetsManifest"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
@@ -209,7 +209,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       StaticWebAssets="@(_ReferencedStaticWebAssets)"
       WebRootFiles="@(_WebRootFiles)" />
 
-    <GenerateStaticWebAssetsManifest
+    <GenerateV1StaticWebAssetsManifest
       Condition="'@(_ExternalStaticWebAsset->Count())' != '0'"
       ContentRootDefinitions="@(_ExternalStaticWebAsset)"
       TargetManifestPath="$(_GeneratedStaticWebAssetsDevelopmentManifest)" />

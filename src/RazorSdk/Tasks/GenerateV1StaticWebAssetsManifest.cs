@@ -13,7 +13,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
-    public class LegacyGenerateStaticWebAssetsManifest : Task
+    public class GenerateV1StaticWebAssetsManifest : Task
     {
         private const string ContentRoot = "ContentRoot";
         private const string BasePath = "BasePath";

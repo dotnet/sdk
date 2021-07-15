@@ -12,10 +12,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0">
 
   <PropertyGroup>
-    <_Use5_0_StaticWebAssets Condition="'$(_Use5_0_StaticWebAssets)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '6.0'))">true</_Use5_0_StaticWebAssets>
-    <_Use5_0_StaticWebAssets Condition="'$(_Use5_0_StaticWebAssets)' == ''">false</_Use5_0_StaticWebAssets>
-    <_BlazorWebAssemblyTargetsFile Condition="'$(_BlazorWebAssemblyTargetsFile)' == '' And '$(_Use5_0_StaticWebAssets)' == 'true'">$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets</_BlazorWebAssemblyTargetsFile>
-    <_BlazorWebAssemblyTargetsFile Condition="'$(_BlazorWebAssemblyTargetsFile)' == '' And '$(_Use5_0_StaticWebAssets)' == 'false'">$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.BlazorWebAssembly.5_0.targets</_BlazorWebAssemblyTargetsFile>
+    <_BlazorWebAssemblyTargetsFile Condition="'$(_BlazorWebAssemblyTargetsFile)' == ''">$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets</_BlazorWebAssemblyTargetsFile>
     <DisableImplicitNamespaceImports_BlazorWasm Condition="'$(DisableImplicitNamespaceImports_BlazorWasm)' == '' and '$(DisableImplicitNamespaceImports)' != 'true'">false</DisableImplicitNamespaceImports_BlazorWasm>
   </PropertyGroup>
 
