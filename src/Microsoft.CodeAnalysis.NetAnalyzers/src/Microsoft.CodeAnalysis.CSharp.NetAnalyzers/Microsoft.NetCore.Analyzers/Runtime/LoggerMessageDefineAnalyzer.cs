@@ -3,12 +3,10 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeQuality.Analyzers;
 using Microsoft.Extensions.Logging;
 
@@ -114,25 +112,19 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     return;
                 }
 
-                context.RegisterSyntaxNodeAction(context => AnalyzeInvocation(context, loggerType, loggerExtensionsType, loggerMessageType), SyntaxKind.InvocationExpression);
+                context.RegisterOperationAction(context => AnalyzeInvocation(context, loggerType, loggerExtensionsType, loggerMessageType), OperationKind.Invocation);
             });
         }
 
-        private void AnalyzeInvocation(SyntaxNodeAnalysisContext syntaxContext, INamedTypeSymbol loggerType, INamedTypeSymbol loggerExtensionsType, INamedTypeSymbol loggerMessageType)
+        private void AnalyzeInvocation(OperationAnalysisContext context, INamedTypeSymbol loggerType, INamedTypeSymbol loggerExtensionsType, INamedTypeSymbol loggerMessageType)
         {
-            var invocation = (InvocationExpressionSyntax)syntaxContext.Node;
+            var invocation = (IInvocationOperation)context.Operation;
 
-            var symbolInfo = ModelExtensions.GetSymbolInfo(syntaxContext.SemanticModel, invocation, syntaxContext.CancellationToken);
-            if (symbolInfo.Symbol?.Kind != SymbolKind.Method)
-            {
-                return;
-            }
-
-            var methodSymbol = (IMethodSymbol)symbolInfo.Symbol;
+            var methodSymbol = invocation.TargetMethod;
 
             if (methodSymbol.ContainingType == loggerExtensionsType)
             {
-                syntaxContext.ReportDiagnostic(Diagnostic.Create(CA1848Rule, invocation.GetLocation(), methodSymbol.Name));
+                context.ReportDiagnostic(Diagnostic.Create(CA1848Rule, invocation.Syntax.GetLocation(), methodSymbol.Name));
             }
             else if (!methodSymbol.ContainingType.Equals(loggerType) && !methodSymbol.ContainingType.Equals(loggerMessageType))
             {
@@ -142,32 +134,32 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             if (FindLogParameters(methodSymbol, out var messageArgument, out var paramsArgument))
             {
                 int paramsCount = 0;
-                ExpressionSyntax? formatExpression = null;
+                IOperation? formatExpression = null;
                 bool argsIsArray = false;
 
                 if (methodSymbol.ContainingType == loggerMessageType)
                 {
                     // For LoggerMessage.Define, count type parameters on the invocation instead of arguments
                     paramsCount = methodSymbol.TypeParameters.Length;
-                    var arg = invocation.ArgumentList.Arguments.FirstOrDefault(argument =>
+                    var arg = invocation.Arguments.FirstOrDefault(argument =>
                     {
-                        var parameter = DetermineParameter(argument, syntaxContext.SemanticModel, syntaxContext.CancellationToken);
+                        var parameter = argument.Parameter;
                         return Equals(parameter, messageArgument);
                     });
-                    formatExpression = arg.Expression;
+                    formatExpression = arg.Value;
                 }
                 else
                 {
-                    foreach (var argument in invocation.ArgumentList.Arguments)
+                    foreach (var argument in invocation.Arguments)
                     {
-                        var parameter = DetermineParameter(argument, syntaxContext.SemanticModel, syntaxContext.CancellationToken);
+                        var parameter = argument.Parameter;
                         if (Equals(parameter, messageArgument))
                         {
-                            formatExpression = argument.Expression;
+                            formatExpression = argument.Value;
                         }
                         else if (Equals(parameter, paramsArgument))
                         {
-                            var parameterType = syntaxContext.SemanticModel.GetTypeInfo(argument.Expression).ConvertedType;
+                            var parameterType = argument.Parameter.Type;// TODO test
                             if (parameterType == null)
                             {
                                 return;
@@ -183,17 +175,17 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
                 if (formatExpression is not null)
                 {
-                    AnalyzeFormatArgument(syntaxContext, formatExpression, paramsCount, argsIsArray);
+                    AnalyzeFormatArgument(context, formatExpression, paramsCount, argsIsArray);
                 }
             }
         }
 
-        private void AnalyzeFormatArgument(SyntaxNodeAnalysisContext syntaxContext, ExpressionSyntax formatExpression, int paramsCount, bool argsIsArray)
+        private void AnalyzeFormatArgument(OperationAnalysisContext context, IOperation formatExpression, int paramsCount, bool argsIsArray)
         {
-            var text = TryGetFormatText(formatExpression, syntaxContext.SemanticModel);
+            var text = TryGetFormatText(formatExpression);
             if (text == null)
             {
-                syntaxContext.ReportDiagnostic(Diagnostic.Create(CA2254Rule, formatExpression.GetLocation()));
+                context.ReportDiagnostic(Diagnostic.Create(CA2254Rule, formatExpression.Syntax.GetLocation()));
                 return;
             }
 
@@ -213,37 +205,37 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             {
                 if (int.TryParse(valueName, out _))
                 {
-                    syntaxContext.ReportDiagnostic(Diagnostic.Create(CA2253Rule, formatExpression.GetLocation()));
+                    context.ReportDiagnostic(Diagnostic.Create(CA2253Rule, formatExpression.Syntax.GetLocation()));
                 }
                 else if (char.IsLower(valueName[0]))
                 {
-                    syntaxContext.ReportDiagnostic(Diagnostic.Create(CA1727Rule, formatExpression.GetLocation()));
+                    context.ReportDiagnostic(Diagnostic.Create(CA1727Rule, formatExpression.Syntax.GetLocation()));
                 }
             }
 
             var argsPassedDirectly = argsIsArray && paramsCount == 1;
             if (!argsPassedDirectly && paramsCount != formatter.ValueNames.Count)
             {
-                syntaxContext.ReportDiagnostic(Diagnostic.Create(CA2255Rule, formatExpression.GetLocation()));
+                context.ReportDiagnostic(Diagnostic.Create(CA2255Rule, formatExpression.Syntax.GetLocation()));
             }
         }
 
-        private string? TryGetFormatText(ExpressionSyntax? argumentExpression, SemanticModel semanticModel)
+        private string? TryGetFormatText(IOperation? argumentExpression)
         {
             if (argumentExpression is null)
                 return null;
 
             switch (argumentExpression)
             {
-                case LiteralExpressionSyntax literal when literal.Token.IsKind(SyntaxKind.StringLiteralToken):
-                    return literal.Token.ValueText;
-                case InterpolatedStringExpressionSyntax interpolated:
+                case ILiteralOperation { ConstantValue: { HasValue: true, Value: string constantValue } }:
+                    return constantValue;
+                case IInterpolatedStringOperation interpolated:
                     var text = "";
-                    foreach (var interpolatedStringContentSyntax in interpolated.Contents)
+                    foreach (var interpolatedStringContent in interpolated.Parts)
                     {
-                        if (interpolatedStringContentSyntax is InterpolatedStringTextSyntax textSyntax)
+                        if (interpolatedStringContent is IInterpolatedStringTextOperation textSyntax)
                         {
-                            text += textSyntax.TextToken.ValueText;
+                            text += textSyntax.Text;
                         }
                         else
                         {
@@ -251,14 +243,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                         }
                     }
                     return text;
-                case InvocationExpressionSyntax invocation when IsNameOfInvocation(invocation):
+                case INameOfOperation:
                     // return placeholder from here because actual value is not required for analysis and is hard to get
                     return "NAMEOF";
-                case ParenthesizedExpressionSyntax parenthesized:
-                    return TryGetFormatText(parenthesized.Expression, semanticModel);
-                case BinaryExpressionSyntax binary when binary.OperatorToken.IsKind(SyntaxKind.PlusToken):
-                    var leftText = TryGetFormatText(binary.Left, semanticModel);
-                    var rightText = TryGetFormatText(binary.Right, semanticModel);
+                case IParenthesizedOperation parenthesized:
+                    return TryGetFormatText(parenthesized.Operand);
+                case IBinaryOperation { OperatorKind: BinaryOperatorKind.Add } binary:
+                    var leftText = TryGetFormatText(binary.LeftOperand);
+                    var rightText = TryGetFormatText(binary.RightOperand);
 
                     if (leftText != null && rightText != null)
                     {
@@ -267,7 +259,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
                     return null;
                 default:
-                    var constant = semanticModel.GetConstantValue(argumentExpression);
+                    var constant = argumentExpression.ConstantValue;
                     if (constant.HasValue && constant.Value is string constantString)
                     {
                         return constantString;
@@ -305,68 +297,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 }
             }
             return message != null;
-        }
-
-        private static bool IsNameOfInvocation(InvocationExpressionSyntax invocation)
-        {
-            return invocation.Expression is IdentifierNameSyntax identifierName &&
-                   (identifierName.Identifier.IsKind(SyntaxKind.NameOfKeyword) ||
-                   identifierName.Identifier.ToString() == SyntaxFacts.GetText(SyntaxKind.NameOfKeyword));
-        }
-
-        private static IParameterSymbol? DetermineParameter(
-            ArgumentSyntax argument,
-            SemanticModel semanticModel,
-            CancellationToken cancellationToken)
-        {
-            if (argument.Parent is not BaseArgumentListSyntax argumentList)
-            {
-                return null;
-            }
-
-            if (argumentList.Parent is not ExpressionSyntax invocableExpression)
-            {
-                return null;
-            }
-
-            if (semanticModel.GetSymbolInfo(invocableExpression, cancellationToken).Symbol is not IMethodSymbol symbol)
-            {
-                return null;
-            }
-
-            var parameters = symbol.Parameters;
-
-            // Handle named argument
-            if (argument.NameColon != null && !argument.NameColon.IsMissing)
-            {
-                var name = argument.NameColon.Name.Identifier.ValueText;
-                return parameters.FirstOrDefault(p => p.Name == name);
-            }
-
-            // Handle positional argument
-            var index = argumentList.Arguments.IndexOf(argument);
-            if (index < 0)
-            {
-                return null;
-            }
-
-            if (index < parameters.Length)
-            {
-                return parameters[index];
-            }
-
-            var lastParameter = parameters.LastOrDefault();
-            if (lastParameter == null)
-            {
-                return null;
-            }
-
-            if (lastParameter.IsParams)
-            {
-                return lastParameter;
-            }
-
-            return null;
         }
     }
 }
