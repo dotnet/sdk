@@ -19,20 +19,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SuppressTrimAnalysisWarnings Condition="'$(SuppressTrimAnalysisWarnings)' == '' And '$(TrimmerDefaultAction)' != 'link'">true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
-  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.targets" />
-  <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.targets" />
-  <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" />
-
   <!--
     Targets supporting Razor MSBuild integration. Contain support for generating C# code using Razor
     and including the generated code in the project lifecycle, including compiling, publishing and producing
     nuget packages.
   -->
-
-  <!--
-    This is a hook to import a set of targets before the Blazor targets. By default this is unused.
-  -->
-  <Import Project="$(CustomBeforeBlazorWebAssemblySdkTargets)" Condition="'$(CustomBeforeBlazorWebAssemblySdkTargets)' != '' and Exists('$(CustomBeforeBlazorWebAssemblySdkTargets)')"/>
 
   <PropertyGroup>
     <!-- Paths to tools, tasks, and extensions are calculated relative to the BlazorWebAssemblySdkDirectoryRoot. This can be modified to test a local build. -->
@@ -690,10 +681,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </ItemGroup>
   </Target>
-
-  <!--
-    This is a hook to import a set of targets after the Blazor WebAssembly targets. By default this is unused.
-  -->
-  <Import Project="$(CustomAfterBlazorWebAssemblySdkTargets)" Condition="'$(CustomAfterBlazorWebAssemblySdkTargets)' != '' and Exists('$(CustomAfterBlazorWebAssemblySdkTargets)')"/>
 
 </Project>
