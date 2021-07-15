@@ -192,7 +192,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             build.Execute().Should().Pass();
 
             var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path, "PackageLibraryDirectDependency");
-            var result = pack.Execute("/p:NoBuild=true");
+            pack.WithWorkingDirectory(projectDirectory.TestRoot);
+            var result = pack.Execute("/p:NoBuild=true", "/bl");
 
             var outputPath = pack.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
