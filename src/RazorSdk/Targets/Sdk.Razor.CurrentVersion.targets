@@ -89,6 +89,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Controls whether or not the static web assets feature is enabled. By default is enabled for netcoreapp3.0
          applications and RazorLangVersion 3 or above. -->
     <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == ''">$(_Targeting30OrNewerRazorLangVersion)</StaticWebAssetsEnabled>
+    <_Use5_0_StaticWebAssets Condition="'$(_Use5_0_StaticWebAssets)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '6.0'))">false</_Use5_0_StaticWebAssets>
+    <_Use5_0_StaticWebAssets Condition="'$(_Use5_0_StaticWebAssets)' == ''">true</_Use5_0_StaticWebAssets>
 
     <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net6.0 applications and RazorLangVersion 5 or above -->
     <ScopedCssEnabled Condition="'$(ScopedCssEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_Targeting30OrNewerRazorLangVersion)</ScopedCssEnabled>
@@ -381,10 +383,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.Razor.SourceGenerators.targets" Condition="'$(UseRazorSourceGenerator)' == 'true'" />
 
-  <!-- <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets.targets" Condition="'$(StaticWebAssetsEnabled)' == 'true'" /> -->
-  <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets2.targets" Condition="'$(StaticWebAssetsEnabled)' == 'true'" />
+  <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets.5_0.targets" Condition="'$(_Use5_0_StaticWebAssets) == 'true' Or ('$(_TargetingNET60OrLater)' != 'true' And '$(StaticWebAssetsEnabled)' == 'true')" />
+  <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets.targets" Condition="'$(_Use5_0_StaticWebAssets) != 'true' And '$(_TargetingNET60OrLater)' != 'true' And '$(StaticWebAssetsEnabled)' == 'true'" />
 
-  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.targets" Condition="'$(ScopedCssEnabled)' == 'true'" />
+  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.5_0.targets" Condition="'$(_Use5_0_StaticWebAssets) == 'true' Or ('$(_TargetingNET60OrLater)' != 'true' And '$(StaticWebAssetsEnabled)' == 'true')" />
+  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.targets" Condition="'$(_Use5_0_StaticWebAssets) != 'true' And '$(_TargetingNET60OrLater)' != 'true' And '$(StaticWebAssetsEnabled)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
 
