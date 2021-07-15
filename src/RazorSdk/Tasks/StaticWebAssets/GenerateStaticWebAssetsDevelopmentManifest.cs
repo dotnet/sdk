@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             IEnumerable<(string[], IEnumerable<StaticWebAssetsManifest.DiscoveryPattern> values)> discoveryPatternsByBasePath)
         {
             var contentRootIndex = new Dictionary<string, int>();
-            var root = new StaticWebAssetNode() { Value = "/" };
+            var root = new StaticWebAssetNode() { };
             foreach (var (segments, asset) in assetsWithPathSegments)
             {
                 var currentNode = root;
@@ -123,7 +123,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         currentNode.Children ??= new Dictionary<string, StaticWebAssetNode>();
                         currentNode.Children.Add(segment, new StaticWebAssetNode
                         {
-                            Value = segment,
                             Asset = matchingAsset
                         });
                         break;
@@ -139,7 +138,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         {
                             var newNode = new StaticWebAssetNode
                             {
-                                Value = segment,
                                 Children = new Dictionary<string, StaticWebAssetNode>()
                             };
                             currentNode.Children.Add(segment, newNode);
@@ -200,7 +198,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                             {
                                 childNode = new StaticWebAssetNode
                                 {
-                                    Value = segment,
                                     Patterns = patterns.ToArray(),
                                 };
                                 currentNode.Children.Add(segment, childNode);
@@ -223,7 +220,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                             {
                                 var newNode = new StaticWebAssetNode
                                 {
-                                    Value = segment,
                                     Children = new Dictionary<string, StaticWebAssetNode>()
                                 };
                                 currentNode.Children.Add(segment, newNode);
@@ -263,7 +259,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public class StaticWebAssetNode
         {
-            public string Value { get; set; }
             public IDictionary<string, StaticWebAssetNode> Children { get; set; }
             public StaticWebAssetMatch Asset { get; set; }
             public StaticWebAssetPattern[] Patterns { get; set; }
