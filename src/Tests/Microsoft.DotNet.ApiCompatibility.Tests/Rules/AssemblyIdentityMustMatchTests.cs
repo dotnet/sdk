@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -49,6 +50,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
 
+            Assert.Equal(string.Empty, leftSymbol.Identity.CultureName);
+            Assert.Equal("de", rightSymbol.Identity.CultureName);
+
             ApiComparer differ = new();
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbol, rightSymbol);
             Assert.Single(differences);
@@ -66,13 +70,16 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
 
+            Assert.Equal(new Version(2, 0, 0, 0), leftSymbol.Identity.Version);
+            Assert.Equal(new Version(0, 0, 0, 0), rightSymbol.Identity.Version);
+
             ApiComparer differ = new();
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbol, rightSymbol);
 
             // right assembly should have same or higher version than left
             Assert.Single(differences);
 
-            CompatDifference expected = new CompatDifference(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, $"{rightSymbol.Name}, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+            CompatDifference expected = new(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, $"{rightSymbol.Name}, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
             Assert.Equal(expected, differences.First(), CompatDifferenceComparer.Default);
         }
 
@@ -85,6 +92,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
 
+            Assert.Equal(new Version(1, 0, 0, 0), leftSymbol.Identity.Version);
+            Assert.Equal(new Version(2, 0, 0, 0), rightSymbol.Identity.Version);
+
             // Compatible assembly versions
             ApiComparer differ = new();
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbol, rightSymbol);
@@ -96,7 +106,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             differences = differ.GetDifferences(leftSymbol, rightSymbol);
             Assert.Single(differences);
 
-            CompatDifference expected = new CompatDifference(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, $"{leftSymbol.Name}, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
+            CompatDifference expected = new(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, $"{leftSymbol.Name}, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
             Assert.Equal(expected, differences.First(), CompatDifferenceComparer.Default);
         }
 
@@ -109,6 +119,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax, publicKey: _publicKey);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax, publicKey: _publicKey);
+
+            Assert.Equal(_publicKey, leftSymbol.Identity.PublicKey);
+            Assert.Equal(_publicKey, rightSymbol.Identity.PublicKey);
 
             // public key tokens must match
             ApiComparer differ = new();
@@ -127,6 +140,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax, publicKey: _publicKey);
+
+            Assert.False(leftSymbol.Identity.HasPublicKey);
+            Assert.Equal(_publicKey, rightSymbol.Identity.PublicKey);
 
             ApiComparer differ = new();
             differ.StrictMode = strictMode;
@@ -153,6 +169,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax, publicKey: _publicKey);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax);
+
+            Assert.Equal(_publicKey, leftSymbol.Identity.PublicKey);
+            Assert.False(rightSymbol.Identity.HasPublicKey);
 
             ApiComparer differ = new();
             differ.StrictMode = strictMode;
