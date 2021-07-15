@@ -18,6 +18,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
+        [SkipOnCI("This is a baseline test that needs to be further `templatized` https://github.com/dotnet/runtime/issues/55779")]
         public void StaticWebAssets_BuildMinimal_Works()
         {
             // Arrange
@@ -52,6 +53,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
+        [SkipOnCI("This is a baseline test that needs to be further `templatized` https://github.com/dotnet/runtime/issues/55779")]
         public void StaticWebAssets_PublishMinimal_Works()
         {
             // Arrange
@@ -82,6 +84,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
+        [SkipOnCI("This is a baseline test that needs to be further `templatized` https://github.com/dotnet/runtime/issues/55779")]
         public void StaticWebAssets_Build_Hosted_Works()
         {
             // Arrange
@@ -113,6 +116,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
+        [SkipOnCI("This is a baseline test that needs to be further `templatized` https://github.com/dotnet/runtime/issues/55779")]
         public void StaticWebAssets_Publish_Hosted_Works()
         {
             // Arrange
