@@ -321,7 +321,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("Hello World");
+                .HaveStdOutContaining("Hello lalala");
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
