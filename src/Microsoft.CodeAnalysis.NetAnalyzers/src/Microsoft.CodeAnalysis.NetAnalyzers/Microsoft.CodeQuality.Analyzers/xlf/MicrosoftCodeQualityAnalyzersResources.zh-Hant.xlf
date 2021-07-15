@@ -242,6 +242,81 @@
         <target state="translated">從類型 '{0}' 移除完成項，覆寫 Dispose(bool disposing)，然後在程式碼路徑中放置完成項邏輯，其中 'disposing' 為 false。否則這可能導致 Dispose 引動過程重複，原因是基底類型 ‘{1}’ 也提供了完成項。</target>
         <note />
       </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
+        <source>Logging format string should not be dynamically generated</source>
+        <target state="new">Logging format string should not be dynamically generated</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
+        <source>Logging format string should not be dynamically generated</source>
+        <target state="new">Logging format string should not be dynamically generated</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
+        <source>Logging format string should not be dynamically generated</source>
+        <target state="new">Logging format string should not be dynamically generated</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
+        <source>Logging format string parameter count mismatch</source>
+        <target state="new">Logging format string parameter count mismatch</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
+        <source>Logging format string parameter count mismatch</source>
+        <target state="new">Logging format string parameter count mismatch</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
+        <source>Logging format string parameter count mismatch</source>
+        <target state="new">Logging format string parameter count mismatch</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
+        <source>Numerics should not be used in logging format string</source>
+        <target state="new">Numerics should not be used in logging format string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
+        <source>Numerics should not be used in logging format string</source>
+        <target state="new">Numerics should not be used in logging format string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
+        <source>Numerics should not be used in logging format string</source>
+        <target state="new">Numerics should not be used in logging format string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
+        <source>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</source>
+        <target state="new">For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
+        <source>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</source>
+        <target state="new">For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
+        <source>Use compiled log messages</source>
+        <target state="new">Use compiled log messages</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
+        <source>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</source>
+        <target state="new">For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
+        <source>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</source>
+        <target state="new">For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
+        <source>Use PascalCase for log message tokens</source>
+        <target state="new">Use PascalCase for log message tokens</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
         <source>Apply 'AttributeUsageAttribute'</source>
         <target state="translated">套用 'AttributeUsageAttribute'</target>

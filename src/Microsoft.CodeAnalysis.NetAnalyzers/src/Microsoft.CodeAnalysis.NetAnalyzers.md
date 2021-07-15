@@ -972,6 +972,18 @@ Consistent naming of parameters in an override hierarchy increases the usability
 |CodeFix|True|
 ---
 
+## [CA1727](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727): Use PascalCase for log message tokens
+
+For consistency with logs emitted from other components, use 'PascalCase' for log message tokens
+
+|Item|Value|
+|-|-|
+|Category|Naming|
+|Enabled|False|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA1802](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802): Use literals where appropriate
 
 A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.
@@ -1426,6 +1438,18 @@ It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring'
 |Enabled|True|
 |Severity|Info|
 |CodeFix|True|
+---
+
+## [CA1848](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848): Use compiled log messages
+
+For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|False|
+|Severity|Warning|
+|CodeFix|False|
 ---
 
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
@@ -2013,6 +2037,42 @@ An assembly has to opt into preview features before using them.
 |Category|Usage|
 |Enabled|True|
 |Severity|Info|
+|CodeFix|False|
+---
+
+## [CA2253](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253): Numerics should not be used in logging format string
+
+Numerics should not be used in logging format string
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
+## [CA2254](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254): Logging format string should not be dynamically generated
+
+Logging format string should not be dynamically generated
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
+## [CA2255](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255): Logging format string parameter count mismatch
+
+Logging format string parameter count mismatch
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
 |CodeFix|False|
 ---
 
