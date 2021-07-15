@@ -562,7 +562,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute().Should().Pass();
+            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
+            build.Execute("/bl").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
