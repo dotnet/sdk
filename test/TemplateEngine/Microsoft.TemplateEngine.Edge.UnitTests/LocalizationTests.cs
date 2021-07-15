@@ -148,10 +148,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
         [Theory]
-        [InlineData("de", "name_de-DE:äÄßöÖüÜ")]
+        [InlineData("de", "name")]
         [InlineData("de-de", "name_de-DE:äÄßöÖüÜ")]
-        [InlineData("de-Au", "name_de-DE:äÄßöÖüÜ")]
-        [InlineData("de-AU", "name_de-DE:äÄßöÖüÜ")]
+        [InlineData("de-AT", "name")]
+        [InlineData("de-at", "name")]
+        [InlineData("tr", "name_tr-TR:çÇğĞıIİöÖşŞüÜ")]
+        [InlineData("tr-TR", "name_tr-TR:çÇğĞıIİöÖşŞüÜ")]
         public void TestLocaleCountryFallback(string locale, string expectedName)
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);

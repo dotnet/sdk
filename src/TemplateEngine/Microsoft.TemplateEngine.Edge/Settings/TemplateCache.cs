@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json;
@@ -23,54 +24,27 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             // We need this dictionary to de-duplicate templates that have same identity
             // notice that IEnumerable<ScanResult> that we get in is order by priority which means
             // last template with same Identity wins, others are ignored...
-            var templateDeduplicationDictionary = new Dictionary<string, ITemplate>();
-            var localizationsByTemplateId = new Dictionary<string, ILocalizationLocator>();
-
-            string uiLocale = CultureInfo.CurrentUICulture.Name;
-            string uiLocaleWithoutCountry = GetLocaleNameWithoutCountry(uiLocale);
-
+            var templateDeduplicationDictionary = new Dictionary<string, (ITemplate Template, ILocalizationLocator? Localization)>();
             foreach (var scanResult in scanResults)
             {
                 if (scanResult == null)
                 {
                     continue;
                 }
-                foreach (ILocalizationLocator locator in scanResult.Localizations)
-                {
-                    if (uiLocale != locator.Locale &&
-                        localizationsByTemplateId.TryGetValue(locator.Identity, out ILocalizationLocator existingLoc) &&
-                        existingLoc.Locale == GetLocaleNameWithoutCountry(existingLoc.Locale))
-                    {
-                        // This localization is not a perfect match and we already have the localizations for countryless locale available. Ignore this one.
-                        continue;
-                    }
-
-                    string templateLocaleWithoutCountry = GetLocaleNameWithoutCountry(locator.Locale);
-                    if (uiLocaleWithoutCountry != templateLocaleWithoutCountry)
-                    {
-                        // UI is "fr", but the localizations are for "en". This localization is not good enough to be a substitute.
-                        continue;
-                    }
-
-                    // This localization is either the perfect match, or a suitable substitute and there are no other candidates for the job yet.
-                    localizationsByTemplateId[locator.Identity] = locator;
-                }
-
                 foreach (ITemplate template in scanResult.Templates)
                 {
-                    templateDeduplicationDictionary[template.Identity] = template;
+                    templateDeduplicationDictionary[template.Identity] = (template, GetBestLocalizationLocatorMatch(scanResult.Localizations, template.Identity));
                 }
             }
 
             var templates = new List<TemplateInfo>();
-            foreach (ITemplate newTemplate in templateDeduplicationDictionary.Values)
+            foreach (var newTemplate in templateDeduplicationDictionary.Values)
             {
-                localizationsByTemplateId.TryGetValue(newTemplate.Identity, out ILocalizationLocator locatorForTemplate);
-                templates.Add(new TemplateInfo(newTemplate, locatorForTemplate, logger));
+                templates.Add(new TemplateInfo(newTemplate.Template, newTemplate.Localization, logger));
             }
 
             Version = Settings.TemplateInfo.CurrentVersion;
-            Locale = uiLocale;
+            Locale = CultureInfo.CurrentUICulture.Name;
             TemplateInfo = templates;
             MountPointsInfo = mountPoints;
         }
@@ -140,27 +114,37 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         public Dictionary<string, DateTime> MountPointsInfo { get; }
 
-        /// <summary>
-        /// Given a locale, removes the country/region part and returns.
-        /// </summary>
-        /// <param name="locale">Locale in format "language-countryRegion".</param>
-        /// <examples>
-        /// <list type="bullet">
-        /// <item>Input "en-US" returns "en".</item>
-        /// <item>Input "de-AU" returns "de".</item>
-        /// <item>Input "de" returns "de".</item>
-        /// </list>
-        /// </examples>
-        private static string GetLocaleNameWithoutCountry(string locale)
+        private ILocalizationLocator? GetBestLocalizationLocatorMatch(IReadOnlyList<ILocalizationLocator> localizations, string identity)
         {
-            int countrySplitterIndex = locale.IndexOf('-');
-            if (countrySplitterIndex != -1)
-            {
-                return locale.Substring(0, countrySplitterIndex);
-            }
+            IEnumerable<ILocalizationLocator> localizationsForTemplate = localizations.Where(locator => locator.Identity.Equals(identity, StringComparison.OrdinalIgnoreCase));
 
-            // This locale doesn't have country/Region to begin with.
-            return locale;
+            if (!localizations.Any())
+            {
+                return null;
+            }
+            IEnumerable<string> availableLocalizations = localizationsForTemplate.Select(locator => locator.Locale);
+            string? bestMatch = GetBestLocaleMatch(availableLocalizations);
+            if (string.IsNullOrWhiteSpace(bestMatch))
+            {
+                return null;
+            }
+            return localizationsForTemplate.FirstOrDefault(locator => locator.Locale == bestMatch);
+        }
+
+        /// <remarks>see https://source.dot.net/#System.Private.CoreLib/ResourceFallbackManager.cs.</remarks>
+        private string? GetBestLocaleMatch(IEnumerable<string> availableLocalizations)
+        {
+            CultureInfo currentCulture = CultureInfo.CurrentUICulture;
+            do
+            {
+                if (availableLocalizations.Contains(currentCulture.Name, StringComparer.OrdinalIgnoreCase))
+                {
+                    return currentCulture.Name;
+                }
+                currentCulture = currentCulture.Parent;
+            }
+            while (currentCulture.Name != CultureInfo.InvariantCulture.Name);
+            return null;
         }
     }
 }
