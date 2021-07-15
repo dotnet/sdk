@@ -396,8 +396,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets.5_0.targets" Condition="'$(UseStaticWebAssetsV1)' == 'true' And '$(StaticWebAssetsEnabled)' == 'true'" />
   <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets.targets" Condition="'$(UseStaticWebAssetsV1)' != 'true' And '$(StaticWebAssetsEnabled)' == 'true'" />
 
-  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.5_0.targets" Condition="'$(UseStaticWebAssetsV1)' == 'true' And '$(StaticWebAssetsEnabled)' == 'true'" />
-  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.targets" Condition="'$(UseStaticWebAssetsV1)' != 'true' And '$(StaticWebAssetsEnabled)' == 'true'" />
+  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.5_0.targets" Condition="'$(UseStaticWebAssetsV1)' == 'true' And '$(ScopedCssEnabled)' == 'true'" />
+  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.targets" Condition="'$(UseStaticWebAssetsV1)' != 'true' And '$(ScopedCssEnabled)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
 
