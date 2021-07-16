@@ -101,7 +101,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
                 b.Features.Add(new StaticTagHelperFeature { TagHelpers = tagHelpers });
                 b.Features.Add(new DefaultTagHelperDescriptorProvider());
-
+                
                 CompilerFeatures.Register(b);
                 RazorExtensions.Register(b);
 

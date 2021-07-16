@@ -59,6 +59,15 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         {
             return source.Select((a, b) => { calls[name] = calls.ContainsKey(name) ? calls[name] + 1 : 1; return a; });
         }
+
+        internal static IncrementalValuesProvider<(TLhs, TRhs)> WithLHSComparer<TLhs, TRhs>(this IncrementalValuesProvider<(TLhs, TRhs)> source) => WithLHSComparer(source, EqualityComparer<TLhs>.Default);
+
+        internal static IncrementalValuesProvider<(TLhs, TRhs)> WithLHSComparer<TLhs, TRhs>(this IncrementalValuesProvider<(TLhs, TRhs)> source, Func<TLhs?, TLhs?, bool> equal) => WithLHSComparer(source, new LambdaComparer<TLhs>(equal));
+
+        internal static IncrementalValuesProvider<(TLhs, TRhs)> WithLHSComparer<TLhs, TRhs>(this IncrementalValuesProvider<(TLhs, TRhs)> source, IEqualityComparer<TLhs> comparer)
+        {
+            return source.WithLambdaComparer((@new, old) => comparer.Equals(@new.Item1, old.Item1));
+        }
     }
 
     internal class LambdaComparer<T> : IEqualityComparer<T>
