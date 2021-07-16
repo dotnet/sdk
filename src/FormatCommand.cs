@@ -52,10 +52,12 @@ namespace Microsoft.CodeAnalysis.Tools
                 {
                     AllowMultipleArgumentsPerToken = true
                 },
-                new Option<string[]>(new[] { "--include" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)                {
+                new Option<string[]>(new[] { "--include" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
+                {
                     AllowMultipleArgumentsPerToken = true
                 },
-                new Option<string[]>(new[] { "--exclude" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting)                {
+                new Option<string[]>(new[] { "--exclude" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting)
+                {
                     AllowMultipleArgumentsPerToken = true
                 },
                 new Option<bool>(new[] { "--check" }, Resources.Formats_files_without_saving_changes_to_disk_Terminates_with_a_non_zero_exit_code_if_any_files_were_formatted),
