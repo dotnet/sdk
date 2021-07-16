@@ -3,8 +3,6 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.CodeAnalysis.Tools
@@ -50,9 +48,18 @@ namespace Microsoft.CodeAnalysis.Tools
                 {
                     ArgumentHelpName = "severity"
                 }.FromAmong(SeverityLevels),
-                new Option<string[]>(new[] { "--diagnostics" }, () => Array.Empty<string>(), Resources.A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues),
-                new Option<string[]>(new[] { "--include" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty),
-                new Option<string[]>(new[] { "--exclude" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting),
+                new Option<string[]>(new[] { "--diagnostics" }, () => Array.Empty<string>(), Resources.A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues)
+                {
+                    AllowMultipleArgumentsPerToken = true
+                },
+                new Option<string[]>(new[] { "--include" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
+                {
+                    AllowMultipleArgumentsPerToken = true
+                },
+                new Option<string[]>(new[] { "--exclude" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting)
+                {
+                    AllowMultipleArgumentsPerToken = true
+                },
                 new Option<bool>(new[] { "--check" }, Resources.Formats_files_without_saving_changes_to_disk_Terminates_with_a_non_zero_exit_code_if_any_files_were_formatted),
                 new Option(new[] { "--report" }, Resources.Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory, argumentType: typeof(string), arity: ArgumentArity.ZeroOrOne)
                 {
@@ -112,30 +119,6 @@ namespace Microsoft.CodeAnalysis.Tools
             return folder && binarylog is not null && !binarylog.IsImplicit
                 ? Resources.Cannot_specify_the_folder_option_when_writing_a_binary_log
                 : null;
-        }
-
-        internal static OptionResult? GetOptionResult(this CommandResult result, string alias)
-        {
-            return result.Children.GetByAlias(alias) as OptionResult;
-        }
-
-        [return: MaybeNull]
-        internal static T GetValueForOption<T>(this CommandResult result, string alias)
-        {
-            if (result.GetOptionResult(alias) is OptionResult option &&
-                option.GetValueOrDefault<T>() is { } t)
-            {
-                return t;
-            }
-
-            return default;
-        }
-
-        internal static bool WasOptionUsed(this ParseResult result, params string[] aliases)
-        {
-            return result.Tokens
-                .Where(token => token.Type == TokenType.Option)
-                .Any(token => aliases.Contains(token.Value));
         }
     }
 }

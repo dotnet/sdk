@@ -5,6 +5,14 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>475cf7802d401b2de3d68c42ed08a3bd1475344d</Sha>
     </Dependency>
+    <Dependency Name="System.CommandLine" Version="2.0.0-beta1.21364.1">
+      <Uri>https://github.com/dotnet/command-line-api</Uri>
+      <Sha>d6d49b068ffa199ca60a2aa4a2d31e748c4dbe73</Sha>
+    </Dependency>
+    <Dependency Name="System.CommandLine.Rendering" Version="0.3.0-alpha.21364.1">
+      <Uri>https://github.com/dotnet/command-line-api</Uri>
+      <Sha>d6d49b068ffa199ca60a2aa4a2d31e748c4dbe73</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.21364.3">
