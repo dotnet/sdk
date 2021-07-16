@@ -887,5 +887,72 @@ class C
                         new XAttribute("Text", $"AppHostFile expected to be: '{host}' actually: '$(AppHostFile)'")));
             }
         }
+
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        public void User_can_move_file_before_bundling()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = "net6.0",
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", "true");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => VerifyPrepareForBundle(project));
+
+            var publishCommand = new PublishCommand(testAsset);
+            var singleFilePath = Path.Combine(GetPublishDirectory(publishCommand, "net6.0").FullName, $"SingleFileTest{Constants.ExeSuffix}");
+
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier)
+                .Should()
+                .Pass();
+
+            void VerifyPrepareForBundle(XDocument project)
+            {
+                var ns = project.Root.Name.Namespace;
+                var targetName = "CheckPrepareForBundleData";
+
+                var target = new XElement(ns + "Target",
+                        new XAttribute("Name", targetName),
+                        new XAttribute("BeforeTargets", "GenerateSingleFileBundle"),
+                        new XAttribute("DependsOnTargets", "PrepareForBundle"));
+
+                project.Root.Add(target);
+
+                // Rename SingleFileTest.dll --> SingleFileTest.dll.renamed
+                //
+                //     <Move
+                //         SourceFiles="@(FilesToBundle)"
+                //         DestinationFiles="@(FilesToBundle->'%(FullPath).renamed')"
+                //         Condition = "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'" />
+
+                target.Add(
+                    new XElement(ns + "Move",
+                        new XAttribute("SourceFiles", "@(FilesToBundle)"),
+                        new XAttribute("DestinationFiles", "@(FilesToBundle->'%(FullPath).renamed')"),
+                        new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'")));
+
+                // Modify the FilesToBundle list accordingly, so that publish could pass.
+                //
+                //         <ItemGroup>
+                //             <FilesToBundle Include = "@(FilesToBundle)">
+                //                  <RelativePath>%(FilesToBundle.Identity)</RelativePath>
+                //                  <RelativePath Condition = "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'">@(FilesToBundle->'%(RelativePath).renamed')</RelativePath>
+                //             </FilesToBundle>
+                //         </ItemGroup >
+
+                target.Add(
+                    new XElement(ns + "ItemGroup",
+                        new XElement(ns + "FilesToBundle", new XAttribute("Include", "@(FilesToBundle)"),
+                            new XElement(ns + "RelativePath",
+                                "%(FilesToBundle.Identity)"),
+                            new XElement(ns + "RelativePath",
+                                new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'"),
+                                "@(FilesToBundle->'%(RelativePath).renamed')"))));
+            }
+        }
     }
 }
