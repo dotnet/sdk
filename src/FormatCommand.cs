@@ -3,8 +3,6 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.CodeAnalysis.Tools
