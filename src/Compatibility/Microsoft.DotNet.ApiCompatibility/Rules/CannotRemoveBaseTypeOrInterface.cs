@@ -1,11 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiCompatibility.Extensions;
@@ -38,6 +35,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             if (Settings.StrictMode)
                 ValidateInterfaceNotRemoved(right, left, rightName, leftName, differences);
         }
+
         private void ValidateBaseTypeNotRemoved(ITypeSymbol left, ITypeSymbol right, string leftName, string rightName, IList<CompatDifference> differences)
         {
             // Base type order matters in the hierarchy chain so therefore use a list.
@@ -66,8 +64,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             foreach (ITypeSymbol leftInterface in left.GetAllBaseInterfaces())
             {
-                // Ignore internal interfaces
-                if (!leftInterface.IsVisibleOutsideOfAssembly())
+                // Ignore non visible interfaces based on the run settings
+                if (!leftInterface.IsVisibleOutsideOfAssembly(Settings.IncludeInternalSymbols))
                     return;
 
                 if (!rightInterfaces.Contains(leftInterface))

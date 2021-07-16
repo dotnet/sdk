@@ -1,6 +1,5 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
 using System;
 using System.Collections.Generic;
@@ -92,8 +91,10 @@ namespace CompatTests
             differences[1].Message.Contains("CompatTests.IFirstInterface");
         }
 
-        [Fact]
-        public void RemovedInternalInterfaceIsNotReported()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void RemovedInternalInterfaceIsReportedWhenIncludeInternals(bool includeInternals)
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -109,6 +110,7 @@ namespace CompatTests
 {
   public class First : IFirstInterface { }
   public interface IFirstInterface { }
+  internal interface IFirstInternalInterface { }
 }
 ";
 
@@ -116,8 +118,22 @@ namespace CompatTests
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
 
             ApiComparer differ = new();
+            differ.IncludeInternalSymbols = includeInternals;
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differ.GetDifferences(left, right));
+            if (includeInternals)
+            {
+                CompatDifference[] expected = new[]
+                {
+                    new CompatDifference(DiagnosticIds.CannotRemoveBaseInterface, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
+                };
+
+                Assert.Equal(expected, differences, CompatDifferenceComparer.Default);
+            }
+            else
+            {
+                Assert.Empty(differences);
+            }
         }
 
         [Fact]

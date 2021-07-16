@@ -8,13 +8,15 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
     public class RuleSettings
     {
-        public RuleSettings(bool strictMode, IEqualityComparer<ISymbol> symbolComparer)
+        public RuleSettings(bool strictMode, IEqualityComparer<ISymbol> symbolComparer, bool includeInternalSymbols)
         {
             StrictMode = strictMode;
             SymbolComparer = symbolComparer;
+            IncludeInternalSymbols = includeInternalSymbols;
         }
 
         public bool StrictMode { get; }
         public IEqualityComparer<ISymbol> SymbolComparer { get; }
+        public bool IncludeInternalSymbols { get; }
     }
 }
