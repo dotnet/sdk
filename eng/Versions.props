@@ -11,10 +11,15 @@
       due to the shim executable containing a hardcoded path which includes the release version.
     -->
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+    <SystemCommandLineRendererVersion>
+    </SystemCommandLineRendererVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
     <MicrosoftNETCoreCompilersPackageVersion>4.0.0-3.21364.1</MicrosoftNETCoreCompilersPackageVersion>
+    <!-- Dependencies from https://github.com/dotnet/command-line-api -->
+    <SystemCommandLineVersion>2.0.0-beta1.21364.1</SystemCommandLineVersion>
+    <SystemCommandLineRenderingVersion>0.3.0-alpha.21364.1</SystemCommandLineRenderingVersion>
   </PropertyGroup>
   <!--
     Other Dependency versions

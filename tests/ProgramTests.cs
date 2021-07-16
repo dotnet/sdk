@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -59,17 +60,17 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Equal(0, result.Errors.Count);
             Assert.Equal(0, result.UnmatchedTokens.Count);
             Assert.Equal(0, result.UnparsedTokens.Count);
-            Assert.True(result.ValueForOption<bool>("--folder"));
-            Assert.Collection(result.ValueForOption<IEnumerable<string>>("--include"),
+            Assert.True(result.GetValueForOption<bool>("--folder"));
+            Assert.Collection(result.GetValueForOption<IEnumerable<string>>("--include"),
                 i0 => Assert.Equal("include1", i0),
                 i1 => Assert.Equal("include2", i1));
-            Assert.Collection(result.ValueForOption<IEnumerable<string>>("--exclude"),
+            Assert.Collection(result.GetValueForOption<IEnumerable<string>>("--exclude"),
                 i0 => Assert.Equal("exclude1", i0),
                 i1 => Assert.Equal("exclude2", i1));
-            Assert.True(result.ValueForOption<bool>("--check"));
-            Assert.Equal("report", result.ValueForOption("--report"));
-            Assert.Equal("detailed", result.ValueForOption("--verbosity"));
-            Assert.True(result.ValueForOption<bool>("--include-generated"));
+            Assert.True(result.GetValueForOption<bool>("--check"));
+            Assert.Equal("report", result.GetValueForOption<string>("--report"));
+            Assert.Equal("detailed", result.GetValueForOption<string>("--verbosity"));
+            Assert.True(result.GetValueForOption<bool>("--include-generated"));
         }
 
         [Fact]
@@ -83,7 +84,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.ValueForArgument("workspace"));
+            Assert.Equal("workspaceValue", result.GetValueForArgument<string>("workspace"));
         }
 
         [Fact]
@@ -97,8 +98,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.ValueForArgument("workspace"));
-            Assert.Equal("detailed", result.ValueForOption("--verbosity"));
+            Assert.Equal("workspaceValue", result.GetValueForArgument<string>("workspace"));
+            Assert.Equal("detailed", result.GetValueForOption<string>("--verbosity"));
         }
 
         [Fact]
@@ -112,8 +113,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.ValueForArgument("workspace"));
-            Assert.Equal("detailed", result.ValueForOption("--verbosity"));
+            Assert.Equal("workspaceValue", result.GetValueForArgument<string>("workspace"));
+            Assert.Equal("detailed", result.GetValueForOption<string>("--verbosity"));
         }
 
         [Fact]

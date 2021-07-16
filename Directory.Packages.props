@@ -35,8 +35,8 @@
     <PackageVersion Include="NuGet.Packaging" Version="$(NuGetVersion)" />
     <PackageVersion Include="NuGet.Protocol" Version="$(NuGetVersion)" />
     <PackageVersion Include="NuGet.Versioning" Version="$(NuGetVersion)" />
-    <PackageVersion Include="System.CommandLine.Rendering" Version="0.3.0-alpha.21256.1" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta1.21256.1" />
+    <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
+    <PackageVersion Include="System.CommandLine.Rendering" Version="$(SystemCommandLineRenderingVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(MicrosoftExtensionsVersion)" />
 
     <!-- Avoid version conflicts during build. -->
