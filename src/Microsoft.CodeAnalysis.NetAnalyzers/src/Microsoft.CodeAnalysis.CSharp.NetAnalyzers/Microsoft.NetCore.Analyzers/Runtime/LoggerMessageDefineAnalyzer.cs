@@ -121,30 +121,39 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             var invocation = (IInvocationOperation)context.Operation;
 
             var methodSymbol = invocation.TargetMethod;
+            var containingType = methodSymbol.ContainingType;
 
-            if (methodSymbol.ContainingType == loggerExtensionsType)
+#pragma warning disable RS1024 // Compare symbols correctly
+            if (containingType.Equals(loggerExtensionsType))
+#pragma warning restore RS1024 // Compare symbols correctly
             {
                 context.ReportDiagnostic(Diagnostic.Create(CA1848Rule, invocation.Syntax.GetLocation(), methodSymbol.Name));
             }
-            else if (!methodSymbol.ContainingType.Equals(loggerType) && !methodSymbol.ContainingType.Equals(loggerMessageType))
+#pragma warning disable RS1024 // Compare symbols correctly
+            else if (!containingType.Equals(loggerType) && !containingType.Equals(loggerMessageType))
+#pragma warning restore RS1024 // Compare symbols correctly
             {
                 return;
             }
 
             if (FindLogParameters(methodSymbol, out var messageArgument, out var paramsArgument))
             {
-                int paramsCount = 0;
+                var paramsCount = 0;
                 IOperation? formatExpression = null;
-                bool argsIsArray = false;
+                var argsIsArray = false;
 
-                if (methodSymbol.ContainingType == loggerMessageType)
+#pragma warning disable RS1024 // Compare symbols correctly
+                if (containingType.Equals(loggerMessageType))
+#pragma warning restore RS1024 // Compare symbols correctly
                 {
                     // For LoggerMessage.Define, count type parameters on the invocation instead of arguments
                     paramsCount = methodSymbol.TypeParameters.Length;
                     var arg = invocation.Arguments.FirstOrDefault(argument =>
                     {
                         var parameter = argument.Parameter;
+#pragma warning disable RS1024 // Compare symbols correctly
                         return Equals(parameter, messageArgument);
+#pragma warning restore RS1024 // Compare symbols correctly
                     });
                     formatExpression = arg.Value;
                 }
@@ -153,11 +162,15 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     foreach (var argument in invocation.Arguments)
                     {
                         var parameter = argument.Parameter;
+#pragma warning disable RS1024 // Compare symbols correctly
                         if (Equals(parameter, messageArgument))
+#pragma warning restore RS1024 // Compare symbols correctly
                         {
                             formatExpression = argument.Value;
                         }
+#pragma warning disable RS1024 // Compare symbols correctly
                         else if (Equals(parameter, paramsArgument))
+#pragma warning restore RS1024 // Compare symbols correctly
                         {
                             var parameterType = argument.Parameter.Type;// TODO test
                             if (parameterType == null)
