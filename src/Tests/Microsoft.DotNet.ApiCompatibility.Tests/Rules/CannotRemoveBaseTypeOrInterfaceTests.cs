@@ -306,5 +306,65 @@ namespace CompatTests
 
             AssertExtensions.MultiRightResult(leftMetadata, expectedDiffs, result);
         }
+
+        [Fact]
+        public void MembersPushedDownToNewBaseNotReported()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+  public class First : FirstBase { }
+  public class Second : SecondBase
+  {
+    public string MyMethod() => string.Empty;
+    public int MyProperty => 0;
+  }
+  public class SecondBase : ThirdBase
+  {
+    public void AnotherMethod() { }
+    public string MethodWithArguments(string a) => MethodWithArguments(a, string.Empty);
+    public string MethodWithArguments(string a, string b) => MethodWithArguments(a, string.Empty, string.Empty);
+    public string MethodWithArguments(string a, string b, string c) => c;
+  }
+  public class FirstBase { }
+  public class ThirdBase { }
+}
+";
+
+            string rightSyntax = @"
+namespace CompatTests
+{
+  public class First : NewBase { }
+  public class Second : NewSecondBase
+  {
+    public int MyProperty => 0;
+  }
+  public class NewBase : FirstBase { }
+  public class FirstBase { }
+  public class NewSecondBase : SecondBase
+  {
+    public string MyMethod() => string.Empty;
+  }
+  public class SecondBase : NewThirdBase
+  {
+    public void AnotherMethod() { }
+    public string MethodWithArguments(string a) => MethodWithArguments(a, string.Empty);
+  }
+  public class NewThirdBase : ThirdBase
+  {
+    public string MethodWithArguments(string a, string b) => MethodWithArguments(a, string.Empty, string.Empty);
+    public string MethodWithArguments(string a, string b, string c) => c;
+  }
+  public class ThirdBase { }
+}
+";
+
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+
+            ApiComparer differ = new();
+
+            Assert.Empty(differ.GetDifferences(left, right));
+        }
     }
 }
