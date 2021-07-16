@@ -11,8 +11,6 @@
       due to the shim executable containing a hardcoded path which includes the release version.
     -->
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
-    <SystemCommandLineRendererVersion>
-    </SystemCommandLineRendererVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
