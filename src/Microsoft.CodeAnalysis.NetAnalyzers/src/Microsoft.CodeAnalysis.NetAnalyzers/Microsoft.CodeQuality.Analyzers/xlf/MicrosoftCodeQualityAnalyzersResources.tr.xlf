@@ -288,8 +288,8 @@
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
-        <source>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</source>
-        <target state="new">For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</target>
+        <source>For improved performance, use pre-compiled log messages</source>
+        <target state="new">For improved performance, use pre-compiled log messages</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">

@@ -196,7 +196,7 @@
     <value>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</value>
   </data>
   <data name="LoggerMessageDiagnosticUseCompiledLogMessagesDescription" xml:space="preserve">
-    <value>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</value>
+    <value>For improved performance, use pre-compiled log messages</value>
   </data>
   <data name="LoggerMessageDiagnosticConcatenationInFormatStringTitle" xml:space="preserve">
     <value>Logging format string should not be dynamically generated</value>
@@ -216,7 +216,6 @@
   <data name="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription" xml:space="preserve">
     <value>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</value>
   </data>
-
   <data name="MarkAssembliesWithClsCompliantTitle" xml:space="preserve">
     <value>Mark assemblies with CLSCompliant</value>
   </data>
