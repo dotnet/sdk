@@ -4,6 +4,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -125,7 +126,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
             if (containingType.Equals(loggerExtensionsType, SymbolEqualityComparer.Default))
             {
-                context.ReportDiagnostic(Diagnostic.Create(CA1848Rule, invocation.Syntax.GetLocation(), methodSymbol.Name));
+                context.ReportDiagnostic(invocation.CreateDiagnostic(CA1848Rule, invocation.Syntax.GetLocation(), methodSymbol.Name));
             }
             else if (
                 !containingType.Equals(loggerType, SymbolEqualityComparer.Default) &&
@@ -188,7 +189,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             var text = TryGetFormatText(formatExpression);
             if (text == null)
             {
-                context.ReportDiagnostic(Diagnostic.Create(CA2254Rule, formatExpression.Syntax.GetLocation()));
+                context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2254Rule, formatExpression.Syntax.GetLocation()));
                 return;
             }
 
@@ -208,18 +209,18 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             {
                 if (int.TryParse(valueName, out _))
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(CA2253Rule, formatExpression.Syntax.GetLocation()));
+                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2253Rule, formatExpression.Syntax.GetLocation()));
                 }
                 else if (char.IsLower(valueName[0]))
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(CA1727Rule, formatExpression.Syntax.GetLocation()));
+                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA1727Rule, formatExpression.Syntax.GetLocation()));
                 }
             }
 
             var argsPassedDirectly = argsIsArray && paramsCount == 1;
             if (!argsPassedDirectly && paramsCount != formatter.ValueNames.Count)
             {
-                context.ReportDiagnostic(Diagnostic.Create(CA2255Rule, formatExpression.Syntax.GetLocation()));
+                context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2255Rule, formatExpression.Syntax.GetLocation()));
             }
         }
 
