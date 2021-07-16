@@ -82,20 +82,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </ItemGroup>
 
-  <!-- Implicit imports -->
+  <!-- C# implicit imports -->
   <ItemGroup Condition=" '$(DisableImplicitNamespaceImports_DotNet)' != 'true'
+                      and '$(Language)' == 'C#'
                       and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
                       and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '6.0'))">
-
-    <!-- Imports already defined as VB implicit imports are conditioned to not be added twice -->
-    <Import Include="System" Condition="'$(Language)' != 'VB'" />
-    <Import Include="System.Collections.Generic" Condition="'$(Language)' != 'VB'" />
+    <Import Include="System" />
+    <Import Include="System.Collections.Generic" />
     <Import Include="System.IO" />
-    <Import Include="System.Linq" Condition="'$(Language)' != 'VB'" />
+    <Import Include="System.Linq" />
     <Import Include="System.Net.Http" />
     <Import Include="System.Threading" />
-    <Import Include="System.Threading.Tasks" Condition="'$(Language)' != 'VB'" />
-    
+    <Import Include="System.Threading.Tasks" />
   </ItemGroup>
 
   <!-- VB implicit imports -->
