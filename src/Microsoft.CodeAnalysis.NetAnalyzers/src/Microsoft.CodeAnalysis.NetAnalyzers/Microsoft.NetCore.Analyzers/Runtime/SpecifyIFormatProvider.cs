@@ -78,10 +78,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             var objectType = context.Compilation.GetSpecialType(SpecialType.System_Object);
             var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
-            if (objectType == null || stringType == null)
-            {
-                return;
-            }
 
             var charType = context.Compilation.GetSpecialType(SpecialType.System_Char);
             var boolType = context.Compilation.GetSpecialType(SpecialType.System_Boolean);

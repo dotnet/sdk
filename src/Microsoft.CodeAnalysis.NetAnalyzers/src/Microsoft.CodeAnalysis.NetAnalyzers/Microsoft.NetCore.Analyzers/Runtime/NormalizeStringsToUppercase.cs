@@ -43,10 +43,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
             var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
-            if (stringType == null)
-            {
-                return;
-            }
 
             var cultureInfo = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
             var invariantCulture = cultureInfo?.GetMembers("InvariantCulture").OfType<IPropertySymbol>().FirstOrDefault();

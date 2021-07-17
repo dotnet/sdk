@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
 
             // Without these symbols the rule cannot run
-            if (stringComparisonType == null || stringType == null)
+            if (stringComparisonType == null)
             {
                 return;
             }

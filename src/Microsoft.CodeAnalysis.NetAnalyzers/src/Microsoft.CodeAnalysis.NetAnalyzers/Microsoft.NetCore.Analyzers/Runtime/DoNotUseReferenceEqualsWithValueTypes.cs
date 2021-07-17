@@ -51,11 +51,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 var objectType = compilationStartContext.Compilation.GetSpecialType(SpecialType.System_Object);
 
-                if (objectType == null)
-                {
-                    return;
-                }
-
                 var objectObjectParameters = new[]
                 {
                     ParameterInfo.GetParameterInfo(objectType),

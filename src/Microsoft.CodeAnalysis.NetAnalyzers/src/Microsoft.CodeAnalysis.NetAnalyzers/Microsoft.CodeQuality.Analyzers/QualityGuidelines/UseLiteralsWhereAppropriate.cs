@@ -49,9 +49,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             context.RegisterCompilationStartAction(context =>
             {
-                var builder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
-                builder.Add(context.Compilation.GetSpecialType(SpecialType.System_IntPtr));
-                builder.Add(context.Compilation.GetSpecialType(SpecialType.System_UIntPtr));
+                var builder = ImmutableHashSet.CreateBuilder<SpecialType?>();
+                builder.Add(SpecialType.System_IntPtr);
+                builder.Add(SpecialType.System_UIntPtr);
 
                 var constantIncompatibleTypes = builder.ToImmutable();
 
@@ -85,7 +85,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                     // Though null is const we don't fire the diagnostic to be FxCop Compact
                     if (initializerValue != null &&
-                        !constantIncompatibleTypes.Contains(fieldInitializerValue.Type))
+                        !constantIncompatibleTypes.Contains(fieldInitializerValue.Type?.SpecialType))
                     {
                         if (fieldInitializerValue.Type?.SpecialType == SpecialType.System_String &&
                             ((string)initializerValue).Length == 0)

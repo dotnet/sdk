@@ -57,20 +57,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (typeSymbol != null && typeSymbol.DeclaredAccessibility == Accessibility.Public)
                 {
                     if (typeSymbol.GetMembers(ArrayEmptyMethodName).FirstOrDefault() is IMethodSymbol methodSymbol && methodSymbol.DeclaredAccessibility == Accessibility.Public &&
-    methodSymbol.IsStatic && methodSymbol.Arity == 1 && methodSymbol.Parameters.IsEmpty)
+                        methodSymbol.IsStatic && methodSymbol.Arity == 1 && methodSymbol.Parameters.IsEmpty)
                     {
-                        ctx.RegisterOperationAction(AnalyzeOperation, OperationKind.ArrayCreation);
+                        ctx.RegisterOperationAction(c => AnalyzeOperation(c, methodSymbol), OperationKind.ArrayCreation);
                     }
                 }
             });
         }
 
-        private void AnalyzeOperation(OperationAnalysisContext context)
+        private void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol)
         {
-            AnalyzeOperation(context, IsAttributeSyntax);
+            AnalyzeOperation(context, arrayEmptyMethodSymbol, IsAttributeSyntax);
         }
 
-        private static void AnalyzeOperation(OperationAnalysisContext context, Func<SyntaxNode, bool> isAttributeSytnax)
+        private static void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol, Func<SyntaxNode, bool> isAttributeSytnax)
         {
             IArrayCreationOperation arrayCreationExpression = (IArrayCreationOperation)context.Operation;
 
@@ -109,14 +109,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     if (elementType.TypeKind != TypeKind.Pointer)
                     {
-                        var arrayType = context.Compilation.GetOrCreateTypeByMetadataName(ArrayTypeName);
-                        if (arrayType == null)
-                        {
-                            return;
-                        }
-
-                        IMethodSymbol emptyMethod = (IMethodSymbol)arrayType.GetMembers(ArrayEmptyMethodName).First();
-                        var constructed = emptyMethod.Construct(elementType);
+                        var constructed = arrayEmptyMethodSymbol.Construct(elementType);
 
                         string typeName = constructed.ToDisplayString(ReportFormat);
                         context.ReportDiagnostic(arrayCreationExpression.Syntax.CreateDiagnostic(UseArrayEmptyDescriptor, typeName));

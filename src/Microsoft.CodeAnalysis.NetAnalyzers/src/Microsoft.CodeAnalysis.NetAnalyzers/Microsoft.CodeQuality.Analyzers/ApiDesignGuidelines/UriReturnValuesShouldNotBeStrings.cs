@@ -42,27 +42,24 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             context.RegisterCompilationStartAction(c =>
             {
-                var @string = c.Compilation.GetSpecialType(SpecialType.System_String);
                 var uri = c.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemUri);
-                if (@string == null || uri == null)
+                if (uri == null)
                 {
                     // we don't have required types
                     return;
                 }
 
-                var analyzer = new PerCompilationAnalyzer(@string, uri);
+                var analyzer = new PerCompilationAnalyzer(uri);
                 c.RegisterSymbolAction(analyzer.Analyze, SymbolKind.Method);
             });
         }
 
         private class PerCompilationAnalyzer
         {
-            private readonly INamedTypeSymbol _string;
             private readonly INamedTypeSymbol _uri;
 
-            public PerCompilationAnalyzer(INamedTypeSymbol @string, INamedTypeSymbol uri)
+            public PerCompilationAnalyzer(INamedTypeSymbol uri)
             {
-                _string = @string;
                 _uri = uri;
             }
 
@@ -85,7 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                if (method.IsAccessorMethod() || method.ReturnType?.Equals(_string) != true)
+                if (method.IsAccessorMethod() || method.ReturnType?.SpecialType != SpecialType.System_String)
                 {
                     // return type must be string and it must be not an accessor method
                     return;

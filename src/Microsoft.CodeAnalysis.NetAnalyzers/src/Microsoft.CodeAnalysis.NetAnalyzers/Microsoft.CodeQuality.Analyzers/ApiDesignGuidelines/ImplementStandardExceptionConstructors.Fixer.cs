@@ -82,7 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                     containingTypeName: typeSymbol.Name,
                                                     parameters: new[]
                                                     {
-                                                    generator.ParameterDeclaration("message", generator.TypeExpression(editor.SemanticModel.Compilation.GetSpecialType(SpecialType.System_String)))
+                                                    generator.ParameterDeclaration("message", generator.TypeExpression(SpecialType.System_String))
                                                     },
                                                     accessibility: Accessibility.Public,
                                                     baseConstructorArguments: new[]
@@ -97,7 +97,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                     containingTypeName: typeSymbol.Name,
                                                     parameters: new[]
                                                     {
-                                                    generator.ParameterDeclaration("message", generator.TypeExpression(editor.SemanticModel.Compilation.GetSpecialType(SpecialType.System_String))),
+                                                    generator.ParameterDeclaration("message", generator.TypeExpression(SpecialType.System_String)),
                                                     generator.ParameterDeclaration("innerException", generator.TypeExpression(editor.SemanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemException)))
                                                     },
                                                     accessibility: Accessibility.Public,
