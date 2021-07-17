@@ -50,13 +50,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SemanticModel semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
 
+            INamedTypeSymbol? arrayTypeSymbol = semanticModel.Compilation.GetSpecialType(SpecialType.System_Array);
+            if (arrayTypeSymbol == null)
+            {
+                return document;
+            }
+
             ITypeSymbol? elementType = GetArrayElementType(nodeToFix, semanticModel, cancellationToken);
             if (elementType == null)
             {
                 return document;
             }
 
-            SyntaxNode arrayEmptyInvocation = GenerateArrayEmptyInvocation(generator, elementType).WithTriviaFrom(nodeToFix);
+            SyntaxNode arrayEmptyInvocation = GenerateArrayEmptyInvocation(generator, arrayTypeSymbol, elementType).WithTriviaFrom(nodeToFix);
             editor.ReplaceNode(nodeToFix, arrayEmptyInvocation);
             return editor.GetChangedDocument();
         }
@@ -71,10 +77,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return arrayType?.ElementType;
         }
 
-        private static SyntaxNode GenerateArrayEmptyInvocation(SyntaxGenerator generator, ITypeSymbol elementType)
+        private static SyntaxNode GenerateArrayEmptyInvocation(SyntaxGenerator generator, INamedTypeSymbol arrayTypeSymbol, ITypeSymbol elementType)
         {
             SyntaxNode arrayEmptyName = generator.MemberAccessExpression(
-                generator.TypeExpressionForStaticMemberAccess(SpecialType.System_Array),
+                generator.TypeExpressionForStaticMemberAccess(arrayTypeSymbol),
                 generator.GenericName(AvoidZeroLengthArrayAllocationsAnalyzer.ArrayEmptyMethodName, elementType));
             return generator.InvocationExpression(arrayEmptyName);
         }

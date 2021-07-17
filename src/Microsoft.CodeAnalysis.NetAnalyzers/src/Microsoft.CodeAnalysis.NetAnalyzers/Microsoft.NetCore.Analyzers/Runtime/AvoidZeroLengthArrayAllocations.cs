@@ -16,9 +16,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1825";
 
-        /// <summary>The name of the array type.</summary>
-        internal const string ArrayTypeName = "System.Array"; // using instead of GetSpecialType to make more testable
-
         /// <summary>The name of the Empty method on System.Array.</summary>
         internal const string ArrayEmptyMethodName = "Empty";
 
@@ -53,8 +50,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // Only if it is, register the syntax node action provided by the derived implementations.
             context.RegisterCompilationStartAction(ctx =>
             {
-                INamedTypeSymbol? typeSymbol = ctx.Compilation.GetOrCreateTypeByMetadataName(ArrayTypeName);
-                if (typeSymbol != null && typeSymbol.DeclaredAccessibility == Accessibility.Public)
+                INamedTypeSymbol typeSymbol = ctx.Compilation.GetSpecialType(SpecialType.System_Array);
+                if (typeSymbol.DeclaredAccessibility == Accessibility.Public)
                 {
                     if (typeSymbol.GetMembers(ArrayEmptyMethodName).FirstOrDefault() is IMethodSymbol methodSymbol && methodSymbol.DeclaredAccessibility == Accessibility.Public &&
                         methodSymbol.IsStatic && methodSymbol.Arity == 1 && methodSymbol.Parameters.IsEmpty)
