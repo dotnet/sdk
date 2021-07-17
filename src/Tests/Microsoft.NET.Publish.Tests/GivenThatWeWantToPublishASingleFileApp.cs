@@ -938,20 +938,15 @@ class C
                 // Modify the FilesToBundle list accordingly, so that publish could pass.
                 //
                 //         <ItemGroup>
-                //             <FilesToBundle Include = "@(FilesToBundle)">
-                //                  <RelativePath>%(FilesToBundle.Identity)</RelativePath>
-                //                  <RelativePath Condition = "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'">@(FilesToBundle->'%(RelativePath).renamed')</RelativePath>
+                //             <FilesToBundle Condition = "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'">
+                //                  <RelativePath>SingleFileTest.dll.renamed</RelativePath>
                 //             </FilesToBundle>
                 //         </ItemGroup >
 
                 target.Add(
                     new XElement(ns + "ItemGroup",
-                        new XElement(ns + "FilesToBundle", new XAttribute("Include", "@(FilesToBundle)"),
-                            new XElement(ns + "RelativePath",
-                                "%(FilesToBundle.Identity)"),
-                            new XElement(ns + "RelativePath",
-                                new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'"),
-                                "@(FilesToBundle->'%(RelativePath).renamed')"))));
+                        new XElement("FilesToBundle", new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'"),
+                            new XElement("RelativePath", "SingleFileTest.dll.renamed"))));
             }
         }
     }
