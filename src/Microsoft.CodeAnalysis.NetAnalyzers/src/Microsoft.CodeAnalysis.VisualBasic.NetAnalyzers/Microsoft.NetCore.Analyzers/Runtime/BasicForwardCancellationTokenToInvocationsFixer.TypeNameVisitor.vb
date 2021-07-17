@@ -106,9 +106,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                     Return syntax
                 End If
 
-                If symbol.IsTupleType AndAlso
-               symbol.TupleUnderlyingType IsNot Nothing AndAlso
-               Not symbol.Equals(symbol.TupleUnderlyingType) Then
+                If symbol.IsTupleType AndAlso symbol.TupleUnderlyingType IsNot Nothing AndAlso Not symbol.Equals(symbol.TupleUnderlyingType) Then
                     Return CreateSimpleTypeSyntax(symbol.TupleUnderlyingType)
                 End If
 
