@@ -16,10 +16,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         internal const string CacheContentDirectory = "SearchCache";
         // All the metadata needed for searching from dotnet new.
         internal const string SearchMetadataFilename = "NuGetTemplateSearchInfo.json";
+        internal const string SearchMetadataFilenameVer2 = "NuGetTemplateSearchInfoVer2.json";
+
         // Metadata for the scraper to skip packs known to not contain templates.
         internal const string NonTemplatePacksFileName = "nonTemplatePacks.json";
 
-        internal static string WriteResults(string outputBasePath, PackSourceCheckResult packSourceCheckResults)
+        internal static void WriteResults(string outputBasePath, PackSourceCheckResult packSourceCheckResults)
         {
             string reportPath = Path.Combine(outputBasePath, CacheContentDirectory);
 
@@ -29,16 +31,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                 Console.WriteLine($"Created directory:{reportPath}");
             }
             WriteNonTemplatePackList(reportPath, packSourceCheckResults.PackCheckData);
-            return WriteSearchMetadata(packSourceCheckResults, reportPath);
+            LegacyMetadataWriter.WriteLegacySearchMetadata(packSourceCheckResults, Path.Combine(reportPath, SearchMetadataFilename));
+            WriteSearchMetadata(packSourceCheckResults, Path.Combine(reportPath, SearchMetadataFilenameVer2));
 
         }
 
-        private static string WriteSearchMetadata(PackSourceCheckResult packSourceCheckResults, string reportPath)
+        private static string WriteSearchMetadata(PackSourceCheckResult packSourceCheckResults, string outputFileName)
         {
             TemplateDiscoveryMetadata searchMetadata = CreateSearchMetadata(packSourceCheckResults);
 
             JObject toSerialize = JObject.FromObject(searchMetadata);
-            string outputFileName = Path.Combine(reportPath, SearchMetadataFilename);
             File.WriteAllText(outputFileName, toSerialize.ToString());
             Console.WriteLine($"Search cache file created: {outputFileName}");
             return outputFileName;
@@ -76,7 +78,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                 additionalData[dataProducer.DataUniqueName] = dataProducer.Data;
             }
 
-            return new TemplateDiscoveryMetadata("1.0.0.0", templateCache, packToTemplateMap, additionalData);
+            return new TemplateDiscoveryMetadata("2.0.0.0", templateCache, packToTemplateMap, additionalData);
         }
 
         private static void WriteNonTemplatePackList(string reportPath, IReadOnlyList<PackCheckResult> packCheckResults)
@@ -89,27 +91,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             string outputFileName = Path.Combine(reportPath, NonTemplatePacksFileName);
             File.WriteAllText(outputFileName, serializedContent);
             Console.WriteLine($"Non template pack list was created: {outputFileName}");
-        }
-
-        private class TemplateIdentityEqualityComparer : IEqualityComparer<ITemplateInfo>
-        {
-            public bool Equals(ITemplateInfo? x, ITemplateInfo? y)
-            {
-                if (x == null && y == null)
-                {
-                    return true;
-                }
-                if (x == null || y == null)
-                {
-                    return false;
-                }
-                return string.Equals(x.Identity, y.Identity, System.StringComparison.Ordinal);
-            }
-
-            public int GetHashCode(ITemplateInfo obj)
-            {
-                return obj.Identity.GetHashCode();
-            }
         }
     }
 }

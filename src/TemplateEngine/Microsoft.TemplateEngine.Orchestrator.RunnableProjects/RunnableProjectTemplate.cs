@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     tags[tag.Key] = new CacheTag(null, null, new Dictionary<string, ParameterChoice> { { tag.Value, new ParameterChoice(null, null) } }, tag.Value);
                 }
-                foreach (ITemplateParameter parameter in ((ITemplateInfo)this).Parameters.Where(p => p.DataType.Equals("choice", StringComparison.OrdinalIgnoreCase)))
+                foreach (ITemplateParameter parameter in ((ITemplateInfo)this).Parameters.Where(p => p.DataType != null && p.DataType.Equals("choice", StringComparison.OrdinalIgnoreCase)))
                 {
                     tags[parameter.Name] = new CacheTag(parameter.DisplayName, parameter.Description, parameter.Choices, parameter.DefaultValue);
                 }
@@ -91,7 +91,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             get
             {
                 Dictionary<string, ICacheParameter> cacheParameters = new Dictionary<string, ICacheParameter>();
-                foreach (ITemplateParameter parameter in ((ITemplateInfo)this).Parameters.Where(p => !p.DataType.Equals("choice", StringComparison.OrdinalIgnoreCase)))
+                foreach (ITemplateParameter parameter in ((ITemplateInfo)this).Parameters.Where(p => p.DataType != null && !p.DataType.Equals("choice", StringComparison.OrdinalIgnoreCase)))
                 {
                     cacheParameters[parameter.Name] = new CacheParameter()
                     {
@@ -126,7 +126,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IFileSystemInfo ITemplate.LocaleConfiguration => _localeConfigFile;
 
-        string ITemplateInfo.LocaleConfigPlace => _localeConfigFile.FullPath;
+        string ITemplateInfo.LocaleConfigPlace => _localeConfigFile?.FullPath;
 
         //read in simple template model instead
         bool ITemplate.IsNameAgreementWithFolderPreferred => _config.PreferNameDirectory;
