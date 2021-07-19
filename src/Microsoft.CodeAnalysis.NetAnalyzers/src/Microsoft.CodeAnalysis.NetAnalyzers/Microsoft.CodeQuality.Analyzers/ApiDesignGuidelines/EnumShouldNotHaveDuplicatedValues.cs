@@ -134,7 +134,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 void endVisitEnumSymbol(SymbolAnalysisContext context)
                 {
-                    var enumSymbol = (INamedTypeSymbol)context.Symbol;
                     // visit any duplicates which didn't have an initializer
                     foreach (var field in duplicates)
                     {
