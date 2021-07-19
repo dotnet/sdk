@@ -412,15 +412,9 @@ $@"<Project>
                 }
             }
 
-            string escapeMarkdown(string text)
-            {
-                // Escape generic arguments to ensure they are not considered as HTML elements
-                text = Regex.Replace(text, "(<.+?>)", "\\$1");
-
-                // Escape asterisks.
-                text = text.Replace("*", @"\*");
-                return text;
-            }
+            // Escape generic arguments to ensure they are not considered as HTML elements, and also escape asterisks.
+            static string escapeMarkdown(string text)
+                => Regex.Replace(text, "(<.+?>)", "\\$1").Replace("*", @"\*");
 
             // based on https://github.com/dotnet/roslyn/blob/main/src/Compilers/Core/Portable/CommandLine/ErrorLogger.cs
             void createAnalyzerSarifFile()
