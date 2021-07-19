@@ -1442,7 +1442,7 @@ It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring'
 
 ## [CA1848](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848): Use compiled log messages
 
-For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.
+For improved performance, use pre-compiled log messages
 
 |Item|Value|
 |-|-|
