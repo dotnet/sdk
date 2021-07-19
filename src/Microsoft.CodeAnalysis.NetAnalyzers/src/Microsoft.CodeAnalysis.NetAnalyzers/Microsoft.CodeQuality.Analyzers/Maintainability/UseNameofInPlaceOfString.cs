@@ -109,15 +109,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             var parentOperation = context.Operation.Parent;
             while (parentOperation != null)
             {
-                IMethodSymbol? methodSymbol = null;
-                if (parentOperation.Kind == OperationKind.AnonymousFunction)
+                IMethodSymbol? methodSymbol = parentOperation switch
                 {
-                    methodSymbol = ((IAnonymousFunctionOperation)parentOperation).Symbol;
-                }
-                else if (parentOperation.Kind == OperationKind.LocalFunction)
-                {
-                    methodSymbol = ((ILocalFunctionOperation)parentOperation).Symbol;
-                }
+                    IAnonymousFunctionOperation anonymousOperation => anonymousOperation.Symbol,
+                    ILocalFunctionOperation localFunctionOperation => localFunctionOperation.Symbol,
+                    _ => null;
+                };
 
                 if (methodSymbol is not null)
                 {
