@@ -903,7 +903,6 @@ class C
                 .WithProjectChanges(project => VerifyPrepareForBundle(project));
 
             var publishCommand = new PublishCommand(testAsset);
-            var singleFilePath = Path.Combine(GetPublishDirectory(publishCommand, "net6.0").FullName, $"SingleFileTest{Constants.ExeSuffix}");
 
             publishCommand
                 .Execute(PublishSingleFile, RuntimeIdentifier)
@@ -912,6 +911,8 @@ class C
 
             void VerifyPrepareForBundle(XDocument project)
             {
+                System.Console.WriteLine(project.ToString());
+
                 var ns = project.Root.Name.Namespace;
                 var targetName = "CheckPrepareForBundleData";
 
@@ -935,18 +936,32 @@ class C
                         new XAttribute("DestinationFiles", "@(FilesToBundle->'%(FullPath).renamed')"),
                         new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'")));
 
-                // Modify the FilesToBundle list accordingly, so that publish could pass.
+                // Modify the FilesToBundle to not have SingleFileTest.dll, so that publish could pass.
                 //
                 //         <ItemGroup>
-                //             <FilesToBundle Condition = "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'">
-                //                  <RelativePath>SingleFileTest.dll.renamed</RelativePath>
+                //             <FilesToBundle
+                //                  Include = "@(FilesToBundle)">
+                //                  Condition = "'%(FilesToBundle.RelativePath)' != 'SingleFileTest.dll'"
                 //             </FilesToBundle>
                 //         </ItemGroup >
 
                 target.Add(
+                    new XElement(ns + "Message",
+                        new XAttribute("Importance", "High"),
+                        new XAttribute("Text", "BEFORE: %(FilesToBundle.Identity) %(FilesToBundle.RelativePath)")));
+
+                target.Add(
                     new XElement(ns + "ItemGroup",
-                        new XElement("FilesToBundle", new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'"),
-                            new XElement("RelativePath", "SingleFileTest.dll.renamed"))));
+                        new XElement(ns + "FilesToBundle",
+                            new XAttribute("Include", "@(FilesToBundle)"),
+                            new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' != 'SingleFileTest.dll'"))));
+
+                target.Add(
+                    new XElement(ns + "Message",
+                        new XAttribute("Importance", "High"),
+                        new XAttribute("Text", "AFTER: %(FilesToBundle.Identity) %(FilesToBundle.RelativePath)")));
+
+                System.Console.WriteLine(project.ToString());
             }
         }
     }
