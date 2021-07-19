@@ -38,24 +38,25 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
         private void ValidateBaseTypeNotRemoved(ITypeSymbol left, ITypeSymbol right, string leftName, string rightName, IList<CompatDifference> differences)
         {
-            // Base type order matters in the hierarchy chain so therefore use a list.
-            List<ITypeSymbol> rightBaseTypes = right.GetAllBaseTypes().ToList();
+            ITypeSymbol leftBaseType = left.BaseType;
+            ITypeSymbol rightBaseType = right.BaseType;
 
-            int lastTypeIndex = 0;
-            foreach (ITypeSymbol leftBaseType in left.GetAllBaseTypes())
+            while (rightBaseType != null)
             {
-                lastTypeIndex = rightBaseTypes.FindIndex(lastTypeIndex, r => Settings.SymbolComparer.Equals(leftBaseType, r));
-
-                if (lastTypeIndex < 0)
-                {
-                    differences.Add(new CompatDifference(
-                                            DiagnosticIds.CannotRemoveBaseType,
-                                            string.Format(Resources.CannotRemoveBaseType, left.ToDisplayString(), leftBaseType.ToDisplayString(), rightName, leftName),
-                                            DifferenceType.Changed,
-                                            right));
+                // If we found the immediate left base type on right we can assume
+                // that any removal of a base type up on the hierarchy will be handled
+                // when validating the type which it's base type was actually removed.
+                if (Settings.SymbolComparer.Equals(leftBaseType, rightBaseType))
                     return;
-                }
+
+                rightBaseType = rightBaseType.BaseType;
             }
+            
+            differences.Add(new CompatDifference(
+                                    DiagnosticIds.CannotRemoveBaseType,
+                                    string.Format(Resources.CannotRemoveBaseType, left.ToDisplayString(), leftBaseType.ToDisplayString(), rightName, leftName),
+                                    DifferenceType.Changed,
+                                    right));
         }
 
         private void ValidateInterfaceNotRemoved(ITypeSymbol left, ITypeSymbol right, string leftName, string rightName, IList<CompatDifference> differences)
@@ -65,7 +66,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             foreach (ITypeSymbol leftInterface in left.GetAllBaseInterfaces())
             {
                 // Ignore non visible interfaces based on the run settings
-                if (!leftInterface.IsVisibleOutsideOfAssembly(Settings.IncludeInternalSymbols))
+                // If TypeKind == Error it means the Roslyn couldn't resolve it,
+                // so we are running with a missing assembly reference to where that typeref is defined.
+                // However we still want to consider it as Roslyn does resolve it's name correctly.
+                if (!leftInterface.IsVisibleOutsideOfAssembly(Settings.IncludeInternalSymbols) && leftInterface.TypeKind != TypeKind.Error)
                     return;
 
                 if (!rightInterfaces.Contains(leftInterface))

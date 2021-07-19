@@ -294,8 +294,6 @@ namespace CompatTests
                 Array.Empty<CompatDifference>(),
                 new[]
                 {
-                    new CompatDifference(DiagnosticIds.CannotRemoveBaseType, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
-                    new CompatDifference(DiagnosticIds.CannotRemoveBaseType, string.Empty, DifferenceType.Changed, "T:CompatTests.FirstBase"),
                     new CompatDifference(DiagnosticIds.CannotRemoveBaseType, string.Empty, DifferenceType.Changed, "T:CompatTests.SecondBase"),
                 },
                 new[]
