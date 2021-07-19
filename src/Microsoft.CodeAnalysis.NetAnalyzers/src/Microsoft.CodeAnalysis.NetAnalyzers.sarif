@@ -121,7 +121,6 @@
               "C#"
             ],
             "tags": [
-              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode",
               "CompilationEnd"
@@ -281,7 +280,6 @@
               "C#"
             ],
             "tags": [
-              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode",
               "CompilationEnd"
@@ -360,7 +358,6 @@
               "C#"
             ],
             "tags": [
-              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode",
               "CompilationEnd"
@@ -381,7 +378,6 @@
               "C#"
             ],
             "tags": [
-              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode",
               "CompilationEnd"
@@ -402,7 +398,6 @@
               "C#"
             ],
             "tags": [
-              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode",
               "CompilationEnd"

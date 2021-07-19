@@ -48,9 +48,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                                                                          DiagnosticCategory.Naming,
                                                                          RuleLevel.Disabled,
                                                                          description: s_localizableDescriptionCA1727,
-                                                                         isPortedFxCopRule: true,
+                                                                         isPortedFxCopRule: false,
                                                                          isDataflowRule: false,
-                                                                         // isEnabledByDefaultInAggressiveMode: false,
                                                                          isReportedAtCompilationEnd: true);
 
         internal static DiagnosticDescriptor CA1848Rule = DiagnosticDescriptorHelper.Create(CA1848RuleId,
@@ -59,9 +58,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                                                                          DiagnosticCategory.Performance,
                                                                          RuleLevel.Disabled,
                                                                          description: s_localizableDescriptionCA1848,
-                                                                         isPortedFxCopRule: true,
+                                                                         isPortedFxCopRule: false,
                                                                          isDataflowRule: false,
-                                                                         // isEnabledByDefaultInAggressiveMode: false,
                                                                          isReportedAtCompilationEnd: true);
 
         internal static DiagnosticDescriptor CA2253Rule = DiagnosticDescriptorHelper.Create(CA2253RuleId,
@@ -70,7 +68,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                                                                          DiagnosticCategory.Usage,
                                                                          RuleLevel.IdeSuggestion,
                                                                          description: s_localizableDescriptionCA2253,
-                                                                         isPortedFxCopRule: true,
+                                                                         isPortedFxCopRule: false,
                                                                          isDataflowRule: false,
                                                                          isReportedAtCompilationEnd: true);
 
@@ -80,7 +78,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                                                                          DiagnosticCategory.Usage,
                                                                          RuleLevel.IdeSuggestion,
                                                                          description: s_localizableDescriptionCA2254,
-                                                                         isPortedFxCopRule: true,
+                                                                         isPortedFxCopRule: false,
                                                                          isDataflowRule: false,
                                                                          isReportedAtCompilationEnd: true);
 
@@ -90,7 +88,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                                                                          DiagnosticCategory.Usage,
                                                                          RuleLevel.BuildWarning,
                                                                          description: s_localizableDescriptionCA2255,
-                                                                         isPortedFxCopRule: true,
+                                                                         isPortedFxCopRule: false,
                                                                          isDataflowRule: false,
                                                                          isReportedAtCompilationEnd: true);
 
