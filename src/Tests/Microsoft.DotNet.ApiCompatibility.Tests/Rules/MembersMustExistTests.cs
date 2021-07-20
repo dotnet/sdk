@@ -494,7 +494,6 @@ namespace CompatTests
 {
   public sealed class First
   {
-    public First() { }
   }
 }
 ";
