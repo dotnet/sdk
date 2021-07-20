@@ -1,12 +1,9 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Xunit;
@@ -25,7 +22,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             ApiComparer differ = new();
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differences);
+            foreach (CompatDifference difference in differences)
+            {
+                Assert.NotEqual(DiagnosticIds.CannotSealType, difference.DiagnosticId);
+            }
         }
 
         [Theory]
@@ -38,12 +38,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             ApiComparer differ = new();
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            CompatDifference[] expected = new[]
-            {
-                new CompatDifference(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.UnsealedClass")
-            };
+            CompatDifference difference = new(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.First");
 
-            Assert.Equal(expected, differences, CompatDifferenceComparer.Default);
+            Assert.Contains(difference, differences, CompatDifferenceComparer.Default);
         }
 
         [Theory]
@@ -54,18 +51,18 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             string leftSyntax = @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
-        internal UnsealedClass() { }
+        internal First() { }
     }
 }
 ";
             string rightSyntax = @"
 namespace CompatTests
 {
-    public sealed class UnsealedClass
+    public sealed class First
     {
-      public UnsealedClass() { }
+        internal First() { }
     }
 }
 ";
@@ -85,7 +82,7 @@ namespace CompatTests
             {
                 CompatDifference[] expected = new[]
                 {
-                     new CompatDifference(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.UnsealedClass")
+                     new CompatDifference(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
                 };
 
                 Assert.Equal(expected, differences, CompatDifferenceComparer.Default);
@@ -99,7 +96,7 @@ namespace CompatTests
             string leftSyntax = @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
     }
 }
@@ -110,31 +107,31 @@ namespace CompatTests
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
     }
 }",
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
-        protected UnsealedClass() { }
+        protected First() { }
     }
 }",
                 @"
 namespace CompatTests
 {
-    public sealed class UnsealedClass
+    public sealed class First
     {
     }
 }",
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
-        private UnsealedClass() { }
+        private First() { }
     }
 }",
             };
@@ -155,11 +152,12 @@ namespace CompatTests
                 Array.Empty<CompatDifference>(),
                 new[]
                 {
-                    new CompatDifference(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.UnsealedClass"),
+                    new CompatDifference(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
                 },
                 new[]
                 {
-                    new CompatDifference(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.UnsealedClass"),
+                    new CompatDifference(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
+                    new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.#ctor"),
                 },
             };
 
@@ -172,7 +170,7 @@ namespace CompatTests
             string leftSyntax = @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
     }
 }
@@ -183,24 +181,24 @@ namespace CompatTests
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
     }
 }",
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
-        protected UnsealedClass() { }
+        protected First() { }
     }
 }",
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
-        internal UnsealedClass() { }
+        internal First() { }
     }
 }"
             };
@@ -230,12 +228,9 @@ namespace CompatTests
             differ.StrictMode = true;
             CompatDifference[] differences = differ.GetDifferences(left, right).ToArray();
 
-            CompatDifference[] expected = new[]
-            {
-                new CompatDifference(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.UnsealedClass")
-            };
+            CompatDifference difference = new(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.First");
 
-            Assert.Equal(expected, differences, CompatDifferenceComparer.Default);
+            Assert.Contains(difference, differences, CompatDifferenceComparer.Default);
             Assert.True(differences[0].Message.IndexOf("left") < differences[0].Message.IndexOf("right"));
         }
 
@@ -246,18 +241,18 @@ namespace CompatTests
                 @"
 namespace CompatTests
 {
-    public sealed class UnsealedClass
+    public sealed class First
     {
-        public UnsealedClass() { }
+        public First() { }
     }
 }
 ",
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
-      public UnsealedClass() { }
+      public First() { }
     }
 }
 "
@@ -268,18 +263,18 @@ namespace CompatTests
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
-        private UnsealedClass() { }
+        private First() { }
     }
 }
 ",
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
-        public UnsealedClass() { }
+        public First() { }
     }
 }
 "
@@ -293,7 +288,7 @@ namespace CompatTests
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
     }
 }
@@ -301,9 +296,9 @@ namespace CompatTests
                 @"
 namespace CompatTests
 {
-    public sealed class UnsealedClass
+    public sealed class First
     {
-      public UnsealedClass() { }
+      public First() { }
     }
 }
 "
@@ -314,18 +309,41 @@ namespace CompatTests
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
-        public UnsealedClass() { }
+        public First() { }
     }
 }
 ",
                 @"
 namespace CompatTests
 {
-    public class UnsealedClass
+    public class First
     {
-        private UnsealedClass() { }
+        private First() { }
+    }
+}
+"
+            };
+
+            yield return new[]
+            {
+                @"
+namespace CompatTests
+{
+    public class First
+    {
+        public First() { }
+    }
+}
+",
+                @"
+namespace CompatTests
+{
+    public class First
+    {
+        private First() { }
+        static First() { }
     }
 }
 "
@@ -341,7 +359,7 @@ namespace CompatTests
 {
     public class SealedClass
     {
-      private SealedClass() { } 
+        private SealedClass() { } 
     }
 }
 ",
@@ -350,7 +368,7 @@ namespace CompatTests
 {
     public sealed class SealedClass
     {
-      public SealedClass() { } 
+        public SealedClass() { } 
     }
 }
 "
@@ -371,7 +389,7 @@ namespace CompatTests
 {
     public class SealedClass
     {
-      private SealedClass() { } 
+        private SealedClass() { } 
     }
 }
 "
