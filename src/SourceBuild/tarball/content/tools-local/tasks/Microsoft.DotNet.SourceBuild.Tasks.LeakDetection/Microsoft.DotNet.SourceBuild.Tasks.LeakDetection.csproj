@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <TargetFramework>netcoreapp6.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>$(LeakDetectionTasksBinDir)</OutputPath>
   </PropertyGroup>
