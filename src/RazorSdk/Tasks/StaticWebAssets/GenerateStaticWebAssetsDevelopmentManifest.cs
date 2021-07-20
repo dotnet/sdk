@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -23,6 +24,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             WriteIndented = true
         };
+
+        [Required]
+        public string BasePath { get; set; }
 
         [Required]
         public ITaskItem[] DiscoveryPatterns { get; set; }
@@ -64,8 +68,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             var discoveryPatternsByBasePath = DiscoveryPatterns
                 .Select(ComputeDiscoveryPattern)
-                .GroupBy(p => p.BasePath,
-                 (key, values) => (key.Split('/'), values));
+                .GroupBy(p => p.BasePath == BasePath ? "" : p.BasePath,
+                 (key, values) => (key.Split(new[] { '/' }, options: StringSplitOptions.RemoveEmptyEntries), values));
 
             var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
             return manifest;
@@ -117,7 +121,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         }
                         var matchingAsset = new StaticWebAssetMatch
                         {
-                            SubPath = asset.Identity.Substring(asset.ContentRoot.Length),
+                            SubPath = asset.Identity.StartsWith(asset.ContentRoot) ?
+                                asset.Identity.Substring(asset.ContentRoot.Length) :
+                                asset.RelativePath,
                             ContentRootIndex = index
                         };
                         currentNode.Children ??= new Dictionary<string, StaticWebAssetNode>();
@@ -290,7 +296,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
             }
 
-            return (key.Split('/'), buildSpecificAsset ?? buildAndPublishAsset);
+            return (key.Split(new[] { '/' }, options: StringSplitOptions.RemoveEmptyEntries), buildSpecificAsset ?? buildAndPublishAsset);
         }
 
         private StaticWebAssetsManifest.DiscoveryPattern ComputeDiscoveryPattern(ITaskItem pattern)
@@ -337,28 +343,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             result.AdditionalPublishPropertiesToRemove = additionalPublishPropertiesToRemove;
 
             return result;
-        }
-
-        private void PersistManifest(StaticWebAssetsManifest manifest)
-        {
-            var data = JsonSerializer.SerializeToUtf8Bytes(manifest, ManifestSerializationOptions);
-            var fileExists = File.Exists(ManifestPath);
-            var existingManifestHash = fileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath)).Hash : "";
-
-            if (!fileExists)
-            {
-                Log.LogMessage($"Creating manifest because manifest file '{ManifestPath}' does not exist.");
-                File.WriteAllBytes(ManifestPath, data);
-            }
-            else if (!string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
-            {
-                Log.LogMessage($"Updating manifest because manifest version '{manifest.Hash}' is different from existing manifest hash '{existingManifestHash}'.");
-                File.WriteAllBytes(ManifestPath, data);
-            }
-            else
-            {
-                Log.LogMessage($"Skipping manifest updated because manifest version '{manifest.Hash}' has not changed.");
-            }
         }
     }
 }
