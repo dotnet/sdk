@@ -4,19 +4,24 @@
 using System.Runtime.CompilerServices;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
     internal class NugetPackProvider : IPackProvider
     {
-        // {PackageId}.{Version}.nupkg
-        private const string DownloadUrlFormat = "https://api.nuget.org/v3-flatcontainer/{0}/{1}/{0}.{1}.nupkg";
-
+        private const string NuGetOrgFeed = "https://api.nuget.org/v3/index.json";
         private const string DownloadPackageFileNameFormat = "{0}.{1}.nupkg";
         private const string DownloadedPacksDir = "DownloadedPacks";
         private readonly string _packageTempPath;
         private readonly int _pageSize;
         private readonly bool _runOnlyOnePage;
+        private readonly SourceRepository _repository;
+        private readonly SourceCacheContext _cacheContext = new SourceCacheContext();
+        private readonly FindPackageByIdResource _downloadResource;
         private string _searchUriFormat;
 
         internal NugetPackProvider(string name, string query, string packageTempBasePath, int pageSize, bool runOnlyOnePage, bool includePreviewPacks)
@@ -25,11 +30,21 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             _pageSize = pageSize;
             _runOnlyOnePage = runOnlyOnePage;
             _packageTempPath = Path.GetFullPath(Path.Combine(packageTempBasePath, DownloadedPacksDir, Name));
-            _searchUriFormat = $"https://api-v2v3search-0.nuget.org/query?{query}&skip={{0}}&take={{1}}&prerelease={includePreviewPacks}";
+            _repository = Repository.Factory.GetCoreV3(NuGetOrgFeed);
+            ServiceIndexResourceV3 indexResource = _repository.GetResource<ServiceIndexResourceV3>();
+            IReadOnlyList<ServiceIndexEntry> searchResources = indexResource.GetServiceEntries("SearchQueryService");
+            _downloadResource = _repository.GetResource<FindPackageByIdResource>();
+
+            if (!searchResources.Any())
+            {
+                throw new Exception($"{NuGetOrgFeed} does not support search API (SearchQueryService)");
+            }
+
+            _searchUriFormat = $"{searchResources[0].Uri}?{query}&skip={{0}}&take={{1}}&prerelease={includePreviewPacks}";
 
             if (Directory.Exists(_packageTempPath))
             {
-                throw new Exception($"temp storage path for nuget packages already exists");
+                throw new Exception($"temp storage path for NuGet packages already exists: {_packageTempPath}");
             }
             else
             {
@@ -83,17 +98,25 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 
         public async Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo, CancellationToken token)
         {
-            string downloadUrl = string.Format(DownloadUrlFormat, packinfo.Id, packinfo.Version);
             string packageFileName = string.Format(DownloadPackageFileNameFormat, packinfo.Id, packinfo.Version);
             string outputPackageFileNameFullPath = Path.Combine(_packageTempPath, packageFileName);
 
             try
             {
-                using (HttpClient client = new HttpClient())
+                using Stream packageStream = File.Create(outputPackageFileNameFullPath);
+                if (await _downloadResource.CopyNupkgToStreamAsync(
+                    packinfo.Id,
+                    new NuGetVersion(packinfo.Version),
+                    packageStream,
+                    _cacheContext,
+                    NullLogger.Instance,
+                    token).ConfigureAwait(false))
                 {
-                    byte[] packageBytes = await client.GetByteArrayAsync(downloadUrl, token).ConfigureAwait(false);
-                    await File.WriteAllBytesAsync(outputPackageFileNameFullPath, packageBytes, token).ConfigureAwait(false);
                     return new NugetPackInfo(packinfo, outputPackageFileNameFullPath);
+                }
+                else
+                {
+                    throw new Exception($"Download failed: {nameof(_downloadResource.CopyNupkgToStreamAsync)} returned false.");
                 }
             }
             catch (TaskCanceledException)
@@ -102,7 +125,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed to download package {packinfo.Id} {packinfo.Version}, reason: {e.ToString()}.");
+                Console.WriteLine($"Failed to download package {packinfo.Id} {packinfo.Version}, reason: {e}.");
                 return null;
             }
         }

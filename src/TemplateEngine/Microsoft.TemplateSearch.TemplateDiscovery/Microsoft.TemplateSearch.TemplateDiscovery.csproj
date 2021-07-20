@@ -11,8 +11,9 @@
   <ItemGroup>
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" />
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
-
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="NuGet.Configuration" />
+    <PackageReference Include="NuGet.Protocol" />
   </ItemGroup>
 
   <ItemGroup>
