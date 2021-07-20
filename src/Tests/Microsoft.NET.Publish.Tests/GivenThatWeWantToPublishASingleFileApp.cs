@@ -911,8 +911,6 @@ class C
 
             void VerifyPrepareForBundle(XDocument project)
             {
-                System.Console.WriteLine(project.ToString());
-
                 var ns = project.Root.Name.Namespace;
                 var targetName = "CheckPrepareForBundleData";
 
@@ -939,29 +937,16 @@ class C
                 // Modify the FilesToBundle to not have SingleFileTest.dll, so that publish could pass.
                 //
                 //         <ItemGroup>
-                //             <FilesToBundle
-                //                  Include = "@(FilesToBundle)">
-                //                  Condition = "'%(FilesToBundle.RelativePath)' != 'SingleFileTest.dll'"
-                //             </FilesToBundle>
+                //              <FilesToBundle Remove="@(FilesToBundle)"
+                //              Condition="'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'" />
                 //         </ItemGroup >
-
-                target.Add(
-                    new XElement(ns + "Message",
-                        new XAttribute("Importance", "High"),
-                        new XAttribute("Text", "BEFORE: %(FilesToBundle.Identity) %(FilesToBundle.RelativePath)")));
+                //
 
                 target.Add(
                     new XElement(ns + "ItemGroup",
                         new XElement(ns + "FilesToBundle",
-                            new XAttribute("Include", "@(FilesToBundle)"),
-                            new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' != 'SingleFileTest.dll'"))));
-
-                target.Add(
-                    new XElement(ns + "Message",
-                        new XAttribute("Importance", "High"),
-                        new XAttribute("Text", "AFTER: %(FilesToBundle.Identity) %(FilesToBundle.RelativePath)")));
-
-                System.Console.WriteLine(project.ToString());
+                            new XAttribute("Remove", "@(FilesToBundle)"),
+                            new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'"))));
             }
         }
     }
