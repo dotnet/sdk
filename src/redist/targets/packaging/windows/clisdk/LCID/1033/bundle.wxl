@@ -76,7 +76,7 @@ Resources
   <String Id="InstallationNoteTitle">Installation note</String>
   <String Id="InstallationNote">A command will be run during the install process that will improve project restore speed and enable offline access. It will take up to a minute to complete.
   </String>
-  <String Id="VisualStudioWarning">If you plan to use .NET 6.0 with Visual Studio, Visual Studio 2019 17.0 or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet6-release-notes&quot;&gt;Learn more&lt;/A&gt;.
+  <String Id="VisualStudioWarning">If you plan to use .NET 6.0 with Visual Studio, Visual Studio 2022 17.0 or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet6-release-notes&quot;&gt;Learn more&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">By clicking Install, you agree to the following terms:</String>
 </WixLocalization>
