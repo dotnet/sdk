@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression
                 else if (error.DiagnosticId == null || error.DiagnosticId.StartsWith("cp", StringComparison.InvariantCultureIgnoreCase))
                 {
                     // See if the error is globally suppressed by checking if the same diagnosticid and target or with the same left and right
-                    return _validationSuppressions.Contains(new Suppression { DiagnosticId = error.DiagnosticId, Target = error.Target }) ||
+                    return _validationSuppressions.Contains(new Suppression { DiagnosticId = error.DiagnosticId, Target = error.Target, IsBaselineSuppression = error.IsBaselineSuppression}) ||
                            _validationSuppressions.Contains(new Suppression { DiagnosticId = error.DiagnosticId, Left = error.Left, Right = error.Right, IsBaselineSuppression = error.IsBaselineSuppression });
                 }
 
