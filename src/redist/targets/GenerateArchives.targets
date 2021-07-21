@@ -10,12 +10,18 @@
       <IgnoreTarExitCode Condition="'$(DOTNET_CORESDK_IGNORE_TAR_EXIT_CODE)' == '1'">true</IgnoreTarExitCode>
     </PropertyGroup>
 
+    <!-- Ensure output directories are created -->
+    <MakeDir Directories="$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)" />
+
+    <!-- Create .tar.gz files on Linux/MacOS, and .zip files on Windows -->
     <ZipFileCreateFromDirectory
+        Condition=" '$(OSName)' == 'win' "
         SourceDirectory="$(RedistLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).zip"
         OverwriteDestination="true" />
 
     <ZipFileCreateFromDirectory
+        Condition=" '$(OSName)' == 'win' "
         SourceDirectory="$(SdkInternalLayoutPath)"
         DestinationArchive="$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdk).zip"
         OverwriteDestination="true" />
