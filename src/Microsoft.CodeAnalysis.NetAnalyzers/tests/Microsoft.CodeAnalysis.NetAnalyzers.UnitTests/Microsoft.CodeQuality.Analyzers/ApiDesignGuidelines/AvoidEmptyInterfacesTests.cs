@@ -160,7 +160,11 @@ public class C
     {accessibility} interface I {{ }}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
                 ExpectedDiagnostics =
                 {
@@ -208,7 +212,11 @@ Public Class C
     End Interface
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
                 ExpectedDiagnostics =
                 {
@@ -237,7 +245,11 @@ public class C
     {accessibility} interface I {{ }}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
         }
@@ -262,7 +274,11 @@ Public Class C
     End Interface
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
         }
@@ -348,11 +364,15 @@ End Interface"
         }
 
         private static DiagnosticResult CreateCSharpResult(int line, int col)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, col);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult CreateBasicResult(int line, int col)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, col);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

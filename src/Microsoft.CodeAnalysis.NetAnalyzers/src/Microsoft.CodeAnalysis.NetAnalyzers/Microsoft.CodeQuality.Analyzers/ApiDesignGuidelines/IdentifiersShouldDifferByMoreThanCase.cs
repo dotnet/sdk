@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using System.Threading;
 using Analyzer.Utilities.PooledObjects;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
@@ -37,13 +36,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationAction(AnalyzeCompilation);
-            analysisContext.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            context.RegisterCompilationAction(AnalyzeCompilation);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
         }
 
         private static void AnalyzeCompilation(CompilationAnalysisContext context)
@@ -53,7 +52,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             IEnumerable<INamedTypeSymbol> globalTypes = context.Compilation.GlobalNamespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
-                    MatchesConfiguredVisibility(item, context.Options, context.Compilation, context.CancellationToken));
+                    MatchesConfiguredVisibility(item, context.Options, context.Compilation));
 
             CheckTypeNames(globalTypes, context);
             CheckNamespaceMembers(globalNamespaces, context);
@@ -68,7 +67,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // types because "InternalsVisibleTo" could be set. But it might be bad for users to start seeing warnings
             // where they previously did not from FxCop.
             // Note that end user can now override this default behavior via options.
-            if (!context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation))
             {
                 return;
             }
@@ -76,7 +75,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // Get externally visible members in the given type
             IEnumerable<ISymbol> members = namedTypeSymbol.GetMembers()
                                                           .Where(item => !item.IsAccessorMethod() &&
-                                                                         MatchesConfiguredVisibility(item, context.Options, context.Compilation, context.CancellationToken));
+                                                                         MatchesConfiguredVisibility(item, context.Options, context.Compilation));
 
             if (members.Any())
             {
@@ -96,7 +95,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 // Get all the potentially externally visible types in the namespace
                 IEnumerable<INamedTypeSymbol> typeMembers = @namespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
-                    MatchesConfiguredVisibility(item, context.Options, context.Compilation, context.CancellationToken));
+                    MatchesConfiguredVisibility(item, context.Options, context.Compilation));
 
                 if (typeMembers.Any())
                 {
@@ -300,10 +299,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return string.Join(", ", group.Select(s => s.ToDisplayString()).OrderBy(k => k, StringComparer.Ordinal));
         }
 
-        public static bool MatchesConfiguredVisibility(ISymbol symbol, AnalyzerOptions options, Compilation compilation, CancellationToken cancellationToken)
+        public static bool MatchesConfiguredVisibility(ISymbol symbol, AnalyzerOptions options, Compilation compilation)
         {
             var defaultAllowedVisibilties = SymbolVisibilityGroup.Public | SymbolVisibilityGroup.Internal;
-            var allowedVisibilities = options.GetSymbolVisibilityGroupOption(Rule, symbol, compilation, defaultAllowedVisibilties, cancellationToken);
+            var allowedVisibilities = options.GetSymbolVisibilityGroupOption(Rule, symbol, compilation, defaultAllowedVisibilties);
             return allowedVisibilities.Contains(symbol.GetResultantVisibility());
         }
 

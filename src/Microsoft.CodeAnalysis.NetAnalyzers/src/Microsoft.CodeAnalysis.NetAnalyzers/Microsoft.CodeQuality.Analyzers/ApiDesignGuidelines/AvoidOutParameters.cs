@@ -32,12 +32,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(csac =>
+            context.RegisterCompilationStartAction(csac =>
             {
                 var outAttributeType = csac.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesOutAttribute);
                 var analyzer = new MethodAnalyzer(outAttributeType);
@@ -59,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 var methodSymbol = (IMethodSymbol)analysisContext.Symbol;
 
-                if (!analysisContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, analysisContext.Compilation, analysisContext.CancellationToken))
+                if (!analysisContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, analysisContext.Compilation))
                 {
                     return;
                 }

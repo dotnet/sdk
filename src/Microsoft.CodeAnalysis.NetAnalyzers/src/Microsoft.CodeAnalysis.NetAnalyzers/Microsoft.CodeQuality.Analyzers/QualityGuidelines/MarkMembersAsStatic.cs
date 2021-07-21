@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -37,21 +36,21 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
+            context.EnableConcurrentExecution();
 
             // Don't report in generated code since that's not actionable.
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(compilationContext =>
             {
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationContext.Compilation);
 
                 // Get the list of all method' attributes for which the rule shall not be triggered.
                 ImmutableArray<INamedTypeSymbol> skippedAttributes = GetSkippedAttributes(wellKnownTypeProvider);
 
-                var isWebProject = compilationContext.Compilation.IsWebProject(compilationContext.Options, compilationContext.CancellationToken);
+                var isWebProject = compilationContext.Compilation.IsWebProject(compilationContext.Options);
 
                 compilationContext.RegisterSymbolStartAction(
                     symbolStartContext => OnSymbolStart(symbolStartContext, wellKnownTypeProvider, skippedAttributes, isWebProject),
@@ -98,15 +97,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     // Don't run any other check for this method if it isn't a valid analysis context
-                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes,
-                            blockStartContext.Options, isWebProject, blockStartContext.CancellationToken))
-                    {
-                        return;
-                    }
-
-                    // Don't report methods which have a single throw statement
-                    // with NotImplementedException or NotSupportedException
-                    if (blockStartContext.IsMethodNotImplementedOrSupported())
+                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes, isWebProject, blockStartContext))
                     {
                         return;
                     }
@@ -120,6 +111,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             isInstanceReferenced = true;
                         }
                     }, OperationKind.InstanceReference);
+
+                    // Workaround for https://github.com/dotnet/roslyn/issues/27564
+                    blockStartContext.RegisterOperationAction(operationContext =>
+                    {
+                        if (!operationContext.Operation.IsOperationNoneRoot())
+                        {
+                            isInstanceReferenced = true;
+                        }
+                    }, OperationKind.None);
 
                     blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                     {
@@ -191,34 +191,73 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             IMethodSymbol methodSymbol,
             WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<INamedTypeSymbol> skippedAttributes,
-            AnalyzerOptions options,
             bool isWebProject,
-            CancellationToken cancellationToken)
+#pragma warning disable RS1012 // Start action has no registered actions
+            OperationBlockStartAnalysisContext blockStartContext)
+#pragma warning restore RS1012 // Start action has no registered actions
         {
             // Modifiers that we don't care about
+            // 'PartialImplementationPart is not null' means the method is partial, and the
+            // symbol we have is the "definition", not the "implementation".
+            // We should only analyze the implementation.
             if (methodSymbol.IsStatic || methodSymbol.IsOverride || methodSymbol.IsVirtual ||
-                methodSymbol.IsExtern || methodSymbol.IsAbstract || methodSymbol.IsImplementationOfAnyInterfaceMember())
+                methodSymbol.IsExtern || methodSymbol.IsAbstract || methodSymbol.PartialImplementationPart is not null ||
+                methodSymbol.IsImplementationOfAnyInterfaceMember())
             {
                 return false;
             }
 
-            // Do not analyze constructors and finalizers.
-            if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer())
+            // Do not analyze constructors, finalizers, and indexers.
+            if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer() || methodSymbol.AssociatedSymbol.IsIndexer())
             {
                 return false;
             }
 
-            // Do not analyze public APIs for web projects
-            // See https://github.com/dotnet/roslyn-analyzers/issues/3835 for details.
-            if (isWebProject && methodSymbol.IsExternallyVisible())
+            // Don't report methods which have a single throw statement
+            // with NotImplementedException or NotSupportedException
+            if (blockStartContext.IsMethodNotImplementedOrSupported())
             {
                 return false;
             }
 
-            // CA1000 says one shouldn't declare static members on generic types. So don't flag such cases.
-            if (methodSymbol.ContainingType.IsGenericType && methodSymbol.IsExternallyVisible())
+            if (methodSymbol.IsExternallyVisible())
+            {
+                // Do not analyze public APIs for web projects
+                // See https://github.com/dotnet/roslyn-analyzers/issues/3835 for details.
+                if (isWebProject)
+                {
+                    return false;
+                }
+
+                // CA1000 says one shouldn't declare static members on generic types. So don't flag such cases.
+                if (methodSymbol.ContainingType.IsGenericType)
+                {
+                    return false;
+                }
+            }
+
+            // We consider that auto-property have the intent to always be instance members so we want to workaround this issue.
+            if (methodSymbol.IsAutoPropertyAccessor())
             {
                 return false;
+            }
+
+            // Awaitable-awaiter pattern members should not be marked as static.
+            // There is no need to check for INotifyCompletion or ICriticalNotifyCompletion members as they are already excluded.
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesINotifyCompletion, out var inotifyCompletionType)
+                && wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesICriticalNotifyCompletion, out var icriticalNotifyCompletionType))
+            {
+                if (methodSymbol.IsGetAwaiterFromAwaitablePattern(inotifyCompletionType, icriticalNotifyCompletionType)
+                    || methodSymbol.IsGetResultFromAwaiterPattern(inotifyCompletionType, icriticalNotifyCompletionType))
+                {
+                    return false;
+                }
+
+                if (methodSymbol.AssociatedSymbol is IPropertySymbol property
+                    && property.IsIsCompletedFromAwaiterPattern(inotifyCompletionType, icriticalNotifyCompletionType))
+                {
+                    return false;
+                }
             }
 
             var attributes = methodSymbol.GetAttributes();
@@ -248,14 +287,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            if (!options.MatchesConfiguredVisibility(Rule, methodSymbol, wellKnownTypeProvider.Compilation, cancellationToken,
-                    defaultRequiredVisibility: SymbolVisibilityGroup.All))
+            var hasCorrectVisibility = blockStartContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, wellKnownTypeProvider.Compilation,
+                defaultRequiredVisibility: SymbolVisibilityGroup.All);
+            if (!hasCorrectVisibility)
             {
                 return false;
             }
 
-            // We consider that auto-property have the intent to always be instance members so we want to workaround this issue.
-            return !methodSymbol.IsAutoPropertyAccessor();
+            return true;
         }
 
         private static bool IsExplicitlyVisibleFromCom(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider)
@@ -271,8 +310,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            if (methodSymbol.GetAttributes().Any(attribute => attribute.AttributeClass.Equals(comVisibleAttribute)) ||
-                methodSymbol.ContainingType.GetAttributes().Any(attribute => attribute.AttributeClass.Equals(comVisibleAttribute)))
+            if (methodSymbol.HasAttribute(comVisibleAttribute) ||
+                methodSymbol.ContainingType.HasAttribute(comVisibleAttribute))
             {
                 return true;
             }
@@ -304,12 +343,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             // NUnit Attributes
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkSetUpAttribute));
+            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkInterfacesITestBuilder));
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkOneTimeSetUpAttribute));
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkOneTimeTearDownAttribute));
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkTestAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkTestCaseAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkTestCaseSourceAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkTheoryAttribute));
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkTearDownAttribute));
 
             return builder?.ToImmutable() ?? ImmutableArray<INamedTypeSymbol>.Empty;

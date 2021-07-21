@@ -41,12 +41,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             "System.ApplicationException"
         };
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(AnalyzeCompilationStart);
+            context.RegisterCompilationStartAction(AnalyzeCompilationStart);
         }
 
         private static void AnalyzeCompilationStart(CompilationStartAnalysisContext csContext)

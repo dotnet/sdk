@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseNameofInPlaceOfStringAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseNameofInPlaceOfStringFixer>;
+    Microsoft.CodeQuality.Analyzers.Maintainability.UseNameOfInPlaceOfStringFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicUseNameofInPlaceOfStringAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicUseNameofInPlaceOfStringFixer>;
+    Microsoft.CodeQuality.Analyzers.Maintainability.UseNameOfInPlaceOfStringFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {

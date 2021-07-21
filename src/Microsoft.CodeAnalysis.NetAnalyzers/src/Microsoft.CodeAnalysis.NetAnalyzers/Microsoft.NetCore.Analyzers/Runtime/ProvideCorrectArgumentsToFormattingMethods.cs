@@ -36,12 +36,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(compilationContext =>
             {
                 var formatInfo = new StringFormatInfo(compilationContext.Compilation);
 
@@ -348,7 +348,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 // Check if this the underlying method is user configured string formatting method.
-                var additionalStringFormatMethodsOption = context.Options.GetAdditionalStringFormattingMethodsOption(Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, context.CancellationToken);
+                var additionalStringFormatMethodsOption = context.Options.GetAdditionalStringFormattingMethodsOption(Rule, context.Operation.Syntax.SyntaxTree, context.Compilation);
                 if (additionalStringFormatMethodsOption.Contains(method.OriginalDefinition) &&
                     TryGetFormatInfo(method, out info))
                 {
@@ -358,7 +358,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // Check if the user configured automatic determination of formatting methods.
                 // If so, check if the method called has a 'string format' parameter followed by an params array.
                 var determineAdditionalStringFormattingMethodsAutomatically = context.Options.GetBoolOptionValue(EditorConfigOptionNames.TryDetermineAdditionalStringFormattingMethodsAutomatically,
-                        Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, defaultValue: false, context.CancellationToken);
+                        Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, defaultValue: false);
                 if (determineAdditionalStringFormattingMethodsAutomatically &&
                     TryGetFormatInfo(method, out info) &&
                     info.ExpectedStringFormatArgumentCount == -1)

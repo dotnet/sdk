@@ -59,12 +59,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 compilationStartAnalysisContext =>
                 {
                     var externallyVisibleNamedTypes = new ConcurrentBag<INamedTypeSymbol>();

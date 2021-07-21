@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -433,6 +430,29 @@ class C
             j.MyMethod();
         });
     }
+}
+            ");
+        }
+
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task CS_NoDiagnostic_ReturnTypesDiffer()
+        {
+            return VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class P
+{
+    static void M1(string s, CancellationToken cancellationToken)
+    {
+        var result = M2(s);
+    }
+
+    static Task M2(string s) { throw new NotImplementedException(); }
+
+    static int M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
 }
             ");
         }
@@ -2229,6 +2249,236 @@ class C
             return CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
+        [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task CS_Diagnostic_GenericTypeParamOnInstanceMethod()
+        {
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+public class SqlDataReader
+{
+    public Task<T> GetFieldValueAsync<T>(int i, CancellationToken c = default) => Task.FromResult(default(T));
+}
+class C
+{
+    public async Task<Guid> M(SqlDataReader r, CancellationToken c)
+    {
+        return await [|r.GetFieldValueAsync<Guid>|](0);
+    }
+}
+            ";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+public class SqlDataReader
+{
+    public Task<T> GetFieldValueAsync<T>(int i, CancellationToken c = default) => Task.FromResult(default(T));
+}
+class C
+{
+    public async Task<Guid> M(SqlDataReader r, CancellationToken c)
+    {
+        return await r.GetFieldValueAsync<Guid>(0, c);
+    }
+}
+            ";
+            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task CS_Diagnostic_GenericTypeParamOnStaticMethod()
+        {
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public static Task<T> GetFieldValueAsync<T>(int i, CancellationToken c = default) => Task.FromResult(default(T));
+    public async Task<Guid> M(CancellationToken c)
+    {
+        return await [|GetFieldValueAsync<Guid>|](0);
+    }
+}
+            ";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public static Task<T> GetFieldValueAsync<T>(int i, CancellationToken c = default) => Task.FromResult(default(T));
+    public async Task<Guid> M(CancellationToken c)
+    {
+        return await GetFieldValueAsync<Guid>(0, c);
+    }
+}
+            ";
+            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task CS_Diagnostic_NullCoalescedDelegates()
+        {
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    delegate Task F(CancellationToken c = default);
+    static Task DoF(CancellationToken c = default) => Task.CompletedTask;
+    public async Task M(CancellationToken c)
+    {
+        F f1 = null;
+        F f2 = DoF;
+        await [|(f1 ?? f2)|]();
+    }
+}
+            ";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    delegate Task F(CancellationToken c = default);
+    static Task DoF(CancellationToken c = default) => Task.CompletedTask;
+    public async Task M(CancellationToken c)
+    {
+        F f1 = null;
+        F f2 = DoF;
+        await [|(f1 ?? f2)|](c);
+    }
+}
+            ";
+            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task CS_Diagnostic_NullCoalescedDelegatesWithInvoke()
+        {
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    delegate Task F(CancellationToken c = default);
+    static Task DoF(CancellationToken c = default) => Task.CompletedTask;
+    public async Task M(CancellationToken c)
+    {
+        F f1 = null;
+        F f2 = DoF;
+        await [|(f1 ?? f2).Invoke|]();
+    }
+}
+            ";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    delegate Task F(CancellationToken c = default);
+    static Task DoF(CancellationToken c = default) => Task.CompletedTask;
+    public async Task M(CancellationToken c)
+    {
+        F f1 = null;
+        F f2 = DoF;
+        await (f1 ?? f2).Invoke(c);
+    }
+}
+            ";
+            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task CS_Diagnostic_ReturnTypeIsConvertable()
+        {
+            // Local static functions are available in C# >= 8.0
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class P
+{
+    static void M1(string s, CancellationToken cancellationToken)
+    {
+        long result = [|M2|](s);
+    }
+
+    static long M2(string s) { throw new NotImplementedException(); }
+
+    static int M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
+}";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class P
+{
+    static void M1(string s, CancellationToken cancellationToken)
+    {
+        long result = M2(s, cancellationToken);
+    }
+
+    static long M2(string s) { throw new NotImplementedException(); }
+
+    static int M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
+}";
+            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task CS_SpecialCaseTaskLikeReturnTypes()
+        {
+            // Local static functions are available in C# >= 8.0
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class P
+{
+    static async Task M1Async(string s, CancellationToken cancellationToken)
+    {
+        int result = await [|M2|](s); // CA2016
+    }
+
+    static Task<int> M2(string s) { throw new NotImplementedException(); }
+
+    static ValueTask<int> M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
+}";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class P
+{
+    static async Task M1Async(string s, CancellationToken cancellationToken)
+    {
+        int result = await M2(s, cancellationToken); // CA2016
+    }
+
+    static Task<int> M2(string s) { throw new NotImplementedException(); }
+
+    static ValueTask<int> M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
+}";
+            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
         #endregion
 
         #region No Diagnostic - VB
@@ -2628,6 +2878,31 @@ Class C
     End Sub
 End Class
             ");
+        }
+
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task VB_NoDiagnostic_ReturnTypesDiffer()
+        {
+            return VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Module Program
+    Sub M1(s As String, cancellationToken As CancellationToken)
+        Dim result = M2(s)
+    End Sub
+
+    Function M2(s As String) As Task
+        Throw New NotImplementedException
+    End Function
+
+    Function M2(s As String, cancellationToken As CancellationToken) As Integer
+        Throw New NotImplementedException
+    End Function
+End Module
+");
         }
 
         #endregion
@@ -4197,6 +4472,168 @@ Class C
     End Sub
 End Class
             ";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task VB_Diagnostic_GenericTypeParamOnInstanceMethod()
+        {
+            string originalCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+Public Class SqlDataReader
+    Public Function GetFieldValueAsync(Of T)(ByVal i As Integer, ByVal Optional c As CancellationToken = Nothing) As Task(Of T)
+        Return Task.CompletedTask
+    End Function
+End Class
+Class C
+    Public Async Function M(ByVal r As SqlDataReader, ByVal c As CancellationToken) As Task(Of Guid)
+        Return Await r.[|GetFieldValueAsync(Of Guid)|](0)
+    End Function
+End Class
+";
+            string fixedCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+Public Class SqlDataReader
+    Public Function GetFieldValueAsync(Of T)(ByVal i As Integer, ByVal Optional c As CancellationToken = Nothing) As Task(Of T)
+        Return Task.CompletedTask
+    End Function
+End Class
+Class C
+    Public Async Function M(ByVal r As SqlDataReader, ByVal c As CancellationToken) As Task(Of Guid)
+        Return Await r.GetFieldValueAsync(Of Guid)(0, c)
+    End Function
+End Class
+";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task VB_Diagnostic_GenericTypeParamOnStaticMethod()
+        {
+            string originalCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+Class C
+    Public Shared Function GetFieldValueAsync(Of T)(ByVal i As Integer, Optional ByVal c As CancellationToken = Nothing) As Task(Of T)
+        Return Task.CompletedTask
+    End Function
+    Public Async Function M(ByVal c As CancellationToken) As Task(Of Guid)
+        Return Await [|GetFieldValueAsync(Of Guid)|](0)
+    End Function
+End Class
+";
+            string fixedCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+Class C
+    Public Shared Function GetFieldValueAsync(Of T)(ByVal i As Integer, Optional ByVal c As CancellationToken = Nothing) As Task(Of T)
+        Return Task.CompletedTask
+    End Function
+    Public Async Function M(ByVal c As CancellationToken) As Task(Of Guid)
+        Return Await GetFieldValueAsync(Of Guid)(0, c)
+    End Function
+End Class
+";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task VB_Diagnostic_ReturnTypeIsConvertable()
+        {
+            // Local static functions are available in C# >= 8.0
+            string originalCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Module Program
+    Sub M1(s As String, cancellationToken As CancellationToken)
+        Dim result As Long = [|M2|](s)
+    End Sub
+
+    Function M2(s As String) As Long
+        Throw New NotImplementedException
+    End Function
+
+    Function M2(s As String, cancellationToken As CancellationToken) As Integer
+        Throw New NotImplementedException
+    End Function
+End Module
+";
+            string fixedCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Module Program
+    Sub M1(s As String, cancellationToken As CancellationToken)
+        Dim result As Long = M2(s, cancellationToken)
+    End Sub
+
+    Function M2(s As String) As Long
+        Throw New NotImplementedException
+    End Function
+
+    Function M2(s As String, cancellationToken As CancellationToken) As Integer
+        Throw New NotImplementedException
+    End Function
+End Module
+";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
+        public Task VB_SpecialCaseTaskLikeReturnTypes()
+        {
+            // Local static functions are available in C# >= 8.0
+            string originalCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Module Program
+    Async Function M1Async(s As String, cancellationToken As CancellationToken) As Task
+        Dim result As Integer = Await [|M2|](s)
+    End Function
+
+    Function M2(s As String) As Task(Of Integer)
+        Throw New NotImplementedException
+    End Function
+
+    Function M2(s As String, cancellationToken As CancellationToken) As ValueTask(Of Integer)
+        Throw New NotImplementedException
+    End Function
+End Module
+";
+            string fixedCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Module Program
+    Async Function M1Async(s As String, cancellationToken As CancellationToken) As Task
+        Dim result As Integer = Await M2(s, cancellationToken)
+    End Function
+
+    Function M2(s As String) As Task(Of Integer)
+        Throw New NotImplementedException
+    End Function
+
+    Function M2(s As String, cancellationToken As CancellationToken) As ValueTask(Of Integer)
+        Throw New NotImplementedException
+    End Function
+End Module
+";
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 

@@ -182,10 +182,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         //ImmutableArray.Create(AssemblyRule, NamespaceRule, MemberParameterRule, DelegateParameterRule, TypeTypeParameterRule, MethodTypeParameterRule, TypeRule, MemberRule, AssemblyNoAlternateRule, NamespaceNoAlternateRule, MemberParameterNoAlternateRule, DelegateParameterNoAlternateRule, TypeTypeParameterNoAlternateRule, MethodTypeParameterNoAlternateRule, TypeNoAlternateRule, MemberNoAlternateRule);
 
 #pragma warning disable RS1025 // Configure generated code analysis
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
 #pragma warning restore RS1025 // Configure generated code analysis
         {
-            analysisContext.EnableConcurrentExecution();
+            context.EnableConcurrentExecution();
 
             // TODO: Configure generated code analysis.
             //analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);

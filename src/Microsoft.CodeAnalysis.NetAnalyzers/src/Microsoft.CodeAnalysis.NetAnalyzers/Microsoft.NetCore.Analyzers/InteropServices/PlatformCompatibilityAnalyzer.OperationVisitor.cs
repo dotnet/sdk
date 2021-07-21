@@ -42,8 +42,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         for (var i = 0; i < infosBuilder.Count; i++)
                         {
-                            var newValue = new GlobalFlowStateAnalysisValueSet(infosBuilder[i]);
-                            value = i == 0 ? newValue : new GlobalFlowStateAnalysisValueSet(value, newValue);
+                            var newValue = GlobalFlowStateAnalysisValueSet.Create(infosBuilder[i]);
+                            value = i == 0 ? newValue : GlobalFlowStateAnalysis.GlobalFlowStateAnalysisValueSetDomain.Instance.Merge(value, newValue);
                         }
 
                         return value;

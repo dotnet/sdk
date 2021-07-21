@@ -40,30 +40,29 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(InterfaceRule, TypeParameterRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(
+            context.RegisterSymbolAction(
                 (context) =>
             {
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!context.Options.MatchesConfiguredVisibility(InterfaceRule, context.Symbol, context.Compilation, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(InterfaceRule, context.Symbol, context.Compilation))
                 {
-                    Debug.Assert(!context.Options.MatchesConfiguredVisibility(TypeParameterRule, context.Symbol, context.Compilation, context.CancellationToken));
+                    Debug.Assert(!context.Options.MatchesConfiguredVisibility(TypeParameterRule, context.Symbol, context.Compilation));
                     return;
                 }
 
-                Debug.Assert(context.Options.MatchesConfiguredVisibility(TypeParameterRule, context.Symbol, context.Compilation, context.CancellationToken));
+                Debug.Assert(context.Options.MatchesConfiguredVisibility(TypeParameterRule, context.Symbol, context.Compilation));
 
                 bool allowSingleLetterTypeParameters = context.Options.GetBoolOptionValue(
                     optionName: EditorConfigOptionNames.ExcludeSingleLetterTypeParameters,
                     rule: TypeParameterRule,
                     context.Symbol,
                     context.Compilation,
-                    defaultValue: false,
-                    cancellationToken: context.CancellationToken);
+                    defaultValue: false);
 
                 switch (context.Symbol.Kind)
                 {

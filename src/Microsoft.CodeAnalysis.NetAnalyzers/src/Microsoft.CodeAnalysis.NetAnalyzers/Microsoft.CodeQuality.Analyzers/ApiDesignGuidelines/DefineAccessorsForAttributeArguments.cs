@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -18,7 +17,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// Cause:
     /// In its constructor, an attribute defines arguments that do not have corresponding properties.
     /// </summary>
-    public abstract class DefineAccessorsForAttributeArgumentsAnalyzer : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class DefineAccessorsForAttributeArgumentsAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1019";
         internal const string AddAccessorCase = "AddAccessor";
@@ -59,12 +59,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule, IncreaseVisibilityRule, RemoveSetterRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(compilationContext =>
             {
                 INamedTypeSymbol? attributeType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttribute);
                 if (attributeType == null)
@@ -80,7 +80,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             });
         }
 
-        private void AnalyzeSymbol(INamedTypeSymbol symbol, INamedTypeSymbol attributeType, Compilation compilation, Action<Diagnostic> addDiagnostic)
+        private static void AnalyzeSymbol(INamedTypeSymbol symbol, INamedTypeSymbol attributeType, Compilation compilation, Action<Diagnostic> addDiagnostic)
         {
             if (symbol != null && symbol.GetBaseTypesAndThis().Contains(attributeType) && symbol.DeclaredAccessibility != Accessibility.Private)
             {
@@ -92,11 +92,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 }
             }
         }
-
-        protected abstract bool IsAssignableTo(
-            [NotNullWhen(returnValue: true)] ITypeSymbol? fromSymbol,
-            [NotNullWhen(returnValue: true)] ITypeSymbol? toSymbol,
-            Compilation compilation);
 
         private static IEnumerable<IParameterSymbol> GetAllPublicConstructorParameters(INamedTypeSymbol attributeType)
         {
@@ -139,14 +134,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return propertiesMap;
         }
 
-        private void AnalyzeParameters(Compilation compilation, IEnumerable<IParameterSymbol> parameters, IDictionary<string, IPropertySymbol> propertiesMap, INamedTypeSymbol attributeType, Action<Diagnostic> addDiagnostic)
+        private static void AnalyzeParameters(Compilation compilation, IEnumerable<IParameterSymbol> parameters, IDictionary<string, IPropertySymbol> propertiesMap, INamedTypeSymbol attributeType, Action<Diagnostic> addDiagnostic)
         {
             foreach (IParameterSymbol parameter in parameters)
             {
                 if (parameter.Type.Kind != SymbolKind.ErrorType)
                 {
                     if (!propertiesMap.TryGetValue(parameter.Name, out IPropertySymbol property) ||
-                        !IsAssignableTo(parameter.Type, property.Type, compilation))
+                        !parameter.Type.IsAssignableTo(property.Type, compilation))
                     {
                         // Add a public read-only property accessor for positional argument '{0}' of attribute '{1}'.
                         addDiagnostic(GetDefaultDiagnostic(parameter, attributeType));

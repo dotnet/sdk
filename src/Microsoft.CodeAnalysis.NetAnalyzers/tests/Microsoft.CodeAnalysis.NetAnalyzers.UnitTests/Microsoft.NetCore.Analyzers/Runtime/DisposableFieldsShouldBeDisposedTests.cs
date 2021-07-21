@@ -20,13 +20,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class DisposableFieldsShouldBeDisposedTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic()
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(arguments);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
 
         [Fact]
@@ -1006,8 +1010,11 @@ class C
 ";
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = editorConfig
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
+                }
             };
 
             await csTest.RunAsync();
@@ -1041,8 +1048,11 @@ End Class
 ";
             var vbTest = new VerifyVB.Test()
             {
-                TestCode = vbCode,
-                AnalyzerConfigDocument = editorConfig
+                TestState =
+                {
+                    Sources = { vbCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
+                }
             };
 
             await vbTest.RunAsync();
@@ -1090,8 +1100,11 @@ class C
 ";
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = editorConfig
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
+                }
             };
 
             await csTest.RunAsync();
@@ -1124,8 +1137,11 @@ End Class
 ";
             var vbTest = new VerifyVB.Test()
             {
-                TestCode = vbCode,
-                AnalyzerConfigDocument = editorConfig
+                TestState =
+                {
+                    Sources = { vbCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfig}") },
+                }
             };
 
             await vbTest.RunAsync();
@@ -3322,7 +3338,11 @@ class BB : IDisposable
     }
 }
 "                    },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -3362,7 +3382,11 @@ Class BB
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 

@@ -34,7 +34,9 @@ class T
     {
     }
 }";
+#pragma warning disable RS0030 // Do not used banned APIs
             var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("T.M(System.Threading.CancellationToken, int)");
+#pragma warning restore RS0030 // Do not used banned APIs
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
@@ -49,7 +51,9 @@ class T
     {
     }
 }";
+#pragma warning disable RS0030 // Do not used banned APIs
             var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("T.M(System.Threading.CancellationToken, int, System.Threading.CancellationToken)");
+#pragma warning restore RS0030 // Do not used banned APIs
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
@@ -154,7 +158,9 @@ class T : B
 }";
 
             // One diagnostic for the virtual, but none for the override.
+#pragma warning disable RS0030 // Do not used banned APIs
             var expected = VerifyCS.Diagnostic().WithLocation(5, 28).WithArguments("B.M(System.Threading.CancellationToken, int)");
+#pragma warning restore RS0030 // Do not used banned APIs
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -174,7 +180,9 @@ class T : I
 }";
 
             // One diagnostic for the interface, but none for the implementation.
+#pragma warning disable RS0030 // Do not used banned APIs
             var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("I.M(System.Threading.CancellationToken, int)");
+#pragma warning restore RS0030 // Do not used banned APIs
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -194,7 +202,9 @@ class T : I
 }";
 
             // One diagnostic for the interface, but none for the implementation.
+#pragma warning disable RS0030 // Do not used banned APIs
             var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("I.M(System.Threading.CancellationToken, int)");
+#pragma warning restore RS0030 // Do not used banned APIs
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -240,7 +250,9 @@ static class C1
     }
 }";
 
+#pragma warning disable RS0030 // Do not used banned APIs
             var expected = VerifyCS.Diagnostic().WithLocation(5, 24).WithArguments("C1.M1(object, System.Threading.CancellationToken, object)");
+#pragma warning restore RS0030 // Do not used banned APIs
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -287,7 +299,9 @@ public class C
         throw new NotImplementedException();
     }
 }",
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic().WithLocation(8, 17)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments("C.SomeAsync(System.Threading.CancellationToken, object, System.IProgress<int>)"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -300,7 +314,9 @@ Public Class C
         Throw New NotImplementedException()
     End Function
 End Class",
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic().WithLocation(7, 21)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments("Public Function SomeAsync(cancellationToken As System.Threading.CancellationToken, o As Object, progress As System.IProgress(Of Integer)) As System.Threading.Tasks.Task"));
         }
 
@@ -319,7 +335,9 @@ public class C
         throw new NotImplementedException();
     }
 }",
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic().WithLocation(8, 17)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments("C.SomeAsync(System.Threading.CancellationToken, System.IProgress<int>, System.IProgress<int>)"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -332,7 +350,9 @@ Public Class C
         Throw New NotImplementedException()
     End Function
 End Class",
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic().WithLocation(7, 21)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments("Public Function SomeAsync(cancellationToken As System.Threading.CancellationToken, progress1 As System.IProgress(Of Integer), progress2 As System.IProgress(Of Integer)) As System.Threading.Tasks.Task"));
         }
 
@@ -466,7 +486,11 @@ public class C
     {accessibility} void [|M|](CancellationToken t, int i) {{}}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             }.RunAsync();
         }
@@ -516,7 +540,11 @@ Public Class C
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             }.RunAsync();
         }
@@ -556,7 +584,11 @@ public class C2
     public " + prefix + "C2" + suffix + @"(CancellationToken t, int i) {}
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             }.RunAsync();
 
@@ -582,7 +614,11 @@ Public Class C2
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             }.RunAsync();
         }
@@ -610,7 +646,11 @@ using System.Threading;
 
 public record " + prefix + "R" + suffix + @"(CancellationToken t, int i) {}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             }.RunAsync();
         }

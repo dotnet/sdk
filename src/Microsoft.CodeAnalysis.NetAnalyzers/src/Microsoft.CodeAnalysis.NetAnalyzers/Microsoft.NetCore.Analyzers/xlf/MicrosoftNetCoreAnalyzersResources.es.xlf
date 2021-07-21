@@ -298,7 +298,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
-        <source>Use Secure Cookies In ASP.Net Core</source>
+        <source>Use Secure Cookies In ASP.NET Core</source>
         <target state="translated">Usar cookies seguras en ASP.NET Core</target>
         <note />
       </trans-unit>
@@ -448,8 +448,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
-        <target state="translated">Al deserializar una instancia de la clase {0}, el método {1} puede llamar al método peligroso {2}.</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
+        <target state="translated">Al deserializar una instancia de la clase {0}, el método {1} puede llamar al método peligroso {2}. Invocaciones de métodos posibles: {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -1019,7 +1019,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
         <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="needs-review-translation">Reenvíe el parámetro "CancellationToken" a los métodos que aceptan uno para garantizar que las notificaciones de cancelación de operaciones se propagan correctamente, o pase "CancellationToken.None" explícitamente para indicar que no se propagará intencionalmente el token.</target>
+        <target state="translated">Reenvíe el parámetro "CancellationToken" a los métodos para garantizar que las notificaciones de cancelación de operaciones se propagan correctamente, o bien pase "CancellationToken.None" explícitamente para indicar que no se propagará el token intencionalmente.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1029,7 +1029,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
-        <target state="needs-review-translation">Reenviar el parámetro "CancellationToken" a los métodos que aceptan uno</target>
+        <target state="translated">Reenviar el parámetro "CancellationToken" a los métodos</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1388,7 +1388,7 @@
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
-        <source>Ensure Use Secure Cookies In ASP.Net Core</source>
+        <source>Ensure Use Secure Cookies In ASP.NET Core</source>
         <target state="translated">Asegurarse de usar cookies seguras en ASP.NET Core</target>
         <note />
       </trans-unit>
@@ -1517,6 +1517,11 @@
         <target state="translated">Los elementos P/Invoke no deben estar visibles</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlatformCompatibilityAllPlatforms">
+        <source>and all other platforms</source>
+        <target state="translated">y el resto de plataformas</target>
+        <note>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</note>
+      </trans-unit>
       <trans-unit id="PlatformCompatibilityAllVersions">
         <source>'{0}' all versions</source>
         <target state="translated">Todas las versiones de "{0}"</target>
@@ -1609,7 +1614,7 @@
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</source>
-        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</target>
+        <target state="translated">Elegir "IsEmpty" en vez de "Count" para determinar si el objeto está vacío</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">

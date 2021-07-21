@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.QualityGuidelines.UseLiteralsWhereAppropriateAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpUseLiteralsWhereAppropriate,
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpUseLiteralsWhereAppropriateFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.QualityGuidelines.UseLiteralsWhereAppropriateAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicUseLiteralsWhereAppropriate,
     Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicUseLiteralsWhereAppropriateFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
@@ -142,6 +143,31 @@ Class C
     Friend Const f7 As Integer = 8 + f6
 End Class
 ");
+        }
+
+        [Fact]
+        [WorkItem(4732, "https://github.com/dotnet/roslyn-analyzers/issues/4732")]
+        public async Task ConstantInterpolatedString_LanguageVersionNotSupported()
+        {
+            // At the time of writing the test, constant interpolated strings is preview.
+            // A diagnostic should be produced when it's supported in a stable language version (most likely C# 10).
+            var csharpCode = @"
+class C
+{
+    private const string foo = ""foo"";
+    private static readonly string fooBar = $""{foo}bar"";
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(csharpCode, csharpCode);
+
+            // Not supported in VB.
+            var vbCode = @"
+Class C
+    Private Const foo As String = ""foo""
+    Private Shared ReadOnly fooBar As String = $""{foo}bar""
+End Class
+";
+            await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
     }
 }

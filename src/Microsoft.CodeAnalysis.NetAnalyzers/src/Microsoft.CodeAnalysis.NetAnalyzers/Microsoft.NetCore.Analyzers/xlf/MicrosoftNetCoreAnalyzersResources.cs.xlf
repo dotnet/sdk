@@ -298,8 +298,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
-        <source>Use Secure Cookies In ASP.Net Core</source>
-        <target state="translated">Používejte v ASP.Net Core zabezpečené soubory cookie</target>
+        <source>Use Secure Cookies In ASP.NET Core</source>
+        <target state="translated">Používat zabezpečené soubory cookie v ASP.NET Core</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCoreMessage">
@@ -448,8 +448,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
-        <target state="translated">Při deserializaci instance třídy {0} může metoda {1} volat nebezpečnou metodu {2}.</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
+        <target state="translated">Při deserializaci instance třídy {0} může metoda {1} volat nebezpečnou metodu {2}. Možná volání metod: {3}</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -1019,7 +1019,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
         <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="needs-review-translation">Přepošlete parametr CancellationToken na metody, které ho přijmou, abyste měli jistotu, že se správně rozšíří oznámení o zrušení operací. Nebo můžete předat explicitně CancellationToken.None a označit tak, že se token záměrně nebude šířit.</target>
+        <target state="translated">Přepošlete parametr CancellationToken do metod, aby se zajistilo, že se správně rozšíří oznámení o zrušení operací. Nebo můžete předat explicitně CancellationToken.None a označit tak, že se token záměrně nebude šířit.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1029,7 +1029,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
-        <target state="needs-review-translation">Přeposlat parametr CancellationToken metodám, které ho přijmou</target>
+        <target state="translated">Přeposlat parametr CancellationToken do metod</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1388,8 +1388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
-        <source>Ensure Use Secure Cookies In ASP.Net Core</source>
-        <target state="translated">Zajistěte použití zabezpečených souborů cookie v ASP.Net Core</target>
+        <source>Ensure Use Secure Cookies In ASP.NET Core</source>
+        <target state="translated">Zajistit používání zabezpečených souborů cookie v ASP.NET Core</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCoreMessage">
@@ -1516,6 +1516,11 @@
         <source>P/Invokes should not be visible</source>
         <target state="translated">Metody P/Invoke nemají být viditelné</target>
         <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityAllPlatforms">
+        <source>and all other platforms</source>
+        <target state="translated">a všechny ostatní platformy</target>
+        <note>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllVersions">
         <source>'{0}' all versions</source>

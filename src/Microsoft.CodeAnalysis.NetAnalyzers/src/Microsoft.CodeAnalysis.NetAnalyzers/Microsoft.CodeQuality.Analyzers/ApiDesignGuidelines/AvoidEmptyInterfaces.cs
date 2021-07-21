@@ -33,12 +33,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(AnalyzeInterface, SymbolKind.NamedType);
+            context.RegisterSymbolAction(AnalyzeInterface, SymbolKind.NamedType);
         }
 
         private static void AnalyzeInterface(SymbolAnalysisContext context)
@@ -46,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var symbol = (INamedTypeSymbol)context.Symbol;
 
             if (symbol.TypeKind == TypeKind.Interface &&
-                context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken) &&
+                context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation) &&
                 symbol.GetMembers().IsEmpty &&
                 !symbol.AllInterfaces.SelectMany(s => s.GetMembers()).Any())
             {

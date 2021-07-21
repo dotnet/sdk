@@ -41,12 +41,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AddGetterRule, MakeMoreAccessibleRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
         }
 
         /// <summary>
@@ -68,13 +68,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // Only analyze externally visible properties by default
-            if (!context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation))
             {
-                Debug.Assert(!context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation, context.CancellationToken));
+                Debug.Assert(!context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation));
                 return;
             }
 
-            Debug.Assert(context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation, context.CancellationToken));
+            Debug.Assert(context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation));
 
             // We handled the non-CA1044 cases earlier.  Now, we handle CA1044 cases
             // If there is no getter then it is not accessible

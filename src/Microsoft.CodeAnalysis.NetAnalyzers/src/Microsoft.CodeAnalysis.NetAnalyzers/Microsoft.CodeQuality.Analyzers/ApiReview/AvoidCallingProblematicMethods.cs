@@ -122,10 +122,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
         // ImmutableArray.Create(SystemGCCollectRule, SystemThreadingThreadResumeRule, SystemThreadingThreadSuspendRule, SystemTypeInvokeMemberRule, CoInitializeSecurityRule, CoSetProxyBlanketRule, SystemRuntimeInteropServicesSafeHandleDangerousGetHandleRule, SystemReflectionAssemblyLoadFromRule, SystemReflectionAssemblyLoadFileRule, SystemReflectionAssemblyLoadWithPartialNameRule);
 
 #pragma warning disable RS1025 // Configure generated code analysis
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
 #pragma warning restore RS1025 // Configure generated code analysis
         {
-            analysisContext.EnableConcurrentExecution();
+            context.EnableConcurrentExecution();
 
             // TODO: Configure generated code analysis.
             //analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);

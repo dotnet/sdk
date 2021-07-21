@@ -550,7 +550,11 @@ public class {|#0:SomeClass|}
 }
 ",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                     ExpectedDiagnostics = { VerifyCS.Diagnostic().WithLocation(0).WithArguments("SomeClass", args), },
                 },
             }.RunAsync();
@@ -570,20 +574,28 @@ Public Class {|#0:SomeClass|}
 End Class
 ",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                     ExpectedDiagnostics = { VerifyVB.Diagnostic().WithLocation(0).WithArguments("SomeClass", args), },
                 },
             }.RunAsync();
         }
 
         private static DiagnosticResult GetCA1001CSharpResultAt(int line, int column, string objectName, string disposableFields)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(objectName, disposableFields);
 
         private static DiagnosticResult GetCA1001BasicResultAt(int line, int column, string objectName, string disposableFields)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(objectName, disposableFields);
     }
 }

@@ -813,7 +813,7 @@ By convention, identifier names do not contain the underscore (_) character. Thi
 |Category|Naming|
 |Enabled|True|
 |Severity|Hidden|
-|CodeFix|False|
+|CodeFix|True|
 ---
 
 ## [CA1708](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1708): Identifiers should differ by more than case
@@ -2664,7 +2664,7 @@ By default, the Trusted Root Certification Authorities certificate store is conf
 |CodeFix|False|
 ---
 
-## [CA5382](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5382): Use Secure Cookies In ASP.Net Core
+## [CA5382](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5382): Use Secure Cookies In ASP.NET Core
 
 Applications available over HTTPS must use secure cookies.
 
@@ -2676,7 +2676,7 @@ Applications available over HTTPS must use secure cookies.
 |CodeFix|False|
 ---
 
-## [CA5383](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5383): Ensure Use Secure Cookies In ASP.Net Core
+## [CA5383](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5383): Ensure Use Secure Cookies In ASP.NET Core
 
 Applications available over HTTPS must use secure cookies.
 

@@ -39,12 +39,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         public abstract void RegisterLanguageSpecificChecks(CompilationStartAnalysisContext context, ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes);
 
-        public sealed override void Initialize(AnalysisContext analysisContext)
+        public sealed override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
 
-            analysisContext.RegisterCompilationStartAction(startContext =>
+            context.RegisterCompilationStartAction(startContext =>
             {
                 ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
                 var internalTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -16,7 +15,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// <summary>
     /// CA1065: Do not raise exceptions in unexpected locations
     /// </summary>
-    public abstract class DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1065";
 
@@ -55,12 +55,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
             => ImmutableArray.Create(PropertyGetterRule, HasAllowedExceptionsRule, NoAllowedExceptionsRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationStartContext =>
+            context.RegisterCompilationStartAction(compilationStartContext =>
             {
                 Compilation compilation = compilationStartContext.Compilation;
                 INamedTypeSymbol? exceptionType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemException);
@@ -95,7 +95,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         if (((IThrowOperation)operationContext.Operation).GetThrownExceptionType() is INamedTypeSymbol thrownExceptionType && thrownExceptionType.DerivesFrom(exceptionType))
                         {
                             // If no exceptions are allowed or if the thrown exceptions is not an allowed one..
-                            if (methodCategory.AllowedExceptions.IsEmpty || !methodCategory.AllowedExceptions.Any(n => IsAssignableTo(thrownExceptionType, n, compilation)))
+                            if (methodCategory.AllowedExceptions.IsEmpty || !methodCategory.AllowedExceptions.Any(n => thrownExceptionType.IsAssignableTo(n, compilation)))
                             {
                                 operationContext.ReportDiagnostic(
                                     operationContext.Operation.Syntax.CreateDiagnostic(methodCategory.Rule, methodSymbol.Name, thrownExceptionType.Name));
@@ -105,11 +105,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 });
             });
         }
-
-        protected abstract bool IsAssignableTo(
-            [NotNullWhen(returnValue: true)] ITypeSymbol? fromSymbol,
-            [NotNullWhen(returnValue: true)] ITypeSymbol? toSymbol,
-            Compilation compilation);
 
         /// <summary>
         /// This object describes a class of methods where exception throwing statements should be analyzed.
@@ -189,7 +184,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 new MethodCategory(IsEqualsOverrideOrInterfaceImplementation, true,
                     NoAllowedExceptionsRule),
 
-                new MethodCategory(IsEqualityOperator, true,
+                new MethodCategory(IsComparisonOperator, true,
                     NoAllowedExceptionsRule),
 
                 new MethodCategory(IsGetHashCodeOverride, true,
@@ -321,7 +316,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return method.IsFinalizer();
         }
 
-        private static bool IsEqualityOperator(IMethodSymbol method, Compilation compilation)
+        private static bool IsComparisonOperator(IMethodSymbol method, Compilation compilation)
         {
             if (!method.IsStatic || !method.IsPublic())
                 return false;
@@ -329,7 +324,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return method.Name switch
             {
                 WellKnownMemberNames.EqualityOperatorName
-                or WellKnownMemberNames.InequalityOperatorName => true,
+                or WellKnownMemberNames.InequalityOperatorName
+                or WellKnownMemberNames.LessThanOperatorName
+                or WellKnownMemberNames.GreaterThanOperatorName
+                or WellKnownMemberNames.LessThanOrEqualOperatorName
+                or WellKnownMemberNames.GreaterThanOrEqualOperatorName => true,
                 _ => false,
             };
         }

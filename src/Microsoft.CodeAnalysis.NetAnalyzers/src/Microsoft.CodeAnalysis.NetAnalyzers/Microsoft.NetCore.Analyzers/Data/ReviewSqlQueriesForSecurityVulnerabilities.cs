@@ -38,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Data
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
             context.RegisterCompilationStartAction(compilationContext =>
             {
                 INamedTypeSymbol? iDbCommandType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataIDbCommand);
@@ -203,7 +203,7 @@ namespace Microsoft.NetCore.Analyzers.Data
                                                  ISymbol invokedSymbol,
                                                  ISymbol containingMethod)
         {
-            if (operationContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationContext.Compilation, operationContext.CancellationToken))
+            if (operationContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationContext.Compilation))
             {
                 return false;
             }
@@ -215,7 +215,7 @@ namespace Microsoft.NetCore.Analyzers.Data
                 {
                     var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationContext.Compilation);
                     var valueContentResult = ValueContentAnalysis.TryGetOrComputeResult(cfg, containingMethod, wellKnownTypeProvider,
-                        operationContext.Options, Rule, PointsToAnalysisKind.Complete, operationContext.CancellationToken);
+                        operationContext.Options, Rule, PointsToAnalysisKind.Complete);
                     if (valueContentResult != null)
                     {
                         ValueContentAbstractValue value = valueContentResult[argumentValue.Kind, argumentValue.Syntax];

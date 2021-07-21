@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -137,12 +136,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ObjectCreationRule, StringCreationRule, HResultOrErrorCodeRule, TryParseRule, PureMethodRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(compilationContext =>
             {
                 INamedTypeSymbol? expectedExceptionType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualStudioTestToolsUnitTestingExpectedExceptionAttribute);
                 INamedTypeSymbol? nunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkAssert);
@@ -160,7 +159,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     {
                         IOperation expression = ((IExpressionStatementOperation)opContext.Operation).Operation;
 
-                        var userDefinedMethods = compilationContext.Options.GetAdditionalUseResultsMethodsOption(UserDefinedMethodRule, expression.Syntax.SyntaxTree, compilationContext.Compilation, compilationContext.CancellationToken);
+                        var userDefinedMethods = compilationContext.Options.GetAdditionalUseResultsMethodsOption(UserDefinedMethodRule, expression.Syntax.SyntaxTree, compilationContext.Compilation);
 
                         DiagnosticDescriptor? rule = null;
                         string targetMethodName = "";
@@ -306,7 +305,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                 IMethodSymbol methodSymbol = (IMethodSymbol)operationContext.ContainingSymbol;
 
-                return methodSymbol.GetAttributes().Any(attr => Equals(attr.AttributeClass, expectedExceptionType));
+                return methodSymbol.HasAttribute(expectedExceptionType);
             }
             else
             {
@@ -345,7 +344,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         private static bool IsPureMethod(IMethodSymbol method, Compilation compilation)
         {
-            return method.GetAttributes().Any(attr => attr.AttributeClass.Equals(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsContractsPureAttribute)));
+            return method.HasAttribute(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsContractsPureAttribute));
         }
     }
 }

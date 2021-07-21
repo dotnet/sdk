@@ -1,82 +1,76 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-// TODO(dotpaul): Enable nullable analysis when rewriting this to use DFA.
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Microsoft.NetFramework.Analyzers.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
+using Microsoft.NetFramework.Analyzers.Helpers;
 
 namespace Microsoft.NetFramework.Analyzers
 {
-    public abstract class DoNotUseInsecureDtdProcessingInApiDesignAnalyzer : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class DoNotUseInsecureDtdProcessingInApiDesignAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA3077";
 
-        internal static DiagnosticDescriptor RuleDoNotUseInsecureDtdProcessingInApiDesign = DiagnosticDescriptorHelper.Create(RuleId,
-            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureDtdProcessingInApiDesign)),
-            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage)),
-            DiagnosticCategory.Security,
-            RuleLevel.IdeHidden_BulkConfigurable,
-            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingInApiDesignDescription)),
-            isPortedFxCopRule: false,
-            isDataflowRule: false);
+        internal static DiagnosticDescriptor RuleDoNotUseInsecureDtdProcessingInApiDesign =
+            DiagnosticDescriptorHelper.Create(
+                RuleId,
+                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureDtdProcessingInApiDesign)),
+                nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage),
+                DiagnosticCategory.Security,
+                RuleLevel.IdeHidden_BulkConfigurable,
+                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingInApiDesignDescription)),
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleDoNotUseInsecureDtdProcessingInApiDesign);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+            => ImmutableArray.Create(RuleDoNotUseInsecureDtdProcessingInApiDesign);
 
-#pragma warning disable RS1026 // Enable concurrent execution
-        public override void Initialize(AnalysisContext analysisContext)
-#pragma warning restore RS1026 // Enable concurrent execution
+        public override void Initialize(AnalysisContext context)
         {
-            // TODO: Make analyzer thread-safe.
-            //analysisContext.EnableConcurrentExecution();
+            context.EnableConcurrentExecution();
 
             // Security analyzer - analyze and report diagnostics in generated code.
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+            context.ConfigureGeneratedCodeAnalysis(
+                GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-            analysisContext.RegisterCompilationStartAction(
-                (context) =>
+            context.RegisterCompilationStartAction(context =>
+            {
+                Compilation compilation = context.Compilation;
+                var xmlTypes = new CompilationSecurityTypes(compilation);
+                if (ReferencesAnyTargetType(xmlTypes))
                 {
-                    Compilation compilation = context.Compilation;
-                    var xmlTypes = new CompilationSecurityTypes(compilation);
-                    if (ReferencesAnyTargetType(xmlTypes))
-                    {
-                        Version version = SecurityDiagnosticHelpers.GetDotNetFrameworkVersion(compilation);
+                    var version = SecurityDiagnosticHelpers.GetDotNetFrameworkVersion(compilation);
 
-                        // bail if we are not analyzing project targeting .NET Framework
-                        // TODO: should we throw an exception to notify user?
-                        if (version != null)
-                        {
-                            SymbolAndNodeAnalyzer analyzer = GetAnalyzer(context, xmlTypes, version);
-                            context.RegisterSymbolAction(analyzer.AnalyzeSymbol, SymbolKind.NamedType);
-                        }
+                    // bail if we are not analyzing project targeting .NET Framework
+                    // TODO: should we throw an exception to notify user?
+                    if (version != null)
+                    {
+                        SymbolAndNodeAnalyzer analyzer = new SymbolAndNodeAnalyzer(xmlTypes, version);
+                        context.RegisterSymbolAction(analyzer.AnalyzeSymbol, SymbolKind.NamedType);
+                        context.RegisterOperationBlockStartAction(analyzer.AnalyzeOperationBlock);
                     }
-                });
+                }
+            });
         }
 
         private static bool ReferencesAnyTargetType(CompilationSecurityTypes types)
-        {
-            return types.XmlDocument != null
-                || types.XmlTextReader != null;
-        }
+            => types.XmlDocument != null || types.XmlTextReader != null;
 
-        protected abstract SymbolAndNodeAnalyzer GetAnalyzer(CompilationStartAnalysisContext context, CompilationSecurityTypes types, Version targetFrameworkVersion);
-
-        protected sealed class SymbolAndNodeAnalyzer
+        private sealed class SymbolAndNodeAnalyzer
         {
             // .NET frameworks >= 4.5.2 have secure default settings for XmlTextReader:
             //      DtdProcessing is enabled with null resolver
             private static readonly Version s_minSecureFxVersion = new(4, 5, 2);
 
             private readonly CompilationSecurityTypes _xmlTypes;
-            private readonly SyntaxNodeHelper _syntaxNodeHelper;
             private readonly bool _isFrameworkSecure;
 
             // key: symbol for type derived from XmlDocument/XmlTextReader (exclude base type itself)
@@ -84,23 +78,23 @@ namespace Microsoft.NetFramework.Analyzers
             private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlDocumentDerivedTypes = new();
             private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlTextReaderDerivedTypes = new();
 
-            public SymbolAndNodeAnalyzer(CompilationSecurityTypes xmlTypes, SyntaxNodeHelper helper, Version targetFrameworkVersion)
+            public SymbolAndNodeAnalyzer(CompilationSecurityTypes xmlTypes,
+                Version targetFrameworkVersion)
             {
                 _xmlTypes = xmlTypes;
-                _syntaxNodeHelper = helper;
-                _isFrameworkSecure = targetFrameworkVersion != null && targetFrameworkVersion >= SymbolAndNodeAnalyzer.s_minSecureFxVersion;
+                _isFrameworkSecure = targetFrameworkVersion != null
+                    && targetFrameworkVersion >= s_minSecureFxVersion;
             }
 
-            public void AnalyzeNode(SyntaxNodeAnalysisContext context)
+            public void AnalyzeOperationBlock(OperationBlockStartAnalysisContext context)
             {
-                // an alternative is to do syntax analysis during the symbol analysis, which might cause AST construction on the fly
-                AnalyzeNodeForXmlDocumentDerivedTypeConstructorDecl(context);
-                AnalyzeNodeForXmlDocumentDerivedTypeMethodDecl(context);
+                AnalyzeBlockForXmlDocumentDerivedTypeConstructorDecl(context);
+                AnalyzeBlockForXmlDocumentDerivedTypeMethodDecl(context);
                 if (!_isFrameworkSecure)
                 {
-                    AnalyzeNodeForXmlTextReaderDerivedTypeConstructorDecl(context);
+                    AnalyzeBlockForXmlTextReaderDerivedTypeConstructorDecl(context);
                 }
-                AnalyzeNodeForXmlTextReaderDerivedTypeMethodDecl(context);
+                AnalyzeBlockForXmlTextReaderDerivedTypeMethodDecl(context);
             }
 
             public void AnalyzeSymbol(SymbolAnalysisContext context)
@@ -109,94 +103,91 @@ namespace Microsoft.NetFramework.Analyzers
                 AnalyzeSymbolForXmlTextReaderDerivedType(context);
             }
 
-            private void AnalyzeNodeForXmlDocumentDerivedTypeConstructorDecl(SyntaxNodeAnalysisContext context)
+            private void AnalyzeBlockForXmlDocumentDerivedTypeConstructorDecl(
+                OperationBlockStartAnalysisContext context)
             {
-                SyntaxNode node = context.Node;
-                SemanticModel model = context.SemanticModel;
-
-                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
-                    methodSymbol.MethodKind != MethodKind.Constructor ||
-                    !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true)))
+                if (context.OwningSymbol is not IMethodSymbol methodSymbol
+                    || methodSymbol.MethodKind != MethodKind.Constructor
+                    || Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)
+                    || !methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true))
                 {
                     return;
                 }
 
-                bool hasSetSecureXmlResolver = false;
-
-                IEnumerable<SyntaxNode> assignments = _syntaxNodeHelper.GetDescendantAssignmentExpressionNodes(node);
-                foreach (SyntaxNode a in assignments)
+                var hasSetSecureXmlResolver = new ThreadSafeBoolean(false);
+                context.RegisterOperationAction(context =>
                 {
-                    // this is intended to be an assignment, not a bug
-                    if (hasSetSecureXmlResolver = IsAssigningIntendedValueToPropertyDerivedFromType(a,
-                            model,
-                            (s) =>
-                            {
-                                return SecurityDiagnosticHelpers.IsXmlDocumentXmlResolverProperty(s, _xmlTypes);
-                            },
-                            (n) =>
-                            {
-                                return SyntaxNodeHelper.NodeHasConstantValueNull(n, model) ||
-                                    SecurityDiagnosticHelpers.IsXmlSecureResolverType(model.GetTypeInfo(n).Type, _xmlTypes);
-                            },
-                            out bool isTargetProperty))
+                    var assignment = (IAssignmentOperation)context.Operation;
+
+                    if (hasSetSecureXmlResolver.Value)
                     {
-                        break;
+                        return;
                     }
-                }
 
-                if (!hasSetSecureXmlResolver)
+                    var result = IsAssigningIntendedValueToPropertyDerivedFromType(
+                        assignment,
+                        property =>
+                            SecurityDiagnosticHelpers.IsXmlDocumentXmlResolverProperty(property, _xmlTypes),
+                        operation =>
+                            operation.HasNullConstantValue()
+                            || SecurityDiagnosticHelpers.IsXmlSecureResolverType(operation.Type, _xmlTypes),
+                        out _);
+
+                    if (result)
+                    {
+                        hasSetSecureXmlResolver.Value = true;
+                    }
+                }, OperationKind.SimpleAssignment);
+
+                context.RegisterOperationBlockEndAction(context =>
                 {
-                    DiagnosticDescriptor rule = RuleDoNotUseInsecureDtdProcessingInApiDesign;
+                    if (hasSetSecureXmlResolver.Value)
+                    {
+                        return;
+                    }
+
                     context.ReportDiagnostic(
-                        CreateDiagnostic(
-                            methodSymbol.Locations,
-                            rule,
+                        methodSymbol.CreateDiagnostic(
+                            RuleDoNotUseInsecureDtdProcessingInApiDesign,
                             SecurityDiagnosticHelpers.GetLocalizableResourceString(
                                 nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage),
-                                SecurityDiagnosticHelpers.GetNonEmptyParentName(node, model, context.CancellationToken)
+                                SecurityDiagnosticHelpers.GetNonEmptyParentName(methodSymbol)
                             )
                         )
                     );
-                }
+                });
             }
 
-            // Trying to find every "this.XmlResolver = [Insecure Resolve];" in methods of types derived from XmlDocment and generate a warning for each
-            private void AnalyzeNodeForXmlDocumentDerivedTypeMethodDecl(SyntaxNodeAnalysisContext context)
+            // Trying to find every "this.XmlResolver = [Insecure Resolve];" in methods of
+            // types derived from XmlDocment and generate a warning for each
+            private void AnalyzeBlockForXmlDocumentDerivedTypeMethodDecl(OperationBlockStartAnalysisContext context)
             {
-                SyntaxNode node = context.Node;
-                SemanticModel model = context.SemanticModel;
-
-                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
-                    // skip constructors since we report on the absence of secure assignment in AnalyzeNodeForXmlDocumentDerivedTypeConstructorDecl
-                    methodSymbol.MethodKind == MethodKind.Constructor ||
-                    !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true)))
+                if (context.OwningSymbol is not IMethodSymbol methodSymbol
+                    // skip constructors since we report on the absence of secure assignment in AnalyzeBlockForXmlDocumentDerivedTypeConstructorDecl
+                    || methodSymbol.MethodKind == MethodKind.Constructor
+                    || Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)
+                    || !methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true))
                 {
                     return;
                 }
 
-                IEnumerable<SyntaxNode> assignments = _syntaxNodeHelper.GetDescendantAssignmentExpressionNodes(node);
-                foreach (SyntaxNode assignment in assignments)
+                context.RegisterOperationAction(context =>
                 {
-                    // this is intended to be an assignment, not a bug
-                    if (IsAssigningIntendedValueToPropertyDerivedFromType(assignment,
-                            model,
-                            (s) =>
-                            {
-                                return SecurityDiagnosticHelpers.IsXmlDocumentXmlResolverProperty(s, _xmlTypes);
-                            },
-                            (n) =>
-                            {
-                                return !(SyntaxNodeHelper.NodeHasConstantValueNull(n, model) ||
-                                         SecurityDiagnosticHelpers.IsXmlSecureResolverType(model.GetTypeInfo(n).Type, _xmlTypes));
-                            },
-                            out bool isTargetProperty)
-                        )
+                    var assignment = (IAssignmentOperation)context.Operation;
+
+                    var isAssigned = IsAssigningIntendedValueToPropertyDerivedFromType(
+                        assignment,
+                        property => SecurityDiagnosticHelpers.IsXmlDocumentXmlResolverProperty(property, _xmlTypes),
+                        operation =>
+                            !operation.HasNullConstantValue()
+                            || SecurityDiagnosticHelpers.IsXmlSecureResolverType(operation.Type, _xmlTypes),
+                        out _);
+
+                    if (isAssigned)
                     {
-                        DiagnosticDescriptor rule = RuleDoNotUseInsecureDtdProcessingInApiDesign;
                         context.ReportDiagnostic(
-                            CreateDiagnostic(
-                                assignment.GetLocation(),
-                                rule,
+                            assignment.CreateDiagnostic(
+                                RuleDoNotUseInsecureDtdProcessingInApiDesign,
                                 SecurityDiagnosticHelpers.GetLocalizableResourceString(
                                     nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage),
                                     methodSymbol.Name
@@ -204,196 +195,196 @@ namespace Microsoft.NetFramework.Analyzers
                             )
                         );
                     }
-                }
+                }, OperationKind.SimpleAssignment);
             }
 
-            private void AnalyzeNodeForXmlTextReaderDerivedTypeConstructorDecl(SyntaxNodeAnalysisContext context)
+            private void AnalyzeBlockForXmlTextReaderDerivedTypeConstructorDecl(
+                OperationBlockStartAnalysisContext context)
             {
-                SyntaxNode node = context.Node;
-                SemanticModel model = context.SemanticModel;
-
-                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
-                    methodSymbol.MethodKind != MethodKind.Constructor ||
-                    !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlTextReader)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true)))
+                if (context.OwningSymbol is not IMethodSymbol methodSymbol
+                    || methodSymbol.MethodKind != MethodKind.Constructor
+                    || Equals(methodSymbol.ContainingType, _xmlTypes.XmlTextReader)
+                    || !methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true))
                 {
                     return;
                 }
 
-                bool hasSetSecureXmlResolver = false;
-                bool isDtdProcessingDisabled = false;
+                var hasSetSecureXmlResolver = new ThreadSafeBoolean(false);
+                var isDtdProcessingDisabled = new ThreadSafeBoolean(false);
 
-                IEnumerable<SyntaxNode> assignments = _syntaxNodeHelper.GetDescendantAssignmentExpressionNodes(node);
-                foreach (SyntaxNode assignment in assignments)
+                context.RegisterOperationAction(context =>
                 {
-                    bool isTargetProperty = false;
-
-                    hasSetSecureXmlResolver = hasSetSecureXmlResolver || IsAssigningIntendedValueToPropertyDerivedFromType(assignment,
-                            model,
-                            (s) =>
-                            {
-                                return SecurityDiagnosticHelpers.IsXmlTextReaderXmlResolverProperty(s, _xmlTypes);
-                            },
-                            (n) =>
-                            {
-                                return SyntaxNodeHelper.NodeHasConstantValueNull(n, model) ||
-                                       SecurityDiagnosticHelpers.IsXmlSecureResolverType(model.GetTypeInfo(n).Type, _xmlTypes);
-                            },
-                            out isTargetProperty);
-
-                    if (isTargetProperty)
-                    {
-                        continue;
-                    }
-
-                    isDtdProcessingDisabled = isDtdProcessingDisabled || IsAssigningIntendedValueToPropertyDerivedFromType(assignment,
-                            model,
-                            (s) =>
-                            {
-                                return SecurityDiagnosticHelpers.IsXmlTextReaderDtdProcessingProperty(s, _xmlTypes);
-                            },
-                            (n) =>
-                            {
-                                return !SyntaxNodeHelper.GetSymbol(n, model).MatchFieldByName(_xmlTypes.DtdProcessing, SecurityMemberNames.Parse);
-                            },
-                            out isTargetProperty);
-
-                    if (hasSetSecureXmlResolver && isDtdProcessingDisabled)
+                    var assignment = (IAssignmentOperation)context.Operation;
+                    if (hasSetSecureXmlResolver.Value && isDtdProcessingDisabled.Value)
                     {
                         return;
                     }
-                }
 
-                DiagnosticDescriptor rule = RuleDoNotUseInsecureDtdProcessingInApiDesign;
-                context.ReportDiagnostic(
-                    CreateDiagnostic(
-                        methodSymbol.Locations,
-                        rule,
-                        SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                            nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassConstructorNoSecureSettingsMessage),
-                            SecurityDiagnosticHelpers.GetNonEmptyParentName(node, model, context.CancellationToken)
-                        )
-                    )
-                );
+                    bool isTargetProperty = false;
+
+                    if (!hasSetSecureXmlResolver.Value)
+                    {
+                        var result = IsAssigningIntendedValueToPropertyDerivedFromType(
+                            assignment,
+                            property =>
+                                SecurityDiagnosticHelpers.IsXmlTextReaderXmlResolverProperty(property, _xmlTypes),
+                            operation =>
+                                operation.HasNullConstantValue()
+                                || SecurityDiagnosticHelpers.IsXmlSecureResolverType(operation.Type, _xmlTypes),
+                            out isTargetProperty);
+
+                        if (result)
+                        {
+                            hasSetSecureXmlResolver.Value = true;
+                        }
+                    }
+
+                    if (!isTargetProperty && !isDtdProcessingDisabled.Value)
+                    {
+                        var result = IsAssigningIntendedValueToPropertyDerivedFromType(
+                            assignment,
+                            property =>
+                                SecurityDiagnosticHelpers.IsXmlTextReaderDtdProcessingProperty(property, _xmlTypes),
+                            operation =>
+                                operation is not IFieldReferenceOperation fieldReference
+                                || _xmlTypes.DtdProcessing == null
+                                || !fieldReference.Field.MatchMemberByName(_xmlTypes.DtdProcessing, SecurityMemberNames.Parse),
+                            out _);
+
+                        if (result)
+                        {
+                            isDtdProcessingDisabled.Value = true;
+                        }
+                    }
+                }, OperationKind.SimpleAssignment);
+
+                context.RegisterOperationBlockEndAction(context =>
+                {
+                    if (!hasSetSecureXmlResolver.Value || !isDtdProcessingDisabled.Value)
+                    {
+                        context.ReportDiagnostic(
+                            methodSymbol.CreateDiagnostic(
+                                RuleDoNotUseInsecureDtdProcessingInApiDesign,
+                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassConstructorNoSecureSettingsMessage),
+                                    SecurityDiagnosticHelpers.GetNonEmptyParentName(methodSymbol)
+                                )
+                            )
+                        );
+                    }
+                });
             }
 
-            private void AnalyzeNodeForXmlTextReaderDerivedTypeMethodDecl(SyntaxNodeAnalysisContext context)
+            private void AnalyzeBlockForXmlTextReaderDerivedTypeMethodDecl(
+                OperationBlockStartAnalysisContext context)
             {
-                SyntaxNode node = context.Node;
-                SemanticModel model = context.SemanticModel;
-
-                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
-                   !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlTextReader)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true)))
+                if (context.OwningSymbol is not IMethodSymbol methodSymbol
+                    || Equals(methodSymbol.ContainingType, _xmlTypes.XmlTextReader)
+                    || !methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true))
                 {
                     return;
                 }
 
-                // If the default value are not secure, the AnalyzeNodeForXmlTextReaderDerivedTypeConstructorDecl would be skipped,
-                // therefoer we need to check constructor for any insecure settings.
+                // If the default value are not secure, the AnalyzeNodeForXmlTextReaderDerivedTypeConstructorDecl
+                // would be skipped, therefore we need to check constructor for any insecure settings.
                 // Otherwise, we skip checking constructors
                 if (_isFrameworkSecure && methodSymbol.MethodKind == MethodKind.Constructor)
                 {
                     return;
                 }
 
-                bool hasSetXmlResolver = false;
-                bool hasSetInsecureXmlResolver = true;
-                bool isDtdProcessingSet = false;
-                bool isDtdProcessingEnabled = true;
+                var hasSetXmlResolver = new ThreadSafeBoolean(false);
+                var hasSetInsecureXmlResolver = new ThreadSafeBoolean(true);
+                var isDtdProcessingSet = new ThreadSafeBoolean(false);
+                var isDtdProcessingEnabled = new ThreadSafeBoolean(true);
 
-                List<Location> locs = null;
+                var locations = new ConcurrentQueue<Location>();
 
-                IEnumerable<SyntaxNode> assignments = _syntaxNodeHelper.GetDescendantAssignmentExpressionNodes(node);
-                foreach (SyntaxNode assignment in assignments)
+                context.RegisterOperationAction(context =>
                 {
-                    bool ret;
+                    var assignment = (IAssignmentOperation)context.Operation;
 
-                    ret = IsAssigningIntendedValueToPropertyDerivedFromType(assignment,
-                            model,
-                            (s) =>
-                            {
-                                return SecurityDiagnosticHelpers.IsXmlTextReaderXmlResolverProperty(s, _xmlTypes);
-                            },
-                            (n) =>
-                            {
-                                return !(SyntaxNodeHelper.NodeHasConstantValueNull(n, model) ||
-                                        SecurityDiagnosticHelpers.IsXmlSecureResolverType(model.GetTypeInfo(n).Type, _xmlTypes));
-                            },
-                            out bool isTargetProperty
-                            );
+                    var result = IsAssigningIntendedValueToPropertyDerivedFromType(
+                        assignment,
+                        property =>
+                            SecurityDiagnosticHelpers.IsXmlTextReaderXmlResolverProperty(property, _xmlTypes),
+                        operation =>
+                            !operation.HasNullConstantValue()
+                            && !SecurityDiagnosticHelpers.IsXmlSecureResolverType(operation.Type, _xmlTypes),
+                        out var isTargetProperty);
 
                     if (isTargetProperty)
                     {
-                        hasSetXmlResolver = true;
-                        hasSetInsecureXmlResolver &= ret; // use 'AND' to avoid false positives (but imcrease false negative rate)
-                        if (ret)
+                        hasSetXmlResolver.Value = true;
+                        // use 'AND' to avoid false positives (but increase false negative rate)
+                        if (!result)
                         {
-                            if (locs == null)
-                            {
-                                locs = new List<Location>();
-                            }
-                            locs.Add(assignment.GetLocation());
+                            hasSetInsecureXmlResolver.Value = false;
                         }
-                        continue;
+                        else
+                        {
+                            locations.Enqueue(assignment.Syntax.GetLocation());
+                        }
+                        return;
                     }
 
-                    ret = IsAssigningIntendedValueToPropertyDerivedFromType(assignment,
-                            model,
-                            (s) =>
-                            {
-                                return SecurityDiagnosticHelpers.IsXmlTextReaderDtdProcessingProperty(s, _xmlTypes);
-                            },
-                            (n) =>
-                            {
-                                return SyntaxNodeHelper.GetSymbol(n, model).MatchFieldByName(_xmlTypes.DtdProcessing, SecurityMemberNames.Parse);
-                            },
-                            out isTargetProperty);
+                    result = IsAssigningIntendedValueToPropertyDerivedFromType(
+                        assignment,
+                        property =>
+                            SecurityDiagnosticHelpers.IsXmlTextReaderDtdProcessingProperty(property, _xmlTypes),
+                        operation =>
+                            operation is IFieldReferenceOperation fieldReference
+                            && _xmlTypes.DtdProcessing != null
+                            && fieldReference.Field.MatchMemberByName(_xmlTypes.DtdProcessing, SecurityMemberNames.Parse),
+                        out isTargetProperty);
 
                     if (isTargetProperty)
                     {
-                        isDtdProcessingSet = true;
-                        isDtdProcessingEnabled &= ret; // use 'AND' to avoid false positives (but imcrease false negative rate)
-                        if (ret)
+                        isDtdProcessingSet.Value = true;
+                        // use 'AND' to avoid false positives (but increase false negative rate)
+                        if (!result)
                         {
-                            if (locs == null)
-                            {
-                                locs = new List<Location>();
-                            }
-                            locs.Add(assignment.GetLocation());
+                            isDtdProcessingEnabled.Value = false;
+                        }
+                        else
+                        {
+                            locations.Enqueue(assignment.Syntax.GetLocation());
                         }
                     }
-                }
+                }, OperationKind.SimpleAssignment);
 
-                // neither XmlResolver nor DtdProcessing is explicitly set
-                if (!(hasSetXmlResolver || isDtdProcessingSet))
+                context.RegisterOperationBlockEndAction(context =>
                 {
-                    return;
-                }
-                // explicitly set XmlResolver and/or DtdProcessing to secure value
-                else if (!hasSetInsecureXmlResolver || !isDtdProcessingEnabled)
-                {
-                    return;
-                }
-                // didn't explicitly set either one of XmlResolver and DtdProcessing to secure value
-                // but explicitly set XmlResolver and/or DtdProcessing to insecure value
-                else
-                {
-                    DiagnosticDescriptor rule = RuleDoNotUseInsecureDtdProcessingInApiDesign;
-                    // TODO: Only first location is shown in error, maybe we want to report on method instead?
-                    //       Or on each insecure assignment?
-                    context.ReportDiagnostic(
-                        CreateDiagnostic(
-                            locs,
-                            rule,
-                            SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage),
-                                methodSymbol.Name
+                    // neither XmlResolver nor DtdProcessing is explicitly set
+                    if (!(hasSetXmlResolver.Value || isDtdProcessingSet.Value))
+                    {
+                        return;
+                    }
+                    // explicitly set XmlResolver and/or DtdProcessing to secure value
+                    else if (!hasSetInsecureXmlResolver.Value || !isDtdProcessingEnabled.Value)
+                    {
+                        return;
+                    }
+                    // didn't explicitly set either one of XmlResolver and DtdProcessing to secure value
+                    // but explicitly set XmlResolver and/or DtdProcessing to insecure value
+                    else
+                    {
+                        // TODO: Only first location is shown in error, maybe we want to report on method instead?
+                        //       Or on each insecure assignment?
+                        context.ReportDiagnostic(
+                            locations.OrderBy(l => l.SourceSpan.Start).CreateDiagnostic(
+                                RuleDoNotUseInsecureDtdProcessingInApiDesign,
+                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage),
+                                    methodSymbol.Name
+                                )
                             )
-                        )
-                    );
-                }
+                        );
+                    }
+                });
             }
 
-            // report warning if no explicit definition of contrsuctor in XmlDocument derived types
+            // report warning if no explicit definition of constructor in XmlDocument derived types
             private void AnalyzeSymbolForXmlDocumentDerivedType(SymbolAnalysisContext context)
             {
                 ISymbol symbol = context.Symbol;
@@ -401,38 +392,39 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     return;
                 }
+
                 var typeSymbol = (INamedTypeSymbol)symbol;
-                INamedTypeSymbol xmlDocumentSym = _xmlTypes.XmlDocument;
-                if ((!Equals(typeSymbol, xmlDocumentSym)) && typeSymbol.DerivesFrom(xmlDocumentSym, baseTypesOnly: true))
+                if (Equals(typeSymbol, _xmlTypes.XmlDocument) ||
+                    !typeSymbol.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true))
                 {
-                    bool explicitlyDeclared = true;
-
-                    if (typeSymbol.Constructors.Length == 1)
-                    {
-                        IMethodSymbol constructor = typeSymbol.Constructors[0];
-                        explicitlyDeclared = !constructor.IsImplicitlyDeclared;
-
-                        if (!explicitlyDeclared)
-                        {
-                            DiagnosticDescriptor rule = RuleDoNotUseInsecureDtdProcessingInApiDesign;
-                            context.ReportDiagnostic(
-                                CreateDiagnostic(
-                                    typeSymbol.Locations,
-                                    rule,
-                                    SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                        nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassNoConstructorMessage),
-                                        typeSymbol.Name
-                                    )
-                                )
-                            );
-                        }
-                    }
-
-                    _xmlDocumentDerivedTypes.AddOrUpdate(typeSymbol, explicitlyDeclared, (k, v) => explicitlyDeclared);
+                    return;
                 }
+
+                bool explicitlyDeclared = true;
+
+                if (typeSymbol.Constructors.Length == 1)
+                {
+                    IMethodSymbol constructor = typeSymbol.Constructors[0];
+                    explicitlyDeclared = !constructor.IsImplicitlyDeclared;
+
+                    if (!explicitlyDeclared)
+                    {
+                        context.ReportDiagnostic(
+                            typeSymbol.CreateDiagnostic(
+                                RuleDoNotUseInsecureDtdProcessingInApiDesign,
+                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassNoConstructorMessage),
+                                    typeSymbol.Name
+                                )
+                            )
+                        );
+                    }
+                }
+
+                _xmlDocumentDerivedTypes.AddOrUpdate(typeSymbol, explicitlyDeclared, (k, v) => explicitlyDeclared);
             }
 
-            // report warning if no explicit definition of contrsuctor in XmlTextReader derived types
+            // report warning if no explicit definition of constructor in XmlTextReader derived types
             private void AnalyzeSymbolForXmlTextReaderDerivedType(SymbolAnalysisContext context)
             {
                 ISymbol symbol = context.Symbol;
@@ -440,60 +432,56 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     return;
                 }
+
                 var typeSymbol = (INamedTypeSymbol)symbol;
-                INamedTypeSymbol xmlTextReaderSym = _xmlTypes.XmlTextReader;
-                if ((!Equals(typeSymbol, xmlTextReaderSym)) && typeSymbol.DerivesFrom(xmlTextReaderSym, baseTypesOnly: true))
+                if (Equals(typeSymbol, _xmlTypes.XmlTextReader) ||
+                    !typeSymbol.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true))
                 {
-                    bool explicitlyDeclared = true;
-
-                    if (typeSymbol.Constructors.Length == 1)
-                    {
-                        IMethodSymbol constructor = typeSymbol.Constructors[0];
-                        explicitlyDeclared = !constructor.IsImplicitlyDeclared;
-
-                        if (!explicitlyDeclared && !_isFrameworkSecure)
-                        {
-                            DiagnosticDescriptor rule = RuleDoNotUseInsecureDtdProcessingInApiDesign;
-                            context.ReportDiagnostic(
-                                CreateDiagnostic(
-                                    typeSymbol.Locations,
-                                    rule,
-                                    SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                        nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassNoConstructorMessage),
-                                        symbol.Name
-                                    )
-                                )
-                            );
-                        }
-                    }
-
-                    _xmlTextReaderDerivedTypes.AddOrUpdate(typeSymbol, explicitlyDeclared, (k, v) => explicitlyDeclared);
+                    return;
                 }
+
+                bool explicitlyDeclared = true;
+
+                if (typeSymbol.Constructors.Length == 1)
+                {
+                    IMethodSymbol constructor = typeSymbol.Constructors[0];
+                    explicitlyDeclared = !constructor.IsImplicitlyDeclared;
+
+                    if (!explicitlyDeclared && !_isFrameworkSecure)
+                    {
+                        context.ReportDiagnostic(
+                            typeSymbol.CreateDiagnostic(
+                                RuleDoNotUseInsecureDtdProcessingInApiDesign,
+                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassNoConstructorMessage),
+                                    symbol.Name
+                                )
+                            )
+                        );
+                    }
+                }
+
+                _xmlTextReaderDerivedTypes.AddOrUpdate(typeSymbol, explicitlyDeclared,
+                    (k, v) => explicitlyDeclared);
             }
 
-            private bool IsAssigningIntendedValueToPropertyDerivedFromType(SyntaxNode assignment,
-                SemanticModel model,
-                Func<IPropertySymbol, bool> isTargetPropertyFunc,
-                Func<SyntaxNode, bool> isIntendedValueFunc,
+            private static bool IsAssigningIntendedValueToPropertyDerivedFromType(
+                IAssignmentOperation assignmentOperation,
+                Func<IPropertySymbol?, bool> isTargetPropertyFunc,
+                Func<IOperation, bool> isIntendedValueFunc,
                 out bool isTargetProperty)
             {
-                bool isIntendedValue;
-
-                SyntaxNode left = _syntaxNodeHelper.GetAssignmentLeftNode(assignment);
-                SyntaxNode right = _syntaxNodeHelper.GetAssignmentRightNode(assignment);
-
-                IPropertySymbol leftSymbol = SyntaxNodeHelper.GetCalleePropertySymbol(left, model);
-
-                isTargetProperty = isTargetPropertyFunc(leftSymbol);
-
+                var propertyReference = assignmentOperation.Target as IPropertyReferenceOperation;
+                isTargetProperty = isTargetPropertyFunc(propertyReference?.Property);
                 if (!isTargetProperty)
                 {
                     return false;
                 }
 
+                RoslynDebug.Assert(propertyReference != null);
                 // call to isIntendedValueFunc must be after checking isTargetProperty
                 // since the logic of isIntendedValueFunc relies on corresponding SyntaxNode
-                isIntendedValue = isIntendedValueFunc(right);
+                bool isIntendedValue = isIntendedValueFunc(assignmentOperation.Value);
 
                 // Here's an example that needs some extra check:
                 //
@@ -510,59 +498,49 @@ namespace Microsoft.NetFramework.Analyzers
                 // it is not setting the actual property for this class.
 
                 // The goal is to find all assignment like in the example above, "this.xxx.xxx.Property = ...;".
-                // For simplicity, here we adopt a simple but inaccurate logic:
-                //   If the target is a member access node, then the only pattern we are looking for is "this.Property"
-                SyntaxNode memberAccessNode = _syntaxNodeHelper.GetDescendantMemberAccessExpressionNodes(left).FirstOrDefault();
-
-                // if assignment target doesn't have any member access node,
-                // then we treat it as an instance property access without explicit 'this' ('Me' in VB)
-                if (memberAccessNode == null)
+                if (propertyReference.Instance == null
+                    || propertyReference.Instance.IsImplicit)
                 {
                     //stop here, to avoid false positive, as long as there's one setting <Property> to secure value, we are happy
                     return isIntendedValue;
                 }
 
-                SyntaxNode exp = _syntaxNodeHelper.GetMemberAccessExpressionNode(memberAccessNode);
-                ISymbol expSymbol = SyntaxNodeHelper.GetSymbol(exp, model);
-
-                isTargetProperty = expSymbol.Kind == SymbolKind.Parameter && ((IParameterSymbol)expSymbol).IsThis;
-                if (!isTargetProperty)
-                {
-                    return false;
-                }
-
-                SyntaxNode name = _syntaxNodeHelper.GetMemberAccessNameNode(memberAccessNode);
-                ISymbol nameSymbol = SyntaxNodeHelper.GetSymbol(name, model);
-
-                isTargetProperty = isTargetPropertyFunc(nameSymbol as IPropertySymbol);
-                if (!isTargetProperty)
+                if (propertyReference.Instance.Kind != OperationKind.InstanceReference)
                 {
                     return false;
                 }
 
                 // stop here, same reason as stated above
-                return isIntendedValue;
+                return isTargetProperty && isIntendedValue;
+            }
+        }
+
+        private class ThreadSafeBoolean
+        {
+            private const int TRUE_VALUE = 1;
+            private const int FALSE_VALUE = 0;
+            private int zeroOrOne = FALSE_VALUE;
+
+            public ThreadSafeBoolean(bool initialValue = false)
+            {
+                zeroOrOne = initialValue ? TRUE_VALUE : FALSE_VALUE;
             }
 
-            public static Diagnostic CreateDiagnostic(
-                Location location,
-                DiagnosticDescriptor rule,
-                params object[] args)
+            public bool Value
             {
-                return CreateDiagnostic(new[] { location }, rule, args);
-            }
+                get => Interlocked.CompareExchange(ref zeroOrOne, TRUE_VALUE, TRUE_VALUE) == TRUE_VALUE;
 
-            public static Diagnostic CreateDiagnostic(
-                IEnumerable<Location> locations,
-                DiagnosticDescriptor rule,
-                params object[] args)
-            {
-                Location location = locations.First(l => l.IsInSource);
-                IEnumerable<Location> additionalLocations = locations.Where(l => l.IsInSource).Skip(1);
-                return Diagnostic.Create(rule,
-                         location: location,
-                         additionalLocations: additionalLocations,
-                         messageArgs: args);
+                set
+                {
+                    if (value)
+                    {
+                        Interlocked.CompareExchange(ref zeroOrOne, TRUE_VALUE, FALSE_VALUE);
+                    }
+                    else
+                    {
+                        Interlocked.CompareExchange(ref zeroOrOne, FALSE_VALUE, TRUE_VALUE);
+                    }
+                }
             }
         }
     }

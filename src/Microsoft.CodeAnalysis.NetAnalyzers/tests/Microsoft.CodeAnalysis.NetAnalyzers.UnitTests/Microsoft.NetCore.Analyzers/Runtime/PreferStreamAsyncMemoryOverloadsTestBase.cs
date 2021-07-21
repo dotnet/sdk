@@ -17,7 +17,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     {
         // Verifies that the analyzer generates the specified C# diagnostic results, if any.
         protected Task CSharpVerifyAnalyzerAsync(string source, params DiagnosticResult[] expected) =>
-            CSharpVerifyForVersionAsync(source, null, ReferenceAssemblies.Net.Net50, expected);
+            CSharpVerifyForVersionAsync(source, null, ReferenceAssemblies.Net.Net50, CodeAnalysis.CSharp.LanguageVersion.CSharp7_3, expected);
 
         // Verifies that the analyzer generates the specified VB diagnostic results, if any.
         protected Task VisualBasicVerifyAnalyzerAsync(string source, params DiagnosticResult[] expected) =>
@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         // Verifies that the analyzer generates the specified C# diagnostic results, if any, in an unsupported .NET version.
         protected Task CSharpVerifyAnalyzerForUnsupportedVersionAsync(string source, params DiagnosticResult[] expected) =>
-            CSharpVerifyForVersionAsync(source, null, ReferenceAssemblies.NetCore.NetCoreApp20, expected);
+            CSharpVerifyForVersionAsync(source, null, ReferenceAssemblies.NetCore.NetCoreApp20, CodeAnalysis.CSharp.LanguageVersion.CSharp7_3, expected);
 
         // Verifies that the analyzer generates the specified VB diagnostic results, if any, in an unsupported .NET version.
         protected Task VisualBasicVerifyAnalyzerForUnsupportedVersionAsync(string source, params DiagnosticResult[] expected) =>
@@ -33,7 +33,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         // Verifies that the fixer generates the fixes for the specified C# diagnostic results, if any.
         protected Task CSharpVerifyExpectedCodeFixDiagnosticsAsync(string originalSource, string fixedSource, params DiagnosticResult[] expected) =>
-            CSharpVerifyForVersionAsync(originalSource, fixedSource, ReferenceAssemblies.Net.Net50, expected);
+            CSharpVerifyForVersionAsync(originalSource, fixedSource, ReferenceAssemblies.Net.Net50, CodeAnalysis.CSharp.LanguageVersion.CSharp7_3, expected);
 
         // Verifies that the fixer generates the fixes for the specified VB diagnostic results, if any.
         protected Task VisualBasicVerifyExpectedCodeFixDiagnosticsAsync(string originalSource, string fixedSource, params DiagnosticResult[] expected) =>
@@ -41,12 +41,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         // Verifies that the analyzer generates the specified C# diagnostic results, if any, for the specified originalSource.
         // If fixedSource is provided, also verifies that the fixer generates the fixes for the verified diagnostic results, if any.
-        private Task CSharpVerifyForVersionAsync(string originalSource, string fixedSource, ReferenceAssemblies version, params DiagnosticResult[] expected)
+        protected Task CSharpVerifyForVersionAsync(string originalSource, string fixedSource, ReferenceAssemblies version, CodeAnalysis.CSharp.LanguageVersion languageVersion, params DiagnosticResult[] expected)
         {
             var test = new VerifyCS.Test
             {
                 TestCode = originalSource,
                 ReferenceAssemblies = version,
+                LanguageVersion = languageVersion
             };
 
             if (!string.IsNullOrEmpty(fixedSource))
@@ -110,6 +111,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             yield return new object[] { "buffer, 0, buffer.Length, CancellationToken.None",
                                         "buffer, CancellationToken.None" };
         }
+
         public static IEnumerable<object[]> CSharpUnnamedArgumentsPartialBufferTestData()
         {
             yield return new object[] { "buffer, 1, buffer.Length",
@@ -481,6 +483,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             yield return new object[] { "cancellationToken:=CancellationToken.None, offset:=0, buffer:=buffer, count:=buffer.Length",
                                         "buffer:=buffer, cancellationToken:=CancellationToken.None" };
             yield return new object[] { "cancellationToken:=CancellationToken.None, offset:=0, count:=buffer.Length, buffer:=buffer",
+                                        "buffer:=buffer, cancellationToken:=CancellationToken.None" };
+        }
+
+        public static IEnumerable<object[]> VisualBasicNamedArgumentsWrongCaseTestData()
+        {
+            yield return new object[] { "cOUnt:=buffer.Length, BUFFER:=buffer, offSET:=1",
+                                        "buffer:=buffer.AsMemory(start:=1, length:=buffer.Length)" };
+            yield return new object[] { "OffSet:=0, cOUNT:=buffer.Length, BuFfEr:=buffer",
+                                        "buffer:=buffer" };
+            yield return new object[] { "COUNT:=buffer.Length, oFFSeT:=1, bUffEr:=buffer, CANCELlationtOKEN:=New CancellationToken()",
+                                        "buffer:=buffer.AsMemory(start:=1, length:=buffer.Length), cancellationToken:=New CancellationToken()" };
+            yield return new object[] { "CANCELLATIONTOKEN:=New CancellationToken(), OffsEt:=1, BUFFEr:=buffer, cOUnt:=buffer.Length",
+                                        "buffer:=buffer.AsMemory(start:=1, length:=buffer.Length), cancellationToken:=New CancellationToken()" };
+            yield return new object[] { "COUNT:=buffer.Length, BUFFER:=buffer, CANCELLATIONTOKEN:=CancellationToken.None, OFFSET:=0",
                                         "buffer:=buffer, cancellationToken:=CancellationToken.None" };
         }
     }

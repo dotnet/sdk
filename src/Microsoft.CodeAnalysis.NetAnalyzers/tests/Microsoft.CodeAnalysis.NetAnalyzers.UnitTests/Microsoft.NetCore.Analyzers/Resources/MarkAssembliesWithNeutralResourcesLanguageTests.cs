@@ -56,25 +56,33 @@ End Class", VerifyVB.Diagnostic());
         [Fact]
         public async Task TestCSharpInvalidAttribute1()
         {
+#pragma warning disable RS0030 // Do not used banned APIs
             await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage("""")]", VerifyCS.Diagnostic().WithLocation(1, 12));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]
         public async Task TestCSharpInvalidAttribute2()
         {
+#pragma warning disable RS0030 // Do not used banned APIs
             await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage(null)]", VerifyCS.Diagnostic().WithLocation(1, 12));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]
         public async Task TestBasicInvalidAttribute1()
         {
+#pragma warning disable RS0030 // Do not used banned APIs
             await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage("""")>", VerifyVB.Diagnostic().WithLocation(1, 2));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]
         public async Task TestBasicInvalidAttribute2()
         {
+#pragma warning disable RS0030 // Do not used banned APIs
             await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage(Nothing)>", VerifyVB.Diagnostic().WithLocation(1, 2));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]

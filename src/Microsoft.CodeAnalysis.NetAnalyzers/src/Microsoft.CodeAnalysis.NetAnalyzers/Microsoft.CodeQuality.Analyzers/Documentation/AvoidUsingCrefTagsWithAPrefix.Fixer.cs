@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.CodeQuality.Analyzers.Documentation
 {
     /// <summary>
-    /// RS0010: Avoid using cref tags with a prefix
+    /// CA1200: Avoid using cref tags with a prefix
     /// </summary>
     public abstract class AvoidUsingCrefTagsWithAPrefixFixer : CodeFixProvider
     {
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.Documentation
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
-            // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
             return WellKnownFixAllProviders.BatchFixer;
         }
 

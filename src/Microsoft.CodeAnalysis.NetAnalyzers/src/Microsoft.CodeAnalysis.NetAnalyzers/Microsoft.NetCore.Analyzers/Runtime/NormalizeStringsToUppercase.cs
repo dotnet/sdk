@@ -6,6 +6,7 @@ using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
@@ -19,7 +20,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// </para>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class NormalizeStringsToUppercaseAnalyzer : DiagnosticAnalyzer
+    public sealed class NormalizeStringsToUppercaseAnalyzer : AbstractGlobalizationDiagnosticAnalyzer
     {
         internal const string RuleId = "CA1308";
 
@@ -39,64 +40,58 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ToUpperRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-
-            analysisContext.RegisterCompilationStartAction(compilationStartContext =>
+            var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
+            if (stringType == null)
             {
-                var stringType = compilationStartContext.Compilation.GetSpecialType(SpecialType.System_String);
-                if (stringType == null)
+                return;
+            }
+
+            var cultureInfo = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
+            var invariantCulture = cultureInfo?.GetMembers("InvariantCulture").OfType<IPropertySymbol>().FirstOrDefault();
+
+            // We want to flag calls to "ToLowerInvariant" and "ToLower(CultureInfo.InvariantCulture)".
+            var toLowerInvariant = stringType.GetMembers("ToLowerInvariant").OfType<IMethodSymbol>().FirstOrDefault();
+            var toLowerWithCultureInfo = cultureInfo != null ?
+                stringType.GetMembers("ToLower").OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == 1 && Equals(m.Parameters[0].Type, cultureInfo)) :
+                null;
+
+            if (toLowerInvariant == null && toLowerWithCultureInfo == null)
+            {
+                return;
+            }
+
+            // We want to recommend calling "ToUpperInvariant" or "ToUpper(CultureInfo.InvariantCulture)".
+            var toUpperInvariant = stringType.GetMembers("ToUpperInvariant").OfType<IMethodSymbol>().FirstOrDefault();
+            var toUpperWithCultureInfo = cultureInfo != null ?
+                stringType.GetMembers("ToUpper").OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == 1 && Equals(m.Parameters[0].Type, cultureInfo)) :
+                null;
+
+            if (toUpperInvariant == null && toUpperWithCultureInfo == null)
+            {
+                return;
+            }
+
+            context.RegisterOperationAction(operationAnalysisContext =>
+            {
+                var invocation = (IInvocationOperation)operationAnalysisContext.Operation;
+                if (invocation.TargetMethod == null)
                 {
                     return;
                 }
-
-                var cultureInfo = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
-                var invariantCulture = cultureInfo?.GetMembers("InvariantCulture").OfType<IPropertySymbol>().FirstOrDefault();
-
-                // We want to flag calls to "ToLowerInvariant" and "ToLower(CultureInfo.InvariantCulture)".
-                var toLowerInvariant = stringType.GetMembers("ToLowerInvariant").OfType<IMethodSymbol>().FirstOrDefault();
-                var toLowerWithCultureInfo = cultureInfo != null ?
-                    stringType.GetMembers("ToLower").OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == 1 && Equals(m.Parameters[0].Type, cultureInfo)) :
-                    null;
-
-                if (toLowerInvariant == null && toLowerWithCultureInfo == null)
+                var method = invocation.TargetMethod;
+                if (method.Equals(toLowerInvariant) ||
+                    (method.Equals(toLowerWithCultureInfo) &&
+                     ((invocation.Arguments.FirstOrDefault()?.Value as IMemberReferenceOperation)?.Member.Equals(invariantCulture) ?? false)))
                 {
-                    return;
+                    IMethodSymbol suggestedMethod = toUpperInvariant ?? toUpperWithCultureInfo!;
+
+                    // In method {0}, replace the call to {1} with {2}.
+                    var diagnostic = invocation.CreateDiagnostic(ToUpperRule, operationAnalysisContext.ContainingSymbol.Name, method.Name, suggestedMethod.Name);
+                    operationAnalysisContext.ReportDiagnostic(diagnostic);
                 }
-
-                // We want to recommend calling "ToUpperInvariant" or "ToUpper(CultureInfo.InvariantCulture)".
-                var toUpperInvariant = stringType.GetMembers("ToUpperInvariant").OfType<IMethodSymbol>().FirstOrDefault();
-                var toUpperWithCultureInfo = cultureInfo != null ?
-                    stringType.GetMembers("ToUpper").OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == 1 && Equals(m.Parameters[0].Type, cultureInfo)) :
-                    null;
-
-                if (toUpperInvariant == null && toUpperWithCultureInfo == null)
-                {
-                    return;
-                }
-
-                compilationStartContext.RegisterOperationAction(operationAnalysisContext =>
-                {
-                    var invocation = (IInvocationOperation)operationAnalysisContext.Operation;
-                    if (invocation.TargetMethod == null)
-                    {
-                        return;
-                    }
-                    var method = invocation.TargetMethod;
-                    if (method.Equals(toLowerInvariant) ||
-                        (method.Equals(toLowerWithCultureInfo) &&
-                         ((invocation.Arguments.FirstOrDefault()?.Value as IMemberReferenceOperation)?.Member.Equals(invariantCulture) ?? false)))
-                    {
-                        IMethodSymbol suggestedMethod = toUpperInvariant ?? toUpperWithCultureInfo!;
-
-                        // In method {0}, replace the call to {1} with {2}.
-                        var diagnostic = invocation.CreateDiagnostic(ToUpperRule, operationAnalysisContext.ContainingSymbol.Name, method.Name, suggestedMethod.Name);
-                        operationAnalysisContext.ReportDiagnostic(diagnostic);
-                    }
-                }, OperationKind.Invocation);
-            });
+            }, OperationKind.Invocation);
         }
     }
 }

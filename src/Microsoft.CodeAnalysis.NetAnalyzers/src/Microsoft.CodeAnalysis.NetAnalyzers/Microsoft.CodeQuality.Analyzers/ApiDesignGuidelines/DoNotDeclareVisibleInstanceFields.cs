@@ -33,12 +33,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(context =>
+            context.RegisterCompilationStartAction(context =>
             {
                 var structLayoutAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesStructLayoutAttribute);
 
@@ -62,7 +62,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     var excludeStructs = symbolAnalysisContext.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeStructs, Rule,
-                        field, symbolAnalysisContext.Compilation, defaultValue: false, symbolAnalysisContext.CancellationToken);
+                        field, symbolAnalysisContext.Compilation, defaultValue: false);
                     if (excludeStructs &&
                         field.ContainingType?.TypeKind == TypeKind.Struct)
                     {
@@ -70,7 +70,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // Additionally, by default only report externally visible fields for FxCop compat.
-                    if (symbolAnalysisContext.Options.MatchesConfiguredVisibility(Rule, field, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
+                    if (symbolAnalysisContext.Options.MatchesConfiguredVisibility(Rule, field, symbolAnalysisContext.Compilation))
                     {
                         symbolAnalysisContext.ReportDiagnostic(field.CreateDiagnostic(Rule));
                     }

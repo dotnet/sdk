@@ -7,6 +7,7 @@ using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
@@ -15,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// CA1307: Specify StringComparison
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class SpecifyStringComparisonAnalyzer : DiagnosticAnalyzer
+    public sealed class SpecifyStringComparisonAnalyzer : AbstractGlobalizationDiagnosticAnalyzer
     {
         private const string RuleId_CA1307 = "CA1307";
         private const string RuleId_CA1310 = "CA1310";
@@ -49,95 +50,80 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              isPortedFxCopRule: false,
                                                                              isDataflowRule: false);
 
-        private static readonly ImmutableArray<OperationKind> s_LambdaOrLocalFunctionKinds =
-            ImmutableArray.Create(OperationKind.AnonymousFunction, OperationKind.LocalFunction);
-
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule_CA1307, Rule_CA1310);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            var stringComparisonType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemStringComparison);
+            var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
 
-            analysisContext.RegisterCompilationStartAction(csaContext =>
+            // Without these symbols the rule cannot run
+            if (stringComparisonType == null || stringType == null)
             {
-                var stringComparisonType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemStringComparison);
-                var stringType = csaContext.Compilation.GetSpecialType(SpecialType.System_String);
+                return;
+            }
 
-                // Without these symbols the rule cannot run
-                if (stringComparisonType == null || stringType == null)
+            var overloadMap = GetWellKnownStringOverloads(context.Compilation, stringType, stringComparisonType);
+
+            var linqExpressionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+
+            context.RegisterOperationAction(oaContext =>
+            {
+                var invocationExpression = (IInvocationOperation)oaContext.Operation;
+                var targetMethod = invocationExpression.TargetMethod;
+
+                if (targetMethod.IsGenericMethod ||
+                    targetMethod.ContainingType == null ||
+                    targetMethod.ContainingType.IsErrorType())
                 {
                     return;
                 }
 
-                var overloadMap = GetWellKnownStringOverloads(csaContext.Compilation, stringType, stringComparisonType);
-
-                var linqExpressionType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
-
-                csaContext.RegisterOperationAction(oaContext =>
+                // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+                // that the underlying call doesn't have the comparison option so we want to bail-out.
+                if (invocationExpression.IsWithinExpressionTree(linqExpressionType))
                 {
-                    var invocationExpression = (IInvocationOperation)oaContext.Operation;
-                    var targetMethod = invocationExpression.TargetMethod;
+                    return;
+                }
 
-                    if (targetMethod.IsGenericMethod ||
-                        targetMethod.ContainingType == null ||
-                        targetMethod.ContainingType.IsErrorType())
-                    {
-                        return;
-                    }
+                // Report correctness issue CA1310 for known string comparison methods that default to culture specific string comparison:
+                // https://docs.microsoft.com/dotnet/standard/base-types/best-practices-strings#string-comparisons-that-use-the-current-culture
+                if (targetMethod.ContainingType.SpecialType == SpecialType.System_String &&
+                    !overloadMap.IsEmpty &&
+                    overloadMap.ContainsKey(targetMethod))
+                {
+                    ReportDiagnostic(
+                        Rule_CA1310,
+                        oaContext,
+                        invocationExpression,
+                        targetMethod,
+                        overloadMap[targetMethod]);
 
-                    if (linqExpressionType != null)
-                    {
-                        var enclosingLambdaOrLocalFunc = invocationExpression.GetAncestor(s_LambdaOrLocalFunctionKinds);
+                    return;
+                }
 
-                        // Check if we are in a Expression<Func<T...>> context, in which case it is possible
-                        // that the underlying call doesn't have the comparison option so we want to bail-out.
-                        if (enclosingLambdaOrLocalFunc?.Parent?.Type?.OriginalDefinition is { } lambdaType
-                            && linqExpressionType.Equals(lambdaType))
-                        {
-                            return;
-                        }
-                    }
+                // Report maintainability issue CA1307 for any method that has an additional overload with the exact same parameter list,
+                // plus as additional StringComparison parameter. Default StringComparison may or may not match user's intent,
+                // but it is recommended to explicitly specify it for clarity and readability:
+                // https://docs.microsoft.com/dotnet/standard/base-types/best-practices-strings#recommendations-for-string-usage
+                IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>();
+                if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
+                {
+                    var correctOverload = methodsWithSameNameAsTargetMethod
+                                            .GetMethodOverloadsWithDesiredParameterAtTrailing(targetMethod, stringComparisonType)
+                                            .FirstOrDefault();
 
-                    // Report correctness issue CA1310 for known string comparison methods that default to culture specific string comparison:
-                    // https://docs.microsoft.com/dotnet/standard/base-types/best-practices-strings#string-comparisons-that-use-the-current-culture
-                    if (targetMethod.ContainingType.SpecialType == SpecialType.System_String &&
-                        !overloadMap.IsEmpty &&
-                        overloadMap.ContainsKey(targetMethod))
+                    if (correctOverload != null)
                     {
                         ReportDiagnostic(
-                            Rule_CA1310,
+                            Rule_CA1307,
                             oaContext,
                             invocationExpression,
                             targetMethod,
-                            overloadMap[targetMethod]);
-
-                        return;
+                            correctOverload);
                     }
-
-                    // Report maintainability issue CA1307 for any method that has an additional overload with the exact same parameter list,
-                    // plus as additional StringComparison parameter. Default StringComparison may or may not match user's intent,
-                    // but it is recommended to explicitly specify it for clarity and readability:
-                    // https://docs.microsoft.com/dotnet/standard/base-types/best-practices-strings#recommendations-for-string-usage
-                    IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>();
-                    if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
-                    {
-                        var correctOverload = methodsWithSameNameAsTargetMethod
-                                                .GetMethodOverloadsWithDesiredParameterAtTrailing(targetMethod, stringComparisonType)
-                                                .FirstOrDefault();
-
-                        if (correctOverload != null)
-                        {
-                            ReportDiagnostic(
-                                Rule_CA1307,
-                                oaContext,
-                                invocationExpression,
-                                targetMethod,
-                                correctOverload);
-                        }
-                    }
-                }, OperationKind.Invocation);
-            });
+                }
+            }, OperationKind.Invocation);
 
             static ImmutableDictionary<IMethodSymbol, IMethodSymbol> GetWellKnownStringOverloads(
                 Compilation compilation,

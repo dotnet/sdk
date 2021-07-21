@@ -172,7 +172,11 @@ End Class
                     {
                         @"public class @class {}",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 },
             }.RunAsync();
 
@@ -186,7 +190,11 @@ End Class
 Public Class [Class]
 End Class",
             },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 },
             }.RunAsync();
         }
@@ -206,7 +214,11 @@ End Class",
                     {
                         @"public class @class {}",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCSharpResultAt(1, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "class", "class"), },
                 },
             }.RunAsync();
@@ -221,7 +233,11 @@ End Class",
 Public Class [Class]
 End Class",
             },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetBasicResultAt(2, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "Class", "Class"), },
                 },
             }.RunAsync();
@@ -317,13 +333,17 @@ End Class"
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arg1, arg2);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arg1, arg2);
     }
 }

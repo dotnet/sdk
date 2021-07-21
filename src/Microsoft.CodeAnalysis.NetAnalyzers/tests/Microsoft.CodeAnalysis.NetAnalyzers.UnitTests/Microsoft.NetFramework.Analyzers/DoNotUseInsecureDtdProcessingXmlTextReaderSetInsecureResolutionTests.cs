@@ -15,10 +15,14 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
         private static DiagnosticResult GetCA3075XmlTextReaderSetInsecureResolutionCSharpResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlTextReaderSetInsecureResolution).WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3075XmlTextReaderSetInsecureResolutionBasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlTextReaderSetInsecureResolution).WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
         public async Task UseXmlTextReaderNoCtorShouldNotGenerateDiagnostic()

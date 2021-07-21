@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Analyzer.Utilities;
-using System.Linq;
 using Analyzer.Utilities.Extensions;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
@@ -37,12 +36,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(compilationContext =>
             {
                 INamedTypeSymbol? flagsAttribute = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemFlagsAttribute);
                 if (flagsAttribute == null)
@@ -70,14 +69,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // Check accessibility of enum matches configuration or is public if not configured
-            if (!context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation))
             {
                 return;
             }
 
             // If enum is Int64 and has Flags attributes then exit
-            bool hasFlagsAttribute = symbol.GetAttributes().Any(a => a.AttributeClass.Equals(flagsAttribute));
-            if (underlyingType == SpecialType.System_Int64 && hasFlagsAttribute)
+            if (underlyingType == SpecialType.System_Int64 && symbol.HasAttribute(flagsAttribute))
             {
                 return;
             }

@@ -16,13 +16,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class CollectionsShouldImplementGenericInterfaceTests
     {
         private static DiagnosticResult GetCA1010CSharpResultAt(int line, int column, string typeName, string interfaceName, string genericInterfaceName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, interfaceName, genericInterfaceName);
 
         private static DiagnosticResult GetCA1010BasicResultAt(int line, int column, string typeName, string interfaceName, string genericInterfaceName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, interfaceName, genericInterfaceName);
 
         [Fact]
@@ -933,7 +937,11 @@ public class C : IDictionary
     IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "ICollection", "ICollection<T>") },
                 }
             }.RunAsync();
@@ -1031,7 +1039,11 @@ Public Class C
     End Function
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "ICollection", "ICollection(Of T)") },
                 }
             }.RunAsync();
@@ -1084,7 +1096,11 @@ public class C : IDictionary
     IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "IDictionary", "IDictionary<TKey, TValue>") },
                 }
             }.RunAsync();
@@ -1182,7 +1198,11 @@ Public Class C
     End Function
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "IDictionary", "IDictionary(Of TKey, TValue)") },
                 }
             }.RunAsync();
@@ -1204,7 +1224,11 @@ using System.Collections;
 
 public class TestClass : CollectionBase { }"
 },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(4, 14, "TestClass", "IList", "IDictionary<TKey, TValue>") },
                 }
             }.RunAsync();
@@ -1223,7 +1247,11 @@ Public Class TestClass
 End Class
 "
     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCA1010BasicResultAt(4, 14, "TestClass", "IList", "IDictionary(Of TKey, TValue)") },
                 }
             }.RunAsync();

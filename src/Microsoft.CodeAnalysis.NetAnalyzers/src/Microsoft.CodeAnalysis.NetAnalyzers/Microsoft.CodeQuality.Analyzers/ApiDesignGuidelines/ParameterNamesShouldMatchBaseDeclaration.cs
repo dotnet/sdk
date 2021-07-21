@@ -36,19 +36,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
         /// <inheritdoc/>
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(AnalyzeMethodSymbol, SymbolKind.Method);
+            context.RegisterSymbolAction(AnalyzeMethodSymbol, SymbolKind.Method);
         }
 
         private static void AnalyzeMethodSymbol(SymbolAnalysisContext analysisContext)
         {
             var methodSymbol = (IMethodSymbol)analysisContext.Symbol;
 
-            if (!analysisContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, analysisContext.Compilation, analysisContext.CancellationToken) ||
+            if (!analysisContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, analysisContext.Compilation) ||
                 !(methodSymbol.CanBeReferencedByName || methodSymbol.IsImplementationOfAnyExplicitInterfaceMember())
                 || !methodSymbol.Locations.Any(x => x.IsInSource)
                 || string.IsNullOrWhiteSpace(methodSymbol.Name))

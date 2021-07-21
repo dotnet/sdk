@@ -588,23 +588,31 @@ public class C
         }
 
         private static DiagnosticResult GetCA1307CSharpResultsAt(int line, int column, string arg1, string arg2, string arg3) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(SpecifyStringComparisonAnalyzer.Rule_CA1307)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arg1, arg2, arg3);
 
         private static DiagnosticResult GetCA1307BasicResultsAt(int line, int column, string arg1, string arg2, string arg3) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(SpecifyStringComparisonAnalyzer.Rule_CA1307)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arg1, arg2, arg3);
 
         private static DiagnosticResult GetCA1310CSharpResultsAt(int line, int column, string arg1, string arg2, string arg3) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(SpecifyStringComparisonAnalyzer.Rule_CA1310)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arg1, arg2, arg3);
 
         private static DiagnosticResult GetCA1310BasicResultsAt(int line, int column, string arg1, string arg2, string arg3) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(SpecifyStringComparisonAnalyzer.Rule_CA1310)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arg1, arg2, arg3);
     }
 }

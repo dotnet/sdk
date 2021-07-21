@@ -408,23 +408,31 @@ public ref struct A
         }
 
         private static DiagnosticResult GetCSharpOverrideEqualsDiagnostic(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.EqualsRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCSharpOperatorEqualsDiagnostic(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetBasicOverrideEqualsDiagnostic(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.EqualsRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetBasicOperatorEqualsDiagnostic(int line, int column, string typeName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
     }
 }

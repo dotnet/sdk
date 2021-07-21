@@ -31,12 +31,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(
+            context.RegisterSymbolAction(
                 symbolAnalysisContext =>
                 {
                     // Fxcop compat: fire only on public static members within externally visible generic types by default.
@@ -44,7 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (!symbol.IsStatic ||
                         symbol.DeclaredAccessibility != Accessibility.Public ||
                         !symbol.ContainingType.IsGenericType ||
-                        !symbolAnalysisContext.Options.MatchesConfiguredVisibility(Rule, symbol.ContainingType, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
+                        !symbolAnalysisContext.Options.MatchesConfiguredVisibility(Rule, symbol.ContainingType, symbolAnalysisContext.Compilation))
                     {
                         return;
                     }

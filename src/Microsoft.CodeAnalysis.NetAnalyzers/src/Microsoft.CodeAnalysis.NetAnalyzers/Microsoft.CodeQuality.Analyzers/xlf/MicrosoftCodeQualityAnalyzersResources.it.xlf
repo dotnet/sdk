@@ -22,36 +22,6 @@
         <target state="translated">Assegnazione del simbolo e del relativo membro nella stessa istruzione</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAsyncVoidTitle">
-        <source>Avoid Async Void</source>
-        <target state="translated">Evitare metodi asincroni void</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAsyncVoidDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAsyncVoidMessage">
-        <source>Avoid Async Void</source>
-        <target state="translated">Evitare metodi asincroni void</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AsyncMethodNamesShouldEndInAsyncTitle">
-        <source>Async Method Names Should End in Async</source>
-        <target state="translated">I nomi di metodi asincroni devono terminare con Async</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AsyncMethodNamesShouldEndInAsyncDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AsyncMethodNamesShouldEndInAsyncMessage">
-        <source>Async Method Names Should End in Async</source>
-        <target state="translated">I nomi di metodi asincroni devono terminare con Async</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesDescription">
         <source>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</source>
         <target state="translated">Maggiore è il numero di parametri di tipo contenuti in un tipo generico, più difficile sarà conoscere e ricordare il significato di ogni parametro di tipo.</target>
@@ -202,21 +172,6 @@
         <target state="translated">Non eseguire l'overload dell'operatore di uguaglianza per i tipi riferimento</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
-        <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">Non passare espressioni lambda asincrone come tipi delegati che restituiscono void</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesMessage">
-        <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">Non passare espressioni lambda asincrone come tipi delegati che restituiscono void</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
         <target state="translated">Oltre all'esperienza con i puntatori, per passare tipi per riferimento (con out o ref), è necessario comprendere le differenze tra tipi valore e tipi riferimento e gestire i metodi con più valori restituiti. Anche la differenza tra parametri out e ref non è del tutto compresa.</target>
@@ -245,21 +200,6 @@
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameTitle">
         <source>Do not prefix enum values with type name</source>
         <target state="translated">Non aggiungere nomi di tipo come prefisso in valori di enumerazione</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesTitle">
-        <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">Non archiviare espressioni lambda asincrone come tipi delegati che restituiscono void</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesMessage">
-        <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">Non archiviare espressioni lambda asincrone come tipi delegati che restituiscono void</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
@@ -292,6 +232,11 @@
         <target state="translated">Non usare il prefisso 'Before' o 'After' negli eventi</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
+        <source>Remove underscores</source>
+        <target state="new">Remove underscores</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">Rimuovere il finalizzatore dal tipo '{0}', eseguire l'override di Dispose(bool disposing) e inserire la logica di finalizzazione nel percorso del codice in cui 'disposing' è false. In caso contrario, potrebbero verificarsi chiamate duplicate a Dispose perché il tipo di base '{1}' fornisce anche un finalizzatore.</target>
@@ -302,34 +247,9 @@
         <target state="translated">Applica 'AttributeUsageAttribute'</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
-        <source>Propagate CancellationTokens When Possible</source>
-        <target state="translated">Propagare parametri CancellationToken quando possibile</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PropagateCancellationTokensWhenPossibleDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PropagateCancellationTokensWhenPossibleMessage">
-        <source>Propagate CancellationTokens When Possible</source>
-        <target state="translated">Propagare parametri CancellationToken quando possibile</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotMixBlockingAndAsyncTitle">
-        <source>Don't Mix Blocking and Async</source>
-        <target state="translated">Non combinare codice di blocco e asincrono</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotMixBlockingAndAsyncDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotMixBlockingAndAsyncMessage">
-        <source>Don't Mix Blocking and Async</source>
-        <target state="translated">Non combinare codice di blocco e asincrono</target>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesCodeFixTitle">
+        <source>Add operator overload named alternate</source>
+        <target state="translated">Aggiungi l'overload degli operatori con nome alternativo</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
@@ -351,6 +271,11 @@
         <source>Type '{0}' owns disposable field(s) '{1}' but is not disposable</source>
         <target state="translated">Il tipo '{0}' è proprietario di campi Disposable '{1}' ma non è Disposable</target>
         <note />
+      </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
+        <source>Add 'System.Uri' overloads</source>
+        <target state="translated">Aggiungi overload 'System.Uri'</target>
+        <note>{Locked="System.Uri"}</note>
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
@@ -709,7 +634,7 @@
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
         <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
-        <target state="new">Implement the equality operators and make their behavior identical to that of the Equals method</target>
+        <target state="translated">Implementare gli operatori di uguaglianza e impostare il comportamento in modo che sia identico a quello del metodo Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
@@ -745,21 +670,6 @@
       <trans-unit id="CancellationTokenParametersMustComeLastMessage">
         <source>Method '{0}' should take CancellationToken as the last parameter</source>
         <target state="translated">Il metodo '{0}' deve accettare CancellationToken come ultimo parametro</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableTitle">
-        <source>Constructor make noninheritable base class inheritable</source>
-        <target state="translated">Il costruttore rende ereditabile la classe di base non ereditabile</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableDescription">
-        <source>When a base class is noninheritable because its constructor is internal, a derived class should not make it inheritable by having a public or protected constructor.</source>
-        <target state="translated">Quando una classe di base è non ereditabile perché il relativo costruttore è interno, una classe derivata non deve renderla ereditabile tramite un costruttore public o protected.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableMessage">
-        <source>Constructor make noninheritable base class inheritable</source>
-        <target state="translated">Il costruttore rende ereditabile la classe di base non ereditabile</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainTypeNamesTitle">
@@ -1342,96 +1252,6 @@
         <target state="translated">Nel membro {0} modificare il nome di parametro {1} in {2} in modo che corrisponda all'identificatore come è stato dichiarato in {3}</target>
         <note />
       </trans-unit>
-      <trans-unit id="UsePreferredTermsTitle">
-        <source>Use preferred terms</source>
-        <target state="translated">Usare termini preferiti</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsDescription">
-        <source>The name of an externally visible identifier includes a term for which an alternative, preferred term exists. Alternatively, the name includes the term ""Flag"" or ""Flags"".</source>
-        <target state="translated">Il nome di un identificatore visibile esternamente include un termine per il quale esiste un termine preferito alternativo. In alternativa, il nome include il termine ""Flag"" o ""Flags"".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageAssembly">
-        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'</source>
-        <target state="translated">Sostituire il termine '{0}' nel nome di assembly {1} con l'alternativa preferita '{2}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageNamespace">
-        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'</source>
-        <target state="translated">Sostituire il termine '{0}' nel nome di spazio dei nomi '{1}' con l'alternativa preferita '{2}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMemberParameter">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">Nel membro {0} sostituire il termine '{1}' nel nome di parametro '{2}' con l'alternativa preferita '{3}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageDelegateParameter">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">Nel delegato {0} sostituire il termine '{1}' nel nome di parametro '{2}' con l'alternativa preferita '{3}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageTypeTypeParameter">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">Nel tipo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con l'alternativa preferita '{3}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMethodTypeParameter">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">Nel metodo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con l'alternativa preferita '{3}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageType">
-        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'</source>
-        <target state="translated">Sostituire il termine '{0}' nel nome di tipo {1} con l'alternativa preferita '{2}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMember">
-        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'</source>
-        <target state="translated">Sostituire il termine '{0}' nel nome di membro {1} con l'alternativa preferita '{2}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageAssemblyNoAlternate">
-        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">Sostituire il termine '{0}' nel nome di assembly {1} con un'alternativa appropriata o rimuoverlo completamente</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
-        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely</source>
-        <target state="translated">Sostituire il termine '{0}' nel nome di spazio dei nomi '{1}' con un'alternativa appropriata o rimuoverlo completamente</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">Nel membro {0} sostituire il termine '{1}' nel nome di parametro {2} con un'alternativa appropriata o rimuoverlo completamente</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageDelegateParameterNoAlternate">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">Nel delegato {0} sostituire il termine '{1}' nel nome di parametro {2} con un'alternativa appropriata o rimuoverlo completamente</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">Nel tipo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con un'alternativa appropriata o rimuoverlo completamente</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">Nel metodo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con un'alternativa appropriata o rimuoverlo completamente</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
-        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">Sostituire il termine '{0}' nel nome di tipo {1} con un'alternativa appropriata o rimuoverlo completamente</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
-        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">Sostituire il termine '{0}' nel nome di membro {1} con un'alternativa appropriata o rimuoverlo completamente</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
         <source>Override equals and operator equals on value types</source>
         <target state="translated">Eseguire l'override di Equals e dell'operatore di uguaglianza sui tipi di valore</target>
@@ -1465,26 +1285,6 @@
       <trans-unit id="PropertiesShouldNotReturnArraysMessage">
         <source>Properties should not return arrays</source>
         <target state="translated">Le proprietà non devono restituire matrici</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesTitle">
-        <source>Assemblies should have valid strong names</source>
-        <target state="translated">Agli assembly devono essere assegnati nomi sicuri validi</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesDescription">
-        <source>The strong name protects clients from unknowingly loading an assembly that has been tampered with. Assemblies without strong names should not be deployed outside very limited scenarios. If you share or distribute assemblies that are not correctly signed, the assembly can be tampered with, the common language runtime might not load the assembly, or the user might have to disable verification on his or her computer.</source>
-        <target state="translated">Il nome sicuro protegge i client dal caricamento involontario di un assembly alterato. Gli assembly senza nomi sicuri non devono essere distribuiti al di fuori di scenari molto limitati. Se si condividono o si distribuiscono assembly non firmati correttamente, l'assembly può essere alterato o non essere caricato in Common Language Runtime oppure l'utente potrebbe dover disabilitare la verifica nel proprio computer.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesMessageNoStrongName">
-        <source>Sign {0} with a strong name key.</source>
-        <target state="translated">Firmare {0} con una chiave con nome sicuro.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesMessageNotValid">
-        <source>Verify that {0} has a valid strong name before deploying.</source>
-        <target state="translated">Prima della distribuzione verificare che a {0} sia assegnato un nome sicuro valido.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideGetHashCodeOnOverridingEqualsTitle">
@@ -1687,71 +1487,6 @@
         <target state="translated">{0} deve definire l'operatore o gli operatori '{1}' e Equals perché implementa IComparable</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsTitle">
-        <source>Avoid calling problematic methods</source>
-        <target state="translated">Evitare di chiamare metodi problematici</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsDescription">
-        <source>A member calls a potentially dangerous or problematic method.</source>
-        <target state="translated">Un membro chiama un metodo potenzialmente pericoloso o problematico.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemGCCollect">
-        <source>Remove the call to GC.Collect from {0}. It is usually unnecessary to force garbage collection, and doing so can severely degrade performance.</source>
-        <target state="translated">Rimuovere la chiamata a GC.Collect da {0}. Non è necessario forzare la Garbage Collection perché tale operazione può influire molto negativamente sulle prestazioni.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemThreadingThreadResume">
-        <source>Remove the call to Thread.Resume from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</source>
-        <target state="translated">Rimuovere la chiamata a Thread.Resume da {0}. Può essere pericoloso sospendere e riprendere i thread se il sistema sta eseguendo un'operazione critica, ad esempio durante l'esecuzione di un costruttore di classe di un importante tipo di sistema o la risoluzione della sicurezza per un assembly condiviso.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemThreadingThreadSuspend">
-        <source>Remove the call to Thread.Suspend from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</source>
-        <target state="translated">Rimuovere la chiamata a Thread.Suspend da {0}. Può essere pericoloso sospendere e riprendere i thread se il sistema sta eseguendo un'operazione critica, ad esempio durante l'esecuzione di un costruttore di classe di un importante tipo di sistema o la risoluzione della sicurezza per un assembly condiviso.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemTypeInvokeMember">
-        <source>Remove the call to System.Type.InvokeMember with BindingFlags.NonPublic from {0}. Taking a dependency on a private member increases the chance of a breaking change in the future.</source>
-        <target state="translated">Rimuovere la chiamata a System.Type.InvokeMember con BindingFlags.NonPublic da {0}. L'uso di una dipendenza su un membro privato aumenta la possibilità di una modifica importante in futuro.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageCoInitializeSecurity">
-        <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called after the runtime has been initialized. The workaround is to write an unmanaged shim that will call the routine and then activate and call into managed code. You can do this using an export from a mixed-mode C++ DLL, by registering a managed component for use by COM, or by using the runtime hosting API.</source>
-        <target state="translated">{0} è una dichiarazione P/Invoke per un'API OLE32 che non può essere chiamata in modo affidabile dopo l'inizializzazione del runtime. Come soluzione alternativa è possibile scrivere uno shim non gestito che chiamerà la routine e quindi la attiverà e la chiamerà nel codice gestito. A questo scopo, è possibile usare un'esportazione da una DLL C++ in modalità mista, registrando un componente gestito per COM o usando l'API di hosting del runtime.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageCoSetProxyBlanket">
-        <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called against a runtime callable wrapper (a managed object wrapping a COM object). Runtime callable wrappers dynamically fetch interface pointers so the effect of the call might be arbitrarily lost. Runtime callable wrappers for a given COM object are also shared across an application domain so the call could possibly affect other users. Replace this call with a native wrapper COM object for the interface pointer that does the appropriate CoSetProxyBlanket calls.</source>
-        <target state="translated">{0} è una dichiarazione P/Invoke per un'API OLE32 che non può essere chiamata in modo affidabile su un oggetto Runtime Callable Wrapper, ovvero un oggetto gestito che esegue il wrapping di un oggetto COM. Gli oggetti Runtime Callable Wrapper recuperano dinamicamente i puntatori a interfaccia, quindi l'effetto della chiamata potrebbe andare arbitrariamente perso. Gli oggetti Runtime Callable Wrapper relativi a un determinato oggetto COM sono inoltre condivisi in un dominio dell'applicazione, quindi la chiamata potrebbe interessare altri utenti. Sostituire questa chiamata con un oggetto COM wrapper nativo per il puntatore a interfaccia che effettua le chiamate appropriate a CoSetProxyBlanket.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
-        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}</source>
-        <target state="translated">Rimuovere la chiamata a SafeHandle.DangerousGetHandle da {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFrom">
-        <source>Remove the call to Assembly.LoadFrom from {0}</source>
-        <target state="translated">Rimuovere la chiamata a Assembly.LoadFrom da {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFile">
-        <source>Remove the call to Assembly.LoadFile from {0}</source>
-        <target state="translated">Rimuovere la chiamata a Assembly.LoadFile da {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadWithPartialName">
-        <source>Remove the call to Assembly.LoadWithPartialName from {0}</source>
-        <target state="translated">Rimuovere la chiamata a Assembly.LoadWithPartialName da {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CategoryReliability">
-        <source>Reliability</source>
-        <target state="translated">Affidabilità</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidUsingCrefTagsWithAPrefixTitle">
         <source>Avoid using cref tags with a prefix</source>
         <target state="translated">Evitare di usare tag cref con un prefisso</target>
@@ -1855,26 +1590,6 @@
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
         <source>Invalid entry in code metrics rule specification file</source>
         <target state="translated">Voce non valida nel file di specifica delle regole per la metrica del codice</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesTitle">
-        <source>Variable names should not match field names</source>
-        <target state="translated">I nomi di variabile non devono corrispondere ai nomi di campo</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesDescription">
-        <source>An instance method declares a parameter or a local variable whose name matches an instance field of the declaring type, leading to errors.</source>
-        <target state="translated">Un metodo di istanza dichiara un parametro o una variabile locale il cui nome corrisponde a un campo di istanza del tipo dichiarante, quindi vengono generati errori.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageLocal">
-        <source>{0}, a variable declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</source>
-        <target state="translated">La variabile {0} dichiarata in {1} ha lo stesso nome di un campo di istanza sul tipo. Modificare il nome di uno di questi elementi.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageParameter">
-        <source>{0}, a parameter declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</source>
-        <target state="translated">Il parametro {0} dichiarato in {1} ha lo stesso nome di un campo di istanza sul tipo. Modificare il nome di uno di questi elementi.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewUnusedParametersTitle">

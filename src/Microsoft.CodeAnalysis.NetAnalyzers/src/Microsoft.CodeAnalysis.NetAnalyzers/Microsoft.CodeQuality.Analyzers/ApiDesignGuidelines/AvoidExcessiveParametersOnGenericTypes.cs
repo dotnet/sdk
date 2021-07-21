@@ -31,17 +31,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(context =>
+            context.RegisterSymbolAction(context =>
             {
                 var namedType = (INamedTypeSymbol)context.Symbol;
 
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!context.Options.MatchesConfiguredVisibility(Rule, namedType, context.Compilation, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(Rule, namedType, context.Compilation))
                 {
                     return;
                 }

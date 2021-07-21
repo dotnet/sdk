@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using Analyzer.Utilities;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
@@ -22,14 +23,28 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         ///  - UnsupportedFirst - keeps the lowest version of [UnsupportedOSPlatform] attribute found
         ///  - UnsupportedSecond - keeps the second lowest version of [UnsupportedOSPlatform] attribute found
         /// </summary>
-        private class PlatformAttributes
+        private class Versions
         {
             public Version? SupportedFirst { get; set; }
             public Version? SupportedSecond { get; set; }
             public Version? UnsupportedFirst { get; set; }
             public Version? UnsupportedSecond { get; set; }
-            public bool HasAttribute() => SupportedFirst != null || UnsupportedFirst != null ||
+            public bool IsSet() => SupportedFirst != null || UnsupportedFirst != null ||
                         SupportedSecond != null || UnsupportedSecond != null;
+        }
+
+        private sealed class PlatformAttributes
+        {
+            public PlatformAttributes() { }
+
+            public PlatformAttributes(Callsite callsite, SmallDictionary<string, Versions> platforms)
+            {
+                Callsite = callsite;
+                Platforms = platforms;
+            }
+
+            public SmallDictionary<string, Versions>? Platforms { get; set; }
+            public Callsite Callsite { get; set; }
         }
     }
 }

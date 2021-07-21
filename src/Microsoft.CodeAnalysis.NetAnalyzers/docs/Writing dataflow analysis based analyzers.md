@@ -3,16 +3,21 @@
 ## Introduction
 
 ### Definition
+
 Data-flow analysis is a technique for gathering information about the possible set of values calculated at various points in a computer program. A program's control flow graph (CFG) is used to determine those parts of a program to which a particular value assigned to a variable might propagate.
 
 ### Theory and concepts
+
 Please read [this introductory article](https://wikipedia.org/wiki/Data-flow_analysis) to understand the basic terminology, concepts and common algorithms for dataflow analysis.
 
 ### ControlFlowGraph (CFG) API
+
 [Microsoft.CodeAnalysis](https://www.nuget.org/packages/Microsoft.CodeAnalysis/) NuGet package provides public APIs to generate a ControlFlowGraph based on low-level IOperation nodes as statements/instructions within a basic block. See more [details](https://github.com/dotnet/roslyn/blob/1deafee3682da88bf07d1c18521a99f47446cee8/src/Compilers/Core/Portable/Operations/ControlFlowGraph.cs#L13-L20).
 
 ## Dataflow analysis framework
+
 We have built a dataflow analysis [framework](https://github.com/dotnet/roslyn-analyzers/tree/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Framework/DataFlow) based on the above CFG API in this repo. Additionally, we have implemented certain [well-known dataflow analyses](https://github.com/dotnet/roslyn-analyzers/tree/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis) on top of this framework. This enables you to implement either or both of the following:
+
 1. Write dataflow based analyzers which consume the analysis result from these well-known analyses.
 2. Write your own custom dataflow analyses, which can optionally consume analysis results from these well-known analyses.
 
@@ -88,6 +93,7 @@ Now that we are familiar with the basic concepts and data types for flow analysi
     3. Derive from [DataFlowOperationVisitor](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Framework/DataFlow/DataFlowOperationVisitor.cs): If none of the above two special visitor sub-types are suitable for your analysis, you can directly sub-type the core `DataFlowOperationVisitor`, although you will likely have a more complicated implementation with many more overrides. Hopefully, this will not be required often.
 
 Once you have implemented the above custom analysis pieces, your dataflow analyzers can invoke `MyCustomAnalysis.TryGetOrComputeResult` API to get the analysis result. Your analyzer can then consume any of the below components of the analysis result:
+
    1. Analysis values for any given operation in the graph OR
    2. AbstractBlockAnalysisResult for any basic block in the graph OR
    3. Merged analysis state for all the unhandled throw operations in the graph.
@@ -99,30 +105,36 @@ Once you have implemented the above custom analysis pieces, your dataflow analyz
 We have some common analyses that you may likely want to consume for your custom dataflow analysis implementation or use directly in dataflow analyzers:
 
 1. [PointsToAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/PointsToAnalysis/PointsToAnalysis.cs): Dataflow analysis to track locations pointed to by AnalysisEntity and IOperation instances. This is the most commonly used dataflow analysis in all our flow based analyzers/analyses. Consider the following example:
-```csharp
-var x = new MyClass();
-object y = x;
-var z = flag ? new MyClass() : y;
-```
-PointsToAnalysis will compute that variables `x` and `y` have identical non-null `PointsToAbstractValue`, which contains a single `AbstractLocation` corresponding to the first `IObjectCreationOperation` for `new MyClass()`. Variable `z` has a different `PointsToAbstractValue`, which is guaranteed to be non-null, but has two potential `AbstractLocation`, one for each `IObjectCreationOperation` in the above code.
+
+    ```csharp
+    var x = new MyClass();
+    object y = x;
+    var z = flag ? new MyClass() : y;
+    ```
+
+    PointsToAnalysis will compute that variables `x` and `y` have identical non-null `PointsToAbstractValue`, which contains a single `AbstractLocation` corresponding to the first `IObjectCreationOperation` for `new MyClass()`. Variable `z` has a different `PointsToAbstractValue`, which is guaranteed to be non-null, but has two potential `AbstractLocation`, one for each `IObjectCreationOperation` in the above code.
 
 2. [CopyAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/CopyAnalysis/CopyAnalysis.cs): Dataflow analysis to track AnalysisEntity instances that share the same value type or reference type value, determined based on [CopyAbstractValueKind](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/CopyAnalysis/CopyAbstractValueKind.cs#L8). Consider the following example:
-```csharp
-var x = new MyClass();
-object y = x;
-int c1 = 0;
-int c2 = 0;
-```
-CopyAnalysis will compute that variables `x` and `y` have identical `CopyAbstractValue` with `CopyAbstractValueKind.KnownReferenceCopy` with two `AnalysisEntity` instances, one for `x` and one for `y`. Similarly, it will compute that `c1` and `c2` have identical `CopyAbstractValue` with `CopyAbstractValueKind.KnownValueCopy` with two `AnalysisEntity` instances, one for `c1` and one for `c2`. CopyAnalysis is currently off by default for all analyzers as it has known performance issues and needs performance tuning. It can be enabled by end users with editorconfig option [copy_analysis](https://github.com/dotnet/roslyn-analyzers/blob/master/docs/Analyzer%20Configuration.md#configure-execution-of-copy-analysis-tracks-value-and-reference-copies).
+
+    ```csharp
+    var x = new MyClass();
+    object y = x;
+    int c1 = 0;
+    int c2 = 0;
+    ```
+
+   CopyAnalysis will compute that variables `x` and `y` have identical `CopyAbstractValue` with `CopyAbstractValueKind.KnownReferenceCopy` with two `AnalysisEntity` instances, one for `x` and one for `y`. Similarly, it will compute that `c1` and `c2` have identical `CopyAbstractValue` with `CopyAbstractValueKind.KnownValueCopy` with two `AnalysisEntity` instances, one for `c1` and one for `c2`. CopyAnalysis is currently off by default for all analyzers as it has known performance issues and needs performance tuning. It can be enabled by end users with editorconfig option [copy_analysis](https://github.com/dotnet/roslyn-analyzers/blob/main/docs/Analyzer%20Configuration.md#configure-execution-of-copy-analysis-tracks-value-and-reference-copies).
 
 3. [ValueContentAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/ValueContentAnalysis/ValueContentAnalysis.cs): Dataflow analysis to track possible constant values that might be stored in an AnalysisEntity and IOperation instances. This is identical to constant propagation for constant values stored in non-constant symbols. Consider the following example:
-```csharp
-int c1 = 0;
-int c2 = 0;
-int c3 = c1 + c2;
-int c4 = flag ? c3 : c3 + param;     // assume 'param' is a parameter for this method block with unknown value content from callers.
-```
-ValueContentAnalysis will compute that variables `c1`, `c2` and `c3` have identical `ValueContentAbstractValue` with a single literal value `0` and `ValueContainsNonLiteralState.No` to indicate it cannot contain a non-literal value. It will compute that `c4` has a different `ValueContentAbstractValue` with a single literal value `0` and `ValueContainsNonLiteralState.Maybe` to indicate that it may contain some non-literal value(s) in some code path(s).
+
+    ```csharp
+    int c1 = 0;
+    int c2 = 0;
+    int c3 = c1 + c2;
+    int c4 = flag ? c3 : c3 + param;     // assume 'param' is a parameter for this method block with unknown value content from callers.
+    ```
+
+    ValueContentAnalysis will compute that variables `c1`, `c2` and `c3` have identical `ValueContentAbstractValue` with a single literal value `0` and `ValueContainsNonLiteralState.No` to indicate it cannot contain a non-literal value. It will compute that `c4` has a different `ValueContentAbstractValue` with a single literal value `0` and `ValueContainsNonLiteralState.Maybe` to indicate that it may contain some non-literal value(s) in some code path(s).
 
 4. [TaintedDataAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/TaintedDataAnalysis/TaintedDataAnalysis.cs): Dataflow analysis to track tainted state of AnalysisEntity and IOperation instances.
 
@@ -135,6 +147,7 @@ We also support a complete context sensitive interprocedural flow analysis for i
 Interprocedural analysis support is baked into the core `DataFlowOperationVisitor` and each custom dataflow analysis implementation gets all this support for free, without requiring to add any code specific to interprocedural analysis. Each dataflow analysis defines the default `InterproceduralAnalysisKind` in its `TryGetOrComputeResult` entry point, and the analyzer is free to override the interprocedural analysis kind. Interprocedural analysis almost always leads to more precise analysis results at the expense of more computation resources, i.e. it likely takes more memory and time to complete. So, an analyzer should be extremely fine tuned for performance if it defaults to enabling context sensitive interprocedural analysis by default. Note that the end user can override the interprocedural analysis kind for specific rule ID or all dataflow rules with the editorconfig option [interprocedural-analysis-kind](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/docs/Analyzer%20Configuration.md#interprocedural-analysis-kind). This option takes precedence over the defaults in the `TryGetOrComputeResult` entry points to analysis and also any overrides from individual analyzers invoking this API.
 
 We also have couple of additional configuration/customization points for interprocedural analysis:
+
 1. [InterproceduralAnalysisConfiguration](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Framework/DataFlow/InterproceduralAnalysisConfiguration.cs): Defines interprocedural analysis configuration parameters. For example, `MaxInterproceduralMethodCallChain` and `MaxInterproceduralLambdaOrLocalFunctionCallChain` control the size of the maximum height of the interprocedural call tree. Each analyzer can override the defaults for these chain lengths (3 as of current implementation), and end users can override it with editorconfig options [max_interprocedural_method_call_chain](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/docs/Analyzer%20Configuration.md#maximum-method-call-chain-length-to-analyze-for-interprocedural-dataflow-analysis) and [max_interprocedural_lambda_or_local_function_call_chain](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/docs/Analyzer%20Configuration.md#maximum-lambda-or-local-function-call-chain-length-to-analyze-for-interprocedural-dataflow-analysis).
 
 2. [InterproceduralAnalysisPredicate](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Framework/DataFlow/InterproceduralAnalysisPredicate.cs): Optional predicates that can be provided by each analyzer to determine if interprocedural analysis should be invoked or not for specific callsites. For example, [this predicate](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Microsoft.NetCore.Analyzers/Core/Runtime/DisposeObjectsBeforeLosingScope.cs#L175) used by dispose analysis significantly trims down the size of interprocedural call trees and provides huge performance improvements for interprocedural analysis.

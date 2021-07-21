@@ -97,7 +97,11 @@ public class C
     }}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 }
             }.RunAsync();
 
@@ -116,7 +120,11 @@ Public Class C
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 }
             }.RunAsync();
         }
@@ -147,7 +155,11 @@ public class C
     }}
 }}"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics =
                     {
                         GetCSharpExpectedResult(4, 11 + accessibility.Length)
@@ -175,7 +187,11 @@ Public Class C
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics =
                     {
                         GetBasicExpectedResult(5, 10 + accessibility.Length)
@@ -440,9 +456,13 @@ public class Person
         }
 
         private static DiagnosticResult GetCSharpExpectedResult(int line, int col) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic().WithLocation(line, col);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetBasicExpectedResult(int line, int col) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic().WithLocation(line, col);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

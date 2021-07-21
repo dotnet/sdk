@@ -108,19 +108,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AssemblyRule, NamespaceRule, TypeRule, MemberRule, TypeTypeParameterRule, MethodTypeParameterRule, MemberParameterRule, DelegateParameterRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(symbolAnalysisContext =>
+            context.RegisterSymbolAction(symbolAnalysisContext =>
             {
                 var symbol = symbolAnalysisContext.Symbol;
 
                 // FxCop compat: only analyze externally visible symbols by default
                 // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                 // will always have identical configured visibility.
-                if (!symbolAnalysisContext.Options.MatchesConfiguredVisibility(AssemblyRule, symbol, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
+                if (!symbolAnalysisContext.Options.MatchesConfiguredVisibility(AssemblyRule, symbol, symbolAnalysisContext.Compilation))
                 {
                     return;
                 }
@@ -216,7 +216,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             SymbolKind.Method, SymbolKind.Property, SymbolKind.Field, SymbolKind.Event // Members
             );
 
-            analysisContext.RegisterCompilationAction(compilationAnalysisContext =>
+            context.RegisterCompilationAction(compilationAnalysisContext =>
             {
                 var compilation = compilationAnalysisContext.Compilation;
                 if (ContainsUnderScore(compilation.AssemblyName))
@@ -230,7 +230,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
             // will always have identical configured visibility.
-            var matchesConfiguration = context.Options.MatchesConfiguredVisibility(AssemblyRule, symbol, context.Compilation, context.CancellationToken);
+            var matchesConfiguration = context.Options.MatchesConfiguredVisibility(AssemblyRule, symbol, context.Compilation);
 
             return (!(matchesConfiguration && !symbol.IsOverride)) ||
                 symbol.IsAccessorMethod() || symbol.IsImplementationOfAnyInterfaceMember();

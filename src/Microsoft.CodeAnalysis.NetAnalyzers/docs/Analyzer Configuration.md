@@ -46,6 +46,8 @@ End users can enable `.editorconfig` based configuration for individual document
 
 Note that this additional file based approach is also supported on VS2019 16.3 and later releases for backwards compatibility.
 
+**The additional file based approach is no longer supported starting in Microsoft.CodeAnalysis.NetAnalyzers v5.0.4. It will be implicitly discovered (if the file is in the project's directory or any ancestor directory), or it should be converted into a 'globalconfig'. See [Configuration files for code analysis rules](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/configuration-files).**
+
 ## Supported .editorconfig options
 
 This section documents the list of supported `.editorconfig` key-value options for CA rules.
@@ -208,7 +210,7 @@ Option Values: Names of null check validation methods (separated by `|`) that va
 Allowed method name formats:
 
   1. Method name only (includes all methods with the name, regardless of the containing type or namespace).
-  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format)
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format)
      with an optional `M:` prefix.
 
 Default Value: _None_
@@ -232,7 +234,7 @@ Option Values: Names of additional string formatting methods (separated by `|`).
 Allowed method name formats:
 
   1. Method name only (includes all methods with the name, regardless of the containing type or namespace).
-  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format)
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format)
      with an optional `M:` prefix.
 
 Default Value: _None_
@@ -315,9 +317,9 @@ Allowed symbol name formats:
 
   1. Symbol name (includes all symbols with the name, regardless of the containing type or namespace).
   2. Symbol name ending with a wildcard symbol (includes all symbols whose name starts with the given name, regardless of the containing type or namespace).
-  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format).
+  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format).
     Note that each symbol name requires a symbol kind prefix, such as `M:` prefix for methods, `T:` prefix for types, `N:` prefix for namespaces, etc.
-  4. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) and ending with the wildcard symbol.
+  4. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format) and ending with the wildcard symbol.
     Note that each symbol name requires a symbol kind prefix, such as `M:` prefix for methods, `T:` prefix for types, `N:` prefix for namespaces, etc.
   5. `.ctor` for constructors and `.cctor` for static constructors.
 
@@ -346,8 +348,8 @@ Allowed symbol name formats:
 
   1. Type name only (includes all types with the name, regardless of the containing type or namespace).
   2. Type name only ending with the wildcard symbol (includes all types whose name starts with the given name, regardless of the containing type or namespace).
-  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix.
-  4. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix and ending with the wildcard symbol.
+  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix.
+  4. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix and ending with the wildcard symbol.
 
 Default Value: _None_
 
@@ -394,7 +396,7 @@ Option Values: Names of symbols (separated by `|`) that are disallowed in the co
 Allowed symbol name formats:
 
   1. Symbol name only (includes all symbols with the name, regardless of the containing type or namespace).
-  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format).
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format).
      Note that each symbol name requires a symbol kind prefix, such as `M:` prefix for methods, `T:` prefix for types, `N:` prefix for namespaces, etc.
   3. `.ctor` for constructors and `.cctor` for static constructors.
 
@@ -635,7 +637,7 @@ Option Values: List (separated by `|`) of type names with their required suffix 
 Allowed type name formats:
 
   1. Type name only (includes all types with the name, regardless of the containing type or namespace).
-  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix.
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix.
 
 Default Value: _None_
 
@@ -657,7 +659,7 @@ Option Values: List (separated by `|`) of interface names with their required ge
 Allowed interface formats:
 
   1. Interface name only (includes all interfaces with the name, regardless of the containing type or namespace).
-  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix.
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix.
 
 Default Value: _None_
 
@@ -679,7 +681,7 @@ Allowed symbol name formats:
 
   1. Type or namespace name (includes all types with the name, regardless of the containing type or namespace and all types whose namespace contains the name).
   2. Type or namespace name ending with a wildcard symbol (includes all types whose name starts with the given name, regardless of the containing type or namespace and all types whose namespace contains the name).
-  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix for types or `N:` prefix for namespaces.
+  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix for types or `N:` prefix for namespaces.
   4. Fully qualified type or namespace name with an optional `T:` prefix for type or `N:` prefix for namespace and ending with the wildcard symbol (includes all types whose fully qualified name starts with the given suffix).
 
 Default Value: `N:System.*` (note that this value is always automatically added to the value provided)
@@ -731,7 +733,7 @@ Option Values: Names of additional methods (separated by `|`).
 Allowed method name formats:
 
   1. Method name only (includes all methods with the name, regardless of the containing type or namespace).
-  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format)
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format)
      with an optional `M:` prefix.
 
 Default Value: _None_

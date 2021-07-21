@@ -46,12 +46,12 @@ namespace Microsoft.NetFramework.Analyzers
                                                         {"System.Collections.Stack", MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsStack},
                                                     }.ToImmutableDictionary();
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(AnalyzeCompilationStart);
+            context.RegisterCompilationStartAction(AnalyzeCompilationStart);
         }
 
         private static void AnalyzeCompilationStart(CompilationStartAnalysisContext context)
@@ -69,7 +69,7 @@ namespace Microsoft.NetFramework.Analyzers
 
                         if (namedTypeSymbol.BaseType != null &&
                             badBaseTypes.Contains(namedTypeSymbol.BaseType) &&
-                            saContext.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken))
+                            saContext.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, saContext.Compilation))
                         {
                             string baseTypeName = namedTypeSymbol.BaseType.ToDisplayString();
                             Debug.Assert(s_badBaseTypesToMessage.ContainsKey(baseTypeName));

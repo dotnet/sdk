@@ -434,7 +434,11 @@ public class C
     public virtual void F(int @int) {}
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 },
             }.RunAsync();
 
@@ -450,7 +454,11 @@ Public Class C
     End Sub
 End Class",
             },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 },
             }.RunAsync();
         }
@@ -474,7 +482,11 @@ public class C
     public virtual void F(int @int) {}
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCSharpResultAt(4, 31, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberParameterRule, "C.F(int)", "int", "int"), },
                 },
             }.RunAsync();
@@ -491,20 +503,28 @@ Public Class C
     End Sub
 End Class",
             },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetBasicResultAt(3, 30, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberParameterRule, "C.F(Integer)", "int", "int"), },
                 },
             }.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
     }
 }

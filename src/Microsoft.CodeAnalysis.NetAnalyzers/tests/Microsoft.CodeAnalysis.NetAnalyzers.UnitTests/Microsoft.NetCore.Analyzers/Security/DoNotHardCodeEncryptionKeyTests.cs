@@ -180,9 +180,9 @@ class TestClass
 {
     public void TestMethod(byte[] someOtherBytesForIV)
     {
-        string someHardCodedBase64String = ""sssdsdsdsdsdsds"" +
-                                          ""sdasdsadasddsda""  + 
-                                          ""sdasdsadasddsda"" ;
+        string someHardCodedBase64String = ""1234"" +
+                                          ""1234""  + 
+                                          ""1234"" ;
         byte[] key = Convert.FromBase64String(someHardCodedBase64String);
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
         rijn.CreateEncryptor(key, someOtherBytesForIV);
@@ -203,7 +203,7 @@ class TestClass
 {
     public void TestMethod(byte[] someOtherBytesForIV)
     {
-        byte[] rgbKey = new byte[] {1, 2, 3};
+        byte[] rgbKey = new byte[] {1, 2, 3, 4, 5};
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
         rijn.CreateEncryptor(rgbKey, someOtherBytesForIV);
     }
@@ -222,7 +222,7 @@ class TestClass
 {
     public void TestMethod()
     {
-        byte[] key = new byte[] {1, 2, 3};
+        byte[] key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
         AesGcm aesGcm = new AesGcm(key);
     }
 }",
@@ -240,11 +240,47 @@ class TestClass
 {
     public void TestMethod()
     {
-        ReadOnlySpan<byte> key = new ReadOnlySpan<byte>(new byte[] {1, 2, 3});
+        ReadOnlySpan<byte> key = new ReadOnlySpan<byte>(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
         AesGcm aesGcm = new AesGcm(key);
     }
 }",
             GetCSharpResultAt(10, 25, 9, 57, "AesGcm.AesGcm(ReadOnlySpan<byte> key)", "void TestClass.TestMethod()", "byte[]", "void TestClass.TestMethod()"));
+        }
+
+        [Fact]
+        public async Task Test_TooShortHardcodedInStringWithVariable_AesGcm_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Security.Cryptography;
+
+class TestClass
+{
+    public void TestMethod()
+    {
+        string someHardCodedBase64String = ""AAAA"";
+        byte[] key = Convert.FromBase64String(someHardCodedBase64String);
+        AesGcm aesGcm = new AesGcm(key);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task Test_InvalidBase64HardcodedInStringWithVariable_AesGcm_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Security.Cryptography;
+
+class TestClass
+{
+    public void TestMethod()
+    {
+        string someHardCodedBase64String = ""AAAAbbbbCCCCddddE"";
+        byte[] key = Convert.FromBase64String(someHardCodedBase64String);
+        AesGcm aesGcm = new AesGcm(key);
+    }
+}");
         }
 
         [Fact]
@@ -267,7 +303,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_AesCcmWithByteArrayParameter_Diagnostic()
+        public async Task Test_AesCcmWithTooShortByteArrayParameter_NoDiagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -278,6 +314,23 @@ class TestClass
     public void TestMethod()
     {
         byte[] key = new byte[] {1, 2, 3};
+        AesCcm aesCcm = new AesCcm(key);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task Test_AesCcmWithByteArrayParameter_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Security.Cryptography;
+
+class TestClass
+{
+    public void TestMethod()
+    {
+        byte[] key = new byte[] {1, 2, 3, 4, 5};
         AesCcm aesCcm = new AesCcm(key);
     }
 }",
@@ -295,7 +348,7 @@ class TestClass
 {
     public void TestMethod()
     {
-        ReadOnlySpan<byte> key = new ReadOnlySpan<byte>(new byte[] {1, 2, 3});
+        ReadOnlySpan<byte> key = new ReadOnlySpan<byte>(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
         AesCcm aesCcm = new AesCcm(key);
     }
 }",
@@ -332,7 +385,7 @@ class TestClass
 {
     public void TestMethod(byte[] someOtherBytesForIV)
     {
-        byte[] rgbKey = new byte[] {1, 2, 3};
+        byte[] rgbKey = new byte[] {1, 2, 3, 4, 5};
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
         rijn.CreateDecryptor(rgbKey, someOtherBytesForIV);
     }
@@ -352,7 +405,7 @@ class TestClass
     public void TestMethod(byte[] someOtherBytesForIV)
     {
         byte b = 1;
-        byte[] rgbKey = new byte[] {b};
+        byte[] rgbKey = new byte[] {b, 2, 3, 4, 5};
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
         rijn.CreateEncryptor(rgbKey, someOtherBytesForIV);
     }
@@ -371,7 +424,7 @@ class TestClass
 {
     public void TestMethod(byte[] someOtherBytesForIV)
     {
-        byte[] rgbKey = new byte[] {1, 2, 3};
+        byte[] rgbKey = new byte[] {1, 2, 3, 4, 5};
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
         rijn.Key = rgbKey;
     }
@@ -390,7 +443,7 @@ class TestClass
 {
     public void TestMethod(byte[] someOtherBytesForIV)
     {
-        byte[] rgbKey = new byte[] {1, 2, 3};
+        byte[] rgbKey = new byte[] {1, 2, 3, 4, 5};
         Aes aes = Aes.Create();
         aes.CreateEncryptor(rgbKey, someOtherBytesForIV);
     }
@@ -411,7 +464,7 @@ class TestClass
     {
         using (var aes = Aes.Create())
         {
-            aes.Key = new Byte[] { 1, 2, 3 };
+            aes.Key = new Byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
         }
     }
 }",
@@ -429,12 +482,12 @@ class TestClass
 {
     public void TestMethod(byte[] someOtherBytesForIV)
     {
-        byte[] rgbKey = new byte[] {1, 2, 3};
+        byte[] rgbKey = new byte[] {1, 2, 3, 4, 5, 6, 7, 8};
         Random r = new Random();
 
         if (r.Next(6) == 4)
         {
-            rgbKey = new byte[] {4, 5, 6};
+            rgbKey = new byte[] {9, 10, 11, 12, 13, 14, 15, 16};
         }
 
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
@@ -457,7 +510,7 @@ class TestClass
     public void TestMethod(byte[] someOtherBytesForIV)
     {
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
-        rijn.CreateEncryptor(new byte[] {1, 2, 3}, someOtherBytesForIV);
+        rijn.CreateEncryptor(new byte[] {1, 2, 3, 4, 5}, someOtherBytesForIV);
     }
 }",
             GetCSharpResultAt(10, 9, 10, 30, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
@@ -478,7 +531,7 @@ class TestClass
 
         if (r.Next(6) == 4)
         {
-            rgbKey = new byte[] {4, 5, 6};
+            rgbKey = new byte[] {4, 5, 6, 7, 8, 9};
         }
 
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
@@ -537,7 +590,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_HardcodedIn2DByteArray_CreateEncryptor_Diagnostic()
+        public async Task Test_HardcodedIn2DByteArray_CreateEncryptor_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -552,12 +605,13 @@ class TestClass
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
         rijn.CreateEncryptor(rgbKey.Cast<byte>().ToArray(), someOtherBytesForIV);
     }
-}",
-            GetCSharpResultAt(12, 9, 10, 26, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[,]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
+}");
+            // This case is a weird way of hardcoding a key.
+            ////GetCSharpResultAt(12, 9, 10, 26, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[,]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
         [Fact]
-        public async Task Test_HardcodedInJaggedArrayInitializer_CreateEncryptor_Diagnostic()
+        public async Task Test_HardcodedInJaggedArrayInitializer_CreateEncryptor_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -577,9 +631,10 @@ class TestClass
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
         rijn.CreateEncryptor(rgbKey.Cast<byte>().ToArray(), someOtherBytesForIV);
     }
-}",
-            GetCSharpResultAt(17, 9, 13, 13, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte unknownByte)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte unknownByte)"),
-            GetCSharpResultAt(17, 9, 12, 13, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte unknownByte)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte unknownByte)"));
+}");
+            // This case is a weird way of hardcoding a key.
+            ////GetCSharpResultAt(17, 9, 13, 13, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte unknownByte)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte unknownByte)"),
+            ////GetCSharpResultAt(17, 9, 12, 13, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte unknownByte)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte unknownByte)"));
         }
 
         [Fact]
@@ -593,7 +648,7 @@ class TestClass
 {
     public void TestMethod(byte[] someOtherBytesForIV)
     {
-        byte[] rgbKey = GetArray(1, 2, 3);
+        byte[] rgbKey = GetArray(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32);
         SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
         rijn.CreateEncryptor(rgbKey, someOtherBytesForIV);
     }
@@ -604,6 +659,29 @@ class TestClass
     }
 }",
             GetCSharpResultAt(11, 9, 9, 25, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
+        }
+
+        [Fact]
+        public async Task Test_TooLongHardcodeByParamsBytesArray_CreateEncryptor_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Security.Cryptography;
+
+class TestClass
+{
+    public void TestMethod(byte[] someOtherBytesForIV)
+    {
+        byte[] rgbKey = GetArray(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33);
+        SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
+        rijn.CreateEncryptor(rgbKey, someOtherBytesForIV);
+    }
+
+    public byte[] GetArray(params byte[] array)
+    {
+        return array;
+    }
+}");
         }
 
         [Fact]

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -464,25 +465,22 @@ public class C
         {
             await new VerifyCS.Test()
             {
-                TestCode = @"int x = 0;",
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-                SolutionTransforms =
+                TestState =
                 {
-                    (solution, projectId) =>
-                    {
-                        var project = solution.GetProject(projectId);
-                        project = project.WithCompilationOptions(project.CompilationOptions.WithOutputKind(CodeAnalysis.OutputKind.ConsoleApplication));
-                        return project.Solution;
-                    },
-                }
+                    Sources = { @"int x = 0;" },
+                    OutputKind = OutputKind.ConsoleApplication,
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
             }.RunAsync();
         }
 
         #region Helpers
 
         private static DiagnosticResult GetCA1720CSharpResultAt(int line, int column, string identifierName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(identifierName);
 
         #endregion

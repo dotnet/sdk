@@ -215,15 +215,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             return new Version(versionBuilder[0], versionBuilder[1]);
                         }
-                        else
-                        {
-                            return new Version(versionBuilder[0], versionBuilder[1], versionBuilder[2]);
-                        }
+
+                        return new Version(versionBuilder[0], versionBuilder[1], versionBuilder[2]);
                     }
-                    else
-                    {
-                        return new Version(versionBuilder[0], versionBuilder[1], versionBuilder[2], versionBuilder[3]);
-                    }
+
+                    return new Version(versionBuilder[0], versionBuilder[1], versionBuilder[2], versionBuilder[3]);
                 }
             }
 
@@ -248,7 +244,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 => obj is PlatformMethodValue otherInfo && Equals(otherInfo);
 
             public override int GetHashCode()
-                => HashUtilities.Combine(InvokedMethodName.GetHashCode(), PlatformName.GetHashCode(), Version.GetHashCode(), Negated.GetHashCode());
+            {
+                return RoslynHashCode.Combine(
+                    InvokedMethodName.GetHashCode(),
+                    PlatformName.GetHashCode(),
+                    Version.GetHashCode(),
+                    Negated.GetHashCode());
+            }
 
             bool IEquatable<IAbstractAnalysisValue>.Equals(IAbstractAnalysisValue other)
                 => other is PlatformMethodValue otherInfo && Equals(otherInfo);

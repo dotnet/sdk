@@ -780,6 +780,90 @@ class C
             return CSharpVerifyExpectedCodeFixDiagnosticsAsync(originalSource, fixedSource, GetCSharpResult(12, 74, 12, 254));
         }
 
+        [Fact]
+        public Task CS_Fixer_PreserveNullability()
+        {
+            // The differences with the WriteAsync test are "condition ? 0 : 1" and "buffer!.Length".
+            string originalSource = @"
+#nullable enable
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+public class C
+{
+    async void M(FileStream? stream, byte[]? buffer, bool condition)
+    {
+        await stream!.ReadAsync(buffer!, offset: condition ? 0 : 1, count: buffer!.Length).ConfigureAwait(false);
+    }
+}
+";
+            string fixedSource = @"
+#nullable enable
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+public class C
+{
+    async void M(FileStream? stream, byte[]? buffer, bool condition)
+    {
+        await (stream!).ReadAsync((buffer!).AsMemory(start: condition ? 0 : 1, length: buffer!.Length)).ConfigureAwait(false);
+    }
+}
+";
+
+            return CSharpVerifyForVersionAsync(
+                originalSource,
+                fixedSource,
+                ReferenceAssemblies.Net.Net50,
+                CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                GetCSharpResult(11, 15, 11, 91));
+        }
+
+        [Fact]
+        public Task CS_Fixer_PreserveNullabilityWithCancellationTOken()
+        {
+            // The differences with the WriteAsync test are "condition ? 0 : 1" and "buffer!.Length".
+            string originalSource = @"
+#nullable enable
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    async void M(FileStream? stream, byte[]? buffer, bool condition, CancellationToken ct)
+    {
+        await stream!.ReadAsync(buffer!, offset: condition ? 0 : 1, count: buffer!.Length, ct).ConfigureAwait(false);
+    }
+}
+";
+            string fixedSource = @"
+#nullable enable
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    async void M(FileStream? stream, byte[]? buffer, bool condition, CancellationToken ct)
+    {
+        await (stream!).ReadAsync((buffer!).AsMemory(start: condition ? 0 : 1, length: buffer!.Length), ct).ConfigureAwait(false);
+    }
+}
+";
+
+            return CSharpVerifyForVersionAsync(
+                originalSource,
+                fixedSource,
+                ReferenceAssemblies.Net.Net50,
+                CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                GetCSharpResult(12, 15, 12, 95));
+        }
+
         #endregion
 
         #region VB - Diagnostic
@@ -839,12 +923,51 @@ End Class
         }
 
         [Theory]
+        [InlineData("System")]
+        [InlineData("system")]
+        [InlineData("SYSTEM")]
+        [InlineData("systEM")]
+        public Task VB_Fixer_Diagnostic_EnsureSystemNamespaceNotAddedWhenAlreadyPresent(string systemNamespace)
+        {
+            string originalCode = $@"
+Imports System.IO
+Imports System.Threading
+Imports {systemNamespace}
+
+Class C
+    Public Async Sub M()
+        Using s As FileStream = New FileStream(""path.txt"", FileMode.Create)
+            Dim buffer As Byte() = New Byte(s.Length - 1) {{}}
+            Await s.ReadAsync(New Byte(s.Length - 1) {{}}, 0, s.Length)
+        End Using
+    End Sub
+End Class
+";
+            string fixedCode = $@"
+Imports System.IO
+Imports System.Threading
+Imports {systemNamespace}
+
+Class C
+    Public Async Sub M()
+        Using s As FileStream = New FileStream(""path.txt"", FileMode.Create)
+            Dim buffer As Byte() = New Byte(s.Length - 1) {{}}
+            Await s.ReadAsync((New Byte(s.Length - 1) {{}}).AsMemory(0, s.Length))
+        End Using
+    End Sub
+End Class
+";
+            return VisualBasicVerifyExpectedCodeFixDiagnosticsAsync(originalCode, fixedCode, GetVisualBasicResult(10, 19, 10, 70));
+        }
+
+        [Theory]
         [MemberData(nameof(VisualBasicUnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenFullBufferTestData))]
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_ArgumentNaming(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
@@ -855,6 +978,7 @@ End Class
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_ArgumentNaming_WithConfigureAwait(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 
@@ -875,6 +999,7 @@ End Class
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_AwaitInvocationPassedAsArgument(string originalArgs, string fixedArgs) =>
             VB_Fixer_Diagnostic_AwaitInvocationPassedAsArgument_Internal(originalArgs, fixedArgs, isEmptyConfigureAwait: true);
 
@@ -885,6 +1010,7 @@ End Class
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
+        [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
         public Task VB_Fixer_Diagnostic_AwaitInvocationPassedAsArgument_WithConfigureAwait(string originalArgs, string fixedArgs) =>
             VB_Fixer_Diagnostic_AwaitInvocationPassedAsArgument_Internal(originalArgs, fixedArgs, isEmptyConfigureAwait: false);
 

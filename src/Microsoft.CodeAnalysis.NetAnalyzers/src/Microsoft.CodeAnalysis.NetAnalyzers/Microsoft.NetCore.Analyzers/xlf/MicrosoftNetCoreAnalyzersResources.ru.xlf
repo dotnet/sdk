@@ -298,7 +298,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
-        <source>Use Secure Cookies In ASP.Net Core</source>
+        <source>Use Secure Cookies In ASP.NET Core</source>
         <target state="translated">Использовать защищенные файлы cookie в ASP.NET Core</target>
         <note />
       </trans-unit>
@@ -448,8 +448,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
-        <target state="translated">При десериализации экземпляра класса {0} метод {1} может вызывать опасный метод {2}.</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
+        <target state="translated">При десериализации экземпляра класса {0} метод {1} может вызывать опасный метод {2}. Потенциальные вызовы метода: {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -1019,7 +1019,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
         <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="needs-review-translation">Перенаправьте параметр "CancellationToken" в методы, которые его принимают, чтобы обеспечить правильное распространение уведомлений об отмене операции, или передайте "CancellationToken.None" явным образом, чтобы намеренно указать запрет на распространение токена.</target>
+        <target state="translated">Перенаправьте параметр "CancellationToken" в методы, чтобы обеспечить правильное распространение уведомлений об отмене операции, или передайте "CancellationToken.None" явным образом, чтобы намеренно указать запрет на распространение маркера.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1029,7 +1029,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
-        <target state="needs-review-translation">Перенаправьте параметр "CancellationToken" в методы, которые его принимают.</target>
+        <target state="translated">Перенаправьте параметр "CancellationToken" в методы</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1388,7 +1388,7 @@
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
-        <source>Ensure Use Secure Cookies In ASP.Net Core</source>
+        <source>Ensure Use Secure Cookies In ASP.NET Core</source>
         <target state="translated">Убедитесь в использовании защищенных файлов cookie в ASP.NET Core.</target>
         <note />
       </trans-unit>
@@ -1517,6 +1517,11 @@
         <target state="translated">Методы P/Invoke не должны быть видимыми</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlatformCompatibilityAllPlatforms">
+        <source>and all other platforms</source>
+        <target state="translated">и на всех остальных платформах</target>
+        <note>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</note>
+      </trans-unit>
       <trans-unit id="PlatformCompatibilityAllVersions">
         <source>'{0}' all versions</source>
         <target state="translated">все версии "{0}"</target>
@@ -1609,7 +1614,7 @@
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</source>
-        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</target>
+        <target state="translated">Старайтесь использовать "IsEmpty" вместо "Count", чтобы определить, пуст ли объект.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">

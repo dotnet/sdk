@@ -9,7 +9,7 @@ using Microsoft.CodeQuality.Analyzers.Documentation;
 namespace Microsoft.CodeQuality.CSharp.Analyzers.Documentation
 {
     /// <summary>
-    /// RS0010: Avoid using cref tags with a prefix
+    /// CA1200: Avoid using cref tags with a prefix
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpAvoidUsingCrefTagsWithAPrefixAnalyzer : AvoidUsingCrefTagsWithAPrefixAnalyzer

@@ -123,12 +123,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1501Rule, CA1502Rule, CA1505Rule, CA1506Rule, InvalidEntryInCodeMetricsConfigFileRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationAction(compilationContext =>
+            context.RegisterCompilationAction(compilationContext =>
             {
                 if (compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {
@@ -285,7 +285,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
                         CA1505RuleId => 10,
 
-                        CA1506RuleId => symbolKind == SymbolKind.NamedType ? 95 : 40,
+                        CA1506RuleId => symbolKind == SymbolKind.NamedType ? 95 : (uint)40,
 
                         _ => throw new NotImplementedException(),
                     };
@@ -479,7 +479,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
             // For example inheriting from WPF/WinForms UserControl makes your class over the default threshold,
             // yet there isn't anything you can do about it.
             var inheritanceExcludedTypes = context.Options.GetInheritanceExcludedSymbolNamesOption(CA1501Rule,
-                tree, context.Compilation, defaultForcedValue: "N:System", context.CancellationToken);
+                tree, context.Compilation, defaultForcedValue: "N:System");
 
             if (inheritanceExcludedTypes.IsEmpty)
             {

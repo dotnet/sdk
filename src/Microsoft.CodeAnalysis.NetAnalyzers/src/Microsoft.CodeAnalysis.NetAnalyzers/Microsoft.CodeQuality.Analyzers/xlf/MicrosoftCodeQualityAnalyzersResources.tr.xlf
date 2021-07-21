@@ -22,36 +22,6 @@
         <target state="translated">Sembolü ve üyesini aynı deyimde atama</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAsyncVoidTitle">
-        <source>Avoid Async Void</source>
-        <target state="translated">Async Void Kullanmayın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAsyncVoidDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAsyncVoidMessage">
-        <source>Avoid Async Void</source>
-        <target state="translated">Async Void Kullanmayın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AsyncMethodNamesShouldEndInAsyncTitle">
-        <source>Async Method Names Should End in Async</source>
-        <target state="translated">Zaman Uyumsuz Yöntem Adları Async ile Bitmelidir</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AsyncMethodNamesShouldEndInAsyncDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AsyncMethodNamesShouldEndInAsyncMessage">
-        <source>Async Method Names Should End in Async</source>
-        <target state="translated">Zaman Uyumsuz Yöntem Adları Async ile Bitmelidir</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesDescription">
         <source>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</source>
         <target state="translated">Genel bir tür ne kadar fazla tür parametresi içeriyorsa, her bir tür parametresinin neyi temsil ettiğini bilmek ve hatırlamak o kadar zorlaşır.</target>
@@ -202,21 +172,6 @@
         <target state="translated">Eşitlik işlecini başvuru türlerinde aşırı yüklemeyin</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
-        <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">Temsilci Türlerini Döndüren Void Olarak Async Lambdaları Geçirme</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesMessage">
-        <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">Temsilci Türlerini Döndüren Void Olarak Async Lambdaları Geçirme</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
         <target state="translated">Türleri başvuruya göre geçirmek (out veya ref kullanılarak) için işaretçiler konusunda deneyim sahibi olmak, değer ve başvuru türleri arasındaki farkları anlamak ve birden çok dönüş değeri içeren metotları işlemeyi bilmek gerekir. Ayrıca out ve ref parametreleri arasındaki fark genelde kapsamlı bir şekilde anlaşılmaz.</target>
@@ -245,21 +200,6 @@
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameTitle">
         <source>Do not prefix enum values with type name</source>
         <target state="translated">Numaralandırma değerlerinin önüne tür adını ekleme</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesTitle">
-        <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">Temsilci Türlerini Döndüren Void Olarak Async Lambdaları Depolamayın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesMessage">
-        <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">Temsilci Türlerini Döndüren Void Olarak Async Lambdaları Depolamayın</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
@@ -292,6 +232,11 @@
         <target state="translated">Olaylar 'Before' ya da 'After' ön ekine sahip olmamalıdır</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
+        <source>Remove underscores</source>
+        <target state="new">Remove underscores</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">'{0}' türünden sonlandırıcıyı kaldırın, Dispose(bool disposing) metodunu geçersiz kılın ve sonlandırma mantığını 'disposing' değerinin false olduğu kod yoluna yerleştirin. Aksi takdirde, '{1}' Temel türü de bir sonlandırıcı sağladığından yinelenen Dispose çağrılarına yol açabilir.</target>
@@ -302,34 +247,9 @@
         <target state="translated">'AttributeUsageAttribute' uygula</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
-        <source>Propagate CancellationTokens When Possible</source>
-        <target state="translated">Mümkün Olduğunda CancellationToken’ları Yay</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PropagateCancellationTokensWhenPossibleDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PropagateCancellationTokensWhenPossibleMessage">
-        <source>Propagate CancellationTokens When Possible</source>
-        <target state="translated">Mümkün Olduğunda CancellationToken’ları Yay</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotMixBlockingAndAsyncTitle">
-        <source>Don't Mix Blocking and Async</source>
-        <target state="translated">Engelleyen ile Zaman Uyumsuzu Karıştırma</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotMixBlockingAndAsyncDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotMixBlockingAndAsyncMessage">
-        <source>Don't Mix Blocking and Async</source>
-        <target state="translated">Engelleyen ile Zaman Uyumsuzu Karıştırma</target>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesCodeFixTitle">
+        <source>Add operator overload named alternate</source>
+        <target state="translated">Alternatif adlı işleç aşırı yüklemesi ekleme</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
@@ -351,6 +271,11 @@
         <source>Type '{0}' owns disposable field(s) '{1}' but is not disposable</source>
         <target state="translated">'{0}' türü '{1}' atılabilir alanlarını içeriyor ancak atılabilir değil</target>
         <note />
+      </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
+        <source>Add 'System.Uri' overloads</source>
+        <target state="translated">'System.Uri' aşırı yüklemeleri ekle</target>
+        <note>{Locked="System.Uri"}</note>
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
@@ -709,7 +634,7 @@
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
         <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
-        <target state="new">Implement the equality operators and make their behavior identical to that of the Equals method</target>
+        <target state="translated">Eşitlik işleçlerini uygula ve işleç davranışlarını Equals metodununkiyle aynı yap</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
@@ -745,21 +670,6 @@
       <trans-unit id="CancellationTokenParametersMustComeLastMessage">
         <source>Method '{0}' should take CancellationToken as the last parameter</source>
         <target state="translated">'{0}' yöntemi, son parametre olarak CancellationToken’ı almalıdır</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableTitle">
-        <source>Constructor make noninheritable base class inheritable</source>
-        <target state="translated">Oluşturucu, devralınamayan temel sınıfı devralınabilir hale getirir</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableDescription">
-        <source>When a base class is noninheritable because its constructor is internal, a derived class should not make it inheritable by having a public or protected constructor.</source>
-        <target state="translated">Temel bir sınıf, oluşturucusu dahili olduğu için devralınamaz durumdaysa, türetilen bir sınıf tarafından genel veya korumalı bir oluşturucuya sahip olunarak devralınabilir hale getirilmemelidir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableMessage">
-        <source>Constructor make noninheritable base class inheritable</source>
-        <target state="translated">Oluşturucu, devralınamayan temel sınıfı devralınabilir hale getirir</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainTypeNamesTitle">
@@ -1342,96 +1252,6 @@
         <target state="translated">{0} üyesinde, {1} parametre adının {3} içinde bildirilen şekilde tanımlayıcıyla eşleşmesini sağlamak için adı {2} olarak değiştirin</target>
         <note />
       </trans-unit>
-      <trans-unit id="UsePreferredTermsTitle">
-        <source>Use preferred terms</source>
-        <target state="translated">Tercih edilen terimleri kullanın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsDescription">
-        <source>The name of an externally visible identifier includes a term for which an alternative, preferred term exists. Alternatively, the name includes the term ""Flag"" or ""Flags"".</source>
-        <target state="translated">Dışarıdan görünen bir tanımlayıcının adı, kendisi için alternatif, tercih edilen bir terimin olduğu bir terim içerir. Alternatif olarak, ad ""Flag"" veya ""Flags"" terimini içerir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageAssembly">
-        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'</source>
-        <target state="translated">{1} bütünleştirilmiş kod adındaki '{0}' terimini, tercih edilen '{2}' alternatifiyle değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageNamespace">
-        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'</source>
-        <target state="translated">{1} ad alanı adındaki '{0}' terimini tercih edilen '{2}' alternatifiyle değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMemberParameter">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">{0} üyesinde, {2} parametre adındaki '{1}' terimini tercih edilen '{3}' alternatifiyle değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageDelegateParameter">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">{0} temsilcisinde, {2} parametre adındaki '{1}' terimini tercih edilen '{3}' alternatifiyle değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageTypeTypeParameter">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">{0} türünde, {2} genel tür parametre adındaki '{1}' terimini tercih edilen '{3}' alternatifiyle değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMethodTypeParameter">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">{0} metodunda, {2} genel tür parametre adındaki '{1}' terimini tercih edilen '{3}' alternatifiyle değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageType">
-        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'</source>
-        <target state="translated">{1} tür adındaki '{0}' terimini tercih edilen '{2}' alternatifiyle değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMember">
-        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'</source>
-        <target state="translated">{1} üye adındaki '{0}' terimini tercih edilen '{2}' alternatifiyle değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageAssemblyNoAlternate">
-        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">{1} bütünleştirilmiş kod adındaki '{0}' terimini uygun bir alternatifle değiştirin veya tamamen kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
-        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely</source>
-        <target state="translated">'{1}' ad alanı adındaki '{0}' terimini uygun bir alternatifle değiştirin veya tamamen kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">{0} üyesinde, {2} parametre adındaki '{1}' terimini uygun bir alternatifle değiştirin veya tamamen kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageDelegateParameterNoAlternate">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">{0} temsilcisinde, {2} parametre adındaki '{1}' terimini uygun bir alternatifle değiştirin veya tamamen kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">{0} türünde, {2} genel tür parametre adındaki '{1}' terimini uygun bir alternatifle değiştirin veya tamamen kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">{0} metodunda, {2} genel tür parametre adındaki '{1}' terimini uygun bir alternatifle değiştirin veya tamamen kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
-        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">{1} tür adındaki '{0}' terimini uygun bir alternatifle değiştirin veya tamamen kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
-        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">{1} üye adındaki '{0}' terimini uygun bir alternatifle değiştirin veya tamamen kaldırın</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
         <source>Override equals and operator equals on value types</source>
         <target state="translated">Değer türlerinde eşittirleri ve işleç eşittirleri geçersiz kılın</target>
@@ -1465,26 +1285,6 @@
       <trans-unit id="PropertiesShouldNotReturnArraysMessage">
         <source>Properties should not return arrays</source>
         <target state="translated">Özellikler dizi döndürmemelidir</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesTitle">
-        <source>Assemblies should have valid strong names</source>
-        <target state="translated">Bütünleştirilmiş kodlar geçerli tanımlayıcı adlara sahip olmalıdır</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesDescription">
-        <source>The strong name protects clients from unknowingly loading an assembly that has been tampered with. Assemblies without strong names should not be deployed outside very limited scenarios. If you share or distribute assemblies that are not correctly signed, the assembly can be tampered with, the common language runtime might not load the assembly, or the user might have to disable verification on his or her computer.</source>
-        <target state="translated">Tanımlayıcı ad, istemcileri farkında olmadan oynanmış bir bütünleştirilmiş kodu yüklemeye karşı korur. Çok kısıtlı senaryolar dışında tanımlayıcı adları olmayan bütünleştirilmiş kodlar kullanılmamalıdır. Doğru imzalanmamış bütünleştirilmiş kodlar paylaşır veya dağıtırsanız, bütünleştirilmiş kodla oynanabilir, ortak dil çalışma zamanı bütünleştirilmiş kodu yükleyemeyebilir veya kullanıcının bilgisayarında doğrulamayı devre dışı bırakması gerekebilir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesMessageNoStrongName">
-        <source>Sign {0} with a strong name key.</source>
-        <target state="translated">{0} öğesini bir tanımlayıcı ad anahtarıyla imzalayın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesMessageNotValid">
-        <source>Verify that {0} has a valid strong name before deploying.</source>
-        <target state="translated">{0} öğesini dağıtmadan önce öğenin geçerli bir tanımlayıcı adı olduğunu doğrulayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideGetHashCodeOnOverridingEqualsTitle">
@@ -1687,71 +1487,6 @@
         <target state="translated">{0}, IComparable'ı uyguladığından '{1}' işleçlerini ve Equals'ı tanımlamalıdır</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsTitle">
-        <source>Avoid calling problematic methods</source>
-        <target state="translated">Sorunlu yöntemleri çağırmaktan kaçının</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsDescription">
-        <source>A member calls a potentially dangerous or problematic method.</source>
-        <target state="translated">Bir üye, tehlikeli veya sorunlu olabilecek bir yöntemi çağırıyor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemGCCollect">
-        <source>Remove the call to GC.Collect from {0}. It is usually unnecessary to force garbage collection, and doing so can severely degrade performance.</source>
-        <target state="translated">{0} öğesinden GC.Collect çağrısını kaldırın. Çöp toplamanın zorlanması genelde gereksizdir ve performansı önemli ölçüde düşürebilir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemThreadingThreadResume">
-        <source>Remove the call to Thread.Resume from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</source>
-        <target state="translated">{0} öğesinden Thread.Resume çağrısını kaldırın. Sistem önemli bir sistem türünün sınıf oluşturucusunu yürütme ya da paylaşılan bir bütünleştirilmiş kod için güvenliği çözümleme gibi kritik bir işlemin ortasındaysa iş parçacıklarının askıya alınıp sürdürülmesi tehlikeli olabilir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemThreadingThreadSuspend">
-        <source>Remove the call to Thread.Suspend from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</source>
-        <target state="translated">{0} öğesinden Thread.Suspend çağrısını kaldırın. Sistem önemli bir sistem türünün sınıf oluşturucusunu yürütme ya da paylaşılan bir bütünleştirilmiş kod için güvenliği çözümleme gibi kritik bir işlemin ortasındaysa iş parçacıklarının askıya alınıp sürdürülmesi tehlikeli olabilir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemTypeInvokeMember">
-        <source>Remove the call to System.Type.InvokeMember with BindingFlags.NonPublic from {0}. Taking a dependency on a private member increases the chance of a breaking change in the future.</source>
-        <target state="translated">{0} öğesinden BindingFlags.NonPublic bağlamalı System.Type.InvokeMember çağrısını kaldırın. Özel bir üyede bağımlılık alınması, gelecekte bozucu değişiklik olasılığını artırır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageCoInitializeSecurity">
-        <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called after the runtime has been initialized. The workaround is to write an unmanaged shim that will call the routine and then activate and call into managed code. You can do this using an export from a mixed-mode C++ DLL, by registering a managed component for use by COM, or by using the runtime hosting API.</source>
-        <target state="translated">{0}, çalışma zamanı başlatıldıktan sonra güvenilir bir şekilde çağrılamayacak OLE32 API’ye yönelik bir P/Invoke bildirimi. Geçici çözüm, rutini çağıracak yönetilmeyen bir dolgu yazmak, sonra da etkinleştirip yönetilen koda çağırmaktır. Bunu karışık modlu bir C++ DLL’den dışarı aktarmayı kullanarak, COM ile kullanılmak üzere yönetilen bir bileşen kaydederek ya da çalışma zamanı barındırma API’sini kullanarak yapabilirsiniz.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageCoSetProxyBlanket">
-        <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called against a runtime callable wrapper (a managed object wrapping a COM object). Runtime callable wrappers dynamically fetch interface pointers so the effect of the call might be arbitrarily lost. Runtime callable wrappers for a given COM object are also shared across an application domain so the call could possibly affect other users. Replace this call with a native wrapper COM object for the interface pointer that does the appropriate CoSetProxyBlanket calls.</source>
-        <target state="translated">{0}, çalışma zamanında çağrılabilecek bir sarmalayıcıya (bir COM nesnesini sarmalayan bir yönetilen nesne) göre güvenilir bir şekilde çağrılamayacak OLE32 API’ye yönelik bir P/Invoke bildirimi. Çalışma zamanında çağrılabilen sarmalayıcılar arabirim işaretçilerini dinamik olarak getirdiğinden, çağrının etkisi rastgele olarak kaybolabilir. Belirli bir COM nesnesi için çalışma zamanında çağrılabilen sarmalayıcılar uygulama etki alanının tamamında da paylaşıldığından, çağrının diğer kullanıcıları etkileme olasılığı vardır. Bu çağrıyı, uygun CoSetProxyBlanket çağrılarını gerçekleştiren arabirim işaretçisi için yerel bir sarmalayıcı COM nesnesiyle değiştirin.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
-        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}</source>
-        <target state="translated">{0} öğesinden SafeHandle.DangerousGetHandle çağrısını kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFrom">
-        <source>Remove the call to Assembly.LoadFrom from {0}</source>
-        <target state="translated">{0} öğesinden Assembly.LoadFrom çağrısını kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFile">
-        <source>Remove the call to Assembly.LoadFile from {0}</source>
-        <target state="translated">{0} öğesinden Assembly.LoadFile çağrısını kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadWithPartialName">
-        <source>Remove the call to Assembly.LoadWithPartialName from {0}</source>
-        <target state="translated">{0} öğesinden Assembly.LoadWithPartialName çağrısını kaldırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CategoryReliability">
-        <source>Reliability</source>
-        <target state="translated">Güvenilirlik</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidUsingCrefTagsWithAPrefixTitle">
         <source>Avoid using cref tags with a prefix</source>
         <target state="translated">Ön ek içeren cref etiketlerini kullanmayın</target>
@@ -1855,26 +1590,6 @@
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
         <source>Invalid entry in code metrics rule specification file</source>
         <target state="translated">Ölçüm kuralı belirtim dosyasında geçersiz giriş</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesTitle">
-        <source>Variable names should not match field names</source>
-        <target state="translated">Değişken adları alan adlarıyla eşleşmemelidir</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesDescription">
-        <source>An instance method declares a parameter or a local variable whose name matches an instance field of the declaring type, leading to errors.</source>
-        <target state="translated">Bir örnek yöntemi, adı bildiren türün bir örnek alanıyla eşleşen bir parametre veya yerel değişken bildirerek hatalara neden oluyor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageLocal">
-        <source>{0}, a variable declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</source>
-        <target state="translated">{0} {1} içinde tanımlanmış bir değişkendir ve tür üzerindeki bir örnek alanıyla aynı ada sahiptir. Bu öğelerden birinin adını değiştirin.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageParameter">
-        <source>{0}, a parameter declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</source>
-        <target state="translated">{0} {1} içinde tanımlanmış bir parametredir ve tür üzerindeki bir örnek alanıyla aynı ada sahiptir. Bu öğelerden birinin adını değiştirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewUnusedParametersTitle">

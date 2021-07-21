@@ -26,13 +26,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public partial class DisposeObjectsBeforeLosingScopeTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic(rule)
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(arguments);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string allocationText) =>
@@ -55,17 +59,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         private string GetEditorConfigContentToDisableInterproceduralAnalysis(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var text = $@"dotnet_code_quality.interprocedural_analysis_kind = None
+            var text = $@"[*]
+                          dotnet_code_quality.interprocedural_analysis_kind = None
                           dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
             return text;
         }
 
         private string GetEditorConfigContent(DisposeAnalysisKind disposeAnalysisKind)
-            => $@"dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
+            => $@"[*]
+                  dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
 
         private string GetEditorConfigContent(PointsToAnalysisKind? pointsToAnalysisKind)
             => pointsToAnalysisKind.HasValue ?
-                $"dotnet_code_quality.CA2000.points_to_analysis_kind = {pointsToAnalysisKind}" :
+                $@"[*]
+                   dotnet_code_quality.CA2000.points_to_analysis_kind = {pointsToAnalysisKind}" :
                 string.Empty;
 
         [Fact]
@@ -1286,7 +1293,11 @@ class DisposableOwnerType
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -1328,7 +1339,11 @@ End Class
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -1381,7 +1396,11 @@ class Test
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -1421,7 +1440,11 @@ End Class
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -1521,7 +1544,11 @@ public class SerialPort : IDisposable
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             };
 
@@ -1597,7 +1624,11 @@ End Class
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             };
 
@@ -1692,7 +1723,10 @@ Public Class A
 End Class
 "
                     },
-                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(disposeAnalysisKind)) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{GetEditorConfigContent(disposeAnalysisKind)}") }
                 }
             };
 
@@ -2640,7 +2674,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
 
@@ -2667,7 +2705,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -2709,7 +2751,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
 
@@ -2737,7 +2783,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -2779,7 +2829,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
 
@@ -2807,7 +2861,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -2882,7 +2940,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
 
@@ -2955,7 +3017,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -3031,7 +3097,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
 
@@ -3097,7 +3167,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -6178,7 +6252,11 @@ class Test
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             };
 
@@ -7189,7 +7267,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") },
                     ExpectedDiagnostics =
                     {
                         // Test0.cs(34,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
@@ -7299,7 +7381,11 @@ Class Test
 End Class
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") },
                     ExpectedDiagnostics =
                     {
                         // Test0.vb(30,32): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
@@ -7626,7 +7712,11 @@ class Test
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             };
             csharpTest.ExpectedDiagnostics.AddRange(builder);
@@ -7702,7 +7792,11 @@ End Class
                 TestState =
                 {
                     Sources = { source },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(builder);
@@ -8105,10 +8199,7 @@ End Class");
         [InlineData(PointsToAnalysisKind.Complete)]
         public async Task MemberReferenceInQueryFromClause_Disposed_NoDiagnostic(PointsToAnalysisKind? analysisKind)
         {
-            await new VerifyCS.Test()
-            {
-                AnalyzerConfigDocument = GetEditorConfigContent(analysisKind),
-                TestCode = @"
+            var source = @"
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -8146,7 +8237,14 @@ class Test
         y.Dispose();
     }
 }
-",
+";
+            await new VerifyCS.Test()
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(analysisKind)) },
+                }
             }.RunAsync();
         }
 
@@ -8702,7 +8800,11 @@ public class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -8782,8 +8884,11 @@ public class Test
 ";
             var test = new VerifyCS.Test()
             {
-                TestCode = source,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
@@ -8920,8 +9025,11 @@ public class Test
 
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
@@ -8982,8 +9090,11 @@ public class Test
 }";
             var csTest = new VerifyCS.Test()
             {
-                TestCode = csCode,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { csCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
@@ -9025,8 +9136,11 @@ End Class
 ";
             var vbTest = new VerifyVB.Test()
             {
-                TestCode = vbCode,
-                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+                TestState =
+                {
+                    Sources = { vbCode },
+                    AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(pointsToAnalysisKind)) },
+                }
             };
 
             if (pointsToAnalysisKind != PointsToAnalysisKind.None)
@@ -10078,7 +10192,10 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(DisposeAnalysisKind.AllPaths)) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{GetEditorConfigContent(DisposeAnalysisKind.AllPaths)}") },
                     ExpectedDiagnostics =
                     {
                         // Test0.cs(17,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
@@ -10321,7 +10438,10 @@ Class Test
 End Class
 "
                     },
-                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(DisposeAnalysisKind.AllPaths)) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{GetEditorConfigContent(DisposeAnalysisKind.AllPaths)}") },
                     ExpectedDiagnostics =
                     {
                         // Test0.vb(16,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
@@ -10513,7 +10633,10 @@ class MyException: Exception
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(disposeAnalysisKind)) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{GetEditorConfigContent(disposeAnalysisKind)}") }
                 }
             };
 
@@ -11244,7 +11367,11 @@ class C : IDisposable
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
 }
             }.RunAsync();
         }
@@ -11292,7 +11419,11 @@ public class C
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             }.RunAsync();
         }
@@ -11538,7 +11669,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -11574,7 +11709,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -11624,7 +11763,11 @@ class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -11665,7 +11808,11 @@ Class Test
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
 
@@ -11848,7 +11995,11 @@ class B : IDisposable
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -11895,7 +12046,11 @@ class B : IDisposable
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -11943,7 +12098,11 @@ class Test
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigFile}
+") }
                 }
             }.RunAsync();
         }
@@ -12053,7 +12212,11 @@ namespace MyNamespace
     }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 }
             };
 
@@ -12097,7 +12260,11 @@ Namespace MyNamespace
     End Class
 End Namespace",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 }
             };
 
@@ -12205,7 +12372,11 @@ public class C
     }
 }"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 }
             }.RunAsync();
 
@@ -12232,7 +12403,11 @@ Public Class C
     End Sub
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") },
                 }
             }.RunAsync();
         }

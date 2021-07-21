@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -13,18 +14,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     /// <summary>
     /// CA1507: Use nameof to express symbol names
     /// </summary>
-    public abstract class UseNameOfInPlaceOfStringFixer : CodeFixProvider
+    [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
+    public sealed class UseNameOfInPlaceOfStringFixer : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseNameofInPlaceOfStringAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
-            // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers'
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers'
             return WellKnownFixAllProviders.BatchFixer;
         }
-
-        protected virtual SyntaxNode GetNameOfExpression(SyntaxGenerator generator, string identifierNameArgument) =>
-            generator.NameOfExpression(generator.IdentifierName(identifierNameArgument));
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -47,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 context.Diagnostics);
         }
 
-        private async Task<Document> ReplaceWithNameOf(Document document, SyntaxNode nodeToReplace,
+        private static async Task<Document> ReplaceWithNameOf(Document document, SyntaxNode nodeToReplace,
             string stringText, CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
@@ -55,7 +54,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             var trailingTrivia = nodeToReplace.GetTrailingTrivia();
             var leadingTrivia = nodeToReplace.GetLeadingTrivia();
-            SyntaxNode nameOfExpression = GetNameOfExpression(generator, stringText)
+            var nameOfExpression = generator.NameOfExpression(generator.IdentifierName(stringText))
                 .WithTrailingTrivia(trailingTrivia)
                 .WithLeadingTrivia(leadingTrivia);
 

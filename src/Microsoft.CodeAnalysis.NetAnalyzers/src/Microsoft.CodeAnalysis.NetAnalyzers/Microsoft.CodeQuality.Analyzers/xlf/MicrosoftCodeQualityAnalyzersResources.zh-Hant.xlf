@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
-  <file datatype="xml" source-language="en" target-language="zh-HANT" original="../MicrosoftCodeQualityAnalyzersResources.resx">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../MicrosoftCodeQualityAnalyzersResources.resx">
     <body>
       <trans-unit id="AppendConfigureAwaitTrue">
         <source>Append .ConfigureAwait(true)</source>
@@ -20,36 +20,6 @@
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement</source>
         <target state="translated">在相同的陳述式中指派符號及其成員</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAsyncVoidTitle">
-        <source>Avoid Async Void</source>
-        <target state="translated">避免 Async Void</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAsyncVoidDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAsyncVoidMessage">
-        <source>Avoid Async Void</source>
-        <target state="translated">避免 Async Void</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AsyncMethodNamesShouldEndInAsyncTitle">
-        <source>Async Method Names Should End in Async</source>
-        <target state="translated">Async 方法名稱應以 Async 結尾</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AsyncMethodNamesShouldEndInAsyncDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AsyncMethodNamesShouldEndInAsyncMessage">
-        <source>Async Method Names Should End in Async</source>
-        <target state="translated">Async 方法名稱應以 Async 結尾</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesDescription">
@@ -202,21 +172,6 @@
         <target state="translated">請勿多載參考型別上的等號比較運算子</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
-        <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">請勿將 Async Lambdas 傳遞為 Void 傳回委派類型</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesMessage">
-        <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">請勿將 Async Lambdas 傳遞為 Void 傳回委派類型</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
         <target state="translated">藉傳址傳遞類型 (使用 out 或 ref) 需有指標經驗、了解實值型別與參考型別之間的差異，以及處理具有多個傳回值的方法。而且，大家普遍不了解 out 與 ref 參數之間的差異。</target>
@@ -245,21 +200,6 @@
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameTitle">
         <source>Do not prefix enum values with type name</source>
         <target state="translated">不要將類型名稱作為列舉值的前置詞</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesTitle">
-        <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">請勿將 Async Lambdas 儲存為 Void 傳回委派類型</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesMessage">
-        <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
-        <target state="translated">請勿將 Async Lambdas 儲存為 Void 傳回委派類型</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
@@ -292,6 +232,11 @@
         <target state="translated">事件開頭不應出現 'Before' 或 'After'</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
+        <source>Remove underscores</source>
+        <target state="new">Remove underscores</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">從類型 '{0}' 移除完成項，覆寫 Dispose(bool disposing)，然後在程式碼路徑中放置完成項邏輯，其中 'disposing' 為 false。否則這可能導致 Dispose 引動過程重複，原因是基底類型 ‘{1}’ 也提供了完成項。</target>
@@ -302,34 +247,9 @@
         <target state="translated">套用 'AttributeUsageAttribute'</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
-        <source>Propagate CancellationTokens When Possible</source>
-        <target state="translated">於可能時散佈 CancellationToken</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PropagateCancellationTokensWhenPossibleDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PropagateCancellationTokensWhenPossibleMessage">
-        <source>Propagate CancellationTokens When Possible</source>
-        <target state="translated">於可能時散佈 CancellationToken</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotMixBlockingAndAsyncTitle">
-        <source>Don't Mix Blocking and Async</source>
-        <target state="translated">請勿混合 Blocking 與 Async</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotMixBlockingAndAsyncDescription">
-        <source>#N/A</source>
-        <target state="translated">#N/A</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotMixBlockingAndAsyncMessage">
-        <source>Don't Mix Blocking and Async</source>
-        <target state="translated">請勿混合 Blocking 與 Async</target>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesCodeFixTitle">
+        <source>Add operator overload named alternate</source>
+        <target state="translated">新增名稱為 alternate 的運算子多載</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
@@ -351,6 +271,11 @@
         <source>Type '{0}' owns disposable field(s) '{1}' but is not disposable</source>
         <target state="translated">類型 '{0}' 擁有可處置的欄位 '{1}' 但其本身並非可處置項目</target>
         <note />
+      </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
+        <source>Add 'System.Uri' overloads</source>
+        <target state="translated">新增 'System.Uri' 多載</target>
+        <note>{Locked="System.Uri"}</note>
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
@@ -709,7 +634,7 @@
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
         <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
-        <target state="new">Implement the equality operators and make their behavior identical to that of the Equals method</target>
+        <target state="translated">實作等號運算子，並使其行為與 Equals 方法的行為相同</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
@@ -745,21 +670,6 @@
       <trans-unit id="CancellationTokenParametersMustComeLastMessage">
         <source>Method '{0}' should take CancellationToken as the last parameter</source>
         <target state="translated">方法 '{0}' 應以 CancellationToken 作為最後一個參數</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableTitle">
-        <source>Constructor make noninheritable base class inheritable</source>
-        <target state="translated">建構函式可將無法繼承的基底類別變成為可繼承</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableDescription">
-        <source>When a base class is noninheritable because its constructor is internal, a derived class should not make it inheritable by having a public or protected constructor.</source>
-        <target state="translated">當基底類別因為其建構函式位於內部而無法繼承時，衍生類別不應利用具有公用或受保護的建構函式，使其成為可繼承。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableMessage">
-        <source>Constructor make noninheritable base class inheritable</source>
-        <target state="translated">建構函式可將無法繼承的基底類別變成為可繼承</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainTypeNamesTitle">
@@ -1342,96 +1252,6 @@
         <target state="translated">在成員 {0} 中，將參數名稱從 {1} 變更為 {2}，以符合已於 {3} 中宣告的識別項</target>
         <note />
       </trans-unit>
-      <trans-unit id="UsePreferredTermsTitle">
-        <source>Use preferred terms</source>
-        <target state="translated">使用慣用字詞</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsDescription">
-        <source>The name of an externally visible identifier includes a term for which an alternative, preferred term exists. Alternatively, the name includes the term ""Flag"" or ""Flags"".</source>
-        <target state="translated">外部可見識別項的名稱，包含存在有替代慣用字詞的字詞。或者，該名稱包含 ""Flag"" 或 ""Flags"" 一詞。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageAssembly">
-        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'</source>
-        <target state="translated">以慣用替代項 '{2}' 取代組件名稱 {1} 中的字詞 '{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageNamespace">
-        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'</source>
-        <target state="translated">以慣用的替代項 '{2}' 取代命名空間名稱 '{1}' 中的字詞 '{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMemberParameter">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">在成員 {0} 中，以慣用的替代項 '{3}' 取代參數名稱 {2} 中的字詞 '{1}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageDelegateParameter">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">在委派 {0} 中，以慣用的替代項 '{3}' 取代參數名稱 {2} 中的字詞 '{1}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageTypeTypeParameter">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">在型別 {0} 上，以慣用的替代項 '{3}' 取代泛型型別參數名稱 {2} 中的字詞 '{1}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMethodTypeParameter">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="translated">在方法 {0} 上，以慣用的替代項 '{3}' 取代泛型型別參數名稱 {2} 中的字詞 '{1}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageType">
-        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'</source>
-        <target state="translated">以慣用替代項 '{2}' 取代型別名稱 {1} 中的字詞 '{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMember">
-        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'</source>
-        <target state="translated">以慣用的替代項 '{2}' 取代成員名稱 {1} 中的字詞 '{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageAssemblyNoAlternate">
-        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">以適當的替代項取代組件名稱 {1} 中的字詞 '{0}'，或是將其完全移除</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
-        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely</source>
-        <target state="translated">以適當的替代項取代命名空間名稱 '{1}' 中的字詞 '{0}'，或是將其完全移除</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">在成員 {0} 中，以適當的替代項取代參數名稱 {2} 中的字詞 '{1}'，或是將其完全移除</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageDelegateParameterNoAlternate">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">在委派 {0} 中，以適當的替代項取代參數名稱 {2} 中的字詞 '{1}'，或是將其完全移除</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">在型別 {0} 上，以適當的替代項取代泛型型別參數名稱 {2} 中的字詞 '{1}'，或是將其完全移除</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">在方法 {0} 上，以適當的替代項取代泛型型別參數名稱 {2} 中的字詞 '{1}'，或是將其完全移除</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
-        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">以適當的替代項取代型別名稱 {1} 中的字詞 '{0}'，或是將其完全移除</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
-        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">以適當的替代項取代成員名稱 {1} 中的字詞 '{0}'，或是將其完全移除</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
         <source>Override equals and operator equals on value types</source>
         <target state="translated">覆寫實值型別上的 Equals 與等號比較運算子</target>
@@ -1465,26 +1285,6 @@
       <trans-unit id="PropertiesShouldNotReturnArraysMessage">
         <source>Properties should not return arrays</source>
         <target state="translated">屬性不應傳回陣列</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesTitle">
-        <source>Assemblies should have valid strong names</source>
-        <target state="translated">組件應具備有效的強式名稱</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesDescription">
-        <source>The strong name protects clients from unknowingly loading an assembly that has been tampered with. Assemblies without strong names should not be deployed outside very limited scenarios. If you share or distribute assemblies that are not correctly signed, the assembly can be tampered with, the common language runtime might not load the assembly, or the user might have to disable verification on his or her computer.</source>
-        <target state="translated">強式名稱可避免用戶端在不知情的狀況下，載入已遭他人竄改的組件。除了極少數的情況外，都應避免部署沒有強式名稱的組件。若共用或散發未正確簽署的組件，表示該組件可能已遭他人竄改、Common Language Runtime 可能未載入該組件，或是使用者可能必須停用電腦上的驗證作業。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesMessageNoStrongName">
-        <source>Sign {0} with a strong name key.</source>
-        <target state="translated">以強式名稱金鑰簽署 {0}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AssembliesShouldHaveValidStrongNamesMessageNotValid">
-        <source>Verify that {0} has a valid strong name before deploying.</source>
-        <target state="translated">請先確認 {0} 具有有效的強式名稱，然後再進行部署。</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideGetHashCodeOnOverridingEqualsTitle">
@@ -1687,71 +1487,6 @@
         <target state="translated">因為 {0} 會實作 IComparable，所以應該定義運算子 '{1}' 與 Equals</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsTitle">
-        <source>Avoid calling problematic methods</source>
-        <target state="translated">避免呼叫有問題的方法</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsDescription">
-        <source>A member calls a potentially dangerous or problematic method.</source>
-        <target state="translated">成員呼叫了可能有危險或會有問題的方法。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemGCCollect">
-        <source>Remove the call to GC.Collect from {0}. It is usually unnecessary to force garbage collection, and doing so can severely degrade performance.</source>
-        <target state="translated">從 {0} 移除對 GC.Collect 的呼叫。一般情況下，並不需要強制進行記憶體回收，且如此做可能會大幅降低效能。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemThreadingThreadResume">
-        <source>Remove the call to Thread.Resume from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</source>
-        <target state="translated">從 {0} 移除對 Thread.Resume 的呼叫。如果系統目前正在進行重要的作業，例如正在執行某個重要系統類型的類別建構函式，或是正在解決某個共用組件的安全性，則暫止與繼續執行緒都可能會造成危險。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemThreadingThreadSuspend">
-        <source>Remove the call to Thread.Suspend from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</source>
-        <target state="translated">從 {0} 移除對 Thread.Suspend 的呼叫。如果系統目前正在進行重要的作業，例如正在執行某個重要系統類型的類別建構函式，或是正在解決某個共用組件的安全性，則暫止與繼續執行緒都可能會造成危險。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemTypeInvokeMember">
-        <source>Remove the call to System.Type.InvokeMember with BindingFlags.NonPublic from {0}. Taking a dependency on a private member increases the chance of a breaking change in the future.</source>
-        <target state="translated">從 {0} 移除利用 BindingFlags.NonPublic 對 System.Type.InvokeMember 的呼叫。相依於私用成員會增加日後阻礙變更的可能性。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageCoInitializeSecurity">
-        <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called after the runtime has been initialized. The workaround is to write an unmanaged shim that will call the routine and then activate and call into managed code. You can do this using an export from a mixed-mode C++ DLL, by registering a managed component for use by COM, or by using the runtime hosting API.</source>
-        <target state="translated">{0} 是對 OLE32 API 的 P/Invoke 宣告，執行階段初始化之後可能無法正常地呼叫它。因應措施是撰寫一個在呼叫常式後會將其啟用，並呼叫受控程式碼的非受控填充碼。您可使用來自混合模式 C++ DLL 的匯出、註冊 COM 使用的受控元件，或是使用執行階段裝載 API 來執行這項作業。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageCoSetProxyBlanket">
-        <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called against a runtime callable wrapper (a managed object wrapping a COM object). Runtime callable wrappers dynamically fetch interface pointers so the effect of the call might be arbitrarily lost. Runtime callable wrappers for a given COM object are also shared across an application domain so the call could possibly affect other users. Replace this call with a native wrapper COM object for the interface pointer that does the appropriate CoSetProxyBlanket calls.</source>
-        <target state="translated">{0} 是對 OLE32 API 的 P/Invoke 宣告，無法正常地對執行階段可呼叫包裝函式 (包裝 COM 物件的受控物件) 進行呼叫。執行階段可呼叫包裝函式會動態擷取介面指標，因此有可能有時會出現遺漏呼叫的情況。指定的 COM 物件之執行階段可呼叫包裝函式，也會跨應用程式定義域共用，所以該呼叫可能會影響其他使用者。針對進行適當 CoSetProxyBlanket 呼叫的介面指標，以原生包裝函式 COM 物件來取代此呼叫。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
-        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}</source>
-        <target state="translated">從 {0} 移除對 SafeHandle.DangerousGetHandle 的呼叫</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFrom">
-        <source>Remove the call to Assembly.LoadFrom from {0}</source>
-        <target state="translated">從 {0} 移除對 Assembly.LoadFrom 的呼叫</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFile">
-        <source>Remove the call to Assembly.LoadFile from {0}</source>
-        <target state="translated">從 {0} 移除對 Assembly.LoadFile 的呼叫</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadWithPartialName">
-        <source>Remove the call to Assembly.LoadWithPartialName from {0}</source>
-        <target state="translated">從 {0} 移除對 Assembly.LoadWithPartialName 的呼叫</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CategoryReliability">
-        <source>Reliability</source>
-        <target state="translated">可靠性</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidUsingCrefTagsWithAPrefixTitle">
         <source>Avoid using cref tags with a prefix</source>
         <target state="translated">避免使用有前置詞的 cref 標籤</target>
@@ -1789,7 +1524,7 @@
       </trans-unit>
       <trans-unit id="AvoidExcessiveClassCouplingMessage">
         <source>'{0}' is coupled with '{1}' different types from '{2}' different namespaces. Rewrite or refactor the code to decrease its class coupling below '{3}'.</source>
-        <target state="translated">‘{0}’ 與 ‘{2}’ 個不同命名空間中 '{1}’ 個不同的類型結合。請重寫或重構程式碼，以將其類別結合程度降低至 ‘{3}’ 以下。</target>
+        <target state="translated">'{0}' 已與來自 '{2}' 個不同命名空間中的 '{1}' 個不同類型結合。請重寫或重構程式碼，以將其類別結合程度降低至 '{3}' 以下。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveClassCouplingTitle">
@@ -1834,7 +1569,7 @@
       </trans-unit>
       <trans-unit id="AvoidUnmantainableCodeMessage">
         <source>'{0}' has a maintainability index of '{1}'. Rewrite or refactor the code to increase its maintainability index (MI) above '{2}'.</source>
-        <target state="translated">‘{0}’ 的可維護性指數為 '{1}’。請重寫或重構程式碼，以將其可維護性指數 (MI) 提高到 ‘{2}’ 以上。</target>
+        <target state="translated">'{0}' 的可維護性指數為 '{1}'。請重寫或重構程式碼，以將其可維護性指數 (MI) 提高到 '{2}' 以上。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnmantainableCodeTitle">
@@ -1855,26 +1590,6 @@
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
         <source>Invalid entry in code metrics rule specification file</source>
         <target state="translated">程式碼度量規則規格檔案中的項目無效</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesTitle">
-        <source>Variable names should not match field names</source>
-        <target state="translated">變數名稱不應與欄位名稱相符</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesDescription">
-        <source>An instance method declares a parameter or a local variable whose name matches an instance field of the declaring type, leading to errors.</source>
-        <target state="translated">執行個體方法宣告的參數或區域變數，其名稱與宣告類型的執行個體欄位相符，所以導致錯誤。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageLocal">
-        <source>{0}, a variable declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</source>
-        <target state="translated">{0} 是在 {1} 中宣告的變數，其與類型上的執行個體欄位有相同的名稱。請變更其中一個這些項目的名稱。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageParameter">
-        <source>{0}, a parameter declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</source>
-        <target state="translated">{0} 是在 {1} 中宣告的參數，其與類型上的執行個體欄位具有相同的名稱。請變更其中一個這些項目的名稱。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewUnusedParametersTitle">

@@ -2,6 +2,9 @@
 
 using System.Threading.Tasks;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareProtectedMembersInSealedTypes,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareProtectedMembersInSealedTypes,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -10,6 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
     public class DoNotDeclareProtectedMembersInSealedTypesTests
     {
+
         [Fact]
         public async Task ProtectedSubInNotInheritable_Diagnostic()
         {
@@ -21,25 +25,75 @@ End Class",
                 VerifyVB.Diagnostic().WithSpan(3, 19, 3, 20).WithArguments("M", "C"));
         }
 
-        [Fact]
-        public async Task ProtectedMemberInNotInheritable_Diagnostic()
+        [Theory]
+        [InlineData("protected")]
+        [InlineData("protected internal")]
+        [InlineData("private protected")]
+        public Task AnyProtectedVariantMembersInSealed_Diagnostic(string accessModifier)
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            return new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+using System;
+
+public sealed class C
+{{
+    {accessModifier} int [|SomeField|];
+
+    {accessModifier} int [|SomeProperty|] {{ [|get|]; [|set|]; }}
+
+    {accessModifier} event EventHandler [|SomeEvent|];
+
+    {accessModifier} void [|SomeMethod|]() {{ }}
+}}"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+dotnet_code_quality.CA1047.api_surface = All
+") }
+                }
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("Protected")]
+        [InlineData("Protected Friend")]
+        [InlineData("Private Protected")]
+        public Task AnyProtectedVariantMemberInNotInheritable_Diagnostic(string accessModifier)
+        {
+            return new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { $@"
 Imports System
 
 Public NotInheritable Class C
-    Protected [|SomeField|] As Integer
+    {accessModifier} [|SomeField|] As Integer
 
-    Protected Property [|SomeProperty|] As Integer
+    {accessModifier} Property [|SomeProperty|] As Integer
 
-    Protected Event [|SomeEvent|] As EventHandler
+    {accessModifier} Event [|SomeEvent|] As EventHandler
 
-    Protected Sub [|SomeSub|]()
+    {accessModifier} Sub [|SomeSub|]()
     End Sub
 
-    Protected Function [|SomeFunction|]() As Integer
+    {accessModifier} Function [|SomeFunction|]() As Integer
     End Function
-End Class");
+End Class"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+dotnet_code_quality.CA1047.api_surface = All
+") }
+                }
+            }.RunAsync();
         }
 
         [Fact]
@@ -110,7 +164,11 @@ Public Class OuterClass
     End Class
 End Class"
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
                 },
             }.RunAsync();
         }

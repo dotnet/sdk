@@ -171,5 +171,25 @@ public partial class WebForm : System.Web.UI.Page
     }
 }");
         }
+
+        [Fact]
+        public async Task AspNetCoreHttpRequest_Process_Start_fileName_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Mvc;
+
+public class HomeController : Controller
+{
+    public IActionResult Index()
+    {
+        string input = Request.Form[""in""];
+        new Regex(input);
+
+        return View();
+    }
+}",
+                GetCSharpResultAt(10, 9, 9, 24, "Regex.Regex(string pattern)", "IActionResult HomeController.Index()", "IFormCollection HttpRequest.Form", "IActionResult HomeController.Index()"));
+        }
     }
 }

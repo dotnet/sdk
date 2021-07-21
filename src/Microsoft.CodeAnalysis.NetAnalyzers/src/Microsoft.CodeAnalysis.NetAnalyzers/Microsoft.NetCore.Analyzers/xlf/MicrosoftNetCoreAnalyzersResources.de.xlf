@@ -298,7 +298,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
-        <source>Use Secure Cookies In ASP.Net Core</source>
+        <source>Use Secure Cookies In ASP.NET Core</source>
         <target state="translated">Sichere Cookies in ASP.NET Core verwenden</target>
         <note />
       </trans-unit>
@@ -419,7 +419,7 @@
       </trans-unit>
       <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPathMessage">
         <source>When creating path for '{0} in method {1}' from relative archive item path to extract file and the source is an untrusted zip archive, make sure to sanitize relative archive item path '{2} in method {3}'</source>
-        <target state="translated">Wenn Sie einen Pfad für "{0} in der Methode "{1}" vom relativen Archivelementpfad zur Extraktionsdatei erstellen und die Quelle ein nicht vertrauenswürdiges ZIP-Archiv ist, stellen Sie sicher, dass der relative Archivelementpfad "{2}" in der Methode "{3}" bereinigt wird.</target>
+        <target state="translated">Wenn Sie einen Pfad für "{0} in Methode {1}" aus dem relativen Archivelementpfad zur Extraktionsdatei erstellen und die Quelle ein nicht vertrauenswürdiges ZIP-Archiv ist, stellen Sie sicher, dass der relative Archivelementpfad "{2} in Methode {3}" bereinigt wird.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotAddSchemaByURL">
@@ -448,8 +448,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
-        <target state="translated">Wenn eine Instanz der Klasse "{0}" deserialisiert wird, kann die Methode "{1}" die gefährliche Methode "{2}" aufrufen.</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
+        <target state="translated">Wenn eine Instanz der Klasse "{0}" deserialisiert wird, kann die Methode "{1}" die gefährliche Methode "{2}" aufrufen. Mögliche Methodenaufrufe: {3}</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -1019,7 +1019,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
         <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="needs-review-translation">Leiten Sie den Parameter "CancellationToken" an Methoden weiter, die diesen Parameter akzeptieren. So stellen Sie sicher, dass Benachrichtigungen zum Abbruch des Vorgangs ordnungsgemäß verteilt werden. Alternativ dazu können Sie explizit "CancellationToken.None" übergeben, um festzulegen, dass das Token nicht verteilt werden soll.</target>
+        <target state="translated">Hiermit wird der Parameter "CancellationToken" an Methoden weitergeleitet. So stellen Sie sicher, dass Benachrichtigungen zum Abbruch des Vorgangs ordnungsgemäß verteilt werden. Alternativ dazu können Sie explizit "CancellationToken.None" übergeben, um festzulegen, dass das Token nicht verteilt werden soll.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1029,7 +1029,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
-        <target state="needs-review-translation">Parameter "CancellationToken" an Methoden weiterleiten, die diesen Parameter akzeptieren</target>
+        <target state="translated">Parameter "CancellationToken" an Methoden weiterleiten</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1388,8 +1388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
-        <source>Ensure Use Secure Cookies In ASP.Net Core</source>
-        <target state="translated">Stellen Sie sicher, dass sichere Cookies in ASP.NET Core verwendet werden.</target>
+        <source>Ensure Use Secure Cookies In ASP.NET Core</source>
+        <target state="translated">Verwendung sicherer Cookies in ASP.NET Core sicherstellen</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCoreMessage">
@@ -1517,6 +1517,11 @@
         <target state="translated">P/Invokes dürfen nicht sichtbar sein</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlatformCompatibilityAllPlatforms">
+        <source>and all other platforms</source>
+        <target state="translated">und alle anderen Plattformen</target>
+        <note>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</note>
+      </trans-unit>
       <trans-unit id="PlatformCompatibilityAllVersions">
         <source>'{0}' all versions</source>
         <target state="translated">{0}, alle Versionen</target>
@@ -1609,7 +1614,7 @@
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</source>
-        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</target>
+        <target state="translated">Verwenden Sie "IsEmpty" anstelle von "Count", um zu bestimmen, ob das Objekt leer ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">

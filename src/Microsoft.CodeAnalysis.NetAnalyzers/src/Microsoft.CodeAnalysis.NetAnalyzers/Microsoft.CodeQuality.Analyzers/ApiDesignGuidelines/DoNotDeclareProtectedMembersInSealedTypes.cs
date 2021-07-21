@@ -34,22 +34,22 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(context =>
+            context.RegisterSymbolAction(context =>
             {
                 var symbol = context.Symbol;
 
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation))
                 {
                     return;
                 }
 
-                if (!symbol.IsProtected() ||
+                if (!IsAnyProtectedVariant(symbol) ||
                     symbol.IsOverride ||
                     !symbol.ContainingType.IsSealed)
                 {
@@ -63,6 +63,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 context.ReportDiagnostic(symbol.CreateDiagnostic(Rule, symbol.Name, symbol.ContainingType.Name));
             }, SymbolKind.Method, SymbolKind.Property, SymbolKind.Event, SymbolKind.Field);
+        }
+
+        private static bool IsAnyProtectedVariant(ISymbol symbol)
+        {
+            return symbol.DeclaredAccessibility == Accessibility.Protected ||
+                symbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal ||
+                symbol.DeclaredAccessibility == Accessibility.ProtectedAndInternal;
         }
     }
 }

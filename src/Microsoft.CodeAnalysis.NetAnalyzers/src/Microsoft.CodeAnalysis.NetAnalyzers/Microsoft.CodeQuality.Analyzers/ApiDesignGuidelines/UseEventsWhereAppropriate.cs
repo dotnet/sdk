@@ -40,12 +40,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(symbolContext =>
+            context.RegisterSymbolAction(symbolContext =>
             {
                 var method = (IMethodSymbol)symbolContext.Symbol;
                 if (!IsEventLikeNameCandidate(method.Name))
@@ -61,7 +61,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     method.IsImplementationOfAnyInterfaceMember() ||
                     method.IsConstructor() ||
                     method.IsFinalizer() ||
-                    !symbolContext.Options.MatchesConfiguredVisibility(Rule, method, symbolContext.Compilation, symbolContext.CancellationToken))
+                    !symbolContext.Options.MatchesConfiguredVisibility(Rule, method, symbolContext.Compilation))
                 {
                     return;
                 }

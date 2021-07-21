@@ -43,12 +43,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(EqualsRule, OpEqualityRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationStartContext =>
+            context.RegisterCompilationStartAction(compilationStartContext =>
             {
                 var iEnumerator = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerator);
                 var genericIEnumerator = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerator1);
@@ -68,7 +68,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (!namedType.IsValueType ||
                         namedType.TypeKind == TypeKind.Enum ||
                         (namedType.TypeKind == TypeKind.Struct && namedType.IsRefLikeType) ||
-                        !context.Options.MatchesConfiguredVisibility(EqualsRule, namedType, context.Compilation, context.CancellationToken) ||
+                        !context.Options.MatchesConfiguredVisibility(EqualsRule, namedType, context.Compilation) ||
                         !namedType.GetMembers().Any(m => !m.IsConstructor()))
                     {
                         return;

@@ -38,11 +38,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-            analysisContext.RegisterSymbolAction(AnalyzeNamedType, SymbolKind.NamedType);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.RegisterSymbolAction(AnalyzeNamedType, SymbolKind.NamedType);
         }
 
         private static void AnalyzeNamedType(SymbolAnalysisContext context)
@@ -57,7 +57,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var prefixedValues = enumValues.Where(m => m.Name.StartsWith(symbol.Name, StringComparison.OrdinalIgnoreCase));
             int percentPrefixed = 100 * prefixedValues.Count() / enumValues.Count();
 
-            var triggerOption = context.Options.GetEnumValuesPrefixTriggerOption(Rule, symbol, context.Compilation, EnumValuesPrefixTrigger.Heuristic, context.CancellationToken);
+            var triggerOption = context.Options.GetEnumValuesPrefixTriggerOption(Rule, symbol, context.Compilation, EnumValuesPrefixTrigger.Heuristic);
 
             if (triggerOption == EnumValuesPrefixTrigger.AnyEnumValue ||
                 (triggerOption == EnumValuesPrefixTrigger.AllEnumValues && percentPrefixed == 100) ||

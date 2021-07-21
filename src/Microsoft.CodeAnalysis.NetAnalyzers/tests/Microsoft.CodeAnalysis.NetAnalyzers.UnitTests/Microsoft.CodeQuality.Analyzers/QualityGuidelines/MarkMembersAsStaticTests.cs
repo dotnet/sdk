@@ -335,6 +335,8 @@ public class MembersTests
     public void SomeNotImplementedMethod() => throw new System.NotImplementedException();
 
     public void SomeNotSupportedMethod() => throw new System.NotSupportedException();
+
+    public int this[int x] => 42;
 }
 
 public class Generic<T>
@@ -394,6 +396,12 @@ Public Class MembersTests
     Public Sub SomeNotSupportedMethod()
         Throw New System.NotSupportedException()
     End Sub
+
+    Default Public ReadOnly Property Item(x As Integer) As Integer
+        Get
+            Return 42
+        End Get
+    End Property
 End Class
 
 Public Class Generic(Of T)
@@ -584,6 +592,84 @@ Namespace CustomxUnit
     <AttributeUsage(AttributeTargets.Method, AllowMultiple:=False)>
     Public Class WpfFactAttribute
         Inherits Xunit.FactAttribute
+    End Class
+End Namespace
+",
+                    },
+                },
+            }.RunAsync();
+        }
+
+        [Fact]
+        [WorkItem(4995, "https://github.com/dotnet/roslyn-analyzers/issues/4995")]
+        [WorkItem(5110, "https://github.com/dotnet/roslyn-analyzers/issues/5110")]
+        public async Task AttributeImplementingNUnitITestBuilder_NoDiagnostic()
+        {
+            var referenceAssemblies = AdditionalMetadataReferences.DefaultWithNUnit;
+
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = referenceAssemblies,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    [CustomNUnit.MyTestBuilder]
+    public void Method1() {}
+}
+",
+@"
+namespace CustomNUnit
+{
+    using System;
+    using System.Collections.Generic;
+    using NUnit.Framework.Interfaces;
+    using NUnit.Framework.Internal;
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class MyTestBuilderAttribute : Attribute, ITestBuilder
+    {
+        public IEnumerable<TestMethod> BuildFrom(IMethodInfo method, Test suite)
+        {
+            return Array.Empty<TestMethod>();
+        }
+    }
+}",
+                    },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = referenceAssemblies,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class Test
+    <CustomNUnit.MyTestBuilder>
+    Public Sub Method1()
+    End Sub
+End Class
+",
+@"
+Imports System
+Imports System.Collections.Generic
+Imports NUnit.Framework.Interfaces
+Imports NUnit.Framework.Internal
+
+Namespace CustomNUnit
+    <AttributeUsage(AttributeTargets.Method, AllowMultiple:=False)>
+    Public Class MyTestBuilderAttribute
+        Inherits Attribute
+        Implements ITestBuilder
+        Public Function BuildFrom(method As IMethodInfo, suite As NUnit.Framework.Internal.Test) As IEnumerable(Of TestMethod) Implements ITestBuilder.BuildFrom
+            Return Array.Empty(Of TestMethod)()
+        End Function
     End Class
 End Namespace
 ",
@@ -852,8 +938,11 @@ public class C : System.Web.HttpApplication
 
             await new VerifyCS.Test()
             {
-                TestCode = csSource,
-                AnalyzerConfigDocument = editorConfigText,
+                TestState =
+                {
+                    Sources = { csSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
+                }
             }.RunAsync();
 
             var vbSource = @"
@@ -903,8 +992,11 @@ End Class
 ";
             await new VerifyVB.Test()
             {
-                TestCode = vbSource,
-                AnalyzerConfigDocument = editorConfigText,
+                TestState =
+                {
+                    Sources = { vbSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
+                }
             }.RunAsync();
         }
 
@@ -1149,8 +1241,11 @@ public class Test
 }";
             await new VerifyCS.Test()
             {
-                TestCode = csSource,
-                AnalyzerConfigDocument = editorConfigText,
+                TestState =
+                {
+                    Sources = { csSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
+                }
             }.RunAsync();
 
             var vbSource = @"
@@ -1173,8 +1268,11 @@ Public Class Test
 End Class";
             await new VerifyVB.Test()
             {
-                TestCode = vbSource,
-                AnalyzerConfigDocument = editorConfigText,
+                TestState =
+                {
+                    Sources = { vbSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
+                }
             }.RunAsync();
         }
 
@@ -1286,14 +1384,97 @@ public class C
             }.RunAsync();
         }
 
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaiterPattern_INotifyCompletion_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaiter : INotifyCompletion
+{
+    public void GetResult()
+    {
+    }
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaiter : ICriticalNotifyCompletion
+{
+    public void GetResult()
+    {
+    }
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+    public void UnsafeOnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaitablePattern_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaitable
+{
+    public DummyAwaiter GetAwaiter() => new DummyAwaiter();
+}
+
+public class DummyAwaiter : INotifyCompletion
+{
+    public void GetResult()
+    {
+    }
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact]
+        public async Task InstanceMemberUsedInXml_NoDiagnostic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Property Language As String
+    Private Sub M()
+        Dim x =
+<Workspace>
+    <Project Language=<%= Me.Language %>>
+    </Project>
+</Workspace>
+        End Sub
+End Class");
+        }
+
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
     }
 }

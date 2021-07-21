@@ -57,11 +57,6 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             return symbol;
         }
 
-        public IEnumerable<SyntaxNode> GetCallArgumentExpressionNodes(SyntaxNode node)
-        {
-            return GetCallArgumentExpressionNodes(node, CallKinds.AnyCall);
-        }
-
         public IEnumerable<SyntaxNode> GetInvocationArgumentExpressionNodes(SyntaxNode node)
         {
             return GetCallArgumentExpressionNodes(node, CallKinds.Invocation);
@@ -85,34 +80,12 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             }
         }
 
-        public IEnumerable<IMethodSymbol> GetCalleeMethodSymbols(SyntaxNode? node, SemanticModel semanticModel)
-        {
-            IMethodSymbol? symbol = GetCalleeMethodSymbol(node, semanticModel);
-            if (symbol != null)
-            {
-                return new List<IMethodSymbol>() { symbol };
-            }
-
-            return GetCandidateCalleeMethodSymbols(node, semanticModel);
-        }
-
         public static IPropertySymbol? GetCalleePropertySymbol(SyntaxNode? node, SemanticModel semanticModel)
         {
             ISymbol? symbol = GetReferencedSymbol(node, semanticModel);
             if (symbol != null && symbol.Kind == SymbolKind.Property)
             {
                 return (IPropertySymbol)symbol;
-            }
-
-            return null;
-        }
-
-        public static IFieldSymbol? GetCalleeFieldSymbol(SyntaxNode? node, SemanticModel semanticModel)
-        {
-            ISymbol? symbol = GetReferencedSymbol(node, semanticModel);
-            if (symbol != null && symbol.Kind == SymbolKind.Field)
-            {
-                return (IFieldSymbol)symbol;
             }
 
             return null;
@@ -161,17 +134,6 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             }
             Optional<object> value = model.GetConstantValue(node);
             return value.HasValue && value.Value == null;
-        }
-
-        public static bool NodeHasConstantValueIntZero(SyntaxNode? node, SemanticModel? model)
-        {
-            if (node == null || model == null)
-            {
-                return false;
-            }
-            Optional<object> value = model.GetConstantValue(node);
-            return value.HasValue &&
-                   value.Value is 0;
         }
 
         public static bool NodeHasConstantValueBoolFalse(SyntaxNode? node, SemanticModel? model)

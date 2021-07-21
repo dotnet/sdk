@@ -19,8 +19,8 @@ namespace Microsoft.NetCore.Analyzers.Security
             isDataflowRule: true,
             isReportedAtCompilationEnd: false);
 
-        protected override SinkKind SinkKind { get { return SinkKind.Xml; } }
+        protected override SinkKind SinkKind => SinkKind.Xml;
 
-        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor { get { return Rule; } }
+        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor => Rule;
     }
 }

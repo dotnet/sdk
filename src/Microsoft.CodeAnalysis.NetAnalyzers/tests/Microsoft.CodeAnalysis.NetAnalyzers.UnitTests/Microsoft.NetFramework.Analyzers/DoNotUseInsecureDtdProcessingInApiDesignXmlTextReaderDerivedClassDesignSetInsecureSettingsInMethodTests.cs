@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
-    Microsoft.NetFramework.CSharp.Analyzers.CSharpDoNotUseInsecureDtdProcessingInApiDesignAnalyzer,
+    Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingInApiDesignAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
-    Microsoft.NetFramework.VisualBasic.Analyzers.BasicDoNotUseInsecureDtdProcessingInApiDesignAnalyzer,
+    Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingInApiDesignAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetFramework.Analyzers.UnitTests
@@ -16,10 +16,14 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingInApiDesignAnalyzerTests
     {
         private static DiagnosticResult GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodCSharpResultAt(int line, int column, string name)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage, name));
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodBasicResultAt(int line, int column, string name)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage, name));
+#pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
         public async Task XmlTextReaderDerivedTypeNoCtorSetUrlResolverToXmlResolverMethodShouldGenerateDiagnostic()
@@ -462,8 +466,10 @@ End Namespace");
         [Fact]
         public async Task XmlTextReaderDerivedTypeParseAndUrlResolverMethodShouldGenerateDiagnostic()
         {
+#pragma warning disable RS0030 // Do not used banned APIs
             DiagnosticResult diagWith2Locations = GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodCSharpResultAt(17, 13, "method")
                 .WithLocation(18, 13);
+#pragma warning restore RS0030 // Do not used banned APIs
 
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -489,8 +495,10 @@ namespace TestNamespace
                 diagWith2Locations
             );
 
+#pragma warning disable RS0030 // Do not used banned APIs
             diagWith2Locations = GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodBasicResultAt(13, 13, "method")
                 .WithLocation(14, 13);
+#pragma warning restore RS0030 // Do not used banned APIs
 
             await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml

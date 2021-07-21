@@ -49,12 +49,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(context =>
+            context.RegisterCompilationStartAction(context =>
             {
                 var allowedTypes = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>();
 
@@ -102,7 +102,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            if (context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
+            if (context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation))
             {
                 context.ReportDiagnostic(symbol.CreateDiagnostic(Rule));
             }

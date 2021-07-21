@@ -117,60 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AvoidAsyncVoidTitle" xml:space="preserve">
-    <value>Avoid Async Void</value>
-  </data>
-  <data name="AvoidAsyncVoidDescription" xml:space="preserve">
-    <value>#N/A</value>
-  </data>
-  <data name="AvoidAsyncVoidMessage" xml:space="preserve">
-    <value>Avoid Async Void</value>
-  </data>
-  <data name="AsyncMethodNamesShouldEndInAsyncTitle" xml:space="preserve">
-    <value>Async Method Names Should End in Async</value>
-  </data>
-  <data name="AsyncMethodNamesShouldEndInAsyncDescription" xml:space="preserve">
-    <value>#N/A</value>
-  </data>
-  <data name="AsyncMethodNamesShouldEndInAsyncMessage" xml:space="preserve">
-    <value>Async Method Names Should End in Async</value>
-  </data>
-  <data name="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle" xml:space="preserve">
-    <value>Don't Pass Async Lambdas as Void Returning Delegate Types</value>
-  </data>
-  <data name="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesDescription" xml:space="preserve">
-    <value>#N/A</value>
-  </data>
-  <data name="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesMessage" xml:space="preserve">
-    <value>Don't Pass Async Lambdas as Void Returning Delegate Types</value>
-  </data>
-  <data name="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesTitle" xml:space="preserve">
-    <value>Don't Store Async Lambdas as Void Returning Delegate Types</value>
-  </data>
-  <data name="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesDescription" xml:space="preserve">
-    <value>#N/A</value>
-  </data>
-  <data name="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesMessage" xml:space="preserve">
-    <value>Don't Store Async Lambdas as Void Returning Delegate Types</value>
-  </data>
-  <data name="PropagateCancellationTokensWhenPossibleTitle" xml:space="preserve">
-    <value>Propagate CancellationTokens When Possible</value>
-  </data>
-  <data name="PropagateCancellationTokensWhenPossibleDescription" xml:space="preserve">
-    <value>#N/A</value>
-  </data>
-  <data name="PropagateCancellationTokensWhenPossibleMessage" xml:space="preserve">
-    <value>Propagate CancellationTokens When Possible</value>
-  </data>
-  <data name="DoNotMixBlockingAndAsyncTitle" xml:space="preserve">
-    <value>Don't Mix Blocking and Async</value>
-  </data>
-  <data name="DoNotMixBlockingAndAsyncDescription" xml:space="preserve">
-    <value>#N/A</value>
-  </data>
-  <data name="DoNotMixBlockingAndAsyncMessage" xml:space="preserve">
-    <value>Don't Mix Blocking and Async</value>
-  </data>
   <data name="TypesThatOwnDisposableFieldsShouldBeDisposableTitle" xml:space="preserve">
     <value>Types that own disposable fields should be disposable</value>
   </data>
@@ -435,15 +381,6 @@
   </data>
   <data name="CancellationTokenParametersMustComeLastMessage" xml:space="preserve">
     <value>Method '{0}' should take CancellationToken as the last parameter</value>
-  </data>
-  <data name="ConstructorMakeNoninheritableBaseClassInheritableTitle" xml:space="preserve">
-    <value>Constructor make noninheritable base class inheritable</value>
-  </data>
-  <data name="ConstructorMakeNoninheritableBaseClassInheritableDescription" xml:space="preserve">
-    <value>When a base class is noninheritable because its constructor is internal, a derived class should not make it inheritable by having a public or protected constructor.</value>
-  </data>
-  <data name="ConstructorMakeNoninheritableBaseClassInheritableMessage" xml:space="preserve">
-    <value>Constructor make noninheritable base class inheritable</value>
   </data>
   <data name="IdentifiersShouldNotContainTypeNamesTitle" xml:space="preserve">
     <value>Identifier contains type name</value>
@@ -796,60 +733,6 @@
   <data name="ParameterNamesShouldMatchBaseDeclarationMessage" xml:space="preserve">
     <value>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}</value>
   </data>
-  <data name="UsePreferredTermsTitle" xml:space="preserve">
-    <value>Use preferred terms</value>
-  </data>
-  <data name="UsePreferredTermsDescription" xml:space="preserve">
-    <value>The name of an externally visible identifier includes a term for which an alternative, preferred term exists. Alternatively, the name includes the term ""Flag"" or ""Flags"".</value>
-  </data>
-  <data name="UsePreferredTermsMessageAssembly" xml:space="preserve">
-    <value>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'</value>
-  </data>
-  <data name="UsePreferredTermsMessageNamespace" xml:space="preserve">
-    <value>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'</value>
-  </data>
-  <data name="UsePreferredTermsMessageMemberParameter" xml:space="preserve">
-    <value>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</value>
-  </data>
-  <data name="UsePreferredTermsMessageDelegateParameter" xml:space="preserve">
-    <value>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</value>
-  </data>
-  <data name="UsePreferredTermsMessageTypeTypeParameter" xml:space="preserve">
-    <value>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</value>
-  </data>
-  <data name="UsePreferredTermsMessageMethodTypeParameter" xml:space="preserve">
-    <value>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</value>
-  </data>
-  <data name="UsePreferredTermsMessageType" xml:space="preserve">
-    <value>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'</value>
-  </data>
-  <data name="UsePreferredTermsMessageMember" xml:space="preserve">
-    <value>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'</value>
-  </data>
-  <data name="UsePreferredTermsMessageAssemblyNoAlternate" xml:space="preserve">
-    <value>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely</value>
-  </data>
-  <data name="UsePreferredTermsMessageNamespaceNoAlternate" xml:space="preserve">
-    <value>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely</value>
-  </data>
-  <data name="UsePreferredTermsMessageMemberParameterNoAlternate" xml:space="preserve">
-    <value>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</value>
-  </data>
-  <data name="UsePreferredTermsMessageDelegateParameterNoAlternate" xml:space="preserve">
-    <value>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</value>
-  </data>
-  <data name="UsePreferredTermsMessageTypeTypeParameterNoAlternate" xml:space="preserve">
-    <value>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</value>
-  </data>
-  <data name="UsePreferredTermsMessageMethodTypeParameterNoAlternate" xml:space="preserve">
-    <value>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</value>
-  </data>
-  <data name="UsePreferredTermsMessageTypeNoAlternate" xml:space="preserve">
-    <value>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely</value>
-  </data>
-  <data name="UsePreferredTermsMessageMemberNoAlternate" xml:space="preserve">
-    <value>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely</value>
-  </data>
   <data name="OverrideEqualsAndOperatorEqualsOnValueTypesTitle" xml:space="preserve">
     <value>Override equals and operator equals on value types</value>
   </data>
@@ -870,18 +753,6 @@
   </data>
   <data name="PropertiesShouldNotReturnArraysMessage" xml:space="preserve">
     <value>Properties should not return arrays</value>
-  </data>
-  <data name="AssembliesShouldHaveValidStrongNamesTitle" xml:space="preserve">
-    <value>Assemblies should have valid strong names</value>
-  </data>
-  <data name="AssembliesShouldHaveValidStrongNamesDescription" xml:space="preserve">
-    <value>The strong name protects clients from unknowingly loading an assembly that has been tampered with. Assemblies without strong names should not be deployed outside very limited scenarios. If you share or distribute assemblies that are not correctly signed, the assembly can be tampered with, the common language runtime might not load the assembly, or the user might have to disable verification on his or her computer.</value>
-  </data>
-  <data name="AssembliesShouldHaveValidStrongNamesMessageNoStrongName" xml:space="preserve">
-    <value>Sign {0} with a strong name key.</value>
-  </data>
-  <data name="AssembliesShouldHaveValidStrongNamesMessageNotValid" xml:space="preserve">
-    <value>Verify that {0} has a valid strong name before deploying.</value>
   </data>
   <data name="OverrideGetHashCodeOnOverridingEqualsTitle" xml:space="preserve">
     <value>Override GetHashCode on overriding Equals</value>
@@ -1007,45 +878,6 @@
   <data name="DoNotPrefixEnumValuesWithTypeNameTitle" xml:space="preserve">
     <value>Do not prefix enum values with type name</value>
   </data>
-  <data name="AvoidCallingProblematicMethodsTitle" xml:space="preserve">
-    <value>Avoid calling problematic methods</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsDescription" xml:space="preserve">
-    <value>A member calls a potentially dangerous or problematic method.</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsMessageSystemGCCollect" xml:space="preserve">
-    <value>Remove the call to GC.Collect from {0}. It is usually unnecessary to force garbage collection, and doing so can severely degrade performance.</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsMessageSystemThreadingThreadResume" xml:space="preserve">
-    <value>Remove the call to Thread.Resume from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsMessageSystemThreadingThreadSuspend" xml:space="preserve">
-    <value>Remove the call to Thread.Suspend from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsMessageSystemTypeInvokeMember" xml:space="preserve">
-    <value>Remove the call to System.Type.InvokeMember with BindingFlags.NonPublic from {0}. Taking a dependency on a private member increases the chance of a breaking change in the future.</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsMessageCoInitializeSecurity" xml:space="preserve">
-    <value>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called after the runtime has been initialized. The workaround is to write an unmanaged shim that will call the routine and then activate and call into managed code. You can do this using an export from a mixed-mode C++ DLL, by registering a managed component for use by COM, or by using the runtime hosting API.</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsMessageCoSetProxyBlanket" xml:space="preserve">
-    <value>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called against a runtime callable wrapper (a managed object wrapping a COM object). Runtime callable wrappers dynamically fetch interface pointers so the effect of the call might be arbitrarily lost. Runtime callable wrappers for a given COM object are also shared across an application domain so the call could possibly affect other users. Replace this call with a native wrapper COM object for the interface pointer that does the appropriate CoSetProxyBlanket calls.</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle" xml:space="preserve">
-    <value>Remove the call to SafeHandle.DangerousGetHandle from {0}</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFrom" xml:space="preserve">
-    <value>Remove the call to Assembly.LoadFrom from {0}</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFile" xml:space="preserve">
-    <value>Remove the call to Assembly.LoadFile from {0}</value>
-  </data>
-  <data name="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadWithPartialName" xml:space="preserve">
-    <value>Remove the call to Assembly.LoadWithPartialName from {0}</value>
-  </data>
-  <data name="CategoryReliability" xml:space="preserve">
-    <value>Reliability</value>
-  </data>
   <data name="AvoidUsingCrefTagsWithAPrefixTitle" xml:space="preserve">
     <value>Avoid using cref tags with a prefix</value>
   </data>
@@ -1054,18 +886,6 @@
   </data>
   <data name="AvoidUsingCrefTagsWithAPrefixMessage" xml:space="preserve">
     <value>Avoid using cref tags with a prefix</value>
-  </data>
-  <data name="VariableNamesShouldNotMatchFieldNamesTitle" xml:space="preserve">
-    <value>Variable names should not match field names</value>
-  </data>
-  <data name="VariableNamesShouldNotMatchFieldNamesDescription" xml:space="preserve">
-    <value>An instance method declares a parameter or a local variable whose name matches an instance field of the declaring type, leading to errors.</value>
-  </data>
-  <data name="VariableNamesShouldNotMatchFieldNamesMessageLocal" xml:space="preserve">
-    <value>{0}, a variable declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</value>
-  </data>
-  <data name="VariableNamesShouldNotMatchFieldNamesMessageParameter" xml:space="preserve">
-    <value>{0}, a parameter declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</value>
   </data>
   <data name="ReviewUnusedParametersTitle" xml:space="preserve">
     <value>Review unused parameters</value>
@@ -1433,7 +1253,17 @@
   <data name="DoNotIgnoreMethodResultsMessageUserDefinedMethod" xml:space="preserve">
     <value>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</value>
   </data>
+  <data name="IdentifiersShouldNotContainUnderscoresCodeFixTitle" xml:space="preserve">
+    <value>Remove underscores</value>
+  </data>
   <data name="MarkAttributesWithAttributeUsageCodeFix" xml:space="preserve">
     <value>Apply 'AttributeUsageAttribute'</value>
+  </data>
+  <data name="UriParametersShouldNotBeStringsCodeFixTitle" xml:space="preserve">
+    <value>Add 'System.Uri' overloads</value>
+    <comment>{Locked="System.Uri"}</comment>
+  </data>
+  <data name="OperatorOverloadsHaveNamedAlternatesCodeFixTitle" xml:space="preserve">
+    <value>Add operator overload named alternate</value>
   </data>
 </root>

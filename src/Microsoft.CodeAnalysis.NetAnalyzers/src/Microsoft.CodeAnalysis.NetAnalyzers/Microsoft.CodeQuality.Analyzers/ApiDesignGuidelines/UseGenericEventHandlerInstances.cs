@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -64,12 +63,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleForDelegates, RuleForEvents, RuleForEvents2);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 (context) =>
                 {
                     INamedTypeSymbol? eventArgs = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs);
@@ -92,7 +91,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                         // will always have identical configured visibility.
                         var namedType = (INamedTypeSymbol)symbolContext.Symbol;
-                        if (symbolContext.Options.MatchesConfiguredVisibility(RuleForDelegates, namedType, symbolContext.Compilation, symbolContext.CancellationToken) &&
+                        if (symbolContext.Options.MatchesConfiguredVisibility(RuleForDelegates, namedType, symbolContext.Compilation) &&
                             IsDelegateTypeWithInvokeMethod(namedType) &&
                             namedType.DelegateInvokeMethod.HasEventHandlerSignature(eventArgs))
                         {
@@ -104,7 +103,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     INamedTypeSymbol? comSourceInterfacesAttribute = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesComSourceInterfacesAttribute);
                     bool ContainingTypeHasComSourceInterfacesAttribute(IEventSymbol eventSymbol) =>
                         comSourceInterfacesAttribute != null &&
-                        eventSymbol.ContainingType.GetAttributes().Any(a => Equals(a.AttributeClass, comSourceInterfacesAttribute));
+                        eventSymbol.ContainingType.HasAttribute(comSourceInterfacesAttribute);
 
                     context.RegisterSymbolAction(symbolContext =>
                     {
@@ -114,7 +113,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                         // will always have identical configured visibility.
                         var eventSymbol = (IEventSymbol)symbolContext.Symbol;
-                        if (symbolContext.Options.MatchesConfiguredVisibility(RuleForEvents, eventSymbol, symbolContext.Compilation, symbolContext.CancellationToken) &&
+                        if (symbolContext.Options.MatchesConfiguredVisibility(RuleForEvents, eventSymbol, symbolContext.Compilation) &&
                             !eventSymbol.IsOverride &&
                             !eventSymbol.IsImplementationOfAnyInterfaceMember() &&
                             !ContainingTypeHasComSourceInterfacesAttribute(eventSymbol) &&

@@ -67,12 +67,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule, PropertyRule, MultipleRule, VisibilityRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
         }
 
         private static void AnalyzeSymbol(SymbolAnalysisContext symbolContext)
@@ -82,7 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // FxCop compat: only analyze externally visible symbols by default.
             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
             // will always have identical configured visibility.
-            if (!symbolContext.Options.MatchesConfiguredVisibility(DefaultRule, methodSymbol, symbolContext.Compilation, symbolContext.CancellationToken))
+            if (!symbolContext.Options.MatchesConfiguredVisibility(DefaultRule, methodSymbol, symbolContext.Compilation))
             {
                 return;
             }

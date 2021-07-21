@@ -42,12 +42,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA1401, RuleCA2101);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 (context) =>
                 {
                     INamedTypeSymbol? dllImportType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute);
@@ -121,7 +121,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
 
                 // CA2101 - Specify marshalling for PInvoke string arguments
-                if (dllImportData.BestFitMapping != false)
+                if (dllImportData.BestFitMapping != false ||
+                    context.Options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.InvariantGlobalization, context.Compilation) is not "true")
                 {
                     bool appliedCA2101ToMethod = false;
                     foreach (IParameterSymbol parameter in methodSymbol.Parameters)

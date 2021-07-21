@@ -55,12 +55,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleNoArguments, RuleIncorrectMessage, RuleIncorrectParameterName);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 compilationContext =>
                 {
                     Compilation compilation = compilationContext.Compilation;
@@ -133,7 +133,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool MatchesConfiguredVisibility(ISymbol owningSymbol, OperationAnalysisContext context) =>
              context.Options.MatchesConfiguredVisibility(RuleIncorrectParameterName, owningSymbol, context.Compilation,
-                 context.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.All);
+                 defaultRequiredVisibility: SymbolVisibilityGroup.All);
 
         private static bool HasParameters(ISymbol owningSymbol) => !owningSymbol.GetParameters().IsEmpty;
 

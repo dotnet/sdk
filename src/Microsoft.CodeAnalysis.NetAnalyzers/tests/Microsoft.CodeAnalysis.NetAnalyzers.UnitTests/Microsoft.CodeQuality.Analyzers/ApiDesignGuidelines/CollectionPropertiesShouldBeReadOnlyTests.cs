@@ -16,13 +16,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class CollectionPropertiesShouldBeReadOnlyTests
     {
         private static DiagnosticResult GetBasicResultAt(int line, int column, string propertyName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(propertyName);
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string propertyName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(propertyName);
 
         [Fact]

@@ -35,14 +35,14 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
+            context.EnableConcurrentExecution();
 
             // We need to analyze generated code, but don't intend to report diagnostics for generated code fields.
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 (compilationContext) =>
                 {
                     ConcurrentDictionary<IFieldSymbol, UnusedValue> maybeUnreferencedPrivateFields = new ConcurrentDictionary<IFieldSymbol, UnusedValue>();

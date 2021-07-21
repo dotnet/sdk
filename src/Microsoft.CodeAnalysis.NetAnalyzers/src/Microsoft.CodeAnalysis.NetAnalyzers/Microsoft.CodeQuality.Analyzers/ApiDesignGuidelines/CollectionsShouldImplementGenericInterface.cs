@@ -51,12 +51,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                context =>
                {
                    var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
@@ -99,7 +99,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
 
             // FxCop compat: only fire on externally visible types by default.
-            if (!context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation))
             {
                 return;
             }
@@ -111,7 +111,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // First we need to try to match all types from the user definition...
-            var userMap = context.Options.GetAdditionalRequiredGenericInterfaces(Rule, context.Symbol, context.Compilation, context.CancellationToken);
+            var userMap = context.Options.GetAdditionalRequiredGenericInterfaces(Rule, context.Symbol, context.Compilation);
             if (!userMap.IsEmpty)
             {
                 foreach (var @interface in allInterfaces)

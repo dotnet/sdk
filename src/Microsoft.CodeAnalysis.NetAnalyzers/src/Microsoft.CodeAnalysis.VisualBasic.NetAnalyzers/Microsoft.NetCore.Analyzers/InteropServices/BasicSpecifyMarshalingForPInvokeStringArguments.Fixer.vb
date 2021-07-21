@@ -22,7 +22,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.InteropServices
         Protected Overrides Function FindNamedArgument(arguments As IReadOnlyList(Of SyntaxNode), argumentName As String) As SyntaxNode
             Return Aggregate arg In arguments.OfType(Of SimpleArgumentSyntax)
                    Where arg.IsNamed
-                   Into FirstOrDefault(arg.NameColonEquals.Name.Identifier.Text = argumentName)
+                   Into FirstOrDefault(String.Equals(arg.NameColonEquals.Name.Identifier.Text, argumentName, StringComparison.OrdinalIgnoreCase))
         End Function
 
         Protected Overrides Function IsDeclareStatement(node As SyntaxNode) As Boolean

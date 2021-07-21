@@ -31,17 +31,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(context =>
+            context.RegisterSymbolAction(context =>
             {
                 var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
                 if (namedTypeSymbol.IsValueType &&
                     !(namedTypeSymbol.IsRefLikeType && namedTypeSymbol.TypeKind == TypeKind.Struct) &&
-                    context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation, context.CancellationToken) &&
+                    context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation) &&
                     namedTypeSymbol.OverridesEquals() &&
                     !namedTypeSymbol.ImplementsEqualityOperators())
                 {

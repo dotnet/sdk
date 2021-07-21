@@ -135,5 +135,25 @@ public partial class WebForm : System.Web.UI.Page
     }
 }");
         }
+
+        [Fact]
+        public async Task AspNetCoreHttpRequest_FileInfo_Constructor_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.IO;
+using Microsoft.AspNetCore.Mvc;
+
+public class HomeController : Controller
+{
+    public IActionResult Index()
+    {
+        string input = Request.Form[""in""];
+        new FileInfo(input);
+
+        return View();
+    }
+}",
+                GetCSharpResultAt(10, 9, 9, 24, "FileInfo.FileInfo(string fileName)", "IActionResult HomeController.Index()", "IFormCollection HttpRequest.Form", "IActionResult HomeController.Index()"));
+        }
     }
 }

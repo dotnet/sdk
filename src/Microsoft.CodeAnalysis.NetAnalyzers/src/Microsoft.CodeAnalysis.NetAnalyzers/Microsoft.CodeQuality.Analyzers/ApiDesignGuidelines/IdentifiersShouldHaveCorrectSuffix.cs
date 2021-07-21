@@ -46,34 +46,34 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         // Tuple says <TypeInheritedOrImplemented, AppropriateSuffix, Bool value saying if the suffix can `Collection` or the `AppropriateSuffix`>s
         // The bool values are as mentioned in the Uri
-        private static readonly List<(string typeName, string suffix, bool canSuffixBeCollection)> s_baseTypesAndTheirSuffix = new List<(string, string, bool)>()
-                                                    {
-                                                        ("System.Attribute", "Attribute", false),
-                                                        ("System.EventArgs", "EventArgs", false),
-                                                        ("System.Exception", "Exception", false),
-                                                        ("System.Collections.ICollection", "Collection", false),
-                                                        ("System.Collections.IDictionary", "Dictionary", false),
-                                                        ("System.Collections.IEnumerable", "Collection", false),
-                                                        ("System.Collections.Queue", "Queue", true),
-                                                        ("System.Collections.Stack", "Stack", true),
-                                                        ("System.Collections.Generic.Queue`1", "Queue", true),
-                                                        ("System.Collections.Generic.Stack`1", "Stack", true),
-                                                        ("System.Collections.Generic.ICollection`1", "Collection", false),
-                                                        ("System.Collections.Generic.IDictionary`2", "Dictionary", false),
-                                                        ("System.Collections.Generic.IReadOnlyDictionary`2", "Dictionary", false),
-                                                        ("System.Data.DataSet", "DataSet", false),
-                                                        ("System.Data.DataTable", "DataTable", true),
-                                                        ("System.IO.Stream", "Stream", false),
-                                                        ("System.Security.IPermission","Permission", false),
-                                                        ("System.Security.Policy.IMembershipCondition", "Condition", false)
-                                                    };
-
-        public override void Initialize(AnalysisContext analysisContext)
+        private static readonly List<(string typeName, string suffix, bool canSuffixBeCollection)> s_baseTypesAndTheirSuffix = new()
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            ("System.Attribute", "Attribute", false),
+            ("System.EventArgs", "EventArgs", false),
+            ("System.Exception", "Exception", false),
+            ("System.Collections.ICollection", "Collection", false),
+            ("System.Collections.IDictionary", "Dictionary", false),
+            ("System.Collections.IEnumerable", "Collection", false),
+            ("System.Collections.Queue", "Queue", true),
+            ("System.Collections.Stack", "Stack", true),
+            ("System.Collections.Generic.Queue`1", "Queue", true),
+            ("System.Collections.Generic.Stack`1", "Stack", true),
+            ("System.Collections.Generic.ICollection`1", "Collection", false),
+            ("System.Collections.Generic.IDictionary`2", "Dictionary", false),
+            ("System.Collections.Generic.IReadOnlyDictionary`2", "Dictionary", false),
+            ("System.Data.DataSet", "DataSet", false),
+            ("System.Data.DataTable", "DataTable", true),
+            ("System.IO.Stream", "Stream", false),
+            ("System.Security.IPermission", "Permission", false),
+            ("System.Security.Policy.IMembershipCondition", "Condition", false)
+        };
 
-            analysisContext.RegisterCompilationStartAction(AnalyzeCompilationStart);
+        public override void Initialize(AnalysisContext context)
+        {
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+
+            context.RegisterCompilationStartAction(AnalyzeCompilationStart);
         }
 
         private static void AnalyzeCompilationStart(CompilationStartAnalysisContext context)
@@ -107,23 +107,23 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterSymbolAction((saContext) =>
             {
                 var namedTypeSymbol = (INamedTypeSymbol)saContext.Symbol;
-                if (!saContext.Options.MatchesConfiguredVisibility(DefaultRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken))
+                if (!saContext.Options.MatchesConfiguredVisibility(DefaultRule, namedTypeSymbol, saContext.Compilation))
                 {
-                    Debug.Assert(!saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
+                    Debug.Assert(!saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation));
                     return;
                 }
 
-                Debug.Assert(saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
+                Debug.Assert(saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation));
 
                 var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, DefaultRule,
-                   namedTypeSymbol, context.Compilation, defaultValue: true, cancellationToken: context.CancellationToken);
+                   namedTypeSymbol, context.Compilation, defaultValue: true);
 
                 var baseTypes = excludeIndirectBaseTypes
                     ? namedTypeSymbol.BaseType != null ? ImmutableArray.Create(namedTypeSymbol.BaseType) : ImmutableArray<INamedTypeSymbol>.Empty
                     : namedTypeSymbol.GetBaseTypes();
 
                 var userTypeSuffixMap = context.Options.GetAdditionalRequiredSuffixesOption(DefaultRule, saContext.Symbol,
-                    context.Compilation, context.CancellationToken);
+                    context.Compilation);
 
                 if (TryGetTypeSuffix(baseTypes, baseTypeSuffixMap, userTypeSuffixMap, out var typeSuffixInfo))
                 {
@@ -176,14 +176,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             foreach (var type in typeSymbols)
             {
                 // User specific mapping has higher priority than hardcoded one
-                if (userMap.TryGetValue(type.OriginalDefinition, out var suffix) &&
-                    !RoslynString.IsNullOrWhiteSpace(suffix))
+                if (userMap.TryGetValue(type.OriginalDefinition, out var suffix))
                 {
-                    suffixInfo = SuffixInfo.Create(suffix, canSuffixBeCollection: false);
-                    return true;
+                    if (!RoslynString.IsNullOrWhiteSpace(suffix))
+                    {
+                        suffixInfo = SuffixInfo.Create(suffix, canSuffixBeCollection: false);
+                        return true;
+                    }
                 }
-
-                if (hardcodedMap.TryGetValue(type.OriginalDefinition, out suffixInfo))
+                else if (hardcodedMap.TryGetValue(type.OriginalDefinition, out suffixInfo))
                 {
                     return true;
                 }

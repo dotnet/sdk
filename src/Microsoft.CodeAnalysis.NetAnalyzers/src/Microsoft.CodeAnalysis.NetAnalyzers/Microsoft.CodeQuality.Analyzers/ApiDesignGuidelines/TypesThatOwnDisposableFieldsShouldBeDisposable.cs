@@ -35,12 +35,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(compilationContext =>
             {
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationContext.Compilation);
                 if (!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIDisposable, out _))
@@ -90,7 +90,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     SemanticModel model = symbolContext.Compilation.GetSemanticModel(classDecl.SyntaxTree);
                     IEnumerable<string> disposableFieldNames = classDecl.DescendantNodes(n => !(n is TTypeDeclarationSyntax) || ReferenceEquals(n, classDecl))
                         .SelectMany(n => GetDisposableFieldCreations(n, model, disposableFieldsHashSet, symbolContext.CancellationToken))
-                        .Where(field => !symbolContext.Options.IsConfiguredToSkipAnalysis(Rule, field.Type, namedType, symbolContext.Compilation, symbolContext.CancellationToken))
+                        .Where(field => !symbolContext.Options.IsConfiguredToSkipAnalysis(Rule, field.Type, namedType, symbolContext.Compilation))
                         .Select(field => field.Name);
 
                     if (disposableFieldNames.Any())

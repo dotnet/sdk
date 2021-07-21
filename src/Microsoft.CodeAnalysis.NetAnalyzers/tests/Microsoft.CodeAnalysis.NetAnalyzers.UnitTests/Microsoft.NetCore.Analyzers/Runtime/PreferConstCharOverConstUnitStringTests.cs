@@ -493,11 +493,12 @@ namespace TestNamespace
         { 
             StringBuilder sb = new StringBuilder();
             const string ch = ""a"";
-            sb.Append($""{ch}"");
+            sb.Append([|$""{ch}""|]);
         } 
     } 
 }";
-            await VerifyCS.VerifyAnalyzerAsync(interpolatedString_cs);
+
+            await VerifyCS.VerifyCodeFixAsync(interpolatedString_cs, interpolatedString_cs);
             const string interpolatedString_vb = @"
 Imports System
 

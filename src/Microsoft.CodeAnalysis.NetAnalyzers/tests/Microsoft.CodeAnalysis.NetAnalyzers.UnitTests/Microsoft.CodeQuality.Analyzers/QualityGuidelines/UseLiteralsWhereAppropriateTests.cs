@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.QualityGuidelines.UseLiteralsWhereAppropriateAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpUseLiteralsWhereAppropriate,
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpUseLiteralsWhereAppropriateFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.QualityGuidelines.UseLiteralsWhereAppropriateAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicUseLiteralsWhereAppropriate,
     Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicUseLiteralsWhereAppropriateFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
@@ -135,7 +135,11 @@ public class Test
 }
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 },
             };
             csTest.ExpectedDiagnostics.AddRange(expected);
@@ -162,7 +166,11 @@ Public Class Test
 End Class
 "
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(expected);
@@ -244,23 +252,31 @@ public class Class1
         }
 
         private static DiagnosticResult GetCSharpDefaultResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetCSharpEmptyStringResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetBasicDefaultResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetBasicEmptyStringResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
     }
 }

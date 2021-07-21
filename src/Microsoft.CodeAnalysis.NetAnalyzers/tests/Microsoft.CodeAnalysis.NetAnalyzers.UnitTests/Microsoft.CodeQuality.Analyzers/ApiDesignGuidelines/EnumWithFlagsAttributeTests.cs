@@ -567,23 +567,31 @@ End Enum
         }
 
         private static DiagnosticResult GetCA1027CSharpResultAt(int line, int column, string enumTypeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(EnumWithFlagsAttributeAnalyzer.Rule1027)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(enumTypeName);
 
         private static DiagnosticResult GetCA1027BasicResultAt(int line, int column, string enumTypeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(EnumWithFlagsAttributeAnalyzer.Rule1027)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(enumTypeName);
 
         private static DiagnosticResult GetCA2217CSharpResultAt(int line, int column, string enumTypeName, string missingValuesString)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(EnumWithFlagsAttributeAnalyzer.Rule2217)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(enumTypeName, missingValuesString);
 
         private static DiagnosticResult GetCA2217BasicResultAt(int line, int column, string enumTypeName, string missingValuesString)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(EnumWithFlagsAttributeAnalyzer.Rule2217)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(enumTypeName, missingValuesString);
     }
 }

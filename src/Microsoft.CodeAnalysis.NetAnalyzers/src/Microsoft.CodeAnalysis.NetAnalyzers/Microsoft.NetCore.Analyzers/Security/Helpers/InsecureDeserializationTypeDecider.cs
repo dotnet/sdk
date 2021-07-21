@@ -144,7 +144,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             ITypeSymbol? Compute(ITypeSymbol typeSymbol)
             {
                 // Sort type symbols by display string so that we get consistent results.
-                using PooledSortedSet<ITypeSymbol> associatedTypeSymbols = PooledSortedSet<ITypeSymbol>.GetInstance(
+                SortedSet<ITypeSymbol> associatedTypeSymbols = new SortedSet<ITypeSymbol>(
                     this.SymbolByDisplayStringComparer);
                 GetAssociatedTypes(typeSymbol, associatedTypeSymbols);
                 foreach (ITypeSymbol t in associatedTypeSymbols)
@@ -239,8 +239,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
 
                 // Sort type symbols by display strings.
                 // Keep track of member types we see, and we'll recurse through those afterwards.
-                using PooledSortedSet<ITypeSymbol> typesToRecurse = PooledSortedSet<ITypeSymbol>.GetInstance(
-                    this.SymbolByDisplayStringComparer);
+                SortedSet<ITypeSymbol> typesToRecurse = new SortedSet<ITypeSymbol>(this.SymbolByDisplayStringComparer);
                 foreach (ISymbol member in typeSymbol.GetMembers())
                 {
                     switch (member)
@@ -415,7 +414,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <param name="results">Set to populate with associated types.</param>
         private static void GetAssociatedTypes(
             ITypeSymbol type,
-            PooledSortedSet<ITypeSymbol> results)
+            SortedSet<ITypeSymbol> results)
         {
             if (type == null || !results.Add(type))
             {

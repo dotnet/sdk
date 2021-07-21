@@ -85,16 +85,16 @@ namespace Microsoft.NetCore.Analyzers.Security
                 "handler",
                 (IMethodSymbol methodSymbol, PropertySetAbstractValue abstractValue) =>
                 {
-                    return (abstractValue[ServerCertificateValidationCallbackIndex]) switch
+                    return abstractValue[ServerCertificateValidationCallbackIndex] switch
                     {
-                        PropertySetAbstractValueKind.Flagged => (abstractValue[CheckCertificateRevocationListIndex]) switch
+                        PropertySetAbstractValueKind.Flagged => abstractValue[CheckCertificateRevocationListIndex] switch
                         {
                             PropertySetAbstractValueKind.Flagged => HazardousUsageEvaluationResult.Flagged,
                             PropertySetAbstractValueKind.MaybeFlagged => HazardousUsageEvaluationResult.MaybeFlagged,
                             _ => HazardousUsageEvaluationResult.Unflagged,
                         },
 
-                        PropertySetAbstractValueKind.MaybeFlagged => (abstractValue[CheckCertificateRevocationListIndex]) switch
+                        PropertySetAbstractValueKind.MaybeFlagged => abstractValue[CheckCertificateRevocationListIndex] switch
                         {
                             PropertySetAbstractValueKind.Unflagged => HazardousUsageEvaluationResult.Unflagged,
                             _ => HazardousUsageEvaluationResult.MaybeFlagged,
@@ -141,13 +141,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                             if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(
                                     DefinitelyDisableHttpClientCRLCheckRule,
                                     owningSymbol,
-                                    operationBlockStartAnalysisContext.Compilation,
-                                    operationBlockStartAnalysisContext.CancellationToken) &&
+                                    operationBlockStartAnalysisContext.Compilation) &&
                                 operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(
                                     MaybeDisableHttpClientCRLCheckRule,
                                     owningSymbol,
-                                    operationBlockStartAnalysisContext.Compilation,
-                                    operationBlockStartAnalysisContext.CancellationToken))
+                                    operationBlockStartAnalysisContext.Compilation))
                             {
                                 return;
                             }
@@ -200,8 +198,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             SupportedDiagnostics,
                                             rootOperationsNeedingAnalysis.First().Item1,
                                             compilationAnalysisContext.Compilation,
-                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                            cancellationToken: compilationAnalysisContext.CancellationToken));
+                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive));
                                 }
 
                                 if (allResults == null)

@@ -298,7 +298,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
-        <source>Use Secure Cookies In ASP.Net Core</source>
+        <source>Use Secure Cookies In ASP.NET Core</source>
         <target state="translated">ASP.NET Core에서 보안 쿠키 사용</target>
         <note />
       </trans-unit>
@@ -448,8 +448,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
-        <target state="translated">{0} 클래스의 인스턴스를 역직렬화할 때 {1} 메서드가 위험한 메서드 {2}을(를) 호출할 수 있습니다.</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
+        <target state="translated">{0} 클래스의 인스턴스를 역직렬화할 때 {1} 메서드가 위험한 메서드 {2}을(를) 호출할 수 있습니다. 잠재적인 메서드 호출은 {3}입니다</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -1019,7 +1019,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
         <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="needs-review-translation">'CancellationToken' 매개 변수를 이를 사용하는 메서드로 전달하여 작업 취소 알림이 올바르게 전파되도록 하거나, 명시적으로 'CancellationToken.None'을 전달하여 의도적으로 토큰을 전파하지 않음을 나타냅니다.</target>
+        <target state="translated">'CancellationToken' 매개 변수를 메서드로 전달하여 작업 취소 알림이 올바르게 전파되도록 하거나, 명시적으로 'CancellationToken.None'을 전달하여 의도적으로 토큰을 전파하지 않음을 나타냅니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1029,7 +1029,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
-        <target state="needs-review-translation">'CancellationToken' 매개 변수를 이를 사용하는 메서드로 전달</target>
+        <target state="translated">'CancellationToken' 매개 변수를 메서드로 전달</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1388,7 +1388,7 @@
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
-        <source>Ensure Use Secure Cookies In ASP.Net Core</source>
+        <source>Ensure Use Secure Cookies In ASP.NET Core</source>
         <target state="translated">ASP.NET Core에서 보안 쿠키 사용 확인</target>
         <note />
       </trans-unit>
@@ -1517,6 +1517,11 @@
         <target state="translated">P/Invokes를 표시하지 않아야 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlatformCompatibilityAllPlatforms">
+        <source>and all other platforms</source>
+        <target state="translated">및 다른 모든 플랫폼</target>
+        <note>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</note>
+      </trans-unit>
       <trans-unit id="PlatformCompatibilityAllVersions">
         <source>'{0}' all versions</source>
         <target state="translated">'{0}' 모든 버전</target>
@@ -1609,7 +1614,7 @@
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</source>
-        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</target>
+        <target state="translated">개체가 비어 있는지 확인하려면 'Count' 대신 'IsEmpty'를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">

@@ -13,5 +13,6 @@ namespace GenerateDocumentationAndConfigFiles
         public const string CodeAnalysisAnalyzersPackageName = "Microsoft.CodeAnalysis.Analyzers";
         public const string PublicApiAnalyzersPackageName = "Microsoft.CodeAnalysis.PublicApiAnalyzers";
         public const string PerformanceSensitiveAnalyzersPackageName = "Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers";
+        public const string ResxSourceGeneratorPackageName = "Microsoft.CodeAnalysis.ResxSourceGenerator";
     }
 }

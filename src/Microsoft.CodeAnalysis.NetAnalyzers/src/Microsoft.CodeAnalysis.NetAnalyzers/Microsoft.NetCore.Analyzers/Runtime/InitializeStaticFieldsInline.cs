@@ -47,12 +47,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1810Rule, CA2207Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterOperationBlockStartAction(context =>
+            context.RegisterOperationBlockStartAction(context =>
             {
                 if (context.OwningSymbol is not IMethodSymbol method ||
                     !method.IsStatic ||
@@ -113,7 +113,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             public bool Value
             {
-                get { return Interlocked.CompareExchange(ref zeroOrOne, TRUE_VALUE, TRUE_VALUE) == TRUE_VALUE; }
+                get => Interlocked.CompareExchange(ref zeroOrOne, TRUE_VALUE, TRUE_VALUE) == TRUE_VALUE;
                 set
                 {
                     if (value)

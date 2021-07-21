@@ -30,7 +30,7 @@ In the remainder of this document, we explain the principles we used to decide h
 
 ## Analyzer packages
 
-The list of all the rules that ship in VS, along with certain other FxCop/Roslyn rules that we know of, is captured in the file [RulesInventory.csv](https://github.com/dotnet/roslyn-analyzers/blob/master/docs/FxCopPort/RulesInventory.csv) file (which, thanks to GitHub, is searchable). That file also contains our proposed factoring of the analyzers (in the "Proposed Analyzer" column, which perhaps might have been better named "Proposed Analyzer Package").
+The list of all the rules that ship in VS, along with certain other FxCop/Roslyn rules that we know of, is captured in the file [RulesInventory.csv](https://github.com/dotnet/roslyn-analyzers/blob/main/docs/FxCopPort/RulesInventory.csv) file (which, thanks to GitHub, is searchable). That file also contains our proposed factoring of the analyzers (in the "Proposed Analyzer" column, which perhaps might have been better named "Proposed Analyzer Package").
 
 ### API analyzer packages
 

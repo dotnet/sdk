@@ -54,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         private static HazardousUsageEvaluationResult HazardousUsageCallback(IMethodSymbol methodSymbol, PropertySetAbstractValue propertySetAbstractValue)
         {
-            return (propertySetAbstractValue[0]) switch
+            return propertySetAbstractValue[0] switch
             {
                 PropertySetAbstractValueKind.Flagged => HazardousUsageEvaluationResult.Flagged,
 
@@ -122,9 +122,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                             // TODO: Handle case when exactly one of the below rules is configured to skip analysis.
                             if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(DefinitelyInstallRootCertRule,
-                                    owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken) &&
+                                    owningSymbol, operationBlockStartAnalysisContext.Compilation) &&
                                 operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(MaybeInstallRootCertRule,
-                                    owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
+                                    owningSymbol, operationBlockStartAnalysisContext.Compilation))
                             {
                                 return;
                             }
@@ -188,8 +188,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             SupportedDiagnostics,
                                             rootOperationsNeedingAnalysis.First().Item1,
                                             compilationAnalysisContext.Compilation,
-                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                            cancellationToken: compilationAnalysisContext.CancellationToken));
+                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive));
                                 }
 
                                 if (allResults == null)

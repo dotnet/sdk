@@ -35,17 +35,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(symbolAnalysisContext =>
+            context.RegisterSymbolAction(symbolAnalysisContext =>
             {
                 var namedType = (INamedTypeSymbol)symbolAnalysisContext.Symbol;
 
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!symbolAnalysisContext.Options.MatchesConfiguredVisibility(Rule, namedType, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
+                if (!symbolAnalysisContext.Options.MatchesConfiguredVisibility(Rule, namedType, symbolAnalysisContext.Compilation))
                 {
                     return;
                 }
@@ -77,7 +77,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             foreach (var operator1 in operators1)
             {
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!analysisContext.Options.MatchesConfiguredVisibility(Rule, operator1, analysisContext.Compilation, analysisContext.CancellationToken))
+                if (!analysisContext.Options.MatchesConfiguredVisibility(Rule, operator1, analysisContext.Compilation))
                 {
                     return;
                 }

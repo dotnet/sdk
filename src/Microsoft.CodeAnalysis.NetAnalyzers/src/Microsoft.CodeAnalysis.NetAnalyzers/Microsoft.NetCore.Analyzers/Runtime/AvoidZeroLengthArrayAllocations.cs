@@ -81,6 +81,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
+            var linqExpressionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+            if (arrayCreationExpression.IsWithinExpressionTree(linqExpressionType))
+            {
+                return;
+            }
+
             if (arrayCreationExpression.DimensionSizes.Length == 1)
             {
                 IOperation dimensionSize = arrayCreationExpression.DimensionSizes[0];

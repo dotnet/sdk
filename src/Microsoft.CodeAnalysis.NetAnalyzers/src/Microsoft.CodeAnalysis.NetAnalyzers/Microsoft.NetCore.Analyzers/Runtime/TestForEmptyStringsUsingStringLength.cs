@@ -46,26 +46,43 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            context.RegisterOperationAction(
-                operationAnalysisContext => AnalyzeInvocationExpression((IInvocationOperation)operationAnalysisContext.Operation, operationAnalysisContext.ReportDiagnostic),
-                OperationKind.Invocation);
+            context.RegisterCompilationStartAction(context =>
+            {
+                var linqExpressionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
 
-            context.RegisterOperationAction(
-                operationAnalysisContext => AnalyzeBinaryExpression((IBinaryOperation)operationAnalysisContext.Operation, operationAnalysisContext.ReportDiagnostic),
-                OperationKind.BinaryOperator);
+                context.RegisterOperationAction(
+                    operationAnalysisContext => AnalyzeInvocationExpression(
+                        (IInvocationOperation)operationAnalysisContext.Operation, linqExpressionType,
+                        operationAnalysisContext.ReportDiagnostic),
+                    OperationKind.Invocation);
+
+                context.RegisterOperationAction(
+                    operationAnalysisContext => AnalyzeBinaryExpression(
+                        (IBinaryOperation)operationAnalysisContext.Operation, linqExpressionType,
+                        operationAnalysisContext.ReportDiagnostic),
+                    OperationKind.BinaryOperator);
+            });
         }
 
         /// <summary>
         /// Check to see if we have an invocation to string.Equals that has an empty string as an argument.
         /// </summary>
-        private static void AnalyzeInvocationExpression(IInvocationOperation invocationOperation, Action<Diagnostic> reportDiagnostic)
+        private static void AnalyzeInvocationExpression(IInvocationOperation invocationOperation,
+            INamedTypeSymbol? linqExpressionTreeType, Action<Diagnostic> reportDiagnostic)
         {
             if (!invocationOperation.Arguments.IsEmpty)
             {
                 IMethodSymbol methodSymbol = invocationOperation.TargetMethod;
-                if (methodSymbol != null &&
-                    IsStringEqualsMethod(methodSymbol) &&
-                    HasAnEmptyStringArgument(invocationOperation))
+                if (methodSymbol == null
+                    || !IsStringEqualsMethod(methodSymbol)
+                    || !HasAnEmptyStringArgument(invocationOperation))
+                {
+                    return;
+                }
+
+                // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+                // that the underlying call doesn't have the helper so we want to bail-out.
+                if (!invocationOperation.IsWithinExpressionTree(linqExpressionTreeType))
                 {
                     reportDiagnostic(invocationOperation.Syntax.CreateDiagnostic(s_rule));
                 }
@@ -76,7 +93,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// Check to see if we have a equals or not equals expression where an empty string is being
         /// compared.
         /// </summary>
-        private static void AnalyzeBinaryExpression(IBinaryOperation binaryOperation, Action<Diagnostic> reportDiagnostic)
+        private static void AnalyzeBinaryExpression(IBinaryOperation binaryOperation,
+            INamedTypeSymbol? linqExpressionTreeType, Action<Diagnostic> reportDiagnostic)
         {
             if (binaryOperation.OperatorKind is not BinaryOperatorKind.Equals and
                 not BinaryOperatorKind.NotEquals)
@@ -90,7 +108,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            if (IsEmptyString(binaryOperation.LeftOperand) || IsEmptyString(binaryOperation.RightOperand))
+            if (!IsEmptyString(binaryOperation.LeftOperand)
+                && !IsEmptyString(binaryOperation.RightOperand))
+            {
+                return;
+            }
+
+            // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+            // that the underlying call doesn't have the helper so we want to bail-out.
+            if (!binaryOperation.IsWithinExpressionTree(linqExpressionTreeType))
             {
                 reportDiagnostic(binaryOperation.Syntax.CreateDiagnostic(s_rule));
             }

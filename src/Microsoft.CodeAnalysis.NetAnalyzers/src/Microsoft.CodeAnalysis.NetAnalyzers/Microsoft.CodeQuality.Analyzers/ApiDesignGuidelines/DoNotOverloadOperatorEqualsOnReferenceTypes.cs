@@ -29,12 +29,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(context =>
+            context.RegisterCompilationStartAction(context =>
             {
                 var iequatableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIEquatable1);
                 var icomparableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIComparable);
@@ -67,7 +67,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // FxCop compat: only analyze externally visible symbols by default.
-                    if (!context.Options.MatchesConfiguredVisibility(Rule, method, context.Compilation, context.CancellationToken))
+                    if (!context.Options.MatchesConfiguredVisibility(Rule, method, context.Compilation))
                     {
                         return;
                     }

@@ -3,10 +3,10 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpDefineAccessorsForAttributeArgumentsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicDefineAccessorsForAttributeArgumentsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests

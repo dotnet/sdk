@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -31,12 +30,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(compilationContext =>
             {
                 INamedTypeSymbol? attributeType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttribute);
                 INamedTypeSymbol? attributeUsageAttributeType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeUsageAttribute);
@@ -60,8 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            bool hasAttributeUsageAttribute = symbol.GetAttributes().Any(attribute => attribute.AttributeClass.Equals(attributeUsageAttributeType));
-            if (!hasAttributeUsageAttribute)
+            if (!symbol.HasAttribute(attributeUsageAttributeType))
             {
                 addDiagnostic(symbol.CreateDiagnostic(Rule, symbol.Name));
             }

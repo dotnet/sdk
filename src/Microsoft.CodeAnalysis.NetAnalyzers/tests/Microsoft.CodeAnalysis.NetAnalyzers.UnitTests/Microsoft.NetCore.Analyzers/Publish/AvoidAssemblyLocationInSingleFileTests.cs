@@ -26,7 +26,7 @@ class C
 {
     public string M() => Assembly.GetExecutingAssembly().Location;
 }";
-            string analyzerConfig = "";
+            string analyzerConfig = "[*]\r\n";
             if (publish is not null)
             {
                 analyzerConfig += $"build_property.{PublishSingleFile} = {publish}" + Environment.NewLine;
@@ -38,8 +38,11 @@ class C
 
             var test = new VerifyCS.Test
             {
-                TestCode = source,
-                AnalyzerConfigDocument = analyzerConfig
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", analyzerConfig) },
+                }
             };
 
             DiagnosticResult[] diagnostics;
@@ -47,7 +50,7 @@ class C
             {
                 diagnostics = new DiagnosticResult[] {
                     // /0/Test0.cs(5,26): warning IL3000: 'System.Reflection.Assembly.Location' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.
-                    VerifyCS.Diagnostic(AvoidAssemblyLocationInSingleFile.IL3000).WithSpan(5, 26, 5, 66).WithArguments("System.Reflection.Assembly.Location"),
+                    VerifyCS.Diagnostic(IL3000).WithSpan(5, 26, 5, 66).WithArguments("System.Reflection.Assembly.Location"),
                 };
             }
             else
@@ -77,7 +80,7 @@ class C
 }";
             return VerifyDiagnosticsAsync(src,
                 // /0/Test0.cs(8,13): warning IL3000: 'System.Reflection.Assembly.Location' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.
-                VerifyCS.Diagnostic(AvoidAssemblyLocationInSingleFile.IL3000).WithSpan(8, 13, 8, 23).WithArguments("System.Reflection.Assembly.Location")
+                VerifyCS.Diagnostic(IL3000).WithSpan(8, 13, 8, 23).WithArguments("System.Reflection.Assembly.Location")
             );
         }
 
@@ -97,9 +100,9 @@ class C
 }";
             return VerifyDiagnosticsAsync(src,
                 // /0/Test0.cs(8,13): warning IL3001: Assemblies embedded in a single-file app cannot have additional files in the manifest.
-                VerifyCS.Diagnostic(AvoidAssemblyLocationInSingleFile.IL3001).WithSpan(8, 13, 8, 41).WithArguments("System.Reflection.Assembly.GetFile(string)"),
+                VerifyCS.Diagnostic(IL3001).WithSpan(8, 13, 8, 41).WithArguments("System.Reflection.Assembly.GetFile(string)"),
                 // /0/Test0.cs(9,13): warning IL3001: Assemblies embedded in a single-file app cannot have additional files in the manifest.
-                VerifyCS.Diagnostic(AvoidAssemblyLocationInSingleFile.IL3001).WithSpan(9, 13, 9, 25).WithArguments("System.Reflection.Assembly.GetFiles()")
+                VerifyCS.Diagnostic(IL3001).WithSpan(9, 13, 9, 25).WithArguments("System.Reflection.Assembly.GetFiles()")
                 );
         }
 
@@ -119,9 +122,9 @@ class C
 }";
             return VerifyDiagnosticsAsync(src,
                 // /0/Test0.cs(8,13): warning IL3000: 'System.Reflection.AssemblyName.CodeBase' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.
-                VerifyCS.Diagnostic(AvoidAssemblyLocationInSingleFile.IL3000).WithSpan(8, 13, 8, 23).WithArguments("System.Reflection.AssemblyName.CodeBase"),
+                VerifyCS.Diagnostic(IL3000).WithSpan(8, 13, 8, 23).WithArguments("System.Reflection.AssemblyName.CodeBase"),
                 // /0/Test0.cs(9,13): warning IL3000: 'System.Reflection.AssemblyName.EscapedCodeBase' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.
-                VerifyCS.Diagnostic(AvoidAssemblyLocationInSingleFile.IL3000).WithSpan(9, 13, 9, 30).WithArguments("System.Reflection.AssemblyName.EscapedCodeBase")
+                VerifyCS.Diagnostic(IL3000).WithSpan(9, 13, 9, 30).WithArguments("System.Reflection.AssemblyName.EscapedCodeBase")
                 );
         }
 
@@ -143,21 +146,24 @@ class C
 }";
             return VerifyDiagnosticsAsync(src,
                 // /0/Test0.cs(8,13): warning IL3000: 'System.Reflection.Assembly.Location' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.
-                VerifyCS.Diagnostic(AvoidAssemblyLocationInSingleFile.IL3000).WithSpan(8, 13, 8, 23).WithArguments("System.Reflection.Assembly.Location"),
+                VerifyCS.Diagnostic(IL3000).WithSpan(8, 13, 8, 23).WithArguments("System.Reflection.Assembly.Location"),
                 // /0/Test0.cs(9,13): warning IL3001: Assemblies embedded in a single-file app cannot have additional files in the manifest.
-                VerifyCS.Diagnostic(AvoidAssemblyLocationInSingleFile.IL3001).WithSpan(9, 13, 9, 25).WithArguments("System.Reflection.Assembly.GetFiles()")
+                VerifyCS.Diagnostic(IL3001).WithSpan(9, 13, 9, 25).WithArguments("System.Reflection.Assembly.GetFiles()")
                 );
         }
 
         private Task VerifyDiagnosticsAsync(string source, params DiagnosticResult[] expected)
         {
-            const string singleFilePublishConfig = @"
+            const string singleFilePublishConfig = @"is_global = true
 build_property." + PublishSingleFile + " = true";
 
             var test = new VerifyCS.Test
             {
-                TestCode = source,
-                AnalyzerConfigDocument = singleFilePublishConfig
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", singleFilePublishConfig) },
+                }
             };
 
             test.ExpectedDiagnostics.AddRange(expected);

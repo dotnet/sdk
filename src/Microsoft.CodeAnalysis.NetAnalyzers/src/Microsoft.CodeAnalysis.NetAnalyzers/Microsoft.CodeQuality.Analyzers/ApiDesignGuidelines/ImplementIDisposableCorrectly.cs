@@ -113,12 +113,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(IDisposableReimplementationRule, FinalizeOverrideRule, DisposeOverrideRule, DisposeSignatureRule, RenameDisposeRule, DisposeBoolSignatureRule, DisposeImplementationRule, FinalizeImplementationRule, ProvideDisposeBoolRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 context =>
                 {
                     INamedTypeSymbol? disposableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIDisposable);
@@ -176,7 +176,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 // will always have identical configured visibility.
                 if (context.Symbol is INamedTypeSymbol type &&
                     type.TypeKind == TypeKind.Class &&
-                    context.Options.MatchesConfiguredVisibility(IDisposableReimplementationRule, type, context.Compilation, context.CancellationToken))
+                    context.Options.MatchesConfiguredVisibility(IDisposableReimplementationRule, type, context.Compilation))
                 {
                     bool implementsDisposableInBaseType = ImplementsDisposableInBaseType(type);
 
@@ -237,7 +237,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // will always have identical configured visibility.
                     INamedTypeSymbol type = method.ContainingType;
                     if (type != null && type.TypeKind == TypeKind.Class &&
-                        !type.IsSealed && context.Options.MatchesConfiguredVisibility(IDisposableReimplementationRule, type, context.Compilation, context.CancellationToken))
+                        !type.IsSealed && context.Options.MatchesConfiguredVisibility(IDisposableReimplementationRule, type, context.Compilation))
                     {
                         if (ImplementsDisposableDirectly(type))
                         {
@@ -493,12 +493,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// </summary>
         private sealed class DisposeImplementationValidator
         {
-            // this type will be created per compilation
-            // this is actually a bug - https://github.com/dotnet/roslyn-analyzers/issues/845
-#pragma warning disable RS1008
             private readonly IMethodSymbol _suppressFinalizeMethod;
             private readonly INamedTypeSymbol _type;
-#pragma warning restore RS1008
             private bool _callsDisposeBool;
             private bool _callsSuppressFinalize;
 
@@ -625,11 +621,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// </summary>
         private sealed class FinalizeImplementationValidator
         {
-            // Avoid storing per-compilation data into the fields of a diagnostic analyzer.
-            // this is actually a bug - https://github.com/dotnet/roslyn-analyzers/issues/845
-#pragma warning disable RS1008
             private readonly INamedTypeSymbol _type;
-#pragma warning restore RS1008
             private bool _callDispose;
 
             public FinalizeImplementationValidator(INamedTypeSymbol type)

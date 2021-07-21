@@ -33,14 +33,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 context.RegisterCodeFix(
                     new MyCodeAction(title,
                         async ct => await GetFix(context.Document, expression, argument: false, cancellationToken: ct).ConfigureAwait(false),
-                        equivalenceKey: title),
+                        equivalenceKey: nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse)),
                     context.Diagnostics);
 
                 title = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue;
                 context.RegisterCodeFix(
                     new MyCodeAction(title,
                         async ct => await GetFix(context.Document, expression, argument: true, cancellationToken: ct).ConfigureAwait(false),
-                        equivalenceKey: title),
+                        equivalenceKey: nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue)),
                     context.Diagnostics);
             }
         }
@@ -50,19 +50,26 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // Rewrite the expression to include a .ConfigureAwait() after it. We reattach trailing trivia to the end.
             // This is especially important for VB, as the end-of-line may be in the trivia
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            SyntaxGenerator generator = editor.Generator;
-            SyntaxNode memberAccess = generator.MemberAccessExpression(expression.WithoutTrailingTrivia(), "ConfigureAwait");
-            SyntaxNode argumentLiteral = argument ? generator.TrueLiteralExpression() : generator.FalseLiteralExpression();
-            SyntaxNode invocation = generator.InvocationExpression(memberAccess, argumentLiteral);
-            invocation = invocation.WithLeadingTrivia(expression.GetLeadingTrivia()).WithTrailingTrivia(expression.GetTrailingTrivia());
-
-            editor.ReplaceNode(expression, invocation);
+            FixDiagnostic(editor, expression, argument);
             return editor.GetChangedDocument();
+        }
+
+        private static void FixDiagnostic(DocumentEditor editor, SyntaxNode expression, bool argument)
+        {
+            editor.ReplaceNode(
+                expression,
+                (expression, generator) =>
+                {
+                    SyntaxNode memberAccess = generator.MemberAccessExpression(expression.WithoutTrailingTrivia(), "ConfigureAwait");
+                    SyntaxNode argumentLiteral = argument ? generator.TrueLiteralExpression() : generator.FalseLiteralExpression();
+                    SyntaxNode invocation = generator.InvocationExpression(memberAccess, argumentLiteral);
+                    return invocation.WithLeadingTrivia(expression.GetLeadingTrivia()).WithTrailingTrivia(expression.GetTrailingTrivia());
+                });
         }
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
-            return WellKnownFixAllProviders.BatchFixer;
+            return CustomFixAllProvider.Instance;
         }
 
         private class MyCodeAction : DocumentChangeAction
@@ -71,8 +78,26 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 base(title, createChangedDocument, equivalenceKey)
             {
             }
+        }
 
-            public override string EquivalenceKey => Title;
+        private sealed class CustomFixAllProvider : DocumentBasedFixAllProvider
+        {
+            public static readonly CustomFixAllProvider Instance = new();
+
+            protected override string CodeActionTitle => MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse;
+
+            protected override async Task<SyntaxNode> FixAllInDocumentAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
+            {
+                var useConfigureAwaitTrue = fixAllContext.CodeActionEquivalenceKey == nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue);
+                var editor = await DocumentEditor.CreateAsync(document, fixAllContext.CancellationToken).ConfigureAwait(false);
+                foreach (var diagnostic in diagnostics)
+                {
+                    SyntaxNode expression = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+                    FixDiagnostic(editor, expression, argument: useConfigureAwaitTrue);
+                }
+
+                return editor.GetChangedRoot();
+            }
         }
     }
 }
