@@ -3,9 +3,11 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
@@ -17,7 +19,7 @@ namespace Microsoft.TemplateEngine.Utils
     public static class InstallRequestPathResolution
     {
         /// <summary>
-        /// Returns absolute path to files or folders resolved from <paramref name="maskedPath"/>.
+        /// Returns absolute path to files or folders resolved from <paramref name="maskedPath"/> or unchanged <paramref name="maskedPath"/> when path cannot be resolved.
         /// </summary>
         /// <remarks>
         /// Example of <paramref name="maskedPath"/> would be "C:\Users\username\packages\*.nupkg".<br/>
@@ -26,53 +28,65 @@ namespace Microsoft.TemplateEngine.Utils
         /// </remarks>
         /// <param name="maskedPath">This parameter can contain a wildcard (*) character in the filename.</param>
         /// <param name="environmentSettings"></param>
-        /// <returns>List of absolute paths to files or folders that match <paramref name="maskedPath"/>.</returns>
+        /// <returns>List of absolute paths to files or folders that match <paramref name="maskedPath"/> or unchanged <paramref name="maskedPath"/> when path cannot be resolved.</returns>
         public static IEnumerable<string> ExpandMaskedPath(string maskedPath, IEngineEnvironmentSettings environmentSettings)
         {
-            if (maskedPath.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+            if (string.IsNullOrWhiteSpace(maskedPath))
+            {
+                throw new ArgumentException($"'{nameof(maskedPath)}' cannot be null or whitespace.", nameof(maskedPath));
+            }
+
+            if (environmentSettings is null)
+            {
+                throw new ArgumentNullException(nameof(environmentSettings));
+            }
+
+            var arr = Path.GetInvalidPathChars();
+            if (maskedPath.IndexOfAny(arr) != -1)
             {
                 yield return maskedPath;
                 yield break;
             }
-            var matches = DetermineDirectoriesToScan(maskedPath, environmentSettings).ToList();
-            //This can happen when user specifies "PackageId"
-            if (matches.Count == 0)
+
+            foreach (string path in ResolveSearchPattern(maskedPath, environmentSettings))
             {
-                yield return maskedPath;
-                yield break;
-            }
-            foreach (var path in matches)
-            {
-                yield return Path.GetFullPath(path);
+                yield return path;
             }
         }
 
-        private static IReadOnlyList<string> DetermineDirectoriesToScan(string baseDir, IEngineEnvironmentSettings environmentSettings)
+        private static IEnumerable<string> ResolveSearchPattern(string maskedPath, IEngineEnvironmentSettings environmentSettings)
         {
-            List<string> directoriesToScan = new List<string>();
+            string baseDir = maskedPath;
 
+            //trim trailing separators
             if (baseDir[baseDir.Length - 1] == '/' || baseDir[baseDir.Length - 1] == '\\')
             {
                 baseDir = baseDir.Substring(0, baseDir.Length - 1);
             }
 
-            string searchTarget = Path.Combine(environmentSettings.Host.FileSystem.GetCurrentDirectory(), baseDir.Trim());
-            List<string> matches = environmentSettings.Host.FileSystem.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
+            try
+            {
+                string searchTarget = Path.Combine(environmentSettings.Host.FileSystem.GetCurrentDirectory(), baseDir.Trim());
+                string parentFolder = Path.GetFullPath(Path.GetDirectoryName(searchTarget));
+                string searchPattern = Path.GetFileName(searchTarget);
 
-            if (matches.Count == 1)
-            {
-                directoriesToScan.Add(matches[0]);
-            }
-            else
-            {
-                foreach (string match in matches)
+                //EnumerateFileSystemEntries treats '.' as '*' and cannot handle '..'
+                if (searchPattern.Equals(".") || searchPattern.Equals(".."))
                 {
-                    IReadOnlyList<string> subDirMatches = DetermineDirectoriesToScan(match, environmentSettings);
-                    directoriesToScan.AddRange(subDirMatches);
+                    return new[] { Path.GetFullPath(searchTarget) };
                 }
+                IEnumerable<string> matches = environmentSettings.Host.FileSystem.EnumerateFileSystemEntries(parentFolder, searchPattern, SearchOption.TopDirectoryOnly);
+                if (!matches.Any())
+                {
+                    return new[] { maskedPath };
+                }
+                return matches;
             }
-
-            return directoriesToScan;
+            catch (Exception ex)
+            {
+                environmentSettings.Host.Logger.LogDebug("Failed to parse masked path {0}, {1}.", maskedPath, ex.ToString());
+                return new[] { maskedPath };
+            }
         }
     }
 }
