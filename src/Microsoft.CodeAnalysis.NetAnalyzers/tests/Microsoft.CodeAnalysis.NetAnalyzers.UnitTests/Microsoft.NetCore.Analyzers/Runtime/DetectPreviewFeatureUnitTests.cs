@@ -29,6 +29,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             }.RunAsync();
         }
 
+        private static async Task TestCSPreview(string csInput)
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                TestState =
+                {
+                    Sources =
+                    {
+                        csInput
+                    }
+                },
+                MarkupOptions = MarkupOptions.UseFirstDescriptor,
+                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+            }.RunAsync();
+        }
+
         [Fact]
         public async Task TestPreviewMethodUnaryOperator()
         {
@@ -457,7 +474,7 @@ namespace Preview_Feature_Scratch
 
         }
 
-        [Fact(Skip = "The following test cannot be activated yet because it requires preview roslyn bits")]
+        [Fact(Skip = "Not yet working")]
         public async Task TestPreviewLanguageFeatures()
         {
             var csInput = @" 
@@ -472,6 +489,9 @@ namespace Preview_Feature_Scratch
                 {
                     new Program();
                 }
+
+                public static bool StaticMethod() => throw null;
+                public static bool AProperty => throw null;
             }
 
             public interface IProgram
@@ -483,7 +503,7 @@ namespace Preview_Feature_Scratch
 
             ";
 
-            await TestCS(csInput);
+            await TestCSPreview(csInput);
         }
 
         [Fact]
