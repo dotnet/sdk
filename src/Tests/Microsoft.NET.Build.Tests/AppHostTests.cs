@@ -39,9 +39,6 @@ namespace Microsoft.NET.Build.Tests
             if (!string.IsNullOrEmpty(targetFramework))
             {
                 var parsedTargetFramework = NuGetFramework.Parse(targetFramework);
-                if (parsedTargetFramework.Version.Major >= 5)
-                    expectedFiles.Add($"ref/{testProjectName}.dll");
-
                 if (parsedTargetFramework.Version.Major < 6)
                     expectedFiles.Add($"{testProjectName}.runtimeconfig.dev.json");
             }

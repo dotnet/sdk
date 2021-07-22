@@ -19,9 +19,10 @@ namespace Microsoft.NET.Build.Tests
         {}
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("netcoreapp3.1", false)]
-        [InlineData("net5.0", true)]
-        public void It_produces_ref_assembly_for_appropriate_frameworks(string targetFramework, bool expectedExists)
+        [InlineData("netcoreapp3.1", false, false)]
+        [InlineData("net5.0", true, false)]
+        [InlineData("net5.0", true, true)]
+        public void It_produces_ref_assembly_for_appropriate_frameworks(string targetFramework, bool expectedExists, bool expectedInBinDir)
         {
             TestProject testProject = new TestProject()
             {
@@ -33,11 +34,18 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute()
+            var buildArgument = expectedInBinDir ? "/p:ProduceReferenceAssemblyInOutDir=true" : string.Empty;
+            buildCommand.Execute(buildArgument)
                 .Should()
                 .Pass();
             var filePath = Path.Combine(testAsset.Path, testProject.Name, "obj", "Debug", targetFramework, "ref", $"{testProject.Name}.dll");
             File.Exists(filePath).Should().Be(expectedExists);
+
+            var binFilePath = Path.Combine(testAsset.Path, testProject.Name, "bin", "Debug", targetFramework, "ref", $"{testProject.Name}.dll");
+            File.Exists(binFilePath).Should().Be(expectedExists && expectedInBinDir);
+
+            var objFilePath = Path.Combine(testAsset.Path, testProject.Name, "obj", "Debug", targetFramework, "refint", $"{testProject.Name}.dll");
+            File.Exists(objFilePath).Should().Be(expectedExists && !expectedInBinDir);
         }
     }
 }
