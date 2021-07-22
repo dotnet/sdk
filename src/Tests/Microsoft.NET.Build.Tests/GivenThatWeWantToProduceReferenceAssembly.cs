@@ -38,14 +38,24 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute(buildArgument)
                 .Should()
                 .Pass();
-            var filePath = Path.Combine(testAsset.Path, testProject.Name, "obj", "Debug", targetFramework, "ref", $"{testProject.Name}.dll");
-            File.Exists(filePath).Should().Be(expectedExists);
 
-            var binFilePath = Path.Combine(testAsset.Path, testProject.Name, "bin", "Debug", targetFramework, "ref", $"{testProject.Name}.dll");
-            File.Exists(binFilePath).Should().Be(expectedExists && expectedInBinDir);
+            // TODO: Remove after Framework MSBuild picks up https://github.com/dotnet/msbuild/pull/6560
+            if (UsingFullFrameworkMSBuild)
+            {
+                var filePath = Path.Combine(testAsset.Path, testProject.Name, "obj", "Debug", targetFramework, "ref", $"{testProject.Name}.dll");
+                File.Exists(filePath).Should().Be(expectedExists);
+            }
+            else
+            {
+                var filePath = Path.Combine(testAsset.Path, testProject.Name, "obj", "Debug", targetFramework, "ref", $"{testProject.Name}.dll");
+                File.Exists(filePath).Should().Be(expectedExists && !expectedInBinDir);
 
-            var objFilePath = Path.Combine(testAsset.Path, testProject.Name, "obj", "Debug", targetFramework, "refint", $"{testProject.Name}.dll");
-            File.Exists(objFilePath).Should().Be(expectedExists && !expectedInBinDir);
+                var intFilePath = Path.Combine(testAsset.Path, testProject.Name, "obj", "Debug", targetFramework, "refint", $"{testProject.Name}.dll");
+                File.Exists(intFilePath).Should().Be(expectedExists);
+
+                var binFilePath = Path.Combine(testAsset.Path, testProject.Name, "bin", "Debug", targetFramework, "ref", $"{testProject.Name}.dll");
+                File.Exists(binFilePath).Should().Be(expectedExists && expectedInBinDir);
+            }
         }
     }
 }
