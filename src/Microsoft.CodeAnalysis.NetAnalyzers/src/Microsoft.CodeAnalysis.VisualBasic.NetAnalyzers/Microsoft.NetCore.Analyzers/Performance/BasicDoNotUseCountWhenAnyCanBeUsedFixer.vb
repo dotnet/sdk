@@ -144,4 +144,5 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
         End Function
 
     End Class
+
 End Namespace
