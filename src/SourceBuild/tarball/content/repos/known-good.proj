@@ -34,6 +34,7 @@
         <RepositoryReference Include="clicommandlineparser" />
         <RepositoryReference Include="command-line-api" />
         <RepositoryReference Include="diagnostics" />
+        <RepositoryReference Include="roslyn" />
         <RepositoryReference Include="source-build" />
         <RepositoryReference Include="symreader" />
         <RepositoryReference Include="test-templates" />

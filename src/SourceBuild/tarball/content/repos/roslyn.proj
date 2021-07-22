@@ -1,25 +1,15 @@
 <Project>
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFiles" />
-
   <PropertyGroup>
-    <BuildCommandArgs>--restore --build --pack</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) --configuration $(Configuration)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -v $(LogVerbosity)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -bl</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:TreatWarningsAsErrors=false</BuildCommandArgs>
-
-    <!-- Versioning args. -->
-    <BuildCommandArgs>$(BuildCommandArgs) /p:OfficialBuild=true</BuildCommandArgs>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:ApplyPartialNgenOptimization=false</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:EnablePartialNgenOptimization=false</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PublishWindowsPdb=false</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetBuildFromSource=true</BuildCommandArgs>
     <!-- UsingToolMicrosoftNetCompilers=false introduces a prebuilt so we'll have to turn back on after our bootstrap SDK has native integer support -->
     <!-- issue: https://github.com/dotnet/source-build/issues/1719 -->
     <BuildCommandArgs>$(BuildCommandArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:RepoRoot=$(ProjectDirectory)</BuildCommandArgs>
 
     <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
 
@@ -29,49 +19,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackProjects Include="$(ProjectDirectory)src/NuGet/Microsoft.NETCore.Compilers/Microsoft.NETCore.Compilers.Package.csproj" />
-    <PackProjects Include="$(ProjectDirectory)src/NuGet/Microsoft.Net.Compilers.Toolset/Microsoft.Net.Compilers.Toolset.Package.csproj" />
-    <PackProjects Include="$(ProjectDirectory)src/Workspaces/Core/Portable/Microsoft.CodeAnalysis.Workspaces.csproj" />
-    <PackProjects Include="$(ProjectDirectory)src/Workspaces/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Workspaces.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
-    <RepositoryReference Include="humanizer" />
+    <RepositoryReference Include="source-build" />
     <RepositoryReference Include="xliff-tasks" />
   </ItemGroup>
 
   <ItemGroup>
     <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
   </ItemGroup>
-
-  <!--
-    Some internal utility APIs implemented by dotnet/roslyn have the same name
-    as types that were officially added to .NET in 5.0. That means that when we
-    target 'net5.0', they are sometimes ambiguous. The .NET 5.0 and Roslyn
-    versions of these types are not compatible, so we need to keep using the
-    internal implementation. This target renames the internal Roslyn types to
-    make them unambiguous to the compiler.
-  -->
-  <Target Name="MangleInternalApiNamesOverlappingWithNet50"
-          BeforeTargets="Build">
-    <ItemGroup>
-      <RoslynSourceFile Include="$(ProjectDirectory)**\*.cs" />
-      <RoslynSourceFile Include="$(ProjectDirectory)**\*.vb" />
-    </ItemGroup>
-
-    <!-- Stick 'Roslyn' in the middle of the new text for some idempotence. -->
-    <ReplaceTextInFiles
-      InputFiles="@(RoslynSourceFile)"
-      OldText="IReadOnlySet"
-      NewText="IRoslynReadOnlySet" />
-
-    <ReplaceTextInFiles
-      InputFiles="@(RoslynSourceFile)"
-      OldText="ReferenceEqualityComparer"
-      NewText="ReferenceEqualityRoslynComparer" />
-  </Target>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

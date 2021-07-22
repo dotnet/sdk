@@ -1,0 +1,27 @@
+From eb67cc234b0073d8b210c3ae42b5efe481bd0900 Mon Sep 17 00:00:00 2001
+From: Chris Rummel <crummel@microsoft.com>
+Date: Tue, 20 Jul 2021 09:41:52 -0500
+Subject: [PATCH 1/2] Patch out version check for source-build scenarios.
+
+The immediate cause for removing this was that NuGet is not yet built at this point in the source-build process.  Roslyn tries to use a reference package to run this task but fails (the usual "reference packages cannot be used at runtime" error).  Additionally, this is not really a valid check in source-build - we give each repo the SDK and MSBuild that we expect it to use, and want to override its opinions about what it should be using.
+
+---
+ eng/targets/Imports.targets | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/targets/Imports.targets b/eng/targets/Imports.targets
+index 15b067deb04..303b10c40cd 100644
+--- a/eng/targets/Imports.targets
++++ b/eng/targets/Imports.targets
+@@ -159,7 +159,7 @@
+   <UsingTask TaskName="Microsoft.DotNet.Arcade.Sdk.CompareVersions" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" />
+   <UsingTask TaskName="Microsoft.DotNet.Arcade.Sdk.SingleError" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" />
+ 
+-  <Target Name="_CheckRequiredMSBuildVersion" BeforeTargets="BeforeBuild">
++  <Target Name="_CheckRequiredMSBuildVersion" BeforeTargets="BeforeBuild" Condition="'$(DotNetBuildFromSource)' != 'true'">
+     <CompareVersions Left="$(MSBuildVersion)" Right="$(MinimumMSBuildVersion)">
+       <Output TaskParameter="Result" PropertyName="_VersionComparisonResult"/>
+     </CompareVersions>
+-- 
+2.18.0
+
