@@ -138,7 +138,7 @@ namespace System.Web.Mvc
         /// If the tested source code starts with SystemWebMvcNamespaceCSharp, we can add offsets when specifying location line numbers,
         /// and not break everything when adding to SystemWebMvcNamespaceCSharp.
         /// </summary>
-        private static readonly int SystemWebMvcNamespaceCSharpLineCount = SystemWebMvcNamespaceCSharp.Where(ch => ch == '\n').Count();
+        private static readonly int SystemWebMvcNamespaceCSharpLineCount = SystemWebMvcNamespaceCSharp.Count(ch => ch == '\n');
 
         /// <summary>
         /// Types in the System.Web.Mvc namespace that the analyzer looks for, so we don't have to reference ASP.NET MVC bits.
@@ -219,7 +219,7 @@ End Namespace
         /// If the tested source code starts with SystemWebMvcNamespaceBasic, we can add offsets when specifying location line numbers,
         /// and not break everything when adding to SystemWebMvcNamespaceBasic.
         /// </summary>
-        private static readonly int SystemWebMvcNamespaceBasicLineCount = SystemWebMvcNamespaceBasic.Where(ch => ch == '\n').Count();
+        private static readonly int SystemWebMvcNamespaceBasicLineCount = SystemWebMvcNamespaceBasic.Count(ch => ch == '\n');
 
         [Fact]
         public async Task HaveAcceptStringPutAndToken_CSharp_NoDiagnostic()
