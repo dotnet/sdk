@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + expectedExists + expectedInBinDir);
 
             var buildCommand = new BuildCommand(testAsset);
             var buildArgument = expectedInBinDir ? "/p:ProduceReferenceAssemblyInOutDir=true" : string.Empty;
