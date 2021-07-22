@@ -77,7 +77,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     
   </Target>
 
-  <Target Name="AddWinRTComponentImplementationReference" AfterTargets="ResolveProjectReferences" DependsOnTargets="RemoveManagedWinRTComponentWinMDReferences">
+  <Target Name="AddWinRTComponentImplementationReference" AfterTargets="ResolveProjectReferences" DependsOnTargets="RemoveManagedWinRTComponentWinMDReferences" Condition="'@(ManagedWinRTComponentImplementations)' != ''">
     
     <ItemGroup>
       <Reference Include="@(ManagedWinRTComponentImplementations)"/>
