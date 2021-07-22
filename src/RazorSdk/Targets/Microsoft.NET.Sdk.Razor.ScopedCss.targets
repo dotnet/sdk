@@ -51,23 +51,19 @@ Integration with static web assets:
 <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.ConcatenateCssFiles" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
 
 <PropertyGroup>
-
-  <PrepareForRunDependsOn>
-    _PrepareForScopedCss;
-    $(PrepareForRunDependsOn)
-  </PrepareForRunDependsOn>
-
-  <_PrepareForScopedCssDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
+    
+  <CopyStaticWebAssetsToOutputFolderDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
+    $(CopyStaticWebAssetsToOutputFolderDependsOn);
     _ResolveBundlingConfiguration;
+    _GenerateScopedCssFiles;
     BundleScopedCssFiles;
-    $(_PrepareForScopedCssDependsOn)
-  </_PrepareForScopedCssDependsOn>
+  </CopyStaticWebAssetsToOutputFolderDependsOn>
 
   <!-- Order between this definition and the above one is important to make sure we don't create a circular reference loop. -->
-  <_PrepareForScopedCssDependsOn>
+  <CopyStaticWebAssetsToOutputFolderDependsOn Condition="'$(DisableScopedCssBundling)' == 'true'">
     _GenerateScopedCssFiles;
-    $(_PrepareForScopedCssDependsOn)
-  </_PrepareForScopedCssDependsOn>
+    $(CopyStaticWebAssetsToOutputFolderDependsOn);
+  </CopyStaticWebAssetsToOutputFolderDependsOn>
 
   <ResolveStaticWebAssetsInputsDependsOn Condition="'$(DisableScopedCssBundling)' == 'true'">
     $(ResolveStaticWebAssetsInputsDependsOn);
@@ -204,6 +200,7 @@ Integration with static web assets:
 
 <Target Name="_ResolveBundlingConfiguration" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
   <PropertyGroup>
+    <_ScopedCssIntermediatePath>$([System.IO.Path]::GetFullPath($(IntermediateOutputPath)scopedcss\))</_ScopedCssIntermediatePath>
     <!-- This bundle represents the bundle for the entire application dependency graph which includes the application scoped css files and all the scoped css files from
          projects and packages that this app references -->
     <_ScopedCssBundleContentRoot>$(_ScopedCssIntermediatePath)bundle\</_ScopedCssBundleContentRoot>
