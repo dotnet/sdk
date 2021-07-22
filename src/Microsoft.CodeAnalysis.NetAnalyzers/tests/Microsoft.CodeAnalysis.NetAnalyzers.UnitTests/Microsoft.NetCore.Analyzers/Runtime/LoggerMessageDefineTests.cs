@@ -34,10 +34,10 @@ namespace Microsoft.Extensions.Logging.Analyzer
         }
 
         [Theory]
-        [MemberData(nameof(GenerateTemplateUsages), @"{|CA1727:""{string}""|}", "1, 2", false)]
-        [MemberData(nameof(GenerateTemplateUsages), @"{|CA1727:""{str"" + ""ing}""|}", "1, 2", false)]
-        //Some cases fail: [MemberData(nameof(GenerateTemplateUsages), @"{|CA1727:""{"" + nameof(ILogger) + ""}""|}", "", true)]
-        //Some cases fail: [MemberData(nameof(GenerateTemplateUsages), @"{|CA1727:""{"" + Const + ""}""|}", "", true)]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2255:{|CA1727:""{string}""|}|}", "1, 2", false)]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2255:{|CA1727:""{str"" + ""ing}""|}|}", "1, 2", false)]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2255:""{"" + nameof(ILogger) + ""}""|}", "", true)]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2255:{|CA1727:""{"" + Const + ""}""|}|}", "", true)]
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2255:{|CA1727:""{string}""|}|}", 2)]
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2255:{|CA1727:""{str"" + ""ing}""|}|}", 2)]
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2255:""{"" + nameof(ILogger) + ""}""|}", 0)]
@@ -62,7 +62,8 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:""{st"" + ""ring}""|}", "1")]
 
         // we are unable to parse expressions
-        [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:{|CA1727:""{string} {string}""|}|}", "new object[] { 1 }")]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2255:{|CA1727:{|CA1727:""{string} {string}""|}|}|}", "new object[] { 1 }", false)]
+        [MemberData(nameof(GenerateDefineUsages), @"{|CA1727:{|CA1727:""{string} {string}""|}|}")]
 
         // CA2253 is not enabled by default.
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:""{camelCase}""|}", "1")]
