@@ -245,6 +245,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                         }
                     }
                     return text;
+                case INameOfOperation { ConstantValue: { HasValue: true, Value: string constantValue } }:
+                    return constantValue;
                 case INameOfOperation:
                     // return placeholder from here because actual value is not required for analysis and is hard to get
                     return "NAMEOF";

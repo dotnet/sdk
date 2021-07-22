@@ -34,12 +34,10 @@ namespace Microsoft.Extensions.Logging.Analyzer
         }
 
         [Theory]
-        /* Expected CA2255 but not triggered. TODO: either remove test cases or add expected support in analyzer
         [MemberData(nameof(GenerateTemplateUsages), @"{|CA1727:""{string}""|}", "1, 2", false)]
         [MemberData(nameof(GenerateTemplateUsages), @"{|CA1727:""{str"" + ""ing}""|}", "1, 2", false)]
         //Some cases fail: [MemberData(nameof(GenerateTemplateUsages), @"{|CA1727:""{"" + nameof(ILogger) + ""}""|}", "", true)]
         //Some cases fail: [MemberData(nameof(GenerateTemplateUsages), @"{|CA1727:""{"" + Const + ""}""|}", "", true)]
-        */
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2255:{|CA1727:""{string}""|}|}", 2)]
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2255:{|CA1727:""{str"" + ""ing}""|}|}", 2)]
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2255:""{"" + nameof(ILogger) + ""}""|}", 0)]
