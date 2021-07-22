@@ -288,42 +288,48 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(false)]
         public void It_supports_composite_r2r(bool extractAll)
         {
-            var projName = "SingleFileTest";
-            if (extractAll)
+            // the test fails once in a while on OSX, but dumps are not very informative,
+            // so enabling this for non-OSX platforms, hoping to get a better crash dump
+            // if you see this failing on Linux, please preserve the dump.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                projName += "Extracted";
+                var projName = "SingleFileTest";
+                if (extractAll)
+                {
+                    projName += "Extracted";
+                }
+
+                var testProject = new TestProject()
+                {
+                    Name = projName,
+                    TargetFrameworks = "net6.0",
+                    IsExe = true,
+                };
+
+                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+                var publishCommand = new PublishCommand(testAsset);
+                var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunComposite, RuntimeIdentifier };
+
+                if (extractAll)
+                {
+                    extraArgs.Add(IncludeAllContent);
+                }
+
+                publishCommand
+                    .Execute(extraArgs.ToArray())
+                    .Should()
+                    .Pass();
+
+                var publishDir = GetPublishDirectory(publishCommand, targetFramework: "net6.0").FullName;
+                var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
+
+                var command = new RunExeCommand(Log, singleFilePath);
+                command.Execute()
+                    .Should()
+                    .Pass()
+                    .And
+                    .HaveStdOutContaining("Hello World");
             }
-
-            var testProject = new TestProject()
-            {
-                Name = projName,
-                TargetFrameworks = "net6.0",
-                IsExe = true,
-            };
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-            var publishCommand = new PublishCommand(testAsset);
-            var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunComposite, RuntimeIdentifier };
-
-            if (extractAll)
-            {
-                extraArgs.Add(IncludeAllContent);
-            }
-
-            publishCommand
-                .Execute(extraArgs.ToArray())
-                .Should()
-                .Pass();
-
-            var publishDir = GetPublishDirectory(publishCommand, targetFramework: "net6.0").FullName;
-            var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
-
-            var command = new RunExeCommand(Log, singleFilePath);
-            command.Execute()
-                .Should()
-                .Pass()
-                .And
-                .HaveStdOutContaining("Hello World");
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
