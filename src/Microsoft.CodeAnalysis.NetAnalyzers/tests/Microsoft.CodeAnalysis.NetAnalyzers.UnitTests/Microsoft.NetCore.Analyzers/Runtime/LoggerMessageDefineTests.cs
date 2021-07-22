@@ -15,7 +15,7 @@ using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
 
 namespace Microsoft.Extensions.Logging.Analyzer
 {
-    public class FormatStringAnalyzerTests
+    public class LoggerMessageDefineTests
     {
         [Theory]
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA2253:""{0}""|}", "1")]
