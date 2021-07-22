@@ -99,7 +99,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Controls whether or not the static web assets feature is enabled. By default is enabled for netcoreapp3.0
          applications and RazorLangVersion 3 or above. -->
     <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == ''">$(_Targeting30OrNewerRazorLangVersion)</StaticWebAssetsEnabled>
-    <UseStaticWebAssetsV1 Condition="'$(UseStaticWebAssetsV1)' == '' And ('$(_TargetingNET60OrLater)' == 'true' Or '$(_TargetingNETStandard21OrLater)' == 'true')">false</UseStaticWebAssetsV1>
+    <UseStaticWebAssetsV1 Condition="'$(UseStaticWebAssetsV1)' == '' And ('$(_TargetingNET60OrLater)' == 'true' Or '$(_TargetingNETStandard21OrLater)' == 'true') And '$(RazorLangVersion)' > '3.0'">false</UseStaticWebAssetsV1>
     <UseStaticWebAssetsV1 Condition="'$(UseStaticWebAssetsV1)' == ''">true</UseStaticWebAssetsV1>
 
     <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net6.0 applications and RazorLangVersion 5 or above -->
