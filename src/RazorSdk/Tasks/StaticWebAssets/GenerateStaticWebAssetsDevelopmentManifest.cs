@@ -280,15 +280,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             StaticWebAsset buildAndPublishAsset = null;
             foreach (var candidate in candidates)
             {
-                if ((candidate.IsComputed() || candidate.IsDiscovered()) && candidate.IsForReferencedProjectsOnly())
-                {
-                    continue;
-                }
-
-                if ((candidate.IsProject() || candidate.IsPackage()) && candidate.IsForCurrentProjectOnly())
-                {
-                    continue;
-                }
+                // Todo, perform filtering based on project mode.
 
                 if (candidate.IsBuildOnly())
                 {
