@@ -148,7 +148,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     builder
                         .Append(AsyncKeyword)
                         .Append(' ');
-                };
+                }
 
                 return builder
                     .Append(@"void M()
@@ -282,7 +282,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     builder
                         .Append(AsyncKeyword)
                         .Append(' ');
-                };
+                }
 
                 return builder
                     .Append(@"Sub M()

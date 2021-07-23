@@ -102,7 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         }
 
                         return fieldReferenceOperation.Field.Name != "None";
-                    };
+                    }
                 });
         }
     }
