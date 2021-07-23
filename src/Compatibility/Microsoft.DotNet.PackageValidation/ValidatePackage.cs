@@ -1,6 +1,9 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using System.Reflection;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Tasks;
 using NuGet.RuntimeModel;
@@ -30,30 +33,58 @@ namespace Microsoft.DotNet.PackageValidation
 
         public string CompatibilitySuppressionFilePath { get; set; }
 
+        public string RoslynDirectory { get; set; }
+
         protected override void ExecuteCore()
         {
-            RuntimeGraph runtimeGraph = null;
-            if (!string.IsNullOrEmpty(RuntimeGraph))
+            if (string.IsNullOrEmpty(RoslynDirectory))
             {
-                runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(RuntimeGraph);
+                throw new ArgumentNullException(nameof(RoslynDirectory));
             }
 
-            Package package = NupkgParser.CreatePackage(PackageTargetPath, runtimeGraph);
-            PackageValidationLogger logger = new(Log, CompatibilitySuppressionFilePath, GenerateCompatibilitySuppressionFile);
+            AppDomain.CurrentDomain.AssemblyResolve += ResolverForRoslyn;
 
-            new CompatibleTfmValidator(NoWarn, null, RunApiCompat, EnableStrictModeForCompatibleTfms, logger).Validate(package);
-            new CompatibleFrameworkInPackageValidator(NoWarn, null, EnableStrictModeForCompatibleFrameworksInPackage, logger).Validate(package);
-
-            if (!DisablePackageBaselineValidation && !string.IsNullOrEmpty(BaselinePackageTargetPath))
+            try
             {
-                Package baselinePackage = NupkgParser.CreatePackage(BaselinePackageTargetPath, runtimeGraph);
-                new BaselinePackageValidator(baselinePackage, NoWarn, null, RunApiCompat, logger).Validate(package);
-            }
+                RuntimeGraph runtimeGraph = null;
+                if (!string.IsNullOrEmpty(RuntimeGraph))
+                {
+                    runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(RuntimeGraph);
+                }
 
-            if (GenerateCompatibilitySuppressionFile)
-            {
-                logger.GenerateSuppressionsFile(CompatibilitySuppressionFilePath);
+                Package package = NupkgParser.CreatePackage(PackageTargetPath, runtimeGraph);
+                PackageValidationLogger logger = new(Log, CompatibilitySuppressionFilePath, GenerateCompatibilitySuppressionFile);
+
+                new CompatibleTfmValidator(NoWarn, null, RunApiCompat, EnableStrictModeForCompatibleTfms, logger).Validate(package);
+                new CompatibleFrameworkInPackageValidator(NoWarn, null, EnableStrictModeForCompatibleFrameworksInPackage, logger).Validate(package);
+
+                if (!DisablePackageBaselineValidation && !string.IsNullOrEmpty(BaselinePackageTargetPath))
+                {
+                    Package baselinePackage = NupkgParser.CreatePackage(BaselinePackageTargetPath, runtimeGraph);
+                    new BaselinePackageValidator(baselinePackage, NoWarn, null, RunApiCompat, logger).Validate(package);
+                }
+
+                if (GenerateCompatibilitySuppressionFile)
+                {
+                    logger.GenerateSuppressionsFile(CompatibilitySuppressionFilePath);
+                }
             }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= ResolverForRoslyn;
+            }
+        }
+
+        private Assembly ResolverForRoslyn(object sender, ResolveEventArgs args)
+        {
+            AssemblyName name = new(args.Name);
+
+            return name.Name switch
+            {
+                "Microsoft.CodeAnalysis" or "Microsoft.CodeAnalysis.CSharp" =>
+                    Assembly.LoadFrom(Path.Combine(RoslynDirectory, $"{name.Name}.dll")),
+                _ => null,
+            };
         }
     }
 }
