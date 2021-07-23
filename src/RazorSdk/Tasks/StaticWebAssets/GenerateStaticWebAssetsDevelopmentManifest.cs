@@ -280,12 +280,12 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             StaticWebAsset buildAndPublishAsset = null;
             foreach (var candidate in candidates)
             {
-                if (candidate.IsComputed() || candidate.IsDiscovered() && candidate.IsForReferencedProjectsOnly())
+                if ((candidate.IsComputed() || candidate.IsDiscovered()) && candidate.IsForReferencedProjectsOnly())
                 {
                     continue;
                 }
 
-                if (candidate.IsProject() || candidate.IsPackage() && candidate.IsForCurrentProjectOnly())
+                if ((candidate.IsProject() || candidate.IsPackage()) && candidate.IsForCurrentProjectOnly())
                 {
                     continue;
                 }
