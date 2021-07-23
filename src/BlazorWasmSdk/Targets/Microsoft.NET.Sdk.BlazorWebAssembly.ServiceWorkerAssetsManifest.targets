@@ -29,9 +29,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_PublishServiceWorkerSourcePath>@(ServiceWorker->'%(PublishedContent)')</_PublishServiceWorkerSourcePath>
-      <_PublishServiceWorkerIntermediatePath>$(IntermediateOutputPath)service-worker\@(ServiceWorker->'%(PublishedContent)')</_PublishServiceWorkerIntermediatePath>
+      <_PublishServiceWorkerIntermediatePath>$(IntermediateOutputPath)service-worker\$([System.IO.Path]::GetFileName('$(_PublishServiceWorkerSourcePath)'))</_PublishServiceWorkerIntermediatePath>
       <_BuildServiceWorkerSourcePath>%(ServiceWorker.Identity)</_BuildServiceWorkerSourcePath>
-      <_BuildServiceWorkerIntermediatePath>$(IntermediateOutputPath)service-worker\@(ServiceWorker->'%(Identity)')</_BuildServiceWorkerIntermediatePath>
+      <_BuildServiceWorkerIntermediatePath>$(IntermediateOutputPath)service-worker\@(ServiceWorker->'%(FileName)%(Extension)')</_BuildServiceWorkerIntermediatePath>
     </PropertyGroup>
 
     <ItemGroup Condition="'@(ServiceWorker)' != ''">
