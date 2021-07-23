@@ -61,7 +61,7 @@
     </Exec>
 
     <!-- This is hardcoding version for the root repo (installer), since there
-         isn't a Version.Details.xml file to read it from.  
+         isn't a Version.Details.xml file to read it from.
          See https://github.com/dotnet/source-build/issues/2250 -->
     <ItemGroup>
       <SourceBuildRepos Include="$(GitHubRepositoryName)">
@@ -92,7 +92,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CloneRepoAndDependentsRecursive" 
+  <Target Name="CloneRepoAndDependentsRecursive"
     DependsOnTargets="GetSourceBuildIntermediateNupkgNameConvention">
 
     <Message Text="--> Start Cloning Repo $(SourceBuildRepoName)" Importance="High" />
@@ -151,7 +151,7 @@
       <Output TaskParameter="Dependencies" ItemName="SourceBuildRepos" />
     </Tarball_ReadSourceBuildIntermediateNupkgDependencies>
 
-    <!-- Remove repo if it has already be cloned at any sha.  This results in 
+    <!-- Remove repo if it has already be cloned at any sha.  This results in
          The commit sha for the cloned repo in the tarball being the one that
          was first encountered. -->
     <ItemGroup>
@@ -164,9 +164,9 @@
 
     <Message Text="--> Dependencies for $(TarballVersionDetailsFile):" Importance="High" />
     <Message Text="-->     [@(SourceBuildRepos)]" Importance="High" />
-    <MSBuild Projects="$(MSBuildProjectFile)" 
+    <MSBuild Projects="$(MSBuildProjectFile)"
       Condition=" '@(SourceBuildRepos)' != '' "
-      Targets="CloneRepoAndDependentsRecursive" 
+      Targets="CloneRepoAndDependentsRecursive"
       Properties="SourceBuildRepoName=%(SourceBuildRepos.SourceBuildRepoName);RepoSha=%(SourceBuildRepos.Sha);RepoUri=%(SourceBuildRepos.Uri)" />
 
   </Target>
@@ -203,6 +203,8 @@
       File="$(ArchiveArtifactsTextFile)"
       Lines="@(ArtifactUrls)"
       Overwrite="true" />
+
+    <MakeDir Directories="$(TarballRootDir)packages/prebuilt" />
   </Target>
 
 </Project>
