@@ -215,6 +215,9 @@ Details: {1}.</value>
     <value>Failed to check the update for the package {0}.
 Details: {1}.</value>
   </data>
+  <data name="Scanner_Error_TemplatePackageLocationIsNotSupported" xml:space="preserve">
+    <value>Template package location {0} is not supported, or doesn't exist.</value>
+  </data>
   <data name="TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate" xml:space="preserve">
     <value>Could not load template.</value>
   </data>
@@ -227,6 +230,6 @@ Details: {0}.</value>
   </data>
   <data name="TemplatePackageManager_Error_FailedToScan" xml:space="preserve">
     <value>Failed to scan {0}.
-Details: {1}.</value>
+Details: {1}</value>
   </data>
 </root>

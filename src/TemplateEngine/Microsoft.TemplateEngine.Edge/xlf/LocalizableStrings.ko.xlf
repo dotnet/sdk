@@ -163,6 +163,11 @@ Details: {1}.</source>
 세부 정보: {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Scanner_Error_TemplatePackageLocationIsNotSupported">
+        <source>Template package location {0} is not supported, or doesn't exist.</source>
+        <target state="new">Template package location {0} is not supported, or doesn't exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate">
         <source>Could not load template.</source>
         <target state="translated">템플릿을 로드할 수 없습니다.</target>
@@ -182,8 +187,8 @@ Details: {0}.</source>
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToScan">
         <source>Failed to scan {0}.
-Details: {1}.</source>
-        <target state="translated">{0}을(를) 검사하지 못했습니다.
+Details: {1}</source>
+        <target state="needs-review-translation">{0}을(를) 검사하지 못했습니다.
 세부 정보: {1}.</target>
         <note />
       </trans-unit>

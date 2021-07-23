@@ -317,7 +317,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(LocalizableStrings.TemplatePackageManager_Error_FailedToScan, allTemplatePackages[index].MountPointUri, ex);
+                    _logger.LogWarning(LocalizableStrings.TemplatePackageManager_Error_FailedToScan, allTemplatePackages[index].MountPointUri, ex.Message);
+                    _logger.LogDebug($"Stack trace: {ex.StackTrace}");
                 }
             });
             cancellationToken.ThrowIfCancellationRequested();

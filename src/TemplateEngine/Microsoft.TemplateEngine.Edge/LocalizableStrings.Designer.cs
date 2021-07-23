@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Edge {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class LocalizableStrings {
@@ -346,6 +346,15 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Template package location {0} is not supported, or doesn&apos;t exist..
+        /// </summary>
+        internal static string Scanner_Error_TemplatePackageLocationIsNotSupported {
+            get {
+                return ResourceManager.GetString("Scanner_Error_TemplatePackageLocationIsNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not load template..
         /// </summary>
         internal static string TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate {
@@ -375,7 +384,7 @@ namespace Microsoft.TemplateEngine.Edge {
         
         /// <summary>
         ///   Looks up a localized string similar to Failed to scan {0}.
-        ///Details: {1}..
+        ///Details: {1}.
         /// </summary>
         internal static string TemplatePackageManager_Error_FailedToScan {
             get {

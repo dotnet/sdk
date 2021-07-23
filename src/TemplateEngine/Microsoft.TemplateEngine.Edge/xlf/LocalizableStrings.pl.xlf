@@ -163,6 +163,11 @@ Details: {1}.</source>
 Szczegóły: {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Scanner_Error_TemplatePackageLocationIsNotSupported">
+        <source>Template package location {0} is not supported, or doesn't exist.</source>
+        <target state="new">Template package location {0} is not supported, or doesn't exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate">
         <source>Could not load template.</source>
         <target state="translated">Nie można załadować szablonu.</target>
@@ -182,8 +187,8 @@ Szczegóły: {0}.</target>
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToScan">
         <source>Failed to scan {0}.
-Details: {1}.</source>
-        <target state="translated">Nie można zeskanować {0}.
+Details: {1}</source>
+        <target state="needs-review-translation">Nie można zeskanować {0}.
 Szczegóły: {1}.</target>
         <note />
       </trans-unit>

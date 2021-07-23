@@ -72,7 +72,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     );
                 }
             }
-            throw new Exception($"source location {sourceLocation} is not supported, or doesn't exist.");
+            throw new Exception(string.Format(LocalizableStrings.Scanner_Error_TemplatePackageLocationIsNotSupported, sourceLocation));
         }
 
         private void ScanForComponents(MountPointScanSource source)
