@@ -18,7 +18,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class ScopedCssIntegrationTest : AspNetSdkBaselineTest
     {
-        public ScopedCssIntegrationTest(ITestOutputHelper log) : base(log, true) { }
+        public ScopedCssIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
 
         [Fact]
         public void Build_NoOps_WhenScopedCssIsDisabled()

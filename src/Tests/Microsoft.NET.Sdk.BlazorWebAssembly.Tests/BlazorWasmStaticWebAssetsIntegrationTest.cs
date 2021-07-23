@@ -13,7 +13,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class BlazorWasmStaticWebAssetsIntegrationTest : BlazorWasmBaselineTests
     {
-        public BlazorWasmStaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log, true)
+        public BlazorWasmStaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines)
         {
         }
 
