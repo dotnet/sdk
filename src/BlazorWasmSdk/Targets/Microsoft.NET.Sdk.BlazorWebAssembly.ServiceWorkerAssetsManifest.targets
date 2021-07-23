@@ -29,7 +29,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_PublishServiceWorkerSourcePath>@(ServiceWorker->'%(PublishedContent)')</_PublishServiceWorkerSourcePath>
+      <_PublishServiceWorkerIntermediatePath>$(IntermediateOutputPath)service-worker\@(ServiceWorker->'%(PublishedContent)')</_PublishServiceWorkerIntermediatePath>
       <_BuildServiceWorkerSourcePath>%(ServiceWorker.Identity)</_BuildServiceWorkerSourcePath>
+      <_BuildServiceWorkerIntermediatePath>$(IntermediateOutputPath)service-worker\@(ServiceWorker->'%(Identity)')</_BuildServiceWorkerIntermediatePath>
     </PropertyGroup>
 
     <ItemGroup Condition="'@(ServiceWorker)' != ''">
@@ -44,10 +46,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- This is the dev service worker, which is defined as a Build static web asset -->
       <_BuildServiceWorker
-        Include="@(ServiceWorker->'%(Identity)')"
-        OriginalItemSpec="@(ServiceWorker->'%(Identity)')"
-        SourceType="Discovered"
+        Include="$(_BuildServiceWorkerIntermediatePath)"
+        OriginalItemSpec="$(_BuildServiceWorkerSourcePath)"
+        SourceType="Computed"
         AssetKind="Build"
+        TargetPath="$(_BuildServiceWorkerSourcePath)"
+        ContentRoot="$(IntermediateOutputPath)service-worker"
+        CopyToOutputDirectory="PreserveNewest"
         CopyToPublishDirectory="Never"
         AssetTraitName="BlazorServiceWorker"
         AssetTraitValue="ServiceWorkerJs" />
@@ -55,13 +60,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- This is the publish service worker, which will be generated during publish and that is defined here as a Publish
            static web asset.
       -->
-      <_PublishServiceWorker Include="$(_PublishServiceWorkerSourcePath)">
+      <_PublishServiceWorker Include="$(_PublishServiceWorkerIntermediatePath)">
         <TargetPath>@(ServiceWorker->'%(Identity)')</TargetPath>
-        <ContentRoot>$(IntermediateOutputPath)\service-worker</ContentRoot>
+        <ContentRoot>$(IntermediateOutputPath)service-worker</ContentRoot>
         <AssetTraitName>BlazorServiceWorker</AssetTraitName>
         <AssetTraitValue>ServiceWorkerJs</AssetTraitValue>
         <AssetKind>Publish</AssetKind>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         <OriginalItemSpec>$(_PublishServiceWorkerSourcePath)</OriginalItemSpec>
       </_PublishServiceWorker>
@@ -118,6 +123,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BuildServiceWorkItem Include="@(_BuildAssetsForManifestWithTargetPath)">
         <AssetUrl>%(_BuildAssetsForManifestWithTargetPath.TargetPath)</AssetUrl>
       </_BuildServiceWorkItem>
+      <_BuildServiceWorkerFile Include="@(StaticWebAsset)" Condition="'%(AssetKind)' == 'Build' And '%(AssetTraitName)' == 'BlazorServiceWorker' And '%(AssetTraitValue)' == 'ServiceWorkerJs'" />
     </ItemGroup>
 
     <GenerateServiceWorkerAssetsManifest
@@ -127,12 +133,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="CalculatedVersion" PropertyName="_BuildServiceWorkerAssetsManifestVersion" />
     </GenerateServiceWorkerAssetsManifest>
 
-    <ItemGroup>
-      <_BuildServiceWorkerFile Include="@(_ServiceWorkerCopyCandidates)" Condition="'%(Identity)' == '$(_BuildServiceWorkerSourcePath)'" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(_BuildServiceWorkerFile->'%(Identity)')"
-      DestinationFiles="@(_BuildServiceWorkerFile->'%(TargetPath)')"
+    <Copy SourceFiles="@(_BuildServiceWorkerFile->'%(OriginalItemSpec)')"
+      DestinationFiles="@(_BuildServiceWorkerFile->'%(Identity)')"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
       Retries="$(CopyRetryCount)"
       RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -144,12 +146,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
 
     <WriteLinesToFile
-      File="@(_BuildServiceWorkerFile->'%(TargetPath)')"
+      File="@(_BuildServiceWorkerFile->'%(Identity)')"
       Lines="/* Manifest version: $(_BuildServiceWorkerAssetsManifestVersion) */"
       Condition="'$(_BuildServiceWorkerAssetsManifestVersion)' != ''" />
 
     <ItemGroup>
-      <FileWrites Include="@(_BuildServiceWorkerFile->'%(TargetPath)')" />
+      <FileWrites Include="@(_BuildServiceWorkerFile->'%(Identity)')" />
       <FileWrites Include="$(IntermediateOutputPath)$(ServiceWorkerAssetsManifest).build" />
     </ItemGroup>
 
@@ -169,6 +171,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_ServiceWorkItem Include="@(_AssetsForManifestWithTargetPath)">
         <AssetUrl>%(_AssetsForManifestWithTargetPath.TargetPath)</AssetUrl>
       </_ServiceWorkItem>
+      <_PublishServiceWorkerFile Include="@(StaticWebAsset)" Condition="'%(AssetKind)' == 'Publish' And '%(AssetTraitName)' == 'BlazorServiceWorker' And '%(AssetTraitValue)' == 'ServiceWorkerJs'" />
     </ItemGroup>
 
     <GenerateServiceWorkerAssetsManifest
@@ -178,12 +181,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="CalculatedVersion" PropertyName="_ServiceWorkerAssetsManifestVersion" />
     </GenerateServiceWorkerAssetsManifest>
 
-    <ItemGroup>
-      <_PublishServiceWorkerFile Include="@(_ServiceWorkerCopyCandidates)" Condition="'%(Identity)' == '$(_PublishServiceWorkerSourcePath)'" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(_PublishServiceWorkerFile->'%(Identity)')"
-      DestinationFiles="@(_PublishServiceWorkerFile->'%(TargetPath)')"
+    <Copy SourceFiles="@(_PublishServiceWorkerFile->'%(OriginalItemSpec)')"
+      DestinationFiles="@(_PublishServiceWorkerFile->'%(Identity)')"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
       Retries="$(CopyRetryCount)"
       RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -195,7 +194,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
 
     <WriteLinesToFile
-      File="@(_PublishServiceWorkerFile->'%(TargetPath)')"
+      File="@(_PublishServiceWorkerFile->'%(Identity)')"
       Lines="/* Manifest version: $(_ServiceWorkerAssetsManifestVersion) */"
       Condition="'$(_ServiceWorkerAssetsManifestVersion)' != ''" />
 
