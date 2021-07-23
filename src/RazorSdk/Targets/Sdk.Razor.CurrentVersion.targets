@@ -102,9 +102,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Blazor webassembly 3.2 is netstandard 2.1 and targets RazorLang 3.0. Other class libraries will target a RazorLangVersion of 2.1 or a higher than 3.0 version.
         We use that fact to discriminate -->
-    <_IsBlazorWebAssembly32 Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '2.1')) And '$(RazorLangVersion)' == '3.0'">true</_IsBlazorWebAssembly32>
+    <_IsBlazorWebAssembly32 Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$([MSBuild]::VersionEquals($(TargetFrameworkVersion), 2.1)' == 'true' And '$(RazorLangVersion)' == '3.0'">true</_IsBlazorWebAssembly32>
 
-    <UseStaticWebAssetsV1 Condition="'$(UseStaticWebAssetsV1)' == '' And ('$(_TargetingNET60OrLater)' == 'true' Or ('$(_TargetingNETStandard21OrLater)' == 'true' AND '$(_IsBlazorWebAssembly32)' != 'true')))">false</UseStaticWebAssetsV1>
+    <UseStaticWebAssetsV1 Condition="'$(UseStaticWebAssetsV1)' == '' And ('$(_TargetingNET60OrLater)' == 'true' Or ('$(_TargetingNETStandard21OrLater)' == 'true' AND '$(_IsBlazorWebAssembly32)' != 'true'))">false</UseStaticWebAssetsV1>
     <UseStaticWebAssetsV1 Condition="'$(UseStaticWebAssetsV1)' == ''">true</UseStaticWebAssetsV1>
      
     <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net6.0 applications and RazorLangVersion 5 or above -->
