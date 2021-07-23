@@ -100,9 +100,9 @@ namespace Microsoft.TemplateSearch.Common
         private static bool TryReadVersion(ILogger logger, JObject cacheObject, out string? version)
         {
             logger.LogDebug($"Reading template search cache version");
-            if (cacheObject.TryGetValue(nameof(TemplateSearchCache.Version), out JToken value))
+            version = cacheObject.ToString(nameof(Version));
+            if (!string.IsNullOrWhiteSpace(version))
             {
-                version = value.Value<string>();
                 logger.LogDebug($"Version: {version}.");
                 if (_supportedVersions.Contains(version))
                 {

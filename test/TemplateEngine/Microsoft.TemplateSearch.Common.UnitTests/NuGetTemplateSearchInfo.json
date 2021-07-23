@@ -1,138 +1,138 @@
 {
-    "Version": "1.0.0.3",
-    "TemplateCache": [
+  "Version": "1.0.0.3",
+  "TemplateCache": [
+    {
+      "ConfigMountPointId": "9c7aced3-f3b1-45b3-93a9-8d6f19d000f3",
+      "Author": "Microsoft",
+      "Classifications": [
+        "Azure Functions",
+        "Solution"
+      ],
+      "DefaultName": "Company.FunctionApp",
+      "Description": "",
+      "Identity": "Microsoft.AzureFunctions.ProjectTemplate.CSharp.3.x",
+      "GeneratorId": "0c434df7-e2cb-4dee-b216-d7c58c8eb4b3",
+      "GroupIdentity": "Microsoft.AzureFunctions.ProjectTemplates",
+      "Precedence": 100,
+      "Name": "Azure Functions",
+      "ShortNameList": [
+        "func"
+      ],
+      "Tags": {
+        "language": {
+          "Description": null,
+          "ChoicesAndDescriptions": {
+            "C#": ""
+          },
+          "DefaultValue": "C#"
+        },
+        "type": {
+          "Description": null,
+          "ChoicesAndDescriptions": {
+            "project": ""
+          },
+          "DefaultValue": "project"
+        }
+      },
+      "CacheParameters": {
+        "name": {
+          "DataType": "string",
+          "DefaultValue": null,
+          "Description": "The default name symbol"
+        },
+        "StorageConnectionStringValue": {
+          "DataType": "AzureStorage",
+          "DefaultValue": "UseDevelopmentStorage=true",
+          "Description": "The connection string for your Azure WebJobs Storage."
+        },
+        "AzureFunctionsVersion": {
+          "DataType": null,
+          "DefaultValue": "V3",
+          "Description": "The setting that determines the target release"
+        }
+      },
+      "ConfigPlace": "/content/ProjectTemplate-CSharp/.template.config/template.json",
+      "LocaleConfigMountPointId": "00000000-0000-0000-0000-000000000000",
+      "LocaleConfigPlace": null,
+      "HostConfigMountPointId": "9c7aced3-f3b1-45b3-93a9-8d6f19d000f3",
+      "HostConfigPlace": "/content/ProjectTemplate-CSharp/.template.config/dotnetcli.host.json",
+      "ThirdPartyNotices": null,
+      "BaselineInfo": {},
+      "HasScriptRunningPostActions": false,
+      "ConfigTimestampUtc": null
+    },
+    {
+      "ConfigMountPointId": "9c7aced3-f3b1-45b3-93a9-8d6f19d000f3",
+      "Author": "Microsoft",
+      "Classifications": [
+        "Azure Functions",
+        "Solution"
+      ],
+      "DefaultName": "Company.FunctionApp",
+      "Description": "",
+      "Identity": "Microsoft.AzureFunctions.ProjectTemplate.FSharp.3.x",
+      "GeneratorId": "0c434df7-e2cb-4dee-b216-d7c58c8eb4b3",
+      "GroupIdentity": "Microsoft.AzureFunctions.ProjectTemplates",
+      "Precedence": 100,
+      "Name": "Azure Functions",
+      "ShortNameList": [
+        "func"
+      ],
+      "Tags": {
+        "language": {
+          "Description": null,
+          "ChoicesAndDescriptions": {
+            "F#": ""
+          },
+          "DefaultValue": "F#"
+        },
+        "type": {
+          "Description": null,
+          "ChoicesAndDescriptions": {
+            "project": ""
+          },
+          "DefaultValue": "project"
+        }
+      },
+      "CacheParameters": {
+        "name": {
+          "DataType": "string",
+          "DefaultValue": null,
+          "Description": "The default name symbol"
+        },
+        "StorageConnectionStringValue": {
+          "DataType": "AzureStorage",
+          "DefaultValue": "UseDevelopmentStorage=True",
+          "Description": "The connection string for your Azure WebJobs Storage."
+        }
+      },
+      "ConfigPlace": "/content/ProjectTemplate-FSharp/.template.config/template.json",
+      "LocaleConfigMountPointId": "00000000-0000-0000-0000-000000000000",
+      "LocaleConfigPlace": null,
+      "HostConfigMountPointId": "9c7aced3-f3b1-45b3-93a9-8d6f19d000f3",
+      "HostConfigPlace": "/content/ProjectTemplate-FSharp/.template.config/dotnetcli.host.json",
+      "ThirdPartyNotices": null,
+      "BaselineInfo": {},
+      "HasScriptRunningPostActions": false,
+      "ConfigTimestampUtc": null
+    }
+  ],
+  "PackToTemplateMap": {
+    "Microsoft.Azure.WebJobs.ProjectTemplates": {
+      "Version": "3.1.1791",
+      "TotalDownloads": 3891162,
+      "TemplateIdentificationEntry": [
         {
-            "ConfigMountPointId": "9c7aced3-f3b1-45b3-93a9-8d6f19d000f3",
-            "Author": "Microsoft",
-            "Classifications": [
-                "Azure Functions",
-                "Solution"
-            ],
-            "DefaultName": "Company.FunctionApp",
-            "Description": "",
-            "Identity": "Microsoft.AzureFunctions.ProjectTemplate.CSharp.3.x",
-            "GeneratorId": "0c434df7-e2cb-4dee-b216-d7c58c8eb4b3",
-            "GroupIdentity": "Microsoft.AzureFunctions.ProjectTemplates",
-            "Precedence": 100,
-            "Name": "Azure Functions",
-            "ShortNameList": [
-                "func"
-            ],
-            "Tags": {
-                "language": {
-                    "Description": null,
-                    "ChoicesAndDescriptions": {
-                        "C#": ""
-                    },
-                    "DefaultValue": "C#"
-                },
-                "type": {
-                    "Description": null,
-                    "ChoicesAndDescriptions": {
-                        "project": ""
-                    },
-                    "DefaultValue": "project"
-                }
-            },
-            "CacheParameters": {
-                "name": {
-                    "DataType": "string",
-                    "DefaultValue": null,
-                    "Description": "The default name symbol"
-                },
-                "StorageConnectionStringValue": {
-                    "DataType": "AzureStorage",
-                    "DefaultValue": "UseDevelopmentStorage=true",
-                    "Description": "The connection string for your Azure WebJobs Storage."
-                },
-                "AzureFunctionsVersion": {
-                    "DataType": null,
-                    "DefaultValue": "V3",
-                    "Description": "The setting that determines the target release"
-                }
-            },
-            "ConfigPlace": "/content/ProjectTemplate-CSharp/.template.config/template.json",
-            "LocaleConfigMountPointId": "00000000-0000-0000-0000-000000000000",
-            "LocaleConfigPlace": null,
-            "HostConfigMountPointId": "9c7aced3-f3b1-45b3-93a9-8d6f19d000f3",
-            "HostConfigPlace": "/content/ProjectTemplate-CSharp/.template.config/dotnetcli.host.json",
-            "ThirdPartyNotices": null,
-            "BaselineInfo": {},
-            "HasScriptRunningPostActions": false,
-            "ConfigTimestampUtc": null
+          "Identity": "Microsoft.AzureFunctions.ProjectTemplate.CSharp.3.x",
+          "GroupIdentity": "Microsoft.AzureFunctions.ProjectTemplates"
         },
         {
-            "ConfigMountPointId": "9c7aced3-f3b1-45b3-93a9-8d6f19d000f3",
-            "Author": "Microsoft",
-            "Classifications": [
-                "Azure Functions",
-                "Solution"
-            ],
-            "DefaultName": "Company.FunctionApp",
-            "Description": "",
-            "Identity": "Microsoft.AzureFunctions.ProjectTemplate.FSharp.3.x",
-            "GeneratorId": "0c434df7-e2cb-4dee-b216-d7c58c8eb4b3",
-            "GroupIdentity": "Microsoft.AzureFunctions.ProjectTemplates",
-            "Precedence": 100,
-            "Name": "Azure Functions",
-            "ShortNameList": [
-                "func"
-            ],
-            "Tags": {
-                "language": {
-                    "Description": null,
-                    "ChoicesAndDescriptions": {
-                        "F#": ""
-                    },
-                    "DefaultValue": "F#"
-                },
-                "type": {
-                    "Description": null,
-                    "ChoicesAndDescriptions": {
-                        "project": ""
-                    },
-                    "DefaultValue": "project"
-                }
-            },
-            "CacheParameters": {
-                "name": {
-                    "DataType": "string",
-                    "DefaultValue": null,
-                    "Description": "The default name symbol"
-                },
-                "StorageConnectionStringValue": {
-                    "DataType": "AzureStorage",
-                    "DefaultValue": "UseDevelopmentStorage=True",
-                    "Description": "The connection string for your Azure WebJobs Storage."
-                }
-            },
-            "ConfigPlace": "/content/ProjectTemplate-FSharp/.template.config/template.json",
-            "LocaleConfigMountPointId": "00000000-0000-0000-0000-000000000000",
-            "LocaleConfigPlace": null,
-            "HostConfigMountPointId": "9c7aced3-f3b1-45b3-93a9-8d6f19d000f3",
-            "HostConfigPlace": "/content/ProjectTemplate-FSharp/.template.config/dotnetcli.host.json",
-            "ThirdPartyNotices": null,
-            "BaselineInfo": {},
-            "HasScriptRunningPostActions": false,
-            "ConfigTimestampUtc": null
+          "Identity": "Microsoft.AzureFunctions.ProjectTemplate.FSharp.3.x",
+          "GroupIdentity": "Microsoft.AzureFunctions.ProjectTemplates"
         }
-    ],
-    "PackToTemplateMap": {
-        "Microsoft.Azure.WebJobs.ProjectTemplates": {
-            "Version": "3.1.1791",
-            "TotalDownloads": 3891162,
-            "TemplateIdentificationEntry": [
-                {
-                    "Identity": "Microsoft.AzureFunctions.ProjectTemplate.CSharp.3.x",
-                    "GroupIdentity": "Microsoft.AzureFunctions.ProjectTemplates"
-                },
-                {
-                    "Identity": "Microsoft.AzureFunctions.ProjectTemplate.FSharp.3.x",
-                    "GroupIdentity": "Microsoft.AzureFunctions.ProjectTemplates"
-                }
-            ]
-        }
-    },
-    "AdditionalData": {
+      ]
     }
+  },
+  "AdditionalData": {
+  }
 }

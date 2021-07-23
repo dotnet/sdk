@@ -36,7 +36,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         private static string WriteSearchMetadata(PackSourceCheckResult packSourceCheckResults, string outputFileName)
         {
             TemplateSearchCache searchMetadata = CreateSearchMetadata(packSourceCheckResults);
-            File.WriteAllText(outputFileName, searchMetadata.ToJObject().ToString());
+            File.WriteAllText(outputFileName, searchMetadata.ToJObject().ToString(Formatting.None));
             Console.WriteLine($"Search cache file created: {outputFileName}");
             return outputFileName;
         }
@@ -46,6 +46,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             List<TemplatePackageSearchData> packages = new List<TemplatePackageSearchData>();
             foreach (PackCheckResult package in packSourceCheckResults.PackCheckData)
             {
+                if (!package.FoundTemplates.Any())
+                {
+                    continue;
+                }
                 List<TemplateSearchData> templates = new List<TemplateSearchData>();
                 foreach (ITemplateInfo template in package.FoundTemplates)
                 {

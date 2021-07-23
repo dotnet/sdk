@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.TestHelper;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -22,13 +23,13 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.Equal(1, parsedCache.TemplatePackages.Count);
             Assert.Equal(2, parsedCache.TemplatePackages.Sum(p => p.Templates.Count)); 
 
-            Assert.IsType<BlobStorageTemplateInfo>(parsedCache.TemplatePackages[0].Templates[0].TemplateInfo);
+            Assert.IsAssignableFrom<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
 
             //can read tags
-            Assert.Equal(2, parsedCache.TemplatePackages[0].Templates[0].TemplateInfo.TagsCollection.Count);
+            Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection.Count);
 
-            //can read parameters: 2 tags + 3 cache parameters
-            Assert.Equal(5, parsedCache.TemplatePackages[0].Templates[0].TemplateInfo.Parameters.Count);
+            //can read parameters
+            Assert.Equal(5, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).Parameters.Count);
         }
 
         [Fact]
@@ -40,6 +41,17 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             JObject cache = JObject.Parse(content);
 
             var parsedCache = TemplateSearchCache.FromJObject(cache, environmentSettings.Host.Logger);
+
+            Assert.Equal(1, parsedCache.TemplatePackages.Count);
+            Assert.Equal(2, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
+
+            Assert.IsAssignableFrom<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
+
+            //can read tags
+            Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection.Count);
+
+            //can read parameters: 2 tags + 3 cache parameters
+            Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).Parameters.Count);
         }
 
         [Fact]
@@ -55,8 +67,8 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.Equal(1, parsedCache.TemplatePackages.Count);
             Assert.Equal(1, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
 
-            Assert.IsType<BlobStorageTemplateInfo>(parsedCache.TemplatePackages[0].Templates[0].TemplateInfo);
-            Assert.Equal("Microsoft.AzureFunctions.ProjectTemplate.CSharp.3.x", parsedCache.TemplatePackages[0].Templates[0].TemplateInfo.Identity);
+            Assert.IsAssignableFrom<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
+            Assert.Equal("Microsoft.AzureFunctions.ProjectTemplate.CSharp.3.x", ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).Identity);
         }
     }
 }

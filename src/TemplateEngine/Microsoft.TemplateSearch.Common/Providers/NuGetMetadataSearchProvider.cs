@@ -47,7 +47,7 @@ namespace Microsoft.TemplateSearch.Common.Providers
             IEnumerable<TemplatePackageSearchData> filteredPackages = _searchCache.TemplatePackages.Where(package => packFilter(package));
 
             return filteredPackages
-                .Select<TemplatePackageSearchData, (IPackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>(package => (package.PackageInfo, matchingTemplatesFilter(package)))
+                .Select<TemplatePackageSearchData, (IPackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>(package => (package, matchingTemplatesFilter(package)))
                 .Where(result => result.MatchedTemplates.Any())
                 .ToList();
         }

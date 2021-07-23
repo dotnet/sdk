@@ -7,7 +7,7 @@ namespace Microsoft.TemplateSearch.Common.Abstractions
     {
         public string Name { get; }
 
-        public string Version { get; }
+        public string? Version { get; }
 
         public long TotalDownloads { get; }
     }

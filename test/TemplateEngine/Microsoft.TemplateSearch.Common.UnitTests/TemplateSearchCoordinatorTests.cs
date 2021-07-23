@@ -44,9 +44,9 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                  new MockTemplateSearchProviderFactory(Guid.NewGuid(), "provider2", provider2));
 
             var searchCoordinator = new TemplateSearchCoordinator(_engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, p => p.Templates.Select(t => t.TemplateInfo).ToList(), default).ConfigureAwait(false);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, p => p.Templates.ToList(), default).ConfigureAwait(false);
 
-            Assert.Equal(2, searchResult.Count);
+            Assert.Equal(2, searchResult.Count());
             Assert.Single(searchResult, r => r.Provider.Factory.DisplayName == "provider1");
             Assert.Single(searchResult, r => r.Provider.Factory.DisplayName == "provider2");
 
@@ -72,8 +72,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> filter =
                 templatePack => templatePack.Templates
-                    .Where(t => t.TemplateInfo.Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
-                    .Select(t => t.TemplateInfo)
+                    .Where(t => ((ITemplateInfo)t).Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(_engineEnvironmentSettings);
