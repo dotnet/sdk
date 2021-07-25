@@ -847,7 +847,7 @@ public class TestClass
             {
                 TestCode = source,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                LanguageVersion = LanguageVersion.Preview,
+                LanguageVersion = LanguageVersion.CSharp9,
                 FixedCode = corrected,
             };
 
@@ -861,7 +861,7 @@ public class TestClass
             {
                 TestCode = source,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                LanguageVersion = LanguageVersion.Preview,
+                LanguageVersion = LanguageVersion.CSharp9,
             };
 
             test.ExpectedDiagnostics.AddRange(expected);

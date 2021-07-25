@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DetectPreviewFeatureAnalyzer,
@@ -9,62 +10,41 @@ using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public partial class DetectPreviewFeatureUnitTests
+    public class DetectPreviewFeatureUnitTests
     {
         private static async Task TestCS(string csInput)
         {
             await new VerifyCS.Test
             {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
                 TestState =
                 {
                     Sources =
                     {
-                        csInput, requiresPreviewFeaturesAttribute
+                        csInput
                     }
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
+                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
             }.RunAsync();
         }
 
-        private static async Task TestCSNet50(string csInput)
+        private static async Task TestCSPreview(string csInput)
         {
             await new VerifyCS.Test
             {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
                 TestState =
                 {
                     Sources =
                     {
-                        csInput, requiresPreviewFeaturesAttribute
+                        csInput
                     }
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
             }.RunAsync();
         }
-
-        private const string requiresPreviewFeaturesAttribute = $@"
-namespace System.Runtime.Versioning
-{{
-    [AttributeUsage(AttributeTargets.Assembly |
-                AttributeTargets.Module |
-                AttributeTargets.Class |
-                AttributeTargets.Interface |
-                AttributeTargets.Delegate |
-                AttributeTargets.Struct |
-                AttributeTargets.Enum |
-                AttributeTargets.Constructor |
-                AttributeTargets.Method |
-                AttributeTargets.Property |
-                AttributeTargets.Field |
-                AttributeTargets.Event, Inherited = false)]
-    public sealed class RequiresPreviewFeaturesAttribute : Attribute
-    {{
-        public RequiresPreviewFeaturesAttribute() {{ }}
-    }}
-}}
-";
 
         [Fact]
         public async Task TestPreviewMethodUnaryOperator()
@@ -494,7 +474,7 @@ namespace Preview_Feature_Scratch
 
         }
 
-        [Fact(Skip = "The following test cannot be activated yet because it requires preview roslyn bits")]
+        [Fact(Skip = "Not yet working")]
         public async Task TestPreviewLanguageFeatures()
         {
             var csInput = @" 
@@ -509,6 +489,9 @@ namespace Preview_Feature_Scratch
                 {
                     new Program();
                 }
+
+                public static bool StaticMethod() => throw null;
+                public static bool AProperty => throw null;
             }
 
             public interface IProgram
@@ -520,7 +503,7 @@ namespace Preview_Feature_Scratch
 
             ";
 
-            await TestCS(csInput);
+            await TestCSPreview(csInput);
         }
 
         [Fact]
@@ -552,7 +535,7 @@ namespace Preview_Feature_Scratch
 
     ";
 
-            await TestCSNet50(csInput);
+            await TestCS(csInput);
         }
 
         [Fact]
@@ -637,7 +620,7 @@ namespace Preview_Feature_Scratch
 
     ";
 
-            await TestCSNet50(csInput);
+            await TestCS(csInput);
         }
 
         [Fact]
