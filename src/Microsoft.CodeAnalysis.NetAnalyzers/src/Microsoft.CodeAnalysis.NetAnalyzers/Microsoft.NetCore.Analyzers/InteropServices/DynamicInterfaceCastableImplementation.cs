@@ -121,7 +121,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if (member.IsVirtual || member.IsAbstract)
                 {
                     // We don't want to emit diagnostics when the member is an accessor method.
-                    if (member is not IMethodSymbol { AssociatedSymbol: ISymbol })
+                    if (member is not IMethodSymbol { AssociatedSymbol: IPropertySymbol or IEventSymbol })
                     {
                         // Emit diagnostic for non-concrete method on implementation interface
                         context.ReportDiagnostic(member.CreateDiagnostic(MembersDeclaredOnImplementationTypeMustBeSealed, member.ToDisplayString(), targetType.ToDisplayString()));
