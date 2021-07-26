@@ -9,8 +9,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// <summary>
     /// CA2207: Initialize value type static fields inline
     /// </summary>
-    public abstract class InitializeStaticFieldsInlineFixer<TLanguageKindEnum> : CodeFixProvider
-        where TLanguageKindEnum : struct
+    public abstract class InitializeStaticFieldsInlineFixer : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray<string>.Empty;
 

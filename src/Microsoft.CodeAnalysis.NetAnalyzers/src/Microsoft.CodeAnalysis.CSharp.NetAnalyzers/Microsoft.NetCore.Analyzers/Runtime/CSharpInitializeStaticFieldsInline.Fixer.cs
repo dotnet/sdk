@@ -4,7 +4,6 @@ using System.Composition;
 using Microsoft.NetCore.Analyzers.Runtime;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
@@ -12,7 +11,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
     /// CA2207: Initialize value type static fields inline
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-    public class CSharpInitializeStaticFieldsInlineFixer : InitializeStaticFieldsInlineFixer<SyntaxKind>
+    public class CSharpInitializeStaticFieldsInlineFixer : InitializeStaticFieldsInlineFixer
     {
     }
 }
