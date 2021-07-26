@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 
@@ -36,24 +34,26 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 return;
             }
-            Diagnostic diagnostic = context.Diagnostics.First();
-            if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId)
+            foreach (Diagnostic diagnostic in context.Diagnostics)
             {
-                context.RegisterCodeFix(
-                    new MyCodeAction(
-                        MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,
-                        async ct => await ImplementInterfacesOnDynamicCastableImplementation(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
-                        equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
-                    diagnostic);
-            }
-            else if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MeembersDeclaredOnImplementationTypeMustBeSealedRuleId)
-            {
-                context.RegisterCodeFix(
-                    new MyCodeAction(
-                        MicrosoftNetCoreAnalyzersResources.SealMethodDeclaredOnImplementationType,
-                        async ct => await SealMemberDeclaredOnImplementationType(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
-                        equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.SealMethodDeclaredOnImplementationType)),
-                    diagnostic);
+                if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId)
+                {
+                    context.RegisterCodeFix(
+                        CodeAction.Create(
+                            MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,
+                            async ct => await ImplementInterfacesOnDynamicCastableImplementation(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
+                        diagnostic);
+                }
+                else if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MeembersDeclaredOnImplementationTypeMustBeSealedRuleId)
+                {
+                    context.RegisterCodeFix(
+                        CodeAction.Create(
+                            MicrosoftNetCoreAnalyzersResources.SealMethodDeclaredOnImplementationType,
+                            async ct => await SealMemberDeclaredOnImplementationType(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.SealMethodDeclaredOnImplementationType)),
+                        diagnostic);
+                }
             }
         }
 
@@ -62,19 +62,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         protected abstract Task<Document> ImplementInterfacesOnDynamicCastableImplementation(
             SyntaxNode declaration,
             Document document,
-            CancellationToken ct);
+            CancellationToken cancellationToken);
 
         protected abstract Task<Document> SealMemberDeclaredOnImplementationType(
             SyntaxNode declaration,
             Document document,
-            CancellationToken ct);
-
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
-        }
+            CancellationToken cancellationToken);
     }
 }

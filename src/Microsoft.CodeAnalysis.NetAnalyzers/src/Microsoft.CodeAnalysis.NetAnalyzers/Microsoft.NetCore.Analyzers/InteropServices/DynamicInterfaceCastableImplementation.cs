@@ -103,6 +103,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         break;
                     }
                 }
+
+                // Once we find one missing method implementation, we can stop searching for missing implementations.
+                if (missingMethodImplementations)
+                {
+                    break;
+                }
             }
 
             if (missingMethodImplementations)

@@ -27,11 +27,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
         protected override async Task<Document> ImplementInterfacesOnDynamicCastableImplementation(
             SyntaxNode declaration,
             Document document,
-            CancellationToken ct)
+            CancellationToken cancellationToken)
         {
-            var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
+            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 
-            var type = (INamedTypeSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
+            var type = (INamedTypeSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, cancellationToken);
             var generator = editor.Generator;
 
             var defaultMethodBodyStatements = generator.DefaultMethodBody(editor.SemanticModel.Compilation).ToArray();
@@ -177,18 +177,18 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
         protected override async Task<Document> SealMemberDeclaredOnImplementationType(
             SyntaxNode declaration,
             Document document,
-            CancellationToken ct)
+            CancellationToken cancellationToken)
         {
-            var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
+            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;
             var defaultMethodBodyStatements = generator.DefaultMethodBody(editor.SemanticModel.Compilation).ToArray();
 
-            var symbol = editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
+            var symbol = editor.SemanticModel.GetDeclaredSymbol(declaration, cancellationToken);
             if (declaration.IsKind(SyntaxKind.EventFieldDeclaration))
             {
                 // We'll only end up here with one event in the event field declaration syntax.
                 var eventField = (EventFieldDeclarationSyntax)declaration;
-                symbol = editor.SemanticModel.GetDeclaredSymbol(eventField.Declaration.Variables[0], ct);
+                symbol = editor.SemanticModel.GetDeclaredSymbol(eventField.Declaration.Variables[0], cancellationToken);
             }
 
             editor.ReplaceNode(generator.GetDeclaration(declaration), SealMemberDeclaration(declaration, symbol));
