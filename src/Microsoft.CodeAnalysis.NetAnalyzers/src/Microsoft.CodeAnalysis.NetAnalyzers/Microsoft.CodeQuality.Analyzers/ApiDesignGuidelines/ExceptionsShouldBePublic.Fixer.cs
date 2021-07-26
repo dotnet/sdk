@@ -36,13 +36,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             CodeAction action = CodeAction.Create(
                 MicrosoftCodeQualityAnalyzersResources.MakeExceptionPublic,
-                c => MakePublic(context.Document, node, context.CancellationToken),
+                c => MakePublicAsync(context.Document, node, context.CancellationToken),
                 equivalenceKey);
 
             context.RegisterCodeFix(action, context.Diagnostics);
         }
 
-        private static async Task<Document> MakePublic(Document document, SyntaxNode classDecl, CancellationToken cancellationToken)
+        private static async Task<Document> MakePublicAsync(Document document, SyntaxNode classDecl, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 

@@ -55,12 +55,12 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
             var title = MicrosoftNetCoreAnalyzersResources.RemoveRedundantCall;
 
             context.RegisterCodeFix(new MyCodeAction(title,
-                                        async cancellationToken => await RemoveRedundantCall(document, root, invocationNode, invocationOperation).ConfigureAwait(false),
+                                        async cancellationToken => await RemoveRedundantCallAsync(document, root, invocationNode, invocationOperation).ConfigureAwait(false),
                                         equivalenceKey: title),
                                     diagnostic);
         }
 
-        private static Task<Document> RemoveRedundantCall(Document document, SyntaxNode root, SyntaxNode invocationNode, IInvocationOperation invocationOperation)
+        private static Task<Document> RemoveRedundantCallAsync(Document document, SyntaxNode root, SyntaxNode invocationNode, IInvocationOperation invocationOperation)
         {
             var instance = invocationOperation.GetInstanceSyntax().WithTriviaFrom(invocationNode);
             var newRoot = root.ReplaceNode(invocationNode, instance);

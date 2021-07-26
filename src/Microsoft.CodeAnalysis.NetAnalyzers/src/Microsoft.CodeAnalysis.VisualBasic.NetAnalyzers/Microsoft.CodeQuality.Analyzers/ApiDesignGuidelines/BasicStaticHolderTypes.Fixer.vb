@@ -43,12 +43,12 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
             Dim classStatement = root.FindToken(span.Start).Parent?.FirstAncestorOrSelf(Of ClassStatementSyntax)
             If classStatement IsNot Nothing Then
                 Dim title As String = MicrosoftCodeQualityAnalyzersResources.MakeClassStatic
-                Dim fix = New MyCodeAction(title, Async Function(ct) Await AddNotInheritableKeyword(document, root, classStatement).ConfigureAwait(False), equivalenceKey:=title)
+                Dim fix = New MyCodeAction(title, Async Function(ct) Await AddNotInheritableKeywordAsync(document, root, classStatement).ConfigureAwait(False), equivalenceKey:=title)
                 context.RegisterCodeFix(fix, context.Diagnostics)
             End If
         End Function
 
-        Private Shared Function AddNotInheritableKeyword(document As Document, root As SyntaxNode, classStatement As ClassStatementSyntax) As Task(Of Document)
+        Private Shared Function AddNotInheritableKeywordAsync(document As Document, root As SyntaxNode, classStatement As ClassStatementSyntax) As Task(Of Document)
             Dim notInheritableKeyword = SyntaxFactory.Token(SyntaxKind.NotInheritableKeyword).WithAdditionalAnnotations(Formatter.Annotation)
             Dim newClassStatement = classStatement.AddModifiers(notInheritableKeyword)
             Dim newRoot = root.ReplaceNode(classStatement, newClassStatement)

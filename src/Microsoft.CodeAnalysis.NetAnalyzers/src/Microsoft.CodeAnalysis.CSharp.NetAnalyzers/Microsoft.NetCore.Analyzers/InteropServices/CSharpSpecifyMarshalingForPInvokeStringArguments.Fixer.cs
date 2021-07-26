@@ -31,7 +31,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             return false;
         }
 
-        protected override Task<Document> FixDeclareStatement(Document document, SyntaxNode node, CancellationToken cancellationToken)
+        protected override Task<Document> FixDeclareStatementAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
         {
             return Task.FromResult(document);
         }

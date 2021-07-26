@@ -32,13 +32,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             string title = MicrosoftCodeQualityAnalyzersResources.RemoveEmptyFinalizers;
             context.RegisterCodeFix(new MyCodeAction(title,
-                             async ct => await RemoveFinalizer(context.Document, node, ct).ConfigureAwait(false),
+                             async ct => await RemoveFinalizerAsync(context.Document, node, ct).ConfigureAwait(false),
                              equivalenceKey: title),
                         context.Diagnostics);
             return;
         }
 
-        private static async Task<Document> RemoveFinalizer(Document document, SyntaxNode node, CancellationToken cancellationToken)
+        private static async Task<Document> RemoveFinalizerAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 

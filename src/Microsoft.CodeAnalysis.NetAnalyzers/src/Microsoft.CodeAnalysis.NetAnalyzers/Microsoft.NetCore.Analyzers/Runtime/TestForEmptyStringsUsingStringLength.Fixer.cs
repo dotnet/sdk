@@ -43,13 +43,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (resolution != null)
             {
                 var methodInvocationAction = CodeAction.Create(MicrosoftNetCoreAnalyzersResources.TestForEmptyStringsUsingStringLengthMessage,
-                    async ct => await ConvertToMethodInvocation(context, resolution).ConfigureAwait(false),
+                    async ct => await ConvertToMethodInvocationAsync(context, resolution).ConfigureAwait(false),
                     equivalenceKey: "TestForEmptyStringCorrectlyUsingIsNullOrEmpty");
 
                 context.RegisterCodeFix(methodInvocationAction, context.Diagnostics);
 
                 var stringLengthAction = CodeAction.Create(MicrosoftNetCoreAnalyzersResources.TestForEmptyStringsUsingStringLengthMessage,
-                    async ct => await ConvertToStringLengthComparison(context, resolution).ConfigureAwait(false),
+                    async ct => await ConvertToStringLengthComparisonAsync(context, resolution).ConfigureAwait(false),
                     equivalenceKey: "TestForEmptyStringCorrectlyUsingStringLength");
 
                 context.RegisterCodeFix(stringLengthAction, context.Diagnostics);
@@ -102,7 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return false;
         }
 
-        private static async Task<Document> ConvertToMethodInvocation(CodeFixContext context, FixResolution fixResolution)
+        private static async Task<Document> ConvertToMethodInvocationAsync(CodeFixContext context, FixResolution fixResolution)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, context.CancellationToken).ConfigureAwait(false);
 
@@ -118,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return editor.GetChangedDocument();
         }
 
-        private async Task<Document> ConvertToStringLengthComparison(CodeFixContext context, FixResolution fixResolution)
+        private async Task<Document> ConvertToStringLengthComparisonAsync(CodeFixContext context, FixResolution fixResolution)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, context.CancellationToken).ConfigureAwait(false);
             SyntaxNode leftOperand = GetLeftOperand(fixResolution.ExpressionSyntax);

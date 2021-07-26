@@ -35,7 +35,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 context.RegisterCodeFix(
                     new MyCodeAction(
                         MicrosoftCodeQualityAnalyzersResources.RemoveUnusedParameterMessage,
-                        async ct => await RemoveNodes(context.Document, diagnostic, ct).ConfigureAwait(false),
+                        async ct => await RemoveNodesAsync(context.Document, diagnostic, ct).ConfigureAwait(false),
                         equivalenceKey: MicrosoftCodeQualityAnalyzersResources.RemoveUnusedParameterMessage),
                     diagnostic);
             }
@@ -58,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         /// </summary>
         protected abstract bool CanContinuouslyLeadToObjectCreationOrInvocation(SyntaxNode node);
 
-        private async Task<Solution> RemoveNodes(Document document, Diagnostic diagnostic, CancellationToken cancellationToken)
+        private async Task<Solution> RemoveNodesAsync(Document document, Diagnostic diagnostic, CancellationToken cancellationToken)
         {
             var solution = document.Project.Solution;
             var pairs = await GetNodesToRemoveAsync(document, diagnostic, cancellationToken).ConfigureAwait(false);

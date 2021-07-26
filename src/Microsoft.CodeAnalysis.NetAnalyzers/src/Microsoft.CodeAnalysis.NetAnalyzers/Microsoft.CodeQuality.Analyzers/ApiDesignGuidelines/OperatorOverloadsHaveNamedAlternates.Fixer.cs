@@ -38,10 +38,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             string title = MicrosoftCodeQualityAnalyzersResources.OperatorOverloadsHaveNamedAlternatesCodeFixTitle;
-            context.RegisterCodeFix(new MyCodeAction(title, ct => Fix(context, ct), equivalenceKey: title), context.Diagnostics.First());
+            context.RegisterCodeFix(new MyCodeAction(title, ct => FixAsync(context, ct), equivalenceKey: title), context.Diagnostics.First());
         }
 
-        private static async Task<Document> Fix(CodeFixContext context, CancellationToken cancellationToken)
+        private static async Task<Document> FixAsync(CodeFixContext context, CancellationToken cancellationToken)
         {
             var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);

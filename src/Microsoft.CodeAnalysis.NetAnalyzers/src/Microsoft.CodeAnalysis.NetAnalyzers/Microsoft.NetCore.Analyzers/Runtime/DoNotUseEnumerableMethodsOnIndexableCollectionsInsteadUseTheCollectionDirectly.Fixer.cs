@@ -82,12 +82,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var title = MicrosoftNetCoreAnalyzersResources.UseIndexer;
 
             context.RegisterCodeFix(new MyCodeAction(title,
-                                        ct => UseCollectionDirectly(context.Document, root, invocationNode, collectionSyntax, method),
+                                        ct => UseCollectionDirectlyAsync(context.Document, root, invocationNode, collectionSyntax, method),
                                         equivalenceKey: title),
                                     diagnostic);
         }
 
-        private static Task<Document> UseCollectionDirectly(Document document, SyntaxNode root, SyntaxNode invocationNode, SyntaxNode collectionSyntax, string methodName)
+        private static Task<Document> UseCollectionDirectlyAsync(Document document, SyntaxNode root, SyntaxNode invocationNode, SyntaxNode collectionSyntax, string methodName)
         {
             var generator = SyntaxGenerator.GetGenerator(document);
 
