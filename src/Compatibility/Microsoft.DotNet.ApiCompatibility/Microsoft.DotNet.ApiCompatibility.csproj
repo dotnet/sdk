@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
+    <!-- Please update RoslynMinVersion in Microsoft.NET.PackageValidation.targets when we use newer version of roslyn.-->
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.0.0-3.21372.2" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,6 +2,10 @@
 <Project>
   <UsingTask TaskName="Microsoft.DotNet.PackageValidation.ValidatePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
 
+  <PropertyGroup>
+    <RoslynMinVersion>4.0.0.0</RoslynMinVersion>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(EnablePackageValidation)' == 'true' and '$(DisablePackageBaselineValidation)' != 'true' and '$(PackageValidationBaselinePath)' == '' and '$(PackageValidationBaselineVersion)' != ''">
     <PackageDownload Include="$([MSBuild]::ValueOrDefault('$(PackageValidationBaselineName)', '$(PackageId)'))" Version="[$(PackageValidationBaselineVersion)]" />
   </ItemGroup>
@@ -10,9 +14,9 @@
           AfterTargets="Pack"
           Condition="'$(IsPackable)' == 'true' and '$(EnablePackageValidation)' == 'true'">
 
-    <PropertyGroup Condition="'$(RoslynDirectory)' == ''">
-      <RoslynDirectory>$([System.IO.Path]::GetDirectoryName($(CSharpCoreTargetsPath)))</RoslynDirectory>
-      <RoslynDirectory Condition="'$(MSBuildRuntimeType)' == 'Core'">$([System.IO.Path]::Combine('$(RoslynDirectory)', bincore))</RoslynDirectory>
+    <PropertyGroup Condition="'$(RoslynAssemblyPath)' == ''">
+      <RoslynAssemblyPath>$(RoslynTargetsPath)</RoslynAssemblyPath>
+      <RoslynAssemblyPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$([System.IO.Path]::Combine('$(RoslynAssemblyPath)', bincore))</RoslynAssemblyPath>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -35,6 +39,7 @@
       CompatibilitySuppressionFilePath="$(CompatibilitySuppressionFilePath)"
       BaselinePackageTargetPath="$(PackageValidationBaselinePath)"
       DisablePackageBaselineValidation="$(DisablePackageBaselineValidation)"
-      RoslynDirectory="$(RoslynDirectory)"/>
+      RoslynAssemblyPath="$(RoslynAssemblyPath)"
+      RoslynMinVersion="$(RoslynMinVersion)" />
   </Target>
 </Project>

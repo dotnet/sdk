@@ -57,6 +57,11 @@
         <target state="new">Package '{0}' not found. Please provide a valid package path.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateSdkVersion">
+        <source>You are using an older version of the roslyn. Please update to the latest sdk version.</source>
+        <target state="new">You are using an older version of the roslyn. Please update to the latest sdk version.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WroteSuppressions">
         <source>Successfully wrote compatibility suppressions to '{0}'.</source>
         <target state="new">Successfully wrote compatibility suppressions to '{0}'.</target>

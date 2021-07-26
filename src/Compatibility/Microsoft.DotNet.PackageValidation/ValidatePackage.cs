@@ -33,41 +33,21 @@ namespace Microsoft.DotNet.PackageValidation
 
         public string CompatibilitySuppressionFilePath { get; set; }
 
-        public string RoslynDirectory { get; set; }
+        public string RoslynAssemblyPath { get; set; }
 
-        protected override void ExecuteCore()
+        public string RoslynMinVersion { get; set; }
+
+        public override bool Execute()
         {
-            if (string.IsNullOrEmpty(RoslynDirectory))
+            if (string.IsNullOrEmpty(RoslynAssemblyPath))
             {
-                throw new ArgumentNullException(nameof(RoslynDirectory));
+                throw new ArgumentNullException(nameof(RoslynAssemblyPath));
             }
 
             AppDomain.CurrentDomain.AssemblyResolve += ResolverForRoslyn;
-
             try
             {
-                RuntimeGraph runtimeGraph = null;
-                if (!string.IsNullOrEmpty(RuntimeGraph))
-                {
-                    runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(RuntimeGraph);
-                }
-
-                Package package = NupkgParser.CreatePackage(PackageTargetPath, runtimeGraph);
-                PackageValidationLogger logger = new(Log, CompatibilitySuppressionFilePath, GenerateCompatibilitySuppressionFile);
-
-                new CompatibleTfmValidator(NoWarn, null, RunApiCompat, EnableStrictModeForCompatibleTfms, logger).Validate(package);
-                new CompatibleFrameworkInPackageValidator(NoWarn, null, EnableStrictModeForCompatibleFrameworksInPackage, logger).Validate(package);
-
-                if (!DisablePackageBaselineValidation && !string.IsNullOrEmpty(BaselinePackageTargetPath))
-                {
-                    Package baselinePackage = NupkgParser.CreatePackage(BaselinePackageTargetPath, runtimeGraph);
-                    new BaselinePackageValidator(baselinePackage, NoWarn, null, RunApiCompat, logger).Validate(package);
-                }
-
-                if (GenerateCompatibilitySuppressionFile)
-                {
-                    logger.GenerateSuppressionsFile(CompatibilitySuppressionFilePath);
-                }
+                return base.Execute();
             }
             finally
             {
@@ -75,16 +55,45 @@ namespace Microsoft.DotNet.PackageValidation
             }
         }
 
+        protected override void ExecuteCore()
+        {
+            RuntimeGraph runtimeGraph = null;
+            if (!string.IsNullOrEmpty(RuntimeGraph))
+            {
+                runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(RuntimeGraph);
+            }
+
+            Package package = NupkgParser.CreatePackage(PackageTargetPath, runtimeGraph);
+            PackageValidationLogger logger = new(Log, CompatibilitySuppressionFilePath, GenerateCompatibilitySuppressionFile);
+
+            new CompatibleTfmValidator(NoWarn, null, RunApiCompat, EnableStrictModeForCompatibleTfms, logger).Validate(package);
+            new CompatibleFrameworkInPackageValidator(NoWarn, null, EnableStrictModeForCompatibleFrameworksInPackage, logger).Validate(package);
+
+            if (!DisablePackageBaselineValidation && !string.IsNullOrEmpty(BaselinePackageTargetPath))
+            {
+                Package baselinePackage = NupkgParser.CreatePackage(BaselinePackageTargetPath, runtimeGraph);
+                new BaselinePackageValidator(baselinePackage, NoWarn, null, RunApiCompat, logger).Validate(package);
+            }
+
+            if (GenerateCompatibilitySuppressionFile)
+            {
+                logger.GenerateSuppressionsFile(CompatibilitySuppressionFilePath);
+            }
+        }
+
         private Assembly ResolverForRoslyn(object sender, ResolveEventArgs args)
         {
             AssemblyName name = new(args.Name);
-
-            return name.Name switch
+            if (name.Name == "Microsoft.CodeAnalysis" || name.Name == "Microsoft.CodeAnalysis.CSharp")
             {
-                "Microsoft.CodeAnalysis" or "Microsoft.CodeAnalysis.CSharp" =>
-                    Assembly.LoadFrom(Path.Combine(RoslynDirectory, $"{name.Name}.dll")),
-                _ => null,
-            };
+                Assembly asm = Assembly.LoadFrom(Path.Combine(RoslynAssemblyPath, $"{name.Name}.dll"));
+                if (asm.GetName().Version < new Version(RoslynMinVersion))
+                {
+                    throw new Exception(Resources.UpdateSdkVersion);
+                }
+                return asm;
+            }
+            return null;
         }
     }
 }

@@ -153,4 +153,7 @@
   <data name="Baseline" xml:space="preserve">
     <value>[Baseline]</value>
   </data>
+  <data name="UpdateSdkVersion" xml:space="preserve">
+    <value>You are using an older version of the roslyn. Please update to the latest sdk version.</value>
+  </data>
 </root>

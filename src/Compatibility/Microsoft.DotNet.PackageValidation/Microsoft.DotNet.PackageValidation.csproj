@@ -18,7 +18,7 @@
     <PackageReference Include="NuGet.Frameworks" Version="$(NuGetBuildTasksPackageVersion)" ExcludeAssets="Runtime" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetBuildTasksPackageVersion)" ExcludeAssets="Runtime" />
     <PackageReference Include="NuGet.Protocol" Version="$(NuGetBuildTasksPackageVersion)" ExcludeAssets="Runtime" />
-    <PackageReference Include="System.IO.Compression" Version="4.3.0" ExcludeAssets="Runtime" />
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" ExcludeAssets="Runtime" />
   </ItemGroup>
 
@@ -82,15 +82,8 @@
   <Target Name="_AddBuildOutputToPackageDesktop" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <ItemGroup>
       <!-- Include .NET Framework build outputs in the package under tools directory. -->
-      <BuildOutputFiles Include="$(OutputPath)**" 
+      <TfmSpecificPackageFile Include="$(OutputPath)**" 
                               PackagePath="tools/$(TargetFramework)/%(RecursiveDir)%(FileName)%(Extension)" />
-
-      <TfmSpecificPackageFile Include="@(BuildOutputFiles)" 
-                              Condition="'%(FileName)' == 'Microsoft.DotNet.PackageValidation' or 
-                                        '%(FileName)' == 'Microsoft.DotNet.PackageValidation.resources' or
-                                        '%(FileName)' == 'Microsoft.DotNet.PackageValidation.dll' or
-                                        '%(FileName)' == 'Microsoft.DotNet.ApiCompatibility' or
-                                        '%(FileName)' == 'Microsoft.DotNet.ApiCompatibility.resources'" />
     </ItemGroup>
   </Target>
 
