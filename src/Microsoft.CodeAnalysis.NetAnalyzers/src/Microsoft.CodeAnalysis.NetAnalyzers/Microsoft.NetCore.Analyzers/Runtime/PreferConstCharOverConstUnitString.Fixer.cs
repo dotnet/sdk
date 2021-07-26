@@ -50,7 +50,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             return;
                         }
 
-                        variableDeclaratorOperation = semanticModel.GetOperationWalkingUpParentChain(declaringSyntaxReference.GetSyntax(cancellationToken), cancellationToken) as IVariableDeclaratorOperation;
+                        variableDeclaratorOperation = semanticModel.GetOperationWalkingUpParentChain(await declaringSyntaxReference.GetSyntaxAsync(cancellationToken).ConfigureAwait(false), cancellationToken) as IVariableDeclaratorOperation;
 
                         if (variableDeclaratorOperation == null)
                         {
