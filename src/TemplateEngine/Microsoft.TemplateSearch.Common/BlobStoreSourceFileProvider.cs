@@ -32,11 +32,12 @@ namespace Microsoft.TemplateSearch.Common
 
         internal BlobStoreSourceFileProvider(IEngineEnvironmentSettings environmentSettings)
         {
-            _environmentSettings = environmentSettings;
+            _environmentSettings = environmentSettings ?? throw new ArgumentNullException(nameof(environmentSettings));
         }
 
         internal async Task<string> GetSearchFileAsync(string preferredMetadataLocation, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             string? localOverridePath = _environmentSettings.Environment.GetEnvironmentVariable(_localSourceSearchFileOverrideEnvVar);
             if (!string.IsNullOrEmpty(localOverridePath))
             {
@@ -44,7 +45,7 @@ namespace Microsoft.TemplateSearch.Common
                 {
                     return localOverridePath!;
                 }
-                throw new Exception($"Local search cache {localOverridePath} does not exist.");
+                throw new Exception(string.Format(LocalizableStrings.BlobStoreSourceFileProvider_Exception_LocalCacheDoesNotExist, localOverridePath));
             }
 
             string? useLocalSearchFile = _environmentSettings.Environment.GetEnvironmentVariable(_useLocalSearchFileIfPresentEnvVar);
@@ -57,7 +58,7 @@ namespace Microsoft.TemplateSearch.Common
                 }
                 else
                 {
-                    throw new Exception($"Local search cache {preferredMetadataLocation} does not exist.");
+                    throw new Exception(string.Format(LocalizableStrings.BlobStoreSourceFileProvider_Exception_LocalCacheDoesNotExist, preferredMetadataLocation));
                 }
             }
             else
@@ -97,8 +98,10 @@ namespace Microsoft.TemplateSearch.Common
         /// <returns></returns>
         private async Task AcquireFileFromCloudAsync(string searchMetadataFileLocation, CancellationToken cancellationToken)
         {
+            List<Exception> exceptionsOccurred = new List<Exception>();
             foreach (Uri searchMetadataUri in _searchMetadataUris)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     using (HttpClient client = new HttpClient())
@@ -141,17 +144,17 @@ namespace Microsoft.TemplateSearch.Common
                 catch (Exception e)
                 {
                     _environmentSettings.Host.Logger.LogDebug("Failed to download {0}, details: {1}", searchMetadataUri, e);
+                    exceptionsOccurred.Add(e);
                 }
             }
+
             if (_environmentSettings.Host.FileSystem.FileExists(searchMetadataFileLocation))
             {
-                _environmentSettings.Host.Logger.LogWarning(
-                    "Failed to update search cache file from locations {0}. The previously downloaded search cache will be used instead.",
-                    string.Join(", ", _searchMetadataUris.Select(uri => uri.ToString())));
+                _environmentSettings.Host.Logger.LogWarning(LocalizableStrings.BlobStoreSourceFileProvider_Warning_LocalCacheWillBeUsed);
             }
             else
             {
-                throw new Exception($"Failed to update search cache file from locations {string.Join(", ", _searchMetadataUris.Select(uri => uri.ToString()))}");
+                throw new AggregateException(LocalizableStrings.BlobStoreSourceFileProvider_Exception_FailedToUpdateCache, exceptionsOccurred);
             }
         }
     }

@@ -24,7 +24,7 @@ namespace Microsoft.TemplateSearch.Common
             IEngineEnvironmentSettings environmentSettings,
             IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
-            _environmentSettings = environmentSettings;
+            _environmentSettings = environmentSettings ?? throw new ArgumentNullException(nameof(environmentSettings));
             _additionalDataReaders = additionalDataReaders ?? new Dictionary<string, Func<object, object>>();
             Dictionary<string, ITemplateSearchProvider> configuredProviders = new Dictionary<string, ITemplateSearchProvider>();
             foreach (ITemplateSearchProviderFactory factory in _environmentSettings.Components.OfType<ITemplateSearchProviderFactory>())
@@ -46,6 +46,15 @@ namespace Microsoft.TemplateSearch.Common
             Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> matchingTemplatesFilter,
             CancellationToken cancellationToken)
         {
+            if (packFilter is null)
+            {
+                throw new ArgumentNullException(nameof(packFilter));
+            }
+
+            if (matchingTemplatesFilter is null)
+            {
+                throw new ArgumentNullException(nameof(matchingTemplatesFilter));
+            }
             cancellationToken.ThrowIfCancellationRequested();
 
             List<SearchResult> results = new List<SearchResult>();

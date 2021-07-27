@@ -21,9 +21,19 @@ namespace Microsoft.TemplateSearch.Common
             ILogger logger,
             IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
+            if (cacheObject is null)
+            {
+                throw new ArgumentNullException(nameof(cacheObject));
+            }
+
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             if (!TryReadVersion(logger, cacheObject, out string? version) || string.IsNullOrWhiteSpace(version))
             {
-                throw new NotSupportedException($"The template search cache is not supported.");
+                throw new NotSupportedException(LocalizableStrings.TemplateSearchCache_Exception_NotSupported);
             }
             if (version!.StartsWith("1"))
             {
@@ -39,7 +49,7 @@ namespace Microsoft.TemplateSearch.Common
             JArray? data = cacheObject.Get<JArray>(nameof(TemplatePackages));
             if (data == null)
             {
-                throw new Exception($"The template search cache data is not valid.");
+                throw new Exception(LocalizableStrings.TemplateSearchCache_Exception_NotValid);
             }
             List<TemplatePackageSearchData> templatePackages = new List<TemplatePackageSearchData>();
             foreach (JToken templatePackage in data)

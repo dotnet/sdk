@@ -16,6 +16,16 @@ namespace Microsoft.TemplateSearch.Common
     {
         internal TemplateSearchData(JObject jObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
+            if (jObject is null)
+            {
+                throw new ArgumentNullException(nameof(jObject));
+            }
+
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             TemplateInfo = BlobStorageTemplateInfo.FromJObject(jObject);
             //read additional data
             if (additionalDataReaders != null)

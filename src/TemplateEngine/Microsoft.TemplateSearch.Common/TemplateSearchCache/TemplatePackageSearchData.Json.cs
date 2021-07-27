@@ -16,6 +16,16 @@ namespace Microsoft.TemplateSearch.Common
     {
         internal TemplatePackageSearchData(JObject jObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
+            if (jObject is null)
+            {
+                throw new ArgumentNullException(nameof(jObject));
+            }
+
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             string? name = jObject.ToString(nameof(Name));
 
             Name = name!;

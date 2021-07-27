@@ -15,6 +15,11 @@ namespace Microsoft.TemplateSearch.Common
     {
         public TemplateSearchData(ITemplateInfo templateInfo, IDictionary<string, object>? data = null)
         {
+            if (templateInfo is null)
+            {
+                throw new ArgumentNullException(nameof(templateInfo));
+            }
+
             TemplateInfo = new BlobStorageTemplateInfo(templateInfo);
             AdditionalData = data ?? new Dictionary<string, object>();
         }

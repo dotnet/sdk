@@ -27,7 +27,7 @@ namespace Microsoft.TemplateSearch.Common
             {
                 throw new ArgumentException($"{nameof(hits)} cannot be null when {nameof(success)} is true", nameof(hits));
             }
-            Provider = provider;
+            Provider = provider ?? throw new ArgumentNullException(nameof(provider));
             Success = success;
             ErrorMessage = errorMessage;
             if (!success)

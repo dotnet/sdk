@@ -18,6 +18,16 @@ namespace Microsoft.TemplateSearch.Common.Providers
             IEngineEnvironmentSettings environmentSettings,
             IReadOnlyDictionary<string, Func<object, object>> additionalDataReaders)
         {
+            if (environmentSettings is null)
+            {
+                throw new ArgumentNullException(nameof(environmentSettings));
+            }
+
+            if (additionalDataReaders is null)
+            {
+                throw new ArgumentNullException(nameof(additionalDataReaders));
+            }
+
             return new NuGetMetadataSearchProvider(this, environmentSettings, additionalDataReaders);
         }
     }

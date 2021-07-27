@@ -26,9 +26,9 @@ namespace Microsoft.TemplateSearch.Common.Providers
             IEngineEnvironmentSettings environmentSettings,
             IReadOnlyDictionary<string, Func<object, object>> additionalDataReaders)
         {
-            Factory = factory;
-            _environmentSettings = environmentSettings;
-            _additionalDataReaders = additionalDataReaders;
+            Factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _environmentSettings = environmentSettings ?? throw new ArgumentNullException(nameof(environmentSettings));
+            _additionalDataReaders = additionalDataReaders ?? throw new ArgumentNullException(nameof(additionalDataReaders));
             _searchInfoFileProvider = new BlobStoreSourceFileProvider(_environmentSettings);
         }
 
@@ -39,6 +39,8 @@ namespace Microsoft.TemplateSearch.Common.Providers
             Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> matchingTemplatesFilter,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (_searchCache == null)
             {
                 _searchCache = await ConfigureAsync(cancellationToken).ConfigureAwait(false);
@@ -52,9 +54,8 @@ namespace Microsoft.TemplateSearch.Common.Providers
                 .ToList();
         }
 
-        internal async Task<TemplateSearchCache> ConfigureAsync(CancellationToken cancellationToken)
+        private async Task<TemplateSearchCache> ConfigureAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
             string searchMetadataFileLocation = Path.Combine(_environmentSettings.Paths.HostVersionSettingsDir, TemplateDiscoveryMetadataFile);
             string metadataLocation = await _searchInfoFileProvider.GetSearchFileAsync(searchMetadataFileLocation, cancellationToken).ConfigureAwait(false);
             return TemplateSearchCache.FromJObject(_environmentSettings.Host.FileSystem.ReadObject(metadataLocation), _environmentSettings.Host.Logger, _additionalDataReaders);

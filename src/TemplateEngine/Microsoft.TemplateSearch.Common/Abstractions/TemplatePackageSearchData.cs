@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateSearch.Common.Abstractions;
@@ -14,7 +15,18 @@ namespace Microsoft.TemplateSearch.Common
     {
         public TemplatePackageSearchData(IPackageInfo packInfo, IEnumerable<TemplateSearchData> templates, IDictionary<string, object>? data = null)
         {
-            Name = packInfo.Name;
+            if (packInfo is null)
+            {
+                throw new ArgumentNullException(nameof(packInfo));
+            }
+
+            if (templates is null)
+            {
+                throw new ArgumentNullException(nameof(templates));
+            }
+
+            Name = !string.IsNullOrWhiteSpace(packInfo.Name) ? packInfo.Name
+                : throw new ArgumentException($"{nameof(packInfo.Name)} should not be null or empty", nameof(packInfo));
             Version = packInfo.Version;
             TotalDownloads = packInfo.TotalDownloads;
             Templates = templates.ToList();

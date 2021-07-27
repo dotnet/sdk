@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="fr" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="BlobStoreSourceFileProvider_Exception_FailedToUpdateCache">
+        <source>Failed to update search cache.</source>
+        <target state="new">Failed to update search cache.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BlobStoreSourceFileProvider_Exception_LocalCacheDoesNotExist">
+        <source>Local search cache {0} does not exist.</source>
+        <target state="new">Local search cache {0} does not exist.</target>
+        <note>{0} file path to search cache</note>
+      </trans-unit>
+      <trans-unit id="BlobStoreSourceFileProvider_Warning_LocalCacheWillBeUsed">
+        <source>Failed to update search cache. Local search cache will be used instead.</source>
+        <target state="new">Failed to update search cache. Local search cache will be used instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateSearchCache_Exception_NotSupported">
+        <source>The template search cache data is not supported.</source>
+        <target state="new">The template search cache data is not supported.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateSearchCache_Exception_NotValid">
+        <source>The template search cache data is not valid.</source>
+        <target state="new">The template search cache data is not valid.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
