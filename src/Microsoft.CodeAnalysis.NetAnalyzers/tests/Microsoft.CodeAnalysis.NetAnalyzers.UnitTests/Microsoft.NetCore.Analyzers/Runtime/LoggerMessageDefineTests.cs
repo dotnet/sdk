@@ -28,8 +28,8 @@ namespace Microsoft.Extensions.Logging.Analyzer
         }
 
         [Theory]
-        [MemberData(nameof(GenerateTemplateAndDefineUsageIgnoresCA1848ForBeginScope), @"{|CA2254:$""{string.Empty}""|}", "")]
-        [MemberData(nameof(GenerateTemplateAndDefineUsageIgnoresCA1848ForBeginScope), @"{|CA2254:""string"" + 2|}", "")]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:$""{string.Empty}""|}", "11", false)]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:""string"" + 2|}", "11", false)]
         public async Task CA2254IsProducedForDynamicFormatArgument(string format)
         {
             await TriggerCodeAsync(format);

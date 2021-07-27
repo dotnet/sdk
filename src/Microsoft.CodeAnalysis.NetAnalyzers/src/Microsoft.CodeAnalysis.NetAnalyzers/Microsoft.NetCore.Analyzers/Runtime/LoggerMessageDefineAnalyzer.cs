@@ -121,9 +121,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             var methodSymbol = invocation.TargetMethod;
             var containingType = methodSymbol.ContainingType;
+            bool usingLoggerExtensionsTypes = false;
 
-            if (containingType.Equals(loggerExtensionsType, SymbolEqualityComparer.Default))
+            if (containingType.Equals(loggerExtensionsType, SymbolEqualityComparer.Default)) // the condition I want
             {
+                usingLoggerExtensionsTypes = true;
                 context.ReportDiagnostic(invocation.CreateDiagnostic(CA1848Rule, invocation.Syntax.GetLocation(), methodSymbol.Name));
             }
             else if (
@@ -185,17 +187,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 if (formatExpression is not null)
                 {
-                    AnalyzeFormatArgument(context, formatExpression, paramsCount, argsIsArray);
+                    AnalyzeFormatArgument(context, formatExpression, paramsCount, argsIsArray, usingLoggerExtensionsTypes);
                 }
             }
         }
 
-        private void AnalyzeFormatArgument(OperationAnalysisContext context, IOperation formatExpression, int paramsCount, bool argsIsArray)
+        private void AnalyzeFormatArgument(OperationAnalysisContext context, IOperation formatExpression, int paramsCount, bool argsIsArray, bool usingLoggerExtensionsTypes)
         {
             var text = TryGetFormatText(formatExpression);
             if (text == null)
             {
-                context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2254Rule, formatExpression.Syntax.GetLocation()));
+                if (usingLoggerExtensionsTypes)
+                {
+                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2254Rule, formatExpression.Syntax.GetLocation()));
+                }
                 return;
             }
 
