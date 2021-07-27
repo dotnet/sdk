@@ -1,15 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
     public class NugetPackInfo : IDownloadedPackInfo
     {
-        private IPackInfo _info;
+        private ITemplatePackageInfo _info;
 
-        internal NugetPackInfo(IPackInfo info, string filePath)
+        internal NugetPackInfo(ITemplatePackageInfo info, string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -20,11 +21,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             Path = filePath;
         }
 
-        public string VersionedPackageIdentity => $"{Id}::{Version}";
+        public string Name => _info.Name;
 
-        public string Id => _info.Id;
-
-        public string Version => _info.Version;
+        public string? Version => _info.Version;
 
         public string Path { get; private set; }
 

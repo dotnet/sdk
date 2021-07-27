@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli;
+using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 using Newtonsoft.Json;
 
@@ -15,7 +16,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         private Dictionary<string, HostSpecificTemplateData> _hostDataForPackByTemplate = new Dictionary<string, HostSpecificTemplateData>(StringComparer.OrdinalIgnoreCase);
 
-        private Dictionary<IPackInfo, Dictionary<string, HostSpecificTemplateData>> _hostDataForPack = new Dictionary<IPackInfo, Dictionary<string, HostSpecificTemplateData>>(new IPackInfoComparer());
+        private Dictionary<ITemplatePackageInfo, Dictionary<string, HostSpecificTemplateData>> _hostDataForPack = new Dictionary<ITemplatePackageInfo, Dictionary<string, HostSpecificTemplateData>>(new ITemplatePackageInfoComparer());
 
         internal CliHostDataProducer()
         {
@@ -47,12 +48,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
             _hostDataForPack[packInfo] = dataForPack;
         }
 
-        public object? GetDataForPack(IPackInfo packInfo)
+        public object? GetDataForPack(ITemplatePackageInfo packInfo)
         {
             return null;
         }
 
-        public object? GetDataForTemplate(IPackInfo packInfo, string templateIdentity)
+        public object? GetDataForTemplate(ITemplatePackageInfo packInfo, string templateIdentity)
         {
             if (!_hostDataForPack.TryGetValue(packInfo, out Dictionary<string, HostSpecificTemplateData>? packData))
             {
@@ -65,9 +66,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
             return data;
         }
 
-        private class IPackInfoComparer : IEqualityComparer<IPackInfo>
+        private class ITemplatePackageInfoComparer : IEqualityComparer<ITemplatePackageInfo>
         {
-            public bool Equals(IPackInfo? x, IPackInfo? y)
+            public bool Equals(ITemplatePackageInfo? x, ITemplatePackageInfo? y)
             {
                 if (x == null && y == null)
                 {
@@ -79,15 +80,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                     return false;
                 }
 
-                return x.Id.Equals(y.Id, StringComparison.OrdinalIgnoreCase) && x.Version.Equals(y.Version, StringComparison.OrdinalIgnoreCase);
+                return x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase)
+                    && (x.Version?.Equals(y.Version, StringComparison.OrdinalIgnoreCase) ?? x.Version == y.Version);
             }
 
-            public int GetHashCode([DisallowNull] IPackInfo obj)
+            public int GetHashCode([DisallowNull] ITemplatePackageInfo obj)
             {
                 return new
                 {
-                    a = obj.Version.ToLowerInvariant(),
-                    b = obj.Id.ToLowerInvariant()
+                    a = obj.Version?.ToLowerInvariant(),
+                    b = obj.Name.ToLowerInvariant()
                 }.GetHashCode();
             }
         }

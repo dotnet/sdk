@@ -31,11 +31,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             Dictionary<string, PackToTemplateEntry> packToTemplateMap = packSourceCheckResults.PackCheckData
                             .Where(r => r.AnyTemplates)
                             .ToDictionary(
-                                r => r.PackInfo.Id,
+                                r => r.PackInfo.Name,
                                 r =>
                                 {
                                     PackToTemplateEntry packToTemplateEntry = new PackToTemplateEntry(
-                                            r.PackInfo.Version,
+                                            r.PackInfo.Version ?? "",
                                             r.FoundTemplates.Select(t => new TemplateIdentificationEntry(t.Identity, t.GroupIdentity)).ToList());
 
                                     if (r.PackInfo is NugetPackInfo npi)

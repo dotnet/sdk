@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -54,7 +55,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 
         public string Name { get; private set; }
 
-        public async IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync([EnumeratorCancellation] CancellationToken token)
+        public async IAsyncEnumerable<ITemplatePackageInfo> GetCandidatePacksAsync([EnumeratorCancellation] CancellationToken token)
         {
             int skip = 0;
             bool done = false;
@@ -96,16 +97,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             while (!done && !_runOnlyOnePage);
         }
 
-        public async Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo, CancellationToken token)
+        public async Task<IDownloadedPackInfo?> DownloadPackageAsync(ITemplatePackageInfo packinfo, CancellationToken token)
         {
-            string packageFileName = string.Format(DownloadPackageFileNameFormat, packinfo.Id, packinfo.Version);
+            string packageFileName = string.Format(DownloadPackageFileNameFormat, packinfo.Name, packinfo.Version);
             string outputPackageFileNameFullPath = Path.Combine(_packageTempPath, packageFileName);
 
             try
             {
                 using Stream packageStream = File.Create(outputPackageFileNameFullPath);
                 if (await _downloadResource.CopyNupkgToStreamAsync(
-                    packinfo.Id,
+                    packinfo.Name,
                     new NuGetVersion(packinfo.Version),
                     packageStream,
                     _cacheContext,
@@ -125,7 +126,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed to download package {packinfo.Id} {packinfo.Version}, reason: {e}.");
+                Console.WriteLine($"Failed to download package {packinfo.Name} {packinfo.Version}, reason: {e}.");
                 return null;
             }
         }

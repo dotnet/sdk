@@ -31,9 +31,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
             {
                 foreach (string package in PackagesToBeSkipped)
                 {
-                    if (packInfo.Id.StartsWith(package, StringComparison.OrdinalIgnoreCase))
+                    if (packInfo.Name.StartsWith(package, StringComparison.OrdinalIgnoreCase))
                     {
-                        return new PreFilterResult(_FilterId, isFiltered: true, $"Package {packInfo.Id} is skipped as it matches the package name to be permanently skipped.");
+                        return new PreFilterResult(_FilterId, isFiltered: true, $"Package {packInfo.Name} is skipped as it matches the package name to be permanently skipped.");
                     }
                 }
                 return new PreFilterResult(_FilterId, isFiltered: false);

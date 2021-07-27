@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
@@ -16,9 +17,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templates, IEngineEnvironmentSettings environment);
 
-        object? GetDataForPack(IPackInfo packInfo);
+        object? GetDataForPack(ITemplatePackageInfo packInfo);
 
-        object? GetDataForTemplate(IPackInfo packInfo, string templateIdentity);
+        object? GetDataForTemplate(ITemplatePackageInfo packInfo, string templateIdentity);
 
     }
 }

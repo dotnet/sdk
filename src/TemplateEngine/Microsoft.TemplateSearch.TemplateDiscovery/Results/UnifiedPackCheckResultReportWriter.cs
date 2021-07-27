@@ -73,7 +73,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                         packData[producer.DataUniqueName] = producerData;
                     }
                 }
-                packages.Add(new TemplatePackageSearchData(new PackInfo(package.PackInfo.Id, package.PackInfo.Version, package.PackInfo.TotalDownloads), templates, packData));
+                packages.Add(new TemplatePackageSearchData(package.PackInfo, templates, packData));
             }
             return new TemplateSearchCache(packages);
         }
@@ -81,7 +81,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         private static void WriteNonTemplatePackList(string reportPath, IReadOnlyList<PackCheckResult> packCheckResults)
         {
             List<string> packsWithoutTemplates = packCheckResults.Where(r => !r.AnyTemplates)
-                                                                .Select(r => r.PackInfo.Id)
+                                                                .Select(r => r.PackInfo.Name)
                                                                 .ToList();
             string serializedContent = JsonConvert.SerializeObject(packsWithoutTemplates, Formatting.Indented);
 

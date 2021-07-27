@@ -45,7 +45,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 
         private static ITemplateEngineHost CreateHost(IDownloadedPackInfo packInfo)
         {
-            string hostIdentifier = HostIdentifierBase + packInfo.Id;
+            string hostIdentifier = HostIdentifierBase + packInfo.Name;
 
             ITemplateEngineHost host = TemplateEngineHostHelper.CreateHost(hostIdentifier);
 

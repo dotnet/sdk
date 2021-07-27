@@ -16,7 +16,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
         {
             Func<IDownloadedPackInfo, PreFilterResult> previouslyRejectedPackFilter = (packInfo) =>
             {
-                if (nonTemplatePacks.Contains(packInfo.Id))
+                if (nonTemplatePacks.Contains(packInfo.Name))
                 {
                     return new PreFilterResult(FilterId, isFiltered: true, "Package was previously examined, and does not contain templates.");
                 }

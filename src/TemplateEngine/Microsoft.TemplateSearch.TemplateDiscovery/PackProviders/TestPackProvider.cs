@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using Microsoft.TemplateSearch.Common.Abstractions;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
 {
@@ -26,12 +27,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
             return Task.FromResult(0);
         }
 
-        public Task<IDownloadedPackInfo?> DownloadPackageAsync(IPackInfo packinfo, CancellationToken token)
+        public Task<IDownloadedPackInfo?> DownloadPackageAsync(ITemplatePackageInfo packinfo, CancellationToken token)
         {
             return Task.FromResult((IDownloadedPackInfo?)packinfo);
         }
 
-        public async IAsyncEnumerable<IPackInfo> GetCandidatePacksAsync([EnumeratorCancellation]CancellationToken token)
+        public async IAsyncEnumerable<ITemplatePackageInfo> GetCandidatePacksAsync([EnumeratorCancellation]CancellationToken token)
         {
             var directoryInfo = new DirectoryInfo(_folder);
 
@@ -48,21 +49,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
             return Task.FromResult(new DirectoryInfo(_folder).EnumerateFiles("*.nupkg", SearchOption.AllDirectories).Count());
         }
 
-        private class TestPackInfo : IPackInfo, IDownloadedPackInfo
+        private class TestPackInfo : ITemplatePackageInfo, IDownloadedPackInfo
         {
             internal TestPackInfo(string path)
             {
                 Path = path;
-                Id = System.IO.Path.GetFileNameWithoutExtension(path);
+                Name = System.IO.Path.GetFileNameWithoutExtension(path);
             }
 
-            public string Id { get; }
+            public string Name { get; }
 
             public string Version => "1.0";
 
             public long TotalDownloads => 0;
-
-            public string VersionedPackageIdentity => $"{Id}::{Version}";
 
             public string Path { get; }
         }

@@ -2,13 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine;
-using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
+using Microsoft.TemplateSearch.Common.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
-    internal class NugetPackageSourceInfo : IPackInfo, IEquatable<IPackInfo>
+    internal class NugetPackageSourceInfo : ITemplatePackageInfo, IEquatable<ITemplatePackageInfo>
     {
         internal NugetPackageSourceInfo(string id, string version)
         {
@@ -22,20 +22,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
                 throw new ArgumentException($"'{nameof(version)}' cannot be null or whitespace.", nameof(version));
             }
 
-            Id = id;
+            Name = id;
             Version = version;
         }
 
-        public string VersionedPackageIdentity
-        {
-            get
-            {
-                return $"{Id}::{Version}";
-            }
-        }
-
         [JsonProperty]
-        public string Id { get; private set; }
+        public string Name { get; private set; }
 
         [JsonProperty]
         public string Version { get; private set; }
@@ -45,7 +37,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 
         internal static NugetPackageSourceInfo FromJObject (JObject entry)
         {
-            string id = entry.ToString(nameof(Id)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Id)} property.", nameof(entry));
+            string id = entry.ToString(nameof(Name)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Name)} property.", nameof(entry));
             string version = entry.ToString(nameof(Version)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Version)} property.", nameof(entry));
             NugetPackageSourceInfo sourceInfo = new NugetPackageSourceInfo(id, version);
             sourceInfo.TotalDownloads = entry.ToInt32(nameof(TotalDownloads));
@@ -58,24 +50,24 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
         {
             if (obj is NugetPackageSourceInfo info)
             {
-                return Id.Equals(info.Id, StringComparison.OrdinalIgnoreCase) && Version.Equals(info.Version, StringComparison.OrdinalIgnoreCase);
+                return Name.Equals(info.Name, StringComparison.OrdinalIgnoreCase) && Version.Equals(info.Version, StringComparison.OrdinalIgnoreCase);
             }
             return base.Equals(obj);
         }
 
         public override int GetHashCode()
         {
-            return (Id, Version).GetHashCode();
+            return (Name, Version).GetHashCode();
         }
 
-        public bool Equals(IPackInfo? other)
+        public bool Equals(ITemplatePackageInfo? other)
         {
             if (other == null)
             {
                 return false;
             }
 
-            return Id.Equals(other.Id, StringComparison.OrdinalIgnoreCase) && Version.Equals(other.Version, StringComparison.OrdinalIgnoreCase);
+            return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase) && Version.Equals(other.Version, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
