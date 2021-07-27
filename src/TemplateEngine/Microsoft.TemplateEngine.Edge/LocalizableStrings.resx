@@ -231,5 +231,6 @@ Details: {0}.</value>
   <data name="TemplatePackageManager_Error_FailedToScan" xml:space="preserve">
     <value>Failed to scan {0}.
 Details: {1}</value>
+    <comment>last line should not end with a period, period is a part of the format entry</comment>
   </data>
 </root>

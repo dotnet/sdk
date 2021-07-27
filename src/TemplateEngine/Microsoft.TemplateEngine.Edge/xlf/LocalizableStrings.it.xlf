@@ -190,7 +190,7 @@ Dettagli: {0}.</target>
 Details: {1}</source>
         <target state="needs-review-translation">Non è stato possibile analizzare {0}.
 Dettagli: {1}.</target>
-        <note />
+        <note>last line should not end with a period, period is a part of the format entry</note>
       </trans-unit>
     </body>
   </file>

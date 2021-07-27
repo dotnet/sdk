@@ -190,7 +190,7 @@ Details: {0}.</source>
 Details: {1}</source>
         <target state="needs-review-translation">未能扫描 {0}"。
 : {1}。</target>
-        <note />
+        <note>last line should not end with a period, period is a part of the format entry</note>
       </trans-unit>
     </body>
   </file>

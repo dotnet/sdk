@@ -190,7 +190,7 @@ Details: {0}.</source>
 Details: {1}</source>
         <target state="needs-review-translation">{0}을(를) 검사하지 못했습니다.
 세부 정보: {1}.</target>
-        <note />
+        <note>last line should not end with a period, period is a part of the format entry</note>
       </trans-unit>
     </body>
   </file>
