@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. 
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -12,9 +11,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class DetectPreviewFeatureUnitTests
     {
-        private static async Task TestCS(string csInput)
+        private static VerifyCS.Test TestCS(string csInput)
         {
-            await new VerifyCS.Test
+            return new VerifyCS.Test
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
                 TestState =
@@ -24,14 +23,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         csInput
                     }
                 },
-                MarkupOptions = MarkupOptions.UseFirstDescriptor,
                 ReferenceAssemblies = AdditionalMetadataReferences.Net60,
-            }.RunAsync();
+            };
         }
 
-        private static async Task TestCSPreview(string csInput)
+        private static VerifyCS.Test TestCSPreview(string csInput)
         {
-            await new VerifyCS.Test
+            return new VerifyCS.Test
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
                 TestState =
@@ -41,9 +39,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         csInput
                     }
                 },
-                MarkupOptions = MarkupOptions.UseFirstDescriptor,
                 ReferenceAssemblies = AdditionalMetadataReferences.Net60,
-            }.RunAsync();
+            };
         }
 
         [Fact]
@@ -59,7 +56,7 @@ namespace Preview_Feature_Scratch
         static void Main(string[] args)
         {
             var a = new Fraction();
-            var b = [|+a|];
+            var b = {|#0:+a|};
         }
     }
 
@@ -71,7 +68,9 @@ namespace Preview_Feature_Scratch
 }
 ";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("op_UnaryPlus"));
+            await test.RunAsync();
         }
 
         [Fact]
@@ -97,7 +96,7 @@ namespace Preview_Feature_Scratch
             {
                 Console.WriteLine(""Foo"");
             }
-            catch [|(DerivedException ex)|]
+            catch {|#0:(DerivedException ex)|}
             {
                 throw;
             }
@@ -106,234 +105,250 @@ namespace Preview_Feature_Scratch
 }
 ";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("DerivedException"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestArrayOrPreviewTypes()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
-    public class Program
-    {
-        static void Main(string[] args)
-        {
-            Lib[] array = [|new Lib[] { }|];
+            public class Program
+            {
+                static void Main(string[] args)
+                {
+                    Lib[] array = {|#0:new Lib[] { }|};
+                }
+            }
+
+            [RequiresPreviewFeatures]
+            public class Lib
+            {
+            }
         }
-    }
+        ";
 
-    [RequiresPreviewFeatures]
-    public class Lib
-    {
-    }
-}
-";
-
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Lib"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestPreviewMethodBinaryOperator()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
-    public class Program
-    {
-        static void Main(string[] args)
-        {
-            var a = new Fraction();
-            var b = new Fraction();
-            b = [|b + a|];
-        }
-    }
+            public class Program
+            {
+                static void Main(string[] args)
+                {
+                    var a = new Fraction();
+                    var b = new Fraction();
+                    b = {|#0:b + a|};
+                }
+            }
 
-    public readonly struct Fraction
-    {
-        [RequiresPreviewFeatures]
-        public static Fraction operator +(Fraction a, Fraction b) => a;
-    }
-}
-";
-            await TestCS(csInput);
+            public readonly struct Fraction
+            {
+                [RequiresPreviewFeatures]
+                public static Fraction operator +(Fraction a, Fraction b) => a;
+            }
+        }
+        ";
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("op_Addition"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestUnmarkedPreviewPropertyCallingPreviewProperty()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
-[RequiresPreviewFeatures]
-public class Program
-{
-    public bool CallSite => UnmarkedPreviewClass.SomeStaticProperty;
-}
-
-public class UnmarkedPreviewClass
-{
         [RequiresPreviewFeatures]
-        public static bool SomeStaticProperty => false;
-}
-}
-";
+        public class Program
+        {
+            public bool CallSite => UnmarkedPreviewClass.SomeStaticProperty;
+        }
 
-            await TestCS(csInput);
+        public class UnmarkedPreviewClass
+        {
+                [RequiresPreviewFeatures]
+                public static bool SomeStaticProperty => false;
+        }
+        }
+        ";
+
+            var test = TestCS(csInput);
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestUnmarkedPreviewMethodCallingPreviewMethod()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
-[RequiresPreviewFeatures]
-public class Program
-{
-    public bool CallSite()
-    {
-        return UnmarkedPreviewClass.SomeStaticMethod();
-    }
-}
-
-public class UnmarkedPreviewClass
-{
         [RequiresPreviewFeatures]
-        public static bool SomeStaticMethod()
+        public class Program
         {
-            return false;
+            public bool CallSite()
+            {
+                return UnmarkedPreviewClass.SomeStaticMethod();
+            }
         }
-}
-}
-";
 
-            await TestCS(csInput);
+        public class UnmarkedPreviewClass
+        {
+                [RequiresPreviewFeatures]
+                public static bool SomeStaticMethod()
+                {
+                    return false;
+                }
+        }
+        }
+        ";
+
+            var test = TestCS(csInput);
+            await test.RunAsync();
         }
         [Fact]
         public async Task TestPreviewMethodCallingPreviewMethod()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
-public class Program
-{
-    [RequiresPreviewFeatures]
-    public virtual void PreviewMethod()  { }
-   
-    [RequiresPreviewFeatures]
-    void CallSite()
-    {
-        PreviewMethod();
-    }
-}
-}
-";
+        public class Program
+        {
+            [RequiresPreviewFeatures]
+            public virtual void PreviewMethod()  { }
 
-            await TestCS(csInput);
+            [RequiresPreviewFeatures]
+            void CallSite()
+            {
+                PreviewMethod();
+            }
+        }
+        }
+        ";
+
+            var test = TestCS(csInput);
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestDerivedClassExtendsUnmarkedClass()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
-    public partial class UnmarkedPreviewClass
-    {
-        [RequiresPreviewFeatures]
-        public virtual void UnmarkedVirtualMethodInPreviewClass() { }
-    }
+            public partial class UnmarkedPreviewClass
+            {
+                [RequiresPreviewFeatures]
+                public virtual void UnmarkedVirtualMethodInPreviewClass() { }
+            }
 
-    public partial class Derived : UnmarkedPreviewClass
-    {
-        public override void [|UnmarkedVirtualMethodInPreviewClass|]()
-        {
-            throw new NotImplementedException();
+            public partial class Derived : UnmarkedPreviewClass
+            {
+                public override void {|#0:UnmarkedVirtualMethodInPreviewClass|}()
+                {
+                    throw new NotImplementedException();
+                }
+            }
         }
-    }
-}
-";
+        ";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("UnmarkedVirtualMethodInPreviewClass"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestMethodInvocation_Simple()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    public class Program
-    {
-        [RequiresPreviewFeatures]
-        public virtual void PreviewMethod()
-        {
+            public class Program
+            {
+                [RequiresPreviewFeatures]
+                public virtual void PreviewMethod()
+                {
 
-        }
+                }
 
-        static void Main(string[] args)
-        {
-            var prog = new Program();
-            [|prog.PreviewMethod()|];
-        }
-    }
-}";
+                static void Main(string[] args)
+                {
+                    var prog = new Program();
+                    {|#0:prog.PreviewMethod()|};
+                }
+            }
+        }";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("PreviewMethod"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestMethodInvocation_DeclareDerivedMethod()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    public class Program
-    {
-        [RequiresPreviewFeatures]
-        public virtual void PreviewMethod()
-        {
+            public class Program
+            {
+                [RequiresPreviewFeatures]
+                public virtual void PreviewMethod()
+                {
 
-        }
+                }
 
-        static void Main(string[] args)
-        {
-        }
-    }
+                static void Main(string[] args)
+                {
+                }
+            }
 
-    public class Derived : Program
-    {
-        public Derived() : base()
-        {
-        }
+            public class Derived : Program
+            {
+                public Derived() : base()
+                {
+                }
 
-        public override void [|PreviewMethod|]()
-        {
-            [|base.PreviewMethod()|];
-        }
-    }
-}";
+                public override void {|#0:PreviewMethod|}()
+                {
+                    {|#1:base.PreviewMethod()|};
+                }
+            }
+        }";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("PreviewMethod"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("PreviewMethod"));
+            await test.RunAsync();
         }
 
         [Theory]
@@ -342,140 +357,80 @@ namespace Preview_Feature_Scratch
         public async Task TestClassOrStruct(string classOrStruct)
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @$"
 
-    [RequiresPreviewFeatures]
-    {classOrStruct} Program
-    {{
-        static void Main(string[] args)
-        {{
-            new Program();
-        }}
-    }}
-}}";
+            [RequiresPreviewFeatures]
+            {classOrStruct} Program
+            {{
+                static void Main(string[] args)
+                {{
+                    new Program();
+                }}
+            }}
+        }}";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestAbstractClass()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    class [|Program|] : AbClass
-    {
-        static void Main(string[] args)
-        {
-            Program prog = new Program();
-            prog.Bar();
-            [|prog.FooBar()|];
-            [|prog.BarImplemented()|];
-        }
+            class {|#0:Program|} : AbClass
+            {
+                static void Main(string[] args)
+                {
+                    Program prog = new Program();
+                    prog.Bar();
+                    {|#1:prog.FooBar()|};
+                    {|#2:prog.BarImplemented()|};
+                }
 
-        public override void [|Bar|]()
-        {
-            throw new NotImplementedException();
-        }
+                public override void {|#3:Bar|}()
+                {
+                    throw new NotImplementedException();
+                }
 
-        [RequiresPreviewFeatures]
-        public override void FooBar()
-        {
-            throw new NotImplementedException();
-        }
-    }
+                [RequiresPreviewFeatures]
+                public override void FooBar()
+                {
+                    throw new NotImplementedException();
+                }
+            }
 
-    [RequiresPreviewFeatures]
-    public abstract class AbClass
-    {
-        [RequiresPreviewFeatures]
-        public abstract void Bar();
+            [RequiresPreviewFeatures]
+            public abstract class AbClass
+            {
+                [RequiresPreviewFeatures]
+                public abstract void Bar();
 
-        [RequiresPreviewFeatures]
-        public abstract void FooBar();
+                [RequiresPreviewFeatures]
+                public abstract void FooBar();
 
-        [RequiresPreviewFeatures]
-        public void BarImplemented() => throw new NotImplementedException();
-    }
-}";
+                [RequiresPreviewFeatures]
+                public void BarImplemented() => throw new NotImplementedException();
+            }
+        }";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Program"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("FooBar"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("BarImplemented"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(3).WithArguments("Bar"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestUnmarkedPreviewProperty()
-        {
-            var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
-@"
-
-    class Program : IProgram
-    {
-        static void Main(string[] args)
-        {
-            new Program();
-        }
-
-        public bool [|MarkedPropertyInInterface|] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); } // [] if not opted in yet
-    }
-
-    public interface IProgram
-    {
-        [RequiresPreviewFeatures]
-        bool MarkedPropertyInInterface { get; set; }
-    }
-}
-
-    ";
-
-            await TestCS(csInput);
-        }
-
-        [Fact]
-        public async Task TestUnmarkedPreviewInterface()
-        {
-            var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
-@"
-
-    class Program : IProgram
-    {
-        static void Main(string[] args)
-        {
-            new Program();
-        }
-
-        public void [|MarkedMethodInInterface|]()
-        {
-            throw new NotImplementedException();
-        }        
-    }
-
-    public interface IProgram
-    {
-        [RequiresPreviewFeatures]
-        void MarkedMethodInInterface();
-    }
-}
-
-    ";
-
-            await TestCS(csInput);
-
-        }
-
-        [Fact(Skip = "Not yet working")]
-        public async Task TestPreviewLanguageFeatures()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -490,225 +445,316 @@ namespace Preview_Feature_Scratch
                     new Program();
                 }
 
-                public static bool StaticMethod() => throw null;
-                public static bool AProperty => throw null;
+                public bool {|#0:MarkedPropertyInInterface|} { get => throw new NotImplementedException(); set => throw new NotImplementedException(); } // [] if not opted in yet
             }
 
             public interface IProgram
             {
-                public static abstract bool [|StaticMethod|]();
-                public static abstract bool [|AProperty|] { [|get|]; }
+                [RequiresPreviewFeatures]
+                bool MarkedPropertyInInterface { get; set; }
             }
         }
 
             ";
 
-            await TestCSPreview(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("MarkedPropertyInInterface"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestUnmarkedPreviewInterface()
+        {
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
+@"
+
+            class Program : IProgram
+            {
+                static void Main(string[] args)
+                {
+                    new Program();
+                }
+
+                public void {|#0:MarkedMethodInInterface|}()
+                {
+                    throw new NotImplementedException();
+                }        
+            }
+
+            public interface IProgram
+            {
+                [RequiresPreviewFeatures]
+                void MarkedMethodInInterface();
+            }
+        }
+
+            ";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("MarkedMethodInInterface"));
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestPreviewLanguageFeatures()
+        {
+            var csInput = @" 
+                using System.Runtime.Versioning; using System;
+                namespace Preview_Feature_Scratch
+                {" +
+@"
+
+                    class Program : IProgram
+                    {
+                        static void Main(string[] args)
+                        {
+                            new Program();
+                        }
+
+                        public static bool StaticMethod() => throw null;
+                        public static bool AProperty => throw null;
+                    }
+
+                    public interface IProgram
+                    {
+                        public static abstract bool {|#0:StaticMethod|}();
+                        public static abstract bool {|#1:AProperty|} { {|#2:get|}; }
+                    }
+                }
+
+                    ";
+
+            var test = TestCSPreview(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.StaticAbstractIsPreviewFeatureRule).WithLocation(0).WithArguments("StaticMethod"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.StaticAbstractIsPreviewFeatureRule).WithLocation(1).WithArguments("AProperty"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.StaticAbstractIsPreviewFeatureRule).WithLocation(2).WithArguments("get"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestMarkedPreviewInterface()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    class Program : IProgram
-    {
-        static void Main(string[] args)
-        {
-            new Program();
+            class Program : IProgram
+            {
+                static void Main(string[] args)
+                {
+                    new Program();
+                }
+
+                public void {|#0:UnmarkedMethodInMarkedInterface|}() { }
+
+            }
+
+            [RequiresPreviewFeatures]
+            public interface IProgram
+            {
+                public void UnmarkedMethodInMarkedInterface() { }
+            }
         }
 
-        public void [|UnmarkedMethodInMarkedInterface|]() { }
+            ";
 
-    }
-
-    [RequiresPreviewFeatures]
-    public interface IProgram
-    {
-        public void UnmarkedMethodInMarkedInterface() { }
-    }
-}
-
-    ";
-
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("UnmarkedMethodInMarkedInterface"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestMarkedEmptyPreviewInterface()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    class [|Program|] : IProgram
-    {
-        static void Main(string[] args)
-        {
-            new Program();
+            class {|#0:Program|} : IProgram
+            {
+                static void Main(string[] args)
+                {
+                    new Program();
+                }
+            }
+
+            [RequiresPreviewFeatures]
+            public interface IProgram
+            {
+            }
         }
-    }
 
-    [RequiresPreviewFeatures]
-    public interface IProgram
-    {
-    }
-}
+            ";
 
-    ";
-
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsEmptyPreviewInterfaceRule).WithLocation(0).WithArguments("Program"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestInterfaceMethodInvocation()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    class Program : IProgram
-    {
-        static void Main(string[] args)
-        {
-            Program progObject = new Program();
-            IProgram prog = progObject;
-            [|prog.Foo()|];
-            [|prog.FooDelegate()|];
-            bool prop = [|prog.AProperty|];
-            bool anotherProp = [|progObject.AnotherInterfaceProperty|];
-            Console.WriteLine(""prop.ToString() + anotherProp.ToString()"");
+            class Program : IProgram
+            {
+                static void Main(string[] args)
+                {
+                    Program progObject = new Program();
+                    IProgram prog = progObject;
+                    {|#0:prog.Foo()|};
+                    {|#1:prog.FooDelegate()|};
+                    bool prop = {|#2:prog.AProperty|};
+                    bool anotherProp = {|#3:progObject.AnotherInterfaceProperty|};
+                    Console.WriteLine(""prop.ToString() + anotherProp.ToString()"");
+                }
+
+                public IProgram.IProgramDelegate {|#4:FooDelegate|}()
+                {
+                    throw new NotImplementedException();
+                }
+
+                [RequiresPreviewFeatures]
+                public bool AnotherInterfaceProperty { get; set; }
+            }
+
+            public interface IProgram
+            {
+                [RequiresPreviewFeatures]
+                public bool AProperty => true;
+
+                public bool AnotherInterfaceProperty { get; set; }
+
+                public delegate void IProgramDelegate();
+
+                [RequiresPreviewFeatures]
+                public void Foo()
+                {
+                    throw new NotImplementedException();
+                }
+
+                [RequiresPreviewFeatures]
+                public IProgramDelegate FooDelegate();
+
+            }
         }
 
-        public IProgram.IProgramDelegate [|FooDelegate|]()
-        {
-            throw new NotImplementedException();
-        }
+            ";
 
-        [RequiresPreviewFeatures]
-        public bool AnotherInterfaceProperty { get; set; }
-    }
-
-    public interface IProgram
-    {
-        [RequiresPreviewFeatures]
-        public bool AProperty => true;
-
-        public bool AnotherInterfaceProperty { get; set; }
-
-        public delegate void IProgramDelegate();
-
-        [RequiresPreviewFeatures]
-        public void Foo()
-        {
-            throw new NotImplementedException();
-        }
-
-        [RequiresPreviewFeatures]
-        public IProgramDelegate FooDelegate();
-
-    }
-}
-
-    ";
-
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("FooDelegate"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("AProperty"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(3).WithArguments("AnotherInterfaceProperty"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(4).WithArguments("FooDelegate"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestField()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    class Program
-    {
-        [RequiresPreviewFeatures]
-        private bool _field;
+            class Program
+            {
+                [RequiresPreviewFeatures]
+                private bool _field;
 
-        public Program()
-        {
-            [|_field|] = true;
-        } 
+                public Program()
+                {
+                    {|#0:_field|} = true;
+                } 
 
-        static void Main(string[] args)
-        {
-        }
-    }
-}";
+                static void Main(string[] args)
+                {
+                }
+            }
+        }";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("_field"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestProperty()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    class Program
-    {
-        [RequiresPreviewFeatures]
-        private bool Foo => true;
+            class Program
+            {
+                [RequiresPreviewFeatures]
+                private bool Foo => true;
 
-        [RequiresPreviewFeatures]
-        public virtual bool AProperty => true;
+                [RequiresPreviewFeatures]
+                public virtual bool AProperty => true;
 
-        static void Main(string[] args)
-        {
-            Program prog = new Program();
-            bool foo = [|prog.Foo|];
+                static void Main(string[] args)
+                {
+                    Program prog = new Program();
+                    bool foo = {|#0:prog.Foo|};
 
-            Derived derived = new Derived();
-            bool prop = derived.AProperty;
-        }
-    }
+                    Derived derived = new Derived();
+                    bool prop = derived.AProperty;
+                }
+            }
 
-    class Derived: Program
-    {
-        public override bool [|AProperty|] => true;
-    }
-}";
+            class Derived: Program
+            {
+                public override bool {|#1:AProperty|} => true;
+            }
+        }";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("AProperty"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestDelegate()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    class Program
-    {
-        [RequiresPreviewFeatures]
-        public delegate void Del();
+            class Program
+            {
+                [RequiresPreviewFeatures]
+                public delegate void Del();
 
-        static void Main(string[] args)
-        {
-            Del del = [|new(() => { })|];
-        }
-    }
-}";
+                static void Main(string[] args)
+                {
+                    Del del = {|#0:new(() => { })|};
+                }
+            }
+        }";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Del"));
+            await test.RunAsync();
 
         }
 
@@ -716,126 +762,133 @@ namespace Preview_Feature_Scratch
         public async Task TestEnumValue()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    enum AnEnum
-    {
-        [RequiresPreviewFeatures]
-        Foo,
-        Bar
-    }
+            enum AnEnum
+            {
+                [RequiresPreviewFeatures]
+                Foo,
+                Bar
+            }
 
-    class Program
-    {
-        public Program()
-        {
-        }
+            class Program
+            {
+                public Program()
+                {
+                }
 
-        static void Main(string[] args)
-        {
-            AnEnum fooEnum = [|AnEnum.Foo|];
-        }
-    }
-}";
+                static void Main(string[] args)
+                {
+                    AnEnum fooEnum = {|#0:AnEnum.Foo|};
+                }
+            }
+        }";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestEnumValue_NoDiagnostic()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    enum AnEnum
-    {
-        Foo,
-        [RequiresPreviewFeatures]
-        Bar
-    }
+            enum AnEnum
+            {
+                Foo,
+                [RequiresPreviewFeatures]
+                Bar
+            }
 
-    class Program
-    {
-        public Program()
-        {
-        }
+            class Program
+            {
+                public Program()
+                {
+                }
 
-        static void Main(string[] args)
-        {
-            AnEnum fooEnum = AnEnum.Foo;
-        }
-    }
-}";
+                static void Main(string[] args)
+                {
+                    AnEnum fooEnum = AnEnum.Foo;
+                }
+            }
+        }";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestEnum()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    [RequiresPreviewFeatures]
-    enum AnEnum
-    {
-        Foo,
-        Bar
-    }
+            [RequiresPreviewFeatures]
+            enum AnEnum
+            {
+                Foo,
+                Bar
+            }
 
-    class Program
-    {
-        public Program()
-        {
-        }
+            class Program
+            {
+                public Program()
+                {
+                }
 
-        static void Main(string[] args)
-        {
-            AnEnum fooEnum = [|AnEnum.Foo|];
-        }
-    }
-}";
+                static void Main(string[] args)
+                {
+                    AnEnum fooEnum = {|#0:AnEnum.Foo|};
+                }
+            }
+        }";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo"));
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task TestEvent()
         {
             var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {" +
 @"
 
-    class Program
-    {
-        public Program()
-        {
-        }
+            class Program
+            {
+                public Program()
+                {
+                }
 
-        public delegate void SampleEventHandler(object sender, bool e);
+                public delegate void SampleEventHandler(object sender, bool e);
 
-        [RequiresPreviewFeatures]
-        public static event SampleEventHandler SampleEvent;
+                [RequiresPreviewFeatures]
+                public static event SampleEventHandler SampleEvent;
 
-        static void Main(string[] args)
-        {
-            [|SampleEvent|]?.Invoke(new Program(), new bool());
-        }
-    }
-}";
+                static void Main(string[] args)
+                {
+                    {|#0:SampleEvent|}?.Invoke(new Program(), new bool());
+                }
+            }
+        }";
 
-            await TestCS(csInput);
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("SampleEvent"));
+            await test.RunAsync();
         }
     }
 }

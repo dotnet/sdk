@@ -3,6 +3,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -82,13 +83,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols = new();
                 ConcurrentDictionary<ISymbol, PreviewFeatureUsageType> requiresPreviewFeaturesSymbolsToUsageType = new();
 
-                if (context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesRuntimeFeatureVirtualStaticsInInterfaces, out INamedTypeSymbol? runtimeFeatureTypeVirtualStaticsInInterfaces))
+                IFieldSymbol? virtualStaticsInInterfaces = null;
+                if (context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesRuntimeFeature, out INamedTypeSymbol? runtimeFeatureType))
                 {
-                    ProcessPreviewAttribute(runtimeFeatureTypeVirtualStaticsInInterfaces, requiresPreviewFeaturesSymbols);
+                    virtualStaticsInInterfaces = runtimeFeatureType
+                        .GetMembers("VirtualStaticsInInterfaces")
+                        .OfType<IFieldSymbol>()
+                        .FirstOrDefault();
+
+                    if (virtualStaticsInInterfaces != null)
+                    {
+                        ProcessPreviewAttribute(virtualStaticsInInterfaces, requiresPreviewFeaturesSymbols, previewFeaturesAttribute);
+                    }
                 }
 
                 // Handle user side invocation/references to preview features
-                context.RegisterOperationAction(context => BuildSymbolInformationFromOperations(context, requiresPreviewFeaturesSymbols),
+                context.RegisterOperationAction(context => BuildSymbolInformationFromOperations(context, requiresPreviewFeaturesSymbols, previewFeaturesAttribute),
                     OperationKind.Invocation,
                     OperationKind.ObjectCreation,
                     OperationKind.PropertyReference,
@@ -102,11 +112,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     );
 
                 // Handle library side definitions of preview features
-                context.RegisterSymbolAction(context => AnalyzeSymbol(context, requiresPreviewFeaturesSymbols, requiresPreviewFeaturesSymbolsToUsageType, runtimeFeatureTypeVirtualStaticsInInterfaces), s_symbols);
+                context.RegisterSymbolAction(context => AnalyzeSymbol(context, requiresPreviewFeaturesSymbols, requiresPreviewFeaturesSymbolsToUsageType, virtualStaticsInInterfaces, previewFeaturesAttribute), s_symbols);
             });
         }
 
-        private static bool ProcessTypeSymbolAttributes(ITypeSymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, ConcurrentDictionary<ISymbol, PreviewFeatureUsageType> requiresPreviewFeaturesSymbolsToUsageType)
+        private static bool ProcessTypeSymbolAttributes(ITypeSymbol symbol,
+            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+            ConcurrentDictionary<ISymbol, PreviewFeatureUsageType> requiresPreviewFeaturesSymbolsToUsageType,
+            INamedTypeSymbol previewFeatureAttributeSymbol)
         {
             ImmutableArray<INamedTypeSymbol> interfaces = symbol.Interfaces;
             foreach (INamedTypeSymbol anInterface in interfaces)
@@ -123,13 +136,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             INamedTypeSymbol? baseType = symbol.BaseType;
             if (baseType != null)
             {
-                return ProcessPreviewAttribute(baseType, requiresPreviewFeaturesSymbols);
+                return ProcessPreviewAttribute(baseType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
             }
 
             return false;
         }
 
-        private static bool ProcessContainingTypePreviewAttributes(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols)
+        private static bool ProcessContainingTypePreviewAttributes(ISymbol symbol,
+            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+            INamedTypeSymbol previewFeatureAttributeSymbol)
         {
             INamedTypeSymbol? containingType = symbol.ContainingType;
             // Namespaces do not have attributes
@@ -140,23 +155,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             if (containingType != null)
             {
-                return ProcessPreviewAttribute(containingType, requiresPreviewFeaturesSymbols);
+                return ProcessPreviewAttribute(containingType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
             }
 
             return false;
         }
 
-        private static bool SymbolIsStaticAndAbstract(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols)
+        private static bool SymbolIsStaticAndAbstract(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttributeSymbol)
         {
-            return symbol.IsStatic && symbol.IsAbstract && !ProcessContainingTypePreviewAttributes(symbol, requiresPreviewFeaturesSymbols);
+            // Static Abstract is only legal on interfaces. Anything else is likely a compile error and we shouldn't tag such cases.
+            return symbol.IsStatic && symbol.IsAbstract && symbol.ContainingType != null && symbol.ContainingType.TypeKind == TypeKind.Interface && !ProcessContainingTypePreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
         }
 
-        private static bool ProcessPropertyOrMethodAttributes(ISymbol propertyOrMethodSymbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, ConcurrentDictionary<ISymbol, PreviewFeatureUsageType> requiresPreviewFeaturesSymbolsToUsageType, INamedTypeSymbol? runtimeFeatureType)
+        private static bool ProcessPropertyOrMethodAttributes(ISymbol propertyOrMethodSymbol,
+            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+            ConcurrentDictionary<ISymbol, PreviewFeatureUsageType> requiresPreviewFeaturesSymbolsToUsageType,
+            IFieldSymbol? virtualStaticsInInterfaces,
+            INamedTypeSymbol previewFeatureAttributeSymbol)
         {
-            if (SymbolIsStaticAndAbstract(propertyOrMethodSymbol, requiresPreviewFeaturesSymbols))
+            if (SymbolIsStaticAndAbstract(propertyOrMethodSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
             {
-                // TODO: This needs to be tagged only on interfaces. A static abstract method on an abstract class is illegal and we shouldn't tag such cases.
-                if (runtimeFeatureType != null && ProcessPreviewAttribute(runtimeFeatureType, requiresPreviewFeaturesSymbols))
+                if (virtualStaticsInInterfaces != null && ProcessPreviewAttribute(virtualStaticsInInterfaces, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
                     requiresPreviewFeaturesSymbolsToUsageType.GetOrAdd(propertyOrMethodSymbol, PreviewFeatureUsageType.StaticAbstract);
                     return true;
@@ -165,7 +184,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             if (propertyOrMethodSymbol.IsImplementationOfAnyImplicitInterfaceMember(out ISymbol baseInterfaceMember))
             {
-                if (ProcessPreviewAttribute(baseInterfaceMember, requiresPreviewFeaturesSymbols) || ProcessContainingTypePreviewAttributes(baseInterfaceMember, requiresPreviewFeaturesSymbols))
+                if (ProcessPreviewAttribute(baseInterfaceMember, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol) || ProcessContainingTypePreviewAttributes(baseInterfaceMember, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
                     return true;
                 }
@@ -174,7 +193,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (propertyOrMethodSymbol.IsOverride)
             {
                 ISymbol? overridden = propertyOrMethodSymbol.GetOverriddenMember();
-                if (overridden != null && ProcessPreviewAttribute(overridden, requiresPreviewFeaturesSymbols))
+                if (overridden != null && ProcessPreviewAttribute(overridden, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
                     return true;
                 }
@@ -183,20 +202,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return false;
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, ConcurrentDictionary<ISymbol, PreviewFeatureUsageType> requiresPreviewFeaturesSymbolsToUsageType, INamedTypeSymbol? runtimeFeatureType)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context,
+            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+            ConcurrentDictionary<ISymbol, PreviewFeatureUsageType> requiresPreviewFeaturesSymbolsToUsageType,
+            IFieldSymbol? virtualStaticsInInterfaces,
+            INamedTypeSymbol previewFeatureAttributeSymbol)
         {
             ISymbol symbol = context.Symbol;
 
             // Don't report diagnostics on symbols that are marked as Preview
-            if (ProcessPreviewAttribute(symbol, requiresPreviewFeaturesSymbols))
+            if (ProcessPreviewAttribute(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
             {
                 return;
             }
 
             var reportDiagnostic = symbol switch
             {
-                ITypeSymbol typeSymbol => ProcessTypeSymbolAttributes(typeSymbol, requiresPreviewFeaturesSymbols, requiresPreviewFeaturesSymbolsToUsageType),
-                IPropertySymbol or IMethodSymbol => ProcessPropertyOrMethodAttributes(symbol, requiresPreviewFeaturesSymbols, requiresPreviewFeaturesSymbolsToUsageType, runtimeFeatureType),
+                ITypeSymbol typeSymbol => ProcessTypeSymbolAttributes(typeSymbol, requiresPreviewFeaturesSymbols, requiresPreviewFeaturesSymbolsToUsageType, previewFeatureAttributeSymbol),
+                IPropertySymbol or IMethodSymbol => ProcessPropertyOrMethodAttributes(symbol, requiresPreviewFeaturesSymbols, requiresPreviewFeaturesSymbolsToUsageType, virtualStaticsInInterfaces, previewFeatureAttributeSymbol),
                 _ => false
             };
 
@@ -220,9 +243,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private static void BuildSymbolInformationFromOperations(OperationAnalysisContext context, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols)
+        private static void BuildSymbolInformationFromOperations(OperationAnalysisContext context, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttributeSymbol)
         {
-            if (OperationUsesPreviewFeatures(context, requiresPreviewFeaturesSymbols, out ISymbol? symbol))
+            if (OperationUsesPreviewFeatures(context, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? symbol))
             {
                 IOperation operation = context.Operation;
                 if (operation is ICatchClauseOperation catchClauseOperation)
@@ -234,18 +257,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private static bool OperationUsesPreviewFeatures(OperationAnalysisContext context, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, [NotNullWhen(true)] out ISymbol? symbol)
+        private static bool OperationUsesPreviewFeatures(OperationAnalysisContext context, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttributeSymbol, [NotNullWhen(true)] out ISymbol? symbol)
         {
             IOperation operation = context.Operation;
             ISymbol containingSymbol = context.ContainingSymbol;
-            if (OperationUsesPreviewFeatures(containingSymbol, requiresPreviewFeaturesSymbols) || OperationUsesPreviewFeatures(containingSymbol.ContainingSymbol, requiresPreviewFeaturesSymbols))
+            if (OperationUsesPreviewFeatures(containingSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol) ||
+                OperationUsesPreviewFeatures(containingSymbol.ContainingSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
             {
                 symbol = null;
                 return false;
             }
 
             symbol = GetOperationSymbol(operation);
-            return symbol != null && OperationUsesPreviewFeatures(symbol, requiresPreviewFeaturesSymbols);
+            return symbol != null && OperationUsesPreviewFeatures(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
         }
 
         private static ISymbol? GetOperationSymbol(IOperation operation)
@@ -264,27 +288,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 _ => null,
             };
 
-        private static bool OperationUsesPreviewFeatures(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols)
+        private static bool OperationUsesPreviewFeatures(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute)
         {
-            return ProcessContainingTypePreviewAttributes(symbol, requiresPreviewFeaturesSymbols) || ProcessPreviewAttribute(symbol, requiresPreviewFeaturesSymbols);
+            return ProcessContainingTypePreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttribute) || ProcessPreviewAttribute(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttribute);
         }
 
-        private static bool ProcessPreviewAttribute(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols)
+        private static bool ProcessPreviewAttribute(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol? previewFeatureAttribute)
         {
             if (!requiresPreviewFeaturesSymbols.TryGetValue(symbol, out bool existing))
             {
-                bool ret = false;
-                // TODO: Use symbol.HasAttribute(RequiresPreviewFeaturesAttribute) once we consume the latest sdk
-                ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
-                foreach (AttributeData attribute in attributes)
-                {
-                    string attributeName = attribute.AttributeClass.Name;
-                    if (attributeName == RequiresPreviewFeaturesAttribute)
-                    {
-                        ret = true;
-                        break;
-                    }
-                }
+                bool ret = symbol.HasAttribute(previewFeatureAttribute);
                 requiresPreviewFeaturesSymbols.GetOrAdd(symbol, ret);
                 return ret;
             }
