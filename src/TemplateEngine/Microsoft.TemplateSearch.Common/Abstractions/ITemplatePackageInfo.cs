@@ -6,7 +6,7 @@ namespace Microsoft.TemplateSearch.Common.Abstractions
     /// <summary>
     /// Represents information about template package.
     /// </summary>
-    public interface IPackageInfo
+    public interface ITemplatePackageInfo
     {
         /// <summary>
         /// Gets template package name.

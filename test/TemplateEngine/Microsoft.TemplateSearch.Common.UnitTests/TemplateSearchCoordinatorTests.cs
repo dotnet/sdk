@@ -20,15 +20,15 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
-        private static readonly IPackageInfo _fooPackInfo = new PackInfo("fooPack", "1.0.0");
+        private static readonly ITemplatePackageInfo _fooPackInfo = new PackInfo("fooPack", "1.0.0");
 
-        private static readonly IPackageInfo _barPackInfo = new PackInfo("barPack", "2.0.0");
+        private static readonly ITemplatePackageInfo _barPackInfo = new PackInfo("barPack", "2.0.0");
 
-        private static readonly IPackageInfo _redPackInfo = new PackInfo("redPack", "1.1");
+        private static readonly ITemplatePackageInfo _redPackInfo = new PackInfo("redPack", "1.1");
 
-        private static readonly IPackageInfo _bluePackInfo = new PackInfo("bluePack", "2.1");
+        private static readonly ITemplatePackageInfo _bluePackInfo = new PackInfo("bluePack", "2.1");
 
-        private static readonly IPackageInfo _greenPackInfo = new PackInfo("greenPack", "3.0.0");
+        private static readonly ITemplatePackageInfo _greenPackInfo = new PackInfo("greenPack", "3.0.0");
 
         [Fact]
         public async Task TwoSourcesAreBothSearched()
@@ -90,9 +90,9 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.True(createdProviders.All(p => p.WasSearched));
         }
 
-        private static IReadOnlyDictionary<string, IReadOnlyList<(IPackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> GetMockNameSearchResults()
+        private static IReadOnlyDictionary<string, IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> GetMockNameSearchResults()
         {
-            Dictionary<string, IReadOnlyList<(IPackageInfo, IReadOnlyList<ITemplateInfo>)>> dataForSources = new();
+            Dictionary<string, IReadOnlyList<(ITemplatePackageInfo, IReadOnlyList<ITemplateInfo>)>> dataForSources = new();
 
             ITemplateInfo sourceOneTemplateOne = new MockTemplateInfo("foo1", name: "MockFooTemplateOne", identity: "Mock.Foo.1").WithDescription("Mock Foo template one");
             ITemplateInfo sourceOneTemplateTwo = new MockTemplateInfo("foo2", name: "MockFooTemplateTwo", identity: "Mock.Foo.2").WithDescription("Mock Foo template two");

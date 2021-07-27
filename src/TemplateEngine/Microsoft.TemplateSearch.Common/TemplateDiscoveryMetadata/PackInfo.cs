@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
-    internal class PackInfo : IPackageInfo
+    internal class PackInfo : ITemplatePackageInfo
     {
         internal PackInfo(string name, string version)
         {

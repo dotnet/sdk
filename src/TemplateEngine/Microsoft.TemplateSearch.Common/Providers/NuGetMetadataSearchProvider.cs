@@ -34,7 +34,7 @@ namespace Microsoft.TemplateSearch.Common.Providers
 
         public ITemplateSearchProviderFactory Factory { get; }
 
-        public async Task<IReadOnlyList<(IPackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> SearchForTemplatePackagesAsync(
+        public async Task<IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> SearchForTemplatePackagesAsync(
             Func<TemplatePackageSearchData, bool> packFilter,
             Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> matchingTemplatesFilter,
             CancellationToken cancellationToken)
@@ -49,7 +49,7 @@ namespace Microsoft.TemplateSearch.Common.Providers
             IEnumerable<TemplatePackageSearchData> filteredPackages = _searchCache.TemplatePackages.Where(package => packFilter(package));
 
             return filteredPackages
-                .Select<TemplatePackageSearchData, (IPackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>(package => (package, matchingTemplatesFilter(package)))
+                .Select<TemplatePackageSearchData, (ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>(package => (package, matchingTemplatesFilter(package)))
                 .Where(result => result.MatchedTemplates.Any())
                 .ToList();
         }

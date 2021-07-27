@@ -28,7 +28,7 @@ namespace Microsoft.TemplateSearch.Common.Abstractions
         /// <param name="matchingTemplatesFilter">The filter that list of templates that are the match inside given <see cref="TemplatePackageSearchData"/>.</param>
         /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
         /// <returns>The list of packages and matching templates for the source.</returns>
-        Task<IReadOnlyList<(IPackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> SearchForTemplatePackagesAsync(
+        Task<IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> SearchForTemplatePackagesAsync(
             Func<TemplatePackageSearchData, bool> packFilters,
             Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> matchingTemplatesFilter,
             CancellationToken cancellationToken);

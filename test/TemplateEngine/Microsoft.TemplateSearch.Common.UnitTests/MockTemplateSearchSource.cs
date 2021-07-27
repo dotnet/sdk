@@ -34,11 +34,11 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
         public bool WasSearched => _wasSearched;
 
-        public IReadOnlyList<(IPackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> Results { get; set; } = Array.Empty<(IPackageInfo, IReadOnlyList<ITemplateInfo>)>();
+        public IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> Results { get; set; } = Array.Empty<(ITemplatePackageInfo, IReadOnlyList<ITemplateInfo>)>();
 
         public ITemplateSearchProviderFactory Factory { get; set; }
 
-        Task<IReadOnlyList<(IPackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> ITemplateSearchProvider.SearchForTemplatePackagesAsync(
+        Task<IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> ITemplateSearchProvider.SearchForTemplatePackagesAsync(
             Func<TemplatePackageSearchData, bool> packFilters,
             Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> matchingTemplatesFilter,
             CancellationToken cancellationToken)

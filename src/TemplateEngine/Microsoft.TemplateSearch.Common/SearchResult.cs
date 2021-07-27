@@ -17,7 +17,7 @@ namespace Microsoft.TemplateSearch.Common
             ITemplateSearchProvider provider,
             bool success,
             string? errorMessage = null,
-            IReadOnlyList<(IPackageInfo, IReadOnlyList<ITemplateInfo>)>? hits = null)
+            IReadOnlyList<(ITemplatePackageInfo, IReadOnlyList<ITemplateInfo>)>? hits = null)
         {
             if (!success && string.IsNullOrWhiteSpace(errorMessage))
             {
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateSearch.Common
             ErrorMessage = errorMessage;
             if (!success)
             {
-                SearchHits = new List<(IPackageInfo, IReadOnlyList<ITemplateInfo>)>();
+                SearchHits = new List<(ITemplatePackageInfo, IReadOnlyList<ITemplateInfo>)>();
             }
             else
             {
@@ -58,6 +58,6 @@ namespace Microsoft.TemplateSearch.Common
         /// <summary>
         /// Gets search hits returned by <see cref="Provider"/>.
         /// </summary>
-        public IReadOnlyList<(IPackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> SearchHits { get; }
+        public IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> SearchHits { get; }
     }
 }
