@@ -2,10 +2,6 @@
 <Project>
   <UsingTask TaskName="Microsoft.DotNet.PackageValidation.ValidatePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
 
-  <ItemGroup Condition="'$(EnablePackageValidation)' == 'true' and '$(DisablePackageBaselineValidation)' != 'true' and '$(PackageValidationBaselinePath)' == '' and '$(PackageValidationBaselineVersion)' != ''">
-    <PackageDownload Include="$([MSBuild]::ValueOrDefault('$(PackageValidationBaselineName)', '$(PackageId)'))" Version="[$(PackageValidationBaselineVersion)]" />
-  </ItemGroup>
-
   <Target Name="RunPackageValidation"
           AfterTargets="Pack"
           Condition="'$(IsPackable)' == 'true' and '$(EnablePackageValidation)' == 'true'">

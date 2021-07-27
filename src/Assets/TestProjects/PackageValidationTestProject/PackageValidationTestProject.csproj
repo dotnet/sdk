@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.0.0-1.21277.15" />
   </ItemGroup>
 
-  <Import Project="$(MSBuildProjectDirectory)\..\..\..\..\src\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.PackageValidation.targets" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\..\..\src\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.Compatibility.targets" />
 
   <PropertyGroup>
     <DotNetPackageValidationAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)\bin\$(Configuration)\netstandard2.0\Microsoft.DotNet.PackageValidation.dll</DotNetPackageValidationAssembly>

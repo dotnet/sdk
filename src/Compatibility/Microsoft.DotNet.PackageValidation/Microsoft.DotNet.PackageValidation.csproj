@@ -35,6 +35,10 @@
     <None Include="**/*.props;**/*.targets" Pack="true">
       <PackagePath>%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
     </None>
+    <None Include="..\..\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.Compatibility.Common.targets" Pack="true" >
+      <Link>build/Microsoft.NET.Compatibility.Common.targets</Link>
+      <PackagePath>build/%(Filename)%(Extension)</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
