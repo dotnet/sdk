@@ -20,15 +20,15 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
-        private static readonly ITemplatePackageInfo _fooPackInfo = new PackInfo("fooPack", "1.0.0");
+        private static readonly ITemplatePackageInfo _fooPackInfo = new MockTemplatePackageInfo("fooPack", "1.0.0");
 
-        private static readonly ITemplatePackageInfo _barPackInfo = new PackInfo("barPack", "2.0.0");
+        private static readonly ITemplatePackageInfo _barPackInfo = new MockTemplatePackageInfo("barPack", "2.0.0");
 
-        private static readonly ITemplatePackageInfo _redPackInfo = new PackInfo("redPack", "1.1");
+        private static readonly ITemplatePackageInfo _redPackInfo = new MockTemplatePackageInfo("redPack", "1.1");
 
-        private static readonly ITemplatePackageInfo _bluePackInfo = new PackInfo("bluePack", "2.1");
+        private static readonly ITemplatePackageInfo _bluePackInfo = new MockTemplatePackageInfo("bluePack", "2.1");
 
-        private static readonly ITemplatePackageInfo _greenPackInfo = new PackInfo("greenPack", "3.0.0");
+        private static readonly ITemplatePackageInfo _greenPackInfo = new MockTemplatePackageInfo("greenPack", "3.0.0");
 
         [Fact]
         public async Task TwoSourcesAreBothSearched()

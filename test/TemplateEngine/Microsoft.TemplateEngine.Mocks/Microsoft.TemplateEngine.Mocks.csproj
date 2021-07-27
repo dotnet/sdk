@@ -16,6 +16,7 @@
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateSearch.Common\Microsoft.TemplateSearch.Common.csproj" />
   </ItemGroup>
 
 </Project>

@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.Common
 {
-    [Obsolete("The class is deprecated. Use TemplateSearchCache instead to create search cache data")]
+    [Obsolete("The class is deprecated. Use TemplateSearchCache instead to create search cache data.")]
     internal class PackToTemplateEntry
     {
         internal PackToTemplateEntry(string version, List<TemplateIdentificationEntry> templateinfo)

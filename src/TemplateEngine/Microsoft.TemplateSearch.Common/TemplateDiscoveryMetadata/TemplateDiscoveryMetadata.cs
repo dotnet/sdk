@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
-    [Obsolete("The class is deprecated. Use TemplateSearchCache instead to create search cache data")]
+    [Obsolete("The class is deprecated. Use TemplateSearchCache instead to create search cache data.")]
     internal class TemplateDiscoveryMetadata
     {
         internal TemplateDiscoveryMetadata(string version, IReadOnlyList<ITemplateInfo> templateCache, IReadOnlyDictionary<string, PackToTemplateEntry> packToTemplateMap, IReadOnlyDictionary<string, object> additionalData)

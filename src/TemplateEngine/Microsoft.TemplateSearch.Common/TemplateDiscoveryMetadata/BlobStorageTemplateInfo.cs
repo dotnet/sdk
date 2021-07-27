@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.TemplateSearch.Common
 {
     [JsonObject(Id = "TemplateInfo")]
+    [Obsolete("The class is deprecated. Use TemplateSearchCache instead to create search cache data. Deserialization code to be moved to TemplateSearchData.Json.")]
     internal class BlobStorageTemplateInfo : ITemplateInfo
     {
         public BlobStorageTemplateInfo(ITemplateInfo templateInfo)

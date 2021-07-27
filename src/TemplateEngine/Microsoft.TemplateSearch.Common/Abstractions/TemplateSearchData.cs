@@ -20,7 +20,9 @@ namespace Microsoft.TemplateSearch.Common
                 throw new ArgumentNullException(nameof(templateInfo));
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete. The code will be moved to TemplateSearchData.Json when BlobStorageTemplateInfo is ready to be removed.
             TemplateInfo = new BlobStorageTemplateInfo(templateInfo);
+#pragma warning restore CS0618 // Type or member is obsolete
             AdditionalData = data ?? new Dictionary<string, object>();
         }
 
