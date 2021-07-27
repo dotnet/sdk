@@ -25,6 +25,23 @@ steps:
   displayName: Build Tarball
   condition: and(${{ parameters.condition }}, succeeded())
 
+- task: CopyFiles@2
+  displayName: Gather Source Build Artifacts
+  inputs:
+    SourceFolder: '${{ parameters.sourceFolder }}'
+    Contents: |
+      artifacts/**/Private.SourceBuilt.Artifacts*.tar.gz
+    TargetFolder: '$(Build.StagingDirectory)/artifacts'
+    CleanTargetFolder: true
+  condition: and(${{ parameters.condition }}, succeeded())
+
+- task: PublishPipelineArtifact@1
+  displayName: Publish Source Build Artifacts
+  inputs:
+    targetPath: '$(Build.StagingDirectory)/artifacts'
+    artifactName: Artifacts_SourceBuild_TarballBuild_Attempt$(System.JobAttempt)
+  condition: and(${{ parameters.condition }}, succeeded())
+
 - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-publish-logs.yml
   parameters:
     sourceFolder: ${{ parameters.sourceFolder }}
