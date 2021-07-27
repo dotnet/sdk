@@ -12,14 +12,8 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.TemplateSearch.Common
 {
     [JsonConverter(typeof(TemplateSearchData.TemplateSearchDataJsonConverter))]
-    public class TemplateSearchData : ITemplateInfo
+    public partial class TemplateSearchData : ITemplateInfo
     {
-        public TemplateSearchData(ITemplateInfo templateInfo, IDictionary<string, object>? data = null)
-        {
-            TemplateInfo = new BlobStorageTemplateInfo(templateInfo);
-            AdditionalData = data ?? new Dictionary<string, object>();
-        }
-
         internal TemplateSearchData(JObject jObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
             TemplateInfo = BlobStorageTemplateInfo.FromJObject(jObject);
@@ -30,87 +24,10 @@ namespace Microsoft.TemplateSearch.Common
             }
         }
 
-        [JsonExtensionData]
-        public IDictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
-
-        #region ITemplateInfo implementation
-        [JsonProperty]
-        string? ITemplateInfo.Author => TemplateInfo.Author;
-
-        [JsonProperty]
-        string? ITemplateInfo.Description => TemplateInfo.Description;
-
-        [JsonProperty]
-        IReadOnlyList<string> ITemplateInfo.Classifications => TemplateInfo.Classifications;
-
-        [JsonIgnore]
-        string? ITemplateInfo.DefaultName => TemplateInfo.DefaultName;
-
-        [JsonProperty]
-        string ITemplateInfo.Identity => TemplateInfo.Identity;
-
-        [JsonIgnore]
-        Guid ITemplateInfo.GeneratorId => TemplateInfo.GeneratorId;
-
-        [JsonProperty]
-        string? ITemplateInfo.GroupIdentity => TemplateInfo.GroupIdentity;
-
-        [JsonProperty]
-        int ITemplateInfo.Precedence => TemplateInfo.Precedence;
-
-        [JsonProperty]
-        string ITemplateInfo.Name => TemplateInfo.Name;
-
-        [JsonIgnore]
-        [Obsolete]
-        string ITemplateInfo.ShortName => TemplateInfo.ShortName;
-
-        [JsonIgnore]
-        [Obsolete]
-        IReadOnlyDictionary<string, ICacheTag> ITemplateInfo.Tags => TemplateInfo.Tags;
-
-        [JsonProperty]
-        IReadOnlyDictionary<string, string> ITemplateInfo.TagsCollection => TemplateInfo.TagsCollection;
-
-        [JsonIgnore]
-        [Obsolete]
-        IReadOnlyDictionary<string, ICacheParameter> ITemplateInfo.CacheParameters => TemplateInfo.CacheParameters;
-
-        [JsonProperty]
-        IReadOnlyList<ITemplateParameter> ITemplateInfo.Parameters => TemplateInfo.Parameters;
-
-        [JsonIgnore]
-        string ITemplateInfo.MountPointUri => TemplateInfo.MountPointUri;
-
-        [JsonIgnore]
-        string ITemplateInfo.ConfigPlace => TemplateInfo.ConfigPlace;
-
-        [JsonIgnore]
-        string? ITemplateInfo.LocaleConfigPlace => TemplateInfo.LocaleConfigPlace;
-
-        [JsonIgnore]
-        string? ITemplateInfo.HostConfigPlace => TemplateInfo.HostConfigPlace;
-
-        [JsonProperty]
-        string? ITemplateInfo.ThirdPartyNotices => TemplateInfo.ThirdPartyNotices;
-
-        [JsonProperty]
-        IReadOnlyDictionary<string, IBaselineInfo> ITemplateInfo.BaselineInfo => TemplateInfo.BaselineInfo;
-
-        [JsonIgnore]
-        [Obsolete]
-        bool ITemplateInfo.HasScriptRunningPostActions { get => TemplateInfo.HasScriptRunningPostActions; set => throw new NotImplementedException(); }
-
-        [JsonProperty]
-        IReadOnlyList<string> ITemplateInfo.ShortNameList => TemplateInfo.ShortNameList;
-        #endregion
-
-        [JsonIgnore]
-        private ITemplateInfo TemplateInfo { get; }
-
         #region JsonConverter
         private class TemplateSearchDataJsonConverter : JsonConverter<TemplateSearchData>
         {
+            //falls back to default de-serializer if not implemented
             public override TemplateSearchData ReadJson(JsonReader reader, Type objectType, TemplateSearchData existingValue, bool hasExistingValue, JsonSerializer serializer)
                 => throw new NotImplementedException();
 
@@ -238,6 +155,7 @@ namespace Microsoft.TemplateSearch.Common
 
                 if (value.TemplateInfo.BaselineInfo.Any())
                 {
+                    writer.WritePropertyName(nameof(ITemplateInfo.BaselineInfo));
                     serializer.Serialize(writer, value.TemplateInfo.BaselineInfo);
                 }
 

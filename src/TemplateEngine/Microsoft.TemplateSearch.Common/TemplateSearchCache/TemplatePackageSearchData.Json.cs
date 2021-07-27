@@ -6,24 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine;
-using Microsoft.TemplateSearch.Common.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
     [JsonConverter(typeof(TemplatePackageSearchData.TemplatePackageSearchDataJsonConverter))]
-    public class TemplatePackageSearchData : IPackageInfo
+    public partial class TemplatePackageSearchData
     {
-        public TemplatePackageSearchData(IPackageInfo packInfo, IEnumerable<TemplateSearchData> templates, IDictionary<string, object>? data = null)
-        {
-            Name = packInfo.Name;
-            Version = packInfo.Version;
-            TotalDownloads = packInfo.TotalDownloads;
-            Templates = templates.ToList();
-            AdditionalData = data ?? new Dictionary<string, object>();
-        }
-
         internal TemplatePackageSearchData(JObject jObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
             string? name = jObject.ToString(nameof(Name));
@@ -61,21 +51,6 @@ namespace Microsoft.TemplateSearch.Common
                 AdditionalData = TemplateSearchCache.ReadAdditionalData(jObject, additionalDataReaders, logger);
             }
         }
-
-        [JsonProperty]
-        public string Name { get; }
-
-        [JsonProperty]
-        public string? Version { get; }
-
-        [JsonProperty]
-        public long TotalDownloads { get; }
-
-        [JsonProperty]
-        public IReadOnlyList<TemplateSearchData> Templates { get; }
-
-        [JsonExtensionData]
-        public IDictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
 
         #region JsonConverter
         private class TemplatePackageSearchDataJsonConverter : JsonConverter<TemplatePackageSearchData>
