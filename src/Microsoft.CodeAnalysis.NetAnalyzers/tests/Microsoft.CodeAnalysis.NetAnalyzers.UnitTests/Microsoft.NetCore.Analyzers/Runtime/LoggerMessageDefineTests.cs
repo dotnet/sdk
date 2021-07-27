@@ -36,15 +36,15 @@ namespace Microsoft.Extensions.Logging.Analyzer
         }
 
         [Theory]
-        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2255:{|CA1727:""{string}""|}|}", "1, 2", false)]
-        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2255:{|CA1727:""{str"" + ""ing}""|}|}", "1, 2", false)]
-        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2255:""{"" + nameof(ILogger) + ""}""|}", "", true)]
-        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2255:{|CA1727:""{"" + Const + ""}""|}|}", "", true)]
-        [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2255:{|CA1727:""{string}""|}|}", 2)]
-        [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2255:{|CA1727:""{str"" + ""ing}""|}|}", 2)]
-        [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2255:""{"" + nameof(ILogger) + ""}""|}", 0)]
-        [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2255:{|CA1727:""{"" + Const + ""}""|}|}", 0)]
-        public async Task CA2255IsProducedForFormatArgumentCountMismatch(string format)
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2017:{|CA1727:""{string}""|}|}", "1, 2", false)]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2017:{|CA1727:""{str"" + ""ing}""|}|}", "1, 2", false)]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2017:""{"" + nameof(ILogger) + ""}""|}", "", true)]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2017:{|CA1727:""{"" + Const + ""}""|}|}", "", true)]
+        [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:""{string}""|}|}", 2)]
+        [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:""{str"" + ""ing}""|}|}", 2)]
+        [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:""{"" + nameof(ILogger) + ""}""|}", 0)]
+        [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:""{"" + Const + ""}""|}|}", 0)]
+        public async Task CA2017IsProducedForFormatArgumentCountMismatch(string format)
         {
             await TriggerCodeAsync(format);
         }
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:""{st"" + ""ring}""|}", "1")]
 
         // we are unable to parse expressions
-        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2255:{|CA1727:{|CA1727:""{string} {string}""|}|}|}", "new object[] { 1 }", false)]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2017:{|CA1727:{|CA1727:""{string} {string}""|}|}|}", "new object[] { 1 }", false)]
         [MemberData(nameof(GenerateDefineUsages), @"{|CA1727:{|CA1727:""{string} {string}""|}|}")]
 
         // CA2253 is not enabled by default.
@@ -75,15 +75,15 @@ namespace Microsoft.Extensions.Logging.Analyzer
         }
 
         [Theory]
-        [InlineData(@"LoggerMessage.Define(LogLevel.Information, 42, {|CA2255:""{One} {Two} {Three}""|});")]
-        [InlineData(@"LoggerMessage.Define<int>(LogLevel.Information, 42, {|CA2255:""{One} {Two} {Three}""|});")]
-        [InlineData(@"LoggerMessage.Define<int, int>(LogLevel.Information, 42, {|CA2255:""{One} {Two} {Three}""|});")]
-        [InlineData(@"LoggerMessage.Define<int, int, int>(LogLevel.Information, 42, {|CA2255:""{One} {Two}""|});")]
-        [InlineData(@"LoggerMessage.Define<int, int, int, int>(LogLevel.Information, 42, {|CA2255:""{One} {Two} {Three}""|});")]
-        [InlineData(@"LoggerMessage.DefineScope<int>({|CA2255:""{One} {Two} {Three}""|});")]
-        [InlineData(@"LoggerMessage.DefineScope<int, int>({|CA2255:""{One} {Two} {Three}""|});")]
-        [InlineData(@"LoggerMessage.DefineScope<int, int, int>({|CA2255:""{One} {Two}""|});")]
-        public async Task CA2255IsProducedForDefineMessageTypeParameterMismatch(string expression)
+        [InlineData(@"LoggerMessage.Define(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
+        [InlineData(@"LoggerMessage.Define<int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
+        [InlineData(@"LoggerMessage.Define<int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
+        [InlineData(@"LoggerMessage.Define<int, int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two}""|});")]
+        [InlineData(@"LoggerMessage.Define<int, int, int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
+        [InlineData(@"LoggerMessage.DefineScope<int>({|CA2017:""{One} {Two} {Three}""|});")]
+        [InlineData(@"LoggerMessage.DefineScope<int, int>({|CA2017:""{One} {Two} {Three}""|});")]
+        [InlineData(@"LoggerMessage.DefineScope<int, int, int>({|CA2017:""{One} {Two}""|});")]
+        public async Task CA2017IsProducedForDefineMessageTypeParameterMismatch(string expression)
         {
             await TriggerCodeAsync(expression);
         }

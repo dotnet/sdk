@@ -2016,11 +2016,11 @@
           "id": "CA1727",
           "shortDescription": "Use PascalCase for log message tokens",
           "fullDescription": "For consistency with logs emitted from other components, use 'PascalCase' for log message tokens.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727",
           "properties": {
             "category": "Naming",
-            "isEnabledByDefault": false,
+            "isEnabledByDefault": true,
             "typeName": "LoggerMessageDefineAnalyzer",
             "languages": [
               "C#",
@@ -2666,11 +2666,11 @@
           "id": "CA1848",
           "shortDescription": "Use compiled log messages",
           "fullDescription": "For improved performance, use pre-compiled log messages.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848",
           "properties": {
             "category": "Performance",
-            "isEnabledByDefault": false,
+            "isEnabledByDefault": true,
             "typeName": "LoggerMessageDefineAnalyzer",
             "languages": [
               "C#",
@@ -2855,6 +2855,26 @@
             "category": "Reliability",
             "isEnabledByDefault": true,
             "typeName": "DoNotDefineFinalizersForTypesDerivedFromMemoryManager",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2017": {
+          "id": "CA2017",
+          "shortDescription": "Logging format string parameter count mismatch",
+          "fullDescription": "Logging format string parameter count mismatch.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "LoggerMessageDefineAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -3616,26 +3636,6 @@
           "fullDescription": "Logging format string should not be dynamically generated.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": true,
-            "typeName": "LoggerMessageDefineAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2255": {
-          "id": "CA2255",
-          "shortDescription": "Logging format string parameter count mismatch",
-          "fullDescription": "Logging format string parameter count mismatch.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,

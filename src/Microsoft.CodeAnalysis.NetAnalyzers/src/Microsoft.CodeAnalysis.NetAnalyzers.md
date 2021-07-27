@@ -979,8 +979,8 @@ For consistency with logs emitted from other components, use 'PascalCase' for lo
 |Item|Value|
 |-|-|
 |Category|Naming|
-|Enabled|False|
-|Severity|Warning|
+|Enabled|True|
+|Severity|Hidden|
 |CodeFix|False|
 ---
 
@@ -1447,8 +1447,8 @@ For improved performance, use pre-compiled log messages.
 |Item|Value|
 |-|-|
 |Category|Performance|
-|Enabled|False|
-|Severity|Warning|
+|Enabled|True|
+|Severity|Hidden|
 |CodeFix|False|
 ---
 
@@ -1582,6 +1582,18 @@ Forward the 'CancellationToken' parameter to methods to ensure the operation can
 |Enabled|True|
 |Severity|Info|
 |CodeFix|True|
+---
+
+## [CA2017](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017): Logging format string parameter count mismatch
+
+Logging format string parameter count mismatch.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
 ---
 
 ## [CA2100](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
@@ -2061,18 +2073,6 @@ Logging format string should not be dynamically generated.
 |Category|Usage|
 |Enabled|True|
 |Severity|Info|
-|CodeFix|False|
----
-
-## [CA2255](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255): Logging format string parameter count mismatch
-
-Logging format string parameter count mismatch.
-
-|Item|Value|
-|-|-|
-|Category|Usage|
-|Enabled|True|
-|Severity|Warning|
 |CodeFix|False|
 ---
 
