@@ -974,7 +974,7 @@ Consistent naming of parameters in an override hierarchy increases the usability
 
 ## [CA1727](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727): Use PascalCase for log message tokens
 
-For consistency with logs emitted from other components, use 'PascalCase' for log message tokens
+For consistency with logs emitted from other components, use 'PascalCase' for log message tokens.
 
 |Item|Value|
 |-|-|
@@ -1442,7 +1442,7 @@ It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring'
 
 ## [CA1848](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848): Use compiled log messages
 
-For improved performance, use pre-compiled log messages
+For improved performance, use pre-compiled log messages.
 
 |Item|Value|
 |-|-|
@@ -2042,7 +2042,7 @@ An assembly has to opt into preview features before using them.
 
 ## [CA2253](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253): Numerics should not be used in logging format string
 
-Numerics should not be used in logging format string
+Numerics should not be used in logging format string.
 
 |Item|Value|
 |-|-|
@@ -2054,7 +2054,7 @@ Numerics should not be used in logging format string
 
 ## [CA2254](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254): Logging format string should not be dynamically generated
 
-Logging format string should not be dynamically generated
+Logging format string should not be dynamically generated.
 
 |Item|Value|
 |-|-|
@@ -2066,7 +2066,7 @@ Logging format string should not be dynamically generated
 
 ## [CA2255](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255): Logging format string parameter count mismatch
 
-Logging format string parameter count mismatch
+Logging format string parameter count mismatch.
 
 |Item|Value|
 |-|-|

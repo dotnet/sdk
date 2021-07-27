@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Text;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.LoggerMessageDefineAnalyzer,
+    Microsoft.NetCore.Analyzers.Runtime.LoggerMessageDefineAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.Extensions.Logging.Analyzer
@@ -19,6 +19,8 @@ namespace Microsoft.Extensions.Logging.Analyzer
     {
         [Theory]
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA2253:""{0}""|}", "1")]
+        [InlineData(@"{|CA1848:logger.LogTrace({|CA2253:""{0}""|}, 1)|};")]
+        [InlineData(@"{|CA1848:logger.LogTrace({|CA2253:""{0}""|}, ""1"")|};")]
         public async Task CA2253IsProducedForNumericFormatArgument(string format)
         {
             // Make sure CA1727 is enabled for this test so we can verify it does not trigger on numeric arguments.

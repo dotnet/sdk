@@ -11,9 +11,9 @@ using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeQuality.Analyzers;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
+namespace Microsoft.NetCore.Analyzers.Runtime
 {
-    [DiagnosticAnalyzer(LanguageNames.CSharp)]
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class LoggerMessageDefineAnalyzer : DiagnosticAnalyzer
     {
         internal const string CA1727RuleId = "CA1727";
@@ -237,7 +237,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
             switch (argumentExpression)
             {
-                case ILiteralOperation { ConstantValue: { HasValue: true, Value: string constantValue } }:
+                case ILiteralOperation { ConstantValue: { HasValue: false, Value: string constantValue } }:
                     return constantValue;
                 case IInterpolatedStringOperation interpolated:
                     var text = "";

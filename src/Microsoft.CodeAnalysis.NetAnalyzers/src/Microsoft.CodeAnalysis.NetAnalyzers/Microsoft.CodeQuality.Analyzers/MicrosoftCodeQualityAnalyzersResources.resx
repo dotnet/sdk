@@ -178,7 +178,7 @@
     <value>Numerics should not be used in logging format string</value>
   </data>
   <data name="LoggerMessageDiagnosticNumericsInFormatStringDescription" xml:space="preserve">
-    <value>Numerics should not be used in logging format string</value>
+    <value>Numerics should not be used in logging format string.</value>
   </data>
   <data name="LoggerMessageDiagnosticFormatParameterCountMismatchTitle" xml:space="preserve">
     <value>Logging format string parameter count mismatch</value>
@@ -187,16 +187,16 @@
     <value>Logging format string parameter count mismatch</value>
   </data>
   <data name="LoggerMessageDiagnosticFormatParameterCountMismatchDescription" xml:space="preserve">
-    <value>Logging format string parameter count mismatch</value>
+    <value>Logging format string parameter count mismatch.</value>
   </data>
   <data name="LoggerMessageDiagnosticUseCompiledLogMessagesTitle" xml:space="preserve">
     <value>Use compiled log messages</value>
   </data>
   <data name="LoggerMessageDiagnosticUseCompiledLogMessagesMessage" xml:space="preserve">
-    <value>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</value>
+    <value>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message</value>
   </data>
   <data name="LoggerMessageDiagnosticUseCompiledLogMessagesDescription" xml:space="preserve">
-    <value>For improved performance, use pre-compiled log messages</value>
+    <value>For improved performance, use pre-compiled log messages.</value>
   </data>
   <data name="LoggerMessageDiagnosticConcatenationInFormatStringTitle" xml:space="preserve">
     <value>Logging format string should not be dynamically generated</value>
@@ -205,7 +205,7 @@
     <value>Logging format string should not be dynamically generated</value>
   </data>
   <data name="LoggerMessageDiagnosticConcatenationInFormatStringDescription" xml:space="preserve">
-    <value>Logging format string should not be dynamically generated</value>
+    <value>Logging format string should not be dynamically generated.</value>
   </data>
   <data name="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle" xml:space="preserve">
     <value>Use PascalCase for log message tokens</value>
@@ -214,7 +214,7 @@
     <value>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</value>
   </data>
   <data name="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription" xml:space="preserve">
-    <value>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</value>
+    <value>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens.</value>
   </data>
   <data name="MarkAssembliesWithClsCompliantTitle" xml:space="preserve">
     <value>Mark assemblies with CLSCompliant</value>

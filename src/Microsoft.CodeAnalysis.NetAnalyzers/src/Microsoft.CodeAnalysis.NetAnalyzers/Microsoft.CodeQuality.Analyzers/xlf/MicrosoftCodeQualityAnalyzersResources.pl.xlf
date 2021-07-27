@@ -243,8 +243,8 @@
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
-        <source>Logging format string should not be dynamically generated</source>
-        <target state="new">Logging format string should not be dynamically generated</target>
+        <source>Logging format string should not be dynamically generated.</source>
+        <target state="new">Logging format string should not be dynamically generated.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
@@ -258,8 +258,8 @@
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
-        <source>Logging format string parameter count mismatch</source>
-        <target state="new">Logging format string parameter count mismatch</target>
+        <source>Logging format string parameter count mismatch.</source>
+        <target state="new">Logging format string parameter count mismatch.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
@@ -273,8 +273,8 @@
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
-        <source>Numerics should not be used in logging format string</source>
-        <target state="new">Numerics should not be used in logging format string</target>
+        <source>Numerics should not be used in logging format string.</source>
+        <target state="new">Numerics should not be used in logging format string.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
@@ -288,13 +288,13 @@
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
-        <source>For improved performance, use pre-compiled log messages</source>
-        <target state="new">For improved performance, use pre-compiled log messages</target>
+        <source>For improved performance, use pre-compiled log messages.</source>
+        <target state="new">For improved performance, use pre-compiled log messages.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
-        <source>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</source>
-        <target state="new">For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message.</target>
+        <source>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message</source>
+        <target state="new">For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
@@ -303,8 +303,8 @@
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
-        <source>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</source>
-        <target state="new">For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</target>
+        <source>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens.</source>
+        <target state="new">For consistency with logs emitted from other components, use 'PascalCase' for log message tokens.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
