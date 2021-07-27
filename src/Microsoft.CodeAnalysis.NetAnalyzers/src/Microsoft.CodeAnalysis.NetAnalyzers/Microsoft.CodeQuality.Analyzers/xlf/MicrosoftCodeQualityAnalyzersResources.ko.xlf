@@ -52,6 +52,16 @@
         <target state="translated">무한 재귀 방지</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsMessage">
+        <source>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to.</source>
+        <target state="new">Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to.</target>
+        <note>'IEnumerable' is a well-known interface name. It should not be translated</note>
+      </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsTitle">
+        <source>Possible multiple enumerations over 'IEnumerable' collection</source>
+        <target state="new">Possible multiple enumerations over 'IEnumerable' collection</target>
+        <note>'IEnumerable' is a well-known interface name. It should not be translated</note>
+      </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
         <target state="translated">'out' 또는 'ref'를 사용하여 참조로 형식을 전달하려면 포인터 사용 경험, 값 형식과 참조 형식이 어떻게 다른지에 대한 이해 및 반환 값이 여러 개인 메서드 처리가 필요합니다. 또한 'out' 매개 변수와 'ref' 매개 변수의 차이점은 널리 이해되지 않습니다.</target>

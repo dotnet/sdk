@@ -1263,4 +1263,12 @@
   <data name="OperatorOverloadsHaveNamedAlternatesCodeFixTitle" xml:space="preserve">
     <value>Add operator overload named alternate</value>
   </data>
+  <data name="AvoidMultipleEnumerationsMessage" xml:space="preserve">
+    <value>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to.</value>
+    <comment>'IEnumerable' is a well-known interface name. It should not be translated</comment>
+  </data>
+  <data name="AvoidMultipleEnumerationsTitle" xml:space="preserve">
+    <value>Possible multiple enumerations over 'IEnumerable' collection</value>
+    <comment>'IEnumerable' is a well-known interface name. It should not be translated</comment>
+  </data>
 </root>

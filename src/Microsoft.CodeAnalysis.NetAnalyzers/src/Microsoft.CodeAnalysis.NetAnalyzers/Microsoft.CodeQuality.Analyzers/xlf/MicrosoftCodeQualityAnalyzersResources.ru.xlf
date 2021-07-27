@@ -52,6 +52,16 @@
         <target state="translated">Избегайте бесконечной рекурсии</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsMessage">
+        <source>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to.</source>
+        <target state="new">Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to.</target>
+        <note>'IEnumerable' is a well-known interface name. It should not be translated</note>
+      </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsTitle">
+        <source>Possible multiple enumerations over 'IEnumerable' collection</source>
+        <target state="new">Possible multiple enumerations over 'IEnumerable' collection</target>
+        <note>'IEnumerable' is a well-known interface name. It should not be translated</note>
+      </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
         <target state="translated">Для передачи типов по ссылке (с использованием "out" или "ref") необходим опыт работы с указателями, понимание различий между типами значений и ссылочными типами, а также использование методов с несколькими возвращаемыми значениями. Кроме того, разница между параметрами "out" и "ref" не является очевидной.</target>
