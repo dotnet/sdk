@@ -37,12 +37,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             string title = MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableInterface;
             context.RegisterCodeFix(new MyCodeAction(title,
-                                                     async ct => await ImplementIDisposable(context.Document, declaration, ct).ConfigureAwait(false),
+                                                     async ct => await ImplementIDisposableAsync(context.Document, declaration, ct).ConfigureAwait(false),
                                                      equivalenceKey: title),
                                     context.Diagnostics);
         }
 
-        private static async Task<Document> ImplementIDisposable(Document document, SyntaxNode declaration, CancellationToken cancellationToken)
+        private static async Task<Document> ImplementIDisposableAsync(Document document, SyntaxNode declaration, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;

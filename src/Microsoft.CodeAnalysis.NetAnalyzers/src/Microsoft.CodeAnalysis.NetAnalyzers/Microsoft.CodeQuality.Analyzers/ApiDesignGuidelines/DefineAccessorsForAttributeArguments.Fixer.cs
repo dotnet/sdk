@@ -38,7 +38,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             {
                                 title = MicrosoftCodeQualityAnalyzersResources.CreatePropertyAccessorForParameter;
                                 context.RegisterCodeFix(new MyCodeAction(title,
-                                                             async ct => await AddAccessor(context.Document, parameter, ct).ConfigureAwait(false),
+                                                             async ct => await AddAccessorAsync(context.Document, parameter, ct).ConfigureAwait(false),
                                                              equivalenceKey: title),
                                                         diagnostic);
                             }
@@ -50,7 +50,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             {
                                 title = MicrosoftCodeQualityAnalyzersResources.MakeGetterPublic;
                                 context.RegisterCodeFix(new MyCodeAction(title,
-                                                                 async ct => await MakePublic(context.Document, node, property, ct).ConfigureAwait(false),
+                                                                 async ct => await MakePublicAsync(context.Document, node, property, ct).ConfigureAwait(false),
                                                                  equivalenceKey: title),
                                                         diagnostic);
                             }
@@ -59,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         case DefineAccessorsForAttributeArgumentsAnalyzer.RemoveSetterCase:
                             title = MicrosoftCodeQualityAnalyzersResources.MakeSetterNonPublic;
                             context.RegisterCodeFix(new MyCodeAction(title,
-                                                         async ct => await RemoveSetter(context.Document, node, ct).ConfigureAwait(false),
+                                                         async ct => await RemoveSetterAsync(context.Document, node, ct).ConfigureAwait(false),
                                                          equivalenceKey: title),
                                                     diagnostic);
                             return;
@@ -71,7 +71,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        private static async Task<Document> AddAccessor(Document document, SyntaxNode parameter, CancellationToken cancellationToken)
+        private static async Task<Document> AddAccessorAsync(Document document, SyntaxNode parameter, CancellationToken cancellationToken)
         {
             SymbolEditor symbolEditor = SymbolEditor.Create(document);
             SemanticModel model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
@@ -117,7 +117,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return symbolEditor.GetChangedDocuments().First();
         }
 
-        private static async Task<Document> MakePublic(Document document, SyntaxNode getMethod, SyntaxNode property, CancellationToken cancellationToken)
+        private static async Task<Document> MakePublicAsync(Document document, SyntaxNode getMethod, SyntaxNode property, CancellationToken cancellationToken)
         {
             // Clear the accessibility on the getter.
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
@@ -145,7 +145,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return editor.GetChangedDocument();
         }
 
-        private static async Task<Document> RemoveSetter(Document document, SyntaxNode setMethod, CancellationToken cancellationToken)
+        private static async Task<Document> RemoveSetterAsync(Document document, SyntaxNode setMethod, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             editor.SetAccessibility(setMethod, Accessibility.Internal);

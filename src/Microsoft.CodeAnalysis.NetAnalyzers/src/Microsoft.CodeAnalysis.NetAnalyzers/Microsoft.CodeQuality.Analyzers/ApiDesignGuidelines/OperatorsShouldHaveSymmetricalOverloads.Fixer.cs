@@ -35,13 +35,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterCodeFix(
                 CodeAction.Create(
                     MicrosoftCodeQualityAnalyzersResources.Generate_missing_operators,
-                    c => CreateChangedDocument(context, c),
+                    c => CreateChangedDocumentAsync(context, c),
                     nameof(MicrosoftCodeQualityAnalyzersResources.Generate_missing_operators)),
                 context.Diagnostics);
             return Task.FromResult(true);
         }
 
-        private static async Task<Document> CreateChangedDocument(
+        private static async Task<Document> CreateChangedDocumentAsync(
             CodeFixContext context, CancellationToken cancellationToken)
         {
             var document = context.Document;

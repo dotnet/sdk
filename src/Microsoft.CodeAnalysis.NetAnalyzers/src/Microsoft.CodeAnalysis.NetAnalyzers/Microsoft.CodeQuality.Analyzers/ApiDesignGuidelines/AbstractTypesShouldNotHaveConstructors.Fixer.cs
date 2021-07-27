@@ -30,7 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             string title = MicrosoftCodeQualityAnalyzersResources.AbstractTypesShouldNotHavePublicConstructorsCodeFix;
             context.RegisterCodeFix(new MyCodeAction(title,
-                                        async ct => await ChangeAccessibilityCodeFix(context.Document, root, node, ct).ConfigureAwait(false),
+                                        async ct => await ChangeAccessibilityCodeFixAsync(context.Document, root, node, ct).ConfigureAwait(false),
                                         equivalenceKey: title),
                                     context.Diagnostics);
         }
@@ -40,7 +40,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return (!symbol.DeclaringSyntaxReferences.IsEmpty) ? symbol.DeclaringSyntaxReferences[0].GetSyntax(cancellationToken) : null;
         }
 
-        private static async Task<Document> ChangeAccessibilityCodeFix(Document document, SyntaxNode root, SyntaxNode nodeToFix, CancellationToken cancellationToken)
+        private static async Task<Document> ChangeAccessibilityCodeFixAsync(Document document, SyntaxNode root, SyntaxNode nodeToFix, CancellationToken cancellationToken)
         {
             SemanticModel model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             var classSymbol = (INamedTypeSymbol)model.GetDeclaredSymbol(nodeToFix, cancellationToken);

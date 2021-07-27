@@ -35,7 +35,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 context.RegisterCodeFix(
                     new MyCodeAction(
                         MicrosoftCodeQualityAnalyzersResources.RemoveUnusedParameterMessage,
-                        async ct => await RemoveNodes(context.Document, diagnostic, ct).ConfigureAwait(false),
+                        async ct => await RemoveNodesAsync(context.Document, diagnostic, ct).ConfigureAwait(false),
                         equivalenceKey: MicrosoftCodeQualityAnalyzersResources.RemoveUnusedParameterMessage),
                     diagnostic);
             }
@@ -58,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         /// </summary>
         protected abstract bool CanContinuouslyLeadToObjectCreationOrInvocation(SyntaxNode node);
 
-        private async Task<Solution> RemoveNodes(Document document, Diagnostic diagnostic, CancellationToken cancellationToken)
+        private async Task<Solution> RemoveNodesAsync(Document document, Diagnostic diagnostic, CancellationToken cancellationToken)
         {
             var solution = document.Project.Solution;
             var pairs = await GetNodesToRemoveAsync(document, diagnostic, cancellationToken).ConfigureAwait(false);
@@ -138,7 +138,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     foreach (var referenceLocation in referencedSymbol.Locations)
                     {
                         Location location = referenceLocation.Location;
-                        var referenceRoot = location.SourceTree.GetRoot(cancellationToken);
+                        var referenceRoot = await location.SourceTree.GetRootAsync(cancellationToken).ConfigureAwait(false);
                         var referencedSymbolNode = referenceRoot.FindNode(location.SourceSpan);
                         DocumentEditor localEditor = await DocumentEditor.CreateAsync(referenceLocation.Document, cancellationToken).ConfigureAwait(false);
                         var arguments = GetOperationArguments(referencedSymbolNode, localEditor.SemanticModel, cancellationToken);

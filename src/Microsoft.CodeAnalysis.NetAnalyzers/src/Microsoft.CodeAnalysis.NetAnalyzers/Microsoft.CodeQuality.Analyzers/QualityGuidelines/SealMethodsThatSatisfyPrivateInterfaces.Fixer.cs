@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 if (dx.Location.IsInSource)
                 {
-                    var root = dx.Location.SourceTree.GetRoot(context.CancellationToken);
+                    var root = await dx.Location.SourceTree.GetRootAsync(context.CancellationToken).ConfigureAwait(false);
                     var declarationNode = gen.GetDeclaration(root.FindToken(dx.Location.SourceSpan.Start).Parent);
                     if (declarationNode != null)
                     {

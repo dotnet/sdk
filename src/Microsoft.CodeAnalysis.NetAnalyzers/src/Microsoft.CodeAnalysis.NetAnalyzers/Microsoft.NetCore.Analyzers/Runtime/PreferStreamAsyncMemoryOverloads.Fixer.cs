@@ -103,7 +103,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             string title = MicrosoftNetCoreAnalyzersResources.PreferStreamAsyncMemoryOverloadsTitle;
 
-            Task<Document> createChangedDocument(CancellationToken _) => FixInvocation(model, doc, root,
+            Task<Document> createChangedDocument(CancellationToken _) => FixInvocationAsync(model, doc, root,
                                                          invocation, invocation.TargetMethod.Name,
                                                          bufferNode, isBufferNamed,
                                                          offsetNode, isOffsetNamed,
@@ -118,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 context.Diagnostics);
         }
 
-        private Task<Document> FixInvocation(SemanticModel model, Document doc, SyntaxNode root,
+        private Task<Document> FixInvocationAsync(SemanticModel model, Document doc, SyntaxNode root,
             IInvocationOperation invocation, string methodName,
             SyntaxNode bufferNode, bool isBufferNamed,
             SyntaxNode offsetNode, bool isOffsetNamed,

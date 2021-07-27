@@ -47,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     return CodeAction.Create(
                         title,
-                        async ct => await AddAttributeUsageAttribute(context.Document, nodeToFix, attributeUsageAttributeType, attributeTargetsType, attributeTargetValue, ct).ConfigureAwait(false),
+                        async ct => await AddAttributeUsageAttributeAsync(context.Document, nodeToFix, attributeUsageAttributeType, attributeTargetsType, attributeTargetValue, ct).ConfigureAwait(false),
                         equivalenceKey: title);
                 })
                 .OrderBy(a => a.Title)
@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 #pragma warning restore RS1010
         }
 
-        private static async Task<Document> AddAttributeUsageAttribute(Document document, SyntaxNode nodeToFix, INamedTypeSymbol attributeUsageAttributeType,
+        private static async Task<Document> AddAttributeUsageAttributeAsync(Document document, SyntaxNode nodeToFix, INamedTypeSymbol attributeUsageAttributeType,
             INamedTypeSymbol attributeTargetsType, string attributeTargetValue, CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);

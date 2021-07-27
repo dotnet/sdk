@@ -32,20 +32,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 string title = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse;
                 context.RegisterCodeFix(
                     new MyCodeAction(title,
-                        async ct => await GetFix(context.Document, expression, argument: false, cancellationToken: ct).ConfigureAwait(false),
+                        async ct => await GetFixAsync(context.Document, expression, argument: false, cancellationToken: ct).ConfigureAwait(false),
                         equivalenceKey: nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse)),
                     context.Diagnostics);
 
                 title = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue;
                 context.RegisterCodeFix(
                     new MyCodeAction(title,
-                        async ct => await GetFix(context.Document, expression, argument: true, cancellationToken: ct).ConfigureAwait(false),
+                        async ct => await GetFixAsync(context.Document, expression, argument: true, cancellationToken: ct).ConfigureAwait(false),
                         equivalenceKey: nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue)),
                     context.Diagnostics);
             }
         }
 
-        private static async Task<Document> GetFix(Document document, SyntaxNode expression, bool argument, CancellationToken cancellationToken)
+        private static async Task<Document> GetFixAsync(Document document, SyntaxNode expression, bool argument, CancellationToken cancellationToken)
         {
             // Rewrite the expression to include a .ConfigureAwait() after it. We reattach trailing trivia to the end.
             // This is especially important for VB, as the end-of-line may be in the trivia

@@ -39,12 +39,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             string title = MicrosoftNetCoreAnalyzersResources.UseArrayEmpty;
             context.RegisterCodeFix(new MyCodeAction(title,
-                                                     async ct => await ConvertToArrayEmpty(context.Document, nodeToFix, ct).ConfigureAwait(false),
+                                                     async ct => await ConvertToArrayEmptyAsync(context.Document, nodeToFix, ct).ConfigureAwait(false),
                                                      equivalenceKey: title),
                                     context.Diagnostics);
         }
 
-        private static async Task<Document> ConvertToArrayEmpty(Document document, SyntaxNode nodeToFix, CancellationToken cancellationToken)
+        private static async Task<Document> ConvertToArrayEmptyAsync(Document document, SyntaxNode nodeToFix, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 

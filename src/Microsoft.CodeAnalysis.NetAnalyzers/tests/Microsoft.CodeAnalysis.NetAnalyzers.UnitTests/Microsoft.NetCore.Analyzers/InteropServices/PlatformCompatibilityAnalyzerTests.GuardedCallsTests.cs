@@ -55,7 +55,7 @@ class Test
     void Api() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -91,7 +91,7 @@ public class Test
     }
 }
 ";
-            await VerifyAnalyzerAsyncCs(csSource, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -126,7 +126,7 @@ public class Test
     }
 }
 ";
-            await VerifyAnalyzerAsyncCs(csSource, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms,
 #pragma warning disable RS0030 // Do not used banned APIs
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(24, 13).WithArguments("BrowserOnlyType", "'browser'"),
 #pragma warning restore RS0030 // Do not used banned APIs
@@ -160,7 +160,7 @@ class Test
     void Api() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4932, "https://github.com/dotnet/roslyn-analyzers/issues/4932")]
@@ -194,7 +194,7 @@ public class MSAL
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -223,7 +223,7 @@ public class MSAL
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -257,7 +257,7 @@ public class MSAL
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -299,7 +299,7 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundSupported
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -381,7 +381,7 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundSupported
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -442,7 +442,7 @@ namespace PlatformCompatDemo.SupportedUnupported
     }
 }" + TargetTypesForTest;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -551,7 +551,7 @@ namespace PlatformCompatDemo.SupportedUnupported
     }
 }" + TargetTypesForTest;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -633,7 +633,7 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundUnsupported
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -660,7 +660,7 @@ class Test
     void Api() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -729,7 +729,7 @@ class Test
     void NotForIos12OrLater() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4190, "https://github.com/dotnet/roslyn-analyzers/issues/4190")]
@@ -815,7 +815,7 @@ class Test
     [UnsupportedOSPlatform(""ios12.1"")]
     void NotForIos12OrLater() { }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         public static IEnumerable<object[]> OperatingSystem_IsOsNameVersionAtLeast_MethodsTestData()
@@ -870,7 +870,7 @@ class Test
     void OsSpecificMethod() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         public static IEnumerable<object[]> OperatingSystem_IsOsName_MethodsTestData()
@@ -925,7 +925,7 @@ class Test
     void OsSpecificMethod() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -962,7 +962,7 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -990,7 +990,7 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
@@ -1018,7 +1018,7 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
@@ -1047,7 +1047,7 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
@@ -1106,7 +1106,7 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1138,7 +1138,7 @@ public class WindowsSpecificApis
     public static void WindowsOnlyMethod() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1172,7 +1172,7 @@ static class Some
 }
 ";
 
-            await VerifyAnalyzerAsyncCs(source,
+            await VerifyAnalyzerCSAsync(source,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsReachable).WithLocation(0).
                 WithArguments("Some.WindowsSpecificApi()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0"),
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows")));
@@ -1197,7 +1197,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -1213,7 +1213,7 @@ Public Class Test
     Public Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -1241,7 +1241,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1269,7 +1269,7 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1302,7 +1302,7 @@ class Test
     [UnsupportedOSPlatform(""Windows10.0"")]
     void M3() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1346,7 +1346,7 @@ class Test
     [UnsupportedOSPlatform(""Windows10.1.2.3"")]
     void M3() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -1380,7 +1380,7 @@ Class Test
     Private Sub M3()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -1421,7 +1421,7 @@ public enum PlatformEnum
     NoPlatform
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1469,7 +1469,7 @@ public class Test
     }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
@@ -1487,7 +1487,7 @@ class C
 [UnsupportedOSPlatform(""windows"")]
 class A { }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
@@ -1505,7 +1505,7 @@ class C
 [UnsupportedOSPlatform(""windows"")]
 class A { }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
@@ -1523,7 +1523,7 @@ class C
 [UnsupportedOSPlatform(""windows"")]
 class A { }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
@@ -1541,7 +1541,7 @@ class C
 [UnsupportedOSPlatform(""windows"")]
 class A { }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -1576,7 +1576,7 @@ public class C
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1608,7 +1608,7 @@ public class OsDependentClass
     public void Method2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -1631,7 +1631,7 @@ Public Class OsDependentClass
     Public Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -1663,7 +1663,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1708,7 +1708,7 @@ public class Test
     [UnsupportedOSPlatform(""Windows10.0"")]
     public void UnsupportedWindows10() { }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -1763,7 +1763,7 @@ public class Test
     public void UnsupportedWindows10() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -1820,7 +1820,7 @@ public class Test
     public void UnsupportedWindows10() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -1856,7 +1856,7 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1898,7 +1898,7 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1945,7 +1945,7 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1981,7 +1981,7 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2032,7 +2032,7 @@ public class Test
     public void Windows10OrLaterOnly() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2078,7 +2078,7 @@ public class Test
     public void WindowsOnly() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2115,7 +2115,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2147,7 +2147,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2190,7 +2190,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4090, "https://github.com/dotnet/roslyn-analyzers/issues/4090")]
@@ -2224,7 +2224,7 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2260,7 +2260,7 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2302,7 +2302,7 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2349,7 +2349,7 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2388,7 +2388,7 @@ public class Test
     public void M3() { _field(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2422,7 +2422,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2459,7 +2459,7 @@ public class Test
     public void M3(object a) { ((Action)a)(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2494,7 +2494,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2530,7 +2530,7 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2562,7 +2562,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2613,7 +2613,7 @@ public class Test
     public void Windows10OrLaterOnly() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2650,7 +2650,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2685,7 +2685,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2720,7 +2720,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4209, "https://github.com/dotnet/roslyn-analyzers/issues/4209")]
@@ -2754,7 +2754,7 @@ class Test
     void UnsupportedOnBrowser() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2799,7 +2799,7 @@ public class Test
     public void M4() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2831,7 +2831,7 @@ public class Test
     }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2872,7 +2872,7 @@ class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2896,7 +2896,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2922,7 +2922,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2945,7 +2945,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -2962,7 +2962,7 @@ Public Class Test
     Public Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -3005,7 +3005,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -3045,7 +3045,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -3082,7 +3082,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -3111,7 +3111,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -3140,7 +3140,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -3191,7 +3191,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -3221,7 +3221,7 @@ class Test
     [UnsupportedOSPlatform(""windows10.0.2004"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -3242,7 +3242,7 @@ Class Test
     Private Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource, s_msBuildPlatforms);
+            await VerifyAnalyzerVBAsync(vbSource, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -3287,7 +3287,7 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -3320,7 +3320,7 @@ class Test
     [SupportedOSPlatform(""Windows"")]
     void M3() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Diagnostics
@@ -3338,7 +3338,7 @@ Class Test
     Private Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -3372,7 +3372,7 @@ class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -3396,7 +3396,7 @@ class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -3420,7 +3420,7 @@ class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -3465,7 +3465,7 @@ class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -3498,7 +3498,7 @@ Class Test
     Private Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -3533,7 +3533,7 @@ class Test
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive\nbuild_property.TargetFramework = net5");
+            await VerifyAnalyzerCSAsync(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive\nbuild_property.TargetFramework = net5");
         }
 
         [Fact, WorkItem(4282, "https://github.com/dotnet/roslyn-analyzers/issues/4282")]
@@ -3596,7 +3596,7 @@ class Test
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4282, "https://github.com/dotnet/roslyn-analyzers/issues/4282")]
@@ -3657,7 +3657,7 @@ class Test
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
+            await VerifyAnalyzerCSAsync(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
         }
 
         [Fact, WorkItem(4182, "https://github.com/dotnet/roslyn-analyzers/issues/4182")]
@@ -3703,7 +3703,7 @@ namespace Repro
         public static IEnumerable<int> GetProcesses() => throw null;
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4372, "https://github.com/dotnet/roslyn-analyzers/issues/4372")]
@@ -3735,7 +3735,7 @@ namespace Repro
         public static void WindowsSupported() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4372, "https://github.com/dotnet/roslyn-analyzers/issues/4372")]
@@ -3767,7 +3767,7 @@ namespace Repro
         public static void WindowsSupported() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact(Skip = "TODO: Analysis value not returned, needs to be fixed")]
@@ -3803,7 +3803,7 @@ class Test
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
+            await VerifyAnalyzerCSAsync(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
         }
 
         private readonly string TargetTypesForTest = @"

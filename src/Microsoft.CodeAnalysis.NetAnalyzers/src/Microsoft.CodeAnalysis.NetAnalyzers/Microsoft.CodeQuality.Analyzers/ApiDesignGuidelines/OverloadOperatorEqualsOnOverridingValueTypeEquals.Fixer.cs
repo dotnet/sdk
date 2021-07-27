@@ -42,11 +42,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             string title = MicrosoftCodeQualityAnalyzersResources.OverloadOperatorEqualsOnOverridingValueTypeEqualsTitle;
             context.RegisterCodeFix(
                 new MyCodeAction(title,
-                    async ct => await ImplementOperatorEquals(context.Document, declaration, typeSymbol, ct).ConfigureAwait(false),
+                    async ct => await ImplementOperatorEqualsAsync(context.Document, declaration, typeSymbol, ct).ConfigureAwait(false),
                     equivalenceKey: title), context.Diagnostics);
         }
 
-        private static async Task<Document> ImplementOperatorEquals(Document document, SyntaxNode declaration, INamedTypeSymbol typeSymbol, CancellationToken cancellationToken)
+        private static async Task<Document> ImplementOperatorEqualsAsync(Document document, SyntaxNode declaration, INamedTypeSymbol typeSymbol, CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;

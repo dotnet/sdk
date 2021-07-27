@@ -21,7 +21,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                    DirectCast(node, SimpleArgumentSyntax).Expression.IsKind(SyntaxKind.SimpleMemberAccessExpression)
         End Function
 
-        Protected Overrides Function FixArgument(document As Document, generator As SyntaxGenerator, root As SyntaxNode, argument As SyntaxNode) As Task(Of Document)
+        Protected Overrides Function FixArgumentAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, argument As SyntaxNode) As Task(Of Document)
             Dim memberAccess = TryCast(TryCast(argument, SimpleArgumentSyntax)?.Expression, MemberAccessExpressionSyntax)
             If memberAccess IsNot Nothing Then
                 ' preserve the "IgnoreCase" suffix if present
@@ -40,7 +40,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                    node?.Parent?.FirstAncestorOrSelf(Of InvocationExpressionSyntax)() IsNot Nothing
         End Function
 
-        Protected Overrides Async Function FixIdentifierName(document As Document, generator As SyntaxGenerator, root As SyntaxNode, identifier As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
+        Protected Overrides Async Function FixIdentifierNameAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, identifier As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
             Dim invokeParent = identifier.Parent?.FirstAncestorOrSelf(Of InvocationExpressionSyntax)()
             If invokeParent IsNot Nothing Then
                 Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)

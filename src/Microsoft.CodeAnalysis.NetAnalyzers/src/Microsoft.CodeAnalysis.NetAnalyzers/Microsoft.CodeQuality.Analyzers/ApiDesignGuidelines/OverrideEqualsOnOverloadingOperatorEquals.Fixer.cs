@@ -46,12 +46,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterCodeFix(
                 new MyCodeAction(
                     title,
-                    cancellationToken => OverrideObjectEquals(context.Document, typeDeclaration, typeSymbol, cancellationToken),
+                    cancellationToken => OverrideObjectEqualsAsync(context.Document, typeDeclaration, typeSymbol, cancellationToken),
                     equivalenceKey: title),
                 context.Diagnostics);
         }
 
-        private static async Task<Document> OverrideObjectEquals(Document document, SyntaxNode typeDeclaration, INamedTypeSymbol typeSymbol, CancellationToken cancellationToken)
+        private static async Task<Document> OverrideObjectEqualsAsync(Document document, SyntaxNode typeDeclaration, INamedTypeSymbol typeSymbol, CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;

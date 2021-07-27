@@ -51,7 +51,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (resolution != null)
             {
                 var action = CodeAction.Create(MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage,
-                    async ct => await ConvertToMethodInvocation(context, resolution).ConfigureAwait(false),
+                    async ct => await ConvertToMethodInvocationAsync(context, resolution).ConfigureAwait(false),
                     equivalenceKey: MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage);
 
                 context.RegisterCodeFix(action, context.Diagnostics);
@@ -95,7 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return null;
         }
 
-        private static async Task<Document> ConvertToMethodInvocation(CodeFixContext context, FixResolution fixResolution)
+        private static async Task<Document> ConvertToMethodInvocationAsync(CodeFixContext context, FixResolution fixResolution)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, context.CancellationToken).ConfigureAwait(false);
 

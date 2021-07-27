@@ -38,12 +38,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterCodeFix(
                 new MyCodeAction(
                     title,
-                    cancellationToken => OverrideObjectGetHashCode(context.Document, typeDeclaration, cancellationToken),
+                    cancellationToken => OverrideObjectGetHashCodeAsync(context.Document, typeDeclaration, cancellationToken),
                     equivalenceKey: title),
                 context.Diagnostics);
         }
 
-        private static async Task<Document> OverrideObjectGetHashCode(Document document, SyntaxNode typeDeclaration, CancellationToken cancellationToken)
+        private static async Task<Document> OverrideObjectGetHashCodeAsync(Document document, SyntaxNode typeDeclaration, CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;

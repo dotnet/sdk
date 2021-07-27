@@ -38,10 +38,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             string title = MicrosoftCodeQualityAnalyzersResources.OperatorOverloadsHaveNamedAlternatesCodeFixTitle;
-            context.RegisterCodeFix(new MyCodeAction(title, ct => Fix(context, ct), equivalenceKey: title), context.Diagnostics.First());
+            context.RegisterCodeFix(new MyCodeAction(title, ct => FixAsync(context, ct), equivalenceKey: title), context.Diagnostics.First());
         }
 
-        private static async Task<Document> Fix(CodeFixContext context, CancellationToken cancellationToken)
+        private static async Task<Document> FixAsync(CodeFixContext context, CancellationToken cancellationToken)
         {
             var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
@@ -58,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     // For C# the following `typeDeclarationSyntax` and `typeDeclaration` nodes are identical, but for VB they're different so in
                     // an effort to keep this as language-agnostic as possible, the heavy-handed approach is used.
-                    SyntaxNode typeDeclarationSyntax = typeSymbol.DeclaringSyntaxReferences.First().GetSyntax(cancellationToken);
+                    SyntaxNode typeDeclarationSyntax = await typeSymbol.DeclaringSyntaxReferences.First().GetSyntaxAsync(cancellationToken).ConfigureAwait(false);
                     SyntaxNode typeDeclaration = generator.GetDeclaration(typeDeclarationSyntax,
                         typeSymbol.TypeKind == TypeKind.Struct ? DeclarationKind.Struct : DeclarationKind.Class);
 

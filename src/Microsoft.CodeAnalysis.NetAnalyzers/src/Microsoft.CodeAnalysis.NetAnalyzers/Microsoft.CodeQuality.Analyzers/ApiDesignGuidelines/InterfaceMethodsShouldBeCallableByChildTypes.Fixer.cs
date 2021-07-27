@@ -75,7 +75,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     string title = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix1, symbolToChange.Name);
 
                     context.RegisterCodeFix(new MyCodeAction(title,
-                         async ct => await MakeProtected(context.Document, symbolToChange, checkSetter, ct).ConfigureAwait(false),
+                         async ct => await MakeProtectedAsync(context.Document, symbolToChange, checkSetter, ct).ConfigureAwait(false),
                          equivalenceKey: MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix1),
                     context.Diagnostics);
                 }
@@ -88,14 +88,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     string title = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix2, symbolToChange.Name);
 
                     context.RegisterCodeFix(new MyCodeAction(title,
-                         async ct => await ChangeToPublicInterfaceImplementation(context.Document, symbolToChange, ct).ConfigureAwait(false),
+                         async ct => await ChangeToPublicInterfaceImplementationAsync(context.Document, symbolToChange, ct).ConfigureAwait(false),
                          equivalenceKey: MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix2),
                     context.Diagnostics);
                 }
             }
 
             context.RegisterCodeFix(new MyCodeAction(string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3, methodSymbol.ContainingType.Name),
-                     async ct => await MakeContainingTypeSealed(context.Document, methodSymbol, ct).ConfigureAwait(false),
+                     async ct => await MakeContainingTypeSealedAsync(context.Document, methodSymbol, ct).ConfigureAwait(false),
                          equivalenceKey: MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3),
                 context.Diagnostics);
         }
@@ -117,7 +117,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return null;
         }
 
-        private static async Task<Document> MakeProtected(Document document, ISymbol symbolToChange, bool checkSetter, CancellationToken cancellationToken)
+        private static async Task<Document> MakeProtectedAsync(Document document, ISymbol symbolToChange, bool checkSetter, CancellationToken cancellationToken)
         {
             SymbolEditor editor = SymbolEditor.Create(document);
 
@@ -154,7 +154,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return editor.GetChangedDocuments().First();
         }
 
-        private static async Task<Document> ChangeToPublicInterfaceImplementation(Document document, ISymbol symbolToChange, CancellationToken cancellationToken)
+        private static async Task<Document> ChangeToPublicInterfaceImplementationAsync(Document document, ISymbol symbolToChange, CancellationToken cancellationToken)
         {
             SymbolEditor editor = SymbolEditor.Create(document);
 
@@ -198,7 +198,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             };
         }
 
-        private static async Task<Document> MakeContainingTypeSealed(Document document, IMethodSymbol methodSymbol, CancellationToken cancellationToken)
+        private static async Task<Document> MakeContainingTypeSealedAsync(Document document, IMethodSymbol methodSymbol, CancellationToken cancellationToken)
         {
             SymbolEditor editor = SymbolEditor.Create(document);
 
