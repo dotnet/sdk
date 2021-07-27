@@ -1,0 +1,37 @@
+From 9531b8ea8fab44bf8b9b19c64c393e0d2d5907c4 Mon Sep 17 00:00:00 2001
+From: dseefeld <dseefeld@microsoft.com>
+Date: Wed, 21 Jul 2021 22:07:46 +0000
+Subject: [PATCH 1/2] Exclude test projects from source-build
+
+---
+ .../Microsoft.Arcade.Common.Tests.csproj                         | 1 +
+ .../Microsoft.Arcade.Test.Common.csproj                          | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/Common/Microsoft.Arcade.Common.Tests/Microsoft.Arcade.Common.Tests.csproj b/src/Common/Microsoft.Arcade.Common.Tests/Microsoft.Arcade.Common.Tests.csproj
+index 653588d2..98b20958 100644
+--- a/src/Common/Microsoft.Arcade.Common.Tests/Microsoft.Arcade.Common.Tests.csproj
++++ b/src/Common/Microsoft.Arcade.Common.Tests/Microsoft.Arcade.Common.Tests.csproj
+@@ -3,6 +3,7 @@
+   <PropertyGroup>
+     <TargetFramework>netcoreapp3.1</TargetFramework>
+     <Nullable>enable</Nullable>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Common/Microsoft.Arcade.Test.Common/Microsoft.Arcade.Test.Common.csproj b/src/Common/Microsoft.Arcade.Test.Common/Microsoft.Arcade.Test.Common.csproj
+index bb3c5eeb..bcc3d717 100644
+--- a/src/Common/Microsoft.Arcade.Test.Common/Microsoft.Arcade.Test.Common.csproj
++++ b/src/Common/Microsoft.Arcade.Test.Common/Microsoft.Arcade.Test.Common.csproj
+@@ -3,6 +3,7 @@
+   <PropertyGroup>
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+     <IsTestProject>true</IsTestProject>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+-- 
+2.31.1
+

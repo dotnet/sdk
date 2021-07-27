@@ -1,0 +1,31 @@
+From f4978575da2a47049a941260629f0f2e54979778 Mon Sep 17 00:00:00 2001
+From: dseefeld <dseefeld@microsoft.com>
+Date: Thu, 22 Jul 2021 13:33:45 +0000
+Subject: [PATCH] Exlude test project from source-build
+
+---
+ src/TestUtilities/TestUtilities.csproj | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/TestUtilities/TestUtilities.csproj b/src/TestUtilities/TestUtilities.csproj
+index c83b5df..92279cc 100644
+--- a/src/TestUtilities/TestUtilities.csproj
++++ b/src/TestUtilities/TestUtilities.csproj
+@@ -3,6 +3,7 @@
+     <TargetFramework>netstandard1.3</TargetFramework>
+     <IsShipping>false</IsShipping>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+   <ItemGroup>
+     <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
+@@ -13,4 +14,4 @@
+   <ItemGroup>
+     <ProjectReference Include="..\Microsoft.DiaSymReader\Microsoft.DiaSymReader.csproj" />
+   </ItemGroup>
+-</Project>
+\ No newline at end of file
++</Project>
+-- 
+2.31.1
+

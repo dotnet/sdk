@@ -25,10 +25,11 @@ namespace Microsoft.DotNet.Build.Tasks
             foreach (string file in InputFiles)
             {
                 string fileContents = File.ReadAllText(file);
+                string newLineChars = FileUtilities.DetectNewLineChars(fileContents);
 
-                fileContents = fileContents.Replace(OldText, NewText, StringComparison.Ordinal);
+                fileContents = fileContents.Replace(OldText, NewText);
 
-                File.WriteAllText(file, fileContents);
+                File.WriteAllText(file, FileUtilities.NormalizeNewLineChars(fileContents, newLineChars));
             }
 
             return true;

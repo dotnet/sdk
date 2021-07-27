@@ -24,10 +24,11 @@ namespace Microsoft.DotNet.Build.Tasks
         public override bool Execute()
         {
             string fileContents = File.ReadAllText(InputFile);
+            string newLineChars = FileUtilities.DetectNewLineChars(fileContents);
 
             fileContents = fileContents.Replace(OldText, NewText);
 
-            File.WriteAllText(InputFile, fileContents);
+            File.WriteAllText(InputFile, FileUtilities.NormalizeNewLineChars(fileContents, newLineChars));
 
             return true;
         }

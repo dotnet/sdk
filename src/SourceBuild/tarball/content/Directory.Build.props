@@ -137,6 +137,7 @@
     <OfflineGitInfoPropsFile>$(GitInfoOfflineDir)$(RepositoryName).props</OfflineGitInfoPropsFile>
     <OfflineAllRepoPropsFile>$(GitInfoOfflineDir)AllRepoVersions.props</OfflineAllRepoPropsFile>
     <PackageReportDir>$(BaseOutputPath)prebuilt-report/</PackageReportDir>
+    <ResultingPrebuiltPackagesDir>$(PackageReportDir)prebuilt-packages/</ResultingPrebuiltPackagesDir>
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
     <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
     <PoisonReportDataFile>$(PackageReportDir)poison-catalog.xml</PoisonReportDataFile>

@@ -1,0 +1,122 @@
+From 5288390142a40beb392f5e11380b370ab696830c Mon Sep 17 00:00:00 2001
+From: dseefeld <dseefeld@microsoft.com>
+Date: Wed, 21 Jul 2021 21:10:15 +0000
+Subject: [PATCH] Update TFM to net6.0
+
+When building from source, only the current TFM is built.  Update
+TargetFrameworks to only have net6.0.
+---
+ eng/TargetFrameworkDefaults.props                               | 2 +-
+ .../Microsoft.DotNet.Deployment.Tasks.Links.csproj              | 2 +-
+ .../tasks/Microsoft.DotNet.NuGetRepack.Tasks.csproj             | 2 +-
+ .../Microsoft.DotNet.GenFacades.csproj                          | 1 +
+ .../Microsoft.DotNet.PackageTesting.csproj                      | 1 +
+ .../Microsoft.DotNet.SharedFramework.Sdk.csproj                 | 1 +
+ src/Microsoft.DotNet.SignTool/Microsoft.DotNet.SignTool.csproj  | 2 +-
+ .../tasks/Microsoft.DotNet.VersionTools.Tasks.csproj            | 2 +-
+ 8 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/eng/TargetFrameworkDefaults.props b/eng/TargetFrameworkDefaults.props
+index 89f2a8eb..ca3546e8 100644
+--- a/eng/TargetFrameworkDefaults.props
++++ b/eng/TargetFrameworkDefaults.props
+@@ -6,7 +6,7 @@
+   -->
+   <PropertyGroup>
+     <TargetFrameworkForNETSDK>netcoreapp3.1</TargetFrameworkForNETSDK>
+-    <TargetFrameworkForNETSDK Condition="'$(DotNetBuildFromSource)' == 'true'">net5.0</TargetFrameworkForNETSDK>
++    <TargetFrameworkForNETSDK Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworkForNETSDK>
+   </PropertyGroup>
+ 
+ </Project>
+diff --git a/src/Microsoft.DotNet.Deployment.Tasks.Links/Microsoft.DotNet.Deployment.Tasks.Links.csproj b/src/Microsoft.DotNet.Deployment.Tasks.Links/Microsoft.DotNet.Deployment.Tasks.Links.csproj
+index 30474e21..c964fbea 100644
+--- a/src/Microsoft.DotNet.Deployment.Tasks.Links/Microsoft.DotNet.Deployment.Tasks.Links.csproj
++++ b/src/Microsoft.DotNet.Deployment.Tasks.Links/Microsoft.DotNet.Deployment.Tasks.Links.csproj
+@@ -3,7 +3,7 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
+ 
+     <IsPackable>true</IsPackable>
+     <Description>Aka.ms link manager</Description>
+diff --git a/src/Microsoft.DotNet.NuGetRepack/tasks/Microsoft.DotNet.NuGetRepack.Tasks.csproj b/src/Microsoft.DotNet.NuGetRepack/tasks/Microsoft.DotNet.NuGetRepack.Tasks.csproj
+index 6a1cee07..e01890c8 100644
+--- a/src/Microsoft.DotNet.NuGetRepack/tasks/Microsoft.DotNet.NuGetRepack.Tasks.csproj
++++ b/src/Microsoft.DotNet.NuGetRepack/tasks/Microsoft.DotNet.NuGetRepack.Tasks.csproj
+@@ -2,7 +2,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+     <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
+ 
+     <IsPackable>true</IsPackable>
+     <PackageType>MSBuildSdk</PackageType>
+diff --git a/src/Microsoft.DotNet.GenFacades/Microsoft.DotNet.GenFacades.csproj b/src/Microsoft.DotNet.GenFacades/Microsoft.DotNet.GenFacades.csproj
+index db51ae17..bca9958d 100644
+--- a/src/Microsoft.DotNet.GenFacades/Microsoft.DotNet.GenFacades.csproj
++++ b/src/Microsoft.DotNet.GenFacades/Microsoft.DotNet.GenFacades.csproj
+@@ -2,6 +2,7 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
++    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <PackageType>MSBuildSdk</PackageType>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+     <IsPackable>true</IsPackable>
+diff --git a/src/Microsoft.DotNet.PackageTesting/Microsoft.DotNet.PackageTesting.csproj b/src/Microsoft.DotNet.PackageTesting/Microsoft.DotNet.PackageTesting.csproj
+index 2f35e4aa..dfe69f4c 100644
+--- a/src/Microsoft.DotNet.PackageTesting/Microsoft.DotNet.PackageTesting.csproj
++++ b/src/Microsoft.DotNet.PackageTesting/Microsoft.DotNet.PackageTesting.csproj
+@@ -2,6 +2,7 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
+     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+     <PackageType>MSBuildSdk</PackageType>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+diff --git a/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj b/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj
+index 4405a1fe..a93edfaa 100644
+--- a/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj
++++ b/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj
+@@ -2,6 +2,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+     <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
+     <LangVersion>preview</LangVersion>
+     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+ 
+diff --git a/src/Microsoft.DotNet.SignTool/Microsoft.DotNet.SignTool.csproj b/src/Microsoft.DotNet.SignTool/Microsoft.DotNet.SignTool.csproj
+index 8ec571ae..7a89dfe9 100644
+--- a/src/Microsoft.DotNet.SignTool/Microsoft.DotNet.SignTool.csproj
++++ b/src/Microsoft.DotNet.SignTool/Microsoft.DotNet.SignTool.csproj
+@@ -2,7 +2,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+     <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <LangVersion>Latest</LangVersion>
+     <IsPackable>true</IsPackable>
+diff --git a/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj b/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj
+index 208ffb03..2dfa124f 100644
+--- a/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj
++++ b/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
+     <PackageType>MSBuildSdk</PackageType>
+   </PropertyGroup>
+ 
+-- 
+2.31.1
+
