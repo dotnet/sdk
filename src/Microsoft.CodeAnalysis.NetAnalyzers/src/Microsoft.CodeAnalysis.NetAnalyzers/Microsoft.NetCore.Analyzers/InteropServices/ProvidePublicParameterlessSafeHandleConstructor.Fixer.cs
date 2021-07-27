@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 
@@ -36,38 +37,15 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
 
-            Diagnostic diagnostic = context.Diagnostics.First();
-            if (diagnostic.Properties.ContainsKey(ProvidePublicParameterlessSafeHandleConstructorAnalyzer.DiagnosticPropertyConstructorExists))
+            foreach (var diagnostic in context.Diagnostics)
             {
                 context.RegisterCodeFix(
-                    new MyCodeAction(
+                    CodeAction.Create(
                         MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic,
                         async ct => await MakeParameterlessConstructorPublic(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
                         equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic)),
                     diagnostic);
             }
-            else if (diagnostic.Properties.ContainsKey(ProvidePublicParameterlessSafeHandleConstructorAnalyzer.DiagnosticPropertyBaseConstructorAccessible))
-            {
-                context.RegisterCodeFix(
-                    new MyCodeAction(
-                        MicrosoftNetCoreAnalyzersResources.AddPublicParameterlessConstructor,
-                        async ct => await AddParameterlessConstructor(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
-                        equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.AddPublicParameterlessConstructor)),
-                    diagnostic);
-            }
-        }
-
-        private static async Task<Document> AddParameterlessConstructor(SyntaxNode declaration, Document document, CancellationToken ct)
-        {
-            var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
-            INamedTypeSymbol type = (INamedTypeSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
-            var generator = editor.Generator;
-
-            var parameterlessConstructor = generator.ConstructorDeclaration(type.Name, accessibility: Accessibility.Public);
-
-            editor.AddMember(declaration, parameterlessConstructor);
-
-            return editor.GetChangedDocument();
         }
 
         private static async Task<Document> MakeParameterlessConstructorPublic(SyntaxNode declaration, Document document, CancellationToken ct)
@@ -75,14 +53,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
             editor.SetAccessibility(declaration, Accessibility.Public);
             return editor.GetChangedDocument();
-        }
-
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
     }
 }
