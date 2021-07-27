@@ -93,6 +93,7 @@ namespace Microsoft.TemplateSearch.Common
         /// Implement If-None-Match/ETag headers to avoid re-downloading the same content over and over again.
         /// </summary>
         /// <param name="searchMetadataFileLocation"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         private async Task AcquireFileFromCloudAsync(string searchMetadataFileLocation, CancellationToken cancellationToken)
         {

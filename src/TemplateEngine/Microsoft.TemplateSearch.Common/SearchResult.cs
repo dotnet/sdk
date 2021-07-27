@@ -8,6 +8,9 @@ using Microsoft.TemplateSearch.Common.Abstractions;
 
 namespace Microsoft.TemplateSearch.Common
 {
+    /// <summary>
+    /// Results of the search performed by <see cref="TemplateSearchCoordinator"/>.
+    /// </summary>
     public class SearchResult
     {
         internal SearchResult(
@@ -37,12 +40,24 @@ namespace Microsoft.TemplateSearch.Common
             }
         }
 
+        /// <summary>
+        /// Gets <see cref="ITemplateSearchProvider"/> that performed the search.
+        /// </summary>
         public ITemplateSearchProvider Provider { get; }
 
+        /// <summary>
+        /// <see langword="true"/> if search completed successfully.
+        /// </summary>
         public bool Success { get; }
 
+        /// <summary>
+        /// Gets localized error message if the search failed.
+        /// </summary>
         public string? ErrorMessage { get; }
 
+        /// <summary>
+        /// Gets search hits returned by <see cref="Provider"/>.
+        /// </summary>
         public IReadOnlyList<(IPackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> SearchHits { get; }
     }
 }

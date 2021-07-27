@@ -4,9 +4,13 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateSearch.Common.Abstractions;
 
 namespace Microsoft.TemplateSearch.Common
 {
+    /// <summary>
+    /// Template searchable data.
+    /// </summary>
     public partial class TemplateSearchData : ITemplateInfo
     {
         public TemplateSearchData(ITemplateInfo templateInfo, IDictionary<string, object>? data = null)
@@ -15,28 +19,45 @@ namespace Microsoft.TemplateSearch.Common
             AdditionalData = data ?? new Dictionary<string, object>();
         }
 
+        /// <summary>
+        /// Gets the additional data available for template package.
+        /// </summary>
+        /// <remarks>
+        /// Additional data may be read by additional readers provider to <see cref="ITemplateSearchProviderFactory"/> when creating the <see cref="ITemplateSearchProvider"/>.
+        /// </remarks>
         public IDictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
 
+        /// <inheritdoc/>
         public string Identity => TemplateInfo.Identity;
 
+        /// <inheritdoc/>
         public string? GroupIdentity => TemplateInfo.GroupIdentity;
 
+        /// <inheritdoc/>
         public string Name => TemplateInfo.Name;
 
+        /// <inheritdoc/>
         public IReadOnlyList<string> ShortNameList => TemplateInfo.ShortNameList;
 
+        /// <inheritdoc/>
         public string? Author => TemplateInfo.Author;
 
+        /// <inheritdoc/>
         public string? Description => TemplateInfo.Description;
 
+        /// <inheritdoc/>
         public IReadOnlyList<string> Classifications => TemplateInfo.Classifications;
 
+        /// <inheritdoc/>
         public IReadOnlyDictionary<string, string> TagsCollection => TemplateInfo.TagsCollection;
 
+        /// <inheritdoc/>
         public IReadOnlyList<ITemplateParameter> Parameters => TemplateInfo.Parameters;
 
+        /// <inheritdoc/>
         public int Precedence => TemplateInfo.Precedence;
 
+        /// <inheritdoc/>
         public string? ThirdPartyNotices => TemplateInfo.ThirdPartyNotices;
 
 #region implicit ITemplateInfo implementation

@@ -4,6 +4,7 @@
     <Description>Components used by the template discovery tool, and also used for related functionality in the CLI.</Description>
     <IsPackable>true</IsPackable>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

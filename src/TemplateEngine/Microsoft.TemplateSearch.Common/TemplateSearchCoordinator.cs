@@ -11,6 +11,9 @@ using Microsoft.TemplateSearch.Common.Abstractions;
 
 namespace Microsoft.TemplateSearch.Common
 {
+    /// <summary>
+    /// <see cref="TemplateSearchCoordinator"/> performs the search for the templates in registered search providers.
+    /// </summary>
     public sealed class TemplateSearchCoordinator
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
@@ -31,6 +34,13 @@ namespace Microsoft.TemplateSearch.Common
             _providers = configuredProviders;
         }
 
+        /// <summary>
+        /// Searches for the templates matching the filters in registered search providers.
+        /// </summary>
+        /// <param name="packFilter">The filter that defines if <see cref="TemplatePackageSearchData"/> is a match.</param>
+        /// <param name="matchingTemplatesFilter">The filter that list of templates that are the match inside given <see cref="TemplatePackageSearchData"/>.</param>
+        /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
+        /// <returns>The list of <see cref="SearchResult"/> representing the result of the search for given <see cref="ITemplateSearchProvider"/>.</returns>
         public async Task<IReadOnlyList<SearchResult>> SearchAsync(
             Func<TemplatePackageSearchData, bool> packFilter,
             Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> matchingTemplatesFilter,
