@@ -3,7 +3,8 @@
 
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
-    <BuildCommandArgs>$(StandardSourceBuildArgs) -v $(LogVerbosity)</BuildCommandArgs>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
