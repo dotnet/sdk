@@ -2,10 +2,6 @@
 <Project>
   <UsingTask TaskName="Microsoft.DotNet.PackageValidation.ValidatePackage" AssemblyFile="$(DotNetPackageValidationAssembly)" />
 
-  <PropertyGroup>
-    <RoslynMinVersion>4.0.0.0</RoslynMinVersion>
-  </PropertyGroup>
-
   <ItemGroup Condition="'$(EnablePackageValidation)' == 'true' and '$(DisablePackageBaselineValidation)' != 'true' and '$(PackageValidationBaselinePath)' == '' and '$(PackageValidationBaselineVersion)' != ''">
     <PackageDownload Include="$([MSBuild]::ValueOrDefault('$(PackageValidationBaselineName)', '$(PackageId)'))" Version="[$(PackageValidationBaselineVersion)]" />
   </ItemGroup>
@@ -39,7 +35,6 @@
       CompatibilitySuppressionFilePath="$(CompatibilitySuppressionFilePath)"
       BaselinePackageTargetPath="$(PackageValidationBaselinePath)"
       DisablePackageBaselineValidation="$(DisablePackageBaselineValidation)"
-      RoslynAssemblyPath="$(RoslynAssemblyPath)"
-      RoslynMinVersion="$(RoslynMinVersion)" />
+      RoslynAssemblyPath="$(RoslynAssemblyPath)" />
   </Target>
 </Project>

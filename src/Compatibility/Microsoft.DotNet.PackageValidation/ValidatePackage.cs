@@ -35,8 +35,6 @@ namespace Microsoft.DotNet.PackageValidation
 
         public string RoslynAssemblyPath { get; set; }
 
-        public string RoslynMinVersion { get; set; }
-
         public override bool Execute()
         {
             if (string.IsNullOrEmpty(RoslynAssemblyPath))
@@ -87,7 +85,7 @@ namespace Microsoft.DotNet.PackageValidation
             if (name.Name == "Microsoft.CodeAnalysis" || name.Name == "Microsoft.CodeAnalysis.CSharp")
             {
                 Assembly asm = Assembly.LoadFrom(Path.Combine(RoslynAssemblyPath, $"{name.Name}.dll"));
-                if (asm.GetName().Version < new Version(RoslynMinVersion))
+                if (asm.GetName().Version < name.Version)
                 {
                     throw new Exception(Resources.UpdateSdkVersion);
                 }

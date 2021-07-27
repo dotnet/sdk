@@ -58,10 +58,10 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression
         public override int GetHashCode()
         {
             int hashCode = 1447485498;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(DiagnosticId ?? string.Empty);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Target ?? string.Empty);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Left ?? string.Empty);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Right ?? string.Empty);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(DiagnosticId?.ToLowerInvariant() ?? string.Empty);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Target?.ToLowerInvariant() ?? string.Empty);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Left?.ToLowerInvariant() ?? string.Empty);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Right?.ToLowerInvariant() ?? string.Empty);
             return hashCode;
         }
     }

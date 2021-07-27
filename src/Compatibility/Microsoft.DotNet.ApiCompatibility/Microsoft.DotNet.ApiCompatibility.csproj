@@ -9,8 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Please update RoslynMinVersion in Microsoft.NET.PackageValidation.targets when we use newer version of roslyn.-->
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.0.0-3.21372.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
