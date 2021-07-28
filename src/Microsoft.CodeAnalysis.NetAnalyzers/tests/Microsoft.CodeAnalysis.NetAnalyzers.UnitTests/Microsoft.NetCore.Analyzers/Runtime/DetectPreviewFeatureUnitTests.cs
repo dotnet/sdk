@@ -544,7 +544,7 @@ namespace Preview_Feature_Scratch
         {" +
 @"
 
-            class Program : IProgram
+            class {|#1:Program|} : IProgram
             {
                 static void Main(string[] args)
                 {
@@ -566,6 +566,7 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("UnmarkedMethodInMarkedInterface"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("Program"));
             await test.RunAsync();
         }
 
@@ -595,7 +596,7 @@ namespace Preview_Feature_Scratch
             ";
 
             var test = TestCS(csInput);
-            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsEmptyPreviewInterfaceRule).WithLocation(0).WithArguments("Program"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Program"));
             await test.RunAsync();
         }
 
@@ -889,6 +890,656 @@ namespace Preview_Feature_Scratch
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("SampleEvent"));
             await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestTypeOf()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine({|#0:typeof(IFoo)|});
+        }
+    }
+    
+    [RequiresPreviewFeatures]
+    interface IFoo { }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("IFoo"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestDerivedInterface()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Program program = new Program();
+        }
+    }
+
+    interface {|#0:IZoo|} : IFoo
+    {
+    }
+
+    [RequiresPreviewFeatures]
+    interface IFoo
+    {
+        void Bar();
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("IZoo"));
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestGenericClassWithoutPreviewInterface()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            A<Foo> aFooInstance = {|#0:new A<Foo>()|}; // Can we have a property?
+        }
+    }
+
+class A<T> where T : IFoo, new()
+{
+    public A()
+    {
+        new T().Bar();
+    }
+}
+
+[RequiresPreviewFeatures]
+class Foo : IFoo
+{
+    public void Bar() { }
+}
+
+interface IFoo
+{
+    void Bar();
+}
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments(".ctor"));
+            await test.RunAsync();
+        }
+
+        // Can't figure out why new T().Bar() isn't throwing a diagnostic
+        [Fact]
+        public async Task TestGenericClass()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            A<Foo> aFooInstance = {|#4:new A<Foo>()|};
+        }
+    }
+
+class {|#1:A|}<T> where T : IFoo, new()
+{
+    public A()
+    {
+        IFoo foo = new T();
+        {|#0:foo.Bar()|};
+    }
+}
+
+class {|#2:Foo|} : IFoo
+{
+    public void {|#3:Bar|}() { }
+}
+
+[RequiresPreviewFeatures]
+interface IFoo
+{
+    void Bar();
+}
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Bar"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("A"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(3).WithArguments("Bar"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(4).WithArguments(".ctor"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestCustomAttribute()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            A aObject = {|#0:new A()|};
+        }
+    }
+
+[My]
+class {|#1:A|}
+{
+}
+
+[RequiresPreviewFeatures]
+[AttributeUsage(AttributeTargets.All)]
+class MyAttribute : Attribute
+{
+}
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments(".ctor"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestNestedInvocation()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine({|#0:A.B()|});
+        }
+    }
+
+class A
+{
+    [RequiresPreviewFeatures]
+    public static bool B() => true;
+}
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("B"));
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestDebug()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+        }
+    }
+
+    public abstract class {|#1:BAbstract|}
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestClassImplementingAbstractClassThatImplementsAnInterface()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+    @"
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            BImplementation b = new BImplementation();
+            ((IZoo)b).Bar();
+        }
+    }
+
+    public class BImplementation : BAbstract
+    {
+
+    }
+
+    public abstract class BAbstract : IZoo
+    {
+    }
+
+    interface {|#0:IZoo|} : IFoo
+    { 
+        bool Bar() { return true; }
+    }
+
+    [RequiresPreviewFeatures]
+    interface IFoo
+    {
+        bool Bar() { return true; }
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("IZoo"));
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestPreviewParametersToPreviewMethod()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    [RequiresPreviewFeatures]
+    class Program
+    {
+        public Foo Getter(Foo foo)
+        {
+            return foo;
+        }
+
+        static void Main(string[] args)
+        {
+            Program prog = new Program();
+            prog.Getter(new Foo());
+        }
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestPreviewParametersToMethods()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class Program
+    {
+        public Foo {|#0:Getter|}(Foo foo)
+        {
+            return foo;
+        }
+
+        static void Main(string[] args)
+        {
+            Program prog = new Program();
+            prog.Getter({|#1:new Foo()|});
+        }
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Getter"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments(".ctor"));
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestPropertyGetterAndSetters()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class {|#2:AFoo|}<T> where T : Foo, new()
+    {
+        private Foo _value;
+
+        public Foo Value
+        {
+            {|#0:get|}
+            {
+                return {|#4:_value|};
+            }
+            {|#1:set|}
+            {
+                {|#5:_value|} = value;
+            }
+        }
+
+        public Foo AnotherGetter => {|#6:{|#3:_value|}|};
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Program prog = new Program();
+        }
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("get_Value"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("set_Value"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("AFoo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(3).WithArguments("get_AnotherGetter"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(4).WithArguments("_value"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(5).WithArguments("_value"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(6).WithArguments("_value"));
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestPropertyGetterFromInterface()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+    public class {|#0:Foo|} : IFoo
+    {
+        [RequiresPreviewFeatures]
+        public decimal Value => 1.1m; // No diagnostic
+    }
+
+    [RequiresPreviewFeatures]
+    interface IFoo
+    {
+        decimal Value { get; }
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo"));
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestExplicitPropertyGetterFromInterface()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+    public class {|#0:Foo|} : IFoo
+    {
+        [RequiresPreviewFeatures]
+        decimal IFoo.Value => 1.1m; // No diagnostic
+    }
+
+    [RequiresPreviewFeatures]
+    interface IFoo
+    {
+        decimal Value { get; }
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo"));
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestNestedClass()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class Program
+    {
+        [RequiresPreviewFeatures]
+        class NestedClass
+        {
+
+        }
+
+        static void Main(string[] args)
+        {
+            NestedClass nestedClass = {|#0:new NestedClass()|};
+        }
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments(".ctor"));
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestGenericMethodWithPreviewClass()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    class Program
+    {
+        public bool {|#0:GenericMethod|}<T>()
+            where T : Foo
+        {
+            return true;
+        }
+
+        static void Main(string[] args)
+        {
+        }
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("GenericMethod"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestGenericMethodInsidePreviewClass()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    [RequiresPreviewFeatures]
+    class Program
+    {
+        public bool GenericMethod<T>()
+            where T : Foo
+        {
+            return true;
+        }
+
+        static void Main(string[] args)
+        {
+        }
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+
+}";
+
+            var test = TestCS(csInput);
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestTwoLevelGenericMethodInsidePreviewClass()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+@"
+
+    [RequiresPreviewFeatures]
+    class Program
+    {
+        class NestedClass
+        {
+            public bool {|#1:GenericMethod|}<T>()
+                where T : Foo
+            {
+                return true;
+            }
+        }
+
+        static void Main(string[] args)
+        {
+        }
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("GenericMethod"));
+            await test.RunAsync();
+
+        }
+
+        [Fact]
+        public async Task TestCallback()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{" +
+    @"
+
+    class {|#2:AFoo|}<T> where T : Foo, new()
+    {
+        public Foo[] _fooArray;
+
+        public void {|#5:CallBackMethod|}(Action<Foo> action)
+        {
+            foreach (var foo in {|#1:_fooArray|})
+            {
+                {|#3:action(foo)|};
+            }
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            AFoo<Foo> anObject = {|#4:new AFoo<Foo>()|};
+            {|#0:anObject.CallBackMethod((Foo foo) => { })|};
+        }
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("CallBackMethod"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("_fooArray"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("AFoo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(3).WithArguments("Invoke"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(4).WithArguments(".ctor"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(5).WithArguments("CallBackMethod"));
+            await test.RunAsync();
+
         }
     }
 }
