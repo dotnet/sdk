@@ -1048,6 +1048,67 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, source);
         }
 
+        [Fact]
+        public async Task DynamicInterfaceCastableImplementation_InstanceMethod_CS_UsageRewritten()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+
+interface I
+{
+    void Method();
+}
+
+[DynamicInterfaceCastableImplementation]
+interface I2 : I
+{
+    void I.Method()
+    {
+        Method2(42);
+        this.Method2(10);
+
+        static void LocalFunction(I2 obj)
+        {
+            obj.Method2(30);
+        }
+    }
+
+    void {|CA2257:Method2|}(int i)
+    {
+        _ = i;
+    }
+}";
+
+            string codeFix = @"
+using System.Runtime.InteropServices;
+
+interface I
+{
+    void Method();
+}
+
+[DynamicInterfaceCastableImplementation]
+interface I2 : I
+{
+    void I.Method()
+    {
+        Method2(this, 42);
+        Method2(this, 10);
+
+        static void LocalFunction(I2 obj)
+        {
+            Method2(obj, 30);
+        }
+    }
+
+    static void Method2(I2 @this, int i)
+    {
+        _ = i;
+    }
+}";
+            await VerifyCSCodeFixAsync(source, codeFix);
+        }
+
         private static Task VerifyCSAnalyzerAsync(string source)
         {
             return VerifyCSCodeFixAsync(source, source);

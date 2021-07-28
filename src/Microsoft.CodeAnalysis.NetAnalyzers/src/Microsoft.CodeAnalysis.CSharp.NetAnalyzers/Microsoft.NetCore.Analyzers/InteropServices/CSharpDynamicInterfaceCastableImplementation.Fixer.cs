@@ -207,7 +207,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             var referencedSymbols = await SymbolFinder.FindReferencesAsync(
                 symbol, document.Project.Solution, cancellationToken).ConfigureAwait(false);
 
-            List<InvocationExpressionSyntax> invocations = new();
+            List<(InvocationExpressionSyntax invocation, ExpressionSyntax target)> invocations = new();
 
             foreach (var referencedSymbol in referencedSymbols)
             {
@@ -228,14 +228,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                         continue;
                     }
 
-                    if (identifierNode.Parent is InvocationExpressionSyntax invocation)
+                    if (identifierNode.Parent is InvocationExpressionSyntax invocationOnThis)
                     {
-                        invocations.Add(invocation);
+                        invocations.Add((invocationOnThis, SyntaxFactory.ThisExpression()));
                     }
-                    else if (identifierNode.Parent is MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax } thisMethodAccess
-                        && thisMethodAccess.Parent is InvocationExpressionSyntax invocationOnThis)
+                    else if (identifierNode.Parent is MemberAccessExpressionSyntax methodAccess
+                        && methodAccess.Parent is InvocationExpressionSyntax invocation)
                     {
-                        invocations.Add(invocationOnThis);
+                        invocations.Add((invocation, methodAccess.Expression));
                     }
                     else
                     {
@@ -246,17 +246,17 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 }
             }
 
-            // Fix all invocations by passing in @this argument.
+            // Fix all invocations by passing in this argument.
             foreach (var invocation in invocations)
             {
                 editor.ReplaceNode(
-                    invocation,
+                    invocation.invocation,
                     (node, generator) =>
                     {
                         var currentInvocation = (InvocationExpressionSyntax)node;
 
                         var newArgList = currentInvocation.ArgumentList.WithArguments(
-                            SyntaxFactory.SingletonSeparatedList(generator.Argument(SyntaxFactory.IdentifierName(EscapedThisToken)))
+                            SyntaxFactory.SingletonSeparatedList(generator.Argument(invocation.target))
                                 .AddRange(currentInvocation.ArgumentList.Arguments));
                         return currentInvocation.WithArgumentList(newArgList).WithExpression(SyntaxFactory.IdentifierName(symbol.Name));
                     });
