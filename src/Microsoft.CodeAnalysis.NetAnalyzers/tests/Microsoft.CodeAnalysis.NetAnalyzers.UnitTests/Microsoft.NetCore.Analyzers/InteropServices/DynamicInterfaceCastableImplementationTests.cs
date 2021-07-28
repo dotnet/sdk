@@ -492,6 +492,29 @@ interface I2 : I
         }
 
         [Fact]
+        public async Task DynamicInterfaceCastableImplementation_DefinedMethodsStatic_CS_NoDiagnostic()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+
+interface I
+{
+    void Method();
+}
+
+[DynamicInterfaceCastableImplementation]
+interface I2 : I
+{
+    void I.Method() {}
+
+    static void Method2(I2 @this)
+    { }
+}";
+
+            await VerifyCSCodeFixAsync(source, source);
+        }
+
+        [Fact]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsSealed_CS_Diagnostic()
         {
             string source = @"
