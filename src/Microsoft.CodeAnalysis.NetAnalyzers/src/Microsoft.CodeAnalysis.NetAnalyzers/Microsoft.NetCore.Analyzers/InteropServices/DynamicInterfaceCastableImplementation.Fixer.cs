@@ -25,6 +25,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
+            System.Diagnostics.Debugger.Break();
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
             SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
