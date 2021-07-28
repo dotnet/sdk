@@ -187,10 +187,7 @@ public class Program
             await new VerifyCS.Test
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-                TestState =
-                {
-                    Sources = { code }
-                },
+                TestCode = code,
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
             }.RunAsync();
         }

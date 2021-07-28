@@ -127,7 +127,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (containingType.Equals(loggerExtensionsType, SymbolEqualityComparer.Default))
             {
                 usingLoggerExtensionsTypes = true;
-                context.ReportDiagnostic(invocation.CreateDiagnostic(CA1848Rule, methodSymbol.ToDisplayString(GetLanguageSpecificFormat(invocation)), methodSymbol.Name));
+                context.ReportDiagnostic(invocation.CreateDiagnostic(CA1848Rule, methodSymbol.ToDisplayString(GetLanguageSpecificFormat(invocation))));
             }
             else if (
                 !containingType.Equals(loggerType, SymbolEqualityComparer.Default) &&
@@ -200,7 +200,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 if (usingLoggerExtensionsTypes)
                 {
-                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2254Rule, methodSymbol.ToDisplayString(GetLanguageSpecificFormat(formatExpression)), methodSymbol.Name));
+                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2254Rule, methodSymbol.ToDisplayString(GetLanguageSpecificFormat(formatExpression))));
                 }
                 return;
             }
