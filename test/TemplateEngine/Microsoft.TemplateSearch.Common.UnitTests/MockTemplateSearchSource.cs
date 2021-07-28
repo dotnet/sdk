@@ -31,12 +31,24 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
     public class MockTemplateSearchProvider : ITemplateSearchProvider
     {
         private bool _wasSearched;
+        private ITemplateSearchProviderFactory? _factory;
 
         public bool WasSearched => _wasSearched;
 
         public IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> Results { get; set; } = Array.Empty<(ITemplatePackageInfo, IReadOnlyList<ITemplateInfo>)>();
 
-        public ITemplateSearchProviderFactory Factory { get; set; }
+        public ITemplateSearchProviderFactory Factory
+        {
+            get
+            {
+                return _factory ?? throw new Exception($"{nameof(Factory)} is not set.");
+            }
+
+            set
+            {
+                _factory = value;
+            }
+        }
 
         Task<IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> ITemplateSearchProvider.SearchForTemplatePackagesAsync(
             Func<TemplatePackageSearchData, bool> packFilters,

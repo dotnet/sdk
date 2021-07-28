@@ -26,7 +26,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             Version = version;
         }
 
-        [JsonProperty]
+        [JsonProperty(PropertyName = "Id")]
         public string Name { get; private set; }
 
         [JsonProperty]
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 
         internal static NugetPackageSourceInfo FromJObject (JObject entry)
         {
-            string id = entry.ToString(nameof(Name)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Name)} property.", nameof(entry));
+            string id = entry.ToString("id") ?? throw new ArgumentException($"{nameof(entry)} doesn't have \"id\" property.", nameof(entry));
             string version = entry.ToString(nameof(Version)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Version)} property.", nameof(entry));
             NugetPackageSourceInfo sourceInfo = new NugetPackageSourceInfo(id, version);
             sourceInfo.TotalDownloads = entry.ToInt32(nameof(TotalDownloads));

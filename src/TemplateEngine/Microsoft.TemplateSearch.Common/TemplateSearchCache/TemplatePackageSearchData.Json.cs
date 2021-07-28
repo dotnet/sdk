@@ -25,10 +25,9 @@ namespace Microsoft.TemplateSearch.Common
             {
                 throw new ArgumentNullException(nameof(logger));
             }
-
             string? name = jObject.ToString(nameof(Name));
-
-            Name = name!;
+            Name = !string.IsNullOrWhiteSpace(name) ? name!
+                : throw new ArgumentException($"{nameof(jObject)} doesn't have {nameof(Name)} property or it is not a string.", nameof(jObject));
             Version = jObject.ToString(nameof(Version));
             TotalDownloads = jObject.ToInt32(nameof(TotalDownloads));
 
@@ -40,18 +39,20 @@ namespace Microsoft.TemplateSearch.Common
             List<TemplateSearchData> templates = new List<TemplateSearchData>();
             foreach (JToken template in templatesData)
             {
-                JObject? templateObj = template as JObject;
                 try
                 {
-                    if (templateObj == null)
+                    if (template is JObject templateObj)
                     {
-                        throw new Exception($"Unexpected data in template search cache data, property: {nameof(Templates)}, value: {template}");
+                        templates.Add(new TemplateSearchData(templateObj, logger, additionalDataReaders));
                     }
-                    templates.Add(new TemplateSearchData(templateObj, logger, additionalDataReaders));
+                    else
+                    {
+                        throw new Exception($"Unexpected data in template package cache data, property: {nameof(Templates)}.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    logger.LogDebug($"Failed to read template package data {templateObj}, details: {ex}");
+                    logger.LogDebug($"Template package {Name}: Failed to read template data {template}, details: {ex}.");
                 }
             }
             Templates = templates;
@@ -59,6 +60,10 @@ namespace Microsoft.TemplateSearch.Common
             if (additionalDataReaders != null)
             {
                 AdditionalData = TemplateSearchCache.ReadAdditionalData(jObject, additionalDataReaders, logger);
+            }
+            else
+            {
+                AdditionalData = new Dictionary<string, object>();
             }
         }
 

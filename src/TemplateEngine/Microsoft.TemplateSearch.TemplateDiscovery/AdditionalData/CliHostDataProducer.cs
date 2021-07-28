@@ -14,9 +14,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
     {
         private const string CliHostDataName = "cliHostData";
 
-        private Dictionary<string, HostSpecificTemplateData> _hostDataForPackByTemplate = new Dictionary<string, HostSpecificTemplateData>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, HostSpecificTemplateData> _hostDataForPackByTemplate = new(StringComparer.OrdinalIgnoreCase);
 
-        private Dictionary<ITemplatePackageInfo, Dictionary<string, HostSpecificTemplateData>> _hostDataForPack = new Dictionary<ITemplatePackageInfo, Dictionary<string, HostSpecificTemplateData>>(new ITemplatePackageInfoComparer());
+        private Dictionary<ITemplatePackageInfo, Dictionary<string, HostSpecificTemplateData>> _hostDataForPack = new(new ITemplatePackageInfoComparer());
 
         internal CliHostDataProducer()
         {

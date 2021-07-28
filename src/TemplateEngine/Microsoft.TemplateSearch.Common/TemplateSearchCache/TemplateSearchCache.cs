@@ -8,7 +8,6 @@ namespace Microsoft.TemplateSearch.Common
 {
     internal partial class TemplateSearchCache
     {
-        [JsonIgnore]
         private const string CurrentVersion = "2.0";
 
         internal TemplateSearchCache(IReadOnlyList<TemplatePackageSearchData> data)

@@ -35,6 +35,10 @@ namespace Microsoft.TemplateSearch.Common
             {
                 AdditionalData = TemplateSearchCache.ReadAdditionalData(jObject, additionalDataReaders, logger);
             }
+            else
+            {
+                AdditionalData = new Dictionary<string, object>();
+            }
         }
 
         #region JsonConverter

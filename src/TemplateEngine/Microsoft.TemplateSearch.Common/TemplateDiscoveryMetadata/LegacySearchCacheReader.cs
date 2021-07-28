@@ -70,7 +70,7 @@ namespace Microsoft.TemplateSearch.Common
             return TryReadDiscoveryMetadata(cacheObject, environmentSettings.Host.Logger, additionalDataReaders, out discoveryMetadata);
         }
 
-         internal static bool TryReadDiscoveryMetadata(JObject cacheObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders, out TemplateDiscoveryMetadata? discoveryMetadata)
+        internal static bool TryReadDiscoveryMetadata(JObject cacheObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders, out TemplateDiscoveryMetadata? discoveryMetadata)
         {
             // add the reader calls, build the model objects
             if (TryReadVersion(logger, cacheObject, out string? version)

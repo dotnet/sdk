@@ -6,14 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
     internal partial class TemplateSearchCache
     {
-        [JsonIgnore]
         private static readonly string[] _supportedVersions = new[] { "1.0.0.0", "1.0.0.3", "2.0" };
 
         internal static TemplateSearchCache FromJObject(
@@ -41,6 +39,11 @@ namespace Microsoft.TemplateSearch.Common
                 if (LegacySearchCacheReader.TryReadDiscoveryMetadata(cacheObject, logger, additionalDataReaders, out TemplateDiscoveryMetadata? discoveryMetadata))
                 {
                     return LegacySearchCacheReader.ConvertTemplateDiscoveryMetadata(discoveryMetadata!, additionalDataReaders);
+                }
+                else
+                {
+                    logger.LogDebug($"Failed to read template search cache, version: {version}.");
+                    throw new Exception(LocalizableStrings.TemplateSearchCache_Exception_NotValid);
                 }
 #pragma warning restore CS0612, CS0618 // Type or member is obsolete
 

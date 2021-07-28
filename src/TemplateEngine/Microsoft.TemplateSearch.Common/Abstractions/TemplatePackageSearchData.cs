@@ -53,6 +53,6 @@ namespace Microsoft.TemplateSearch.Common
         /// <remarks>
         /// Additional data may be read by additional readers provider to <see cref="ITemplateSearchProviderFactory"/> when creating the <see cref="ITemplateSearchProvider"/>.
         /// </remarks>
-        public IDictionary<string, object> AdditionalData { get; } = new Dictionary<string, object>();
+        public IDictionary<string, object> AdditionalData { get; }
     }
 }
