@@ -297,9 +297,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             foreach (var parameter in methodSymbol.Parameters)
             {
                 if (parameter.Type.SpecialType == SpecialType.System_String &&
-                    string.Equals(parameter.Name, "message", StringComparison.Ordinal) ||
+                    (string.Equals(parameter.Name, "message", StringComparison.Ordinal) ||
                     string.Equals(parameter.Name, "messageFormat", StringComparison.Ordinal) ||
-                    string.Equals(parameter.Name, "formatString", StringComparison.Ordinal))
+                    string.Equals(parameter.Name, "formatString", StringComparison.Ordinal)))
                 {
                     message = parameter;
                 }
