@@ -303,16 +303,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     message = parameter;
                 }
-
                 // When calling logger.BeginScope("{Param}") generic overload would be selected
-                if (parameter.Type.SpecialType == SpecialType.System_String &&
+                else if (parameter.Type.SpecialType == SpecialType.System_String &&
                     methodSymbol.Name.Equals("BeginScope") &&
                     string.Equals(parameter.Name, "state", StringComparison.Ordinal))
                 {
                     message = parameter;
                 }
-
-                if (parameter.IsParams &&
+                else if (parameter.IsParams &&
                     string.Equals(parameter.Name, "args", StringComparison.Ordinal))
                 {
                     arguments = parameter;
