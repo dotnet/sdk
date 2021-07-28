@@ -2012,6 +2012,26 @@
             ]
           }
         },
+        "CA1727": {
+          "id": "CA1727",
+          "shortDescription": "Use PascalCase for named placeholders",
+          "fullDescription": "Use PascalCase for named placeholders in the logging message template.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727",
+          "properties": {
+            "category": "Naming",
+            "isEnabledByDefault": true,
+            "typeName": "LoggerMessageDefineAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1806": {
           "id": "CA1806",
           "shortDescription": "Do not ignore method results",
@@ -2642,6 +2662,26 @@
             ]
           }
         },
+        "CA1848": {
+          "id": "CA1848",
+          "shortDescription": "Use the LoggerMessage delegates",
+          "fullDescription": "For improved performance, use the LoggerMessage delegates.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "LoggerMessageDefineAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
@@ -2815,6 +2855,26 @@
             "category": "Reliability",
             "isEnabledByDefault": true,
             "typeName": "DoNotDefineFinalizersForTypesDerivedFromMemoryManager",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2017": {
+          "id": "CA2017",
+          "shortDescription": "Parameter count mismatch",
+          "fullDescription": "Number of parameters supplied in the logging message template do not match the number of named placeholders.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "LoggerMessageDefineAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -3540,6 +3600,46 @@
             "category": "Usage",
             "isEnabledByDefault": true,
             "typeName": "DetectPreviewFeatureAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2253": {
+          "id": "CA2253",
+          "shortDescription": "Named placeholders should not be numeric values",
+          "fullDescription": "Named placeholders in the logging message template should not be comprised of only numeric characters.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "LoggerMessageDefineAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2254": {
+          "id": "CA2254",
+          "shortDescription": "Template should be a static expression",
+          "fullDescription": "The logging message template should not vary between calls.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "LoggerMessageDefineAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
