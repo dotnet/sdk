@@ -2014,8 +2014,8 @@
         },
         "CA1727": {
           "id": "CA1727",
-          "shortDescription": "Use PascalCase for log message tokens",
-          "fullDescription": "For consistency with logs emitted from other components, use 'PascalCase' for log message tokens.",
+          "shortDescription": "Use PascalCase for named holes",
+          "fullDescription": "Use PascalCase for named holes in the logging message template.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727",
           "properties": {
@@ -2664,8 +2664,8 @@
         },
         "CA1848": {
           "id": "CA1848",
-          "shortDescription": "Use compiled log messages",
-          "fullDescription": "For improved performance, use pre-compiled log messages.",
+          "shortDescription": "Use the LoggerMessage delegates",
+          "fullDescription": "For improved performance, use the LoggerMessage delegates.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848",
           "properties": {
@@ -2867,8 +2867,8 @@
         },
         "CA2017": {
           "id": "CA2017",
-          "shortDescription": "Logging format string parameter count mismatch",
-          "fullDescription": "Logging format string parameter count mismatch.",
+          "shortDescription": "Parameter count mismatch",
+          "fullDescription": "Number of parameters supplied in the logging message template do not match the number of named holes.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017",
           "properties": {
@@ -3612,8 +3612,8 @@
         },
         "CA2253": {
           "id": "CA2253",
-          "shortDescription": "Numerics should not be used in logging format string",
-          "fullDescription": "Numerics should not be used in logging format string.",
+          "shortDescription": "Named holes should not be numeric values",
+          "fullDescription": "Named holes in the logging message template should not be comprised of only numeric characters.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253",
           "properties": {
@@ -3632,8 +3632,8 @@
         },
         "CA2254": {
           "id": "CA2254",
-          "shortDescription": "Logging format string should not be dynamically generated",
-          "fullDescription": "Logging format string should not be dynamically generated.",
+          "shortDescription": "Template should be a static expression",
+          "fullDescription": "The logging message template should not vary between calls.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254",
           "properties": {

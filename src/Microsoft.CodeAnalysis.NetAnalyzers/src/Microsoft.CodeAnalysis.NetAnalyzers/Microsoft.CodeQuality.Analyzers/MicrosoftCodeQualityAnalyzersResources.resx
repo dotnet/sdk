@@ -172,49 +172,49 @@
     <value>Abstract type '{0}' should not have public constructors</value>
   </data>
   <data name="LoggerMessageDiagnosticNumericsInFormatStringTitle" xml:space="preserve">
-    <value>Numerics should not be used in logging format string</value>
+    <value>Named holes should not be numeric values</value>
   </data>
   <data name="LoggerMessageDiagnosticNumericsInFormatStringMessage" xml:space="preserve">
-    <value>Numerics should not be used in logging format string</value>
+    <value>Named holes in the logging message template should not be comprised of only numeric characters</value>
   </data>
   <data name="LoggerMessageDiagnosticNumericsInFormatStringDescription" xml:space="preserve">
-    <value>Numerics should not be used in logging format string.</value>
+    <value>Named holes in the logging message template should not be comprised of only numeric characters.</value>
   </data>
   <data name="LoggerMessageDiagnosticFormatParameterCountMismatchTitle" xml:space="preserve">
-    <value>Logging format string parameter count mismatch</value>
+    <value>Parameter count mismatch</value>
   </data>
   <data name="LoggerMessageDiagnosticFormatParameterCountMismatchMessage" xml:space="preserve">
-    <value>Logging format string parameter count mismatch</value>
+    <value>Number of parameters supplied in the logging message template do not match the number of named holes</value>
   </data>
   <data name="LoggerMessageDiagnosticFormatParameterCountMismatchDescription" xml:space="preserve">
-    <value>Logging format string parameter count mismatch.</value>
+    <value>Number of parameters supplied in the logging message template do not match the number of named holes.</value>
   </data>
   <data name="LoggerMessageDiagnosticUseCompiledLogMessagesTitle" xml:space="preserve">
-    <value>Use compiled log messages</value>
+    <value>Use the LoggerMessage delegates</value>
   </data>
   <data name="LoggerMessageDiagnosticUseCompiledLogMessagesMessage" xml:space="preserve">
-    <value>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message</value>
+    <value>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</value>
   </data>
   <data name="LoggerMessageDiagnosticUseCompiledLogMessagesDescription" xml:space="preserve">
-    <value>For improved performance, use pre-compiled log messages.</value>
+    <value>For improved performance, use the LoggerMessage delegates.</value>
   </data>
   <data name="LoggerMessageDiagnosticConcatenationInFormatStringTitle" xml:space="preserve">
-    <value>Logging format string should not be dynamically generated</value>
+    <value>Template should be a static expression</value>
   </data>
   <data name="LoggerMessageDiagnosticConcatenationInFormatStringMessage" xml:space="preserve">
-    <value>Logging format string should not be dynamically generated</value>
+    <value>The logging message template should not vary between calls to '{0}'</value>
   </data>
   <data name="LoggerMessageDiagnosticConcatenationInFormatStringDescription" xml:space="preserve">
-    <value>Logging format string should not be dynamically generated.</value>
+    <value>The logging message template should not vary between calls.</value>
   </data>
   <data name="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle" xml:space="preserve">
-    <value>Use PascalCase for log message tokens</value>
+    <value>Use PascalCase for named holes</value>
   </data>
   <data name="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage" xml:space="preserve">
-    <value>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</value>
+    <value>Use PascalCase for named holes in the logging message template</value>
   </data>
   <data name="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription" xml:space="preserve">
-    <value>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens.</value>
+    <value>Use PascalCase for named holes in the logging message template.</value>
   </data>
   <data name="MarkAssembliesWithClsCompliantTitle" xml:space="preserve">
     <value>Mark assemblies with CLSCompliant</value>

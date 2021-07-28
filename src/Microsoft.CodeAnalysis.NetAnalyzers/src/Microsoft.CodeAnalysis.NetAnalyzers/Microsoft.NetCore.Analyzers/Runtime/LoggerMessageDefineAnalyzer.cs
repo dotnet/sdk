@@ -126,7 +126,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (containingType.Equals(loggerExtensionsType, SymbolEqualityComparer.Default)) // the condition I want
             {
                 usingLoggerExtensionsTypes = true;
-                context.ReportDiagnostic(invocation.CreateDiagnostic(CA1848Rule, invocation.Syntax.GetLocation(), methodSymbol.Name));
+                context.ReportDiagnostic(invocation.CreateDiagnostic(CA1848Rule, methodSymbol.ToDisplayString(GetLanguageSpecificFormat(invocation)), methodSymbol.Name));
             }
             else if (
                 !containingType.Equals(loggerType, SymbolEqualityComparer.Default) &&
@@ -187,19 +187,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 if (formatExpression is not null)
                 {
-                    AnalyzeFormatArgument(context, formatExpression, paramsCount, argsIsArray, usingLoggerExtensionsTypes);
+                    AnalyzeFormatArgument(context, formatExpression, paramsCount, argsIsArray, usingLoggerExtensionsTypes, methodSymbol);
                 }
             }
         }
 
-        private void AnalyzeFormatArgument(OperationAnalysisContext context, IOperation formatExpression, int paramsCount, bool argsIsArray, bool usingLoggerExtensionsTypes)
+        private void AnalyzeFormatArgument(OperationAnalysisContext context, IOperation formatExpression, int paramsCount, bool argsIsArray, bool usingLoggerExtensionsTypes, IMethodSymbol methodSymbol)
         {
             var text = TryGetFormatText(formatExpression);
             if (text == null)
             {
                 if (usingLoggerExtensionsTypes)
                 {
-                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2254Rule, formatExpression.Syntax.GetLocation()));
+                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2254Rule, methodSymbol.ToDisplayString(GetLanguageSpecificFormat(formatExpression)), methodSymbol.Name));
                 }
                 return;
             }
@@ -220,20 +220,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 if (int.TryParse(valueName, out _))
                 {
-                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2253Rule, formatExpression.Syntax.GetLocation()));
+                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2253Rule));
                 }
                 else if (char.IsLower(valueName[0]))
                 {
-                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA1727Rule, formatExpression.Syntax.GetLocation()));
+                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA1727Rule));
                 }
             }
 
             var argsPassedDirectly = argsIsArray && paramsCount == 1;
             if (!argsPassedDirectly && paramsCount != formatter.ValueNames.Count)
             {
-                context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2017Rule, formatExpression.Syntax.GetLocation()));
+                context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2017Rule));
             }
         }
+
+        private static SymbolDisplayFormat GetLanguageSpecificFormat(IOperation operation) =>
+            operation.Language == LanguageNames.CSharp ?
+                SymbolDisplayFormat.CSharpShortErrorMessageFormat : SymbolDisplayFormat.VisualBasicShortErrorMessageFormat;
 
         private string? TryGetFormatText(IOperation? argumentExpression)
         {

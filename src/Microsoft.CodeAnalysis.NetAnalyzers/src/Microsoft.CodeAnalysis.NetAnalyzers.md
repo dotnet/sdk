@@ -972,9 +972,9 @@ Consistent naming of parameters in an override hierarchy increases the usability
 |CodeFix|True|
 ---
 
-## [CA1727](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727): Use PascalCase for log message tokens
+## [CA1727](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727): Use PascalCase for named holes
 
-For consistency with logs emitted from other components, use 'PascalCase' for log message tokens.
+Use PascalCase for named holes in the logging message template.
 
 |Item|Value|
 |-|-|
@@ -1440,9 +1440,9 @@ It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring'
 |CodeFix|True|
 ---
 
-## [CA1848](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848): Use compiled log messages
+## [CA1848](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848): Use the LoggerMessage delegates
 
-For improved performance, use pre-compiled log messages.
+For improved performance, use the LoggerMessage delegates.
 
 |Item|Value|
 |-|-|
@@ -1584,9 +1584,9 @@ Forward the 'CancellationToken' parameter to methods to ensure the operation can
 |CodeFix|True|
 ---
 
-## [CA2017](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017): Logging format string parameter count mismatch
+## [CA2017](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017): Parameter count mismatch
 
-Logging format string parameter count mismatch.
+Number of parameters supplied in the logging message template do not match the number of named holes.
 
 |Item|Value|
 |-|-|
@@ -2052,9 +2052,9 @@ An assembly has to opt into preview features before using them.
 |CodeFix|False|
 ---
 
-## [CA2253](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253): Numerics should not be used in logging format string
+## [CA2253](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253): Named holes should not be numeric values
 
-Numerics should not be used in logging format string.
+Named holes in the logging message template should not be comprised of only numeric characters.
 
 |Item|Value|
 |-|-|
@@ -2064,9 +2064,9 @@ Numerics should not be used in logging format string.
 |CodeFix|False|
 ---
 
-## [CA2254](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254): Logging format string should not be dynamically generated
+## [CA2254](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254): Template should be a static expression
 
-Logging format string should not be dynamically generated.
+The logging message template should not vary between calls.
 
 |Item|Value|
 |-|-|

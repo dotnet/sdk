@@ -243,78 +243,78 @@
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
-        <source>Logging format string should not be dynamically generated.</source>
-        <target state="new">Logging format string should not be dynamically generated.</target>
+        <source>The logging message template should not vary between calls.</source>
+        <target state="new">The logging message template should not vary between calls.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
-        <source>Logging format string should not be dynamically generated</source>
-        <target state="new">Logging format string should not be dynamically generated</target>
+        <source>The logging message template should not vary between calls to '{0}'</source>
+        <target state="new">The logging message template should not vary between calls to '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
-        <source>Logging format string should not be dynamically generated</source>
-        <target state="new">Logging format string should not be dynamically generated</target>
+        <source>Template should be a static expression</source>
+        <target state="new">Template should be a static expression</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
-        <source>Logging format string parameter count mismatch.</source>
-        <target state="new">Logging format string parameter count mismatch.</target>
+        <source>Number of parameters supplied in the logging message template do not match the number of named holes.</source>
+        <target state="new">Number of parameters supplied in the logging message template do not match the number of named holes.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
-        <source>Logging format string parameter count mismatch</source>
-        <target state="new">Logging format string parameter count mismatch</target>
+        <source>Number of parameters supplied in the logging message template do not match the number of named holes</source>
+        <target state="new">Number of parameters supplied in the logging message template do not match the number of named holes</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
-        <source>Logging format string parameter count mismatch</source>
-        <target state="new">Logging format string parameter count mismatch</target>
+        <source>Parameter count mismatch</source>
+        <target state="new">Parameter count mismatch</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
-        <source>Numerics should not be used in logging format string.</source>
-        <target state="new">Numerics should not be used in logging format string.</target>
+        <source>Named holes in the logging message template should not be comprised of only numeric characters.</source>
+        <target state="new">Named holes in the logging message template should not be comprised of only numeric characters.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
-        <source>Numerics should not be used in logging format string</source>
-        <target state="new">Numerics should not be used in logging format string</target>
+        <source>Named holes in the logging message template should not be comprised of only numeric characters</source>
+        <target state="new">Named holes in the logging message template should not be comprised of only numeric characters</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
-        <source>Numerics should not be used in logging format string</source>
-        <target state="new">Numerics should not be used in logging format string</target>
+        <source>Named holes should not be numeric values</source>
+        <target state="new">Named holes should not be numeric values</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
-        <source>For improved performance, use pre-compiled log messages.</source>
-        <target state="new">For improved performance, use pre-compiled log messages.</target>
+        <source>For improved performance, use the LoggerMessage delegates.</source>
+        <target state="new">For improved performance, use the LoggerMessage delegates.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
-        <source>For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message</source>
-        <target state="new">For improved performance, use pre-compiled log messages instead of calling '{0}' with a string message</target>
+        <source>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</source>
+        <target state="new">For improved performance, use the LoggerMessage delegates instead of calling '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
-        <source>Use compiled log messages</source>
-        <target state="new">Use compiled log messages</target>
+        <source>Use the LoggerMessage delegates</source>
+        <target state="new">Use the LoggerMessage delegates</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
-        <source>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens.</source>
-        <target state="new">For consistency with logs emitted from other components, use 'PascalCase' for log message tokens.</target>
+        <source>Use PascalCase for named holes in the logging message template.</source>
+        <target state="new">Use PascalCase for named holes in the logging message template.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
-        <source>For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</source>
-        <target state="new">For consistency with logs emitted from other components, use 'PascalCase' for log message tokens</target>
+        <source>Use PascalCase for named holes in the logging message template</source>
+        <target state="new">Use PascalCase for named holes in the logging message template</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
-        <source>Use PascalCase for log message tokens</source>
-        <target state="new">Use PascalCase for log message tokens</target>
+        <source>Use PascalCase for named holes</source>
+        <target state="new">Use PascalCase for named holes</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
