@@ -972,6 +972,18 @@ Consistent naming of parameters in an override hierarchy increases the usability
 |CodeFix|True|
 ---
 
+## [CA1727](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727): Use PascalCase for named placeholders
+
+Use PascalCase for named placeholders in the logging message template.
+
+|Item|Value|
+|-|-|
+|Category|Naming|
+|Enabled|True|
+|Severity|Hidden|
+|CodeFix|False|
+---
+
 ## [CA1802](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802): Use literals where appropriate
 
 A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.
@@ -1428,6 +1440,18 @@ It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring'
 |CodeFix|True|
 ---
 
+## [CA1848](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848): Use the LoggerMessage delegates
+
+For improved performance, use the LoggerMessage delegates.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Hidden|
+|CodeFix|False|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
@@ -1558,6 +1582,18 @@ Forward the 'CancellationToken' parameter to methods to ensure the operation can
 |Enabled|True|
 |Severity|Info|
 |CodeFix|True|
+---
+
+## [CA2017](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017): Parameter count mismatch
+
+Number of parameters supplied in the logging message template do not match the number of named placeholders.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
 ---
 
 ## [CA2100](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
@@ -2016,28 +2052,28 @@ An assembly has to opt into preview features before using them.
 |CodeFix|False|
 ---
 
-## [CA2253](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253): All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface
+## [CA2253](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253): Named placeholders should not be numeric values
 
-Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.
+Named placeholders in the logging message template should not be comprised of only numeric characters.
 
 |Item|Value|
 |-|-|
 |Category|Usage|
 |Enabled|True|
-|Severity|Warning|
-|CodeFix|True|
+|Severity|Info|
+|CodeFix|False|
 ---
 
-## [CA2254](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254): Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'
+## [CA2254](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254): Template should be a static expression
 
-Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.
+The logging message template should not vary between calls.
 
 |Item|Value|
 |-|-|
 |Category|Usage|
 |Enabled|True|
-|Severity|Warning|
-|CodeFix|True|
+|Severity|Info|
+|CodeFix|False|
 ---
 
 ## [CA2255](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255): Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported
@@ -2050,6 +2086,30 @@ Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attribu
 |Enabled|True|
 |Severity|Warning|
 |CodeFix|False|
+---
+
+## [CA2256](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2256): All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface
+
+Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
+## [CA2257](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2257): Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'
+
+Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
 ---
 
 ## [CA2300](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2300): Do not use insecure deserializer BinaryFormatter

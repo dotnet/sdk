@@ -105,7 +105,7 @@ interface I
 }
 
 [DynamicInterfaceCastableImplementation]
-interface {|CA2253:I2|} : I
+interface {|CA2256:I2|} : I
 {
     void I.Method() {}
 }";
@@ -151,7 +151,7 @@ interface I2 : I
 }
 
 [DynamicInterfaceCastableImplementation]
-interface {|CA2253:I3|} : I2
+interface {|CA2256:I3|} : I2
 {
     void I2.Method2() {}
 }";
@@ -201,7 +201,7 @@ interface I2
 }
 
 [DynamicInterfaceCastableImplementation]
-interface {|CA2253:I3|} : I, I2
+interface {|CA2256:I3|} : I, I2
 {
 }";
             string codeFix = @"
@@ -248,7 +248,7 @@ interface I
 }
 
 [DynamicInterfaceCastableImplementation]
-interface {|CA2253:I2|} : I
+interface {|CA2256:I2|} : I
 {
 }";
             string codeFix = @"
@@ -293,7 +293,7 @@ interface I
 }
 
 [DynamicInterfaceCastableImplementation]
-interface {|CA2253:I2|} : I
+interface {|CA2256:I2|} : I
 {
 }";
             string codeFix = @"
@@ -338,7 +338,7 @@ interface I
 }
 
 [DynamicInterfaceCastableImplementation]
-interface {|CA2253:I2|} : I
+interface {|CA2256:I2|} : I
 {
 }";
             string codeFix = @"
@@ -378,7 +378,7 @@ interface I
 }
 
 [DynamicInterfaceCastableImplementation]
-interface {|CA2253:I2|} : I
+interface {|CA2256:I2|} : I
 {
 }";
             string codeFix = @"
@@ -418,7 +418,7 @@ interface I
 }
 
 [DynamicInterfaceCastableImplementation]
-interface {|CA2253:I2|} : I
+interface {|CA2256:I2|} : I
 {
 }";
             string codeFix = @"
@@ -458,7 +458,7 @@ interface I
 }
 
 [DynamicInterfaceCastableImplementation]
-interface {|CA2253:I2|} : I
+interface {|CA2256:I2|} : I
 {
 }";
 
@@ -507,7 +507,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    sealed void {|CA2254:Method2|}() {}
+    sealed void {|CA2257:Method2|}() {}
 }";
 
             string codeFix = @"
@@ -546,7 +546,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    private void {|CA2254:Method2|}() {}
+    private void {|CA2257:Method2|}() {}
 }";
 
             string codeFix = @"
@@ -585,7 +585,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    void {|CA2254:Method2|}() {}
+    void {|CA2257:Method2|}() {}
 }";
 
             string codeFix = @"
@@ -625,7 +625,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    void {|CA2254:Method2|}();
+    void {|CA2257:Method2|}();
 }";
 
             string codeFix = @"
@@ -667,7 +667,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    virtual void {|CA2254:Method2|}() {}
+    virtual void {|CA2257:Method2|}() {}
 }";
 
             string codeFix = @"
@@ -706,7 +706,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    abstract void {|CA2254:Method2|}();
+    abstract void {|CA2257:Method2|}();
 }";
 
             string codeFix = @"
@@ -747,7 +747,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    public void {|CA2254:Method2|}() {}
+    public void {|CA2257:Method2|}() {}
 }";
 
             string codeFix = @"
@@ -786,7 +786,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    public virtual void {|CA2254:Method2|}() {}
+    public virtual void {|CA2257:Method2|}() {}
 }";
 
             string codeFix = @"
@@ -825,7 +825,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    protected void {|CA2254:Method2|}() {}
+    protected void {|CA2257:Method2|}() {}
 }";
 
             string codeFix = @"
@@ -864,7 +864,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    int {|CA2254:Property|}
+    int {|CA2257:Property|}
     {
         get;
         set;
@@ -890,7 +890,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    int {|CA2254:Property|}
+    int {|CA2257:Property|}
     {
         get;
     }
@@ -915,7 +915,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    int {|CA2254:Property|}
+    int {|CA2257:Property|}
     {
         set;
     }
@@ -940,7 +940,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    int {|CA2254:Property|}
+    int {|CA2257:Property|}
     {
         init;
     }
@@ -965,7 +965,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    int {|CA2254:Property|} { set {} }
+    int {|CA2257:Property|} { set {} }
 }";
 
             await VerifyCSCodeFixAsync(source, source);
@@ -988,7 +988,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    event Action {|CA2254:Event|};
+    event Action {|CA2257:Event|};
 }";
 
             await VerifyCSCodeFixAsync(source, source);
@@ -1011,7 +1011,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    event Action {|CA2254:Event|}, {|CA2254:Event2|};
+    event Action {|CA2257:Event|}, {|CA2257:Event2|};
 }";
 
             await VerifyCSAnalyzerAsync(source);
@@ -1034,7 +1034,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    event Action {|CA2254:Event|}
+    event Action {|CA2257:Event|}
     {
         add
         {

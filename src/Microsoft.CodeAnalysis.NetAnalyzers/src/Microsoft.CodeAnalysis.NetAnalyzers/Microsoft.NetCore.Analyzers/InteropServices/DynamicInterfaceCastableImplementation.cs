@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        internal const string InterfaceMembersMissingImplementationRuleId = "CA2253";
+        internal const string InterfaceMembersMissingImplementationRuleId = "CA2256";
 
         private static readonly DiagnosticDescriptor InterfaceMembersMissingImplementation =
             DiagnosticDescriptorHelper.Create(
@@ -37,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        internal const string MembersDeclaredOnImplementationTypeMustBeStaticRuleId = "CA2254";
+        internal const string MembersDeclaredOnImplementationTypeMustBeStaticRuleId = "CA2257";
 
         private static readonly DiagnosticDescriptor MembersDeclaredOnImplementationTypeMustBeStatic =
             DiagnosticDescriptorHelper.Create(

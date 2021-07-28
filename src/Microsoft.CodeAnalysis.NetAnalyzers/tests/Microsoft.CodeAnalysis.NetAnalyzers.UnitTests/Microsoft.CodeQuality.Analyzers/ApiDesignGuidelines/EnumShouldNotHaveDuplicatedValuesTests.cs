@@ -207,7 +207,30 @@ End Enum",
         }
 
         [Fact]
-        public async Task EnumImplicitDuplication_Diagnostic()
+        public async Task EnumExplicitDuplicationMultiple_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum MyEnum
+{
+    Value1 = 1,
+    Value2 = 1,
+    Value3 = 1,
+}",
+                GetCSharpResultAt(5, 5, "Value2", "1", "Value1"),
+                GetCSharpResultAt(6, 5, "Value3", "1", "Value1"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum MyEnum
+    Value1 = 1
+    Value2 = 1
+    Value3 = 1
+End Enum",
+                GetBasicResultAt(4, 5, "Value2", "1", "Value1"),
+                GetBasicResultAt(5, 5, "Value3", "1", "Value1"));
+        }
+
+        [Fact]
+        public async Task EnumImplicitDuplication_01_Diagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public enum MyEnum
@@ -228,6 +251,46 @@ End Enum",
         }
 
         [Fact]
+        public async Task EnumImplicitDuplication_02_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum MyEnum
+{
+    Value1 = 2,
+    Value2 = 1,
+    Value3,
+}",
+                GetCSharpResultAt(6, 5, "Value3", "2", "Value1"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum MyEnum
+    Value1 = 2
+    Value2 = 1
+    Value3
+End Enum",
+                GetBasicResultAt(5, 5, "Value3", "2", "Value1"));
+        }
+
+        [Fact]
+        public async Task EnumNestedValueReference_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum MyEnum
+{
+    Value1 = 1,
+    Value2 = ~~Value1,
+}",
+                GetCSharpResultAt(5, 5, "Value2", "1", "Value1"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum MyEnum
+    Value1 = 1
+    Value2 = Not Not Value1
+End Enum",
+                GetBasicResultAt(4, 5, "Value2", "1", "Value1"));
+        }
+
+        [Fact]
         public async Task EnumValueReference_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -244,6 +307,27 @@ Public Enum MyEnum
     Value2 = 2
     Value3 = Value1
 End Enum");
+        }
+
+        [Fact]
+        public async Task EnumValueReferenceExplicitDuplicateMember_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum MyEnum
+{
+    Value1 = 1,
+    Value2 = Value1,
+    Value3 = Value2,
+}",
+                GetCSharpResultAt(6, 5, "Value3", "1", "Value1"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum MyEnum
+    Value1 = 1
+    Value2 = Value1
+    Value3 = Value2
+End Enum",
+                GetCSharpResultAt(5, 5, "Value3", "1", "Value1"));
         }
 
         [Fact]
@@ -292,6 +376,35 @@ Public Enum MyEnum
 End Enum",
                 GetBasicResultAt(6, 5, "Value4", "3", "Value3"),
                 GetBasicBitwiseResultAt(6, 34, "Value1"));
+        }
+
+        [Fact]
+        public async Task EnumBitwiseDuplicatedValue_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum MyEnum
+{
+    None = 0,
+    Flag1 = 1 << 0,
+    Flag2 = 1 << 1,
+    AlsoNone = None,
+    Flag1AndNone = Flag1 | None,
+    Flag1AndAlsoNone = Flag1 | AlsoNone
+}",
+            GetCSharpResultAt(8, 5, "Flag1AndNone", "1", "Flag1"),
+            GetCSharpResultAt(9, 5, "Flag1AndAlsoNone", "1", "Flag1"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum MyEnum
+    None = 0
+    Flag1 = 1 << 0
+    Flag2 = 1 << 1
+    AlsoNone = None
+    Flag1AndNone = Flag1 Or None
+    Flag1AndAlsoNone = Flag1 Or AlsoNone
+End Enum",
+            GetBasicResultAt(7, 5, "Flag1AndNone", "1", "Flag1"),
+            GetBasicResultAt(8, 5, "Flag1AndAlsoNone", "1", "Flag1"));
         }
 
         [Fact]
@@ -423,6 +536,47 @@ Public Enum MyEnum2
     Value2 = MyEnum1.Value1
 End Enum",
                 GetBasicResultAt(9, 5, "Value2", "1", "Value1"));
+        }
+
+        [Fact]
+        public async Task EnumMemberBadConstantValue_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public static int I = 1;
+}
+
+public enum MyEnum
+{
+    Value1 = {|CS0133:C.I|}
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Module M
+    Public I As Integer = 1
+End Module
+
+Public Enum MyEnum
+    Value1 = {|BC30059:M.I|}
+End Enum
+");
+        }
+
+        [Fact]
+        public async Task EnumMemberNullConstantValue_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum MyEnum
+{
+    Value1 = {|CS0037:null|}
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum MyEnum
+    Value1 = Nothing
+End Enum
+");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string fieldName, string constantValue, string duplicatedFieldName) =>
