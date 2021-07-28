@@ -15,6 +15,9 @@ namespace Microsoft.DotNet.PackageValidation
         [Required]
         public string PackageTargetPath { get; set; }
 
+        [Required]
+        public string RoslynAssembliesPath { get; set; }
+
         public string RuntimeGraph { get; set; }
 
         public string NoWarn { get; set; }
@@ -33,15 +36,8 @@ namespace Microsoft.DotNet.PackageValidation
 
         public string CompatibilitySuppressionFilePath { get; set; }
 
-        public string RoslynAssemblyPath { get; set; }
-
         public override bool Execute()
         {
-            if (string.IsNullOrEmpty(RoslynAssemblyPath))
-            {
-                throw new ArgumentNullException(nameof(RoslynAssemblyPath));
-            }
-
             AppDomain.CurrentDomain.AssemblyResolve += ResolverForRoslyn;
             try
             {
@@ -84,10 +80,11 @@ namespace Microsoft.DotNet.PackageValidation
             AssemblyName name = new(args.Name);
             if (name.Name == "Microsoft.CodeAnalysis" || name.Name == "Microsoft.CodeAnalysis.CSharp")
             {
-                Assembly asm = Assembly.LoadFrom(Path.Combine(RoslynAssemblyPath, $"{name.Name}.dll"));
-                if (asm.GetName().Version < name.Version)
+                Assembly asm = Assembly.LoadFrom(Path.Combine(RoslynAssembliesPath, $"{name.Name}.dll"));
+                Version version = asm.GetName().Version;
+                if (version < name.Version)
                 {
-                    throw new Exception(Resources.UpdateSdkVersion);
+                    throw new Exception(string.Format(Resources.UpdateSdkVersion, version, name.Version));
                 }
                 return asm;
             }

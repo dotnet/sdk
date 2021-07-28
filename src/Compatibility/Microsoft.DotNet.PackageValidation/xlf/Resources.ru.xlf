@@ -58,8 +58,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UpdateSdkVersion">
-        <source>You are using an older version of the roslyn. Please update to the latest sdk version.</source>
-        <target state="new">You are using an older version of the roslyn. Please update to the latest sdk version.</target>
+        <source> The minimum version required of Roslyn is '{1}' and you are using '{0}' version of the Roslyn. You can update the sdk to get the latest version.</source>
+        <target state="new"> The minimum version required of Roslyn is '{1}' and you are using '{0}' version of the Roslyn. You can update the sdk to get the latest version.</target>
         <note />
       </trans-unit>
       <trans-unit id="WroteSuppressions">

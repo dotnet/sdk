@@ -6,9 +6,9 @@
           AfterTargets="Pack"
           Condition="'$(IsPackable)' == 'true' and '$(EnablePackageValidation)' == 'true'">
 
-    <PropertyGroup Condition="'$(RoslynAssemblyPath)' == ''">
-      <RoslynAssemblyPath>$(RoslynTargetsPath)</RoslynAssemblyPath>
-      <RoslynAssemblyPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$([System.IO.Path]::Combine('$(RoslynAssemblyPath)', bincore))</RoslynAssemblyPath>
+    <PropertyGroup Condition="'$(RoslynAssembliesPath)' == ''">
+      <RoslynAssembliesPath>$(RoslynTargetsPath)</RoslynAssembliesPath>
+      <RoslynAssembliesPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$([System.IO.Path]::Combine('$(RoslynAssembliesPath)', bincore))</RoslynAssembliesPath>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -31,6 +31,6 @@
       CompatibilitySuppressionFilePath="$(CompatibilitySuppressionFilePath)"
       BaselinePackageTargetPath="$(PackageValidationBaselinePath)"
       DisablePackageBaselineValidation="$(DisablePackageBaselineValidation)"
-      RoslynAssemblyPath="$(RoslynAssemblyPath)" />
+      RoslynAssembliesPath="$(RoslynAssembliesPath)" />
   </Target>
 </Project>
