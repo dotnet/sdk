@@ -172,22 +172,22 @@
     <value>Abstract type '{0}' should not have public constructors</value>
   </data>
   <data name="LoggerMessageDiagnosticNumericsInFormatStringTitle" xml:space="preserve">
-    <value>Named holes should not be numeric values</value>
+    <value>Named placeholders should not be numeric values</value>
   </data>
   <data name="LoggerMessageDiagnosticNumericsInFormatStringMessage" xml:space="preserve">
-    <value>Named holes in the logging message template should not be comprised of only numeric characters</value>
+    <value>Named placeholders in the logging message template should not be comprised of only numeric characters</value>
   </data>
   <data name="LoggerMessageDiagnosticNumericsInFormatStringDescription" xml:space="preserve">
-    <value>Named holes in the logging message template should not be comprised of only numeric characters.</value>
+    <value>Named placeholders in the logging message template should not be comprised of only numeric characters.</value>
   </data>
   <data name="LoggerMessageDiagnosticFormatParameterCountMismatchTitle" xml:space="preserve">
     <value>Parameter count mismatch</value>
   </data>
   <data name="LoggerMessageDiagnosticFormatParameterCountMismatchMessage" xml:space="preserve">
-    <value>Number of parameters supplied in the logging message template do not match the number of named holes</value>
+    <value>Number of parameters supplied in the logging message template do not match the number of named placeholders</value>
   </data>
   <data name="LoggerMessageDiagnosticFormatParameterCountMismatchDescription" xml:space="preserve">
-    <value>Number of parameters supplied in the logging message template do not match the number of named holes.</value>
+    <value>Number of parameters supplied in the logging message template do not match the number of named placeholders.</value>
   </data>
   <data name="LoggerMessageDiagnosticUseCompiledLogMessagesTitle" xml:space="preserve">
     <value>Use the LoggerMessage delegates</value>
@@ -208,13 +208,13 @@
     <value>The logging message template should not vary between calls.</value>
   </data>
   <data name="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle" xml:space="preserve">
-    <value>Use PascalCase for named holes</value>
+    <value>Use PascalCase for named placeholders</value>
   </data>
   <data name="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage" xml:space="preserve">
-    <value>Use PascalCase for named holes in the logging message template</value>
+    <value>Use PascalCase for named placeholders in the logging message template</value>
   </data>
   <data name="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription" xml:space="preserve">
-    <value>Use PascalCase for named holes in the logging message template.</value>
+    <value>Use PascalCase for named placeholders in the logging message template.</value>
   </data>
   <data name="MarkAssembliesWithClsCompliantTitle" xml:space="preserve">
     <value>Mark assemblies with CLSCompliant</value>

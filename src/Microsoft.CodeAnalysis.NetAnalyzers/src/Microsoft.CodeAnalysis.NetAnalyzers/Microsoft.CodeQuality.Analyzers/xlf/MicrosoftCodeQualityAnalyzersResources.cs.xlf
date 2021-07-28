@@ -258,13 +258,13 @@
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
-        <source>Number of parameters supplied in the logging message template do not match the number of named holes.</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named holes.</target>
+        <source>Number of parameters supplied in the logging message template do not match the number of named placeholders.</source>
+        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
-        <source>Number of parameters supplied in the logging message template do not match the number of named holes</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named holes</target>
+        <source>Number of parameters supplied in the logging message template do not match the number of named placeholders</source>
+        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
@@ -273,18 +273,18 @@
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
-        <source>Named holes in the logging message template should not be comprised of only numeric characters.</source>
-        <target state="new">Named holes in the logging message template should not be comprised of only numeric characters.</target>
+        <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
+        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
-        <source>Named holes in the logging message template should not be comprised of only numeric characters</source>
-        <target state="new">Named holes in the logging message template should not be comprised of only numeric characters</target>
+        <source>Named placeholders in the logging message template should not be comprised of only numeric characters</source>
+        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
-        <source>Named holes should not be numeric values</source>
-        <target state="new">Named holes should not be numeric values</target>
+        <source>Named placeholders should not be numeric values</source>
+        <target state="new">Named placeholders should not be numeric values</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
@@ -303,18 +303,18 @@
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
-        <source>Use PascalCase for named holes in the logging message template.</source>
-        <target state="new">Use PascalCase for named holes in the logging message template.</target>
+        <source>Use PascalCase for named placeholders in the logging message template.</source>
+        <target state="new">Use PascalCase for named placeholders in the logging message template.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
-        <source>Use PascalCase for named holes in the logging message template</source>
-        <target state="new">Use PascalCase for named holes in the logging message template</target>
+        <source>Use PascalCase for named placeholders in the logging message template</source>
+        <target state="new">Use PascalCase for named placeholders in the logging message template</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
-        <source>Use PascalCase for named holes</source>
-        <target state="new">Use PascalCase for named holes</target>
+        <source>Use PascalCase for named placeholders</source>
+        <target state="new">Use PascalCase for named placeholders</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">

@@ -972,9 +972,9 @@ Consistent naming of parameters in an override hierarchy increases the usability
 |CodeFix|True|
 ---
 
-## [CA1727](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727): Use PascalCase for named holes
+## [CA1727](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727): Use PascalCase for named placeholders
 
-Use PascalCase for named holes in the logging message template.
+Use PascalCase for named placeholders in the logging message template.
 
 |Item|Value|
 |-|-|
@@ -1586,7 +1586,7 @@ Forward the 'CancellationToken' parameter to methods to ensure the operation can
 
 ## [CA2017](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017): Parameter count mismatch
 
-Number of parameters supplied in the logging message template do not match the number of named holes.
+Number of parameters supplied in the logging message template do not match the number of named placeholders.
 
 |Item|Value|
 |-|-|
@@ -2052,9 +2052,9 @@ An assembly has to opt into preview features before using them.
 |CodeFix|False|
 ---
 
-## [CA2253](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253): Named holes should not be numeric values
+## [CA2253](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253): Named placeholders should not be numeric values
 
-Named holes in the logging message template should not be comprised of only numeric characters.
+Named placeholders in the logging message template should not be comprised of only numeric characters.
 
 |Item|Value|
 |-|-|
