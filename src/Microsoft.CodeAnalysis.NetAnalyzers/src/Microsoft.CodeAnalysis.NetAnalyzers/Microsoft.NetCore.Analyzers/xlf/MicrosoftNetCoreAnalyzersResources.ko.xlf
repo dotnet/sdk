@@ -1367,6 +1367,16 @@
         <target state="translated">안전하지 않은 역직렬 변환기 LosFormatter를 사용하지 마세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MakeMethodDeclaredOnImplementationTypeStatic">
+        <source>Convert to static method</source>
+        <target state="new">Convert to static method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode">
+        <source>Converting an instance method to a static method may produce invalid code</source>
+        <target state="new">Converting an instance method to a static method may produce invalid code</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MakeParameterlessConstructorPublic">
         <source>Make the constructor that takes zero parameters 'public'</source>
         <target state="new">Make the constructor that takes zero parameters 'public'</target>
@@ -1487,19 +1497,19 @@
         <target state="translated">암호에서 암호화 키를 파생할 때 {0} 이상의 반복 횟수를 사용하세요. 기본적으로 Rfc2898DeriveByte의 IterationCount는 1,000뿐입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeSealedDescription">
-        <source>Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all members on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</source>
-        <target state="new">Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all members on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</target>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticDescription">
+        <source>Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</source>
+        <target state="new">Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeSealedMessage">
-        <source>The '{0}' member on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
-        <target state="new">The '{0}' member on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</target>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticMessage">
+        <source>The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
+        <target state="new">The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</target>
         <note />
       </trans-unit>
-      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeSealedTitle">
-        <source>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</source>
-        <target state="new">Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</target>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticTitle">
+        <source>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</source>
+        <target state="new">Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -2075,11 +2085,6 @@
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
         <source>Review SQL queries for security vulnerabilities</source>
         <target state="translated">보안상 취약한 부분이 있는지 SQL 쿼리를 검토하십시오.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SealMethodDeclaredOnImplementationType">
-        <source>Mark method as sealed</source>
-        <target state="new">Mark method as sealed</target>
         <note />
       </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">

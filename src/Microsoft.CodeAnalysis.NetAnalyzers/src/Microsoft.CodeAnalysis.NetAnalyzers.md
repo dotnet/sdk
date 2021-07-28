@@ -2028,9 +2028,9 @@ Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as a
 |CodeFix|True|
 ---
 
-## [CA2254](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254): Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'
+## [CA2254](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254): Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'
 
-Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all members on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.
+Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.
 
 |Item|Value|
 |-|-|

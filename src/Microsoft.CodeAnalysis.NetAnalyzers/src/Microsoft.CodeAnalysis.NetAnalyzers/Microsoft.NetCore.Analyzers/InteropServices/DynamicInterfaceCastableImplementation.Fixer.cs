@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         public override ImmutableArray<string> FixableDiagnosticIds =>
             ImmutableArray.Create(
                 DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId,
-                DynamicInterfaceCastableImplementationAnalyzer.MeembersDeclaredOnImplementationTypeMustBeSealedRuleId);
+                DynamicInterfaceCastableImplementationAnalyzer.MembersDeclaredOnImplementationTypeMustBeStaticRuleId);
 
         public override FixAllProvider GetFixAllProvider()
         {
@@ -45,16 +45,22 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
                         diagnostic);
                 }
-                else if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MeembersDeclaredOnImplementationTypeMustBeSealedRuleId)
+                else if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MembersDeclaredOnImplementationTypeMustBeStaticRuleId
+                    && diagnostic.Properties.ContainsKey(DynamicInterfaceCastableImplementationAnalyzer.NonStaticMemberIsMethodKey))
                 {
                     context.RegisterCodeFix(
                         CodeAction.Create(
-                            MicrosoftNetCoreAnalyzersResources.SealMethodDeclaredOnImplementationType,
-                            async ct => await SealMemberDeclaredOnImplementationType(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
-                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.SealMethodDeclaredOnImplementationType)),
+                            MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic,
+                            async ct => await MakeMemberDeclaredOnImplementationTypeStatic(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic)),
                         diagnostic);
                 }
             }
+        }
+
+        protected static SyntaxAnnotation CreatePossibleInvalidCodeWarning()
+        {
+            return WarningAnnotation.Create(MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode);
         }
 
         protected abstract bool CodeFixSupportsDeclaration(SyntaxNode declaration);
@@ -64,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             Document document,
             CancellationToken cancellationToken);
 
-        protected abstract Task<Document> SealMemberDeclaredOnImplementationType(
+        protected abstract Task<Document> MakeMemberDeclaredOnImplementationTypeStatic(
             SyntaxNode declaration,
             Document document,
             CancellationToken cancellationToken);

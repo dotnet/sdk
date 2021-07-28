@@ -1683,17 +1683,17 @@
   <data name="InterfaceMembersMissingImplementationTitle" xml:space="preserve">
     <value>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</value>
   </data>
-  <data name="MembersDeclaredOnImplementationTypeMustBeSealedDescription" xml:space="preserve">
-    <value>Since a type that implements 'IDynamicInterfaceCastable' will conventionally not specify that it implements a 'DynamicInterfaceCastableImplementationAttribute'-attributed type, only the public interface type, virtual interface method lookup will fail even if the method has an implementation. As a result, all members on 'DynamicInterfaceCastableImplementation'-attributed types should be 'sealed'.</value>
+  <data name="MembersDeclaredOnImplementationTypeMustBeStaticDescription" xml:space="preserve">
+    <value>Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</value>
   </data>
-  <data name="MembersDeclaredOnImplementationTypeMustBeSealedMessage" xml:space="preserve">
-    <value>The '{0}' member on the '{1}' type should be marked 'sealed' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</value>
+  <data name="MembersDeclaredOnImplementationTypeMustBeStaticMessage" xml:space="preserve">
+    <value>The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</value>
   </data>
-  <data name="MembersDeclaredOnImplementationTypeMustBeSealedTitle" xml:space="preserve">
-    <value>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'sealed'</value>
+  <data name="MembersDeclaredOnImplementationTypeMustBeStaticTitle" xml:space="preserve">
+    <value>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</value>
   </data>
-  <data name="SealMethodDeclaredOnImplementationType" xml:space="preserve">
-    <value>Mark method as sealed</value>
+  <data name="MakeMethodDeclaredOnImplementationTypeStatic" xml:space="preserve">
+    <value>Convert to static method</value>
   </data>
   <data name="UseStringContainsCharOverloadWithSingleCharactersDescription" xml:space="preserve">
     <value>'string.Contains(char)' is available as a better performing overload for single char lookup.</value>
@@ -1721,5 +1721,8 @@
   </data>
   <data name="StaticAndAbstractRequiresPreviewFeatures" xml:space="preserve">
     <value>Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode" xml:space="preserve">
+    <value>Converting an instance method to a static method may produce invalid code</value>
   </data>
 </root>

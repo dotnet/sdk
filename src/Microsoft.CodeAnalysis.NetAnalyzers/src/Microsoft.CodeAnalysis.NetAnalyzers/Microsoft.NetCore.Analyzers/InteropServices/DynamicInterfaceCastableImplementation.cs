@@ -37,23 +37,25 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        internal const string MeembersDeclaredOnImplementationTypeMustBeSealedRuleId = "CA2254";
+        internal const string MembersDeclaredOnImplementationTypeMustBeStaticRuleId = "CA2254";
 
-        private static readonly DiagnosticDescriptor MembersDeclaredOnImplementationTypeMustBeSealed =
+        private static readonly DiagnosticDescriptor MembersDeclaredOnImplementationTypeMustBeStatic =
             DiagnosticDescriptorHelper.Create(
-                MeembersDeclaredOnImplementationTypeMustBeSealedRuleId,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeSealedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeSealedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                MembersDeclaredOnImplementationTypeMustBeStaticRuleId,
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeStaticTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeStaticMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 DiagnosticCategory.Usage,
                 RuleLevel.BuildWarning,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeSealedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeStaticDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
+
+        internal const string NonStaticMemberIsMethodKey = nameof(NonStaticMemberIsMethodKey);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
             DynamicInterfaceCastableImplementationUnsupported,
             InterfaceMembersMissingImplementation,
-            MembersDeclaredOnImplementationTypeMustBeSealed);
+            MembersDeclaredOnImplementationTypeMustBeStatic);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -118,13 +120,18 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             foreach (var member in targetType.GetMembers())
             {
-                if (member.IsVirtual || member.IsAbstract)
+                if (!member.IsImplementationOfAnyExplicitInterfaceMember() && !member.IsStatic)
                 {
                     // We don't want to emit diagnostics when the member is an accessor method.
                     if (member is not IMethodSymbol { AssociatedSymbol: IPropertySymbol or IEventSymbol })
                     {
                         // Emit diagnostic for non-concrete method on implementation interface
-                        context.ReportDiagnostic(member.CreateDiagnostic(MembersDeclaredOnImplementationTypeMustBeSealed, member.ToDisplayString(), targetType.ToDisplayString()));
+                        ImmutableDictionary<string, string?> propertyBag = ImmutableDictionary<string, string?>.Empty;
+                        if (member is IMethodSymbol)
+                        {
+                            propertyBag = propertyBag.Add(NonStaticMemberIsMethodKey, string.Empty);
+                        }
+                        context.ReportDiagnostic(member.CreateDiagnostic(MembersDeclaredOnImplementationTypeMustBeStatic, propertyBag, member.ToDisplayString(), targetType.ToDisplayString()));
                     }
                 }
             }

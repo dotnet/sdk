@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.NetCore.Analyzers.InteropServices;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
@@ -174,87 +175,147 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 })));
         }
 
-        protected override async Task<Document> SealMemberDeclaredOnImplementationType(
-            SyntaxNode declaration,
-            Document document,
-            CancellationToken cancellationToken)
+        protected override async Task<Document> MakeMemberDeclaredOnImplementationTypeStatic(SyntaxNode declaration, Document document, CancellationToken cancellationToken)
         {
+            var root = (await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false))!;
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;
             var defaultMethodBodyStatements = generator.DefaultMethodBody(editor.SemanticModel.Compilation).ToArray();
 
             var symbol = editor.SemanticModel.GetDeclaredSymbol(declaration, cancellationToken);
-            if (declaration.IsKind(SyntaxKind.EventFieldDeclaration))
+
+            if (symbol is not IMethodSymbol)
             {
-                // We'll only end up here with one event in the event field declaration syntax.
-                var eventField = (EventFieldDeclarationSyntax)declaration;
-                symbol = editor.SemanticModel.GetDeclaredSymbol(eventField.Declaration.Variables[0], cancellationToken);
+                // We can't automatically make properties or events static.
+                return document;
             }
 
-            editor.ReplaceNode(generator.GetDeclaration(declaration), SealMemberDeclaration(declaration, symbol));
+            // We're going to convert the this parameter to a @this parameter at the start of the parameter list,
+            // so we need to warn if the symbol already exists in scope since the fix may produce broken code.
+
+            SymbolInfo introducedThisParamInfo = editor.SemanticModel.GetSpeculativeSymbolInfo(
+                declaration.SpanStart,
+                SyntaxFactory.IdentifierName(EscapedThisToken),
+                SpeculativeBindingOption.BindAsExpression);
+
+            bool shouldWarn = false;
+            if (introducedThisParamInfo.Symbol is not null)
+            {
+                shouldWarn = true;
+            }
+
+            var referencedSymbols = await SymbolFinder.FindReferencesAsync(
+                symbol, document.Project.Solution, cancellationToken).ConfigureAwait(false);
+
+            List<InvocationExpressionSyntax> invocations = new();
+
+            foreach (var referencedSymbol in referencedSymbols)
+            {
+                foreach (var location in referencedSymbol.Locations)
+                {
+                    if (!location.Document.Id.Equals(document.Id))
+                    {
+                        shouldWarn = true;
+                        continue;
+                    }
+                    // We limited the search scope to the single document, 
+                    // so all reference should be in the same tree.
+                    var referenceNode = root.FindNode(location.Location.SourceSpan);
+                    if (referenceNode is not IdentifierNameSyntax identifierNode)
+                    {
+                        // Unexpected scenario, skip and warn.
+                        shouldWarn = true;
+                        continue;
+                    }
+
+                    if (identifierNode.Parent is InvocationExpressionSyntax invocation)
+                    {
+                        invocations.Add(invocation);
+                    }
+                    else if (identifierNode.Parent is MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax } thisMethodAccess
+                        && thisMethodAccess.Parent is InvocationExpressionSyntax invocationOnThis)
+                    {
+                        invocations.Add(invocationOnThis);
+                    }
+                    else
+                    {
+                        // We won't be able to fix non-invocation references, 
+                        // e.g. creating a delegate. 
+                        shouldWarn = true;
+                    }
+                }
+            }
+
+            // Fix all invocations by passing in @this argument.
+            foreach (var invocation in invocations)
+            {
+                editor.ReplaceNode(
+                    invocation,
+                    (node, generator) =>
+                    {
+                        var currentInvocation = (InvocationExpressionSyntax)node;
+
+                        var newArgList = currentInvocation.ArgumentList.WithArguments(
+                            SyntaxFactory.SingletonSeparatedList(generator.Argument(SyntaxFactory.IdentifierName(EscapedThisToken)))
+                                .AddRange(currentInvocation.ArgumentList.Arguments));
+                        return currentInvocation.WithArgumentList(newArgList).WithExpression(SyntaxFactory.IdentifierName(symbol.Name));
+                    });
+            }
+
+            editor.ReplaceNode(
+                declaration,
+                (node, generator) =>
+                {
+                    var updatedMethod = generator.WithModifiers(node, DeclarationModifiers.From(symbol)
+                        .WithIsAbstract(false)
+                        .WithIsVirtual(false)
+                        .WithIsSealed(false)
+                        .WithIsStatic(true));
+
+                    if (symbol.IsAbstract)
+                    {
+                        updatedMethod = generator.WithStatements(updatedMethod, defaultMethodBodyStatements);
+                    }
+
+                    updatedMethod = ((MethodDeclarationSyntax)updatedMethod).WithParameterList(
+                        SyntaxFactory.ParameterList(
+                            SyntaxFactory.SingletonSeparatedList(
+                                SyntaxFactory.Parameter(EscapedThisToken)
+                                .WithType(SyntaxFactory.ParseTypeName(symbol.ContainingType.Name)))
+                            .AddRange(((MethodDeclarationSyntax)updatedMethod).ParameterList.Parameters)));
+
+                    ThisToIntroducedParameterRewriter rewriter = new ThisToIntroducedParameterRewriter();
+                    updatedMethod = rewriter.Visit(updatedMethod);
+
+                    if (shouldWarn)
+                    {
+                        updatedMethod = updatedMethod.WithAdditionalAnnotations(CreatePossibleInvalidCodeWarning());
+                    }
+
+                    return updatedMethod;
+                });
+
             return editor.GetChangedDocument();
-
-            SyntaxNode SealMemberDeclaration(SyntaxNode declaration, ISymbol symbol)
-            {
-                return symbol.Kind switch
-                {
-                    SymbolKind.Method => SealMethod(symbol),
-                    SymbolKind.Property => SealProperty(symbol),
-                    SymbolKind.Event => SealEvent(symbol),
-                    _ => declaration,
-                };
-            }
-
-            SyntaxNode SealMethod(ISymbol symbol)
-            {
-                var modifiers = GetModifiers(generator, declaration);
-                if (symbol.IsAbstract)
-                {
-                    declaration = generator.WithStatements(declaration, defaultMethodBodyStatements);
-                }
-                return generator.WithModifiers(declaration, modifiers);
-            }
-
-            SyntaxNode SealProperty(ISymbol symbol)
-            {
-                var modifiers = GetModifiers(generator, declaration);
-                if (symbol.IsAbstract)
-                {
-                    var prop = (IPropertySymbol)symbol;
-                    if (prop.GetMethod is not null)
-                    {
-                        declaration = generator.WithGetAccessorStatements(declaration, defaultMethodBodyStatements);
-                    }
-                    if (prop.SetMethod is not null)
-                    {
-                        declaration = AddSetAccessor(prop, declaration, generator, defaultMethodBodyStatements, includeAccessibility: true);
-                    }
-                }
-                return generator.WithModifiers(declaration, modifiers);
-            }
-
-            SyntaxNode SealEvent(ISymbol symbol)
-            {
-                var modifiers = GetModifiers(generator, declaration);
-                if (symbol.IsAbstract)
-                {
-                    declaration = GenerateEventImplementation((IEventSymbol)symbol, declaration, generator, defaultMethodBodyStatements);
-                }
-                return generator.WithModifiers(declaration, modifiers);
-            }
-
-            static DeclarationModifiers GetModifiers(SyntaxGenerator generator, SyntaxNode declaration)
-            {
-                return generator.GetModifiers(declaration)
-                                               .WithIsAbstract(false)
-                                               .WithIsVirtual(false)
-                                               .WithIsSealed(true);
-            }
         }
+
+        private static readonly SyntaxToken EscapedThisToken = SyntaxFactory.Identifier(
+                    SyntaxFactory.TriviaList(),
+                    SyntaxKind.IdentifierToken,
+                    "@this",
+                    "this",
+                    SyntaxFactory.TriviaList());
 
         protected override bool CodeFixSupportsDeclaration(SyntaxNode declaration)
         {
             return !declaration.IsKind(SyntaxKind.VariableDeclarator);
+        }
+
+        private class ThisToIntroducedParameterRewriter : CSharpSyntaxRewriter
+        {
+            public override SyntaxNode VisitThisExpression(ThisExpressionSyntax node)
+            {
+                return SyntaxFactory.IdentifierName(EscapedThisToken);
+            }
         }
     }
 }

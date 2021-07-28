@@ -492,7 +492,7 @@ interface I2 : I
         }
 
         [Fact]
-        public async Task DynamicInterfaceCastableImplementation_DefinedMethodsSealed_CS_NoDiagnostic()
+        public async Task DynamicInterfaceCastableImplementation_DefinedMethodsSealed_CS_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -507,14 +507,31 @@ interface I2 : I
 {
     void I.Method() {}
 
-    sealed void Method2() {}
+    sealed void {|CA2254:Method2|}() {}
 }";
 
-            await VerifyCSAnalyzerAsync(source);
+            string codeFix = @"
+using System.Runtime.InteropServices;
+
+interface I
+{
+    void Method();
+}
+
+[DynamicInterfaceCastableImplementation]
+interface I2 : I
+{
+    void I.Method() {}
+
+    static void Method2(I2 @this)
+    { }
+}";
+
+            await VerifyCSCodeFixAsync(source, codeFix);
         }
 
         [Fact]
-        public async Task DynamicInterfaceCastableImplementation_DefinedMethodsPrivate_CS_NoDiagnostic()
+        public async Task DynamicInterfaceCastableImplementation_DefinedMethodsPrivate_CS_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -529,10 +546,27 @@ interface I2 : I
 {
     void I.Method() {}
 
-    private void Method2() {}
+    private void {|CA2254:Method2|}() {}
 }";
 
-            await VerifyCSAnalyzerAsync(source);
+            string codeFix = @"
+using System.Runtime.InteropServices;
+
+interface I
+{
+    void Method();
+}
+
+[DynamicInterfaceCastableImplementation]
+interface I2 : I
+{
+    void I.Method() {}
+
+    private static void Method2(I2 @this)
+    { }
+}";
+
+            await VerifyCSCodeFixAsync(source, codeFix);
         }
 
         [Fact]
@@ -567,7 +601,8 @@ interface I2 : I
 {
     void I.Method() {}
 
-    sealed void Method2() {}
+    static void Method2(I2 @this)
+    { }
 }";
 
             await VerifyCSCodeFixAsync(source, codeFix);
@@ -607,7 +642,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    sealed void Method2()
+    static void Method2(I2 @this)
     {
         throw new NotImplementedException();
     }
@@ -648,7 +683,8 @@ interface I2 : I
 {
     void I.Method() {}
 
-    sealed void Method2() {}
+    static void Method2(I2 @this)
+    { }
 }";
 
             await VerifyCSCodeFixAsync(source, codeFix);
@@ -686,7 +722,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    sealed void Method2()
+    static void Method2(I2 @this)
     {
         throw new System.NotImplementedException();
     }
@@ -727,7 +763,8 @@ interface I2 : I
 {
     void I.Method() {}
 
-    public sealed void Method2() {}
+    public static void Method2(I2 @this)
+    { }
 }";
 
             await VerifyCSCodeFixAsync(source, codeFix);
@@ -765,7 +802,8 @@ interface I2 : I
 {
     void I.Method() {}
 
-    public sealed void Method2() {}
+    public static void Method2(I2 @this)
+    { }
 }";
 
             await VerifyCSCodeFixAsync(source, codeFix);
@@ -803,7 +841,8 @@ interface I2 : I
 {
     void I.Method() {}
 
-    protected sealed void Method2() {}
+    protected static void Method2(I2 @this)
+    { }
 }";
 
             await VerifyCSCodeFixAsync(source, codeFix);
@@ -832,34 +871,7 @@ interface I2 : I
     }
 }";
 
-            string codeFix = @"
-using System.Runtime.InteropServices;
-
-interface I
-{
-    void Method();
-}
-
-[DynamicInterfaceCastableImplementation]
-interface I2 : I
-{
-    void I.Method() {}
-
-    sealed int Property
-    {
-        get
-        {
-            throw new System.NotImplementedException();
-        }
-
-        set
-        {
-            throw new System.NotImplementedException();
-        }
-    }
-}";
-
-            await VerifyCSCodeFixAsync(source, codeFix);
+            await VerifyCSCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -884,29 +896,7 @@ interface I2 : I
     }
 }";
 
-            string codeFix = @"
-using System.Runtime.InteropServices;
-
-interface I
-{
-    void Method();
-}
-
-[DynamicInterfaceCastableImplementation]
-interface I2 : I
-{
-    void I.Method() {}
-
-    sealed int Property
-    {
-        get
-        {
-            throw new System.NotImplementedException();
-        }
-    }
-}";
-
-            await VerifyCSCodeFixAsync(source, codeFix);
+            await VerifyCSCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -931,29 +921,7 @@ interface I2 : I
     }
 }";
 
-            string codeFix = @"
-using System.Runtime.InteropServices;
-
-interface I
-{
-    void Method();
-}
-
-[DynamicInterfaceCastableImplementation]
-interface I2 : I
-{
-    void I.Method() {}
-
-    sealed int Property
-    {
-        set
-        {
-            throw new System.NotImplementedException();
-        }
-    }
-}";
-
-            await VerifyCSCodeFixAsync(source, codeFix);
+            await VerifyCSCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -978,29 +946,7 @@ interface I2 : I
     }
 }";
 
-            string codeFix = @"
-using System.Runtime.InteropServices;
-
-interface I
-{
-    void Method();
-}
-
-[DynamicInterfaceCastableImplementation]
-interface I2 : I
-{
-    void I.Method() {}
-
-    sealed int Property
-    {
-        init
-        {
-            throw new System.NotImplementedException();
-        }
-    }
-}";
-
-            await VerifyCSCodeFixAsync(source, codeFix);
+            await VerifyCSCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -1022,23 +968,7 @@ interface I2 : I
     int {|CA2254:Property|} { set {} }
 }";
 
-            string codeFix = @"
-using System.Runtime.InteropServices;
-
-interface I
-{
-    void Method();
-}
-
-[DynamicInterfaceCastableImplementation]
-interface I2 : I
-{
-    void I.Method() {}
-
-    sealed int Property { set {} }
-}";
-
-            await VerifyCSCodeFixAsync(source, codeFix);
+            await VerifyCSCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -1061,35 +991,7 @@ interface I2 : I
     event Action {|CA2254:Event|};
 }";
 
-            string codeFix = @"
-using System;
-using System.Runtime.InteropServices;
-
-interface I
-{
-    void Method();
-}
-
-[DynamicInterfaceCastableImplementation]
-interface I2 : I
-{
-    void I.Method() {}
-
-    public sealed event Action Event
-    {
-        add
-        {
-            throw new NotImplementedException();
-        }
-
-        remove
-        {
-            throw new NotImplementedException();
-        }
-    }
-}";
-
-            await VerifyCSCodeFixAsync(source, codeFix);
+            await VerifyCSCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -1143,32 +1045,7 @@ interface I2 : I
     }
 }";
 
-            string codeFix = @"
-using System;
-using System.Runtime.InteropServices;
-
-interface I
-{
-    void Method();
-}
-
-[DynamicInterfaceCastableImplementation]
-interface I2 : I
-{
-    void I.Method() {}
-
-    sealed event Action Event
-    {
-        add
-        {
-        }
-        remove
-        {
-        }
-    }
-}";
-
-            await VerifyCSCodeFixAsync(source, codeFix);
+            await VerifyCSCodeFixAsync(source, source);
         }
 
         private static Task VerifyCSAnalyzerAsync(string source)
