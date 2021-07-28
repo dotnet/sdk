@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -123,7 +124,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var containingType = methodSymbol.ContainingType;
             bool usingLoggerExtensionsTypes = false;
 
-            if (containingType.Equals(loggerExtensionsType, SymbolEqualityComparer.Default)) // the condition I want
+            if (containingType.Equals(loggerExtensionsType, SymbolEqualityComparer.Default))
             {
                 usingLoggerExtensionsTypes = true;
                 context.ReportDiagnostic(invocation.CreateDiagnostic(CA1848Rule, methodSymbol.ToDisplayString(GetLanguageSpecificFormat(invocation)), methodSymbol.Name));
@@ -163,7 +164,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         }
                         else if (parameter.Equals(paramsArgument, SymbolEqualityComparer.Default))
                         {
-                            var parameterType = argument.Parameter.Type;// TODO test
+                            var parameterType = argument.Parameter.Type;
                             if (parameterType == null)
                             {
                                 return;
@@ -289,7 +290,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private static bool FindLogParameters(IMethodSymbol methodSymbol, out IParameterSymbol? message, out IParameterSymbol? arguments)
+        private static bool FindLogParameters(IMethodSymbol methodSymbol, [NotNullWhen(true)] out IParameterSymbol? message, out IParameterSymbol? arguments)
         {
             message = null;
             arguments = null;
