@@ -243,7 +243,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PrepareForRunDependsOn>StaticWebAssetsPrepareForRun;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
 
-    <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);GenerateStaticWebAssetsManifest;CopyStaticWebAssetsToOutputFolder</StaticWebAssetsPrepareForRunDependsOn>
+    <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);GenerateStaticWebAssetsManifest;GenerateComputedBuildStaticWebAssets;CopyStaticWebAssetsToOutputFolder</StaticWebAssetsPrepareForRunDependsOn>
+
+    <!-- This is a hook for features like scoped CSS and Blazor can ensure all the assets have been generated -->
+    <GenerateComputedBuildStaticWebAssetsDependsOn></GenerateComputedBuildStaticWebAssetsDependsOn>
 
     <GenerateStaticWebAssetsManifestDependsOn>$(GenerateStaticWebAssetsManifestDependsOn);ResolveStaticWebAssetsInputs</GenerateStaticWebAssetsManifestDependsOn>
 
@@ -255,9 +258,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     
     <!-- StaticWebAssetsPrepareForPublish -> ComputeFilesToPublish -->
 
-    <StaticWebAssetsPrepareForPublishDependsOn>$(StaticWebAssetsPrepareForPublishDependsOn);ResolveStaticWebAssetsConfiguration;GenerateStaticWebAssetsPublishManifest</StaticWebAssetsPrepareForPublishDependsOn>
+    <StaticWebAssetsPrepareForPublishDependsOn>$(StaticWebAssetsPrepareForPublishDependsOn);ResolveStaticWebAssetsConfiguration;GenerateComputedPublishStaticWebAssets;GenerateStaticWebAssetsPublishManifest</StaticWebAssetsPrepareForPublishDependsOn>
 
     <GenerateStaticWebAssetsPublishManifestDependsOn>ResolveStaticWebAssetsConfiguration;ResolvePublishStaticWebAssets;$(GenerateStaticWebAssetsPublishManifestDependsOn)</GenerateStaticWebAssetsPublishManifestDependsOn>
+
+    <!-- This is a hook for features like scoped CSS and Blazor can ensure all the assets have been generated -->
+    <GenerateComputedPublishStaticWebAssetsDependsOn></GenerateComputedPublishStaticWebAssetsDependsOn>
 
     <ComputeReferencedStaticWebAssetsPublishManifestDependsOn>
       $(ComputeReferencedStaticWebAssetsPublishManifestDependsOn);
@@ -421,6 +427,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="StaticWebAssetsPrepareForRun" DependsOnTargets="$(StaticWebAssetsPrepareForRunDependsOn)" />
 
+  <Target Name="GenerateComputedBuildStaticWebAssets" DependsOnTargets="$(GenerateComputedBuildStaticWebAssetsDependsOn)" />
+
   <Target Name="GenerateStaticWebAssetsManifest" DependsOnTargets="$(GenerateStaticWebAssetsManifestDependsOn)">
     <GenerateStaticWebAssetsManifest
       Source="$(PackageId)"
@@ -503,6 +511,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="StaticWebAssetsPrepareForPublish" 
     BeforeTargets="ComputeFilesToPublish"
     DependsOnTargets="$(StaticWebAssetsPrepareForPublishDependsOn)" />
+
+  <Target Name="GenerateComputedPublishStaticWebAssets" DependsOnTargets="$(GenerateComputedPublishStaticWebAssetsDependsOn)" />
 
   <Target Name="GenerateStaticWebAssetsPublishManifest" DependsOnTargets="$(GenerateStaticWebAssetsPublishManifestDependsOn)">
     <ComputePublishStaticWebAssetsList Assets="@(StaticWebAsset)">
