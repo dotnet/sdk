@@ -54,7 +54,7 @@ namespace Microsoft.TemplateSearch.Common
                         templateData.Add(new TemplateSearchData(foundTemplate));
                     }
                 }
-                packageData.Add(new TemplatePackageSearchData(new PackInfo(package.Key, package.Value.Version, package.Value.TotalDownloads), templateData));
+                packageData.Add(new TemplatePackageSearchData(new PackInfo(package.Key, package.Value.Version, package.Value.TotalDownloads, package.Value.Owners, package.Value.Verified), templateData));
             }
             return new TemplateSearchCache(packageData);
         }

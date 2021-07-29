@@ -1,6 +1,8 @@
 ﻿Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo
 Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo.Name.get -> string!
+Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo.Owners.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo.TotalDownloads.get -> long
+Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo.Verified.get -> bool
 Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo.Version.get -> string?
 Microsoft.TemplateSearch.Common.Abstractions.ITemplateSearchProvider
 Microsoft.TemplateSearch.Common.Abstractions.ITemplateSearchProvider.Factory.get -> Microsoft.TemplateSearch.Common.Abstractions.ITemplateSearchProviderFactory!
@@ -17,9 +19,11 @@ Microsoft.TemplateSearch.Common.SearchResult.Success.get -> bool
 Microsoft.TemplateSearch.Common.TemplatePackageSearchData
 Microsoft.TemplateSearch.Common.TemplatePackageSearchData.AdditionalData.get -> System.Collections.Generic.IDictionary<string!, object!>!
 Microsoft.TemplateSearch.Common.TemplatePackageSearchData.Name.get -> string!
+Microsoft.TemplateSearch.Common.TemplatePackageSearchData.Owners.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.TemplateSearch.Common.TemplatePackageSearchData.TemplatePackageSearchData(Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo! packInfo, System.Collections.Generic.IEnumerable<Microsoft.TemplateSearch.Common.TemplateSearchData!>! templates, System.Collections.Generic.IDictionary<string!, object!>? data = null) -> void
 Microsoft.TemplateSearch.Common.TemplatePackageSearchData.Templates.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.TemplateSearchData!>!
 Microsoft.TemplateSearch.Common.TemplatePackageSearchData.TotalDownloads.get -> long
+Microsoft.TemplateSearch.Common.TemplatePackageSearchData.Verified.get -> bool
 Microsoft.TemplateSearch.Common.TemplatePackageSearchData.Version.get -> string?
 Microsoft.TemplateSearch.Common.TemplateSearchCoordinator
 Microsoft.TemplateSearch.Common.TemplateSearchCoordinator.SearchAsync(System.Func<Microsoft.TemplateSearch.Common.TemplatePackageSearchData!, bool>! packFilter, System.Func<Microsoft.TemplateSearch.Common.TemplatePackageSearchData!, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>!>! matchingTemplatesFilter, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateSearch.Common.SearchResult!>!>!

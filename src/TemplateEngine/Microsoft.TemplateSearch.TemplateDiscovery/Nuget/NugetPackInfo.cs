@@ -28,5 +28,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         public string Path { get; private set; }
 
         public long TotalDownloads => _info.TotalDownloads;
+
+        public IReadOnlyList<string> Owners => _info.Owners;
+
+        public bool Verified => _info.Verified;
     }
 }

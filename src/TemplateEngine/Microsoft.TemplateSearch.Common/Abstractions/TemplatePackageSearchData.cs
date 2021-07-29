@@ -29,6 +29,8 @@ namespace Microsoft.TemplateSearch.Common
                 : throw new ArgumentException($"{nameof(packInfo.Name)} should not be null or empty", nameof(packInfo));
             Version = packInfo.Version;
             TotalDownloads = packInfo.TotalDownloads;
+            Owners = packInfo.Owners;
+            Verified = packInfo.Verified;
             Templates = templates.ToList();
             AdditionalData = data ?? new Dictionary<string, object>();
         }
@@ -41,6 +43,12 @@ namespace Microsoft.TemplateSearch.Common
 
         /// <inheritdoc/>
         public long TotalDownloads { get; }
+
+        /// <inheritdoc/>
+        public IReadOnlyList<string> Owners { get; }
+
+        /// <inheritdoc/>
+        public bool Verified { get; }
 
         /// <summary>
         /// Gets the list of templates in template package.

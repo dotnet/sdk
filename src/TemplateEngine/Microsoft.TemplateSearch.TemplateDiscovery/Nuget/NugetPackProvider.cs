@@ -41,7 +41,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                 throw new Exception($"{NuGetOrgFeed} does not support search API (SearchQueryService)");
             }
 
-            _searchUriFormat = $"{searchResources[0].Uri}?{query}&skip={{0}}&take={{1}}&prerelease={includePreviewPacks}";
+            _searchUriFormat = $"{searchResources[0].Uri}?{query}&skip={{0}}&take={{1}}&prerelease={includePreviewPacks}&semVerLevel=2.0.0";
 
             if (Directory.Exists(_packageTempPath))
             {

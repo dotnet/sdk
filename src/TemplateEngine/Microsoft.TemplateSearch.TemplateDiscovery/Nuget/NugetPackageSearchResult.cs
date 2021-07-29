@@ -12,11 +12,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
         internal List<NuGetPackageSourceInfo> Data { get; private set; } = new List<NuGetPackageSourceInfo>();
 
+        //property names are explained here: https://docs.microsoft.com/en-us/nuget/api/search-query-service-resource
         internal static NuGetPackageSearchResult FromJObject(JObject entry)
         {
             NuGetPackageSearchResult searchResult = new NuGetPackageSearchResult();
-            searchResult.TotalHits = entry.ToInt32(nameof(TotalHits));
-            var dataArray = entry.Get<JArray>(nameof(Data));
+            searchResult.TotalHits = entry.ToInt32("totalHits");
+            var dataArray = entry.Get<JArray>("data");
             if (dataArray != null)
             {
                 foreach (JToken data in dataArray)

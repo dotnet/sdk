@@ -3,7 +3,6 @@
 
 using Microsoft.TemplateEngine;
 using Microsoft.TemplateSearch.Common.Abstractions;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
@@ -26,21 +25,26 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             Version = version;
         }
 
-        [JsonProperty(PropertyName = "Id")]
         public string Name { get; private set; }
 
-        [JsonProperty]
         public string Version { get; private set; }
 
-        [JsonProperty]
-        public long TotalDownloads { get; set; }
+        public long TotalDownloads { get; private set; }
 
+        public IReadOnlyList<string> Owners { get; private set; } = Array.Empty<string>();
+
+        public bool Verified { get; private set; }
+
+        //property names are explained here: https://docs.microsoft.com/en-us/nuget/api/search-query-service-resource
         internal static NuGetPackageSourceInfo FromJObject (JObject entry)
         {
             string id = entry.ToString("id") ?? throw new ArgumentException($"{nameof(entry)} doesn't have \"id\" property.", nameof(entry));
-            string version = entry.ToString(nameof(Version)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Version)} property.", nameof(entry));
+            string version = entry.ToString("version") ?? throw new ArgumentException($"{nameof(entry)} doesn't have \"version\"  property.", nameof(entry));
             NuGetPackageSourceInfo sourceInfo = new NuGetPackageSourceInfo(id, version);
-            sourceInfo.TotalDownloads = entry.ToInt32(nameof(TotalDownloads));
+            sourceInfo.TotalDownloads = entry.ToInt32("totalDownloads");
+            sourceInfo.Owners = entry.Get<JToken>("owners").JTokenStringOrArrayToCollection(Array.Empty<string>());
+            sourceInfo.Verified = entry.ToBool("verified");
+
             return sourceInfo;
         }
 

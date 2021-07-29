@@ -7,7 +7,7 @@ using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
-namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
+namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 {
     internal static class NuGetPackSourceCheckerFactory
     {
@@ -27,13 +27,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             }
             else if (!config.Queries.Any())
             {
-                providers.AddRange(SupportedProviders.Select(kvp => new NugetPackProvider(kvp.Key.ToString(), kvp.Value, config.OutputPath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks)));
+                providers.AddRange(SupportedProviders.Select(kvp => new NuGetPackProvider(kvp.Key.ToString(), kvp.Value, config.OutputPath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks)));
             }
             else
             {
                 foreach (SupportedQueries provider in config.Queries.Distinct())
                 {
-                    providers.Add(new NugetPackProvider(provider.ToString(), SupportedProviders[provider], config.OutputPath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks));
+                    providers.Add(new NuGetPackProvider(provider.ToString(), SupportedProviders[provider], config.OutputPath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks));
                 }
             }
 

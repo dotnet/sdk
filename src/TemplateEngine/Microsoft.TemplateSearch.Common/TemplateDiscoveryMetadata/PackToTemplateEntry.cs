@@ -23,6 +23,12 @@ namespace Microsoft.TemplateSearch.Common
         internal long TotalDownloads { get; set; }
 
         [JsonProperty]
+        internal IReadOnlyList<string> Owners { get; set; } = Array.Empty<string>();
+
+        [JsonProperty]
+        internal bool Verified { get; set; }
+
+        [JsonProperty]
         internal IReadOnlyList<TemplateIdentificationEntry> TemplateIdentificationEntry { get; }
     }
 }

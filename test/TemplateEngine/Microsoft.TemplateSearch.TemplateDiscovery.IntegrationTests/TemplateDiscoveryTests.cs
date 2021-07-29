@@ -1,6 +1,7 @@
 ﻿using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.TestHelper;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -168,6 +169,31 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     .Execute()
                     .Should().Fail();
             }
+        }
+
+        [Fact]
+        public void CanReadAuthor()
+        {
+            string testDir = TestUtils.CreateTemporaryFolder();
+            using var packageManager = new PackageManager();
+            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v")
+                .Execute()
+                .Should()
+                .ExitWith(0);
+
+            var jObjectV1 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json")));
+            Assert.Equal("TestAuthor", jObjectV1["PackToTemplateMap"].Children<JProperty>().Single(p => p.Name.StartsWith("Microsoft.TemplateEngine.TestTemplates")).Value["Owners"].Values().Single());
+            var jObjectV2 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")));
+            Assert.Equal("TestAuthor", jObjectV2["TemplatePackages"][0]["Owners"].Value<string>());
         }
     }
 }

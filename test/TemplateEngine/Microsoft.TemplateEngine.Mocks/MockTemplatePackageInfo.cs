@@ -4,13 +4,15 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateSearch.Common.Abstractions;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockTemplatePackageInfo : ITemplatePackageInfo
     {
-        public MockTemplatePackageInfo(string name, string? version = null, long totalDownloads = 0)
+        public MockTemplatePackageInfo(string name, string? version = null, long totalDownloads = 0, IEnumerable<string>? owners = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -20,6 +22,7 @@ namespace Microsoft.TemplateEngine.Mocks
             Name = name;
             Version = version;
             TotalDownloads = totalDownloads;
+            Owners = owners?.ToArray() ?? Array.Empty<string>();
         }
 
         public string Name { get; }
@@ -27,5 +30,9 @@ namespace Microsoft.TemplateEngine.Mocks
         public string? Version { get; }
 
         public long TotalDownloads { get; }
+
+        public IReadOnlyList<string> Owners { get; }
+
+        public bool Verified => false;
     }
 }
