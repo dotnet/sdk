@@ -30,8 +30,8 @@ namespace Microsoft.TemplateSearch.Common.Providers
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Uri[] _searchMetadataUris =
         {
-            new Uri("https://go.microsoft.com/fwlink/?linkid=2087906&clcid=0x409"),         //v1
-            //link TBD                                                                      //v2
+            new Uri("https://go.microsoft.com/fwlink/?linkid=2087906&clcid=0x409"), //v1 search cache
+            new Uri("https://go.microsoft.com/fwlink/?linkid=2168770&clcid=0x409") //v2 search cache
         };
 
         private TemplateSearchCache? _searchCache;
