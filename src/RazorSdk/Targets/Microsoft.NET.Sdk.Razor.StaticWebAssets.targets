@@ -267,7 +267,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ComputeReferencedStaticWebAssetsPublishManifestDependsOn>
       $(ComputeReferencedStaticWebAssetsPublishManifestDependsOn);
-      StaticWebAssetsPrepareForPublishDependsOn;
+      StaticWebAssetsPrepareForPublish;
     </ComputeReferencedStaticWebAssetsPublishManifestDependsOn>
 
     <ResolvePublishStaticWebAssetsDependsOn>LoadStaticWebAssetsBuildManifest;ComputeReferencedProjectsPublishAssets;$(ResolvePublishStaticWebAssetsDependsOn)</ResolvePublishStaticWebAssetsDependsOn>
@@ -459,9 +459,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <FileWrites Include="$(IntermediateOutputPath)$(TargetName).StaticWebAssets.xml" Condition="'$(_GenerateLegacyManifestFormat)' == 'true'" />
-      <StaticWebAsset Remove="@(StaticWebAsset)" />
-      <StaticWebAssetManifest Remove="@(StaticWebAssetManifest)" />
-      <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
     </ItemGroup>
     
@@ -529,9 +526,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestPath="$(StaticWebAssetPublishManifestPath)">
     </GenerateStaticWebAssetsManifest>
     <ItemGroup>
-      <StaticWebAsset Remove="@(StaticWebAsset)" />
-      <StaticWebAssetManifest Remove="@(StaticWebAssetManifest)" />
-      <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
       <FileWrites Include="$(StaticWebAssetPublishManifestPath)" />
     </ItemGroup>
   </Target>

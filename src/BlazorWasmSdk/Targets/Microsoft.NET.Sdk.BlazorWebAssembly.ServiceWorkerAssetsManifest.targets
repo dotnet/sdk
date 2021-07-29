@@ -108,7 +108,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="_WriteBuildServiceWorkerAssetsManifest" DependsOnTargets="_ComputeServiceWorkerAssets">
+  <Target Name="_WriteBuildServiceWorkerAssetsManifest" DependsOnTargets="ResolveStaticWebAssetsInputs">
 
     <ItemGroup>
       <_BuildAssetsForManifest Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' != 'BlazorServiceWorker' and '%(AssetRole)' != 'Alternative' and '%(AssetKind)' != 'Publish' and Exists('%(Identity)')" />
