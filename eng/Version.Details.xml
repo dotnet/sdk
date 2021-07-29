@@ -104,9 +104,9 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>2ee3f4a0e47ab86714e21cb6a7aeb1d8799b8104</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="6.0.0-preview.3.158">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>93159e30255273caf3528ddc53b55405a9c911af</Sha>
+    <Dependency Name="NuGet.Build.Tasks" Version="6.0.0-preview.3.165">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>f017f82b310f26a97d8d8aafc7772d40121730a6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.0.0-preview-20210728-04">
       <Uri>https://github.com/microsoft/vstest</Uri>
@@ -271,9 +271,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>6d3518520ae041fb4c6c1c54d5abf0975a38a450</Sha>
     </Dependency>
-    <Dependency Name="XliffTasks" Version="1.0.0-beta.21367.1" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
+    <Dependency Name="XliffTasks" Version="1.0.0-beta.21312.1" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
       <Uri>https://github.com/dotnet/xliff-tasks</Uri>
-      <Sha>346cb8673bc0dba67d9bf7bb3a868d921a8211f7</Sha>
+      <Sha>d4e95f2cca463823ce9c8e3394554883b6e3c091</Sha>
       <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
