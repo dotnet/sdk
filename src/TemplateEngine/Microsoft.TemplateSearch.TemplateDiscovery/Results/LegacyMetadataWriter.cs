@@ -4,7 +4,7 @@
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
-using Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
+using Microsoft.TemplateSearch.TemplateDiscovery.NuGet;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
@@ -38,7 +38,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                                             r.PackInfo.Version ?? "",
                                             r.FoundTemplates.Select(t => new TemplateIdentificationEntry(t.Identity, t.GroupIdentity)).ToList());
 
-                                    if (r.PackInfo is NugetPackInfo npi)
+                                    if (r.PackInfo is NuGetPackInfo npi)
                                     {
                                         packToTemplateEntry.TotalDownloads = npi.TotalDownloads;
                                     }

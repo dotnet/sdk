@@ -4,13 +4,13 @@
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
-namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
+namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 {
-    public class NugetPackInfo : IDownloadedPackInfo
+    public class NuGetPackInfo : IDownloadedPackInfo
     {
         private ITemplatePackageInfo _info;
 
-        internal NugetPackInfo(ITemplatePackageInfo info, string filePath)
+        internal NuGetPackInfo(ITemplatePackageInfo info, string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {

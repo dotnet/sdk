@@ -6,11 +6,11 @@ using Microsoft.TemplateSearch.Common.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
+namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 {
-    internal class NugetPackageSourceInfo : ITemplatePackageInfo, IEquatable<ITemplatePackageInfo>
+    internal class NuGetPackageSourceInfo : ITemplatePackageInfo, IEquatable<ITemplatePackageInfo>
     {
-        internal NugetPackageSourceInfo(string id, string version)
+        internal NuGetPackageSourceInfo(string id, string version)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -35,11 +35,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
         [JsonProperty]
         public long TotalDownloads { get; set; }
 
-        internal static NugetPackageSourceInfo FromJObject (JObject entry)
+        internal static NuGetPackageSourceInfo FromJObject (JObject entry)
         {
             string id = entry.ToString("id") ?? throw new ArgumentException($"{nameof(entry)} doesn't have \"id\" property.", nameof(entry));
             string version = entry.ToString(nameof(Version)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Version)} property.", nameof(entry));
-            NugetPackageSourceInfo sourceInfo = new NugetPackageSourceInfo(id, version);
+            NuGetPackageSourceInfo sourceInfo = new NuGetPackageSourceInfo(id, version);
             sourceInfo.TotalDownloads = entry.ToInt32(nameof(TotalDownloads));
             return sourceInfo;
         }
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
         public override bool Equals(object? obj)
 #pragma warning restore SA1202 // Elements should be ordered by access
         {
-            if (obj is NugetPackageSourceInfo info)
+            if (obj is NuGetPackageSourceInfo info)
             {
                 return Name.Equals(info.Name, StringComparison.OrdinalIgnoreCase) && Version.Equals(info.Version, StringComparison.OrdinalIgnoreCase);
             }

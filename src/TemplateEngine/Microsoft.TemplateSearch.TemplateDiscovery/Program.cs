@@ -3,7 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
+using Microsoft.TemplateSearch.TemplateDiscovery.NuGet;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
 using Microsoft.TemplateSearch.TemplateDiscovery.Results;
