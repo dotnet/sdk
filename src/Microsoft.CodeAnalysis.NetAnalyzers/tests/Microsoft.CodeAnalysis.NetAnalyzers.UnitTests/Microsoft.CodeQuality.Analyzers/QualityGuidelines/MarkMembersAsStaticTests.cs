@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -26,49 +25,49 @@ public class MembersTests
     internal static int s_field;
     public const int Zero = 0;
 
-    public int Method1(string name)
+    public int {|#0:Method1|}(string name)
     {
         return name.Length;
     }
 
-    public void Method2() { }
+    public void {|#1:Method2|}() { }
 
-    public void Method3()
+    public void {|#2:Method3|}()
     {
         s_field = 4;
     }
 
-    public int Method4()
+    public int {|#3:Method4|}()
     {
         return Zero;
     }
     
-    public int Property
+    public int {|#4:Property|}
     {
         get { return 5; }
     }
 
-    public int Property2
+    public int {|#5:Property2|}
     {
         set { s_field = value; }
     }
 
-    public int MyProperty
+    public int {|#6:MyProperty|}
     {
         get { return 10; }
         set { System.Console.WriteLine(value); }
     }
 
-    public event System.EventHandler<System.EventArgs> CustomEvent { add {} remove {} }
+    public event System.EventHandler<System.EventArgs> {|#7:CustomEvent|} { add {} remove {} }
 }",
-                GetCSharpResultAt(7, 16, "Method1"),
-                GetCSharpResultAt(12, 17, "Method2"),
-                GetCSharpResultAt(14, 17, "Method3"),
-                GetCSharpResultAt(19, 16, "Method4"),
-                GetCSharpResultAt(24, 16, "Property"),
-                GetCSharpResultAt(29, 16, "Property2"),
-                GetCSharpResultAt(34, 16, "MyProperty"),
-                GetCSharpResultAt(40, 56, "CustomEvent"));
+                VerifyCS.Diagnostic().WithLocation(0).WithArguments("Method1"),
+                VerifyCS.Diagnostic().WithLocation(1).WithArguments("Method2"),
+                VerifyCS.Diagnostic().WithLocation(2).WithArguments("Method3"),
+                VerifyCS.Diagnostic().WithLocation(3).WithArguments("Method4"),
+                VerifyCS.Diagnostic().WithLocation(4).WithArguments("Property"),
+                VerifyCS.Diagnostic().WithLocation(5).WithArguments("Property2"),
+                VerifyCS.Diagnostic().WithLocation(6).WithArguments("MyProperty"),
+                VerifyCS.Diagnostic().WithLocation(7).WithArguments("CustomEvent"));
         }
 
         [Fact]
@@ -81,34 +80,34 @@ Public Class MembersTests
     Shared s_field As Integer
     Public Const Zero As Integer = 0
 
-    Public Function Method1(name As String) As Integer
+    Public Function {|#0:Method1|}(name As String) As Integer
         Return name.Length
     End Function
 
-    Public Sub Method2()
+    Public Sub {|#1:Method2|}()
     End Sub
 
-    Public Sub Method3()
+    Public Sub {|#2:Method3|}()
         s_field = 4
     End Sub
 
-    Public Function Method4() As Integer
+    Public Function {|#3:Method4|}() As Integer
         Return Zero
     End Function
 
-    Public ReadOnly Property Property1 As Integer
+    Public ReadOnly Property {|#4:Property1|} As Integer
         Get
             Return 5
         End Get
     End Property
 
-    Public WriteOnly Property Property2 As Integer
+    Public WriteOnly Property {|#5:Property2|} As Integer
         Set
             s_field = Value
         End Set
     End Property
 
-    Public Property MyProperty As Integer
+    Public Property {|#6:MyProperty|} As Integer
         Get 
             Return 10
         End Get
@@ -117,7 +116,7 @@ Public Class MembersTests
         End Set
     End Property
 
-    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+    Public Custom Event {|#7:CustomEvent|} As EventHandler(Of EventArgs)
         AddHandler(value As EventHandler(Of EventArgs))
         End AddHandler
         RemoveHandler(value As EventHandler(Of EventArgs))
@@ -127,14 +126,14 @@ Public Class MembersTests
     End Event
 End Class
 ",
-                GetBasicResultAt(8, 21, "Method1"),
-                GetBasicResultAt(12, 16, "Method2"),
-                GetBasicResultAt(15, 16, "Method3"),
-                GetBasicResultAt(19, 21, "Method4"),
-                GetBasicResultAt(23, 30, "Property1"),
-                GetBasicResultAt(29, 31, "Property2"),
-                GetBasicResultAt(35, 21, "MyProperty"),
-                GetBasicResultAt(44, 25, "CustomEvent"));
+                VerifyVB.Diagnostic().WithLocation(0).WithArguments("Method1"),
+                VerifyVB.Diagnostic().WithLocation(1).WithArguments("Method2"),
+                VerifyVB.Diagnostic().WithLocation(2).WithArguments("Method3"),
+                VerifyVB.Diagnostic().WithLocation(3).WithArguments("Method4"),
+                VerifyVB.Diagnostic().WithLocation(4).WithArguments("Property1"),
+                VerifyVB.Diagnostic().WithLocation(5).WithArguments("Property2"),
+                VerifyVB.Diagnostic().WithLocation(6).WithArguments("MyProperty"),
+                VerifyVB.Diagnostic().WithLocation(7).WithArguments("CustomEvent"));
         }
 
         [Fact]
@@ -146,40 +145,40 @@ internal class MembersTests
     internal static int s_field;
     public const int Zero = 0;
 
-    public int Method1(string name)
+    public int {|#0:Method1|}(string name)
     {
         return name.Length;
     }
 
     public void Method2() { }
 
-    public void Method3()
+    public void {|#1:Method3|}()
     {
         s_field = 4;
     }
 
-    public int Method4()
+    public int {|#2:Method4|}()
     {
         return Zero;
     }
     
-    public int Property
+    public int {|#3:Property|}
     {
         get { return 5; }
     }
 
-    public int Property2
+    public int {|#4:Property2|}
     {
         set { s_field = value; }
     }
 
-    public int MyProperty
+    public int {|#5:MyProperty|}
     {
         get { return 10; }
         set { System.Console.WriteLine(value); }
     }
 
-    public event System.EventHandler<System.EventArgs> CustomEvent { add {} remove {} }
+    public event System.EventHandler<System.EventArgs> {|#6:CustomEvent|} { add {} remove {} }
 
     public void Common(string arg)
     {
@@ -202,13 +201,13 @@ internal class MembersTests
         MyProperty = 10; // getter not accessed.
     }
 }",
-                GetCSharpResultAt(7, 16, "Method1"),
-                GetCSharpResultAt(14, 17, "Method3"),
-                GetCSharpResultAt(19, 16, "Method4"),
-                GetCSharpResultAt(24, 16, "Property"),
-                GetCSharpResultAt(29, 16, "Property2"),
-                GetCSharpResultAt(34, 16, "MyProperty"),
-                GetCSharpResultAt(40, 56, "CustomEvent"));
+                VerifyCS.Diagnostic().WithLocation(0).WithArguments("Method1"),
+                VerifyCS.Diagnostic().WithLocation(1).WithArguments("Method3"),
+                VerifyCS.Diagnostic().WithLocation(2).WithArguments("Method4"),
+                VerifyCS.Diagnostic().WithLocation(3).WithArguments("Property"),
+                VerifyCS.Diagnostic().WithLocation(4).WithArguments("Property2"),
+                VerifyCS.Diagnostic().WithLocation(5).WithArguments("MyProperty"),
+                VerifyCS.Diagnostic().WithLocation(6).WithArguments("CustomEvent"));
         }
 
         [Fact]
@@ -221,34 +220,34 @@ Friend Class MembersTests
     Shared s_field As Integer
     Public Const Zero As Integer = 0
 
-    Public Function Method1(name As String) As Integer
+    Public Function {|#0:Method1|}(name As String) As Integer
         Return name.Length
     End Function
 
     Public Sub Method2()
     End Sub
 
-    Public Sub Method3()
+    Public Sub {|#1:Method3|}()
         s_field = 4
     End Sub
 
-    Public Function Method4() As Integer
+    Public Function {|#2:Method4|}() As Integer
         Return Zero
     End Function
 
-    Public ReadOnly Property Property1 As Integer
+    Public ReadOnly Property {|#3:Property1|} As Integer
         Get
             Return 5
         End Get
     End Property
 
-    Public WriteOnly Property Property2 As Integer
+    Public WriteOnly Property {|#4:Property2|} As Integer
         Set
             s_field = Value
         End Set
     End Property
 
-    Public Property MyProperty As Integer
+    Public Property {|#5:MyProperty|} As Integer
         Get 
             Return 10
         End Get
@@ -257,7 +256,7 @@ Friend Class MembersTests
         End Set
     End Property
 
-    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+    Public Custom Event {|#6:CustomEvent|} As EventHandler(Of EventArgs)
         AddHandler(value As EventHandler(Of EventArgs))
         End AddHandler
         RemoveHandler(value As EventHandler(Of EventArgs))
@@ -288,13 +287,13 @@ End Sub
 
 End Class
 ",
-                GetBasicResultAt(8, 21, "Method1"),
-                GetBasicResultAt(15, 16, "Method3"),
-                GetBasicResultAt(19, 21, "Method4"),
-                GetBasicResultAt(23, 30, "Property1"),
-                GetBasicResultAt(29, 31, "Property2"),
-                GetBasicResultAt(35, 21, "MyProperty"),
-                GetBasicResultAt(44, 25, "CustomEvent"));
+                VerifyVB.Diagnostic().WithLocation(0).WithArguments("Method1"),
+                VerifyVB.Diagnostic().WithLocation(1).WithArguments("Method3"),
+                VerifyVB.Diagnostic().WithLocation(2).WithArguments("Method4"),
+                VerifyVB.Diagnostic().WithLocation(3).WithArguments("Property1"),
+                VerifyVB.Diagnostic().WithLocation(4).WithArguments("Property2"),
+                VerifyVB.Diagnostic().WithLocation(5).WithArguments("MyProperty"),
+                VerifyVB.Diagnostic().WithLocation(6).WithArguments("CustomEvent"));
         }
 
         [Fact]
@@ -699,14 +698,14 @@ public class Program
         N();
     }
 
-    private void N()
+    private void {|#0:N|}()
     {
     }
 }",
                     },
                     ExpectedDiagnostics =
                     {
-                        GetCSharpResultAt(12, 18, "N")
+                        VerifyCS.Diagnostic().WithLocation(0).WithArguments("N"),
                     }
                 }
             }.RunAsync();
@@ -748,7 +747,7 @@ public class Program
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
-    public void M()
+    public void {|#0:M|}()
     {
         var x = new B() { P = true };
     }
@@ -759,7 +758,7 @@ public class B
     public bool P { get; set; }
 }",
             // Test0.cs(4,17): warning CA1822: Member M does not access instance data and can be marked as static (Shared in VisualBasic)
-            GetCSharpResultAt(4, 17, "M"));
+            VerifyCS.Diagnostic().WithLocation(0).WithArguments("M"));
         }
 
         [Fact, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
@@ -767,7 +766,7 @@ public class B
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
-    Public Sub M()
+    Public Sub {|#0:M|}()
         Dim x = New B With {.P = True}
     End Sub
 End Class
@@ -777,7 +776,7 @@ Public Class B
 End Class
 ",
             // Test0.vb(3,16): warning CA1822: Member M does not access instance data and can be marked as static (Shared in VisualBasic)
-            GetBasicResultAt(3, 16, "M"));
+            VerifyVB.Diagnostic().WithLocation(0).WithArguments("M"));
         }
 
         [Fact, WorkItem(1933, "https://github.com/dotnet/roslyn-analyzers/issues/1933")]
@@ -1462,19 +1461,5 @@ Public Class C
         End Sub
 End Class");
         }
-
-        private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyCS.Diagnostic()
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
-                .WithArguments(symbolName);
-
-        private static DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyVB.Diagnostic()
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
-                .WithArguments(symbolName);
     }
 }
