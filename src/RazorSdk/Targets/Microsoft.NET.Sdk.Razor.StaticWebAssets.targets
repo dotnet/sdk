@@ -258,7 +258,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     
     <!-- StaticWebAssetsPrepareForPublish -> ComputeFilesToPublish -->
 
-    <StaticWebAssetsPrepareForPublishDependsOn>$(StaticWebAssetsPrepareForPublishDependsOn);ResolveStaticWebAssetsConfiguration;GenerateComputedPublishStaticWebAssets;GenerateStaticWebAssetsPublishManifest</StaticWebAssetsPrepareForPublishDependsOn>
+    <StaticWebAssetsPrepareForPublishDependsOn>$(StaticWebAssetsPrepareForPublishDependsOn);ResolveStaticWebAssetsConfiguration;GenerateStaticWebAssetsPublishManifest;GenerateComputedPublishStaticWebAssets</StaticWebAssetsPrepareForPublishDependsOn>
 
     <GenerateStaticWebAssetsPublishManifestDependsOn>ResolveStaticWebAssetsConfiguration;ResolvePublishStaticWebAssets;$(GenerateStaticWebAssetsPublishManifestDependsOn)</GenerateStaticWebAssetsPublishManifestDependsOn>
 
@@ -267,7 +267,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ComputeReferencedStaticWebAssetsPublishManifestDependsOn>
       $(ComputeReferencedStaticWebAssetsPublishManifestDependsOn);
-      GenerateStaticWebAssetsPublishManifest
+      StaticWebAssetsPrepareForPublishDependsOn;
     </ComputeReferencedStaticWebAssetsPublishManifestDependsOn>
 
     <ResolvePublishStaticWebAssetsDependsOn>LoadStaticWebAssetsBuildManifest;ComputeReferencedProjectsPublishAssets;$(ResolvePublishStaticWebAssetsDependsOn)</ResolvePublishStaticWebAssetsDependsOn>

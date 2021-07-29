@@ -15,8 +15,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);_AddServiceWorkerAssets</ResolveStaticWebAssetsInputsDependsOn>
-    <CopyStaticWebAssetsToPublishDirectoryDependsOn>$(CopyStaticWebAssetsToPublishDirectoryDependsOn);_WritePublishServiceWorkerAssetsManifest</CopyStaticWebAssetsToPublishDirectoryDependsOn>
-    <CopyStaticWebAssetsToOutputFolderDependsOn>$(CopyStaticWebAssetsToOutputFolderDependsOn);_WriteBuildServiceWorkerAssetsManifest</CopyStaticWebAssetsToOutputFolderDependsOn>
+    <GenerateComputedPublishStaticWebAssetsDependsOn>$(GenerateComputedPublishStaticWebAssetsDependsOn);_WritePublishServiceWorkerAssetsManifest</GenerateComputedPublishStaticWebAssetsDependsOn>
+    <GenerateComputedBuildStaticWebAssetsDependsOn>$(GenerateComputedBuildStaticWebAssetsDependsOn);_WriteBuildServiceWorkerAssetsManifest</GenerateComputedBuildStaticWebAssetsDependsOn>
   </PropertyGroup>
 
   <Target Name="_AddServiceWorkerAssets" DependsOnTargets="_ComputeServiceWorkerAssets">
@@ -157,7 +157,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="_WritePublishServiceWorkerAssetsManifest" DependsOnTargets="_ComputeServiceWorkerAssets;LoadStaticWebAssetsPublishManifest" AfterTargets="GenerateStaticWebAssetsPublishManifest">
+  <Target Name="_WritePublishServiceWorkerAssetsManifest" DependsOnTargets="_ComputeServiceWorkerAssets;LoadStaticWebAssetsPublishManifest">
 
     <ItemGroup>
       <_PublishAssetsForManifest Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' != 'BlazorServiceWorker' and '%(AssetRole)' != 'Alternative'" />
