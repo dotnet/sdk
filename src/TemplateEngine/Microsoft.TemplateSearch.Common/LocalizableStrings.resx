@@ -121,8 +121,8 @@
     <value>Failed to update search cache.</value>
   </data>
   <data name="BlobStoreSourceFileProvider_Exception_LocalCacheDoesNotExist" xml:space="preserve">
-    <value>Local search cache {0} does not exist.</value>
-    <comment>{0} file path to search cache</comment>
+    <value>Local search cache '{0}' does not exist.</value>
+    <comment>{0} - file path to search cache</comment>
   </data>
   <data name="BlobStoreSourceFileProvider_Warning_LocalCacheWillBeUsed" xml:space="preserve">
     <value>Failed to update search cache. Local search cache will be used instead.</value>

@@ -8,9 +8,9 @@
         <note />
       </trans-unit>
       <trans-unit id="BlobStoreSourceFileProvider_Exception_LocalCacheDoesNotExist">
-        <source>Local search cache {0} does not exist.</source>
-        <target state="new">Local search cache {0} does not exist.</target>
-        <note>{0} file path to search cache</note>
+        <source>Local search cache '{0}' does not exist.</source>
+        <target state="new">Local search cache '{0}' does not exist.</target>
+        <note>{0} - file path to search cache</note>
       </trans-unit>
       <trans-unit id="BlobStoreSourceFileProvider_Warning_LocalCacheWillBeUsed">
         <source>Failed to update search cache. Local search cache will be used instead.</source>

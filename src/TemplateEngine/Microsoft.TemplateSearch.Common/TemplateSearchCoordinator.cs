@@ -72,7 +72,7 @@ namespace Microsoft.TemplateSearch.Common
                 }
                 catch (Exception ex)
                 {
-                    _environmentSettings.Host.Logger.LogDebug("Search by provider {0} failed, detailes: {1}", provider.Factory.DisplayName, ex);
+                    _environmentSettings.Host.Logger.LogDebug("Search by provider {0} failed, details: {1}", provider.Factory.DisplayName, ex);
                     results.Add(new SearchResult(provider, false, ex.Message));
                 }
             }
