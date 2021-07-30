@@ -81,9 +81,9 @@
       <Uri>https://github.com/dotnet/fsharp</Uri>
       <Sha>488cc578cafcd261d90d748d8aaa7b8b091232dc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.11.0-4.21373.11">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.11.0-4.21378.26">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>100fefbd0c8bc3ca96b634aa1b0f116e382e2752</Sha>
+      <Sha>ab185a333653a9736667964d54b26fc1f8424f49</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="5.0.9-servicing.21378.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
@@ -105,9 +105,9 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>112236f486dc18a9281226e342b458079441e403</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="16.11.0-release-20210626-04">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="16.11.0-release-20210728-05">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>b58f6c4f4626bdf44df40f2064ab6a80a466115c</Sha>
+      <Sha>b82fdfa51d2a1465b56a48307102794fa997c62f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="5.0.0-rtm.21364.1">
       <Uri>https://github.com/mono/linker</Uri>
