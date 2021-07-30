@@ -1182,11 +1182,6 @@
         <target state="translated">Serialisierungsmethoden korrekt implementieren</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementsEmptyPreviewInterfaceMessage">
-        <source>'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
         <source>A reference type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.</source>
         <target state="translated">Ein Referenztyp deklariert einen expliziten statischen Konstruktor. Um eine Verletzung dieser Regel zu korrigieren, initialisieren Sie alle statischen Daten, wenn sie deklariert wurden, und entfernen Sie den statischen Konstruktor.</target>

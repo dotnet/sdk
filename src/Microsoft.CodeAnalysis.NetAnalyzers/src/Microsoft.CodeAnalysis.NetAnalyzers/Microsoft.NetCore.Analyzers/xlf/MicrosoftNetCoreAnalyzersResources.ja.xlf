@@ -1182,11 +1182,6 @@
         <target state="translated">シリアル化メソッドを正しく実装します</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementsEmptyPreviewInterfaceMessage">
-        <source>'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
         <source>A reference type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.</source>
         <target state="translated">参照型が明示的な静的コンストラクターを宣言します。この規則の違反を修正するには、すべての静的データを宣言時に初期化し、静的コンストラクターを削除します。</target>
