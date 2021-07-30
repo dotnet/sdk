@@ -193,7 +193,7 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     XmlDocumentEnvironment env = p.Value;
 
-                    if (!(env.IsXmlResolverSet | env.IsSecureResolver))
+                    if (!env.IsXmlResolverSet && !env.IsSecureResolver)
                     {
                         context.ReportDiagnostic(env.XmlDocumentDefinition.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));
                     }
@@ -202,8 +202,8 @@ namespace Microsoft.NetFramework.Analyzers
                 foreach (KeyValuePair<ISymbol, XmlTextReaderEnvironment> p in _xmlTextReaderEnvironments)
                 {
                     XmlTextReaderEnvironment env = p.Value;
-                    if (!(env.IsXmlResolverSet | env.IsSecureResolver) ||
-                        !(env.IsDtdProcessingSet | env.IsDtdProcessingDisabled))
+                    if ((!env.IsXmlResolverSet && !env.IsSecureResolver) ||
+                        (!env.IsDtdProcessingSet && !env.IsDtdProcessingDisabled))
                     {
                         context.ReportDiagnostic(env.XmlTextReaderDefinition.CreateDiagnostic(RuleXmlTextReaderConstructedWithNoSecureResolution));
                     }
