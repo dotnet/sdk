@@ -31,7 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessageSpecialCollection = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageMultiple), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor OneSuffixRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor OneSuffixRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageDefault,
                                                                              DiagnosticCategory.Naming,
@@ -39,7 +39,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
-        internal static DiagnosticDescriptor MultipleSuffixesRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor MultipleSuffixesRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageSpecialCollection,
                                                                              DiagnosticCategory.Naming,
@@ -47,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
-        internal static DiagnosticDescriptor UserSuffixRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor UserSuffixRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageDefault,
                                                                              DiagnosticCategory.Naming,
@@ -105,7 +105,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             foreach (var (typeName, suffixes) in s_baseTypesAndTheirSuffix)
             {
                 var wellKnownNamedType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(typeName);
-                if (wellKnownNamedType == null || wellKnownNamedType.OriginalDefinition == null)
+                if (wellKnownNamedType?.OriginalDefinition == null)
                 {
                     continue;
                 }
@@ -127,25 +127,24 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterSymbolAction(context =>
             {
                 var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
-                if (!context.Options.MatchesConfiguredVisibility(OneSuffixRule, namedTypeSymbol, context.Compilation, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(OneSuffixRule, namedTypeSymbol, context.Compilation))
                 {
-                    Debug.Assert(!context.Options.MatchesConfiguredVisibility(MultipleSuffixesRule, namedTypeSymbol, context.Compilation, context.CancellationToken));
-                    Debug.Assert(!context.Options.MatchesConfiguredVisibility(UserSuffixRule, namedTypeSymbol, context.Compilation, context.CancellationToken));
+                    Debug.Assert(!context.Options.MatchesConfiguredVisibility(MultipleSuffixesRule, namedTypeSymbol, context.Compilation));
+                    Debug.Assert(!context.Options.MatchesConfiguredVisibility(UserSuffixRule, namedTypeSymbol, context.Compilation));
                     return;
                 }
 
-                Debug.Assert(context.Options.MatchesConfiguredVisibility(MultipleSuffixesRule, namedTypeSymbol, context.Compilation, context.CancellationToken));
-                Debug.Assert(context.Options.MatchesConfiguredVisibility(UserSuffixRule, namedTypeSymbol, context.Compilation, context.CancellationToken));
+                Debug.Assert(context.Options.MatchesConfiguredVisibility(MultipleSuffixesRule, namedTypeSymbol, context.Compilation));
+                Debug.Assert(context.Options.MatchesConfiguredVisibility(UserSuffixRule, namedTypeSymbol, context.Compilation));
 
                 var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, OneSuffixRule,
-                   namedTypeSymbol, context.Compilation, defaultValue: true, cancellationToken: context.CancellationToken);
+                   namedTypeSymbol, context.Compilation, defaultValue: true);
 
                 var baseTypes = excludeIndirectBaseTypes
                     ? namedTypeSymbol.BaseType != null ? ImmutableArray.Create(namedTypeSymbol.BaseType) : ImmutableArray<INamedTypeSymbol>.Empty
                     : namedTypeSymbol.GetBaseTypes();
 
-                var userTypeSuffixMap = context.Options.GetAdditionalRequiredSuffixesOption(UserSuffixRule, context.Symbol,
-                    context.Compilation, context.CancellationToken);
+                var userTypeSuffixMap = context.Options.GetAdditionalRequiredSuffixesOption(UserSuffixRule, context.Symbol, context.Compilation);
 
                 if (TryGetTypeSuffix(baseTypes, baseTypeSuffixMap, userTypeSuffixMap, out var typesSuffixes, out var rule))
                 {
