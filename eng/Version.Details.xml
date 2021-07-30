@@ -79,22 +79,22 @@
       <Uri>https://github.com/dotnet/format</Uri>
       <Sha>798dfa5405786e2df045acee60d9e40b2d5a778d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.0.0-3.21377.25">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.0.0-4.21379.14">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>b1874706298929978bfd46b266ac30227769db32</Sha>
+      <Sha>3a06c12480787c39e37354dd5d171fa6d91dece1</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-3.21377.25">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-4.21379.14">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>b1874706298929978bfd46b266ac30227769db32</Sha>
+      <Sha>3a06c12480787c39e37354dd5d171fa6d91dece1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.0.0-3.21377.25">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.0.0-4.21379.14">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>b1874706298929978bfd46b266ac30227769db32</Sha>
+      <Sha>3a06c12480787c39e37354dd5d171fa6d91dece1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.0.0-3.21377.25">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.0.0-4.21379.14">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>b1874706298929978bfd46b266ac30227769db32</Sha>
+      <Sha>3a06c12480787c39e37354dd5d171fa6d91dece1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="6.0.0-rc.1.21379.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -271,9 +271,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>6d3518520ae041fb4c6c1c54d5abf0975a38a450</Sha>
     </Dependency>
-    <Dependency Name="XliffTasks" Version="1.0.0-beta.21367.1" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
+    <Dependency Name="XliffTasks" Version="1.0.0-beta.21312.1" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
       <Uri>https://github.com/dotnet/xliff-tasks</Uri>
-      <Sha>346cb8673bc0dba67d9bf7bb3a868d921a8211f7</Sha>
+      <Sha>d4e95f2cca463823ce9c8e3394554883b6e3c091</Sha>
       <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
