@@ -169,9 +169,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                    ResourceName="PublishTrimmedRequiresVersion30" />
 
     <!-- Generate Trimming warnings for WinForms and Wpf applications-->
-    <NetSdkError Condition="'$(UseWindowsForms)' == 'true' and '$(PublishTrimmed)' == 'true' and '$(_SuppressTrimWinFormsError)' != 'true'"
+    <NetSdkError Condition="('$(UseWindowsForms)' == 'true') and ('$(PublishTrimmed)' == 'true') and ('$(_SuppressWinFormsTrimError)' != 'true')"
                  ResourceName="TrimmingWindowsFormsIsNotSupported" />
-    <NetSdkError Condition="'$(UseWpf)' == 'true' and '$(PublishTrimmed)' == 'true' and '$(_SuppressTrimWpfError)' != 'true'"
+    <NetSdkError Condition="('$(UseWpf)' == 'true') and ('$(PublishTrimmed)' == 'true') and ('$(_SuppressWpfTrimError)' != 'true')"
                  ResourceName="TrimmingWpfIsNotSupported" />
 
   </Target>
