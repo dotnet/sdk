@@ -402,28 +402,6 @@
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CreateCombinedRestoreSourceAndVersionProps.complete" Overwrite="true" />
   </Target>
 
-  <!--
-    Generate blank directory build files above the repos, so they won't
-    automatically find the source-build directory build files ("escaping" their
-    directories and causing differences vs. ordinary build).
-  -->
-  <Target Name="PreventDirectoryBuildPropsTargetsEscape"
-          BeforeTargets="Build"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)PreventDirectoryBuildPropsTargetsEscape.complete">
-    <ItemGroup>
-      <DirectoryBuildFilename Include="Directory.Build.targets" />
-      <DirectoryBuildFilename Include="Directory.Build.props" />
-    </ItemGroup>
-
-    <WriteLinesToFile
-      Lines="&lt;Project /&gt;"
-      File="$([MSBuild]::NormalizePath('$(SubmoduleDirectory)', '%(DirectoryBuildFilename.Identity)'))"
-      Overwrite="True" />
-
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)PreventDirectoryBuildPropsTargetsEscape.complete" Overwrite="true" />
-  </Target>
-
   <Target Name="Build"
           DependsOnTargets="BuildRepoReferences"
           Inputs="$(MSBuildProjectFullPath)"
