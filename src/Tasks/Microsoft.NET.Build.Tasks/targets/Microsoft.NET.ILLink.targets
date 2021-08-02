@@ -76,6 +76,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NoWarn>$(NoWarn);IL2097;IL2098;IL2099;IL2106</NoWarn>
     <!-- Unknown value passed to Expression.Property -->
     <NoWarn>$(NoWarn);IL2103</NoWarn>
+    <!-- Multiple methods associated with state machine type -->
+    <NoWarn>$(NoWarn);IL2107</NoWarn>
+    <!-- Reflection access to members with DynamicallyAccessedMembers requirements -->
+    <NoWarn>$(NoWarn);IL2110;IL2111;IL2114;IL2115</NoWarn>
+    <!-- Reflection access to members with RequiresUnreferencedCode -->
+    <NoWarn>$(NoWarn);IL2112;IL2113</NoWarn>
   </PropertyGroup>
 
   <!--
