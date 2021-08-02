@@ -111,7 +111,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 context.Diagnostics);
         }
 
-        private static SyntaxNode TryGenerateNewDocumentRoot(
+        private SyntaxNode TryGenerateNewDocumentRoot(
             Document doc,
             SyntaxNode root,
             IInvocationOperation invocation,
