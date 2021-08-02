@@ -5,16 +5,19 @@ Imports System.Diagnostics.CodeAnalysis
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
+Imports Microsoft.CodeAnalysis.Editing
+Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Operations
+Imports Microsoft.CodeAnalysis.Simplification
+Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.NetCore.Analyzers.Runtime
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
     <ExportCodeFixProvider(LanguageNames.VisualBasic)>
-    Public NotInheritable Class BasicForwardCancellationTokenToInvocationsFixer
-
-        Inherits ForwardCancellationTokenToInvocationsFixer
+    Partial Public NotInheritable Class BasicForwardCancellationTokenToInvocationsFixer
+        Inherits ForwardCancellationTokenToInvocationsFixer(Of ArgumentSyntax)
 
         Protected Overrides Function TryGetInvocation(model As SemanticModel, node As SyntaxNode, ct As CancellationToken, <NotNullWhen(True)> ByRef invocation As IInvocationOperation) As Boolean
 
@@ -46,24 +49,40 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
         End Function
 
-        Protected Overrides Function TryGetExpressionAndArguments(invocationNode As SyntaxNode, ByRef expression As SyntaxNode, ByRef arguments As ImmutableArray(Of SyntaxNode)) As Boolean
+        Protected Overrides Function TryGetExpressionAndArguments(invocationNode As SyntaxNode, ByRef expression As SyntaxNode, ByRef arguments As ImmutableArray(Of ArgumentSyntax)) As Boolean
 
             Dim invocationExpression As InvocationExpressionSyntax = TryCast(invocationNode, InvocationExpressionSyntax)
 
             If invocationExpression IsNot Nothing Then
 
                 expression = invocationExpression.Expression
-                arguments = ImmutableArray.CreateRange(Of SyntaxNode)(invocationExpression.ArgumentList.Arguments)
+                arguments = invocationExpression.ArgumentList.Arguments.ToImmutableArray
                 Return True
 
             End If
 
             expression = Nothing
-            arguments = ImmutableArray(Of SyntaxNode).Empty
+            arguments = ImmutableArray(Of ArgumentSyntax).Empty
             Return False
 
         End Function
 
-    End Class
+        Protected Overrides Function GetTypeSyntaxForArray(type As IArrayTypeSymbol) As SyntaxNode
+            Return TypeNameVisitor.GetTypeSyntaxForSymbol(type.ElementType)
+        End Function
 
+        Protected Overrides Function GetExpressions(newArguments As ImmutableArray(Of ArgumentSyntax)) As IEnumerable(Of SyntaxNode)
+            Return From argument In newArguments
+                   Select argument.GetExpression()
+        End Function
+
+        Protected Overrides Function GetArrayCreationExpression(generator As SyntaxGenerator, typeSyntax As SyntaxNode, expressions As IEnumerable(Of SyntaxNode)) As SyntaxNode
+            ' VB SyntaxGenerator will create ArgumentList nodes by default but the parse creates ArrayRankSpecifier nodes
+            ' We contruct the syntax manually to work around this
+            Dim rankSpecifiers = SyntaxFactory.List(Of ArrayRankSpecifierSyntax).Add(SyntaxFactory.ArrayRankSpecifier(SyntaxFactory.Token(SyntaxKind.OpenParenToken), Nothing, SyntaxFactory.Token(SyntaxKind.CloseParenToken)))
+            Dim initializer = SyntaxFactory.CollectionInitializer(SyntaxFactory.SeparatedList(expressions.Cast(Of ExpressionSyntax)))
+            Dim arrayCreationExpression = SyntaxFactory.ArrayCreationExpression(SyntaxFactory.Token(SyntaxKind.NewKeyword), Nothing, CType(typeSyntax, TypeSyntax), Nothing, rankSpecifiers, initializer)
+            Return arrayCreationExpression.WithAdditionalAnnotations(Formatter.Annotation, Simplifier.Annotation)
+        End Function
+    End Class
 End Namespace
