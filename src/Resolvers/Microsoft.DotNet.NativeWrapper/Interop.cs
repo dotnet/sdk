@@ -27,8 +27,12 @@ namespace Microsoft.DotNet.NativeWrapper
             else
             {
                 HostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath);
-                if (!string.IsNullOrEmpty(HostFxrPath))
-                    NativeLibrary.SetDllImportResolver(typeof(Interop).Assembly, HostFxrDllImportResolver);
+                if (string.IsNullOrEmpty(HostFxrPath))
+                {
+                    throw new ArgumentException(Constants.RuntimeProperty.HostFxrPath);
+                }
+
+                NativeLibrary.SetDllImportResolver(typeof(Interop).Assembly, HostFxrDllImportResolver);
             }
 #endif
         }
@@ -50,8 +54,15 @@ namespace Microsoft.DotNet.NativeWrapper
 #if NETCOREAPP
         private static IntPtr HostFxrDllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
         {
-            if (libraryName != Constants.HostFxr || !NativeLibrary.TryLoad(HostFxrPath, out IntPtr handle))
+            if (libraryName != Constants.HostFxr)
+            {
                 return IntPtr.Zero;
+            }
+
+            if (!NativeLibrary.TryLoad(HostFxrPath, out IntPtr handle))
+            {
+                throw new FileNotFoundException(Constants.HostFxr);
+            }
 
             return handle;
         }
