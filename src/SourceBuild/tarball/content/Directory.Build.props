@@ -114,7 +114,7 @@
     <SourceBuiltAssetsDir>$(SourceBuiltBlobFeedDir)assets/</SourceBuiltAssetsDir>
     <PrebuiltPackagesPath>$(ProjectDir)packages/prebuilt/</PrebuiltPackagesPath>
     <PreviouslyRestoredPackagesPath>$(ProjectDir)packages/previouslyRestored/</PreviouslyRestoredPackagesPath>
-    <PrebuiltSourceBuiltPackagesPath>$(ProjectDir)packages/source-built/</PrebuiltSourceBuiltPackagesPath>
+    <PrebuiltSourceBuiltPackagesPath>$(ProjectDir)packages/previously-source-built/</PrebuiltSourceBuiltPackagesPath>
     <PrebuiltSourceBuiltPackagesPath Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' != ''">$(CustomPrebuiltSourceBuiltPackagesPath)/</PrebuiltSourceBuiltPackagesPath>
     <SourceBuiltTarBallPath>$(OutputPath)</SourceBuiltTarBallPath>
     <SourceBuiltToolsetDir>$(LocalBlobStorageRoot)Sdk/</SourceBuiltToolsetDir>
