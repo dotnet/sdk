@@ -19,7 +19,7 @@
     <PackageReference Include="NuGet.Frameworks" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageReference Include="NuGet.Protocol" Version="$(NuGetBuildTasksPackageVersion)" />
-    <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" ExcludeAssets="Runtime" />
+    <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
