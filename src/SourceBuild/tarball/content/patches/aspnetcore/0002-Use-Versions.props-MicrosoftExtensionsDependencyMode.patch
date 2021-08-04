@@ -1,0 +1,28 @@
+From 14992fbe4d8f433025cc45be81ef0035ed77221b Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Mon, 2 Aug 2021 13:40:03 +0000
+Subject: [PATCH] Use Versions.props MicrosoftExtensionsDependencyModelVersion
+ in RepoTasks
+
+Source build is loading a reference assembly which fails when the RepoTasks are invoked.
+This change gets source build to use the version which is source built.
+---
+ eng/tools/RepoTasks/RepoTasks.csproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/tools/RepoTasks/RepoTasks.csproj b/eng/tools/RepoTasks/RepoTasks.csproj
+index e723beb353..67e01850f8 100644
+--- a/eng/tools/RepoTasks/RepoTasks.csproj
++++ b/eng/tools/RepoTasks/RepoTasks.csproj
+@@ -16,7 +16,7 @@
+ 
+   <ItemGroup>
+     <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackagingVersion)" />
+-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
++    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelVersion)" />
+   </ItemGroup>
+ 
+   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+-- 
+2.29.2
+

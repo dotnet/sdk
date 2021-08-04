@@ -58,6 +58,12 @@ namespace Microsoft.DotNet.Build.Tasks
                 throw new ArgumentException("Unsupported new line characters", nameof(newLineChars));
             }
 
+            // Ensure trailing new line on linux.
+            if (newLineChars == LF && !source.EndsWith(newLineChars))
+            {
+                source += newLineChars;
+            }
+
             return source;
         }
     }

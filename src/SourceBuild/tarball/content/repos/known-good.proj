@@ -47,6 +47,9 @@
         <RepositoryReference Include="templating" />
 
         <!-- Tier 4 -->
+        <RepositoryReference Include="aspnetcore" />
+
+        <!-- Tier 5 -->
         <RepositoryReference Include="fsharp" />
         <RepositoryReference Include="vstest" />
 
