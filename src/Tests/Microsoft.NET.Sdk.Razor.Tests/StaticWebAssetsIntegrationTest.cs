@@ -9,6 +9,11 @@ using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit;
 using Xunit.Abstractions;
+using System.Linq;
+using System.Diagnostics;
+using System.Xml.Linq;
+using NuGet.Packaging;
+using System;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -191,6 +196,121 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             AssertBuildAssets(
                 StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(finalPath)),
                 outputPath,
+                intermediateOutputPath);
+        }
+
+        [Fact]
+        public void BuildProjectWithReferences_WorksWithStaticWebAssetsV1ClassLibraries()
+        {
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((project, document) =>
+                {
+                    if (Path.GetFileName(project) == "AnotherClassLib.csproj")
+                    {
+                        document.Descendants("TargetFramework").Single().ReplaceNodes("netstandard2.1");
+                        document.Descendants("FrameworkReference").Single().Remove();
+                        document.Descendants("PropertyGroup").First().Add(new XElement("RazorLangVersion", "3.0"));
+                    }
+                    if (Path.GetFileName(project) == "ClassLibrary.csproj")
+                    {
+                        document.Descendants("TargetFramework").Single().ReplaceNodes("netstandard2.0");
+                        document.Descendants("FrameworkReference").Single().Remove();
+                        document.Descendants("PropertyGroup").First().Add(new XElement("RazorLangVersion", "3.0"));
+                    }
+                });
+
+            // We are deleting Views and Components because we are only interested in the static web assets behavior for this test
+            // and this makes it easier to validate the test.
+            Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "AnotherClassLib", "Views"), recursive: true);
+            Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "ClassLibrary", "Views"), recursive: true);
+            Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "ClassLibrary", "Components"), recursive: true);
+
+            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
+            build.Execute("/bl").Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.build.json");
+            new FileInfo(path).Should().Exist();
+            AssertManifest(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
+                LoadBuildManifest());
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.json");
+            new FileInfo(finalPath).Should().Exist();
+            AssertManifest(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(finalPath)),
+                LoadBuildManifest());
+
+            AssertBuildAssets(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(finalPath)),
+                outputPath,
+                intermediateOutputPath);
+        }
+
+        [Fact]
+        public void PublishProjectWithReferences_WorksWithStaticWebAssetsV1ClassLibraries()
+        {
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((project, document) =>
+                {
+                    if (Path.GetFileName(project) == "AnotherClassLib.csproj")
+                    {
+                        document.Descendants("TargetFramework").Single().ReplaceNodes("netstandard2.1");
+                        document.Descendants("FrameworkReference").Single().Remove();
+                        document.Descendants("PropertyGroup").First().Add(new XElement("RazorLangVersion", "3.0"));
+                    }
+                    if (Path.GetFileName(project) == "ClassLibrary.csproj")
+                    {
+                        document.Descendants("TargetFramework").Single().ReplaceNodes("netstandard2.0");
+                        document.Descendants("FrameworkReference").Single().Remove();
+                        document.Descendants("PropertyGroup").First().Add(new XElement("RazorLangVersion", "3.0"));
+                    }
+                });
+
+            // We are deleting Views and Components because we are only interested in the static web assets behavior for this test
+            // and this makes it easier to validate the test.
+            Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "AnotherClassLib", "Views"), recursive: true);
+            Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "ClassLibrary", "Views"), recursive: true);
+            Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "ClassLibrary", "Components"), recursive: true);
+
+            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
+            restore.Execute().Should().Pass();
+
+            var publish = new PublishCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
+            publish.WithWorkingDirectory(ProjectDirectory.Path);
+            publish.Execute("/bl").Should().Pass();
+
+            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.build.json");
+            new FileInfo(path).Should().Exist();
+            AssertManifest(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
+                LoadBuildManifest());
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(publishPath, "AppWithPackageAndP2PReference.staticwebassets.json");
+            new FileInfo(finalPath).Should().NotExist();
+
+            // GenerateStaticWebAssetsPublishManifest should generate the publish manifest file.
+            var intermediatePublishManifestPath = Path.Combine(intermediateOutputPath, "StaticWebAssets.publish.json");
+            new FileInfo(path).Should().Exist();
+            AssertManifest(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath)),
+                LoadPublishManifest());
+
+            AssertPublishAssets(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath)),
+                publishPath,
                 intermediateOutputPath);
         }
 
