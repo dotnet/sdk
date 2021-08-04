@@ -61,6 +61,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
                 preFilterList.Add(TemplateJsonExistencePackFilter.SetupPackFilter());
             }
             preFilterList.Add(SkipTemplatePacksFilter.SetupPackFilter());
+            preFilterList.Add(FilterNonMicrosoftAuthors.SetupPackFilter());
 
             PackPreFilterer preFilterer = new PackPreFilterer(preFilterList);
 
