@@ -168,7 +168,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute().Should().Pass();
+            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
+            build.Execute("/bl").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -314,7 +315,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
-            var expectedManifest = LoadBuildManifest();
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
@@ -328,7 +328,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.build.json");
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
-            AssertManifest(manifest, expectedManifest);
+            AssertManifest(manifest, LoadBuildManifest());
 
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
             var finalPath = Path.Combine(publishPath, "ComponentApp.staticwebassets.json");

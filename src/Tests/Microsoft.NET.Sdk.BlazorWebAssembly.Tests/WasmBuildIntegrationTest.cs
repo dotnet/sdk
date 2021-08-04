@@ -310,7 +310,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
             
             var buildCommand = new BuildCommand(testInstance, "blazorhosted");
-            buildCommand.Execute().Should().Pass();
+            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
+            buildCommand.Execute("/bl").Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
 
