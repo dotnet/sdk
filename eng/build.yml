@@ -96,7 +96,6 @@ jobs:
     - ${{ if eq(parameters.agentOs, 'Windows_NT_FullFramework') }}:
       - script: eng\CIBuild.cmd
                   -configuration $(_BuildConfig)
-                  $(_PublishArgs)
                   $(_SignArgs)
                   $(_OfficialBuildIdArgs)
                   $(_InternalRuntimeDownloadArgs)
