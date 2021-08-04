@@ -13,6 +13,8 @@
 
   <ItemGroup>
     <Compile Include="..\..\Tasks\Common\**\*.cs" LinkBase="Common" />
+    <!-- We pin the versions of the assets that ship with the SDK in order to be able to run on older SDKs. 
+    Currently we support .NET 6 Preview5 or later. -->
     <PackageReference Include="Microsoft.Build.Framework" Version="15.4.8" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.4.8" ExcludeAssets="Runtime" />
     <PackageReference Include="NuGet.Frameworks" Version="6.0.0-preview.1.66" />
