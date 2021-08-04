@@ -1,12 +1,20 @@
 {
   "Version": 1,
-  "Hash": "KaAB5vkcd\u002BYBf3j2SF4Tur1FgX9yMekBgT/U5MPLvgQ=",
+  "Hash": "__hash__",
   "Source": "blazorwasm-minimal",
   "BasePath": "/",
   "Mode": "Root",
   "ManifestType": "Publish",
-  "RelatedManifests": [],
-  "DiscoveryPatterns": [],
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "blazorwasm-minimal\\wwwroot",
+      "Source": "blazorwasm-minimal",
+      "ContentRoot": "${ProjectRoot}\\wwwroot\\",
+      "BasePath": "/",
+      "Pattern": "**"
+    }
+  ],
   "Assets": [
     {
       "Identity": "${ProjectRoot}\\bin\\Debug\\net6.0\\wwwroot\\_framework\\blazor.webassembly.js",
@@ -23,7 +31,7 @@
       "AssetTraitValue": "boot",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.components.webassembly\\${PackageVersion}.0\\build\\net${PackageVersion}\\blazor.webassembly.js"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.components.webassembly\\[[CustomPackageVersion]]\\build\\net5.0\\blazor.webassembly.js"
     },
     {
       "Identity": "${ProjectRoot}\\bin\\Debug\\net6.0\\wwwroot\\_framework\\dotnet.timezones.blat",
@@ -196,7 +204,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\obj\\Debug\\net6.0\\build-gz\\[[_framework\\[[_framework/blazorwasm-minimal.pdb.gz]]"
     },
     {
-      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\build-gz\\[[_framework/dotnet.${RuntimeVersion}.js.gz]]",
+      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\build-gz\\[[_framework/dotnet.6.0.0-rc.1.21401.3.js.gz]]",
       "SourceId": "blazorwasm-minimal",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
@@ -2457,7 +2465,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\obj\\Debug\\net6.0\\linked\\blazorwasm-minimal.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\compress\\[[_framework/dotnet.${RuntimeVersion}.js.br]]",
+      "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\compress\\[[_framework/dotnet.6.0.0-rc.1.21401.3.js.br]]",
       "SourceId": "blazorwasm-minimal",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
