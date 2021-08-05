@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class ApiCompatRunner
     {
-        private Dictionary<MetadataInformation, List<(MetadataInformation rightAssembly, string header)>> _dict = new();
+        internal Dictionary<MetadataInformation, List<(MetadataInformation rightAssembly, string header)>> _dict = new();
         private readonly ApiComparer _differ = new();
         private readonly IPackageLogger _log;
 
@@ -97,7 +97,8 @@ namespace Microsoft.DotNet.PackageValidation
         {
             if (_dict.ContainsKey(leftMetadataInfo))
             {
-                _dict[leftMetadataInfo].Add((rightMetdataInfo, header));
+                if (!_dict[leftMetadataInfo].Contains((rightMetdataInfo, header)))
+                    _dict[leftMetadataInfo].Add((rightMetdataInfo, header));
             }
             else
             {
