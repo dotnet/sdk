@@ -4,6 +4,7 @@
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
+using System;
 using System.CommandLine.Parsing;
 using EnvironmentProvider = Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
 using Parser = Microsoft.DotNet.Cli.Parser;
@@ -49,10 +50,15 @@ namespace Microsoft.DotNet.Tools.Sdk.Check
                 _reporter.WriteLine(string.Format(LocalizableStrings.HostFxrCouldNotBeLoaded, e.Message));
                 return -1;
             }
-            catch (HostFxrRuntimePropertyNotSetException e)
+            catch (TypeInitializationException e)
             {
-                _reporter.WriteLine(string.Format(LocalizableStrings.RuntimePropertyNotFound, e.Message));
-                return -1;
+                if (e.InnerException is HostFxrRuntimePropertyNotSetException runtimePropertyNotSet)
+                {
+                    _reporter.WriteLine(string.Format(LocalizableStrings.RuntimePropertyNotFound, runtimePropertyNotSet.Message));
+                    return -1;
+                }
+
+                throw;
             }
 
             return 0;
