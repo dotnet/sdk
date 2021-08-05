@@ -31,6 +31,7 @@ steps:
     SourceFolder: '${{ parameters.sourceFolder }}'
     Contents: |
       artifacts/**/Private.SourceBuilt.Artifacts*.tar.gz
+      artifacts/prebuilt-report/Private.SourceBuilt.Prebuilts.*.tar.gz
     TargetFolder: '$(Build.StagingDirectory)/artifacts'
     CleanTargetFolder: true
   condition: and(${{ parameters.condition }}, succeeded())

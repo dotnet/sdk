@@ -38,6 +38,7 @@ if [ ! -f $SCRIPT_ROOT/packages/archive/archiveArtifacts.txt ]; then
 fi
 
 downloadArtifacts=true
+downloadPrebuilts=true
 installDotnet=true
 
 # Check to make sure curl exists to download the archive files
@@ -53,6 +54,12 @@ if [ -f $SCRIPT_ROOT/packages/archive/Private.SourceBuilt.Artifacts.*.tar.gz ]; 
     downloadArtifacts=false
 fi
 
+# Check if Private.SourceBuilt prebuilts archive exists
+if [ -f $SCRIPT_ROOT/packages/archive/Private.SourceBuilt.Prebuilts.*.tar.gz ]; then
+    echo "  Private.SourceBuilt.Prebuilts.*.tar.gz exists...it will not be downloaded"
+    downloadPrebuilts=false
+fi
+
 # Check if dotnet is installed
 if [ -d $SCRIPT_ROOT/.dotnet ]; then
     echo "  ./.dotnet SDK directory exists...it will not be installed"
@@ -64,6 +71,12 @@ while read -r line; do
     if [[ $line == *"Private.SourceBuilt.Artifacts"* ]]; then
         if [ "$downloadArtifacts" == "true" ]; then
             echo "  Downloading source-built artifacts..."
+            (cd $SCRIPT_ROOT/packages/archive/ && curl -O $line)
+        fi
+    fi
+    if [[ $line == *"Private.SourceBuilt.Prebuilts"* ]]; then
+        if [ "$downloadPrebuilts" == "true" ]; then
+            echo "  Downloading source-built prebuilts..."
             (cd $SCRIPT_ROOT/packages/archive/ && curl -O $line)
         fi
     fi

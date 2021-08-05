@@ -46,6 +46,9 @@
           WorkingDirectory="$(PrebuiltSourceBuiltPackagesPath)"
           Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
 
+    <Exec Command="tar -xzf $(ExternalTarballsDir)$(SourceBuiltPrebuiltsTarballName).*.tar.gz"
+          WorkingDirectory="$(PrebuiltPackagesPath)" />
+
     <!-- Move SBRP packages to reference packages location -->
     <MakeDir Directories="$(ReferencePackagesDir)" />
     <ItemGroup>
