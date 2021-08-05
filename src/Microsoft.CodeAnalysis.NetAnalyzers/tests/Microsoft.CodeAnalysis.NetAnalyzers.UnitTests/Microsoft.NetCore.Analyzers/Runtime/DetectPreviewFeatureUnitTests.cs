@@ -49,8 +49,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
     public class Program
     {
         static void Main(string[] args)
@@ -79,8 +78,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     [RequiresPreviewFeatures]
     public class DerivedException : Exception
@@ -116,8 +114,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
             public class Program
             {
                 static void Main(string[] args)
@@ -144,8 +141,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
             public class Program
             {
                 static void Main(string[] args)
@@ -174,8 +170,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
         [RequiresPreviewFeatures]
         public class Program
         {
@@ -200,8 +195,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
         [RequiresPreviewFeatures]
         public class Program
         {
@@ -231,8 +225,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
         public class Program
         {
             [RequiresPreviewFeatures]
@@ -257,8 +250,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
             public partial class UnmarkedPreviewClass
             {
                 [RequiresPreviewFeatures]
@@ -286,8 +278,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             public class Program
             {
@@ -316,8 +307,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             public class Program
             {
@@ -382,8 +372,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             class {|#0:Program|} : AbClass
             {
@@ -435,8 +424,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             class Program : IProgram
             {
@@ -468,8 +456,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             class Program : IProgram
             {
@@ -505,8 +492,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
                 using System.Runtime.Versioning; using System;
                 namespace Preview_Feature_Scratch
-                {" +
-@"
+                {
 
                     class Program : IProgram
                     {
@@ -541,8 +527,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             class {|#1:Program|} : IProgram
             {
@@ -576,8 +561,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             class {|#0:Program|} : IProgram
             {
@@ -606,8 +590,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             class Program : IProgram
             {
@@ -669,8 +652,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             class Program
             {
@@ -699,8 +681,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             class Program
             {
@@ -738,8 +719,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             class Program
             {
@@ -765,8 +745,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             enum AnEnum
             {
@@ -799,8 +778,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             enum AnEnum
             {
@@ -832,8 +810,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             [RequiresPreviewFeatures]
             enum AnEnum
@@ -866,8 +843,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {" +
-@"
+        {
 
             class Program
             {
@@ -898,8 +874,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     class Program
     {
@@ -924,16 +899,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
-
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Program program = new Program();
-        }
-    }
+{
 
     interface {|#0:IZoo|} : IFoo
     {
@@ -958,14 +924,13 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     class Program
     {
         static void Main(string[] args)
         {
-            A<Foo> aFooInstance = {|#0:new A<Foo>()|}; // Can we have a property?
+            A<Foo> aFooInstance = {|#0:new A<Foo>()|};
         }
     }
 
@@ -994,15 +959,13 @@ interface IFoo
             await test.RunAsync();
         }
 
-        // Can't figure out why new T().Bar() isn't throwing a diagnostic
         [Fact]
         public async Task TestGenericClass()
         {
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     class Program
     {
@@ -1042,14 +1005,13 @@ interface IFoo
             await test.RunAsync();
         }
 
-        [Fact]
+        [Fact(Skip = "Wait for feedback first")]
         public async Task TestCustomAttribute()
         {
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     class Program
     {
@@ -1073,6 +1035,7 @@ class MyAttribute : Attribute
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments(".ctor"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("A"));
             await test.RunAsync();
         }
 
@@ -1082,8 +1045,7 @@ class MyAttribute : Attribute
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     class Program
     {
@@ -1102,32 +1064,6 @@ class A
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("B"));
-            await test.RunAsync();
-
-        }
-
-        [Fact]
-        public async Task TestDebug()
-        {
-            var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{" +
-@"
-
-    class Program
-    {
-        static void Main(string[] args)
-        {
-        }
-    }
-
-    public abstract class {|#1:BAbstract|}
-    {
-    }
-}";
-
-            var test = TestCS(csInput);
             await test.RunAsync();
 
         }
@@ -1183,8 +1119,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     [RequiresPreviewFeatures]
     class Program
@@ -1218,8 +1153,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     class Program
     {
@@ -1254,8 +1188,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     class {|#2:AFoo|}<T> where T : Foo, new()
     {
@@ -1308,8 +1241,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
     public class {|#0:Foo|} : IFoo
     {
         [RequiresPreviewFeatures]
@@ -1335,8 +1267,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
     public class {|#0:Foo|} : IFoo
     {
         [RequiresPreviewFeatures]
@@ -1362,8 +1293,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     class Program
     {
@@ -1392,8 +1322,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     class Program
     {
@@ -1426,8 +1355,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     [RequiresPreviewFeatures]
     class Program
@@ -1461,8 +1389,7 @@ namespace Preview_Feature_Scratch
             var csInput = @" 
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
-{" +
-@"
+{
 
     [RequiresPreviewFeatures]
     class Program

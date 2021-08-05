@@ -385,17 +385,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return true;
                 }
 
-                ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
-                foreach (AttributeData attribute in attributes)
-                {
-                    var attributeClassSymbol = attribute.AttributeClass;
-                    if (attributeClassSymbol.HasAttribute(previewFeatureAttribute))
-                    {
-                        requiresPreviewFeaturesSymbols.GetOrAdd(symbol, true);
-                        return true;
-                    }
-                }
-
                 requiresPreviewFeaturesSymbols.GetOrAdd(symbol, false);
                 return false;
             }
