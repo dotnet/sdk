@@ -22,6 +22,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         private readonly BufferedReporter _reporter;
         private readonly string fakeReleasesPath;
 
+        private const string RuntimePropertyHostFxr = "HOSTFXR_PATH";
         private const string HelpText = @"check:
       .NET SDK Check Command
     
@@ -35,6 +36,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         {
             _reporter = new BufferedReporter();
             fakeReleasesPath = Path.Combine(_testAssetsManager.TestAssetsRoot, "TestReleases", "TestRelease");
+            AppDomain.CurrentDomain.SetData(RuntimePropertyHostFxr, "FakePath");
         }
 
         [Theory]
@@ -193,6 +195,28 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
                     .Should()
                     .NotContain(line);
             }
+        }
+
+        [UnixOnlyFact]
+        public void WhenRuntimePropertyHostFxrPointsToInvalidPathItFails()
+        {
+            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "sdk", "check" });
+            var sdkCheckCommand = new SdkCheckCommand(parseResult, null, null, _reporter);
+            Assert.Equal(-1, sdkCheckCommand.Execute());
+            _reporter.Lines
+                .Should()
+                .Contain($"Native library 'FakePath' could not be loaded.");
+        }
+
+        [Fact]
+        public void WhenRuntimePropertyHostFxrIsNotSerOrEmptyItFails()
+        {
+            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "sdk", "check" });
+            var sdkCheckCommand = new SdkCheckCommand(parseResult, new MockNetBundleProviderWithEmptyHostFxrPath(), null, _reporter);
+            Assert.Equal(-1, sdkCheckCommand.Execute());
+            _reporter.Lines
+                .Should()
+                .Contain($"Runtime property '{RuntimePropertyHostFxr}' was not set or empty.");
         }
 
         private NetEnvironmentInfo GetFakeEnvironmentInfo(IEnumerable<string> sdkVersions, IEnumerable<string> runtimeVersions)

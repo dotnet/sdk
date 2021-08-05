@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.NativeWrapper
                 HostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath);
                 if (string.IsNullOrEmpty(HostFxrPath))
                 {
-                    throw new ArgumentException(Constants.RuntimeProperty.HostFxrPath);
+                    throw new HostFxrRuntimePropertyNotSetException(Constants.RuntimeProperty.HostFxrPath);
                 }
 
                 NativeLibrary.SetDllImportResolver(typeof(Interop).Assembly, HostFxrDllImportResolver);
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
             if (!NativeLibrary.TryLoad(HostFxrPath, out IntPtr handle))
             {
-                throw new FileNotFoundException(Constants.HostFxr);
+                throw new HostFxrNotFoundException(HostFxrPath);
             }
 
             return handle;

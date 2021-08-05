@@ -29,18 +29,31 @@ namespace Microsoft.DotNet.Tools.Sdk.Check
 
         public override int Execute()
         {
-            var dotnetPath = EnvironmentProvider.GetDotnetExeDirectory();
-            var productCollection = _productCollectionProvider.GetProductCollection();
-            var environmentInfo = _netBundleProvider.GetDotnetEnvironmentInfo(dotnetPath);
-            var sdkFormatter = new SdkOutputWriter(environmentInfo.SdkInfo, productCollection, _productCollectionProvider, _reporter);
-            var runtimeFormatter = new RuntimeOutputWriter(environmentInfo.RuntimeInfo, productCollection, _productCollectionProvider, _reporter);
+            try
+            {
+                var dotnetPath = EnvironmentProvider.GetDotnetExeDirectory();
+                var productCollection = _productCollectionProvider.GetProductCollection();
+                var environmentInfo = _netBundleProvider.GetDotnetEnvironmentInfo(dotnetPath);
+                var sdkFormatter = new SdkOutputWriter(environmentInfo.SdkInfo, productCollection, _productCollectionProvider, _reporter);
+                var runtimeFormatter = new RuntimeOutputWriter(environmentInfo.RuntimeInfo, productCollection, _productCollectionProvider, _reporter);
 
-            sdkFormatter.PrintSdkInfo();
-            _reporter.WriteLine();
-            runtimeFormatter.PrintRuntimeInfo();
-            _reporter.WriteLine();
-            _reporter.WriteLine(LocalizableStrings.CommandFooter);
-            _reporter.WriteLine();
+                sdkFormatter.PrintSdkInfo();
+                _reporter.WriteLine();
+                runtimeFormatter.PrintRuntimeInfo();
+                _reporter.WriteLine();
+                _reporter.WriteLine(LocalizableStrings.CommandFooter);
+                _reporter.WriteLine();
+            }
+            catch (HostFxrNotFoundException e)
+            {
+                _reporter.WriteLine(string.Format(LocalizableStrings.HostFxrCouldNotBeLoaded, e.Message));
+                return -1;
+            }
+            catch (HostFxrRuntimePropertyNotSetException e)
+            {
+                _reporter.WriteLine(string.Format(LocalizableStrings.RuntimePropertyNotFound, e.Message));
+                return -1;
+            }
 
             return 0;
         }
