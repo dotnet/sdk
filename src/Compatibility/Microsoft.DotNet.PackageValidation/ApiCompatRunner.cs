@@ -95,10 +95,10 @@ namespace Microsoft.DotNet.PackageValidation
         /// <param name="header">The header for the api compat diagnostics.</param>
         public void QueueApiCompat(MetadataInformation leftMetadataInfo, MetadataInformation rightMetdataInfo, string header)
         {
-            if (_dict.ContainsKey(leftMetadataInfo))
+            if (_dict.TryGetValue(leftMetadataInfo, out var value))
             {
-                if (!_dict[leftMetadataInfo].Contains((rightMetdataInfo, header)))
-                    _dict[leftMetadataInfo].Add((rightMetdataInfo, header));
+                if (!value.Contains((rightMetdataInfo, header)))
+                    value.Add((rightMetdataInfo, header));
             }
             else
             {
