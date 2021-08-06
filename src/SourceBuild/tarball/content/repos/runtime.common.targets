@@ -22,32 +22,6 @@
                          Rid="$(TargetRid)-$(Platform)" />
   </Target>
 
-  <Target Name="CopyTools"
-          AfterTargets="Package"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)CopyTools.complete">
-    <PropertyGroup>
-      <CoreClrDestinationDir>$(ToolPackageExtractDir)coreclr-tools</CoreClrDestinationDir>
-      <AssemblyExtension Condition="'$(TargetOS)' == 'Linux'">so</AssemblyExtension>
-      <AssemblyExtension Condition="'$(TargetOS)' == 'FreeBSD'">so</AssemblyExtension>
-      <AssemblyExtension Condition="'$(TargetOS)' == 'OSX'">dylib</AssemblyExtension>
-      <AssemblyExtension Condition="'$(AssemblyExtension)' == ''">please define AssemblyExtension for $(TargetOS)</AssemblyExtension>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <CoreClrTools Include="$(ProjectDirectory)artifacts/bin/coreclr/$(TargetOS).$(Platform).$(Configuration)/ilasm" />
-      <CoreClrTools Include="$(ProjectDirectory)artifacts/bin/coreclr/$(TargetOS).$(Platform).$(Configuration)/ildasm" />
-      <CoreClrTools Include="$(ProjectDirectory)artifacts/bin/coreclr/$(TargetOS).$(Platform).$(Configuration)/libcoreclr.$(AssemblyExtension)" />
-      <CoreClrTools Include="$(ProjectDirectory)artifacts/bin/coreclr/$(TargetOS).$(Platform).$(Configuration)/System.Private.CoreLib.dll" />
-    </ItemGroup>
-
-    <Message Importance="High" Text="Copying source-built ILAsm and ILDasm '@(CoreClrTools)' to '$(CoreClrDestinationDir)'" />
-
-    <Copy SourceFiles="@(CoreClrTools)" DestinationFolder="$(CoreClrDestinationDir)" />
-
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CopyTools.complete" Overwrite="true" />
-  </Target>
-
   <Target Name="CopyBinariesToBinFolder"
           AfterTargets="Build"
           Inputs="$(MSBuildProjectFullPath)"

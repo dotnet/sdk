@@ -16,7 +16,7 @@
     <SystemCollectionsImmutableVersion>6.0.0-preview.6.21352.12</SystemCollectionsImmutableVersion>
     <SystemReflectionMetadataVersion>5.0.0</SystemReflectionMetadataVersion>
     <SystemReflectionMetadataPackageVersion>5.0.0</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0-preview.6.21352.12</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.6.21352.12</SystemRuntimeCompilerServicesUnsafeVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0-preview.7.21321.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.7.21321.2</SystemRuntimeCompilerServicesUnsafeVersion>
   </PropertyGroup>
 </Project>

@@ -106,7 +106,7 @@
 
   <Target Name="AddCommonNoWarns"
           BeforeTargets="Build"
-          Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') "
+          Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') OR EXISTS('$(ProjectDirectory)src/Directory.Build.props') "
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(RepoCompletedSemaphorePath)AddCommonNoWarns.complete" >
 
@@ -125,8 +125,11 @@
   </PropertyGroup>
 </Project>]]>
       </NewText>
+
+      <DirectoryBuildPropsFile Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') ">$(ProjectDirectory)Directory.Build.props</DirectoryBuildPropsFile>
+      <DirectoryBuildPropsFile Condition=" '$(DirectoryBuildPropsFile)' == '' AND EXISTS('$(ProjectDirectory)src/Directory.Build.props') ">$(ProjectDirectory)src/Directory.Build.props</DirectoryBuildPropsFile>
     </PropertyGroup>
-    <ReplaceTextInFile InputFile="$(ProjectDirectory)Directory.Build.props"
+    <ReplaceTextInFile InputFile="$(DirectoryBuildPropsFile)"
       OldText="$(OldText)"
       NewText="$(NewText)" />
   </Target>
@@ -196,6 +199,15 @@
       NuGetConfigFile="%(NuGetConfigFiles.Identity)"
       BuildWithOnlineSources="$(BuildWithOnlineSources)"
       KeepFeedPrefixes="@(KeepFeedPrefixes)" />
+
+    <!-- Temporarily add dotnet6 feed to all NuGet.Configs 
+         until all repos build so that preview packages
+         referenced in TemporaryBootstrapPackageVersions.props
+         can be found. -->
+    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+                            SourceName="dotnet6-temporary"
+                            SourcePath="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json"
+                            Condition=" '$(BuildWithOnlineSources)' == 'true' " />
 
     <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
                             SourceName="prebuilt"

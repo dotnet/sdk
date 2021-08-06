@@ -1,56 +1,42 @@
 <Project>
-
-  <PropertyGroup>
-    <SourceDirectory>runtime</SourceDirectory>
-    <PortableBuild>true</PortableBuild>
-    <UseSystemLibunwind>false</UseSystemLibunwind>
-  </PropertyGroup>
-
   <Import Project="runtime.common.props"/>
 
   <!-- Repository References -->
   <ItemGroup>
       <RepositoryReference Include="arcade" />
       <RepositoryReference Include="linker" />
-      <RepositoryReference Include="newtonsoft-json" />
-      <RepositoryReference Include="newtonsoft-json901" />
+      <RepositoryReference Include="source-build" />
       <RepositoryReference Include="roslyn" />
   </ItemGroup>
 
   <!-- Additional Targets -->
-  <Target Name="CleanupRepoForNonPortableBuild" AfterTargets="RemoveBuiltPackagesFromCache">
+  <Target Name="CleanupRepoForNonPortableBuild" 
+          BeforeTargets="CleanupRepo"
+          AfterTargets="RemoveBuiltPackagesFromCache">
     <!-- Make a copy of the portable build logs & project.assets.json files-->
     <PropertyGroup>
       <PortableLogDir>$(ProjectDirectory)artifacts/portableLog</PortableLogDir>
       <PortableObjDir>$(ProjectDirectory)artifacts/portableObj</PortableObjDir>
     </PropertyGroup>
     <ItemGroup>
-      <LogFilesToCopy Include="$(ProjectDirectory)artifacts/log/**/*" />
-      <ObjFilesToCopy Include="$(ProjectDirectory)artifacts/obj/**/project.assets.json" />
+      <PortableLogFilesToCopy Include="$(ProjectDirectory)artifacts/log/**/*" />
+      <PortableObjFilesToCopy Include="$(ProjectDirectory)artifacts/obj/**/project.assets.json" />
     </ItemGroup>
     <MakeDir Directories="$(PortableLogDir)" Condition="Exists('$(ProjectDirectory)artifacts')"/>
     <MakeDir Directories="$(PortableObjDir)" Condition="Exists('$(ProjectDirectory)artifacts')"/>
-    <Copy SourceFiles="@(LogFilesToCopy)" DestinationFolder="$(PortableLogDir)/%(RecursiveDir)" Condition="Exists('$(PortableLogDir)')" />
-    <Copy SourceFiles="@(ObjFilesToCopy)" DestinationFolder="$(PortableObjDir)/%(RecursiveDir)" Condition="Exists('$(PortableObjDir)')" />
+    <Copy SourceFiles="@(PortableLogFilesToCopy)" DestinationFolder="$(PortableLogDir)/%(RecursiveDir)" Condition="Exists('$(PortableLogDir)')" />
+    <Copy SourceFiles="@(PortableObjFilesToCopy)" DestinationFolder="$(PortableObjDir)/%(RecursiveDir)" Condition="Exists('$(PortableObjDir)')" />
 
     <!-- Cleanup everything else -->
     <ItemGroup>
-      <DirsToDelete Include="$([System.IO.Directory]::GetDirectories(&quot;$(ProjectDirectory)artifacts/&quot;))" Condition="Exists('$(ProjectDirectory)artifacts')" />
-      <DirsToDelete Include="$(ProjectDirectory)bin" Condition="Exists('$(ProjectDirectory)bin')" />
-      <DirsToDelete Remove="$(PortableLogDir)" />
-      <DirsToDelete Remove="$(PortableObjDir)" />
+      <PortableDirsToDelete Include="$([System.IO.Directory]::GetDirectories(&quot;$(ProjectDirectory)artifacts/&quot;))" Condition="Exists('$(ProjectDirectory)artifacts')" />
+      <PortableDirsToDelete Include="$(ProjectDirectory)bin" Condition="Exists('$(ProjectDirectory)bin')" />
+      <PortableDirsToDelete Remove="$(PortableLogDir)" />
+      <PortableDirsToDelete Remove="$(PortableObjDir)" />
     </ItemGroup>
 
-    <RemoveDir Directories="@(DirsToDelete)" />
+    <RemoveDir Directories="@(PortableDirsToDelete)" />
   </Target>
 
   <Import Project="runtime.common.targets" />
-
-  <Target Name="GatherBuiltPackages" BeforeTargets="CopyPackage">
-    <ItemGroup>
-      <_BuiltPackages Include="$(ShippingPackagesOutput)/*linux*nupkg" Exclude="$(ShippingPackagesOutput)/*.symbols.nupkg" />
-      <_BuiltPackages Include="$(NonShippingPackagesOutput)/*linux*nupkg" Exclude="$(NonShippingPackagesOutput)/*.symbols.nupkg" />
-    </ItemGroup>
-  </Target>
-
 </Project>

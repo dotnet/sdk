@@ -44,6 +44,7 @@
         <!-- Tier 2 -->
         <RepositoryReference Include="linker" />
         <RepositoryReference Include="msbuild" />
+        <RepositoryReference Include="runtime-portable" />
         <RepositoryReference Include="templating" />
 
         <!-- Tier 4 -->

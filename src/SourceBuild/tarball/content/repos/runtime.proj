@@ -18,6 +18,5 @@
     <Exec Command="tar -xvf $(SourceBuiltAssetsDir)dotnet-runtime-$(runtimeOutputPackageVersion)-$(OverrideTargetRid).tar.gz -C $(DotNetCliToolDir)" />
   </Target>
 
-
   <Import Project="runtime.common.targets" />
 </Project>
