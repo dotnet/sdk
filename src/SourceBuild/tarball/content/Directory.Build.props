@@ -122,7 +122,7 @@
     <SourceBuiltAspNetCoreRuntime>$(LocalBlobStorageRoot)aspnetcore/Runtime/</SourceBuiltAspNetCoreRuntime>
     <RestoreSourcePropsPath>$(IntermediatePath)RestoreSources.props</RestoreSourcePropsPath>
     <PackageVersionPropsPath>$(IntermediatePath)PackageVersions.props</PackageVersionPropsPath>
-    <GennedPackageVersionPropsPath>$(IntermediatePath)GennedPackageVersions.props</GennedPackageVersionPropsPath>
+    <CurrentSourceBuiltPackageVersionPropsPath>$(IntermediatePath)CurrentSourceBuiltPackageVersions.props</CurrentSourceBuiltPackageVersionPropsPath>
     <LoggingDir>$(BaseOutputPath)logs/</LoggingDir>
     <MSBuildDebugPathTargetDir>$(BaseOutputPath)msbuild-debug/</MSBuildDebugPathTargetDir>
     <RoslynDebugPathTargetDir>$(BaseOutputPath)roslyn-debug/</RoslynDebugPathTargetDir>

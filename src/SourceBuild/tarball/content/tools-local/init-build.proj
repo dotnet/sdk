@@ -69,17 +69,17 @@
 
     <Delete Files="@(ReferencePackagesToOverride)" />
 
-    <!-- Setup the PackageVersions.props file to be a combination of SourceBuilt and GennedPackages -->
-    <Copy SourceFiles="$(PrebuiltSourceBuiltPackagesPath)PackageVersions.props" DestinationFiles="$(IntermediatePath)SourceBuiltPackageVersions.props" />
+    <!-- Setup the PackageVersions.props file to be a combination of source built and previously source built packages -->
+    <Copy SourceFiles="$(PrebuiltSourceBuiltPackagesPath)PackageVersions.props" DestinationFiles="$(IntermediatePath)PreviouslySourceBuiltPackageVersions.props" />
 
     <PropertyGroup>
       <PackageVersionsPropsFile>$(IntermediatePath)PackageVersions.props</PackageVersionsPropsFile>
       <PackageVersionsPropsContents>
         <![CDATA[<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="SourceBuiltPackageVersions.props" Condition="Exists('SourceBuiltPackageVersions.props')" />
+  <Import Project="PreviouslySourceBuiltPackageVersions.props" Condition="Exists('PreviouslySourceBuiltPackageVersions.props')" />
   <Import Project="$(ProjectDir)TemporaryBootstrapPackageVersions.props" Condition="Exists('$(ProjectDir)TemporaryBootstrapPackageVersions.props')" />
-  <Import Project="GennedPackageVersions.props" Condition="Exists('GennedPackageVersions.props')" />
+  <Import Project="CurrentSourceBuiltPackageVersions.props" Condition="Exists('CurrentSourceBuiltPackageVersions.props')" />
 </Project>
 ]]>
       </PackageVersionsPropsContents>

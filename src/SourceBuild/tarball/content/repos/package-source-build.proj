@@ -5,7 +5,7 @@
     <RepoApiImplemented>false</RepoApiImplemented>
     <ProjectDirectory>$(SubmoduleDirectory)$(RepositoryName)/</ProjectDirectory>
     <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
-    <IncludedPackageVersionPropsFile>$(GennedPackageVersionPropsPath)</IncludedPackageVersionPropsFile>
+    <IncludedPackageVersionPropsFile>$(CurrentSourceBuiltPackageVersionPropsPath)</IncludedPackageVersionPropsFile>
   </PropertyGroup>
 
   <ItemGroup>

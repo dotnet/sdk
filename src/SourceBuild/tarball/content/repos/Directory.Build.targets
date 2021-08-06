@@ -326,7 +326,7 @@
     <WriteBuildOutputProps NuGetPackages="@(PreviouslySourceBuiltPackages)"
                            ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
                            AdditionalAssetDirs="@(_AdditionalAssetDirs)"
-                           OutputPath="$(GennedPackageVersionPropsPath)" />
+                           OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
 
     <WriteBuildOutputProps NuGetPackages="@(PreviouslySourceBuiltPackages)"
                            IncludeCreationTimeProperty="true"
