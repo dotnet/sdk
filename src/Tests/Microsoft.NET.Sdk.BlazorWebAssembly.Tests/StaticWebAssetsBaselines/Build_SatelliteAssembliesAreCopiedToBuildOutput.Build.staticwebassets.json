@@ -7459,7 +7459,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\wwwroot\\_framework\\de\\Microsoft.CodeAnalysis.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\[[_framework/dotnet.6.0.0-rc.1.21401.3.js.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\[[_framework/dotnet.${RuntimeVersion}.js.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\blazor\\",

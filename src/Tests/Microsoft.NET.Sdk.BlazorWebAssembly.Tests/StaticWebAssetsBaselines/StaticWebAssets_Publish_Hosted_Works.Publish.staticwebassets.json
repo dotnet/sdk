@@ -268,7 +268,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\[[_framework\\[[_framework/blazorwasm.pdb.gz]]"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\[[_framework/dotnet.6.0.0-rc.1.21401.3.js.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\build-gz\\[[_framework/dotnet.${RuntimeVersion}.js.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
@@ -2563,7 +2563,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\linked\\blazorwasm.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\compress\\[[_framework/dotnet.6.0.0-rc.1.21401.3.js.br]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net6.0\\compress\\[[_framework/dotnet.${RuntimeVersion}.js.br]]",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net6.0\\publish\\wwwroot\\",
