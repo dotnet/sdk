@@ -1,0 +1,94 @@
+# Builds a source-build tarball
+
+parameters:
+  # Custom condition to apply to the job
+  condition: true
+
+  # Dependent jobs that must be completed before this job will run
+  dependsOn:
+
+  # The resource id of the tarball to download and build
+  tarballResourceId: current
+
+jobs:
+- job: Source_Build_Run_Tarball_Build
+  condition: ${{ parameters.condition }}
+  displayName: Source-Build Build Tarball
+  dependsOn: ${{ parameters.dependsOn }}
+  pool:
+    vmImage: ubuntu-20.04
+  strategy:
+    matrix:
+      Fedora33-Online:
+        _runOnline: true
+        _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
+      Fedora33-Offline:
+        _runOnline: false
+        _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
+  timeoutInMinutes: 120
+  variables:
+    _TarballDir: $(Build.StagingDirectory)/tarball
+  workspace:
+    clean: all
+
+  steps:
+  - checkout: none
+
+  - download: ${{ parameters.tarballResourceId }}
+    artifact: BlobArtifacts
+    patterns: '**/dotnet-sdk-source*.tar.gz'
+    displayName: Download Tarball
+
+  - script: |
+      set -x
+
+      resourceIdPathSegment=
+      if [ '${{ parameters.tarballResourceId }}' != 'current' ]; then
+        resourceIdPathSegment='${{ parameters.tarballResourceId }}/'
+      fi
+
+      mkdir -p "$(_TarballDir)"
+      tarballFilePath="$(PIPELINE.WORKSPACE)/${resourceIdPathSegment}BlobArtifacts/dotnet-sdk-source*.tar.gz"
+      eval tar -ozxf "$tarballFilePath" -C "$(_TarballDir)"
+    displayName: Extract Tarball
+
+  - script: |
+      set -x
+
+      docker run --rm -v $(_TarballDir):/tarball -w /tarball $(_Container) ./prep.sh
+    displayName: Prep Tarball
+
+  - script: |
+      set -x
+      df -h
+
+      networkArgs=
+      customBuildArgs=
+      if [ '$(_runOnline)' = 'true' ]; then
+        customBuildArgs='--online'
+      else
+        networkArgs='--network none'
+      fi
+
+      docker run --rm -v $(_TarballDir):/tarball -w /tarball ${networkArgs} $(_Container) ./build.sh ${customBuildArgs} -- /p:CleanWhileBuilding=true
+    displayName: Build Tarball
+
+  - task: CopyFiles@2
+    displayName: Gather Source Build Artifacts
+    inputs:
+      SourceFolder: $(_TarballDir)
+      Contents: |
+        artifacts/**/Private.SourceBuilt.Artifacts*.tar.gz
+        artifacts/prebuilt-report/Private.SourceBuilt.Prebuilts.*.tar.gz
+      TargetFolder: '$(Build.StagingDirectory)/artifacts'
+      CleanTargetFolder: true
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish Source Build Artifacts
+    inputs:
+      targetPath: '$(Build.StagingDirectory)/artifacts'
+      artifactName: $(Agent.JobName)_Artifacts_Attempt$(System.JobAttempt)
+
+  - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-publish-logs.yml
+    parameters:
+      sourceFolder: $(_TarballDir)

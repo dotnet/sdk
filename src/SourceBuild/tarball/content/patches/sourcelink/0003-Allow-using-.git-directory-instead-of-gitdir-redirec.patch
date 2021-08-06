@@ -1,0 +1,36 @@
+From cfb26098630fe3cd9648ebcbbe9ac59278b63242 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Thu, 5 Aug 2021 19:51:19 +0000
+Subject: [PATCH] Allow using .git directory instead of gitdir redirect in
+ submodules
+
+---
+ .../GitDataReader/GitRepository.cs                   | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/src/Microsoft.Build.Tasks.Git/GitDataReader/GitRepository.cs b/src/Microsoft.Build.Tasks.Git/GitDataReader/GitRepository.cs
+index 9f1648f..c079197 100644
+--- a/src/Microsoft.Build.Tasks.Git/GitDataReader/GitRepository.cs
++++ b/src/Microsoft.Build.Tasks.Git/GitDataReader/GitRepository.cs
+@@ -209,6 +209,18 @@ public static GitRepository OpenRepository(GitRepositoryLocation location, GitEn
+         /// <returns>Null if the HEAD tip reference can't be resolved.</returns>
+         internal string? ReadSubmoduleHeadCommitSha(string submoduleWorkingDirectoryFullPath)
+         {
++            // Submodules don't usually have their own .git directories but this is still legal.
++            // This can occur with older versions of Git or other tools, or when a user clones one
++            // repo into another's source tree (but it was not yet registered as a submodule).
++            // See https://git-scm.com/docs/gitsubmodules#_forms for more details.
++            // Handle this case first since the other case throws.
++            var dotGitPath = Path.Combine(submoduleWorkingDirectoryFullPath, GitDirName);
++            if (IsGitDirectory(dotGitPath, out var directSubmoduleGitDirectory))
++            {
++                var submoduleGitDirResolver = new GitReferenceResolver(directSubmoduleGitDirectory, directSubmoduleGitDirectory);
++                return submoduleGitDirResolver.ResolveHeadReference();
++            }
++
+             var gitDirectory = ReadDotGitFile(Path.Combine(submoduleWorkingDirectoryFullPath, GitDirName));
+             if (!IsGitDirectory(gitDirectory, out var commonDirectory))
+             {
+-- 
+2.29.2
+
