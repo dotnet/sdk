@@ -20,7 +20,7 @@
   </Target>
 
   <UsingTask TaskName="CalculateTemplateVersions" AssemblyFile="$(CoreSdkTaskDll)" />
-  <UsingTask TaskName="DownloadFile" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" />
   <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="ZipFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="ZipFileExtractToDirectory" AssemblyFile="$(CoreSdkTaskDll)" />

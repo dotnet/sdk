@@ -331,16 +331,26 @@
         <PrivateBaseUrl Condition="'$(InternalBuild)' == 'true'">$([System.String]::new('%(ComponentToDownload.PrivateBaseUrl)').Replace('$(DotnetExtensionsBlobRootUrl)', '$(InternalBaseURL)'))</PrivateBaseUrl>
         <PrivateBaseUrl Condition="'$(InternalBuild)' == 'true'">$([System.String]::new('%(ComponentToDownload.PrivateBaseUrl)').Replace('$(DotnetToolsetBlobRootUrl)', '$(InternalBaseURL)'))</PrivateBaseUrl>
       </ComponentToDownload>
+
+      <!-- Now transform the group of components into a list of Uris,
+           with shared metadata DownloadDestination and potentially the encoded key token for the private url.
+           Then use task batching to send batched itemgroups to the DownloadFile task that have the same
+           DownloadDestination. -->
+      
+      <UrisToDownload Include="%(ComponentToDownload.BaseUrl)/%(ComponentToDownload.DownloadFileName)" Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
+        <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
+        <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
+      </UrisToDownload>
+      <UrisToDownload Include="%(ComponentToDownload.PrivateBaseUrl)/%(ComponentToDownload.DownloadFileName)" Condition="'%(ComponentToDownload.ShouldDownload)' == 'true' and '$(DotNetRuntimeSourceFeedKey)' != ''">
+        <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
+        <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
+        <token>$(DotNetRuntimeSourceFeedKey)</token>
+      </UrisToDownload>
     </ItemGroup>
-
-    <PropertyGroup>
-      <DOTNETCLIMSRC_READ_SAS_TOKEN>$([System.Environment]::GetEnvironmentVariable('DOTNETCLIMSRC_READ_SAS_TOKEN'))</DOTNETCLIMSRC_READ_SAS_TOKEN>
-    </PropertyGroup>
-
-    <DownloadFile Condition=" '@(ComponentToDownload)' != '' And '%(ComponentToDownload.ShouldDownload)' == 'true'"
-                  Uri="%(ComponentToDownload.BaseUrl)/%(ComponentToDownload.DownloadFileName)"
-                  PrivateUri="%(ComponentToDownload.PrivateBaseUrl)/%(ComponentToDownload.DownloadFileName)$(DOTNETCLIMSRC_READ_SAS_TOKEN)"
-                  DestinationPath="%(ComponentToDownload.DownloadDestination)" />
+    
+    <DownloadFile Condition=" '@(UrisToDownload)' != '' and %(ShouldDownload)"
+                  Uris="@(UrisToDownload)"
+                  DestinationPath="%(DownloadDestination)" />
 
     <ItemGroup>
       <BundledLayoutPackageDownloadProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">

@@ -21,12 +21,21 @@ jobs:
         officialBuildArgs='/p:OfficialBuildId=$(BUILD.BUILDNUMBER)'
       fi
 
+      # If building on the internal project, the internal storage variable may be available (usually only if needed)
+      # In that case, add variables to allow the download of internal runtimes if the specified versions are not found
+      # in the default public locations.
+      internalRuntimeDownloadArgs=
+      if [ '$(dotnetclimsrc-read-sas-token-base64)' != '$''(dotnetclimsrc-read-sas-token-base64)' ]; then
+        internalRuntimeDownloadArgs='/p:DotNetRuntimeSourceFeed=https://dotnetclimsrc.blob.core.windows.net/dotnet /p:DotNetRuntimeSourceFeedKey=$(dotnetclimsrc-read-sas-token-base64) --runtimesourcefeed https://dotnetclimsrc.blob.core.windows.net/dotnet --runtimesourcefeedkey $(dotnetclimsrc-read-sas-token-base64)'
+      fi
+
       ./build.sh \
         --ci \
         --configuration $(_BuildConfig) \
         --publish \
         -bl \
         $officialBuildArgs \
+        $internalRuntimeDownloadArgs \
         /p:DotNetPublishUsingPipelines=true \
         /p:ArcadeBuildTarball=true
     displayName: Create Tarball
