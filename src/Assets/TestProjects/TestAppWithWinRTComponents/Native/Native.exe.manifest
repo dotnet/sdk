@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity version="1.0.0.0" name="Native"/>
+  <file name="WinRT.Host.dll">
+      <activatableClass
+        name="Coords.Coord"
+        threadingModel="both"
+        xmlns="urn:schemas-microsoft-com:winrt.v1" />
+      <activatableClass
+        name="Posns.Posn"
+        threadingModel="both"
+        xmlns="urn:schemas-microsoft-com:winrt.v1" />
+  </file>
+</assembly>
