@@ -148,7 +148,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void StaticWebAssets_BackCompatibilityBuild_Hosted_Works()
+        public void StaticWebAssets_HostedApp_ReferencingNetStandardLibrary_Works()
         {
             // Arrange
             var testAppName = "BlazorHosted";
