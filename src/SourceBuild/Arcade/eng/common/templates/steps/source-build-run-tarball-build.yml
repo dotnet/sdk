@@ -20,7 +20,8 @@ steps:
     set -x
 
     ./build.sh \
-      --online
+      --online \
+      -- /p:CleanWhileBuilding=true
   workingDirectory: ${{ parameters.sourceFolder }}
   displayName: Build Tarball
   condition: and(${{ parameters.condition }}, succeeded())
