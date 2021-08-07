@@ -14,3 +14,4 @@ CA2017 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-r
 CA2252 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252> | This API requires opting into preview features |
 CA2253 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253> | Named placeholders should not be numeric values |
 CA2254 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254> | Template should be a static expression |
+CA2255 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255> | The 'ModuleInitializer' attribute should not be used in libraries |

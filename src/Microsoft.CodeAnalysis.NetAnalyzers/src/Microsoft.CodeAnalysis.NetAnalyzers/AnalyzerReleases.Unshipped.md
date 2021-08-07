@@ -23,6 +23,7 @@ CA2251 | Usage | Hidden | UseStringEqualsOverStringCompare, [Documentation](http
 CA2252 | Usage | Info | DetectPreviewFeatureAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252)
 CA2253 | Usage | Info | LoggerMessageDefineAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253)
 CA2254 | Usage | Info | LoggerMessageDefineAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254)
+CA2255 | Usage | Warning | ModuleInitializerAttributeShouldNotBeUsedInLibraries, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255)
 
 ### Removed Rules
 

@@ -1467,6 +1467,21 @@
         <target state="translated">操作方法 {0} 需要显式指定 HTTP 请求类型</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
+        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
+        <target state="new">Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
+        <source>The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</source>
+        <target state="new">The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle">
+        <source>The 'ModuleInitializer' attribute should not be used in libraries</source>
+        <target state="new">The 'ModuleInitializer' attribute should not be used in libraries</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
         <target state="translated">在不使用 SerializationBinder 的情况下对不受信任的数据进行反序列化，以限制反序列化对象图中的对象类型时，方法“{0}”不安全。</target>
