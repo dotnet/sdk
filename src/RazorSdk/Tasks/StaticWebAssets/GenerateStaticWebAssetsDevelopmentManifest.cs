@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         private static readonly JsonSerializerOptions ManifestSerializationOptions = new()
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            WriteIndented = true
         };
 
         [Required]
