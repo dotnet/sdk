@@ -431,6 +431,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
+      <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
     </ItemGroup>
     
   </Target>
