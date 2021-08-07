@@ -485,9 +485,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 for (var i = 0; i < segments.Length; i++)
                 {
                     ref var segment = ref segments[i];
-                    if (segment == RuntimeVersion)
+                    if (segment.Contains(RuntimeVersion))
                     {
-                        segment = "${RuntimeVersion}";
+                        segment = segment.Replace(RuntimeVersion, "${RuntimeVersion}");
                         customPackageVersion = false;
                     }
                     if (segment == DefaultPackageVersion)

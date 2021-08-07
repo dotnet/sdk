@@ -3291,7 +3291,7 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "obj\\Debug\\net5\\dotnet.6.0.0-rc.1.21405.1.js"
+      "OriginalItemSpec": "obj\\Debug\\net5\\dotnet.${RuntimeVersion}.js"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net5\\build-gz\\[[_framework/dotnet.timezones.blat.gz]]",
@@ -3447,7 +3447,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net5\\custom-service-worker-assets.js"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net5\\dotnet.6.0.0-rc.1.21405.1.js",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net5\\dotnet.${RuntimeVersion}.js",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net5\\wwwroot\\",
@@ -3461,7 +3461,7 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "obj\\Debug\\net5\\dotnet.6.0.0-rc.1.21405.1.js"
+      "OriginalItemSpec": "obj\\Debug\\net5\\dotnet.${RuntimeVersion}.js"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net5\\serviceworkers\\wwwroot\\serviceworkers\\my-service-worker.js",
