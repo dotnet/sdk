@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd">
+  <metadata minClientVersion="2.5">
+    <id>Microsoft.Windows.CsWinRT</id>
+    <version>1.3.2-prerelease.210721.8</version>
+    <title>C#/WinRT Build Support</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="file">LICENSE</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://github.com/microsoft/cswinrt/tree/master/</projectUrl>
+    <description>C#/WinRT provides packaged WinRT projection support for the C# language. It is compatible with .NET 5 and does not require any built-in knowledge of WinRT by the C# compiler.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>managed C# WinRT cswinrt WinMD xlang</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework5.0" />
+    </dependencies>
+  </metadata>
+</package>

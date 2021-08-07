@@ -5,11 +5,13 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Native", "Native\Native.vcxproj", "{420C0B97-4C6F-4165-85E6-2CF62A81DC4D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Managed", "Managed\Managed.csproj", "{82B258DC-DB66-4D25-9DA7-75B5FE0E90A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Managed", "Managed\Managed.csproj", "{82B258DC-DB66-4D25-9DA7-75B5FE0E90A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coords", "Coords\Coords.csproj", "{93A19CDC-CA0D-41D2-ADD5-4D2BBA83629F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Coords", "Coords\Coords.csproj", "{93A19CDC-CA0D-41D2-ADD5-4D2BBA83629F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Posns", "Posns\Posns.csproj", "{189353B9-2806-42E6-B49C-90797E58AD44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Posns", "Posns\Posns.csproj", "{189353B9-2806-42E6-B49C-90797E58AD44}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "local_nupkgs", "local_nupkgs", "{79DD33CA-88E6-4231-AA7D-67B5B079A2B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
