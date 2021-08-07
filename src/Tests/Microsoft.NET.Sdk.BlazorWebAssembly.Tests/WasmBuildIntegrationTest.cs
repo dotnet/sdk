@@ -355,7 +355,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var intermediateOutputPath = buildCommand.GetIntermediateDirectory(DefaultTfm).ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.build.json");
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());

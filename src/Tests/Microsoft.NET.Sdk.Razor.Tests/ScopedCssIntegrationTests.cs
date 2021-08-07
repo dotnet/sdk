@@ -512,7 +512,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
-            var finalPath = Path.Combine(intermediateOutputPath, "StaticWebAssets.publish.json");
+            var finalPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
             new FileInfo(finalPath).Should().Exist();
             AssertManifest(
                 StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.publish.json"))),

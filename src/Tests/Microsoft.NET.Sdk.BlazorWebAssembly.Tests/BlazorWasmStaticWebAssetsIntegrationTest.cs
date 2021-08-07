@@ -40,7 +40,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.build.json");
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());
@@ -74,7 +74,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.publish.json");
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
@@ -101,7 +101,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.build.json");
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());
@@ -136,7 +136,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.publish.json");
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
@@ -181,7 +181,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.build.json");
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());
@@ -234,7 +234,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "StaticWebAssets.publish.json");
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
