@@ -251,7 +251,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
 
     <!-- For preview only, to ease in the new implementation -->
-    <_GenerateLegacyManifestFormat>true</_GenerateLegacyManifestFormat>
+    <_GenerateLegacyManifestFormat>false</_GenerateLegacyManifestFormat>
 
     <PrepareForRunDependsOn>StaticWebAssetsPrepareForRun;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
 
@@ -399,13 +399,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="AddStaticWebAssetsManifest" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
     <ItemGroup>
-      <ContentWithTargetPath
-        Include="$(StaticWebassetBuildManifestPath)"
-        TargetPath="$(TargetName).staticwebassets.json"
-        CopyToOutputDirectory="PreserveNewest"
-        CopyToPublishDirectory="Never" />
-
-      <ContentWithTargetPath
+      <ContentWithTargetPath Condition="@(StaticWebAsset) != ''"
         Include="$(StaticWebAssetDevelopmentManifestPath)"
         TargetPath="$(TargetName).staticwebassets.runtime.json"
         CopyToOutputDirectory="PreserveNewest"
@@ -446,7 +440,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Assets="@(StaticWebAsset)"
       Source="$(PackageId)"
       ManifestPath="$(StaticWebAssetDevelopmentManifestPath)">
-  </GenerateStaticWebAssetsDevelopmentManifest>
+    </GenerateStaticWebAssetsDevelopmentManifest>
 
     <ItemGroup Condition="'$(_GenerateLegacyManifestFormat)' == 'true'">
       <_LegacyContentRootDefinition Include="@(StaticWebAsset)" Condition="'%(SourceType)' != 'Discovered'"></_LegacyContentRootDefinition>
