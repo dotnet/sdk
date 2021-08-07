@@ -515,11 +515,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var finalPath = Path.Combine(intermediateOutputPath, "StaticWebAssets.publish.json");
             new FileInfo(finalPath).Should().Exist();
             AssertManifest(
-                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json"))),
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.publish.json"))),
                 LoadPublishManifest());
 
-            AssertBuildAssets(
-                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json"))),
+            AssertPublishAssets(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.publish.json"))),
                 outputPath,
                 intermediateOutputPath);
 
