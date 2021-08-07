@@ -66,6 +66,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <_JSModuleCandidates Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />
+
+      <!-- To avoid situations where the content is defined twice, if the user defines the JS module explicitly as
+           a content item, we'll prefer that over the potential item in the None item group
+      -->
+      <_JSFileModuleCandidates Include="@(Content)" />
+      <_JSFileModuleNoneCandidates Include="@(None)" Exclude="@(Content)" />
+      <_JSFileModuleCandidates Include="@(_JSFileModuleNoneCandidates)" />
     </ItemGroup>
 
     <!-- This runs after we've discovered the original set of files, we already found the assets in the wwwroot, and here we just need
@@ -84,7 +91,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Find JS module files -->
     <!-- **/*.razor.js -->
-    <DiscoverStaticWebAssets Candidates="@(None);@(Content)"
+    <DiscoverStaticWebAssets Candidates="@(_JSFileModuleCandidates)"
       SourceId="$(PackageId)"
       Pattern="**/*.razor.js"
       ContentRoot="$(MSBuildProjectDirectory)"
@@ -94,7 +101,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </DiscoverStaticWebAssets>
 
     <!-- **/*.cshtml.js -->
-    <DiscoverStaticWebAssets Candidates="@(None);@(Content)"
+    <DiscoverStaticWebAssets Candidates="@(_JSFileModuleCandidates)"
       SourceId="$(PackageId)"
       Pattern="**/*.cshtml.js"
       ContentRoot="$(MSBuildProjectDirectory)"
