@@ -303,9 +303,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_StaticWebAssetsManifestBase>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework.ToLowerInvariant())\</_StaticWebAssetsManifestBase>
       <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
       <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Default</StaticWebAssetProjectMode>
-      <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)StaticWebAssets.build.json</StaticWebAssetBuildManifestPath>
-      <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)StaticWebAssets.development.json</StaticWebAssetDevelopmentManifestPath>      
-      <StaticWebAssetPublishManifestPath>$(_StaticWebAssetsManifestBase)StaticWebAssets.publish.json</StaticWebAssetPublishManifestPath>
+      <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.json</StaticWebAssetBuildManifestPath>
+      <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.development.json</StaticWebAssetDevelopmentManifestPath>
+      <StaticWebAssetPublishManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.publish.json</StaticWebAssetPublishManifestPath>
 
       <_StaticWebAssetsIntermediateOutputPath>$(IntermediateOutputPath)staticwebassets\</_StaticWebAssetsIntermediateOutputPath>
 
