@@ -6,7 +6,22 @@
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "ComponentApp\\ComponentsJSModule",
+      "Source": "ComponentApp",
+      "ContentRoot": "${ProjectRoot}",
+      "BasePath": "_content/ComponentApp",
+      "Pattern": "**.razor.js"
+    },
+    {
+      "Name": "ComponentApp\\MvcJSModule",
+      "Source": "ComponentApp",
+      "ContentRoot": "${ProjectRoot}",
+      "BasePath": "_content/ComponentApp",
+      "Pattern": "**.cshtml.js"
+    }
+  ],
   "Assets": [
     {
       "Identity": "${ProjectRoot}\\obj\\Debug\\net6.0\\scopedcss\\bundle\\ComponentApp.styles.css",
