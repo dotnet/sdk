@@ -327,6 +327,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <MakeDir
+      Directories="$(_StaticWebAssetsManifestBase)"
+      Condition="!Exists('$(_StaticWebAssetsManifestBase)')" />
+
+    <MakeDir
       Directories="$(_StaticWebAssetsIntermediateOutputPath)"
       Condition="!Exists('$(_StaticWebAssetsIntermediateOutputPath)')" />
   </Target>
