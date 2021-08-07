@@ -361,7 +361,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             AssertManifest(manifest, LoadBuildManifest());
 
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "blazorwasm.staticwebassets.json");
+            var finalPath = Path.Combine(outputPath, "blazorwasm.staticwebassets.runtime.json");
             new FileInfo(finalPath).Should().Exist();
 
             AssertBuildAssets(

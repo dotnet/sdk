@@ -46,7 +46,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             AssertManifest(manifest, LoadBuildManifest());
 
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "blazorwasm-minimal.staticwebassets.json");
+            var finalPath = Path.Combine(outputPath, "blazorwasm-minimal.staticwebassets.runtime.json");
             new FileInfo(finalPath).Should().Exist();
 
             AssertBuildAssets(
@@ -107,7 +107,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             AssertManifest(manifest, LoadBuildManifest());
 
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "blazorhosted.staticwebassets.json");
+            var finalPath = Path.Combine(outputPath, "blazorhosted.staticwebassets.runtime.json");
             new FileInfo(finalPath).Should().Exist();
 
             AssertBuildAssets(
@@ -187,7 +187,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             AssertManifest(manifest, LoadBuildManifest());
 
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "blazorhosted.staticwebassets.json");
+            var finalPath = Path.Combine(outputPath, "blazorhosted.staticwebassets.runtime.json");
             new FileInfo(finalPath).Should().Exist();
 
             AssertBuildAssets(
