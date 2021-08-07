@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Composition;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -14,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// <summary>
     /// CA2216: Disposable types should declare finalizer
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DisposableTypesShouldDeclareFinalizerAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2216";
