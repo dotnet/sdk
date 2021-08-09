@@ -360,14 +360,7 @@ public class Program
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                using (FileStream fs = new FileStream(assemblyFile, FileMode.Open, FileAccess.Read))
-                {
-                    PEReader pereader = new PEReader(fs);
-                    MetadataReader mdReader = pereader.GetMetadataReader();
-                    Guid mvid = mdReader.GetGuid(mdReader.GetModuleDefinition().Mvid);
-
-                    return Path.GetFileName(Path.ChangeExtension(assemblyFile, "ni.{" + mvid + "}.map"));
-                }
+                return Path.GetFileName(Path.ChangeExtension(assemblyFile, "ni.r2rmap"));
             }
 
             return null;
