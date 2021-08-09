@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             InstallWorkloadPack(packInfo, sdkFeatureBand, offlineCache);
         }
 
-        public void RollBackWorkloadPackInstall(PackInfo packInfo, SdkFeatureBand sdkFeatureBand)
+        public void RollBackWorkloadPackInstall(PackInfo packInfo, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
         {
             if (FailingRollback)
             {
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             RolledBackPacks.Add(packInfo);
         }
 
-        public void GarbageCollectInstalledWorkloadPacks()
+        public void GarbageCollectInstalledWorkloadPacks(DirectoryPath? offlineCache = null)
         {
             GarbageCollectionCalled = true;
         }
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return InstallationRecordRepository;
         }
 
-        public void InstallWorkloadManifest(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
+        public void InstallWorkloadManifest(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null, bool isRollback = false)
         {
             InstalledManifests.Add((manifestId, manifestVersion, sdkFeatureBand, offlineCache));
         }

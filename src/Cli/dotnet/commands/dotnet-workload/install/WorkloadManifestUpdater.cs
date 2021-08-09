@@ -449,11 +449,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private string GetAdvertisingManifestPath(SdkFeatureBand featureBand, ManifestId manifestId) =>
             Path.Combine(_userHome, ".dotnet", "sdk-advertising", featureBand.ToString(), manifestId.ToString());
 
-        //internal static PackageId GetManifestPackageId(SdkFeatureBand featureBand, ManifestId manifestId) =>
-        //    new PackageId($"{manifestId}.Manifest-{featureBand}");
-
         internal static PackageId GetManifestPackageId(SdkFeatureBand featureBand, ManifestId manifestId) =>
-            WorkloadInstallerFactory.GetWorkloadInstallType(featureBand, Path.GetDirectoryName(Environment.ProcessPath)) switch
+            new PackageId($"{manifestId}.Manifest-{featureBand}");
+
+        internal static PackageId GetManifestPackageId(SdkFeatureBand featureBand, ManifestId manifestId, InstallType installType) =>
+            installType switch
             {
                 InstallType.FileBased => new PackageId($"{manifestId}.Manifest-{featureBand}"),
                 InstallType.Msi => new PackageId($"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}"),

@@ -235,7 +235,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                             foreach (var manifest in manifestsToUpdate)
                             {
-                                _workloadInstaller.InstallWorkloadManifest(manifest.manifestId, manifest.existingVersion, sdkFeatureBand);
+                                _workloadInstaller.InstallWorkloadManifest(manifest.manifestId, manifest.existingVersion, sdkFeatureBand, offlineCache: null, isRollback: true);
                             }
 
                             foreach (var packId in workloadPackToInstall)
