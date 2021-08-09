@@ -65,45 +65,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-            var expectedPatterns = new StaticWebAssetsManifest.DiscoveryPattern[]
-            {
-                new ()
-                {
-                      Name = "ComponentApp\\ComponentsJSModule",
-                      Source = "ComponentApp",
-                      ContentRoot = @"${ProjectRoot}",
-                      BasePath = "_content/ComponentApp",
-                      Pattern = "**.razor.js"
-                },
-                new()
-                {
-                        Name = "ComponentApp\\MvcJSModule",
-                        Source = "ComponentApp",
-                        ContentRoot = @"${ProjectRoot}",
-                        BasePath = "_content/ComponentApp",
-                        Pattern = "**.cshtml.js"
-                }
-            };
 
             // Components
-            CreateFile("", ProjectDirectory.TestRoot, "Pages", "Component.razor.js");
-            CreateFile("", ProjectDirectory.TestRoot, "Pages", "Categories", "Category.razor.js");
-
-            CreateFile("", ProjectDirectory.TestRoot, "Shared", "SmartMenu.razor.js");
-            CreateFile("", ProjectDirectory.TestRoot, "Shared", "Auth", "Login.razor.js");
-
-            CreateFile("", ProjectDirectory.TestRoot, "Components", "Widget.razor.js");
-            CreateFile("", ProjectDirectory.TestRoot, "Components", "Banner", "Toast.razor.js");
+            CreateFile("", ProjectDirectory.TestRoot, "Components", "Pages", "Counter.razor.js");
 
             // MVC | Razor pages
+            CreateFile("", ProjectDirectory.TestRoot, "Pages", "Index.cshtml");
             CreateFile("", ProjectDirectory.TestRoot, "Pages", "Index.cshtml.js");
-            CreateFile("", ProjectDirectory.TestRoot, "Pages", "Products", "Starred.cshtml.js");
-
-            CreateFile("", ProjectDirectory.TestRoot, "Shared", "Calendar.cshtml.js");
-            CreateFile("", ProjectDirectory.TestRoot, "Shared", "Auth", "Logout.cshtml.js");
-
-            CreateFile("", ProjectDirectory.TestRoot, "Views", "Home", "About.cshtml.js");
-            CreateFile("", ProjectDirectory.TestRoot, "Views", "Shared", "Status.cshtml.js");
 
             var build = new BuildCommand(ProjectDirectory);
             build.WithWorkingDirectory(ProjectDirectory.TestRoot);
@@ -119,7 +87,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 LoadBuildManifest());
 
             buildManifest.Should().NotBeNull();
-            buildManifest.DiscoveryPatterns.Should().BeEquivalentTo(expectedPatterns);
+            buildManifest.DiscoveryPatterns.Should().BeEmpty();
 
             AssertBuildAssets(
                 StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(finalPath)),

@@ -29,6 +29,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
 
   <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateJsModuleManifest" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.ApplyJsModules" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
 
   <PropertyGroup>
     <GenerateJSModuleManifest Condition="$(GenerateJSModuleManifest) == ''">true</GenerateJSModuleManifest>
@@ -62,7 +63,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </PropertyGroup>
 
-  <Target Name="_ResolveJsModuleInputs" DependsOnTargets="ResolveProjectStaticWebAssets">
+  <Target Name="_ResolveJsModuleInputs" BeforeTargets="AssignRazorComponentTargetPaths;AssignRazorGenerateTargetPaths" DependsOnTargets="ResolveProjectStaticWebAssets">
 
     <ItemGroup>
       <_JSModuleCandidates Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />
@@ -110,29 +111,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="DiscoveredStaticWebAssets" ItemName="_MvcJSModule" />
     </DiscoverStaticWebAssets>
 
+    <ApplyJsModules RazorComponents="@(RazorComponent)" RazorGenerate="@(RazorGenerate)" JSFileModuleCandidates="@(_ComponentJSModule);@(_MvcJSModule)">
+      <Output TaskParameter="JsFileModules" ItemName="_JsFileModuleStaticWebAsset" />
+    </ApplyJsModules>  
+
     <ItemGroup>
-      <!-- **/*.razor.js -->
-      <StaticWebAssetDiscoveryPattern Include="$(PackageId)\ComponentsJSModule" Condition="Exists('$(MSBuildProjectDirectory)')">
-        <ContentRoot>$(MSBuildProjectDirectory)</ContentRoot>
-        <Source>$(PackageId)</Source>
-        <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <Pattern>**.razor.js</Pattern>
-      </StaticWebAssetDiscoveryPattern>
-
-      <!-- **/*.cshtml.js -->
-      <StaticWebAssetDiscoveryPattern Include="$(PackageId)\MvcJSModule" Condition="Exists('$(MSBuildProjectDirectory)')">
-        <Source>$(PackageId)</Source>
-        <ContentRoot>$(MSBuildProjectDirectory)</ContentRoot>
-        <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <Pattern>**.cshtml.js</Pattern>
-      </StaticWebAssetDiscoveryPattern>
-
       <!-- Remove the items from their original groups since they've now become a StaticWebAsset -->
-      <Content Remove="@(_ComponentJSModule->'%(OriginalItemSpec)')" />
-      <Content Remove="@(_MvcJSModule->'%(OriginalItemSpec)')" />
-      <None Remove="@(_ComponentJSModule->'%(OriginalItemSpec)')" />
-      <None Remove="@(_MvcJSModule->'%(OriginalItemSpec)')" />
-
+      <Content Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />
+      <None Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />
     </ItemGroup>
 
   </Target>
