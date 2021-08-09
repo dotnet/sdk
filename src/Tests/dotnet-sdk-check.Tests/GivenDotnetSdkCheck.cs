@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         private readonly string fakeReleasesPath;
 
         private const string RuntimePropertyHostFxr = "HOSTFXR_PATH";
-        private const string HelpText = @"check:
+        private const string HelpText = @"Description:
       .NET SDK Check Command
     
     Usage:
