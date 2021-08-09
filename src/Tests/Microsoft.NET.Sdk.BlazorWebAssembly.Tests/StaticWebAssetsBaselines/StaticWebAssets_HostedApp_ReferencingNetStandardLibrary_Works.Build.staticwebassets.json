@@ -38,20 +38,6 @@
       "Pattern": "**"
     },
     {
-      "Name": "blazorhosted\\ComponentsJSModule",
-      "Source": "blazorhosted",
-      "ContentRoot": "${ProjectRoot}\\blazorhosted",
-      "BasePath": "_content/blazorhosted",
-      "Pattern": "**.razor.js"
-    },
-    {
-      "Name": "blazorhosted\\MvcJSModule",
-      "Source": "blazorhosted",
-      "ContentRoot": "${ProjectRoot}\\blazorhosted",
-      "BasePath": "_content/blazorhosted",
-      "Pattern": "**.cshtml.js"
-    },
-    {
       "Name": "blazorwasm\\wwwroot",
       "Source": "blazorwasm",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\wwwroot\\",

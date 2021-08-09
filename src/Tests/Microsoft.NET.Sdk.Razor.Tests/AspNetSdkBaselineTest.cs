@@ -23,7 +23,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 #if GENERATE_SWA_BASELINES
         public static bool GenerateBaselines = true;
 #else
-        public static bool GenerateBaselines = true;
+        public static bool GenerateBaselines = false;
 #endif
 
         private bool _generateBaselines = GenerateBaselines;

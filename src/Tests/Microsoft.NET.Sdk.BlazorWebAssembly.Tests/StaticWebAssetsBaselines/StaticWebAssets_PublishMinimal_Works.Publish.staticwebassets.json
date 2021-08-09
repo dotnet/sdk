@@ -8,20 +8,6 @@
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [
     {
-      "Name": "blazorwasm-minimal\\ComponentsJSModule",
-      "Source": "blazorwasm-minimal",
-      "ContentRoot": "${ProjectRoot}",
-      "BasePath": "/",
-      "Pattern": "**.razor.js"
-    },
-    {
-      "Name": "blazorwasm-minimal\\MvcJSModule",
-      "Source": "blazorwasm-minimal",
-      "ContentRoot": "${ProjectRoot}",
-      "BasePath": "/",
-      "Pattern": "**.cshtml.js"
-    },
-    {
       "Name": "blazorwasm-minimal\\wwwroot",
       "Source": "blazorwasm-minimal",
       "ContentRoot": "${ProjectRoot}\\wwwroot\\",

@@ -31,53 +31,11 @@
   ],
   "DiscoveryPatterns": [
     {
-      "Name": "RazorClassLibrary\\ComponentsJSModule",
-      "Source": "RazorClassLibrary",
-      "ContentRoot": "${ProjectRoot}\\razorclasslibrary",
-      "BasePath": "_content/RazorClassLibrary",
-      "Pattern": "**.razor.js"
-    },
-    {
-      "Name": "RazorClassLibrary\\MvcJSModule",
-      "Source": "RazorClassLibrary",
-      "ContentRoot": "${ProjectRoot}\\razorclasslibrary",
-      "BasePath": "_content/RazorClassLibrary",
-      "Pattern": "**.cshtml.js"
-    },
-    {
       "Name": "RazorClassLibrary\\wwwroot",
       "Source": "RazorClassLibrary",
       "ContentRoot": "${ProjectRoot}\\razorclasslibrary\\wwwroot\\",
       "BasePath": "_content/RazorClassLibrary",
       "Pattern": "**"
-    },
-    {
-      "Name": "blazorhosted\\ComponentsJSModule",
-      "Source": "blazorhosted",
-      "ContentRoot": "${ProjectRoot}\\blazorhosted",
-      "BasePath": "_content/blazorhosted",
-      "Pattern": "**.razor.js"
-    },
-    {
-      "Name": "blazorhosted\\MvcJSModule",
-      "Source": "blazorhosted",
-      "ContentRoot": "${ProjectRoot}\\blazorhosted",
-      "BasePath": "_content/blazorhosted",
-      "Pattern": "**.cshtml.js"
-    },
-    {
-      "Name": "blazorwasm\\ComponentsJSModule",
-      "Source": "blazorwasm",
-      "ContentRoot": "${ProjectRoot}\\blazorwasm",
-      "BasePath": "/",
-      "Pattern": "**.razor.js"
-    },
-    {
-      "Name": "blazorwasm\\MvcJSModule",
-      "Source": "blazorwasm",
-      "ContentRoot": "${ProjectRoot}\\blazorwasm",
-      "BasePath": "/",
-      "Pattern": "**.cshtml.js"
     },
     {
       "Name": "blazorwasm\\wwwroot",

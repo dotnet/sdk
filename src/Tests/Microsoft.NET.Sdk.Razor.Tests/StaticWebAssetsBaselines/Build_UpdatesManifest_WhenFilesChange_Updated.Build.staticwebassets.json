@@ -8,20 +8,6 @@
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [
     {
-      "Name": "ComponentApp\\ComponentsJSModule",
-      "Source": "ComponentApp",
-      "ContentRoot": "${ProjectRoot}",
-      "BasePath": "_content/ComponentApp",
-      "Pattern": "**.razor.js"
-    },
-    {
-      "Name": "ComponentApp\\MvcJSModule",
-      "Source": "ComponentApp",
-      "ContentRoot": "${ProjectRoot}",
-      "BasePath": "_content/ComponentApp",
-      "Pattern": "**.cshtml.js"
-    },
-    {
       "Name": "ComponentApp\\wwwroot",
       "Source": "ComponentApp",
       "ContentRoot": "${ProjectRoot}\\wwwroot\\",

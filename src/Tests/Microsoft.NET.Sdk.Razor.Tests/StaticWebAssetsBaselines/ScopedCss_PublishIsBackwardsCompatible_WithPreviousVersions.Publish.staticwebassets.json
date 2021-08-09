@@ -38,20 +38,6 @@
       "Pattern": "**"
     },
     {
-      "Name": "AppWithPackageAndP2PReference\\ComponentsJSModule",
-      "Source": "AppWithPackageAndP2PReference",
-      "ContentRoot": "${ProjectRoot}\\AppWithPackageAndP2PReference",
-      "BasePath": "_content/AppWithPackageAndP2PReference",
-      "Pattern": "**.razor.js"
-    },
-    {
-      "Name": "AppWithPackageAndP2PReference\\MvcJSModule",
-      "Source": "AppWithPackageAndP2PReference",
-      "ContentRoot": "${ProjectRoot}\\AppWithPackageAndP2PReference",
-      "BasePath": "_content/AppWithPackageAndP2PReference",
-      "Pattern": "**.cshtml.js"
-    },
-    {
       "Name": "ClassLibrary\\wwwroot",
       "Source": "ClassLibrary",
       "ContentRoot": "${ProjectRoot}\\ClassLibrary\\wwwroot\\",
