@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                                           new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, nullLogger),
                                           verboseLogger: nullLogger,
                                           restoreActionConfig: _parseResult.ToRestoreActionConfig());
-            var workloadResolver = WorkloadResolver.Create(_workloadManifestProvider, _dotnetPath, currentSdkReleaseVersion.ToString());
+            workloadResolver = WorkloadResolver.Create(workloadManifestProvider, _dotnetPath, currentSdkReleaseVersion.ToString());
 
             _workloadRecordRepo = workloadRecordRepo ??
                 WorkloadInstallerFactory.GetWorkloadInstaller(reporter, _currentSdkFeatureBand, workloadResolver, _verbosity).GetWorkloadInstallationRecordRepository();
