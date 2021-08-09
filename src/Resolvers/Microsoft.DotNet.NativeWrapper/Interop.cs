@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.NativeWrapper
                 return IntPtr.Zero;
             }
 
-            if (NativeLibrary.TryLoad(Constants.HostFxr, out IntPtr handle))
+            if (NativeLibrary.TryLoad(Constants.HostFxr, Assembly.GetExecutingAssembly(), null, out IntPtr handle))
             {
                 return handle;
             }
