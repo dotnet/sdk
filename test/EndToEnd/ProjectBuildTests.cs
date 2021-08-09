@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Linq;
 using System.Xml.Linq;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
@@ -80,6 +81,58 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .ExecuteWithCapturedOutput()
                 .Should().Pass().And.HaveStdOutContaining("Hello World!");
+        }
+
+        [WindowsOnlyFact]
+        public void ItCanPublishArm64Winforms()
+        {
+            DirectoryInfo directory = TestAssets.CreateTestDirectory();
+            string projectDirectory = directory.FullName;
+
+            string newArgs = "winforms --no-restore";
+            new NewCommandShim()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(newArgs)
+                .Should().Pass();
+
+            string publishArgs="-r win-arm64";
+            new PublishCommand()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(publishArgs)
+                .Should().Pass();
+            var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
+                .Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault()
+                .Sub("win-arm64").Sub("publish");
+
+            selfContainedPublishDir.Should().HaveFilesMatching("System.Windows.Forms.dll", SearchOption.TopDirectoryOnly);
+            selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
+        }
+        
+        [WindowsOnlyFact]
+        public void ItCanPublishArm64Wpf()
+        {
+            DirectoryInfo directory = TestAssets.CreateTestDirectory();
+            string projectDirectory = directory.FullName;
+
+            string newArgs = "wpf --no-restore";
+            new NewCommandShim()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(newArgs)
+                .Should().Pass();
+
+            string publishArgs="-r win-arm64";
+            new PublishCommand()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(publishArgs)
+                .Should().Pass();
+
+            var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
+                .Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault()
+                .Sub("win-arm64").Sub("publish");
+
+            selfContainedPublishDir.Should().HaveFilesMatching("PresentationCore.dll", SearchOption.TopDirectoryOnly);
+            selfContainedPublishDir.Should().HaveFilesMatching("PresentationNative_*.dll", SearchOption.TopDirectoryOnly);
+            selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
         [Theory]
