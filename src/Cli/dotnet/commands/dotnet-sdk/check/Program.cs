@@ -45,20 +45,15 @@ namespace Microsoft.DotNet.Tools.Sdk.Check
                 _reporter.WriteLine(LocalizableStrings.CommandFooter);
                 _reporter.WriteLine();
             }
+            catch (HostFxrRuntimePropertyNotSetException)
+            {
+                _reporter.WriteLine(string.Format(LocalizableStrings.RuntimePropertyNotFound));
+                return -1;
+            }
             catch (HostFxrNotFoundException e)
             {
                 _reporter.WriteLine(string.Format(LocalizableStrings.HostFxrCouldNotBeLoaded, e.Message));
                 return -1;
-            }
-            catch (TypeInitializationException e)
-            {
-                if (e.InnerException is HostFxrRuntimePropertyNotSetException runtimePropertyNotSet)
-                {
-                    _reporter.WriteLine(string.Format(LocalizableStrings.RuntimePropertyNotFound, runtimePropertyNotSet.Message));
-                    return -1;
-                }
-
-                throw;
             }
 
             return 0;

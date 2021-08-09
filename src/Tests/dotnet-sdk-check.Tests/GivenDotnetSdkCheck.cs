@@ -205,7 +205,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             Assert.Equal(-1, sdkCheckCommand.Execute());
             _reporter.Lines
                 .Should()
-                .Contain($"Native library 'FakePath' could not be loaded.");
+                .Contain($"Could not load hostfxr from 'FakePath'.");
         }
 
         [Fact]
@@ -216,7 +216,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             Assert.Equal(-1, sdkCheckCommand.Execute());
             _reporter.Lines
                 .Should()
-                .Contain($"Runtime property '{RuntimePropertyHostFxr}' was not set or empty.");
+                .Contain($"Runtime property 'HOSTFXR_PATH' was not set or empty.");
         }
 
         private NetEnvironmentInfo GetFakeEnvironmentInfo(IEnumerable<string> sdkVersions, IEnumerable<string> runtimeVersions)

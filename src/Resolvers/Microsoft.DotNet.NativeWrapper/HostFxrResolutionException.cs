@@ -11,6 +11,11 @@ namespace Microsoft.DotNet.NativeWrapper
     /// </summary>
     public class HostFxrResolutionException : Exception
     {
+        internal HostFxrResolutionException()
+            : base()
+        {
+        }
+
         internal HostFxrResolutionException(string message)
             : base(message)
         {
@@ -34,8 +39,8 @@ namespace Microsoft.DotNet.NativeWrapper
     /// </summary>
     public sealed class HostFxrRuntimePropertyNotSetException : HostFxrResolutionException
     {
-        public HostFxrRuntimePropertyNotSetException(string message)
-            : base(message)
+        public HostFxrRuntimePropertyNotSetException()
+            : base()
         {
         }
     }

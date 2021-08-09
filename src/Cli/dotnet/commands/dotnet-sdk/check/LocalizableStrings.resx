@@ -160,9 +160,9 @@
     <value>Status</value>
   </data>
   <data name="RuntimePropertyNotFound" xml:space="preserve">
-    <value>Runtime property '{0}' was not set or empty.</value>
+    <value>Runtime property 'HOSTFXR_PATH' was not set or empty.</value>
   </data>
   <data name="HostFxrCouldNotBeLoaded" xml:space="preserve">
-    <value>Native library '{0}' could not be loaded.</value>
+    <value>Could not load hostfxr from '{0}'.</value>
   </data>
 </root>

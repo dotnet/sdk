@@ -23,8 +23,8 @@
         <note />
       </trans-unit>
       <trans-unit id="HostFxrCouldNotBeLoaded">
-        <source>Native library '{0}' could not be loaded.</source>
-        <target state="new">Native library '{0}' could not be loaded.</target>
+        <source>Could not load hostfxr from '{0}'.</source>
+        <target state="new">Could not load hostfxr from '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaintenanceMessage">
@@ -58,8 +58,8 @@
         <note />
       </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">
-        <source>Runtime property '{0}' was not set or empty.</source>
-        <target state="new">Runtime property '{0}' was not set or empty.</target>
+        <source>Runtime property 'HOSTFXR_PATH' was not set or empty.</source>
+        <target state="new">Runtime property 'HOSTFXR_PATH' was not set or empty.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeSectionHeader">

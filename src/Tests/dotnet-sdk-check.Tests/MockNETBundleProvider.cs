@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
     {
         public NetEnvironmentInfo GetDotnetEnvironmentInfo(string dotnetDir)
         {
-            throw new TypeInitializationException("Microsoft.DotNet.NativeWrapper.Interop", new HostFxrRuntimePropertyNotSetException("HOSTFXR_PATH"));
+            throw new HostFxrRuntimePropertyNotSetException();
         }
     }
 }
