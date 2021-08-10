@@ -212,6 +212,11 @@
         <target state="new">Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnknownInstallType">
+        <source>Unknown installation type: {0}.</source>
+        <target state="new">Unknown installation type: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnrecognizedPackError">
         <source>Pack ID {0} unrecognized.</source>
         <target state="new">Pack ID {0} unrecognized.</target>

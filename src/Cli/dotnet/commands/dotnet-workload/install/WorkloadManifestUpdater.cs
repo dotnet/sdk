@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 // Never surface messages on background updates
             }
-}
+        }
 
         public async Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync()
         {
@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 // Never surface errors
             }
-}
+        }
 
         public IEnumerable<(
             ManifestId manifestId,
@@ -450,14 +450,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             Path.Combine(_userHome, ".dotnet", "sdk-advertising", featureBand.ToString(), manifestId.ToString());
 
         internal static PackageId GetManifestPackageId(SdkFeatureBand featureBand, ManifestId manifestId) =>
-            new PackageId($"{manifestId}.Manifest-{featureBand}");
+            GetManifestPackageId(featureBand, manifestId, InstallType.FileBased);
 
         internal static PackageId GetManifestPackageId(SdkFeatureBand featureBand, ManifestId manifestId, InstallType installType) =>
             installType switch
             {
                 InstallType.FileBased => new PackageId($"{manifestId}.Manifest-{featureBand}"),
                 InstallType.Msi => new PackageId($"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}"),
-                _ => throw new Exception(),
+                _ => throw new ArgumentException(String.Format(LocalizableStrings.UnknownInstallType, (int)installType)),
             };
     }
 }

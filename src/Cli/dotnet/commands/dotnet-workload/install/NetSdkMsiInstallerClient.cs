@@ -1,12 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.Versioning;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -259,7 +254,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 Log?.LogMessage($"Installing manifest: Id: {manifestId}, version: {manifestVersion}, feature band: {sdkFeatureBand}, rollback: {isRollback}.");
 
                 // Resolve the package ID for the manifest payload package
-                string msiPackageId = WorkloadManifestUpdater.GetManifestPackageId(sdkFeatureBand, manifestId, InstallType.Msi).ToString();
+                string msiPackageId = WorkloadManifestUpdater.GetManifestPackageId(sdkFeatureBand, manifestId, InstallType.Msi).ToString();                
                 string msiPackageVersion = $"{manifestVersion}";
 
                 Log?.LogMessage($"Resolving {manifestId} ({manifestVersion}) to {msiPackageId} ({msiPackageVersion}).");

@@ -309,4 +309,7 @@
   <data name="MsiProgressUninstall" xml:space="preserve">
     <value>Removing {0} </value>
   </data>
+  <data name="UnknownInstallType" xml:space="preserve">
+    <value>Unknown installation type: {0}.</value>
+  </data>
 </root>

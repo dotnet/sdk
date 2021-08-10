@@ -3,22 +3,17 @@
 
 #nullable disable
 
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using Microsoft.Win32.Msi;
-using System.Runtime.InteropServices;
-using System.ComponentModel;
-using System.IO;
 using System.IO.Pipes;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Security.AccessControl;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Installer.Windows.Security;
+using Microsoft.Win32.Msi;
 using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Installer.Windows
@@ -266,7 +261,7 @@ namespace Microsoft.DotNet.Installer.Windows
                     // Dump all the certificates if there are any.
                     if (certificates.Any())
                     {
-                        Log?.LogMessage($"Ceritificate(s):");
+                        Log?.LogMessage($"Certificate(s):");
 
                         foreach (X509Certificate2 certificate in certificates)
                         {
