@@ -1,22 +1,14 @@
 <Project>
-  <PropertyGroup>
-    <SourceDirectory>sdk</SourceDirectory>
-  </PropertyGroup>
-
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <BuildCommandArgs>--pack --configuration $(Configuration)</BuildCommandArgs>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PublishCompressedFilesPathPrefix=$(SourceBuiltToolsetDir)</BuildCommandArgs>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
     <BuildCommandArgs>$(BuildCommandArgs) -v $(LogVerbosity)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -bl</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -ci</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:Projects=$(ProjectDirectory)source-build.slnf</BuildCommandArgs>
 
     <!-- The sdk repo is building with an older version of the SDK where this property is
          defaulted to false.  The SDK that source-build is using defaults it to true.
@@ -26,7 +18,7 @@
     <!-- Pass in package version props using the Product Construction (ProdCon) API. -->
     <BuildCommandArgs>$(BuildCommandArgs) /p:PB_PackageVersionPropsUrl=file:%2F%2F$(PackageVersionPropsPath)</BuildCommandArgs>
 
-    <BuildCommand>$(ProjectDirectory)\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <!-- NuGet SDK resolver only checks nuget.config files. https://github.com/Microsoft/msbuild/issues/2914 -->
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
@@ -34,10 +26,6 @@
 
     <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
     <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
-
-    <EnvironmentRestoreSources>$(SourceBuiltPackagesPath)</EnvironmentRestoreSources>
-    <EnvironmentRestoreSources>$(EnvironmentRestoreSources)%3B$(ReferencePackagesDir)%3B$(PrebuiltPackagesPath)</EnvironmentRestoreSources>
-    <EnvironmentRestoreSources Condition="'$(BuildWithOnlineSources)' == 'true'">$(EnvironmentRestoreSources)%3Bhttps://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public%40Local/nuget/v3/index.json</EnvironmentRestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,18 +33,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EnvironmentVariables Include="RestoreSources=$(EnvironmentRestoreSources)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="xliff-tasks" />
-    <RepositoryReference Include="runtime" />
+    <!-- TODO:  Enable with https://github.com/dotnet/source-build/issues/2274
+    <RepositoryReference Include="runtime" /> -->
     <RepositoryReference Include="msbuild" />
-    <RepositoryReference Include="newtonsoft-json" />
-    <RepositoryReference Include="newtonsoft-json901" />
-    <RepositoryReference Include="nuget-client" />
-    <RepositoryReference Include="roslyn-analyzers" />
+    <RepositoryReference Include="source-build" />
+    <!-- TODO:  https://github.com/dotnet/source-build/issues/2279
+    <RepositoryReference Include="nuget-client" /> -->
+    <!-- TODO:  https://github.com/dotnet/source-build/issues/2319
+    <RepositoryReference Include="roslyn-analyzers" /> -->
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="fsharp" />
   </ItemGroup>

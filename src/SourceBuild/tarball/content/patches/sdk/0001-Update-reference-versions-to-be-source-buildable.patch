@@ -1,0 +1,41 @@
+From c57808231260cc3467b98d97c3249a59db9757f2 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Mon, 9 Aug 2021 13:43:41 +0000
+Subject: [PATCH] Update reference versions to be source buildable
+
+Update CodeAnalysis version reference to utilize Versions.props in order to work with source build.
+---
+ eng/Versions.props                                            | 1 +
+ .../Microsoft.NET.Sdk.Razor.SourceGenerators.csproj           | 4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 07cca8a35..8fb6dffaf 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -122,6 +122,7 @@
+   <PropertyGroup>
+     <!-- Dependencies from https://github.com/dotnet/roslyn -->
+     <MicrosoftNetCompilersToolsetPackageVersion>4.0.0-2.21359.14</MicrosoftNetCompilersToolsetPackageVersion>
++    <MicrosoftCodeAnalysisPackageVersion>4.0.0-2.21359.14</MicrosoftCodeAnalysisPackageVersion>
+     <MicrosoftCodeAnalysisCSharpPackageVersion>4.0.0-2.21359.14</MicrosoftCodeAnalysisCSharpPackageVersion>
+     <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.0.0-2.21359.14</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+     <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.0.0-2.21359.14</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+diff --git a/src/RazorSdk/SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj b/src/RazorSdk/SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj
+index 1213ec4db..81697986c 100644
+--- a/src/RazorSdk/SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj
++++ b/src/RazorSdk/SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj
+@@ -15,8 +15,8 @@
+     <!-- Instead of using the version of M.C.C defined in Version.props we pin to a minimum required
+     version to avoid issues with loading newer versions of the assembly in VS/VS Code. -->
+     <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguageVersion)" GeneratePathProperty="true" />
+-    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.0.0-2.21354.7" />
+-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-2.21354.7" />
++    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
++    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(MicrosoftCodeAnalysisRazorVersion)" GeneratePathProperty="true" />
+     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" GeneratePathProperty="true" />
+   </ItemGroup>
+-- 
+2.29.2
+

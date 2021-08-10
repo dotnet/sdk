@@ -52,6 +52,7 @@
 
         <!-- Tier 5 -->
         <RepositoryReference Include="fsharp" />
+        <RepositoryReference Include="sdk" />
         <RepositoryReference Include="vstest" />
 
         <!-- Package source-build artifacts -->

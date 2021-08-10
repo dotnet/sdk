@@ -1,0 +1,53 @@
+From 6009d921575a4474c66b812bdb914237ddb04cc2 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Mon, 9 Aug 2021 15:27:19 +0000
+Subject: [PATCH] Remove 472 TFM from source build
+
+src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj : error NU1202: Package Microsoft.Build 17.0.0 is not compatible with net472 (.NETFramework,Version=v4.7.2). Package Microsoft.Build 17.0.0 supports: net6.0 (.NETCoreApp,Version=v6.0)
+src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj : error NU1202: Package Microsoft.Build 17.0.0 is not compatible with net472 (.NETFramework,Version=v4.7.2). Package Microsoft.Build 17.0.0 supports: net6.0 (.NETCoreApp,Version=v6.0)
+.dotnet/sdk/6.0.100-preview.5.21225.11/Microsoft.Common.CurrentVersion.targets(1717,5): error : Project '../Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj' targets 'net6.0'. It cannot be referenced by a project that targets '.NETFramework,Version=v4.7.2'.
+---
+ .../Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj | 1 +
+ .../Microsoft.NET.Build.Extensions.Tasks.csproj                  | 1 +
+ .../Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj   | 1 +
+ 3 files changed, 3 insertions(+)
+
+diff --git a/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj b/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
+index c10a6224c..66a26913b 100644
+--- a/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
++++ b/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
+@@ -2,6 +2,7 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
++    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">$(SdkTargetFramework)</TargetFrameworks>
+     <WarningsAsErrors>true</WarningsAsErrors>
+     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+     <SignAssembly>true</SignAssembly>
+diff --git a/src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj b/src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj
+index 280fbdc83..13ada8222 100644
+--- a/src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj
++++ b/src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj
+@@ -16,6 +16,7 @@
+     <OutputType>Library</OutputType>
+     <RootNamespace>Microsoft.NET.Build.Tasks</RootNamespace>
+     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
++    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">$(SdkTargetFramework)</TargetFrameworks>
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+diff --git a/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj b/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
+index e7ff48146..c98ed27cf 100644
+--- a/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
++++ b/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
+@@ -13,6 +13,7 @@
+     <Description>The MSBuild targets and properties for building .NET Core projects.</Description>
+     <OutputType>Library</OutputType>
+     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
++    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">$(SdkTargetFramework)</TargetFrameworks>
+     <Nullable>annotations</Nullable>
+   </PropertyGroup>
+ 
+-- 
+2.29.2
+
