@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.NativeWrapper
             else
             {
                 HostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath);
-                System.Runtime.Loader.AssemblyLoadContext.Default.ResolvingUnmanagedDll += HostFxrResolver;
+                System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()).ResolvingUnmanagedDll += HostFxrResolver;
             }
 #endif
         }
