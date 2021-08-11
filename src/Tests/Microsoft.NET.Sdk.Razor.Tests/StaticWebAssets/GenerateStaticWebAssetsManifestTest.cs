@@ -163,6 +163,66 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             result.Should().Be(false);
         }
 
+        public static TheoryData<StaticWebAsset, StaticWebAsset> GeneratesManifestFailsWhenTwoAssetsEndUpOnTheSamePathData
+        {
+            get
+            {
+                var data = new TheoryData<StaticWebAsset, StaticWebAsset>();
+                // Duplicate assets
+                data.Add(
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"),
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"));
+
+                // Conflicting asssets from different projects
+                data.Add(
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"),
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "All"));
+
+                // Assets with compatible kinds but from different projects
+                data.Add(
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "Build"),
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Other", "Project", "candidate.js", "All", "Publish"));
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GeneratesManifestFailsWhenTwoAssetsEndUpOnTheSamePathData))]
+        public void GeneratesManifestFailsWhenTwoAssetsEndUpOnTheSamePath(StaticWebAsset first, StaticWebAsset second)
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            // GetTempFilePath automatically creates the file, which interferes with the test.
+            File.Delete(TempFilePath);
+            var task = new GenerateStaticWebAssetsManifest
+            {
+                BuildEngine = buildEngine.Object,
+                Assets = new[]
+                {
+                    first.ToTaskItem(),
+                    second.ToTaskItem()
+                },
+                ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
+                DiscoveryPatterns = Array.Empty<ITaskItem>(),
+                BasePath = "/",
+                Source = "MyProject",
+                ManifestType = "Build",
+                Mode = "Default",
+                ManifestPath = TempFilePath,
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().Be(false);
+        }
+
+
         [Fact]
         public void GeneratesManifestWithReferencedProjectConfigurations()
         {
@@ -274,7 +334,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
-        private StaticWebAsset CreateAsset(
+        private static StaticWebAsset CreateAsset(
             string itemSpec,
             string sourceId,
             string sourceType,

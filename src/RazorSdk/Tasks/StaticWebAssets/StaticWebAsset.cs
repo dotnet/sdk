@@ -94,6 +94,46 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
         }
 
+        internal static bool ValidateAssetGroup(string path, IEnumerable<StaticWebAsset> group, string assetKind, out string reason)
+        {
+            StaticWebAsset prototypeItem = null;
+            StaticWebAsset build = null;
+            StaticWebAsset publish = null;
+            StaticWebAsset all = null;
+            foreach (var item in group)
+            {
+                prototypeItem ??= item;
+                if (!item.HasSourceId(prototypeItem.SourceId))
+                {
+                    reason = $"Conflicting assets with the same target path '{path}'. For assets '{prototypeItem}' and '{item}' from different projects.";
+                    return false;
+                }
+
+                build ??= item.IsBuildOnly() ? item : build;
+                if (build != null && item.IsBuildOnly() && !build.Equals(item))
+                {
+                    reason = $"Conflicting assets with the same target path '{path}'. For 'Build' assets '{build}' and '{item}'.";
+                    return false;
+                }
+
+                publish ??= item.IsPublishOnly() ? item : publish;
+                if (publish != null && item.IsBuildOnly() && !publish.Equals(item))
+                {
+                    reason = $"Conflicting assets with the same target path '{path}'. For 'Publish' assets '{publish}' and '{item}'.";
+                    return false;
+                }
+
+                all ??= item.IsBuildAndPublish() ? item : all;
+                if (all != null && item.IsBuildOnly() && !all.Equals(item))
+                {
+                    reason = $"Conflicting assets with the same target path '{path}'. For 'All' assets '{all}' and '{item}'.";
+                    return false;
+                }
+            }
+            reason = null;
+            return true;
+        }
+
         private bool HasKind(string assetKind) =>
             AssetKinds.IsKind(AssetKind, assetKind);
 
