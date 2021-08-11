@@ -1596,6 +1596,18 @@ Number of parameters supplied in the logging message template do not match the n
 |CodeFix|False|
 ---
 
+## [CA2018](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2018): Call async methods when in an async method
+
+'{0}' synchronously blocks. Await '{1}' instead.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
 ## [CA2100](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.

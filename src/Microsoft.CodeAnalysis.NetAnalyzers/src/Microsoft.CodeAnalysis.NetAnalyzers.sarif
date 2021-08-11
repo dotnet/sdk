@@ -2885,6 +2885,26 @@
             ]
           }
         },
+        "CA2018": {
+          "id": "CA2018",
+          "shortDescription": "Call async methods when in an async method",
+          "fullDescription": "'{0}' synchronously blocks. Await '{1}' instead.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2018",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "UseAsyncMethodInAsyncContext",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",
