@@ -173,9 +173,19 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"),
                     CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"));
 
-                // Conflicting asssets from different projects
+                // Conflicting Build asssets from different projects
                 data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"),
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "Build"),
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "Build"));
+
+                // Conflicting Publish asssets from different projects
+                data.Add(
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "Publish"),
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "Publish"));
+
+                // Conflicting All asssets from different projects
+                data.Add(
+                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "All"),
                     CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "All"));
 
                 // Assets with compatible kinds but from different projects
