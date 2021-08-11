@@ -340,7 +340,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
             catch
             {
-                throw;
             }
         }
     }
