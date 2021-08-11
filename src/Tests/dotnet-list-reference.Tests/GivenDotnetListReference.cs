@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.List.Reference.Tests
 {
     public class GivenDotnetListReference : SdkTest
     {
-        private Func<string, string> ListProjectReferenceCommandHelpText = (defaultVal) => $@"reference:
+        private Func<string, string> ListProjectReferenceCommandHelpText = (defaultVal) => $@"Description:
   List all project-to-project references of the project.
 
 Usage:
@@ -28,9 +28,9 @@ Arguments:
   <PROJECT>    The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
 
 Options:
-  -?, -h, --help    Show help and usage information";
+  -?, -h, --help    Show command line help.";
 
-        private Func<string, string> ListCommandHelpText = (defaultVal) => $@"list:
+        private Func<string, string> ListCommandHelpText = (defaultVal) => $@"Description:
   List references or packages of a .NET project.
 
 Usage:
@@ -40,7 +40,7 @@ Arguments:
   <PROJECT | SOLUTION>    The project or solution file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
 
 Options:
-  -?, -h, --help    Show help and usage information
+  -?, -h, --help    Show command line help.
 
 Commands:
   package      List all package references of the project or solution.

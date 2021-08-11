@@ -3,13 +3,13 @@
   <file datatype="xml" source-language="en" target-language="cs" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="CommandDescription">
-        <source>Install a workload.</source>
+        <source>Repair workload installations.</source>
         <target state="needs-review-translation">Nainstaluje globální nebo místní nástroj. Místní nástroje se přidávají do manifestu a obnovují.</target>
         <note />
       </trans-unit>
       <trans-unit id="RepairSucceeded">
-        <source>Successfully repaired worklods: {0}</source>
-        <target state="new">Successfully repaired worklods: {0}</target>
+        <source>Successfully repaired workloads: {0}</source>
+        <target state="new">Successfully repaired workloads: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="RepairingWorkloads">

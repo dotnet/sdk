@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace Microsoft.DotNet.Compatibility.ErrorSuppression
@@ -66,13 +68,14 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression
                 {
                     return true;
                 }
-                else
+                else if (error.DiagnosticId == null || error.DiagnosticId.StartsWith("cp", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    // See if the error is globally suppressed by checking if the same diagnosticid and target are entered
-                    // without any left and right.
-                    return (error.DiagnosticId == null || error.DiagnosticId.StartsWith("cp", StringComparison.InvariantCultureIgnoreCase)) &&
-                            _validationSuppressions.Contains(new Suppression { DiagnosticId = error.DiagnosticId, Target = error.Target });
+                    // See if the error is globally suppressed by checking if the same diagnosticid and target or with the same left and right
+                    return _validationSuppressions.Contains(new Suppression { DiagnosticId = error.DiagnosticId, Target = error.Target, IsBaselineSuppression = error.IsBaselineSuppression}) ||
+                           _validationSuppressions.Contains(new Suppression { DiagnosticId = error.DiagnosticId, Left = error.Left, Right = error.Right, IsBaselineSuppression = error.IsBaselineSuppression });
                 }
+
+                return false;
             }
             finally
             {
@@ -129,17 +132,24 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression
         }
 
         /// <summary>
-        /// Writes all suppressions in collection down to a file.
+        /// Writes all suppressions in collection down to a file, if empty it doesn't write anything.
         /// </summary>
         /// <param name="supressionFile">The path to the file to be written.</param>
-        public void WriteSuppressionsToFile(string supressionFile)
+        /// <returns>Whether it wrote the file.</returns>
+        public bool WriteSuppressionsToFile(string supressionFile)
         {
+            if (_validationSuppressions.Count <= 0)
+                return false;
+
             using (Stream writer = GetWritableStream(supressionFile))
             {
                 _readerWriterLock.EnterReadLock();
                 try
                 {
-                    _serializer.Serialize(writer, _validationSuppressions.ToArray());
+                    XmlTextWriter xmlWriter = new(writer, Encoding.UTF8);
+                    xmlWriter.Formatting = Formatting.Indented;
+                    xmlWriter.Indentation = 2;
+                    _serializer.Serialize(xmlWriter, _validationSuppressions.ToArray());
                     AfterWrittingSuppressionsCallback(writer);
                 }
                 finally
@@ -147,6 +157,8 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression
                     _readerWriterLock.ExitReadLock();
                 }
             }
+
+            return true;
         }
 
         protected virtual void AfterWrittingSuppressionsCallback(Stream stream)
@@ -195,6 +207,6 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression
 
         protected virtual Stream GetReadableStream(string supressionFile) => new FileStream(supressionFile, FileMode.Open);
 
-        protected virtual Stream GetWritableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.OpenOrCreate);
+        protected virtual Stream GetWritableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Create);
     }
 }

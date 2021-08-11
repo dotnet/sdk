@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli.Remove.Reference.Tests
 {
     public class GivenDotnetRemoveReference : SdkTest
     {
-        private Func<string, string> HelpText = (defaultVal) => $@"reference:
+        private Func<string, string> HelpText = (defaultVal) => $@"Description:
   Remove a project-to-project reference from the project.
 
 Usage:
@@ -32,9 +32,9 @@ Arguments:
 
 Options:
   -f, --framework <FRAMEWORK>    Remove the reference only when targeting a specific framework.
-  -?, -h, --help                 Show help and usage information";
+  -?, -h, --help                 Show command line help.";
 
-        private Func<string, string> RemoveCommandHelpText = (defaultVal) => $@"remove:
+        private Func<string, string> RemoveCommandHelpText = (defaultVal) => $@"Description:
       .NET Remove Command
     
     Usage:
@@ -44,7 +44,7 @@ Options:
       <PROJECT>    The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
     
     Options:
-      -?, -h, --help    Show help and usage information
+      -?, -h, --help    Show command line help.
     
     Commands:
       package <PACKAGE_NAME>      Remove a NuGet package reference from the project.

@@ -3,13 +3,13 @@
   <file datatype="xml" source-language="en" target-language="de" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="CommandDescription">
-        <source>Install a workload.</source>
+        <source>Repair workload installations.</source>
         <target state="needs-review-translation">Hiermit installieren Sie das globale oder lokale Tool. Lokale Tools werden dem Manifest hinzugefügt und wiederhergestellt.</target>
         <note />
       </trans-unit>
       <trans-unit id="RepairSucceeded">
-        <source>Successfully repaired worklods: {0}</source>
-        <target state="new">Successfully repaired worklods: {0}</target>
+        <source>Successfully repaired workloads: {0}</source>
+        <target state="new">Successfully repaired workloads: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="RepairingWorkloads">

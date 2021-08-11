@@ -73,10 +73,21 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression.Tests
                 using StreamReader reader = new(stream);
                 output = reader.ReadToEnd();
             });
-            string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
-            engine.WriteSuppressionsToFile(filePath);
 
-            Assert.True(StringComparer.OrdinalIgnoreCase.Equals(engine.suppressionsFile.Trim(), output.Trim()));
+            string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
+            Assert.True(engine.WriteSuppressionsToFile(filePath));
+
+            Assert.Equal(engine.suppressionsFileWithoutComment.Trim(), output.Trim(), ignoreCase: true);
+        }
+
+        [Fact]
+        public void EmptySuppressionsFileIsNotWritten()
+        {
+            int callbackCount = 0;
+            EmptyTestSuppressionEngine engine = new(() => { callbackCount++; });
+            Assert.Equal(0, engine.GetSuppressionCount());
+            Assert.False(engine.WriteSuppressionsToFile(""));
+            Assert.Equal(0, callbackCount);
         }
 
         [Fact]
@@ -84,11 +95,21 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression.Tests
         {
             SuppressionEngine engine = SuppressionEngine.Create();
             // Engine has a suppression with no left and no right. This should be treated global for any left and any right.
-            engine.AddSuppression("CP0001", "T:A.B");
+            engine.AddSuppression("CP0001", "T:A.B", isBaselineSuppression: true);
+            engine.AddSuppression("CP0001", "T:A.C");
+            // Engine has a suppression with no target. Should be treated globally for any target with that left and right.
+            engine.AddSuppression("CP0003", null, left: "ref/net6.0/myleft.dll", right: "lib/net6.0/myright.dll", isBaselineSuppression: false);
 
-            Assert.True(engine.IsErrorSuppressed("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll"));
-            Assert.True(engine.IsErrorSuppressed("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", false));
-            Assert.True(engine.IsErrorSuppressed("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", true));
+            Assert.True(engine.IsErrorSuppressed("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true));
+            Assert.False(engine.IsErrorSuppressed("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false));
+
+            Assert.True(engine.IsErrorSuppressed("CP0001", "T:A.C", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false));
+            Assert.False(engine.IsErrorSuppressed("CP0001", "T:A.C", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true));
+
+            Assert.True(engine.IsErrorSuppressed("CP0003", "T:A.B", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll"));
+            Assert.True(engine.IsErrorSuppressed("CP0003", "T:A.C", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll"));
+            Assert.True(engine.IsErrorSuppressed("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll"));
+            Assert.False(engine.IsErrorSuppressed("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll", isBaselineSuppression: true));
         }
 
         [Fact]
@@ -113,7 +134,7 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression.Tests
 
             engine.AddSuppression(newSuppression);
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
-            engine.WriteSuppressionsToFile(filePath);
+            Assert.True(engine.WriteSuppressionsToFile(filePath));
 
             XmlSerializer xmlSerializer = new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
             Suppression[] deserializedSuppressions = xmlSerializer.Deserialize(stream) as Suppression[];
@@ -131,11 +152,96 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression.Tests
         }
     }
 
+    public class EmptyTestSuppressionEngine : SuppressionEngine
+    {
+        private Stream _stream;
+        private readonly Action _callback;
+
+        public EmptyTestSuppressionEngine(Action callback)
+        {
+            _callback = callback;
+        }
+
+        public int GetSuppressionCount() => _validationSuppressions.Count;
+
+        protected override Stream GetReadableStream(string baselineFile)
+        {
+            // Not Disposing stream since it will be disposed by caller.
+            _stream = new MemoryStream();
+            return _stream;
+        }
+
+        protected override Stream GetWritableStream(string validationSuppressionFile) => new MemoryStream();
+
+        protected override void AfterWrittingSuppressionsCallback(Stream stream)
+        {
+            if (_callback != null)
+                _callback();
+        }
+    }
+
     public class TestSuppressionEngine : SuppressionEngine
     {
         private MemoryStream _stream;
         private StreamWriter _writer;
-        public readonly string suppressionsFile = @"<?xml version=""1.0""?>
+        public readonly string suppressionsFile = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<!-- This is a comment -->
+<Suppressions xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:A.B</Target>
+    <Left>ref/netstandard2.0/tempValidation.dll</Left>
+    <Right>lib/net6.0/tempValidation.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:tempValidation.Class1.Bar(System.Int32)</Target>
+    <Left>ref/netstandard2.0/tempValidation.dll</Left>
+    <Right>lib/net6.0/tempValidation.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:tempValidation.Class1.SomeOtherGenericMethod``1(``0)</Target>
+    <Left>ref/netstandard2.0/tempValidation.dll</Left>
+    <Right>lib/net6.0/tempValidation.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:tempValidation.Class1.SomeNewBreakingChange</Target>
+    <Left>ref/netstandard2.0/tempValidation.dll</Left>
+    <Right>lib/net6.0/tempValidation.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:tempValidation.SomeGenericType`1</Target>
+    <Left>ref/netstandard2.0/tempValidation.dll</Left>
+    <Right>lib/net6.0/tempValidation.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:A</Target>
+    <Left>lib/netstandard1.3/tempValidation.dll</Left>
+    <Right>lib/netstandard1.3/tempValidation.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:tempValidation.Class1</Target>
+    <Left>lib/netstandard1.3/tempValidation.dll</Left>
+    <Right>lib/netstandard1.3/tempValidation.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>PKV004</DiagnosticId>
+    <Target>.NETFramework,Version=v4.8</Target>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP123</DiagnosticId>
+    <Target>T:myValidation.Class1</Target>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+</Suppressions>";
+
+        public readonly string suppressionsFileWithoutComment = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <Suppressions xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
