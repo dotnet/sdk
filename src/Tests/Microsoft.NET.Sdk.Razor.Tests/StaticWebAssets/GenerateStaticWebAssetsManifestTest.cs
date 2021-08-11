@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Security.Principal;
 using FluentAssertions;
 using Microsoft.AspNetCore.Razor.Tasks;
 using Microsoft.Build.Framework;
@@ -98,6 +97,70 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             manifest.Assets.Should().HaveCount(1);
             var newAsset = manifest.Assets[0];
             newAsset.Should().Be(asset);
+        }
+
+        public static TheoryData<Action<StaticWebAsset>> GeneratesManifestFailsWhenInvalidAssetsAreProvidedData 
+        {
+            get
+            {
+                var theoryData = new TheoryData<Action<StaticWebAsset>>();
+                theoryData.Add(a => a.SourceId = "");
+                theoryData.Add(a => a.SourceType = "");
+                theoryData.Add(a => a.RelativePath = "");
+                theoryData.Add(a => a.ContentRoot = "");
+                theoryData.Add(a => a.OriginalItemSpec = "");
+                theoryData.Add(a => a.AssetKind = "");
+                theoryData.Add(a => a.AssetRole = "");
+                theoryData.Add(a => a.AssetMode = "");
+                theoryData.Add(a =>
+                {
+                    a.AssetRole = "Related";
+                    a.RelatedAsset = "";
+                });
+                theoryData.Add(a =>
+                {
+                    a.AssetRole = "Alternative";
+                    a.RelatedAsset = "";
+                });
+
+                return theoryData;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GeneratesManifestFailsWhenInvalidAssetsAreProvidedData))]
+        public void GeneratesManifestFailsWhenInvalidAssetsAreProvided(Action<StaticWebAsset> change)
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            // GetTempFilePath automatically creates the file, which interferes with the test.
+            File.Delete(TempFilePath);
+            var asset = CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All");
+            change(asset);
+            var task = new GenerateStaticWebAssetsManifest
+            {
+                BuildEngine = buildEngine.Object,
+                Assets = new[]
+                {
+                    asset.ToTaskItem()
+                },
+                ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
+                DiscoveryPatterns = Array.Empty<ITaskItem>(),
+                BasePath = "/",
+                Source = "MyProject",
+                ManifestType = "Build",
+                Mode = "Default",
+                ManifestPath = TempFilePath,
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().Be(false);
         }
 
         [Fact]

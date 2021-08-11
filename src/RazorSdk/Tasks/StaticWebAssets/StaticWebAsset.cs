@@ -305,9 +305,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public void Normalize()
         {
-            ContentRoot = NormalizeContentRootPath(ContentRoot);
+            ContentRoot = !string.IsNullOrEmpty(ContentRoot) ? NormalizeContentRootPath(ContentRoot) : ContentRoot;
             BasePath = Normalize(BasePath);
-            RelativePath = Normalize(RelativePath);
+            RelativePath = Normalize(RelativePath, allowEmpyPath: true);
             RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath(RelatedAsset) : RelatedAsset;
         }
 
