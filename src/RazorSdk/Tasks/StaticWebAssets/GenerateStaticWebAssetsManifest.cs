@@ -52,6 +52,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem);
 
+                if(!ValidateUniquePaths(assets))
+                {
+                    return false;
+                }
+
                 var discoveryPatterns = DiscoveryPatterns
                     .OrderBy(a => a.ItemSpec)
                     .Select(StaticWebAssetsManifest.DiscoveryPattern.FromTaskItem)
@@ -76,6 +81,21 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 Log.LogErrorFromException(ex, showStackTrace: true, showDetail:true, file: null);
             }
             return !Log.HasLoggedErrors;
+        }
+
+        private bool ValidateUniquePaths(IEnumerable<StaticWebAsset> assets)
+        {
+            var assetsByTargetPath = assets.GroupBy(a => a.ComputeTargetPath("", '/'));
+            foreach (var asset in assetsByTargetPath)
+            {
+                if (!StaticWebAsset.ValidateAssetGroup(asset.Key, asset, ManifestType, out var reason))
+                {
+                    Log.LogError(reason);
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private void PersistManifest(StaticWebAssetsManifest manifest)
