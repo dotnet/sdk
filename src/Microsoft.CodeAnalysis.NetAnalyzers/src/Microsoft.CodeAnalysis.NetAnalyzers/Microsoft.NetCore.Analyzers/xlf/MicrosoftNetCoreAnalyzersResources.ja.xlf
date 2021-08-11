@@ -2252,6 +2252,11 @@
         <target state="translated">配列値に対して範囲ベースのインデクサーを使用すると、要求された配列の部分のコピーが作成されます。ReadOnlySpan または ReadOnlyMemory 値として暗黙的に使用される場合、このコピーは不要であることが少なくありません。不要なコピーを回避するには、AsSpan メソッドをご使用ください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextDescription">
+        <source>When inside a Task-returning method, use the async version of methods, if they exist.</source>
+        <target state="new">When inside a Task-returning method, use the async version of methods, if they exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextMessage">
         <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
         <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>

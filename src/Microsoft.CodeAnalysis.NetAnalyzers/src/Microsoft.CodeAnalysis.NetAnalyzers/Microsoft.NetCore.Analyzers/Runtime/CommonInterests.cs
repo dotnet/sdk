@@ -16,9 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal static class JoinableTask
         {
             internal const string TypeName = "JoinableTask";
-
             internal const string Join = "Join";
-
             internal const string JoinAsync = "JoinAsync";
         }
 
@@ -29,18 +27,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             internal const string TypeName = "JoinableTaskFactory";
 
-            internal const string FullName = "Microsoft.VisualStudio.Threading." + TypeName;
-
             /// <summary>
             /// The name of the SwitchToMainThreadAsync method.
             /// </summary>
-            internal const string SwitchToMainThreadAsync = "SwitchToMainThreadAsync";
-
             internal const string Run = "Run";
-
             internal const string RunAsync = "RunAsync";
-
-            internal static readonly IReadOnlyList<string> Namespace = Namespaces.MicrosoftVisualStudioThreading;
         }
 
         internal static readonly IEnumerable<SyncBlockingMethod> JTFSyncBlockers = new[]
@@ -170,7 +161,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal static class AsyncMethodBuilderAttribute
         {
             internal const string TypeName = nameof(System.Runtime.CompilerServices.AsyncMethodBuilderAttribute);
-
             internal static readonly IReadOnlyList<string> Namespace = Namespaces.SystemRuntimeCompilerServices;
         }
 

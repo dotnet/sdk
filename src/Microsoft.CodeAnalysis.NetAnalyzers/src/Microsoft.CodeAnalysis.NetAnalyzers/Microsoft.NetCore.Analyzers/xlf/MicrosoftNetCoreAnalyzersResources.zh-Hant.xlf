@@ -2252,6 +2252,11 @@
         <target state="translated">陣列值中以 Range 為基礎的索引子會產生陣列中要求部分的複本。隱含使用此複本作為 ReadOnlySpan 或 ReadOnlyMemory 值時，通常不需此複本。請使用 AsSpan 方法來避免使用不必要的複本。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextDescription">
+        <source>When inside a Task-returning method, use the async version of methods, if they exist.</source>
+        <target state="new">When inside a Task-returning method, use the async version of methods, if they exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextMessage">
         <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
         <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>

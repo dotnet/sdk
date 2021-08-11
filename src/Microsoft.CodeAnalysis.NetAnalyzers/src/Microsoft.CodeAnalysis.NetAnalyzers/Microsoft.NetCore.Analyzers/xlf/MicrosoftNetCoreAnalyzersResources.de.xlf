@@ -2252,6 +2252,11 @@
         <target state="translated">Der Range-basierte Indexer für Arraywerte erzeugt eine Kopie des angeforderten Teils des Arrays. Diese Kopie ist bei der impliziten Verwendung als ReadOnlySpan- oder ReadOnlyMemory-Wert in der Regel nicht notwendig. Verwenden Sie die AsSpan-Methode, um die nicht benötigte Kopie zu vermeiden.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextDescription">
+        <source>When inside a Task-returning method, use the async version of methods, if they exist.</source>
+        <target state="new">When inside a Task-returning method, use the async version of methods, if they exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextMessage">
         <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
         <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>

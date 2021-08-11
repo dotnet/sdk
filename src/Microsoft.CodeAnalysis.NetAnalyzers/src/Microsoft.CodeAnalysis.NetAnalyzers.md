@@ -1598,7 +1598,7 @@ Number of parameters supplied in the logging message template do not match the n
 
 ## [CA2018](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2018): Call async methods when in an async method
 
-'{0}' synchronously blocks. Await '{1}' instead.
+When inside a Task-returning method, use the async version of methods, if they exist.
 
 |Item|Value|
 |-|-|

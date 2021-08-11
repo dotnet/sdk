@@ -2252,6 +2252,11 @@
         <target state="translated">Użycie indeksatora opartego na zakresie w przypadku wartości tablicy powoduje utworzenie kopii żądanej części tablicy. Ta kopia jest zwykle niepotrzebna, gdy jest niejawnie używana jako wartość ReadOnlySpan lub ReadOnlyMemory. Użyj metody AsSpan, aby uniknąć zbędnego kopiowania.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextDescription">
+        <source>When inside a Task-returning method, use the async version of methods, if they exist.</source>
+        <target state="new">When inside a Task-returning method, use the async version of methods, if they exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextMessage">
         <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
         <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>

@@ -1707,4 +1707,7 @@
   <data name="UseAsyncMethodInAsyncContextMessage_NoAlternative" xml:space="preserve">
     <value>'{0}' synchronously blocks. Use await instead.</value>
   </data>
+  <data name="UseAsyncMethodInAsyncContextDescription" xml:space="preserve">
+    <value>When inside a Task-returning method, use the async version of methods, if they exist.</value>
+  </data>
 </root>

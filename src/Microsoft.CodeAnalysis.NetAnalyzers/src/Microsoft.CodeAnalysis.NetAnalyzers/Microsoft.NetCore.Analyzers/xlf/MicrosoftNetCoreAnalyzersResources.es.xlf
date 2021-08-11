@@ -2252,6 +2252,11 @@
         <target state="translated">El indizador basado en intervalos en los valores de matriz genera una copia de la parte solicitada de la matriz. Esta copia suele ser innecesaria cuando se usa implícitamente como valor ReadOnlySpan o ReadOnlyMemory. Use el método AsSpan para evitar la copia innecesaria.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextDescription">
+        <source>When inside a Task-returning method, use the async version of methods, if they exist.</source>
+        <target state="new">When inside a Task-returning method, use the async version of methods, if they exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextMessage">
         <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
         <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>
