@@ -73,8 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
             catch (Exception ex)
             {
-                Log.LogError(ex.ToString());
-                Log.LogErrorFromException(ex);
+                Log.LogErrorFromException(ex, showStackTrace: true, showDetail:true, file: null);
             }
             return !Log.HasLoggedErrors;
         }
