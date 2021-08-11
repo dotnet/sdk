@@ -2252,6 +2252,21 @@
         <target state="translated">Der Range-basierte Indexer für Arraywerte erzeugt eine Kopie des angeforderten Teils des Arrays. Diese Kopie ist bei der impliziten Verwendung als ReadOnlySpan- oder ReadOnlyMemory-Wert in der Regel nicht notwendig. Verwenden Sie die AsSpan-Methode, um die nicht benötigte Kopie zu vermeiden.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage">
+        <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
+        <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
+        <source>'{0}' synchronously blocks. Use await instead.</source>
+        <target state="new">'{0}' synchronously blocks. Use await instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextTitle">
+        <source>Call async methods when in an async method</source>
+        <target state="new">Call async methods when in an async method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">Fälschungssicherheitstoken in ASP.NET Core MVC-Controllern verwenden</target>

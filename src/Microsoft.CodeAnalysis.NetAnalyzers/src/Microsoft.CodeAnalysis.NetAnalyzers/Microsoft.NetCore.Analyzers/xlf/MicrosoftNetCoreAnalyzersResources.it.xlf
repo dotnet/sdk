@@ -2252,6 +2252,21 @@
         <target state="translated">Con l'indicizzatore basato su Range su valori di matrice viene prodotta una copia della porzione richiesta della matrice. Questa copia è in genere non necessaria quando viene usata in modo implicito come valore di ReadOnlySpan o ReadOnlyMemory. Per evitare la copia non necessaria, usare il metodo AsSpan.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage">
+        <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
+        <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
+        <source>'{0}' synchronously blocks. Use await instead.</source>
+        <target state="new">'{0}' synchronously blocks. Use await instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextTitle">
+        <source>Call async methods when in an async method</source>
+        <target state="new">Call async methods when in an async method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">Usare token antifalsificazione nei controller MVC ASP.NET Core</target>

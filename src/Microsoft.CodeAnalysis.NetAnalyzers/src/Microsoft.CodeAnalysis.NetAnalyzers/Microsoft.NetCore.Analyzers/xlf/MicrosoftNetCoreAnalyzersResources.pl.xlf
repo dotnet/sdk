@@ -2252,6 +2252,21 @@
         <target state="translated">Użycie indeksatora opartego na zakresie w przypadku wartości tablicy powoduje utworzenie kopii żądanej części tablicy. Ta kopia jest zwykle niepotrzebna, gdy jest niejawnie używana jako wartość ReadOnlySpan lub ReadOnlyMemory. Użyj metody AsSpan, aby uniknąć zbędnego kopiowania.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage">
+        <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
+        <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
+        <source>'{0}' synchronously blocks. Use await instead.</source>
+        <target state="new">'{0}' synchronously blocks. Use await instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextTitle">
+        <source>Call async methods when in an async method</source>
+        <target state="new">Call async methods when in an async method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">Użyj tokenów zabezpieczających przed fałszerstwem w kontrolerach MVC ASP.NET Core</target>

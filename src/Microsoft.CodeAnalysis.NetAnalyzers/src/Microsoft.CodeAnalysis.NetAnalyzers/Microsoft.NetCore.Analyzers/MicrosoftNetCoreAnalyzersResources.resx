@@ -1698,4 +1698,13 @@
   <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle" xml:space="preserve">
     <value>The 'ModuleInitializer' attribute should not be used in libraries</value>
   </data>
+  <data name="UseAsyncMethodInAsyncContextMessage" xml:space="preserve">
+    <value>'{0}' synchronously blocks. Await '{1}' instead.</value>
+  </data>
+  <data name="UseAsyncMethodInAsyncContextTitle" xml:space="preserve">
+    <value>Call async methods when in an async method</value>
+  </data>
+  <data name="UseAsyncMethodInAsyncContextMessage_NoAlternative" xml:space="preserve">
+    <value>'{0}' synchronously blocks. Use await instead.</value>
+  </data>
 </root>

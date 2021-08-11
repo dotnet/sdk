@@ -2252,6 +2252,21 @@
         <target state="translated">El indizador basado en intervalos en los valores de matriz genera una copia de la parte solicitada de la matriz. Esta copia suele ser innecesaria cuando se usa implícitamente como valor ReadOnlySpan o ReadOnlyMemory. Use el método AsSpan para evitar la copia innecesaria.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage">
+        <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
+        <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
+        <source>'{0}' synchronously blocks. Use await instead.</source>
+        <target state="new">'{0}' synchronously blocks. Use await instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextTitle">
+        <source>Call async methods when in an async method</source>
+        <target state="new">Call async methods when in an async method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">Usar tokens antifalsificación en los controladores de ASP.NET Core MVC</target>

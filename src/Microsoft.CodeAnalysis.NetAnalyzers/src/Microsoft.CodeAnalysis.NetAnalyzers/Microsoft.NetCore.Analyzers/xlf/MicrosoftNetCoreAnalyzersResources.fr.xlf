@@ -2252,6 +2252,21 @@
         <target state="translated">L'indexeur basé sur Range pour les valeurs de tableau produit une copie de la partie demandée du tableau. Cette copie est généralement inutile quand elle est implicitement utilisée en tant que valeur ReadOnlySpan ou ReadOnlyMemory. Utilisez la méthode AsSpan pour éviter toute copie inutile.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage">
+        <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
+        <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
+        <source>'{0}' synchronously blocks. Use await instead.</source>
+        <target state="new">'{0}' synchronously blocks. Use await instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextTitle">
+        <source>Call async methods when in an async method</source>
+        <target state="new">Call async methods when in an async method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">Utilisez des jetons antifalsification dans les contrôleurs ASP.NET Core MVC</target>

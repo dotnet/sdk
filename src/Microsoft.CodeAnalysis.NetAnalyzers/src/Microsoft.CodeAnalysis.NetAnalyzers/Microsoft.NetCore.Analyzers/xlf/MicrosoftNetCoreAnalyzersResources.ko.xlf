@@ -2252,6 +2252,21 @@
         <target state="translated">배열 값에 대한 범위 기반 인덱서는 배열의 요청된 부분의 복사본을 생성합니다. 이 복사본은 암시적으로 ReadOnlySpan 또는 ReadOnlyMemory 값으로 사용될 경우 대개 필요하지 않습니다. 불필요한 복사본이 생성되지 않도록 하려면 AsSpan 메서드를 사용하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage">
+        <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
+        <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
+        <source>'{0}' synchronously blocks. Use await instead.</source>
+        <target state="new">'{0}' synchronously blocks. Use await instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextTitle">
+        <source>Call async methods when in an async method</source>
+        <target state="new">Call async methods when in an async method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">ASP.NET Core MVC 컨트롤러에서 위조 방지 토큰 사용</target>

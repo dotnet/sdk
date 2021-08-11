@@ -2252,6 +2252,21 @@
         <target state="translated">配列値に対して範囲ベースのインデクサーを使用すると、要求された配列の部分のコピーが作成されます。ReadOnlySpan または ReadOnlyMemory 値として暗黙的に使用される場合、このコピーは不要であることが少なくありません。不要なコピーを回避するには、AsSpan メソッドをご使用ください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage">
+        <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
+        <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
+        <source>'{0}' synchronously blocks. Use await instead.</source>
+        <target state="new">'{0}' synchronously blocks. Use await instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextTitle">
+        <source>Call async methods when in an async method</source>
+        <target state="new">Call async methods when in an async method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">ASP.NET Core MVC コントローラーで偽造防止トークンを使用する</target>
