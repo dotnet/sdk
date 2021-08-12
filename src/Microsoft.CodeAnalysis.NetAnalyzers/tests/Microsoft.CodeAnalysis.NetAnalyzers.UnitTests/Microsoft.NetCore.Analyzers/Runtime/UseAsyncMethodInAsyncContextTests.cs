@@ -81,6 +81,7 @@ End Module
             await VerifyVB.VerifyAnalyzerAsync(testVB);
         }
 
+#if NETCOREAPP
         [Fact]
         public async Task TaskWait_InIAsyncEnumerableAsyncMethod_ShouldReportWarning()
         {
@@ -104,7 +105,26 @@ class Test {
                 TestCode = testCS,
             };
             await csTestVerify.RunAsync();
+
+            var testVB = @"
+Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Threading.Tasks
+
+Module Program
+    Sub Main()
+        FooAsync()
+    End Sub
+    Function FooAsync() As IAsyncEnumerable(Of Integer)
+        [|Task.Delay(TimeSpan.FromSeconds(5)).Wait()|]
+        Return Nothing
+    End Function
+End Module
+";
+            await VerifyVB.VerifyAnalyzerAsync(testVB);
         }
+#endif
 
         [Fact]
         public async Task TaskOfTResultInTaskReturningMethodGeneratesWarning()
