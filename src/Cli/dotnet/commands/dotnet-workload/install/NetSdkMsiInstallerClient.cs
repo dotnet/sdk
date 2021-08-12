@@ -155,7 +155,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             {
                                 // If the current SDK feature band is listed as a dependent, we can validate
                                 // the workload pack against the expected pack IDs and versions to potentially remove it.
-                                if (!expectedWorkloadPacks.Where(p => packRecord.PackId.Equals(p.ResolvedPackageId))
+                                if (!expectedWorkloadPacks.Where(p => packRecord.PackId.ToString().Equals(p.ResolvedPackageId))
                                     .Where(p => p.Version.Equals(packRecord.PackVersion.ToString())).Any())
                                 {
                                     Log?.LogMessage($"Removing dependent '{dependent}' because the pack record does not match any expected packs.");
