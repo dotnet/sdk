@@ -25,8 +25,9 @@
   </Target>
 
   <PropertyGroup>
-      <VersionFeature21>$([MSBuild]::Add($(VersionFeature), 29))</VersionFeature21>
+      <VersionFeature21>30</VersionFeature21>
       <VersionFeature31>$([MSBuild]::Add($(VersionFeature), 18))</VersionFeature31>
+      <VersionFeature50>$([MSBuild]::Add($(VersionFeature), 9))</VersionFeature50>
   </PropertyGroup>
 
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
@@ -39,29 +40,29 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <_NET50RuntimePackVersion>5.0.9</_NET50RuntimePackVersion>
+      <_NET50RuntimePackVersion>5.0.$(VersionFeature50)</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
-      <_WindowsDesktop50RuntimePackVersion>5.0.8</_WindowsDesktop50RuntimePackVersion>
+      <_WindowsDesktop50RuntimePackVersion>5.0.$(VersionFeature50)</_WindowsDesktop50RuntimePackVersion>
       <_WindowsDesktop50TargetingPackVersion>5.0.0</_WindowsDesktop50TargetingPackVersion>
-      <_AspNet50RuntimePackVersion>5.0.9</_AspNet50RuntimePackVersion>
+      <_AspNet50RuntimePackVersion>5.0.$(VersionFeature50)</_AspNet50RuntimePackVersion>
       <_AspNet50TargetingPackVersion>5.0.0</_AspNet50TargetingPackVersion>
 
       <_NETCoreApp30RuntimePackVersion>3.0.3</_NETCoreApp30RuntimePackVersion>
       <_NETCoreApp30TargetingPackVersion>3.0.0</_NETCoreApp30TargetingPackVersion>
 
-      <_NETCoreApp31RuntimePackVersion>3.1.18</_NETCoreApp31RuntimePackVersion>
+      <_NETCoreApp31RuntimePackVersion>3.1.$(VersionFeature31)</_NETCoreApp31RuntimePackVersion>
       <_NETCoreApp31TargetingPackVersion>3.1.0</_NETCoreApp31TargetingPackVersion>
 
       <_WindowsDesktop30RuntimePackVersion>3.0.3</_WindowsDesktop30RuntimePackVersion>
       <_WindowsDesktop30TargetingPackVersion>3.0.0</_WindowsDesktop30TargetingPackVersion>
 
-      <_WindowsDesktop31RuntimePackVersion>3.1.17</_WindowsDesktop31RuntimePackVersion>
+      <_WindowsDesktop31RuntimePackVersion>3.1.$(VersionFeature31)</_WindowsDesktop31RuntimePackVersion>
       <_WindowsDesktop31TargetingPackVersion>3.1.0</_WindowsDesktop31TargetingPackVersion>
 
       <_AspNet30RuntimePackVersion>3.0.3</_AspNet30RuntimePackVersion>
       <_AspNet30TargetingPackVersion>3.0.1</_AspNet30TargetingPackVersion>
 
-      <_AspNet31RuntimePackVersion>3.1.18</_AspNet31RuntimePackVersion>
+      <_AspNet31RuntimePackVersion>3.1.$(VersionFeature31)</_AspNet31RuntimePackVersion>
       <_AspNet31TargetingPackVersion>3.1.10</_AspNet31TargetingPackVersion>
 
       <!-- Use only major and minor in target framework version -->
@@ -221,7 +222,7 @@
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.0"
-                               LatestVersion="2.1.28" />
+                               LatestVersion="2.1.$(VersionFeature21)" />
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="2.2"
                                DefaultVersion="2.2.0"
@@ -229,11 +230,11 @@
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.28"/>
+                               LatestVersion="2.1.$(VersionFeature21)"/>
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.28"/>
+                               LatestVersion="2.1.$(VersionFeature21)"/>
 
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.2"
