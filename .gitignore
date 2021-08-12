@@ -39,3 +39,6 @@ cmake/
 
 # Helix payload
 .dotnet.payload
+
+# Temporary files
+*.TMP
