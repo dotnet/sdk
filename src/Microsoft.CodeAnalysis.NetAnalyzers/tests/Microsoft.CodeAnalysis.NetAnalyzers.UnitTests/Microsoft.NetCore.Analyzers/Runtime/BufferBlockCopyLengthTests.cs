@@ -84,6 +84,40 @@ End Module
         [Theory]
         [InlineData("src")]
         [InlineData("dst")]
+        public async Task UsingBoolArray(string array)
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        bool[] src = new bool[] { true, true, true, true };
+        bool[] dst = new bool[] { false, false, false, false };
+        
+        Buffer.BlockCopy(src, 0, dst, 0, " + array + @".Length);
+    }
+}
+");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Module Program
+    Sub Main(args As String())
+        Dim src = New Boolean() {True, True, True, True}
+        Dim dst = New Boolean() {False, False, False, False}
+
+        Buffer.BlockCopy(src, 0, dst, 0, " + array + @".Length)
+    End Sub
+End Module
+");
+        }
+
+        [Theory]
+        [InlineData("src")]
+        [InlineData("dst")]
         public async Task UsingIntArray(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

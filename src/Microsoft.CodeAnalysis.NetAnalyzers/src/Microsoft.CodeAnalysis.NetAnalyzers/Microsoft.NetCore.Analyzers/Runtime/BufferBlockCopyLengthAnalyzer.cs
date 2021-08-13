@@ -84,7 +84,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     IArgumentOperation destinationArgument = arguments[2];
                     IArgumentOperation countArgument = arguments[4];
 
-                    bool CheckArrayLengthLocalReference(IArgumentOperation targetArgument, IPropertyReferenceOperation lengthPropertyArgument)
+                    bool CheckArgumentArrayType(IArgumentOperation targetArgument, IPropertyReferenceOperation lengthPropertyArgument)
                     {
                         if (targetArgument.Value is IConversionOperation targetArgumentValue)
                         {
@@ -92,7 +92,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             {
                                 IArrayTypeSymbol countArgumentArrayTypeSymbol = (IArrayTypeSymbol)lengthPropertyArgument.Instance.Type;
                                 if (countArgumentArrayTypeSymbol.ElementType.SpecialType != SpecialType.System_Byte &&
-                                countArgumentArrayTypeSymbol.ElementType.SpecialType != SpecialType.System_SByte)
+                                countArgumentArrayTypeSymbol.ElementType.SpecialType != SpecialType.System_SByte &&
+                                countArgumentArrayTypeSymbol.ElementType.SpecialType != SpecialType.System_Boolean)
                                 {
                                     return true;
                                 }
@@ -101,17 +102,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return false;
                     }
 
-                    bool CheckLengthPropertyOnByteOrSByteArrays(IPropertyReferenceOperation countArgument)
+                    bool CheckLengthProperty(IPropertyReferenceOperation countArgument)
                     {
                         if (countArgument.Property.Equals(arrayLengthProperty))
                         {
-                            return CheckArrayLengthLocalReference(sourceArgument, countArgument) || CheckArrayLengthLocalReference(destinationArgument, countArgument);
+                            return CheckArgumentArrayType(sourceArgument, countArgument) || CheckArgumentArrayType(destinationArgument, countArgument);
                         }
 
                         return false;
                     }
 
-                    if (countArgument.Value is IPropertyReferenceOperation countArgumentValue && CheckLengthPropertyOnByteOrSByteArrays(countArgumentValue))
+                    if (countArgument.Value is IPropertyReferenceOperation countArgumentValue && CheckLengthProperty(countArgumentValue))
                     {
                         context.ReportDiagnostic(countArgument.Value.CreateDiagnostic(Rule));
                     }
@@ -141,14 +142,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         IVariableInitializerOperation variableInitializer = variableDeclaratorOperation.Initializer;
 
                         if (variableInitializer is not null && variableInitializer.Value is IPropertyReferenceOperation variableInitializerPropertyReference &&
-                        CheckLengthPropertyOnByteOrSByteArrays(variableInitializerPropertyReference))
+                        CheckLengthProperty(variableInitializerPropertyReference))
                         {
                             context.ReportDiagnostic(countArgument.Value.CreateDiagnostic(Rule));
                         }
                         else if (variableDeclaratorOperation.Parent is IVariableDeclarationOperation variableDeclarationOperation &&
                         variableDeclarationOperation.Initializer is not null &&
                         variableDeclarationOperation.Initializer.Value is IPropertyReferenceOperation variableInitializerPropertyReferenceVB &&
-                        CheckLengthPropertyOnByteOrSByteArrays(variableInitializerPropertyReferenceVB))
+                        CheckLengthProperty(variableInitializerPropertyReferenceVB))
                         {
                             context.ReportDiagnostic(countArgument.Value.CreateDiagnostic(Rule));
                         }
