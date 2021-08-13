@@ -4,9 +4,10 @@
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Compatibility.ErrorSuppression;
+using Microsoft.DotNet.PackageValidation;
 using Microsoft.NET.Build.Tasks;
 
-namespace Microsoft.DotNet.PackageValidation
+namespace Microsoft.DotNet.Compatibility
 {
     internal class PackageValidationLogger : IPackageLogger
     {

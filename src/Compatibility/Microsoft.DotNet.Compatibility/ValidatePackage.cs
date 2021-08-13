@@ -5,10 +5,11 @@ using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.PackageValidation;
 using Microsoft.NET.Build.Tasks;
 using NuGet.RuntimeModel;
 
-namespace Microsoft.DotNet.PackageValidation
+namespace Microsoft.DotNet.Compatibility
 {
     public class ValidatePackage : TaskBase
     {
