@@ -31,27 +31,5 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             nameof(global::System.Runtime),
             nameof(global::System.Runtime.CompilerServices),
         };
-
-        internal static readonly IReadOnlyList<string> MicrosoftVisualStudioThreading = new[]
-        {
-            "Microsoft",
-            "VisualStudio",
-            "Threading",
-        };
-
-        internal static readonly IReadOnlyList<string> MicrosoftVisualStudioShell = new[]
-        {
-            "Microsoft",
-            "VisualStudio",
-            "Shell",
-        };
-
-        internal static readonly IReadOnlyList<string> MicrosoftVisualStudioShellInterop = new[]
-        {
-            "Microsoft",
-            "VisualStudio",
-            "Shell",
-            "Interop",
-        };
     }
 }

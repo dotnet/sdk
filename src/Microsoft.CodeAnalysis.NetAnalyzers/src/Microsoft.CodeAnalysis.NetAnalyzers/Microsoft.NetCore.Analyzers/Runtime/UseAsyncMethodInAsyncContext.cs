@@ -55,6 +55,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.RegisterOperationBlockStartAction(context =>
             {
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask, out INamedTypeSymbol? taskType))
+                {
+                    return;
+                }
+
                 context.RegisterOperationAction(AnalyzeInvocation, OperationKind.Invocation);
                 context.RegisterOperationAction(AnalyzePropertyGetter, OperationKind.PropertyReference);
             });
@@ -101,7 +106,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
 
                     SyntaxNode invokedMethodName = context.Operation.Syntax;
-                    Location invokedMethodLocation = invocationOperation.Syntax.GetLocation();
 
                     foreach (IMethodSymbol method in methodSymbols)
                     {
@@ -111,15 +115,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             && method.HasAsyncCompatibleReturnType())
                         {
                             // An async alternative exists.
-                            ImmutableDictionary<string, string>? properties = ImmutableDictionary<string, string>.Empty
+                            ImmutableDictionary<string, string?> properties = ImmutableDictionary<string, string?>.Empty
                                 .Add(AsyncMethodKeyName, asyncMethodName);
 
-                            Diagnostic diagnostic = Diagnostic.Create(
+                            Diagnostic diagnostic = invocationOperation.CreateDiagnostic(
                                 Descriptor,
-                                invokedMethodLocation,
                                 properties,
                                 invokedMethodName.ToString(),
                                 asyncMethodName);
+
                             context.ReportDiagnostic(diagnostic);
 
                             return;

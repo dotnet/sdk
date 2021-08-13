@@ -2255,7 +2255,7 @@
       <trans-unit id="UseAsyncMethodInAsyncContextDescription">
         <source>When inside a Task-returning method, use the async version of methods, if they exist.</source>
         <target state="new">When inside a Task-returning method, use the async version of methods, if they exist.</target>
-        <note />
+        <note>{Locked="Task"}</note>
       </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextMessage">
         <source>'{0}' synchronously blocks. Await '{1}' instead.</source>

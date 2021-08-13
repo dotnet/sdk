@@ -13,34 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     internal static class CommonInterests
     {
-        internal static class JoinableTask
-        {
-            internal const string TypeName = "JoinableTask";
-            internal const string Join = "Join";
-            internal const string JoinAsync = "JoinAsync";
-        }
-
-        /// <summary>
-        /// Contains descriptors for the JoinableTaskFactory type.
-        /// </summary>
-        internal static class JoinableTaskFactory
-        {
-            internal const string TypeName = "JoinableTaskFactory";
-
-            /// <summary>
-            /// The name of the SwitchToMainThreadAsync method.
-            /// </summary>
-            internal const string Run = "Run";
-            internal const string RunAsync = "RunAsync";
-        }
-
-        internal static readonly IEnumerable<SyncBlockingMethod> JTFSyncBlockers = new[]
-        {
-            new SyncBlockingMethod(new QualifiedMember(new QualifiedType(Namespaces.MicrosoftVisualStudioThreading, JoinableTaskFactory.TypeName), JoinableTaskFactory.Run), JoinableTaskFactory.RunAsync),
-            new SyncBlockingMethod(new QualifiedMember(new QualifiedType(Namespaces.MicrosoftVisualStudioThreading, JoinableTask.TypeName), JoinableTask.Join), JoinableTask.JoinAsync),
-        };
-
-        internal static readonly IEnumerable<SyncBlockingMethod> ProblematicSyncBlockingMethods = new[]
+        internal static readonly IEnumerable<SyncBlockingMethod> SyncBlockingMethods = new[]
         {
             new SyncBlockingMethod(new QualifiedMember(new QualifiedType(Namespaces.SystemThreadingTasks, nameof(Task)), nameof(Task.Wait)), null),
             new SyncBlockingMethod(new QualifiedMember(new QualifiedType(Namespaces.SystemThreadingTasks, nameof(Task)), nameof(Task.WaitAll)), null),
@@ -48,12 +21,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             new SyncBlockingMethod(new QualifiedMember(new QualifiedType(Namespaces.SystemRuntimeCompilerServices, nameof(TaskAwaiter)), nameof(TaskAwaiter.GetResult)), null),
             new SyncBlockingMethod(new QualifiedMember(new QualifiedType(Namespaces.SystemRuntimeCompilerServices, nameof(ValueTaskAwaiter)), nameof(ValueTaskAwaiter.GetResult)), null),
         };
-
-        internal static readonly IEnumerable<SyncBlockingMethod> SyncBlockingMethods = JTFSyncBlockers.Concat(ProblematicSyncBlockingMethods).Concat(new[]
-        {
-            new SyncBlockingMethod(new QualifiedMember(new QualifiedType(Namespaces.MicrosoftVisualStudioShellInterop, "IVsTask"), "Wait"), extensionMethodNamespace: Namespaces.MicrosoftVisualStudioShell),
-            new SyncBlockingMethod(new QualifiedMember(new QualifiedType(Namespaces.MicrosoftVisualStudioShellInterop, "IVsTask"), "GetResult"), extensionMethodNamespace: Namespaces.MicrosoftVisualStudioShell),
-        });
 
         internal static readonly IReadOnlyList<SyncBlockingMethod> SyncBlockingProperties = new[]
         {
