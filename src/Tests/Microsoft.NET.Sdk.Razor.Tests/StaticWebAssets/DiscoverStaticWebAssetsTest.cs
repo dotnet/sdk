@@ -55,7 +55,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             asset.GetMetadata(nameof(StaticWebAsset.AssetTraitValue)).Should().Be("");
             asset.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)).Should().Be("Never");
             asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)).Should().Be("PreserveNewest");
-            asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be("wwwroot\\candidate.js");
+            asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", "candidate.js"));
         }
 
         [Fact]
@@ -100,7 +100,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             asset.GetMetadata(nameof(StaticWebAsset.AssetTraitValue)).Should().Be("");
             asset.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)).Should().Be("Never");
             asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)).Should().Be("PreserveNewest");
-            asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be("wwwroot\\candidate.js");
+            asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", "candidate.js"));
         }
 
         [Fact]
