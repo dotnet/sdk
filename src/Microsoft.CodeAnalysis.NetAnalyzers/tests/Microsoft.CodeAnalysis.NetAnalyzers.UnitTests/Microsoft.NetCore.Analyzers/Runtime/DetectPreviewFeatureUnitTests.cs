@@ -43,8 +43,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             };
         }
 
-        // TODO: Unit tests for events of preview types
-
         #region Operators
         [Fact]
         public async Task TestPreviewMethodUnaryOperator()
