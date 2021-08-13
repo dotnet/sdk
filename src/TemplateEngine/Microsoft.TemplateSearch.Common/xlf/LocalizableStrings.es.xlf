@@ -4,27 +4,27 @@
     <body>
       <trans-unit id="BlobStoreSourceFileProvider_Exception_FailedToUpdateCache">
         <source>Failed to update search cache.</source>
-        <target state="new">Failed to update search cache.</target>
+        <target state="translated">No se pudo actualizar la caché de búsqueda.</target>
         <note />
       </trans-unit>
       <trans-unit id="BlobStoreSourceFileProvider_Exception_LocalCacheDoesNotExist">
         <source>Local search cache '{0}' does not exist.</source>
-        <target state="new">Local search cache '{0}' does not exist.</target>
+        <target state="translated">La caché de búsqueda local "{0}" no existe.</target>
         <note>{0} - file path to search cache</note>
       </trans-unit>
       <trans-unit id="BlobStoreSourceFileProvider_Warning_LocalCacheWillBeUsed">
         <source>Failed to update search cache. Local search cache will be used instead.</source>
-        <target state="new">Failed to update search cache. Local search cache will be used instead.</target>
+        <target state="translated">No se pudo actualizar la caché de búsqueda. Se usará la caché de búsqueda local en su lugar.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateSearchCache_Exception_NotSupported">
         <source>The template search cache data is not supported.</source>
-        <target state="new">The template search cache data is not supported.</target>
+        <target state="translated">No se admiten los datos de la caché de búsqueda de plantillas.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateSearchCache_Exception_NotValid">
         <source>The template search cache data is not valid.</source>
-        <target state="new">The template search cache data is not valid.</target>
+        <target state="translated">Los datos de la caché de búsqueda de plantillas no son válidos.</target>
         <note />
       </trans-unit>
     </body>

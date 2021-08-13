@@ -165,7 +165,7 @@ Détails : {1}.</target>
       </trans-unit>
       <trans-unit id="Scanner_Error_TemplatePackageLocationIsNotSupported">
         <source>Template package location {0} is not supported, or doesn't exist.</source>
-        <target state="new">Template package location {0} is not supported, or doesn't exist.</target>
+        <target state="translated">L’emplacement du package de modèles {0} n’est pas pris en charge ou n’existe pas.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate">
@@ -188,8 +188,8 @@ Détails : {0}.</target>
       <trans-unit id="TemplatePackageManager_Error_FailedToScan">
         <source>Failed to scan {0}.
 Details: {1}</source>
-        <target state="needs-review-translation">Échec de l’analyse {0}.
-Détails : {1}.</target>
+        <target state="translated">Échec de l’analyse de {0}.
+Détails : {1}</target>
         <note>last line should not end with a period, period is a part of the format entry</note>
       </trans-unit>
     </body>
