@@ -26,7 +26,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 BuildEngine = buildEngine.Object,
                 Candidates = new[]
                 {
-                    CreateCandidate("wwwroot\\candidate.js")
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"))
                 },
                 Pattern = "wwwroot\\**",
                 SourceId = "MyProject",
@@ -71,7 +71,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 BuildEngine = buildEngine.Object,
                 Candidates = new[]
                 {
-                    CreateCandidate("wwwroot\\candidate.js", relativePath: "subdir/candidate.js")
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), relativePath: "subdir/candidate.js")
                 },
                 Pattern = "wwwroot\\**",
                 SourceId = "MyProject",
@@ -116,7 +116,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 BuildEngine = buildEngine.Object,
                 Candidates = new[]
                 {
-                    CreateCandidate("wwwroot\\candidate.js", targetPath: "wwwroot\\subdir\\candidate.publish.js")
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), targetPath: Path.Combine("wwwroot", "subdir", "candidate.publish.js"))
                 },
                 Pattern = "wwwroot\\**",
                 SourceId = "MyProject",
@@ -145,7 +145,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             asset.GetMetadata(nameof(StaticWebAsset.AssetTraitValue)).Should().Be("");
             asset.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)).Should().Be("Never");
             asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)).Should().Be("PreserveNewest");
-            asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be("wwwroot\\candidate.js");
+            asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", "candidate.js"));
         }
 
         [Fact]
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 BuildEngine = buildEngine.Object,
                 Candidates = new[]
                 {
-                    CreateCandidate("wwwroot\\candidate.js", link: "wwwroot\\subdir\\candidate.link.js")
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), link: Path.Combine("wwwroot", "subdir", "candidate.link.js"))
                 },
                 Pattern = "wwwroot\\**",
                 SourceId = "MyProject",
@@ -190,7 +190,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             asset.GetMetadata(nameof(StaticWebAsset.AssetTraitValue)).Should().Be("");
             asset.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)).Should().Be("Never");
             asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)).Should().Be("PreserveNewest");
-            asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be("wwwroot\\candidate.js");
+            asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", "candidate.js"));
         }
 
         [Fact]
@@ -206,8 +206,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 BuildEngine = buildEngine.Object,
                 Candidates = new[]
                 {
-                    CreateCandidate("wwwroot\\candidate.js", copyToPublishDirectory: "Never"),
-                    CreateCandidate("wwwroot\\candidate.publish.js", relativePath: "candidate.js")
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), copyToPublishDirectory: "Never"),
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.publish.js"), relativePath: "candidate.js")
                 },
                 Pattern = "wwwroot\\**",
                 SourceId = "MyProject",
@@ -259,12 +259,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 Candidates = new[]
                 {
                     CreateCandidate(
-                        "wwwroot\\candidate.js",
+                        Path.Combine("wwwroot","candidate.js"),
                         copyToOutputDirectory: copyToOutputDirectoryFirst,
                         copyToPublishDirectory: copyToPublishDirectoryFirst),
 
                     CreateCandidate(
-                        "wwwroot\\candidate.publish.js",
+                        Path.Combine("wwwroot","candidate.publish.js"),
                         relativePath: "candidate.js",
                         copyToOutputDirectory: copyToOutputDirectorySecond,
                         copyToPublishDirectory: copyToPublishDirectorySecond)

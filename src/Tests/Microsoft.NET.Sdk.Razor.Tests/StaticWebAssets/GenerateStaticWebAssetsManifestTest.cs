@@ -280,7 +280,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // GetTempFilePath automatically creates the file, which interferes with the test.
             File.Delete(TempFilePath);
 
-            var candidatePattern = CreatePatternCandidate("MyProject\\wwwroot", "base", "wwwroot/**", "MyProject");
+            var candidatePattern = CreatePatternCandidate(Path.Combine("MyProject", "wwwroot"), "base", "wwwroot/**", "MyProject");
             var task = new GenerateStaticWebAssetsManifest
             {
                 BuildEngine = buildEngine.Object,
