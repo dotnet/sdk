@@ -1699,7 +1699,7 @@
     <value>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
   </data>
   <data name="MethodUsesPreviewTypeAsParamaterMessage" xml:space="preserve">
-    <value>`{0}` takes in a preview parameter of type `{1}` and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+    <value>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
   </data>
   <data name="OverridesPreviewMethodMessage" xml:space="preserve">
     <value>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>

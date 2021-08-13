@@ -1042,11 +1042,6 @@
         <target state="translated">XslTransform을 사용하지 마세요. 잠재적으로 위험한 외부 참조를 제한하지 않습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="EventIsPreviewTypeMessage">
-        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
         <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
         <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
@@ -1478,8 +1473,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesPreviewTypeAsParamaterMessage">
-        <source>`{0}` takes in a preview parameter of type `{1}` and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">`{0}` takes in a preview parameter of type `{1}` and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">

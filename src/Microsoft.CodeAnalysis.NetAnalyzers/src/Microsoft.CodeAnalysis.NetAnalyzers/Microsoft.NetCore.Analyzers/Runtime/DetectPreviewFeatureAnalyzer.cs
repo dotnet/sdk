@@ -190,11 +190,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 symbolType = arrayType.ElementType;
             }
 
+            ProcessFieldOrEventSymbolAttributes(context, symbol, symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
+        }
+
+        private static void ProcessFieldOrEventSymbolAttributes(SymbolAnalysisContext context, ISymbol symbol, ISymbol symbolType,
+            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+            INamedTypeSymbol previewFeatureAttributeSymbol)
+        {
             if (SymbolIsAnnotatedAsPreview(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
             {
                 context.ReportDiagnostic(symbol.CreateDiagnostic(FieldOrEventIsPreviewTypeRule, symbol.Name, symbolType.Name));
             }
-            if (ProcessGenericTypesForPreviewAttributes(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
+            if (SymbolContainsGenericTypesWithPreviewAttributes(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
             {
                 context.ReportDiagnostic(symbol.CreateDiagnostic(FieldOrEventIsPreviewTypeRule, symbol.Name, previewSymbol.Name));
             }
@@ -210,14 +217,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 symbolType = arrayType.ElementType;
             }
 
-            if (SymbolIsAnnotatedAsPreview(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
-            {
-                context.ReportDiagnostic(symbol.CreateDiagnostic(FieldOrEventIsPreviewTypeRule, symbol.Name, symbolType.Name));
-            }
-            if (ProcessGenericTypesForPreviewAttributes(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
-            {
-                context.ReportDiagnostic(symbol.CreateDiagnostic(FieldOrEventIsPreviewTypeRule, symbol.Name, previewSymbol.Name));
-            }
+            ProcessFieldOrEventSymbolAttributes(context, symbol, symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
         }
 
         private static void ProcessTypeSymbolAttributes(SymbolAnalysisContext context, ITypeSymbol symbol,
@@ -234,7 +234,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
-            if (ProcessGenericTypesForPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
+            if (SymbolContainsGenericTypesWithPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
             {
                 context.ReportDiagnostic(symbol.CreateDiagnostic(UsesPreviewTypeParameterRule, symbol.Name, previewSymbol.Name));
             }
@@ -275,7 +275,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return false;
         }
 
-        private static bool ProcessGenericTypesForPreviewAttributes(ISymbol symbol,
+        private static bool SymbolContainsGenericTypesWithPreviewAttributes(ISymbol symbol,
             ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
             INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? previewSymbol)
         {
@@ -366,14 +366,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         context.ReportDiagnostic(parameter.CreateDiagnostic(MethodUsesPreviewTypeAsParameterRule, propertyOrMethodSymbol.Name, parameter.Type.Name));
                     }
 
-                    if (ProcessGenericTypesForPreviewAttributes(parameter.Type, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? referencedPreviewSymbol))
+                    if (SymbolContainsGenericTypesWithPreviewAttributes(parameter.Type, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? referencedPreviewSymbol))
                     {
                         context.ReportDiagnostic(propertyOrMethodSymbol.CreateDiagnostic(UsesPreviewTypeParameterRule, propertyOrMethodSymbol.Name, referencedPreviewSymbol.Name));
                     }
                 }
             }
 
-            if (ProcessGenericTypesForPreviewAttributes(propertyOrMethodSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
+            if (SymbolContainsGenericTypesWithPreviewAttributes(propertyOrMethodSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
             {
                 context.ReportDiagnostic(propertyOrMethodSymbol.CreateDiagnostic(UsesPreviewTypeParameterRule, propertyOrMethodSymbol.Name, previewSymbol.Name));
             }
@@ -432,7 +432,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return true;
             }
 
-            if (ProcessGenericTypesForPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
+            if (SymbolContainsGenericTypesWithPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
             {
                 return true;
             }
