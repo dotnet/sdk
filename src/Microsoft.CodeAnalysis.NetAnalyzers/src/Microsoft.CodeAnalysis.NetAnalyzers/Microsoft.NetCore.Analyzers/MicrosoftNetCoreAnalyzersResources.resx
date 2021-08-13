@@ -1534,6 +1534,15 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="BufferBlockCopyLengthMessage" xml:space="preserve">
+    <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
+  </data>
+  <data name="BufferBlockCopyLengthTitle" xml:space="preserve">
+    <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</value>
+  </data>
+  <data name="BufferBlockCopyDescription" xml:space="preserve">
+    <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
+  </data>
   <data name="PreferAsSpanOverSubstringDescription" xml:space="preserve">
     <value>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</value>
   </data>

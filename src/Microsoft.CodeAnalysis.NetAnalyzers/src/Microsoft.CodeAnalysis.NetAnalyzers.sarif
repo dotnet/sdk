@@ -2885,6 +2885,26 @@
             ]
           }
         },
+        "CA2018": {
+          "id": "CA2018",
+          "shortDescription": "'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument",
+          "fullDescription": "'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2018",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "BufferBlockCopyLengthAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",
