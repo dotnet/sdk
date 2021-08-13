@@ -1595,8 +1595,8 @@
         },
         "CA1419": {
           "id": "CA1419",
-          "shortDescription": "Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'",
-          "fullDescription": "Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.",
+          "shortDescription": "Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'",
+          "fullDescription": "Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419",
           "properties": {

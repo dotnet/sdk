@@ -720,9 +720,9 @@ Platform compatibility analyzer requires a valid platform name and version.
 |CodeFix|False|
 ---
 
-## [CA1419](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419): Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'
+## [CA1419](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419): Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'
 
-Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.
+Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.
 
 |Item|Value|
 |-|-|
