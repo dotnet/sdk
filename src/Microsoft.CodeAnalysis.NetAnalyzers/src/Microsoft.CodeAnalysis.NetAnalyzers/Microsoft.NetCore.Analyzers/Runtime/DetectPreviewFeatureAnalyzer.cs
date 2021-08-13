@@ -124,7 +124,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private const string RequiresPreviewFeaturesAttribute = nameof(RequiresPreviewFeaturesAttribute);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(GeneralPreviewFeatureAttributeRule, StaticAbstractIsPreviewFeatureRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(GeneralPreviewFeatureAttributeRule,
+            ImplementsPreviewInterfaceRule,
+            ImplementsPreviewMethodRule,
+            OverridesPreviewMethodRule,
+            DerivesFromPreviewClassRule,
+            UsesPreviewTypeParameterRule,
+            MethodReturnsPreviewTypeRule,
+            MethodUsesPreviewTypeAsParameterRule,
+            FieldOrEventIsPreviewTypeRule,
+            StaticAbstractIsPreviewFeatureRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -185,7 +194,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             INamedTypeSymbol previewFeatureAttributeSymbol)
         {
             ISymbol symbolType = symbol.Type;
-            if (symbolType is IArrayTypeSymbol arrayType)
+            while (symbolType is IArrayTypeSymbol arrayType)
             {
                 symbolType = arrayType.ElementType;
             }
@@ -212,7 +221,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             INamedTypeSymbol previewFeatureAttributeSymbol)
         {
             ISymbol symbolType = symbol.Type;
-            if (symbolType is IArrayTypeSymbol arrayType)
+            while (symbolType is IArrayTypeSymbol arrayType)
             {
                 symbolType = arrayType.ElementType;
             }
