@@ -1686,4 +1686,28 @@
   <data name="StaticAndAbstractRequiresPreviewFeatures" xml:space="preserve">
     <value>Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
   </data>
+  <data name="DerivesFromPreviewClassMessage" xml:space="preserve">
+    <value>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="ImplementsPreviewInterfaceMessage" xml:space="preserve">
+    <value>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="ImplementsPreviewMethodMessage" xml:space="preserve">
+    <value>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="MethodReturnsPreviewTypeMessage" xml:space="preserve">
+    <value>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="MethodUsesPreviewTypeAsParamaterMessage" xml:space="preserve">
+    <value>`{0}` takes in a preview parameter of type `{1}` and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="OverridesPreviewMethodMessage" xml:space="preserve">
+    <value>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
+    <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="FieldIsPreviewTypeMessage" xml:space="preserve">
+    <value>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
 </root>

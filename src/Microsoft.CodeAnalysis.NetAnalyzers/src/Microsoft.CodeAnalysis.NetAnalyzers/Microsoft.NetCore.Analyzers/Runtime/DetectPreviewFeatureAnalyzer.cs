@@ -21,6 +21,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string RuleId = "CA2252";
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DetectPreviewFeaturesTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DetectPreviewFeaturesMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_implementsPreviewInterfaceMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementsPreviewInterfaceMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_implementsPreviewMethodMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementsPreviewMethodMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_overridesPreviewMethodMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.OverridesPreviewMethodMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_derivesFromPreviewClassMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DerivesFromPreviewClassMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_usesPreviewTypeParameterMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsesPreviewTypeParameterMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_methodReturnsPreviewTypeMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MethodReturnsPreviewTypeMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_methodUsesPreviewTypeAsParameterMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MethodUsesPreviewTypeAsParamaterMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_fieldOfPreviewTypeMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.FieldIsPreviewTypeMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_staticAbstractMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.StaticAndAbstractRequiresPreviewFeatures), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DetectPreviewFeaturesDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly ImmutableArray<SymbolKind> s_symbols = ImmutableArray.Create(SymbolKind.NamedType, SymbolKind.Method, SymbolKind.Property, SymbolKind.Field, SymbolKind.Event);
@@ -34,6 +42,77 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                     isPortedFxCopRule: false,
                                                                                                                     isDataflowRule: false);
 
+        internal static DiagnosticDescriptor ImplementsPreviewInterfaceRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                                                                s_localizableTitle,
+                                                                                                                s_implementsPreviewInterfaceMessage,
+                                                                                                                DiagnosticCategory.Usage,
+                                                                                                                RuleLevel.IdeSuggestion,
+                                                                                                                s_localizableDescription,
+                                                                                                                isPortedFxCopRule: false,
+                                                                                                                isDataflowRule: false);
+
+        internal static DiagnosticDescriptor ImplementsPreviewMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                                                                s_localizableTitle,
+                                                                                                                s_implementsPreviewMethodMessage,
+                                                                                                                DiagnosticCategory.Usage,
+                                                                                                                RuleLevel.IdeSuggestion,
+                                                                                                                s_localizableDescription,
+                                                                                                                isPortedFxCopRule: false,
+                                                                                                                isDataflowRule: false);
+
+        internal static DiagnosticDescriptor OverridesPreviewMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                                                                s_localizableTitle,
+                                                                                                                s_overridesPreviewMethodMessage,
+                                                                                                                DiagnosticCategory.Usage,
+                                                                                                                RuleLevel.IdeSuggestion,
+                                                                                                                s_localizableDescription,
+                                                                                                                isPortedFxCopRule: false,
+                                                                                                                isDataflowRule: false);
+
+        internal static DiagnosticDescriptor DerivesFromPreviewClassRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                                                             s_localizableTitle,
+                                                                                                             s_derivesFromPreviewClassMessage,
+                                                                                                             DiagnosticCategory.Usage,
+                                                                                                             RuleLevel.IdeSuggestion,
+                                                                                                             s_localizableDescription,
+                                                                                                             isPortedFxCopRule: false,
+                                                                                                             isDataflowRule: false);
+
+        internal static DiagnosticDescriptor UsesPreviewTypeParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                                                              s_localizableTitle,
+                                                                                                              s_usesPreviewTypeParameterMessage,
+                                                                                                              DiagnosticCategory.Usage,
+                                                                                                              RuleLevel.IdeSuggestion,
+                                                                                                              s_localizableDescription,
+                                                                                                              isPortedFxCopRule: false,
+                                                                                                              isDataflowRule: false);
+
+        internal static DiagnosticDescriptor MethodReturnsPreviewTypeRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                                                              s_localizableTitle,
+                                                                                                              s_methodReturnsPreviewTypeMessage,
+                                                                                                              DiagnosticCategory.Usage,
+                                                                                                              RuleLevel.IdeSuggestion,
+                                                                                                              s_localizableDescription,
+                                                                                                              isPortedFxCopRule: false,
+                                                                                                              isDataflowRule: false);
+
+        internal static DiagnosticDescriptor MethodUsesPreviewTypeAsParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                                                                      s_localizableTitle,
+                                                                                                                      s_methodUsesPreviewTypeAsParameterMessage,
+                                                                                                                      DiagnosticCategory.Usage,
+                                                                                                                      RuleLevel.IdeSuggestion,
+                                                                                                                      s_localizableDescription,
+                                                                                                                      isPortedFxCopRule: false,
+                                                                                                                      isDataflowRule: false);
+        internal static DiagnosticDescriptor FieldOrEventIsPreviewTypeRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                                                        s_localizableTitle,
+                                                                                                        s_fieldOfPreviewTypeMessage,
+                                                                                                        DiagnosticCategory.Usage,
+                                                                                                        RuleLevel.IdeSuggestion,
+                                                                                                        s_localizableDescription,
+                                                                                                        isPortedFxCopRule: false,
+                                                                                                        isDataflowRule: false);
+
         internal static DiagnosticDescriptor StaticAbstractIsPreviewFeatureRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                     s_localizableTitle,
                                                                                                                     s_staticAbstractMessage,
@@ -46,12 +125,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private const string RequiresPreviewFeaturesAttribute = nameof(RequiresPreviewFeaturesAttribute);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(GeneralPreviewFeatureAttributeRule, StaticAbstractIsPreviewFeatureRule);
-
-        private enum PreviewFeatureUsageType
-        {
-            General = 0,
-            StaticAbstract,
-        }
 
         public override void Initialize(AnalysisContext context)
         {
@@ -71,7 +144,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols = new();
-                ConcurrentDictionary<ISymbol, PreviewFeatureUsageType> requiresPreviewFeaturesSymbolsToUsageType = new();
 
                 IFieldSymbol? virtualStaticsInInterfaces = null;
                 if (context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesRuntimeFeature, out INamedTypeSymbol? runtimeFeatureType))
@@ -83,11 +155,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     if (virtualStaticsInInterfaces != null)
                     {
-                        ProcessPreviewAttribute(virtualStaticsInInterfaces, requiresPreviewFeaturesSymbols, previewFeaturesAttribute);
+                        SymbolIsAnnotatedAsPreview(virtualStaticsInInterfaces, requiresPreviewFeaturesSymbols, previewFeaturesAttribute);
                     }
                 }
 
-                // Handle user side invocation/references to preview features
+                // Handle symbol operations involving preview features
                 context.RegisterOperationAction(context => BuildSymbolInformationFromOperations(context, requiresPreviewFeaturesSymbols, previewFeaturesAttribute),
                     OperationKind.Invocation,
                     OperationKind.ObjectCreation,
@@ -99,15 +171,56 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     OperationKind.Binary,
                     OperationKind.ArrayCreation,
                     OperationKind.CatchClause,
-                    OperationKind.TypeOf
+                    OperationKind.TypeOf,
+                    OperationKind.EventAssignment
                     );
 
-                // Handle library side definitions of preview features
-                context.RegisterSymbolAction(context => AnalyzeSymbol(context, requiresPreviewFeaturesSymbols, requiresPreviewFeaturesSymbolsToUsageType, virtualStaticsInInterfaces, previewFeaturesAttribute), s_symbols);
+                // Handle preview symbol definitions
+                context.RegisterSymbolAction(context => AnalyzeSymbol(context, requiresPreviewFeaturesSymbols, virtualStaticsInInterfaces, previewFeaturesAttribute), s_symbols);
             });
         }
 
-        private static bool ProcessTypeSymbolAttributes(ITypeSymbol symbol,
+        private static void ProcessFieldSymbolAttributes(SymbolAnalysisContext context, IFieldSymbol symbol,
+            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+            INamedTypeSymbol previewFeatureAttributeSymbol)
+        {
+            ISymbol symbolType = symbol.Type;
+            if (symbolType is IArrayTypeSymbol arrayType)
+            {
+                symbolType = arrayType.ElementType;
+            }
+
+            if (SymbolIsAnnotatedAsPreview(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+            {
+                context.ReportDiagnostic(symbol.CreateDiagnostic(FieldOrEventIsPreviewTypeRule, symbol.Name, symbolType.Name));
+            }
+            if (ProcessGenericTypesForPreviewAttributes(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
+            {
+                context.ReportDiagnostic(symbol.CreateDiagnostic(FieldOrEventIsPreviewTypeRule, symbol.Name, previewSymbol.Name));
+            }
+        }
+
+        private static void ProcessEventSymbolAttributes(SymbolAnalysisContext context, IEventSymbol symbol,
+            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+            INamedTypeSymbol previewFeatureAttributeSymbol)
+        {
+            ISymbol symbolType = symbol.Type;
+            if (symbolType is IArrayTypeSymbol arrayType)
+            {
+                symbolType = arrayType.ElementType;
+            }
+
+            if (SymbolIsAnnotatedAsPreview(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+            {
+                context.ReportDiagnostic(symbol.CreateDiagnostic(FieldOrEventIsPreviewTypeRule, symbol.Name, symbolType.Name));
+            }
+            if (ProcessGenericTypesForPreviewAttributes(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
+            {
+                context.ReportDiagnostic(symbol.CreateDiagnostic(FieldOrEventIsPreviewTypeRule, symbol.Name, previewSymbol.Name));
+            }
+        }
+
+        private static void ProcessTypeSymbolAttributes(SymbolAnalysisContext context, ITypeSymbol symbol,
             ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
             INamedTypeSymbol previewFeatureAttributeSymbol)
         {
@@ -115,40 +228,67 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             ImmutableArray<INamedTypeSymbol> interfaces = symbol.Interfaces;
             foreach (INamedTypeSymbol anInterface in interfaces)
             {
-                if (ProcessPreviewAttribute(anInterface, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                if (SymbolIsAnnotatedAsPreview(anInterface, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
-                    return true;
+                    context.ReportDiagnostic(symbol.CreateDiagnostic(ImplementsPreviewInterfaceRule, symbol.Name, anInterface.Name));
                 }
             }
 
-            if (ProcessGenericTypesForPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+            if (ProcessGenericTypesForPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
             {
-                return true;
+                context.ReportDiagnostic(symbol.CreateDiagnostic(UsesPreviewTypeParameterRule, symbol.Name, previewSymbol.Name));
+            }
+
+            if (ProcessTypeAttributeForPreviewness(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out SyntaxReference? attributeSyntaxReference, out string? attributeName))
+            {
+                context.ReportDiagnostic(attributeSyntaxReference.GetSyntax(context.CancellationToken).CreateDiagnostic(GeneralPreviewFeatureAttributeRule, attributeName));
             }
 
             INamedTypeSymbol? baseType = symbol.BaseType;
             if (baseType != null)
             {
-                return ProcessPreviewAttribute(baseType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
+                if (SymbolIsAnnotatedAsPreview(baseType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                {
+                    context.ReportDiagnostic(symbol.CreateDiagnostic(DerivesFromPreviewClassRule, symbol.Name, baseType.Name));
+                }
+            }
+        }
+
+        private static bool ProcessTypeAttributeForPreviewness(ISymbol symbol,
+            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+            INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out SyntaxReference? attributeSyntaxReference, [NotNullWhen(true)] out string? attributeName)
+        {
+            ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
+            for (int i = 0; i < attributes.Length; i++)
+            {
+                AttributeData attribute = attributes[i];
+                if (SymbolIsAnnotatedAsPreview(attribute.AttributeClass, requiresPreviewFeaturesSymbols, previewFeatureAttribute) || SymbolIsAnnotatedAsPreview(attribute.AttributeConstructor, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
+                {
+                    attributeName = attribute.AttributeClass.Name;
+                    attributeSyntaxReference = attribute.ApplicationSyntaxReference;
+                    return true;
+                }
             }
 
+            attributeName = null;
+            attributeSyntaxReference = null;
             return false;
         }
 
         private static bool ProcessGenericTypesForPreviewAttributes(ISymbol symbol,
             ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
-            INamedTypeSymbol previewFeatureAttribute)
+            INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? previewSymbol)
         {
             if (symbol is INamedTypeSymbol typeSymbol && typeSymbol.Arity > 0)
             {
                 ImmutableArray<ITypeSymbol> typeArguments = typeSymbol.TypeArguments;
-                if (ProcessTypeArgumentsForPreviewAttributes(typeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
+                if (TypeArgumentsHavePreviewAttribute(typeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out previewSymbol))
                 {
                     return true;
                 }
 
                 ImmutableArray<ITypeParameterSymbol> typeParameters = typeSymbol.TypeParameters;
-                if (ProcessTypeParametersForPreviewAttributes(typeParameters, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
+                if (TypeParametersHavePreviewAttribute(typeParameters, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out previewSymbol))
                 {
                     return true;
                 }
@@ -157,145 +297,116 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (symbol is IMethodSymbol methodSymbol && methodSymbol.Arity > 0)
             {
                 ImmutableArray<ITypeSymbol> typeArguments = methodSymbol.TypeArguments;
-                if (ProcessTypeArgumentsForPreviewAttributes(typeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
+                if (TypeArgumentsHavePreviewAttribute(typeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out previewSymbol))
                 {
                     return true;
                 }
 
                 ImmutableArray<ITypeParameterSymbol> typeParameters = methodSymbol.TypeParameters;
-                if (ProcessTypeParametersForPreviewAttributes(typeParameters, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
+                if (TypeParametersHavePreviewAttribute(typeParameters, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out previewSymbol))
                 {
                     return true;
                 }
             }
 
-            return false;
-        }
-
-        private static bool ProcessContainingTypePreviewAttributes(ISymbol symbol,
-            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
-            INamedTypeSymbol previewFeatureAttributeSymbol)
-        {
-            INamedTypeSymbol? containingType = symbol.ContainingType;
-            // Namespaces do not have attributes
-            while (containingType is INamespaceSymbol)
-            {
-                containingType = containingType.ContainingType;
-            }
-
-            if (containingType != null)
-            {
-                return ProcessPreviewAttribute(containingType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol) || ProcessGenericTypesForPreviewAttributes(containingType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
-            }
-
+            previewSymbol = null;
             return false;
         }
 
         private static bool SymbolIsStaticAndAbstract(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttributeSymbol)
         {
             // Static Abstract is only legal on interfaces. Anything else is likely a compile error and we shouldn't tag such cases.
-            return symbol.IsStatic && symbol.IsAbstract && symbol.ContainingType != null && symbol.ContainingType.TypeKind == TypeKind.Interface && !ProcessContainingTypePreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
+            return symbol.IsStatic && symbol.IsAbstract && symbol.ContainingType != null && symbol.ContainingType.TypeKind == TypeKind.Interface && !SymbolIsAnnotatedAsPreview(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
         }
 
-        private static bool ProcessPropertyOrMethodAttributes(ISymbol propertyOrMethodSymbol,
+        private static void ProcessPropertyOrMethodAttributes(SymbolAnalysisContext context, ISymbol propertyOrMethodSymbol,
             ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
-            ConcurrentDictionary<ISymbol, PreviewFeatureUsageType> requiresPreviewFeaturesSymbolsToUsageType,
             IFieldSymbol? virtualStaticsInInterfaces,
             INamedTypeSymbol previewFeatureAttributeSymbol)
         {
             if (SymbolIsStaticAndAbstract(propertyOrMethodSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
             {
-                if (virtualStaticsInInterfaces != null && ProcessPreviewAttribute(virtualStaticsInInterfaces, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                if (virtualStaticsInInterfaces != null && SymbolIsAnnotatedAsPreview(virtualStaticsInInterfaces, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
-                    requiresPreviewFeaturesSymbolsToUsageType.GetOrAdd(propertyOrMethodSymbol, PreviewFeatureUsageType.StaticAbstract);
-                    return true;
+                    context.ReportDiagnostic(propertyOrMethodSymbol.CreateDiagnostic(StaticAbstractIsPreviewFeatureRule));
                 }
             }
 
             if (propertyOrMethodSymbol.IsImplementationOfAnyImplicitInterfaceMember(out ISymbol baseInterfaceMember))
             {
-                if (ProcessPreviewAttribute(baseInterfaceMember, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol) || ProcessContainingTypePreviewAttributes(baseInterfaceMember, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                if (SymbolIsAnnotatedAsPreview(baseInterfaceMember, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
-                    return true;
+                    string baseInterfaceMemberName = baseInterfaceMember.ContainingType != null ? baseInterfaceMember.ContainingType.Name + "." + baseInterfaceMember.Name : baseInterfaceMember.Name;
+                    context.ReportDiagnostic(propertyOrMethodSymbol.CreateDiagnostic(ImplementsPreviewMethodRule, propertyOrMethodSymbol.Name, baseInterfaceMemberName));
                 }
             }
 
             if (propertyOrMethodSymbol.IsOverride)
             {
-                ISymbol? overridden = propertyOrMethodSymbol.GetOverriddenMember();
-                if (overridden != null && ProcessPreviewAttribute(overridden, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                ISymbol overridden = propertyOrMethodSymbol.GetOverriddenMember();
+                if (SymbolIsAnnotatedAsPreview(overridden, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
-                    return true;
+                    string overriddenName = overridden.ContainingType != null ? overridden.ContainingType.Name + "." + overridden.Name : overridden.Name;
+                    context.ReportDiagnostic(propertyOrMethodSymbol.CreateDiagnostic(OverridesPreviewMethodRule, propertyOrMethodSymbol.Name, overriddenName));
                 }
             }
 
             if (propertyOrMethodSymbol is IMethodSymbol method)
             {
-                if (ProcessPreviewAttribute(method.ReturnType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                if (SymbolIsAnnotatedAsPreview(method.ReturnType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
-                    return true;
+                    context.ReportDiagnostic(method.CreateDiagnostic(MethodReturnsPreviewTypeRule, propertyOrMethodSymbol.Name, method.ReturnType.Name));
                 }
 
                 ImmutableArray<IParameterSymbol> parameters = method.Parameters;
                 foreach (IParameterSymbol parameter in parameters)
                 {
-                    if (ProcessPreviewAttribute(parameter.Type, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol) ||
-                        ProcessGenericTypesForPreviewAttributes(parameter.Type, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                    if (SymbolIsAnnotatedAsPreview(parameter.Type, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                     {
-                        return true;
+                        context.ReportDiagnostic(parameter.CreateDiagnostic(MethodUsesPreviewTypeAsParameterRule, propertyOrMethodSymbol.Name, parameter.Type.Name));
+                    }
+
+                    if (ProcessGenericTypesForPreviewAttributes(parameter.Type, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? referencedPreviewSymbol))
+                    {
+                        context.ReportDiagnostic(propertyOrMethodSymbol.CreateDiagnostic(UsesPreviewTypeParameterRule, propertyOrMethodSymbol.Name, referencedPreviewSymbol.Name));
                     }
                 }
             }
 
-            if (ProcessGenericTypesForPreviewAttributes(propertyOrMethodSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+            if (ProcessGenericTypesForPreviewAttributes(propertyOrMethodSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol))
             {
-                return true;
+                context.ReportDiagnostic(propertyOrMethodSymbol.CreateDiagnostic(UsesPreviewTypeParameterRule, propertyOrMethodSymbol.Name, previewSymbol.Name));
             }
-
-            return false;
         }
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context,
             ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
-            ConcurrentDictionary<ISymbol, PreviewFeatureUsageType> requiresPreviewFeaturesSymbolsToUsageType,
             IFieldSymbol? virtualStaticsInInterfaces,
             INamedTypeSymbol previewFeatureAttributeSymbol)
         {
             ISymbol symbol = context.Symbol;
 
-            // Don't report diagnostics on symbols that are marked as Preview or if the ContainingType is Preview. We'll miss 2+ level nested type/method definitions, but that's ok. Only users who suppress the analyzer will run into this case.
-            if (ProcessPreviewAttribute(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol) ||
-                (symbol is IMethodSymbol method && method.AssociatedSymbol != null && ProcessPreviewAttribute(method.AssociatedSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol)))
+            if (SymbolIsAnnotatedAsPreview(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol) ||
+                (symbol is IMethodSymbol method && method.AssociatedSymbol != null && SymbolIsAnnotatedAsPreview(method.AssociatedSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol)))
             {
                 return;
             }
 
-            ISymbol containingSymbol = symbol.ContainingType;
-            if (containingSymbol != null && ProcessPreviewAttribute(containingSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+            if (symbol is ITypeSymbol typeSymbol)
             {
-                return;
+                ProcessTypeSymbolAttributes(context, typeSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
             }
-
-            var reportDiagnostic = symbol switch
+            else if (symbol is IMethodSymbol || symbol is IPropertySymbol)
             {
-                ITypeSymbol typeSymbol => ProcessTypeSymbolAttributes(typeSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol),
-                IPropertySymbol or IMethodSymbol => ProcessPropertyOrMethodAttributes(symbol, requiresPreviewFeaturesSymbols, requiresPreviewFeaturesSymbolsToUsageType, virtualStaticsInInterfaces, previewFeatureAttributeSymbol),
-                _ => false
-            };
-
-            if (reportDiagnostic)
+                ProcessPropertyOrMethodAttributes(context, symbol, requiresPreviewFeaturesSymbols,/* requiresPreviewFeaturesSymbolsToUsageType,*/ virtualStaticsInInterfaces, previewFeatureAttributeSymbol);
+            }
+            else if (symbol is IFieldSymbol fieldSymbol)
             {
-                if (requiresPreviewFeaturesSymbolsToUsageType.TryGetValue(symbol, out PreviewFeatureUsageType usageType))
-                {
-                    if (usageType == PreviewFeatureUsageType.StaticAbstract)
-                    {
-                        context.ReportDiagnostic(symbol.CreateDiagnostic(StaticAbstractIsPreviewFeatureRule));
-                    }
-                }
-                else
-                {
-                    context.ReportDiagnostic(symbol.CreateDiagnostic(GeneralPreviewFeatureAttributeRule, symbol.Name));
-                }
+                ProcessFieldSymbolAttributes(context, fieldSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
+            }
+            else if (symbol is IEventSymbol eventSymbol)
+            {
+                ProcessEventSymbolAttributes(context, eventSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
             }
         }
 
@@ -313,19 +424,84 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private static bool OperationUsesPreviewFeatures(OperationAnalysisContext context, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttributeSymbol, [NotNullWhen(true)] out ISymbol? symbol)
+        private static bool SymbolIsAnnotatedOrUsesPreviewTypes(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttributeSymbol, [NotNullWhen(true)] out ISymbol? referencedPreviewSymbol)
+        {
+            if (SymbolIsAnnotatedAsPreview(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+            {
+                referencedPreviewSymbol = symbol;
+                return true;
+            }
+
+            if (ProcessGenericTypesForPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
+            {
+                return true;
+            }
+
+            referencedPreviewSymbol = null;
+            return false;
+        }
+
+        private static bool OperationUsesPreviewFeatures(OperationAnalysisContext context, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttributeSymbol, [NotNullWhen(true)] out ISymbol? referencedPreviewSymbol)
         {
             IOperation operation = context.Operation;
             ISymbol containingSymbol = context.ContainingSymbol;
-            if (ProcessPreviewAttribute(containingSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol) ||
-                ProcessPreviewAttribute(containingSymbol.ContainingSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+            if (SymbolIsAnnotatedAsPreview(containingSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
             {
-                symbol = null;
+                referencedPreviewSymbol = null;
                 return false;
             }
 
-            symbol = GetOperationSymbol(operation);
-            return symbol != null && (ProcessPreviewAttribute(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol) || ProcessContainingTypePreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol));
+            ISymbol? symbol = GetOperationSymbol(operation);
+            if (symbol != null)
+            {
+                if (symbol is IPropertySymbol propertySymbol)
+                {
+                    // bool AProperty => true is different from bool AProperty { get => false }. Handle both here
+                    if (SymbolIsAnnotatedOrUsesPreviewTypes(propertySymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
+                    {
+                        return true;
+                    }
+
+                    ValueUsageInfo usageInfo = operation.GetValueUsageInfo(propertySymbol);
+                    if (usageInfo.IsReadFrom())
+                    {
+                        symbol = propertySymbol.GetMethod;
+                    }
+
+                    if (usageInfo.IsWrittenTo() || usageInfo == ValueUsageInfo.ReadWrite)
+                    {
+                        symbol = propertySymbol.SetMethod;
+                    }
+                }
+
+                if (operation is IEventAssignmentOperation eventAssignment && symbol is IEventSymbol eventSymbol)
+                {
+                    symbol = eventAssignment.Adds ? eventSymbol.AddMethod : eventSymbol.RemoveMethod;
+                }
+
+                if (symbol is IMethodSymbol methodSymbol && methodSymbol.IsConstructor())
+                {
+                    if (SymbolIsAnnotatedOrUsesPreviewTypes(methodSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
+                    {
+                        // Constructor symbols have the name .ctor. Return the containing type instead so we get meaningful names in the diagnostic message
+                        referencedPreviewSymbol = referencedPreviewSymbol.ContainingType;
+                        return true;
+                    }
+
+                    if (SymbolIsAnnotatedOrUsesPreviewTypes(methodSymbol.ContainingType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
+                    {
+                        return true;
+                    }
+                }
+
+                if (SymbolIsAnnotatedOrUsesPreviewTypes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
+                {
+                    return true;
+                }
+            }
+
+            referencedPreviewSymbol = null;
+            return false;
         }
 
         private static ISymbol? GetOperationSymbol(IOperation operation)
@@ -342,46 +518,89 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 IArrayCreationOperation arrayCreationOperation => (arrayCreationOperation.Type as IArrayTypeSymbol)?.ElementType,
                 ICatchClauseOperation catchClauseOperation => catchClauseOperation.ExceptionType,
                 ITypeOfOperation typeOfOperation => typeOfOperation.TypeOperand,
+                IEventAssignmentOperation eventAssignment => GetOperationSymbol(eventAssignment.EventReference),
                 _ => null,
             };
 
-        private static bool ProcessTypeParametersForPreviewAttributes(ImmutableArray<ITypeParameterSymbol> typeParameters, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute)
+        private static bool TypeParametersHavePreviewAttribute(ImmutableArray<ITypeParameterSymbol> typeParameters, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? previewSymbol)
         {
             foreach (ITypeParameterSymbol typeParameter in typeParameters)
             {
                 ImmutableArray<ITypeSymbol> constraintTypes = typeParameter.ConstraintTypes;
                 foreach (ITypeSymbol constraintType in constraintTypes)
                 {
-                    if (ProcessPreviewAttribute(constraintType, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
+                    if (SymbolIsAnnotatedAsPreview(constraintType, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
                     {
+                        previewSymbol = constraintType;
                         return true;
                     }
                 }
             }
 
+            previewSymbol = null;
             return false;
         }
 
-        private static bool ProcessTypeArgumentsForPreviewAttributes(ImmutableArray<ITypeSymbol> typeArguments, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute)
+        private static bool TypeArgumentsHavePreviewAttribute(ImmutableArray<ITypeSymbol> typeArguments, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? previewSymbol)
         {
             foreach (ITypeSymbol typeParameter in typeArguments)
             {
-                if (ProcessPreviewAttribute(typeParameter, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
+                if (SymbolIsAnnotatedAsPreview(typeParameter, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
                 {
+                    previewSymbol = typeParameter;
                     return true;
                 }
             }
 
+            previewSymbol = null;
             return false;
         }
 
-        private static bool ProcessPreviewAttribute(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute)
+        private static bool SymbolIsAnnotatedAsPreview(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute)
         {
+            static bool ContainingSymbolHeirarchyIsAnnotatedAsPreview(ISymbol symbol,
+                ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+                INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? containingPreviewSymbol)
+            {
+                INamedTypeSymbol? containingType = symbol.ContainingType;
+                while (containingType != null)
+                {
+                    // Namespaces do not have attributes
+                    if (!(containingType is INamespaceSymbol))
+                    {
+                        if (containingType.HasAttribute(previewFeatureAttribute))
+                        {
+                            requiresPreviewFeaturesSymbols.GetOrAdd(containingType, true);
+                            containingPreviewSymbol = containingType;
+                            return true;
+                        }
+                    }
+
+                    containingType = containingType.ContainingType;
+                }
+
+                containingPreviewSymbol = null;
+                return false;
+            }
+
             if (!requiresPreviewFeaturesSymbols.TryGetValue(symbol, out bool existing))
             {
                 if (symbol.HasAttribute(previewFeatureAttribute))
                 {
                     requiresPreviewFeaturesSymbols.GetOrAdd(symbol, true);
+                    return true;
+                }
+
+                if (ContainingSymbolHeirarchyIsAnnotatedAsPreview(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out ISymbol? containingPreviewSymbol))
+                {
+                    ISymbol loopSymbol = symbol.ContainingSymbol;
+                    requiresPreviewFeaturesSymbols.GetOrAdd(loopSymbol, true);
+                    while (loopSymbol != containingPreviewSymbol)
+                    {
+                        requiresPreviewFeaturesSymbols.GetOrAdd(loopSymbol, true);
+                        loopSymbol = loopSymbol.ContainingSymbol;
+                    }
+
                     return true;
                 }
 

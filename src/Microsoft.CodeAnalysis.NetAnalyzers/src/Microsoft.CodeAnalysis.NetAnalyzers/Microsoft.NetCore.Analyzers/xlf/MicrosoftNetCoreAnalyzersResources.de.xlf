@@ -322,6 +322,11 @@
         <target state="translated">Keine veralteten SslProtocols-Werte verwenden</target>
         <note />
       </trans-unit>
+      <trans-unit id="DerivesFromPreviewClassMessage">
+        <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
         <source>An assembly has to opt into preview features before using them.</source>
         <target state="new">An assembly has to opt into preview features before using them.</target>
@@ -1037,6 +1042,16 @@
         <target state="translated">Verwenden Sie kein XslTransform. Es schränkt potenziell gefährliche externe Verweise nicht ein.</target>
         <note />
       </trans-unit>
+      <trans-unit id="EventIsPreviewTypeMessage">
+        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldIsPreviewTypeMessage">
+        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
         <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
         <target state="translated">Die Finalisierung muss über die Vererbungshierarchie verteilt werden. Um dies zu gewährleisten, müssen Typen in ihrer eigenen Finalize-Methode die Finalize-Methode ihrer Basisklasse aufrufen.</target>
@@ -1180,6 +1195,16 @@
       <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
         <source>Implement serialization methods correctly</source>
         <target state="translated">Serialisierungsmethoden korrekt implementieren</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewInterfaceMessage">
+        <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewMethodMessage">
+        <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1447,6 +1472,16 @@
         <target state="translated">Stellen Sie eine Iterationsanzahl von mindestens {0} sicher, wenn Sie einen kryptografischen Schlüssel aus einem Kennwort ableiten. Standardmäßig beträgt IterationCount von Rfc2898DeriveByte nur 1000.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MethodReturnsPreviewTypeMessage">
+        <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParamaterMessage">
+        <source>`{0}` takes in a preview parameter of type `{1}` and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">`{0}` takes in a preview parameter of type `{1}` and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
         <source>Miss HttpVerb attribute for action methods</source>
         <target state="translated">Fehlendes HttpVerb-Attribut für Aktionsmethoden</target>
@@ -1520,6 +1555,11 @@
       <trans-unit id="ObjectStateFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer ObjectStateFormatter</source>
         <target state="translated">Nicht den unsicheren ObjectStateFormatter zur Deserialisierung verwenden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverridesPreviewMethodMessage">
+        <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -2590,6 +2630,11 @@
       <trans-unit id="UseXmlReaderMessage">
         <source>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
         <target state="translated">Diese Überladung der {0}.{1}-Methode ist potenziell unsicher. Sie kann die Dokumenttypdefinition (DTD) aktivieren, die für DoS-Angriff (Denial of Service) anfällig ist, oder einen XmlResolver verwenden, der anfällig für eine Offenlegung von Informationen sein kann. Verwenden Sie eine Überladung, die stattdessen eine XmlReader-Instanz nutzt, und bei der die DTD-Verarbeitung deaktiviert ist und kein XmlResolver-Vorgang ausgeführt wird.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsesPreviewTypeParameterMessage">
+        <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
         <note />
       </trans-unit>
     </body>
