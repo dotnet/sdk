@@ -155,6 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 #region "IFormatProviderAlternateStringRule Only"
                 if (stringFormatMemberWithIFormatProviderStringAndParamsObjectParameter != null &&
+                    !oaContext.Options.IsConfiguredToSkipAnalysis(IFormatProviderAlternateStringRule, targetMethod, oaContext.ContainingSymbol, oaContext.Compilation) &&
                     (targetMethod.Equals(stringFormatMemberWithStringAndObjectParameter) ||
                      targetMethod.Equals(stringFormatMemberWithStringObjectAndObjectParameter) ||
                      targetMethod.Equals(stringFormatMemberWithStringObjectObjectAndObjectParameter) ||
@@ -174,65 +175,78 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 #endregion
 
                 #region "IFormatProviderAlternateStringRule & IFormatProviderAlternateRule"
-
-                IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>().WhereMethodDoesNotContainAttribute(obsoleteAttributeType).ToList();
-                if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
                 {
-                    var correctOverloads = methodsWithSameNameAsTargetMethod.GetMethodOverloadsWithDesiredParameterAtLeadingOrTrailing(targetMethod, iformatProviderType).ToList();
+                    var rule = targetMethod.ReturnType.Equals(stringType) ?
+                        IFormatProviderAlternateStringRule :
+                        IFormatProviderAlternateRule;
 
-                    // If there are two matching overloads, one with CultureInfo as the first parameter and one with CultureInfo as the last parameter,
-                    // report the diagnostic on the overload with CultureInfo as the last parameter, to match the behavior of FxCop.
-                    var correctOverload = correctOverloads.FirstOrDefault(overload => overload.Parameters.Last().Type.Equals(iformatProviderType)) ?? correctOverloads.FirstOrDefault();
-
-                    // Sample message for IFormatProviderAlternateRule: Because the behavior of Convert.ToInt64(string) could vary based on the current user's locale settings,
-                    // replace this call in IFormatProviderStringTest.TestMethod() with a call to Convert.ToInt64(string, IFormatProvider).
-                    if (correctOverload != null)
+                    if (!oaContext.Options.IsConfiguredToSkipAnalysis(rule, targetMethod, oaContext.ContainingSymbol, oaContext.Compilation))
                     {
-                        oaContext.ReportDiagnostic(
-                            invocationExpression.Syntax.CreateDiagnostic(
-                                targetMethod.ReturnType.Equals(stringType) ?
-                                 IFormatProviderAlternateStringRule :
-                                 IFormatProviderAlternateRule,
-                                targetMethod.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
-                                oaContext.ContainingSymbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
-                                correctOverload.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
+                        IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>().WhereMethodDoesNotContainAttribute(obsoleteAttributeType).ToList();
+                        if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
+                        {
+                            var correctOverloads = methodsWithSameNameAsTargetMethod.GetMethodOverloadsWithDesiredParameterAtLeadingOrTrailing(targetMethod, iformatProviderType).ToList();
+
+                            // If there are two matching overloads, one with CultureInfo as the first parameter and one with CultureInfo as the last parameter,
+                            // report the diagnostic on the overload with CultureInfo as the last parameter, to match the behavior of FxCop.
+                            var correctOverload = correctOverloads.FirstOrDefault(overload => overload.Parameters.Last().Type.Equals(iformatProviderType)) ?? correctOverloads.FirstOrDefault();
+
+                            // Sample message for IFormatProviderAlternateRule: Because the behavior of Convert.ToInt64(string) could vary based on the current user's locale settings,
+                            // replace this call in IFormatProviderStringTest.TestMethod() with a call to Convert.ToInt64(string, IFormatProvider).
+                            if (correctOverload != null)
+                            {
+                                oaContext.ReportDiagnostic(
+                                    invocationExpression.Syntax.CreateDiagnostic(
+                                        rule,
+                                        targetMethod.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
+                                        oaContext.ContainingSymbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
+                                        correctOverload.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
+                            }
+                        }
                     }
                 }
                 #endregion
 
                 #region "UICultureStringRule & UICultureRule"
-                IEnumerable<int> IformatProviderParameterIndices = GetIndexesOfParameterType(targetMethod, iformatProviderType);
-                foreach (var index in IformatProviderParameterIndices)
                 {
-                    var argument = invocationExpression.Arguments[index];
+                    var rule = targetMethod.ReturnType.Equals(stringType) ?
+                        UICultureStringRule :
+                        UICultureRule;
 
-                    if (argument != null && currentUICultureProperty != null &&
-                        installedUICultureProperty != null && currentThreadCurrentUICultureProperty != null)
+                    if (!oaContext.Options.IsConfiguredToSkipAnalysis(rule, targetMethod, oaContext.ContainingSymbol, oaContext.Compilation))
                     {
-                        var semanticModel = argument.SemanticModel;
-
-                        var symbol = semanticModel.GetSymbolInfo(argument.Value.Syntax, oaContext.CancellationToken).Symbol;
-
-                        if (symbol != null &&
-                            (symbol.Equals(currentUICultureProperty) ||
-                             symbol.Equals(installedUICultureProperty) ||
-                             symbol.Equals(currentThreadCurrentUICultureProperty) ||
-                             (installedUICulturePropertyOfComputerInfoType != null && symbol.Equals(installedUICulturePropertyOfComputerInfoType))))
+                        IEnumerable<int> IformatProviderParameterIndices = GetIndexesOfParameterType(targetMethod, iformatProviderType);
+                        foreach (var index in IformatProviderParameterIndices)
                         {
-                            // Sample message
-                            // 1. UICultureStringRule - 'TestClass.TestMethod()' passes 'Thread.CurrentUICulture' as the 'IFormatProvider' parameter to 'TestClass.CalleeMethod(string, IFormatProvider)'.
-                            // This property returns a culture that is inappropriate for formatting methods.
-                            // 2. UICultureRule -'TestClass.TestMethod()' passes 'CultureInfo.CurrentUICulture' as the 'IFormatProvider' parameter to 'TestClass.Callee(IFormatProvider, string)'.
-                            // This property returns a culture that is inappropriate for formatting methods.
+                            var argument = invocationExpression.Arguments[index];
 
-                            oaContext.ReportDiagnostic(
-                            invocationExpression.Syntax.CreateDiagnostic(
-                                targetMethod.ReturnType.Equals(stringType) ?
-                                    UICultureStringRule :
-                                    UICultureRule,
-                                oaContext.ContainingSymbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
-                                symbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
-                                targetMethod.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
+                            if (argument != null && currentUICultureProperty != null &&
+                                installedUICultureProperty != null && currentThreadCurrentUICultureProperty != null)
+                            {
+                                var semanticModel = argument.SemanticModel;
+
+                                var symbol = semanticModel.GetSymbolInfo(argument.Value.Syntax, oaContext.CancellationToken).Symbol;
+
+                                if (symbol != null &&
+                                    (symbol.Equals(currentUICultureProperty) ||
+                                     symbol.Equals(installedUICultureProperty) ||
+                                     symbol.Equals(currentThreadCurrentUICultureProperty) ||
+                                     (installedUICulturePropertyOfComputerInfoType != null && symbol.Equals(installedUICulturePropertyOfComputerInfoType))))
+                                {
+                                    // Sample message
+                                    // 1. UICultureStringRule - 'TestClass.TestMethod()' passes 'Thread.CurrentUICulture' as the 'IFormatProvider' parameter to 'TestClass.CalleeMethod(string, IFormatProvider)'.
+                                    // This property returns a culture that is inappropriate for formatting methods.
+                                    // 2. UICultureRule -'TestClass.TestMethod()' passes 'CultureInfo.CurrentUICulture' as the 'IFormatProvider' parameter to 'TestClass.Callee(IFormatProvider, string)'.
+                                    // This property returns a culture that is inappropriate for formatting methods.
+
+                                    oaContext.ReportDiagnostic(
+                                    invocationExpression.Syntax.CreateDiagnostic(
+                                        rule,
+                                        oaContext.ContainingSymbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
+                                        symbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
+                                        targetMethod.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
+                                }
+                            }
                         }
                     }
                 }
