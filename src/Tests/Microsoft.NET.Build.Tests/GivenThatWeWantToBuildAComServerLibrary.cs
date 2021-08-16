@@ -316,5 +316,31 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining("NETSDK1173: ");
         }
+
+        [WindowsOnlyFact]
+        public void It_copies_nuget_package_dependencies()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("ComServerWithDependencies")
+                .WithSource();
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp3.1");
+
+            outputDirectory.Should().OnlyHaveFiles(new[] {
+                "ComServer.dll",
+                "ComServer.pdb",
+                "ComServer.deps.json",
+                "ComServer.comhost.dll",
+                "ComServer.runtimeconfig.json",
+                "ComServer.runtimeconfig.dev.json",
+                "Newstonsoft.Json.dll"
+            });
+        }
     }
 }
