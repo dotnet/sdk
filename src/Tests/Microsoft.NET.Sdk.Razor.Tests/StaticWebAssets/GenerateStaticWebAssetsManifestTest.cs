@@ -14,7 +14,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
     {
         public GenerateStaticWebAssetsManifestTest()
         {
-            TempFilePath = Path.Combine(TestContext.Current.TestAssetsDirectory, Guid.NewGuid().ToString("N") + ".json");
+            Directory.CreateDirectory(Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(GenerateStaticWebAssetsManifestTest)));
+            TempFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(GenerateStaticWebAssetsManifestTest), Guid.NewGuid().ToString("N") + ".json");
         }
 
         public string TempFilePath { get; }
