@@ -558,7 +558,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="CodeSignAppHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="_CodeSignAppHost"
           AfterTargets="_CreateAppHost"
-          Condition="$([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
+          Condition="$([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and '$(PublishSingleFile)' != 'true' and
                     ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">
     <CodeSignAppHost AppHostPath="$(AppHostIntermediatePath)" />
   </Target>
