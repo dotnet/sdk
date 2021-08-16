@@ -21,26 +21,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
     public partial class PlatformCompatabilityAnalyzerTests
     {
-        private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser,macOS, ios, linux;\nbuild_property.TargetFramework=net5.0";
-
-        [Fact(Skip = "TODO need to be fixed: Test for for wrong arguments, not sure how to report the Compiler error diagnostic")]
-        public async Task TestOsPlatformAttributesWithNonStringArgument()
-        {
-            var csSource = @"
-using System.Runtime.Versioning;
-using System.Runtime.InteropServices;
-
-public class Test
-{
-    [[|SupportedOSPlatform(""Linux"", ""Windows"")|]]
-    public void MethodWithTwoArguments() { }
-
-    [UnsupportedOSPlatform([|new string[]{""Linux"", ""Windows""}|])]
-    public void MethodWithArrayArgument() { }
-}";
-
-            await VerifyAnalyzerAsyncCs(csSource);
-        }
+        private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser,macOS,maccatalyst, ios, linux;\nbuild_property.TargetFramework=net5.0";
 
         public static IEnumerable<object[]> Create_DifferentTfms()
         {
@@ -3785,6 +3766,274 @@ class TestType
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
+#if DEBUG
+        [Fact]
+        public async Task IosSupportedOnMacCatalyst()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+class TestType
+{
+    [SupportedOSPlatform(""ios"")]
+    private void SupportsIOS() { }
+
+    [SupportedOSPlatform(""maccatalyst"")]
+    internal void SupportsMacCatalyst() { }
+
+    [SupportedOSPlatform(""ios"")]
+    [SupportedOSPlatform(""Linux"")]
+    [SupportedOSPlatform(""maccatalyst"")]
+    void SupportsIOSLinuxMacCatalyst() { }
+
+    [UnsupportedOSPlatform(""maccatalyst"")]
+    static void UnsupportsMacCatalyst() { }
+
+    [UnsupportedOSPlatform(""ios"")]
+    static void UnsupportsIos() { }
+
+    void CrossPlatformMethod()
+    {
+        [|SupportsIOSLinuxMacCatalyst()|]; // This call site is reachable on all platforms. 'TestType.SupportsIOSLinuxMacCatalyst()' is only supported on: 'ios', 'Linux', 'maccatalyst'.
+        [|SupportsMacCatalyst()|];         // This call site is reachable on all platforms. 'TestType.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.
+        [|SupportsIOS()|];                 // This call site is reachable on all platforms. 'TestType.SupportsIOS()' is only supported on: 'ios', 'maccatalyst'.
+        UnsupportsIos();                   // no warning because not in the MSBuild default list
+        UnsupportsMacCatalyst();
+    }
+
+    [SupportedOSPlatform(""iOS"")]
+    void MethodReachableOnIOS()
+    {
+        SupportsIOSLinuxMacCatalyst();
+        [|SupportsMacCatalyst()|];       // This call site is reachable on: 'iOS', 'maccatalyst'. 'TestType.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.
+        SupportsIOS();
+        [|UnsupportsIos()|];             // This call site is reachable on: 'iOS', 'maccatalyst'. 'TestType.UnsupportsIos()' is unsupported on: 'ios', 'maccatalyst'.
+        [|UnsupportsMacCatalyst()|];     // This call site is reachable on: 'iOS', 'maccatalyst'. 'TestType.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
+    }
+
+    [SupportedOSPlatform(""MacCatalyst"")]
+    void MethodReachableOnMacCatalyst()
+    {
+        SupportsIOSLinuxMacCatalyst();
+        SupportsMacCatalyst();
+        SupportsIOS();
+        [|UnsupportsIos()|];             // This call site is reachable on: 'MacCatalyst'. 'TestType.UnsupportsIos()' is unsupported on: 'maccatalyst'.
+        [|UnsupportsMacCatalyst()|];     // This call site is reachable on: 'MacCatalyst'. 'TestType.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
+    }
+
+    [SupportedOSPlatform(""ios"")]
+    [UnsupportedOSPlatform(""MacCatalyst"")]
+    void MethodReachableOnIOSButNotMacCatalyst()
+    {
+        SupportsIOSLinuxMacCatalyst();
+        [|SupportsMacCatalyst()|];     // This call site is reachable on: 'ios'. 'TestType.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.    
+        SupportsIOS();
+        [|UnsupportsIos()|];            // This call site is reachable on: 'ios'. 'TestType.UnsupportsIos()' is unsupported on: 'ios'.
+        UnsupportsMacCatalyst();    
+    }
+}" + MockApisCsSource;
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task ExcludeMacCatalystSupportUnsupportFromIos()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""ios"")]
+class SupportsIos
+{
+    [UnsupportedOSPlatform(""MacCatalyst"")]
+    public static void SupportsIOSNotMacCatalyst() { }
+
+    [UnsupportedOSPlatform(""ios"")] // only removes iOS support
+    [SupportedOSPlatform(""maccatalyst"")]
+    public static void WorksOnMacCatalystNotIOS() { }
+}
+
+class AllPlatforms
+{
+    [UnsupportedOSPlatform(""ios"")]
+    [SupportedOSPlatform(""maccatalyst"")] // only removes inferred unsupport
+    public void WorksEverywhereExceptIOS_ButDoesWorkOnMacCatalyst() { }
+
+    [SupportedOSPlatform(""ios"")]
+    [UnsupportedOSPlatform(""MacCatalyst"")]
+    public static void SupportsIOSNotMacCatalyst() { }
+
+    void CrossPlatformMethod()
+    {
+        [|SupportsIOSNotMacCatalyst()|];               // This call site is reachable on all platforms. 'AllPlatforms.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+        WorksEverywhereExceptIOS_ButDoesWorkOnMacCatalyst(); // no diagnostic because MSBuild list is not added
+        [|SupportsIos.SupportsIOSNotMacCatalyst()|];   // This call site is reachable on all platforms. 'TestType.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+        [|SupportsIos.WorksOnMacCatalystNotIOS()|];    // This call site is reachable on all platforms. 'TestType.WorksOnMacCatalystNotIOS()' is supported on: 'maccatalyst'.
+    }
+
+    [SupportedOSPlatform(""iOS"")]
+    void MethodReachableOnIOS()
+    {
+        [|SupportsIOSNotMacCatalyst()|];             // This call site is reachable on: 'iOS', 'maccatalyst'. 'AllPlatforms.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+        [|WorksEverywhereExceptIOS_ButDoesWorkOnMacCatalyst()|]; // This call site is reachable on: 'iOS', 'maccatalyst'. 'AllPlatforms.WorksEverywhereExceptIOS_ButDoesWorkOnMacCatalyst()' is unsupported on: 'ios'.
+        [|SupportsIos.SupportsIOSNotMacCatalyst()|]; // This call site is reachable on: 'iOS', 'maccatalyst'. 'SupportsIos.SupportsIOSNotMacCatalyst()' is unsupported on: 'maccatalyst'.
+        [|SupportsIos.WorksOnMacCatalystNotIOS()|];  // This call site is reachable on: 'iOS', 'maccatalyst'. 'SupportsIos.WorksOnMacCatalystNotIOS()' is unsupported on: 'ios'.
+    }
+
+    [SupportedOSPlatform(""MacCatalyst"")]
+    void MethodReachableOnMacCatalyst()
+    {
+        [|SupportsIOSNotMacCatalyst()|];             // This call site is reachable on: 'MacCatalyst'. 'AllPlatforms.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+        WorksEverywhereExceptIOS_ButDoesWorkOnMacCatalyst();
+        [|SupportsIos.SupportsIOSNotMacCatalyst()|]; // This call site is reachable on: 'MacCatalyst'. 'SupportsIos.SupportsIOSNotMacCatalyst()' is unsupported on: 'maccatalyst'.
+        SupportsIos.WorksOnMacCatalystNotIOS();
+    }
+
+    [SupportedOSPlatform(""ios"")]
+    [UnsupportedOSPlatform(""MacCatalyst"")]
+    void MethodReachableOnIOSButNotMacCatalyst()
+    {
+        SupportsIOSNotMacCatalyst(); 
+        [|WorksEverywhereExceptIOS_ButDoesWorkOnMacCatalyst()|]; // This call site is reachable on: 'ios'. 'AllPlatforms.WorksEverywhereExceptIOS_ButDoesWorkOnMacCatalyst()' is unsupported on: 'ios'.
+        SupportsIos.SupportsIOSNotMacCatalyst();
+        [|SupportsIos.WorksOnMacCatalystNotIOS()|]; // This call site is reachable on: 'ios'. 'SupportsIos.WorksOnMacCatalystNotIOS()' is supported on: 'maccatalyst'.
+    }
+
+    [UnsupportedOSPlatform(""ios"")]
+    [SupportedOSPlatform(""MacCatalyst"")] // only removes inferred unsupport
+    void MethodUnreachableOnIOSButReachableMacCatalyst()
+    {
+        [|SupportsIOSNotMacCatalyst()|];             //  This call site is unreachable on: 'ios'. 'AllPlatforms.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+        WorksEverywhereExceptIOS_ButDoesWorkOnMacCatalyst();
+        [|SupportsIos.SupportsIOSNotMacCatalyst()|]; // This call site is unreachable on: 'ios'. 'SupportsIos.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+        [|SupportsIos.WorksOnMacCatalystNotIOS()|];  // This call site is reachable on all platforms. 'SupportsIos.WorksOnMacCatalystNotIOS()' is supported on: 'maccatalyst'.  
+    }
+}" + MockApisCsSource;
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task IosSupportedOnMacCatalystVersioned()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+class TestType
+{
+    [SupportedOSPlatform(""iOS10.0"")]
+    static void MethodVersionNotSuppress()
+    {
+        [|SupportsMacCatalyst()|]; // This call site is reachable on: 'iOS' 10.0 and later, 'maccatalyst' 10.0 and later. 'TestType.SupportsMacCatalyst()' is only supported on: 'maccatalyst' 12.0 and later.
+        [|SupportsIOS()|]; // This call site is reachable on: 'iOS' 10.0 and later, 'maccatalyst' 10.0 and later. 'TestType.SupportsIOS()' is only supported on: 'ios' 12.0 and later, 'maccatalyst' 12.0 and later.
+    }
+
+    [SupportedOSPlatform(""iOS14.0"")]
+    static void IOSMethod()
+    {
+        [|SupportsMacCatalyst()|]; // This call site is reachable on: 'iOS' 14.0 and later, 'maccatalyst' 14.0 and later. 'TestType.SupportsMacCatalyst()' is only supported on: 'maccatalyst' 12.0 and later.
+        SupportsIOS();
+    }
+
+    [SupportedOSPlatform(""maccatalyst14.0"")]
+    static void MacCatalystMethod()
+    {
+        SupportsMacCatalyst();
+        SupportsIOS();
+    }
+
+    [SupportedOSPlatform(""maccatalyst12.0"")]
+    static void SupportsMacCatalyst() { }
+
+    [SupportedOSPlatform(""ios12.0"")]
+    static void SupportsIOS() { }
+}" + MockApisCsSource;
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task IosUnsupportedOnMacCatalyst()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+class TestType
+{
+    static void M1()
+    {
+        [|UnsupportsMacCatalyst()|]; // This call site is reachable on all platforms. 'TestType.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
+        [|UnsupportsIos()|];         // This call site is reachable on all platforms. 'TestType.UnsupportsIos()' is unsupported on: 'iOS', 'maccatalyst'.
+    }
+
+    [UnsupportedOSPlatform(""iOS"")]
+    static void NonIOSMethod()
+    {
+        UnsupportsMacCatalyst();
+        UnsupportsIos();
+    }
+
+    [UnsupportedOSPlatform(""maccatalyst"")]
+    static void NonMacCatalystMethod()
+    {
+        UnsupportsMacCatalyst();
+        [|UnsupportsIos()|];     // This call site is reachable on all platforms. 'TestType.UnsupportsIos()' is unsupported on: 'iOS'.
+    }
+
+    [UnsupportedOSPlatform(""maccatalyst"")]
+    static void UnsupportsMacCatalyst() { }
+    
+    [UnsupportedOSPlatform(""iOS"")]
+    static void UnsupportsIos() { }
+}" + MockApisCsSource;
+
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task IosUnsupportedOnMacCatalystVersioned()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+class TestType
+{
+    [UnsupportedOSPlatform(""iOS10.0"")]
+    static void IosVersionSuppressed()
+    {
+        UnsupportsMacCatalyst();
+        UnsupportsIos();
+    }
+
+    [UnsupportedOSPlatform(""maccatalyst10.0"")]
+    static void NonMacCatalystMethod()
+    {
+        UnsupportsMacCatalyst();
+        [|UnsupportsIos()|];    // This call site is reachable on all platforms. 'TestType.UnsupportsIos()' is unsupported on: 'iOS' 12.0 and later.
+    }
+
+    [UnsupportedOSPlatform(""iOS14.0"")]
+    static void IosVersionNotSuppress()
+    {
+        [|UnsupportsMacCatalyst()|]; // This call site is reachable on: 'maccatalyst' 14.0 and before. 'TestType.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst' 12.0 and later.
+        [|UnsupportsIos()|];         // This call site is reachable on: 'iOS' 14.0 and before, 'maccatalyst' 14.0 and before. 'TestType.UnsupportsIos()' is unsupported on: 'iOS' 12.0 and later, 'maccatalyst' 12.0 and later.
+    }
+
+    [UnsupportedOSPlatform(""maccatalyst12.0"")]
+    static void UnsupportsMacCatalyst() { }
+
+    [UnsupportedOSPlatform(""iOS12.0"")]
+    static void UnsupportsIos() { }
+}" + MockApisCsSource;
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+#endif
+
         private string GetFormattedString(string resource, params string[] args) =>
             string.Format(CultureInfo.InvariantCulture, resource, args);
 
@@ -3796,7 +4045,7 @@ class TestType
             var test = new VerifyCS.Test
             {
                 TestCode = sourceCode,
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
                 TestState = { }
             };
@@ -3848,7 +4097,7 @@ class TestType
             var test = new VerifyVB.Test
             {
                 TestCode = sourceCode,
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
                 TestState = { },
             };

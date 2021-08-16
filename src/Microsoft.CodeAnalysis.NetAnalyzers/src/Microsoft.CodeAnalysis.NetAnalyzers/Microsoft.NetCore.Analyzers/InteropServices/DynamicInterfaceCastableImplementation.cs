@@ -11,7 +11,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal sealed class DynamicInterfaceCastableImplementationAnalyzer : DiagnosticAnalyzer
     {
-        internal const string DynamicInterfaceCastableImplementationUnsupportedRuleId = "CA2255";
+        internal const string DynamicInterfaceCastableImplementationUnsupportedRuleId = "CA2258";
 
         private static readonly DiagnosticDescriptor DynamicInterfaceCastableImplementationUnsupported =
             DiagnosticDescriptorHelper.Create(
