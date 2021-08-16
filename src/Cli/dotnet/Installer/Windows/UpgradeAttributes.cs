@@ -1,8 +1,5 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using System;
 
 namespace Microsoft.DotNet.Installer.Windows
 {
@@ -15,7 +12,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// Migrates feature states by enabling the logic in the MigrateFeatureStates action
         /// </summary>
-        MigrateFeatures =  0x001,
+        MigrateFeatures = 0x001,
 
         /// <summary>
         /// Detects products and applications but does not remove.

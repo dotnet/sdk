@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Installer.Windows.Security
     public enum UnionChoice : uint
     {
         /// <summary>
-        /// Use the file pointed to by pFile. See <see cref=""/>
+        /// Use the file pointed to by pFile.
         /// </summary>
         WTD_CHOICE_FILE = 1,
 
