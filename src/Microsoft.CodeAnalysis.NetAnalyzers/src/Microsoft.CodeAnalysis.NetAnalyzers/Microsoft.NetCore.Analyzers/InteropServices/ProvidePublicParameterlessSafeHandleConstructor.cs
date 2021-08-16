@@ -61,12 +61,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 if (constructor.Parameters.Length == 0)
                 {
-                    if (constructor.DeclaredAccessibility == Accessibility.Public)
+                    if (constructor.GetResultantVisibility().IsAtLeastAsVisibleAs(type.GetResultantVisibility()))
                     {
-                        // The parameterless constructor is public, so there is no diagnostic to emit.
+                        // The parameterless constructor is as visible as the containing type, so there is no diagnostic to emit.
                         return;
                     }
-
                     context.ReportDiagnostic(constructor.CreateDiagnostic(Rule, type.Name));
                     break;
                 }

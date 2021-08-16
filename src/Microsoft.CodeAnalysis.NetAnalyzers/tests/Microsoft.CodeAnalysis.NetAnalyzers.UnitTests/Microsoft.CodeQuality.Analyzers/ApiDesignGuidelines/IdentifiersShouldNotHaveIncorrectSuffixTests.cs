@@ -1751,7 +1751,6 @@ End Class");
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.ExSuffix,
                     "MyMethodEx"));
-            ;
         }
 
         [Fact]
