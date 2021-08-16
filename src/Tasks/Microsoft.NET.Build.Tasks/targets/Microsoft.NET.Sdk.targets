@@ -543,8 +543,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                      Exists('$(AppHostSourcePath)')">
     <PropertyGroup>
       <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
-      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and $([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
-                                      ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">true</_EnableMacOSCodeSign>
     </PropertyGroup>
 
     <CreateAppHost AppHostSourcePath="$(AppHostSourcePath)"
@@ -554,8 +552,15 @@ Copyright (c) .NET Foundation. All rights reserved.
                    WindowsGraphicalUserInterface="$(_UseWindowsGraphicalUserInterface)"
                    Retries="$(CopyRetryCount)"
                    RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-                   EnableMacOSCodeSign="$(_EnableMacOSCodeSign)"
                    />
+  </Target>
+
+  <UsingTask TaskName="CodeSignAppHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="_CodeSignAppHost"
+          AfterTargets="_CreateAppHost"
+          Condition="$([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
+                    ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">
+    <CodeSignAppHost AppHostPath="$(AppHostIntermediatePath)" />
   </Target>
 
   <!--

@@ -915,6 +915,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <UsingTask TaskName="CodeSignAppHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="_CodeSignSingleFileHost"
+          AfterTargets="GenerateSingleFileBundle"
+          Condition="$([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and $(RuntimeIdentifier.StartsWith('osx'))">
+    <CodeSignAppHost AppHostPath="$(PublishedSingleFileName)" />
+  </Target>
+
   <!--
     ============================================================
     _GeneratePublishDependencyFile
