@@ -70,7 +70,7 @@ namespace Microsoft.TemplateSearch.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Local search cache {0} does not exist..
+        ///   Looks up a localized string similar to Local search cache &apos;{0}&apos; does not exist..
         /// </summary>
         internal static string BlobStoreSourceFileProvider_Exception_LocalCacheDoesNotExist {
             get {

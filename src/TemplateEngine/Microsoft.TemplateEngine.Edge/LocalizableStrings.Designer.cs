@@ -383,6 +383,15 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to load host data in {0} at {1}..
+        /// </summary>
+        internal static string TemplateInfo_Warning_FailedToReadHostData {
+            get {
+                return ResourceManager.GetString("TemplateInfo_Warning_FailedToReadHostData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to scan {0}.
         ///Details: {1}.
         /// </summary>

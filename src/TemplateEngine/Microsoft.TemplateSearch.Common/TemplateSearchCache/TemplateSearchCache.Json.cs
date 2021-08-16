@@ -100,8 +100,6 @@ namespace Microsoft.TemplateSearch.Common
                     // This piece of data failed to read, but isn't strictly necessary.
                 }
             }
-
-            logger.LogDebug($"Successfully read {additionalData.Count} additional information entries.");
             return additionalData;
         }
 

@@ -228,6 +228,10 @@ Details: {0}.</value>
   <data name="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges" xml:space="preserve">
     <value>Destructive changes detected.</value>
   </data>
+  <data name="TemplateInfo_Warning_FailedToReadHostData" xml:space="preserve">
+    <value>Failed to load host data in {0} at {1}.</value>
+    <comment>{0} - path to template location, {1} relative path inside template location.</comment>
+  </data>
   <data name="TemplatePackageManager_Error_FailedToScan" xml:space="preserve">
     <value>Failed to scan {0}.
 Details: {1}</value>

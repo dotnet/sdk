@@ -113,7 +113,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
                 catch (Exception ex)
                 {
-                    logger.LogDebug(ex, $"Failed to load HostConfig in {template.TemplateSourceRoot.MountPoint.MountPointUri} at {template.HostConfigPlace}.");
+                    logger.LogWarning(
+                        ex,
+                        LocalizableStrings.TemplateInfo_Warning_FailedToReadHostData,
+                        template.MountPointUri,
+                        template.HostConfigPlace);
                 }
             }
         }
