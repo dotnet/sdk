@@ -4,16 +4,17 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Razor.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.NET.TestFramework;
 using Moq;
 using Xunit;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class GenerateStaticWebAssetsManifestTest : IDisposable
+    public class GenerateStaticWebAssetsManifestTest
     {
         public GenerateStaticWebAssetsManifestTest()
         {
-            TempFilePath = Path.GetTempFileName();
+            TempFilePath = Path.Combine(TestContext.Current.TestAssetsDirectory, Guid.NewGuid().ToString("N") + ".json");
         }
 
         public string TempFilePath { get; }
@@ -328,20 +329,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             result.AdditionalBuildPropertiesToRemove = additionalBuildPropertiesToRemove;
 
             return result;
-        }
-
-        public void Dispose()
-        {
-            try
-            {
-                if (TempFilePath != null && File.Exists(TempFilePath))
-                {
-                    File.Delete(TempFilePath);
-                }
-            }
-            catch
-            {
-            }
         }
 
         private static StaticWebAsset CreateAsset(
