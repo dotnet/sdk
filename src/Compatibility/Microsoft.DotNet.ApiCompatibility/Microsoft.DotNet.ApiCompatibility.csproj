@@ -8,11 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- ExcludeAssets="Runtime" is being set to avoid adding package references and their dependencies into the package. -->
     <!-- We pin the versions of the assets that ship with the SDK in order to be able to run on older SDKs. 
     Currently we support .NET 6 Preview5 or later. -->
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.0.0-1.21304.5"  ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.0.0-1.21304.5" />
   </ItemGroup>
 
   <ItemGroup>
