@@ -12,6 +12,7 @@
     <PackageReference Include="NuGet.Frameworks" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageReference Include="NuGet.Protocol" Version="$(NuGetBuildTasksPackageVersion)" />
+    <!-- We are excluding the runtime assets to avoid adding roslyn dlls to the package. -->
     <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" ExcludeAssets="Runtime" />
   </ItemGroup>
 

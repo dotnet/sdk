@@ -6,7 +6,7 @@ using Microsoft.DotNet.Compatibility.ErrorSuppression;
 
 namespace Microsoft.DotNet.PackageValidation
 {
-    public interface IPackageLogger
+    public interface ICompatibilityLogger
     {
         void LogError(Suppression suppression, string code, string format, params string[] args);
         void LogErrorHeader(string message);
