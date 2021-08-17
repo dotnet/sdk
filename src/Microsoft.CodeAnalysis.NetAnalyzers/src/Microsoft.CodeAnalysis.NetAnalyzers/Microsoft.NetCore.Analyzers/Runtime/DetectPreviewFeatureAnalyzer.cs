@@ -122,8 +122,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                     isPortedFxCopRule: false,
                                                                                                                     isDataflowRule: false);
 
-        private const string RequiresPreviewFeaturesAttribute = nameof(RequiresPreviewFeaturesAttribute);
-
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(GeneralPreviewFeatureAttributeRule,
             ImplementsPreviewInterfaceRule,
             ImplementsPreviewMethodRule,
@@ -189,17 +187,57 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             });
         }
 
+        /// <summary>
+        /// Returns null if the inner types are not preview
+        /// </summary>
+        /// <param name="typeArguments"></param>
+        /// <returns></returns>
+        private static ISymbol? GetInnerPreviewSymbolForGenericTypes(ImmutableArray<ITypeSymbol> typeArguments,
+            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+            INamedTypeSymbol previewFeatureAttributeSymbol)
+        {
+            for (int i = 0; i < typeArguments.Length; i++)
+            {
+                ITypeSymbol typeParameter = typeArguments[i];
+                if (typeParameter is INamedTypeSymbol innerNamedType)
+                {
+                    ISymbol? previewSymbol = GetInnerPreviewSymbolForGenericTypes(innerNamedType.TypeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
+                    if (previewSymbol != null)
+                    {
+                        return previewSymbol;
+                    }
+                }
+                if (SymbolIsAnnotatedAsPreview(typeParameter, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                {
+                    return typeParameter;
+                }
+            }
+
+            return null;
+        }
+
         private static void ProcessFieldSymbolAttributes(SymbolAnalysisContext context, IFieldSymbol symbol,
             ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
             INamedTypeSymbol previewFeatureAttributeSymbol)
         {
             ISymbol symbolType = symbol.Type;
+            if (symbolType is INamedTypeSymbol outerNamedType)
+            {
+                ISymbol? innerSymbolType = GetInnerPreviewSymbolForGenericTypes(outerNamedType.TypeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
+                if (innerSymbolType != null)
+                {
+                    symbolType = innerSymbolType;
+                }
+            }
             while (symbolType is IArrayTypeSymbol arrayType)
             {
                 symbolType = arrayType.ElementType;
             }
 
-            ProcessFieldOrEventSymbolAttributes(context, symbol, symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
+            if (symbolType != null)
+            {
+                ProcessFieldOrEventSymbolAttributes(context, symbol, symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
+            }
         }
 
         private static void ProcessFieldOrEventSymbolAttributes(SymbolAnalysisContext context, ISymbol symbol, ISymbol symbolType,
@@ -286,35 +324,43 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool SymbolContainsGenericTypesWithPreviewAttributes(ISymbol symbol,
             ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
-            INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? previewSymbol)
+            INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? previewSymbol, bool checkTypeParametersForPreviewFeatures = true)
         {
             if (symbol is INamedTypeSymbol typeSymbol && typeSymbol.Arity > 0)
             {
-                ImmutableArray<ITypeSymbol> typeArguments = typeSymbol.TypeArguments;
-                if (TypeArgumentsHavePreviewAttribute(typeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out previewSymbol))
+                ISymbol? previewTypeArgument = GetInnerPreviewSymbolForGenericTypes(typeSymbol.TypeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttribute);
+                if (previewTypeArgument != null)
                 {
+                    previewSymbol = previewTypeArgument;
                     return true;
                 }
 
-                ImmutableArray<ITypeParameterSymbol> typeParameters = typeSymbol.TypeParameters;
-                if (TypeParametersHavePreviewAttribute(typeParameters, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out previewSymbol))
+                if (checkTypeParametersForPreviewFeatures)
                 {
-                    return true;
+                    ImmutableArray<ITypeParameterSymbol> typeParameters = typeSymbol.TypeParameters;
+                    if (TypeParametersHavePreviewAttribute(typeParameters, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out previewSymbol))
+                    {
+                        return true;
+                    }
                 }
             }
 
             if (symbol is IMethodSymbol methodSymbol && methodSymbol.Arity > 0)
             {
-                ImmutableArray<ITypeSymbol> typeArguments = methodSymbol.TypeArguments;
-                if (TypeArgumentsHavePreviewAttribute(typeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out previewSymbol))
+                ISymbol? previewTypeArgument = GetInnerPreviewSymbolForGenericTypes(methodSymbol.TypeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttribute);
+                if (previewTypeArgument != null)
                 {
+                    previewSymbol = previewTypeArgument;
                     return true;
                 }
 
-                ImmutableArray<ITypeParameterSymbol> typeParameters = methodSymbol.TypeParameters;
-                if (TypeParametersHavePreviewAttribute(typeParameters, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out previewSymbol))
+                if (checkTypeParametersForPreviewFeatures)
                 {
-                    return true;
+                    ImmutableArray<ITypeParameterSymbol> typeParameters = methodSymbol.TypeParameters;
+                    if (TypeParametersHavePreviewAttribute(typeParameters, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out previewSymbol))
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -367,6 +413,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     context.ReportDiagnostic(method.CreateDiagnostic(MethodReturnsPreviewTypeRule, propertyOrMethodSymbol.Name, method.ReturnType.Name));
                 }
 
+                if (method.ReturnType is INamedTypeSymbol typeSymbol && typeSymbol.Arity > 0)
+                {
+                    ISymbol? innerPreviewSymbol = GetInnerPreviewSymbolForGenericTypes(typeSymbol.TypeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
+                    if (innerPreviewSymbol != null)
+                    {
+                        context.ReportDiagnostic(method.CreateDiagnostic(MethodReturnsPreviewTypeRule, propertyOrMethodSymbol.Name, innerPreviewSymbol.Name));
+                    }
+                }
+
                 ImmutableArray<IParameterSymbol> parameters = method.Parameters;
                 foreach (IParameterSymbol parameter in parameters)
                 {
@@ -377,7 +432,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     if (SymbolContainsGenericTypesWithPreviewAttributes(parameter.Type, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? referencedPreviewSymbol))
                     {
-                        context.ReportDiagnostic(propertyOrMethodSymbol.CreateDiagnostic(UsesPreviewTypeParameterRule, propertyOrMethodSymbol.Name, referencedPreviewSymbol.Name));
+                        context.ReportDiagnostic(parameter.CreateDiagnostic(UsesPreviewTypeParameterRule, propertyOrMethodSymbol.Name, referencedPreviewSymbol.Name));
                     }
                 }
             }
@@ -441,7 +496,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return true;
             }
 
-            if (SymbolContainsGenericTypesWithPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
+            if (SymbolContainsGenericTypesWithPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol, checkTypeParametersForPreviewFeatures: false))
             {
                 return true;
             }
@@ -524,39 +579,32 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 IEventReferenceOperation eOperation => eOperation.Member,
                 IUnaryOperation uOperation => uOperation.OperatorMethod,
                 IBinaryOperation bOperation => bOperation.OperatorMethod,
-                IArrayCreationOperation arrayCreationOperation => (arrayCreationOperation.Type as IArrayTypeSymbol)?.ElementType,
+                IArrayCreationOperation arrayCreationOperation => SymbolFromArrayCreationOperation(arrayCreationOperation),
                 ICatchClauseOperation catchClauseOperation => catchClauseOperation.ExceptionType,
                 ITypeOfOperation typeOfOperation => typeOfOperation.TypeOperand,
                 IEventAssignmentOperation eventAssignment => GetOperationSymbol(eventAssignment.EventReference),
                 _ => null,
             };
 
+        private static ISymbol SymbolFromArrayCreationOperation(IArrayCreationOperation operation)
+        {
+            ISymbol ret = operation.Type;
+            while (ret is IArrayTypeSymbol arrayTypeSymbol)
+            {
+                ret = arrayTypeSymbol.ElementType;
+            }
+
+            return ret;
+        }
+
         private static bool TypeParametersHavePreviewAttribute(ImmutableArray<ITypeParameterSymbol> typeParameters, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? previewSymbol)
         {
             foreach (ITypeParameterSymbol typeParameter in typeParameters)
             {
                 ImmutableArray<ITypeSymbol> constraintTypes = typeParameter.ConstraintTypes;
-                foreach (ITypeSymbol constraintType in constraintTypes)
+                previewSymbol = GetInnerPreviewSymbolForGenericTypes(constraintTypes, requiresPreviewFeaturesSymbols, previewFeatureAttribute);
+                if (previewSymbol != null)
                 {
-                    if (SymbolIsAnnotatedAsPreview(constraintType, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
-                    {
-                        previewSymbol = constraintType;
-                        return true;
-                    }
-                }
-            }
-
-            previewSymbol = null;
-            return false;
-        }
-
-        private static bool TypeArgumentsHavePreviewAttribute(ImmutableArray<ITypeSymbol> typeArguments, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? previewSymbol)
-        {
-            foreach (ITypeSymbol typeParameter in typeArguments)
-            {
-                if (SymbolIsAnnotatedAsPreview(typeParameter, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
-                {
-                    previewSymbol = typeParameter;
                     return true;
                 }
             }
@@ -567,31 +615,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool SymbolIsAnnotatedAsPreview(ISymbol symbol, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute)
         {
-            static bool ContainingSymbolHeirarchyIsAnnotatedAsPreview(ISymbol symbol,
-                ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
-                INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? containingPreviewSymbol)
-            {
-                INamedTypeSymbol? containingType = symbol.ContainingType;
-                while (containingType != null)
-                {
-                    // Namespaces do not have attributes
-                    if (!(containingType is INamespaceSymbol))
-                    {
-                        if (containingType.HasAttribute(previewFeatureAttribute))
-                        {
-                            requiresPreviewFeaturesSymbols.GetOrAdd(containingType, true);
-                            containingPreviewSymbol = containingType;
-                            return true;
-                        }
-                    }
-
-                    containingType = containingType.ContainingType;
-                }
-
-                containingPreviewSymbol = null;
-                return false;
-            }
-
             if (!requiresPreviewFeaturesSymbols.TryGetValue(symbol, out bool existing))
             {
                 if (symbol.HasAttribute(previewFeatureAttribute))
@@ -600,17 +623,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return true;
                 }
 
-                if (ContainingSymbolHeirarchyIsAnnotatedAsPreview(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttribute, out ISymbol? containingPreviewSymbol))
+                INamedTypeSymbol? parent = symbol.ContainingType;
+                if (parent is INamespaceSymbol)
                 {
-                    ISymbol loopSymbol = symbol.ContainingSymbol;
-                    requiresPreviewFeaturesSymbols.GetOrAdd(loopSymbol, true);
-                    while (loopSymbol != containingPreviewSymbol)
+                    parent = parent.ContainingType;
+                }
+                if (parent != null)
+                {
+                    if (SymbolIsAnnotatedAsPreview(parent, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
                     {
-                        requiresPreviewFeaturesSymbols.GetOrAdd(loopSymbol, true);
-                        loopSymbol = loopSymbol.ContainingSymbol;
+                        requiresPreviewFeaturesSymbols.GetOrAdd(symbol, true);
+                        return true;
                     }
-
-                    return true;
                 }
 
                 requiresPreviewFeaturesSymbols.GetOrAdd(symbol, false);
