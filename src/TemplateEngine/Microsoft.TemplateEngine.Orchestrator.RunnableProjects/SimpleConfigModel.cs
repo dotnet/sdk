@@ -418,6 +418,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         new SpecialOperationConfigParams("**/*.h", "//", "C++", ConditionalType.CNoComments),
                         new SpecialOperationConfigParams("**/*.hpp", "//", "C++", ConditionalType.CNoComments),
                         new SpecialOperationConfigParams("**/*.hxx", "//", "C++", ConditionalType.CNoComments),
+                        new SpecialOperationConfigParams("**/*.cake", "//", "C++", ConditionalType.CNoComments),
                         new SpecialOperationConfigParams("**/*.*proj", "<!--/", "MSBUILD", ConditionalType.MSBuild),
                         new SpecialOperationConfigParams("**/*.*proj.user", "<!--/", "MSBUILD", ConditionalType.MSBuild),
                         new SpecialOperationConfigParams("**/*.pubxml", "<!--/", "MSBUILD", ConditionalType.MSBuild),
@@ -428,6 +429,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         new SpecialOperationConfigParams("**/*.svg", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/*.*htm", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/*.*html", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/*.md", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/*.jsp", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/*.asp", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/*.aspx", "<!--", "C++", ConditionalType.Xml),
@@ -435,6 +437,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         new SpecialOperationConfigParams("**/web.config", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/web.*.config", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/packages.config", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/nuget.config", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/*.nuspec", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/*.xslt", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/*.xsd", "<!--", "C++", ConditionalType.Xml),
@@ -458,7 +461,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         new SpecialOperationConfigParams("**/*.bas", "'", "VB", ConditionalType.VB),
                         new SpecialOperationConfigParams("**/*.vb", "'", "VB", ConditionalType.VB),
                         new SpecialOperationConfigParams("**/*.xaml", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.sln", "#-", "C++", ConditionalType.HashSignLineComment)
+                        new SpecialOperationConfigParams("**/*.sln", "#-", "C++", ConditionalType.HashSignLineComment),
+                        new SpecialOperationConfigParams("**/*.yaml", "#-", "C++", ConditionalType.HashSignLineComment),
+                        new SpecialOperationConfigParams("**/*.yml", "#-", "C++", ConditionalType.HashSignLineComment),
+                        new SpecialOperationConfigParams("**/Dockerfile", "#-", "C++", ConditionalType.HashSignLineComment),
+                        new SpecialOperationConfigParams("**/.editorconfig", "#-", "C++", ConditionalType.HashSignLineComment),
+                        new SpecialOperationConfigParams("**/.gitattributes", "#-", "C++", ConditionalType.HashSignLineComment),
+                        new SpecialOperationConfigParams("**/.gitignore", "#-", "C++", ConditionalType.HashSignLineComment),
+                        new SpecialOperationConfigParams("**/.dockerignore", "#-", "C++", ConditionalType.HashSignLineComment)
                     };
                     List<KeyValuePair<string, IGlobalRunConfig>> specialOperationConfig = new List<KeyValuePair<string, IGlobalRunConfig>>();
 
