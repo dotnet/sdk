@@ -223,7 +223,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2253Rule));
                 }
-                else if (char.IsLower(valueName[0]))
+                else if (!string.IsNullOrEmpty(valueName) && char.IsLower(valueName[0]))
                 {
                     context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA1727Rule));
                 }
