@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Edge.BuiltInManagedProvider;
+using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
@@ -110,6 +111,21 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             #endregion Open3Load
 
             mutex2.Dispose();
+        }
+
+        [Fact]
+        public void TestDisablingFilewatcher()
+        {
+            var envSettings = _helper.CreateEnvironment(environment: new MockEnvironment(new Dictionary<string, string> { { "TEMPLATE_ENGINE_DISABLE_FILEWATCHER", "1" } }));
+            var settingsFile = Path.Combine(_helper.CreateTemporaryFolder(), "settings.json");
+            using var globalSettings1 = new GlobalSettings(envSettings, settingsFile);
+            Assert.Empty(((MonitoredFileSystem)envSettings.Host.FileSystem).FilesWatched);
+
+            envSettings = _helper.CreateEnvironment();
+            settingsFile = Path.Combine(_helper.CreateTemporaryFolder(), "settings.json");
+            using var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
+            Assert.Single(((MonitoredFileSystem)envSettings.Host.FileSystem).FilesWatched);
+            Assert.Equal(settingsFile, ((MonitoredFileSystem)envSettings.Host.FileSystem).FilesWatched.Single());
         }
 
         public void Dispose()
