@@ -6,6 +6,7 @@
     <Description>A tool that can be used to localize template.json files.</Description>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
 
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-template-localizer</ToolCommandName>
