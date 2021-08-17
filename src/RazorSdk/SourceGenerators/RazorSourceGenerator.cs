@@ -118,7 +118,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 .WithLambdaComparer(static (a, b) =>
                 {
                     var ((compilationA, razorSourceGeneratorOptionsA), hasRazorFilesA) = a;
-                    var ((compilationB, razorSourceGeneratorOptionsB), hasRazorFilesB) = a;
+                    var ((compilationB, razorSourceGeneratorOptionsB), hasRazorFilesB) = b;
 
                     if (!compilationA.References.SequenceEqual(compilationB.References))
                     {
