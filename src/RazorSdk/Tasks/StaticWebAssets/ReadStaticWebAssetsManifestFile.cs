@@ -28,21 +28,22 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             if (!File.Exists(ManifestPath))
             {
                 Log.LogError($"Manifest file at '{ManifestPath}' not found.");
+                return false;
             }
 
             try
             {
                 var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath));
 
-                Assets = manifest.Assets.Select(a => a.ToTaskItem()).ToArray();
+                Assets = manifest.Assets?.Select(a => a.ToTaskItem()).ToArray() ?? Array.Empty<ITaskItem>();
 
-                DiscoveryPatterns = manifest.DiscoveryPatterns.Select(dp => dp.ToTaskItem()).ToArray();
+                DiscoveryPatterns = manifest.DiscoveryPatterns?.Select(dp => dp.ToTaskItem()).ToArray() ?? Array.Empty<ITaskItem>();
 
-                ReferencedProjectsConfiguration = manifest.ReferencedProjectsConfiguration.Select(m => m.ToTaskItem()).ToArray();
+                ReferencedProjectsConfiguration = manifest.ReferencedProjectsConfiguration?.Select(m => m.ToTaskItem()).ToArray() ?? Array.Empty<ITaskItem>();
             }
             catch (Exception ex)
             {
-                Log.LogError(ex.ToString());
+                Log.LogErrorFromException(ex, showStackTrace: true, showDetail: true, file: ManifestPath);
             }
 
             return !Log.HasLoggedErrors;

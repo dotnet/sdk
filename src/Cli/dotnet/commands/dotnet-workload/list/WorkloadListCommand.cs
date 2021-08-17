@@ -113,6 +113,10 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             }
             else
             {
+                _reporter.WriteLine();
+                _reporter.WriteLine(LocalizableStrings.WorkloadListHeader);
+                _reporter.WriteLine();
+
                 PrintableTable<WorkloadId> table = new();
                 table.AddColumn(LocalizableStrings.WorkloadIdColumn, workloadId => workloadId.ToString());
 

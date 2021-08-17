@@ -312,4 +312,7 @@
   <data name="UnknownInstallType" xml:space="preserve">
     <value>Unknown installation type: {0}.</value>
   </data>
+  <data name="GarbageCollectionFailed" xml:space="preserve">
+    <value>Warning: Workload garbage collection failed with error: {0}.</value>
+  </data>
 </root>
