@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.ProvidePublicParameterlessSafeHandleConstructorAnalyzer,
@@ -383,7 +384,6 @@ End Class";
         [Fact]
         public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoBaseTypeParameterlessConstructor_Diagnostic_CS()
         {
-
             string source = @"
 using System;
 using Microsoft.Win32.SafeHandles;
@@ -436,6 +436,72 @@ Public Class [|BarHandle|] : Inherits FooHandle
 
 End Class";
             await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
+        public async Task SafeHandleDerived_WithInternalParameterlessConstructor_InternalType_NoDiagnostic_CS()
+        {
+            string source = @"
+using System;
+using Microsoft.Win32.SafeHandles;
+
+internal class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
+{
+    internal BarHandle()
+        : base(true)
+    {
+    }
+
+    protected override bool ReleaseHandle() => true;
+}";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
+        public async Task SafeHandleDerived_WithInternalParameterlessConstructor_DefaultAccessibilityType_NoDiagnostic_CS()
+        {
+            string source = @"
+using System;
+using Microsoft.Win32.SafeHandles;
+
+class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
+{
+    internal BarHandle()
+        : base(true)
+    {
+    }
+
+    protected override bool ReleaseHandle() => true;
+}";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
+        public async Task SafeHandleDerived_WithPrivateProtectedParameterlessConstructor_PrivateProtectedType_NoDiagnostic_CS()
+        {
+            string source = @"
+using System;
+using Microsoft.Win32.SafeHandles;
+
+class Containing
+{
+    private protected class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
+    {
+        private protected BarHandle()
+            : base(true)
+        {
+        }
+
+        protected override bool ReleaseHandle() => true;
+    }
+}";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
     }
 }

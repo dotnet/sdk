@@ -1534,6 +1534,15 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="BufferBlockCopyLengthMessage" xml:space="preserve">
+    <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
+  </data>
+  <data name="BufferBlockCopyLengthTitle" xml:space="preserve">
+    <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</value>
+  </data>
+  <data name="BufferBlockCopyDescription" xml:space="preserve">
+    <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
+  </data>
   <data name="PreferAsSpanOverSubstringDescription" xml:space="preserve">
     <value>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</value>
   </data>
@@ -1648,13 +1657,13 @@
     <value>Use 'string.Equals'</value>
   </data>
   <data name="ProvidePublicParameterlessSafeHandleConstructorDescription" xml:space="preserve">
-    <value>Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</value>
+    <value>Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</value>
   </data>
   <data name="ProvidePublicParameterlessSafeHandleConstructorMessage" xml:space="preserve">
-    <value>Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</value>
+    <value>Provide a parameterless constructor that is as visible as the containing type for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</value>
   </data>
   <data name="ProvidePublicParameterlessSafeHandleConstructorTitle" xml:space="preserve">
-    <value>Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</value>
+    <value>Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</value>
   </data>
   <data name="AddPublicParameterlessConstructor" xml:space="preserve">
     <value>Add a public constructor that takes zero parameters</value>
@@ -1709,5 +1718,14 @@
   </data>
   <data name="FieldIsPreviewTypeMessage" xml:space="preserve">
     <value>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription" xml:space="preserve">
+    <value>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</value>
+  </data>
+  <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage" xml:space="preserve">
+    <value>The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</value>
+  </data>
+  <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle" xml:space="preserve">
+    <value>The 'ModuleInitializer' attribute should not be used in libraries</value>
   </data>
 </root>

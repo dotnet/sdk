@@ -73,6 +73,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         return;
                     }
 
+                    if (constructor.GetResultantVisibility().IsAtLeastAsVisibleAs(type.GetResultantVisibility()))
+                    {
+                        // The parameterless constructor is as visible as the containing type, so there is no diagnostic to emit.
+                        return;
+                    }
+
                     // If a parameterless constructor has been defined, emit the diagnostic on the constructor instead of on the type.
                     targetWarningSymbol = constructor;
                     diagnosticPropertyBag = diagnosticPropertyBag.Add(DiagnosticPropertyConstructorExists, string.Empty);
