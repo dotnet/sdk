@@ -333,13 +333,13 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp3.1");
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                "ComServer.dll",
-                "ComServer.pdb",
-                "ComServer.deps.json",
-                "ComServer.comhost.dll",
-                "ComServer.runtimeconfig.json",
-                "ComServer.runtimeconfig.dev.json",
-                "Newstonsoft.Json.dll"
+                "ComServerWithDependencies.dll",
+                "ComServerWithDependencies.pdb",
+                "ComServerWithDependencies.deps.json",
+                "ComServerWithDependencies.comhost.dll",
+                "ComServerWithDependencies.runtimeconfig.json",
+                "ComServerWithDependencies.runtimeconfig.dev.json",
+                "Newtonsoft.Json.dll"
             });
         }
     }
