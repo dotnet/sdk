@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -39,13 +39,13 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
             {
                 string title = MicrosoftCodeQualityAnalyzersResources.MakeClassStatic;
                 var codeAction = new MyCodeAction(title,
-                                                  async ct => await MakeClassStatic(document, classDeclaration, ct).ConfigureAwait(false),
+                                                  async ct => await MakeClassStaticAsync(document, classDeclaration, ct).ConfigureAwait(false),
                                                   equivalenceKey: title);
                 context.RegisterCodeFix(codeAction, context.Diagnostics);
             }
         }
 
-        private static async Task<Document> MakeClassStatic(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken ct)
+        private static async Task<Document> MakeClassStaticAsync(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken ct)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
             DeclarationModifiers modifiers = editor.Generator.GetModifiers(classDeclaration);

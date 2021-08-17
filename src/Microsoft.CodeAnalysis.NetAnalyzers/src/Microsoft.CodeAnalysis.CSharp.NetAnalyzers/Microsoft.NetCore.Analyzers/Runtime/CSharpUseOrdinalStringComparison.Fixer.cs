@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Composition;
@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                    ((ArgumentSyntax)node).Expression.IsKind(SyntaxKind.SimpleMemberAccessExpression);
         }
 
-        protected override Task<Document> FixArgument(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode argument)
+        protected override Task<Document> FixArgumentAsync(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode argument)
         {
             if (((ArgumentSyntax)argument)?.Expression is MemberAccessExpressionSyntax memberAccess)
             {
@@ -45,7 +45,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                    node?.Parent?.FirstAncestorOrSelf<InvocationExpressionSyntax>() != null;
         }
 
-        protected override async Task<Document> FixIdentifierName(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode identifier, CancellationToken cancellationToken)
+        protected override async Task<Document> FixIdentifierNameAsync(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode identifier, CancellationToken cancellationToken)
         {
             if (identifier?.Parent?.FirstAncestorOrSelf<InvocationExpressionSyntax>() is InvocationExpressionSyntax invokeParent)
             {

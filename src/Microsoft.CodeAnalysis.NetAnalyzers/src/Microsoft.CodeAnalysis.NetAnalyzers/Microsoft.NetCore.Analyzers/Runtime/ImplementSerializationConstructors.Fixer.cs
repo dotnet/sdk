@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (symbol.Kind == SymbolKind.NamedType)
             {
                 context.RegisterCodeFix(new MyCodeAction(title,
-                     async ct => await GenerateConstructor(context.Document, node, (INamedTypeSymbol)symbol, notImplementedExceptionType, ct).ConfigureAwait(false),
+                     async ct => await GenerateConstructorAsync(context.Document, node, (INamedTypeSymbol)symbol, notImplementedExceptionType, ct).ConfigureAwait(false),
                      equivalenceKey: title),
                 context.Diagnostics);
             }
@@ -54,13 +54,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             else if (symbol.Kind == SymbolKind.Method)
             {
                 context.RegisterCodeFix(new MyCodeAction(title,
-                     async ct => await SetAccessibility(context.Document, (IMethodSymbol)symbol, ct).ConfigureAwait(false),
+                     async ct => await SetAccessibilityAsync(context.Document, (IMethodSymbol)symbol, ct).ConfigureAwait(false),
                      equivalenceKey: title),
                 context.Diagnostics);
             }
         }
 
-        private static async Task<Document> GenerateConstructor(Document document, SyntaxNode node, INamedTypeSymbol typeSymbol, INamedTypeSymbol notImplementedExceptionType, CancellationToken cancellationToken)
+        private static async Task<Document> GenerateConstructorAsync(Document document, SyntaxNode node, INamedTypeSymbol typeSymbol, INamedTypeSymbol notImplementedExceptionType, CancellationToken cancellationToken)
         {
             SymbolEditor editor = SymbolEditor.Create(document);
 
@@ -84,7 +84,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return editor.GetChangedDocuments().First();
         }
 
-        private static async Task<Document> SetAccessibility(Document document, IMethodSymbol methodSymbol, CancellationToken cancellationToken)
+        private static async Task<Document> SetAccessibilityAsync(Document document, IMethodSymbol methodSymbol, CancellationToken cancellationToken)
         {
             SymbolEditor editor = SymbolEditor.Create(document);
 

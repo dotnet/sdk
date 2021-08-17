@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -41,12 +41,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             var stringText = nodeToReplace.FindToken(diagnosticSpan.Start).ValueText;
             context.RegisterCodeFix(CodeAction.Create(
                     MicrosoftCodeQualityAnalyzersResources.UseNameOfInPlaceOfStringTitle,
-                    c => ReplaceWithNameOf(context.Document, nodeToReplace, stringText, c),
+                    c => ReplaceWithNameOfAsync(context.Document, nodeToReplace, stringText, c),
                     equivalenceKey: nameof(UseNameOfInPlaceOfStringFixer)),
                 context.Diagnostics);
         }
 
-        private static async Task<Document> ReplaceWithNameOf(Document document, SyntaxNode nodeToReplace,
+        private static async Task<Document> ReplaceWithNameOfAsync(Document document, SyntaxNode nodeToReplace,
             string stringText, CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);

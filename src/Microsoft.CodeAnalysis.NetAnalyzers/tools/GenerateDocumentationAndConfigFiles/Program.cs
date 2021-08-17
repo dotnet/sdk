@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -35,13 +35,13 @@ namespace GenerateDocumentationAndConfigFiles
 
             if (args.Length != expectedArguments)
             {
-                Console.Error.WriteLine($"Excepted {expectedArguments} arguments, found {args.Length}: {string.Join(';', args)}");
+                await Console.Error.WriteLineAsync($"Excepted {expectedArguments} arguments, found {args.Length}: {string.Join(';', args)}").ConfigureAwait(false);
                 return 1;
             }
 
             if (!args[0].StartsWith("-validateOnly:", StringComparison.OrdinalIgnoreCase))
             {
-                Console.Error.WriteLine($"Excepted the first argument to start with `{validateOnlyPrefix}`. found `{args[0]}`.");
+                await Console.Error.WriteLineAsync($"Excepted the first argument to start with `{validateOnlyPrefix}`. found `{args[0]}`.").ConfigureAwait(false);
                 return 1;
             }
 
@@ -96,7 +96,7 @@ namespace GenerateDocumentationAndConfigFiles
                 string path = Path.Combine(binDirectory, assemblyName, configuration, tfm, assembly);
                 if (!File.Exists(path))
                 {
-                    Console.Error.WriteLine($"'{path}' does not exist");
+                    await Console.Error.WriteLineAsync($"'{path}' does not exist").ConfigureAwait(false);
                     return 1;
                 }
 
@@ -196,12 +196,12 @@ namespace GenerateDocumentationAndConfigFiles
 
             if (fileNamesWithValidationFailures.Count > 0)
             {
-                Console.Error.WriteLine("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` for each solution at the root of the repo to automatically update them:");
+                await Console.Error.WriteLineAsync("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` for each solution at the root of the repo to automatically update them:").ConfigureAwait(false);
                 fileNamesWithValidationFailures.ForEach(fileName => Console.Error.WriteLine($"    {fileName}"));
                 return 1;
             }
 
-            if (!createGlobalConfigFiles())
+            if (!await createGlobalConfigFilesAsync().ConfigureAwait(false))
             {
                 return 2;
             }
@@ -605,8 +605,8 @@ Rule ID | Missing Help Link | Title |
                         // However, we consider "missing" entries as invalid. This is to force updating the file when new rules are added.
                         if (!actualContent.Contains(line))
                         {
-                            Console.Error.WriteLine($"Missing entry in {fileWithPath}");
-                            Console.Error.WriteLine(line);
+                            await Console.Error.WriteLineAsync($"Missing entry in {fileWithPath}").ConfigureAwait(false);
+                            await Console.Error.WriteLineAsync(line).ConfigureAwait(false);
                             // The file is missing an entry. Mark it as invalid and break the loop as there is no need to continue validating.
                             fileNamesWithValidationFailures.Add(fileWithPath);
                             break;
@@ -644,7 +644,7 @@ Rule ID | Missing Help Link | Title |
                 }
             }
 
-            bool createGlobalConfigFiles()
+            async Task<bool> createGlobalConfigFilesAsync()
             {
                 using var shippedFilesDataBuilder = ArrayBuilder<ReleaseTrackingData>.GetInstance();
                 using var versionsBuilder = PooledHashSet<Version>.GetInstance();
@@ -655,7 +655,7 @@ Rule ID | Missing Help Link | Title |
                     var assemblyPath = GetAssemblyPath(assembly);
                     if (!File.Exists(assemblyPath))
                     {
-                        Console.Error.WriteLine($"'{assemblyPath}' does not exist");
+                        await Console.Error.WriteLineAsync($"'{assemblyPath}' does not exist").ConfigureAwait(false);
                         return false;
                     }
 
@@ -667,7 +667,7 @@ Rule ID | Missing Help Link | Title |
                     catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        Console.Error.WriteLine(ex.Message);
+                        await Console.Error.WriteLineAsync(ex.Message).ConfigureAwait(false);
                         return false;
                     }
                 }
@@ -691,7 +691,7 @@ Rule ID | Missing Help Link | Title |
 
                         if (releaseTrackingOptOut)
                         {
-                            Console.Error.WriteLine($"'{shippedFile}' exists but was not expected");
+                            await Console.Error.WriteLineAsync($"'{shippedFile}' exists but was not expected").ConfigureAwait(false);
                             return false;
                         }
 
@@ -710,7 +710,7 @@ Rule ID | Missing Help Link | Title |
                         catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                         {
-                            Console.Error.WriteLine(ex.Message);
+                            await Console.Error.WriteLineAsync(ex.Message).ConfigureAwait(false);
                             return false;
                         }
                     }
@@ -718,7 +718,7 @@ Rule ID | Missing Help Link | Title |
 
                 if (!releaseTrackingOptOut && !sawShippedFile)
                 {
-                    Console.Error.WriteLine($"Could not find any 'AnalyzerReleases.Shipped.md' file");
+                    await Console.Error.WriteLineAsync($"Could not find any 'AnalyzerReleases.Shipped.md' file").ConfigureAwait(false);
                     return false;
                 }
 

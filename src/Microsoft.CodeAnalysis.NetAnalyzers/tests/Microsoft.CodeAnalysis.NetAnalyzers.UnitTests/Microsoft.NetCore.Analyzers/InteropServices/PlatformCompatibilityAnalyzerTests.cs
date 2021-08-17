@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -22,6 +22,25 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     public partial class PlatformCompatabilityAnalyzerTests
     {
         private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser,macOS,maccatalyst, ios, linux;\nbuild_property.TargetFramework=net5.0";
+
+        [Fact(Skip = "TODO need to be fixed: Test for for wrong arguments, not sure how to report the Compiler error diagnostic")]
+        public async Task TestOsPlatformAttributesWithNonStringArgument()
+        {
+            var csSource = @"
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+public class Test
+{
+    [[|SupportedOSPlatform(""Linux"", ""Windows"")|]]
+    public void MethodWithTwoArguments() { }
+
+    [UnsupportedOSPlatform([|new string[]{""Linux"", ""Windows""}|])]
+    public void MethodWithArrayArgument() { }
+}";
+
+            await VerifyAnalyzerCSAsync(csSource);
+        }
 
         public static IEnumerable<object[]> Create_DifferentTfms()
         {
@@ -62,7 +81,7 @@ namespace CallerTargetsBelow5_0
         public static void WindowsOnlyMethod() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, tfm);
+            await VerifyAnalyzerCSAsync(source, tfm);
         }
 
         public static IEnumerable<object[]> Create_DifferentTfmsWithOption()
@@ -107,7 +126,7 @@ namespace CallerTargetsBelow5_0
         public static void WindowsOnlyMethod() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, tfmAndOption);
+            await VerifyAnalyzerCSAsync(source, tfmAndOption);
         }
 
         [Fact]
@@ -216,7 +235,7 @@ public class Test
     [UnsupportedOSPlatform(""browser"")]
     public static void ThrowPnseDefaultConstructor() { throw new PlatformNotSupportedException(); }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -265,7 +284,7 @@ public class Test
         throw new PlatformNotSupportedException(SR.Message, new Exception(SR.Message));
     }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -323,7 +342,7 @@ public class Test
         }
     }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -357,7 +376,7 @@ public class Test
     [UnsupportedOSPlatform(""browser"")]
     public static Exception ThrowPnseDefaultConstructor() { return new PlatformNotSupportedException(); }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -391,7 +410,7 @@ public class Test
         }
     }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -415,7 +434,7 @@ public class Test
         [|GenericMethod<Action<WindowsOnlyType>>()|];
     }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -439,7 +458,7 @@ public class Test
         MethodWithGenericParameter([|new GenericClass<WindowsOnlyType>()|]);
     }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -479,7 +498,7 @@ public class Test
         [|GenericClass<WindowsOnlyType>.SampleEvent|] += WindowsEventHandler;
     }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -538,7 +557,7 @@ namespace WindowsOnlyAssembly
         }
     }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -573,7 +592,7 @@ public class Test
         GenericClass<GenericType<Action<GenericClass<GenericClass<GenericType<Action<GenericClass<int>>>>>>>>.M2();
     }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -597,7 +616,7 @@ public class Test
     [SupportedOSPlatform(""Windows10.1.1.1"")]
     public void WindowsOnly() { }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCSAsync(csSource);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -617,7 +636,7 @@ Public Class Test
     Public Sub Unsupported()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -666,7 +685,7 @@ public class Test
     [UnsupportedOSPlatform("""")]
     public void UnsupportedWithEmptyString() { }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -698,7 +717,7 @@ public class Test
         return option;
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4071, "https://github.com/dotnet/roslyn-analyzers/issues/4071")]
@@ -748,7 +767,7 @@ public class Test
         return option;
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -796,7 +815,7 @@ Public Class Test
         Return[option]
     End Function
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Theory]
@@ -823,7 +842,7 @@ public class Test
         return option;
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         public static IEnumerable<object[]> Create_AttributeProperty_WithCondtions()
@@ -861,7 +880,7 @@ public enum PlatformEnum
     Linux48,
     NoPlatform
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -895,7 +914,7 @@ public enum PlatformEnum
     Linux48,
     NoPlatform
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -920,7 +939,7 @@ Public Enum PlatformEnum
     Linux48
     NoPlatform
 End Enum";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -953,7 +972,7 @@ public class Test
         return option;
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -975,7 +994,7 @@ public class B
     [SupportedOSPlatform(""Windows10.1.1.1"")]
     public void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1002,7 +1021,7 @@ namespace Ns
         public void M2() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -1023,7 +1042,7 @@ Namespace Ns
         End Sub
     End Class
 End Namespace";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -1048,7 +1067,7 @@ public class C
 
     public void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1070,7 +1089,7 @@ public class OsDependentClass
 {
     public void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -1088,7 +1107,7 @@ Public Class OsDependentClass
     End Sub
 End Class
 ";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -1111,7 +1130,7 @@ public class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     public void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1135,7 +1154,7 @@ public class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     public void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1162,7 +1181,7 @@ public class Test
 
     public void M3(Action a) { a(); }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1185,7 +1204,7 @@ public class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     public void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1211,7 +1230,7 @@ public class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     public void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1238,7 +1257,7 @@ public class C
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     public void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1265,7 +1284,7 @@ public class Test
 
     public void M3(Action a) { a(); }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1288,7 +1307,7 @@ public class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     public void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1317,7 +1336,7 @@ public class Test
 
     public void M3() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -1339,7 +1358,7 @@ Public Class Test
     Public Sub M3()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
@@ -1366,7 +1385,7 @@ public class C
         [|Test.WindowsOnlyEvent|] -= WindowsEventHandler;
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1412,7 +1431,7 @@ public class Test
         [|WindowsOnlyEventRemove|] -= WindowsEventHandler;
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1434,7 +1453,7 @@ public class Test
         handler();
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
@@ -1463,7 +1482,7 @@ class UnsupportedOnBrowserType
     [SupportedOSPlatform(""tvos4.0"")]    
     public static void SupportedOnTvos4() {}
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
@@ -1523,7 +1542,7 @@ class UnsupportedOnBrowserType
     [SupportedOSPlatform(""tvos4.0"")]    
     public static void SupportedOnTvos4() {}
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
@@ -1572,7 +1591,7 @@ class UnsupportedOnBrowserSupportedOnWindowType
     [SupportedOSPlatform(""tvos4.0"")]    // same here
     public static void SupportedOnTvos4() {}
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1605,7 +1624,7 @@ namespace CallerSupportsSubsetOfTarget
         public static void SupportedOnWindowsAndBrowser() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -1630,7 +1649,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
         public static void UnsupportedOnWindowsUntilWindows11() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -1809,7 +1828,7 @@ namespace CallerUnsupportsSubsetOfTarget
         public static void FunctionSupportedOnWindowsSameVersion() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -1839,7 +1858,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
         public static void FunctionSupportedOnWindowsSameVersion() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -1898,7 +1917,7 @@ namespace CallerSupportsSubsetOfTarget
         public static void UnsupportedOnWindowsUntilWindows11() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("Target.SupportedOnWindows()", "'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsUnreachable).WithLocation(1).WithArguments("Target.SupportedOnBrowser()", "'browser'", "'browser'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(2).WithArguments("Target.SupportedOnWindowsAndUnsupportedOnBrowser()", "'windows'"),
@@ -1963,7 +1982,7 @@ namespace CallerSupportsSubsetOfTarget
         public static void UnsupportedOnWindowsAndBrowser() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2051,7 +2070,7 @@ class Some
     [UnsupportedOSPlatform(""tvos"")] // Not ignored, suppresses parent
     public static void Api2() {}
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2105,7 +2124,7 @@ namespace PlatformCompatDemo.Bugs
         public static void FunctionSupportedOnBrowser() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2136,7 +2155,7 @@ namespace PlatformCompatDemo
     [UnsupportedOSPlatform(""linux"")] // must be ignored
     public class NonLinuxApis { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2166,7 +2185,7 @@ namespace PlatformCompatDemo
     [SupportedOSPlatform(""browser"")]
     public class BrowserApis { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2190,7 +2209,7 @@ class SomeWindowsSpecific
     [UnsupportedOSPlatform(""windows"")] // This will not be ignored
     public static void NotForWindows() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2216,7 +2235,7 @@ static class Some
 {
     public static void Windows10SpecificApi() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2243,7 +2262,7 @@ static class Some
     [SupportedOSPlatform(""windows1.0"")]
     public static void WindowsSpecificApi1() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
@@ -2264,7 +2283,7 @@ namespace ns
     }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("Overlapped", "'windows'"),
+            await VerifyAnalyzerCSAsync(source, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("Overlapped", "'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).WithArguments("Overlapped.AsyncResult", "'windows'"));
         }
 
@@ -2312,7 +2331,7 @@ public class OsDependentClass
 
             if (warn)
             {
-                await VerifyAnalyzerAsyncCs(source,
+                await VerifyAnalyzerCSAsync(source,
                     VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithSpan(9, 32, 9, 54).
                     WithArguments("OsDependentClass", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, platform, version),
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, suppressingPlatform, suppressingVersion)),
@@ -2322,7 +2341,7 @@ public class OsDependentClass
             }
             else
             {
-                await VerifyAnalyzerAsyncCs(source);
+                await VerifyAnalyzerCSAsync(source);
             }
         }
 
@@ -2366,19 +2385,19 @@ public class OsDependentClass { }
             {
                 if (platform.Equals(suppressingPlatform, System.StringComparison.OrdinalIgnoreCase))
                 {
-                    await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).
+                    await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).
                         WithArguments("OsDependentClass", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, platform, version),
                         GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, suppressingPlatform, suppressingVersion)));
                 }
                 else
                 {
-                    await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(0).
+                    await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(0).
                         WithArguments("OsDependentClass", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, platform, version)));
                 }
             }
             else
             {
-                await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+                await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
             }
         }
 
@@ -2415,7 +2434,7 @@ public class C
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).
+            await VerifyAnalyzerCSAsync(source, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).
                 WithLocation(0).WithArguments("C.StaticClass.LinuxMethod()", "'linux'", "'Linux'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1).WithArguments("C.StaticClass.LinuxVersionedMethod()",
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "linux", "4.8"),
@@ -2481,7 +2500,7 @@ public class C
     [UnsupportedOSPlatform(""windows10.0.2004"")]
     public void UnsupportedSupportedFrom1903To2004() { }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).
                 WithArguments("C.UnsupportedSupportedFrom1903To2004()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "windows", "10.0.1903"),
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "windows", "10.0.2000")),
@@ -2541,7 +2560,7 @@ public class C
     [UnsupportedOSPlatform(""windows10.0.2004"")]
     public void WindowsOnlyUnsupportedFrom2004() { }
 }";
-            await VerifyAnalyzerAsyncCs(source,
+            await VerifyAnalyzerCSAsync(source,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(0).
                 WithArguments("C.WindowsOnlyUnsupportedFrom2004()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "windows", "10.0.2004"), "'Linux'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).
@@ -2638,7 +2657,7 @@ namespace PlatformCompatDemo.SupportedUnupported
 }
 " + TargetTypesForTest;
 
-            await VerifyAnalyzerAsyncCs(source,
+            await VerifyAnalyzerCSAsync(source,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).
                 WithArguments("TypeWithoutAttributes.FunctionSupportedOnWindows()", "'windows'", ""),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).
@@ -2706,7 +2725,7 @@ namespace PlatformCompatDemo.SupportedUnupported
 }
 " + TargetTypesForTest;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(0).
                 WithArguments("TypeUnsupportedOnBrowser", "'browser'", ""),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(1).
@@ -2766,7 +2785,7 @@ public class Test
 }
 " + AllowDenyListTestClasses;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()", "'windows'", ""),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(1).WithArguments("DenyList.UnsupportedWindows10()",
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0", "")),
@@ -2803,7 +2822,7 @@ public class Test
 }
 " + AllowDenyListTestClasses;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()", "'windows'", "'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1).WithArguments("DenyList.UnsupportedWindows10()", GetFormattedString(
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows")),
@@ -2839,7 +2858,7 @@ public class Test
 }
 " + AllowDenyListTestClasses;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()", GetFormattedString(
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "9.0")),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1).WithArguments("DenyList.UnsupportedWindows10()", GetFormattedString(
@@ -2890,7 +2909,7 @@ public class Test
 }
 " + AllowDenyListTestClasses;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()",
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "windows", "10.0")),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1).WithArguments("DenyList.UnsupportedSupportedWindows8To10()", GetFormattedString(
@@ -2931,7 +2950,7 @@ public class Test
 }
 " + AllowDenyListTestClasses;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsUnreachable).WithLocation(0).WithArguments("AllowList.WindowsOnly()", "'windows'", "'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsUnreachable).WithLocation(1).WithArguments("AllowList.Windows10Only()", GetFormattedString(
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows")),
@@ -2970,7 +2989,7 @@ public class Test
 }
 " + AllowDenyListTestClasses;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()", GetFormattedString(
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "windows", "9.0")),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1).WithArguments("DenyList.UnsupportedSupportedWindows8To10()", GetFormattedString(
@@ -3012,7 +3031,7 @@ public class Test
 }
 " + AllowDenyListTestClasses;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()", GetFormattedString(
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "9.0")),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1).WithArguments("DenyList.UnsupportedWindows10()", GetFormattedString(
@@ -3052,7 +3071,7 @@ public class Test
 }
 " + AllowDenyListTestClasses;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()",
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "11.0")),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1).WithArguments("DenyList.UnsupportedWindows10()",
@@ -3093,7 +3112,7 @@ public class Test
 }
 " + AllowDenyListTestClasses;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()", GetFormattedString(
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "9.0", "12.0")),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1).WithArguments("DenyList.UnsupportedWindows10()", GetFormattedString(
@@ -3161,7 +3180,7 @@ class TypeSupportedOnlyOnWindows
         public static void ApiSupportedOn7_10() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("TypeSupportedOnlyOnWindows.ApiWithNoAttrbiute()", "'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).WithArguments("TypeSupportedOnlyOnWindows.ApiSupportedOn7()",
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "7.0")),
@@ -3235,7 +3254,7 @@ class TypeUnsupportedWin8
         public static void ApiUnsupportedSupportedOn7_9() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(0).WithArguments("TypeUnsupportedWin8.ApiWithNoAttrbiute()",
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "8.0")),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(1).WithArguments("TypeUnsupportedWin8.ApiUnsupportedOn9()",
@@ -3333,7 +3352,7 @@ class TypeSupportedWindows8_14
         public static void SupportedOn10_12() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("TypeSupportedWindows8_14.ApiWithNoAttrbiute()",
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "8.0", "14.0")),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).WithArguments("TypeSupportedWindows8_14.UnsupportedOn12()",
@@ -3406,7 +3425,7 @@ class UnsupportedWindows8Supported9_14
         public static void Unsupported6Supported11_13() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsAllPlatforms).WithLocation(0).WithArguments("UnsupportedWindows8Supported9_14.ApiWithNoAttrbiute()",
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "9.0", "14.0")),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsAllPlatforms).WithLocation(1).WithArguments("UnsupportedWindows8Supported9_14.UnsupportedOn7()",
@@ -3461,7 +3480,7 @@ class UnsupportedWindows8_9_12_Ios6_7_14
         public static void UnsupportedWindowsIos2_9_10() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsAllPlatforms).WithLocation(0).WithArguments("UnsupportedWindows8_9_12_Ios6_7_14.ApiWithNoAttrbiute()",
                     Join(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "ios", "7.0", "14.0"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "9.0", "12.0"))),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsAllPlatforms).WithLocation(1).WithArguments("UnsupportedWindows8_9_12_Ios6_7_14.UnsupportedWindows6_10_Ios_1_5_11.ApiWithNoAttrbiute()",
@@ -3488,7 +3507,7 @@ public class Test
         }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -3509,7 +3528,7 @@ public class Test
         }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -3532,7 +3551,7 @@ public class Test
         }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -3556,7 +3575,7 @@ public class Test
         }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -3576,7 +3595,7 @@ public class Test
         Console.Beep(10, 20); // Windows only API, should not warn
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -3602,7 +3621,7 @@ public class Test
     [SupportedOSPlatform(""windows10.0"")]
     void SupportedOnWindows10() { }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -3644,7 +3663,7 @@ public class Test
         NoAttribute();
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -3693,7 +3712,7 @@ class Test
         Console.Beep(10, 20);
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
@@ -3763,7 +3782,7 @@ class TestType
     [SupportedOSPlatform(""windows"")]
     static void Test() { }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
 #if DEBUG
@@ -4053,10 +4072,10 @@ class TestType
             return test;
         }
 
-        private static async Task VerifyAnalyzerAsyncCs(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
-            => await VerifyAnalyzerAsyncCs(sourceCode, "build_property.TargetFramework = net5", expectedDiagnostics);
+        private static async Task VerifyAnalyzerCSAsync(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
+            => await VerifyAnalyzerCSAsync(sourceCode, "build_property.TargetFramework = net5", expectedDiagnostics);
 
-        private static async Task VerifyAnalyzerAsyncCs(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
+        private static async Task VerifyAnalyzerCSAsync(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
         {
             var test = PopulateTestCs(sourceCode, expectedDiagnostics);
             test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $@"root = true
@@ -4067,7 +4086,7 @@ class TestType
             await test.RunAsync();
         }
 
-        private static async Task VerifyAnalyzerAsyncCs(string sourceCode, string editorconfigText)
+        private static async Task VerifyAnalyzerCSAsync(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestCs(sourceCode);
             test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $@"root = true
@@ -4078,10 +4097,10 @@ class TestType
             await test.RunAsync();
         }
 
-        private static async Task VerifyAnalyzerAsyncVb(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
-            => await VerifyAnalyzerAsyncVb(sourceCode, "build_property.TargetFramework = net5", expectedDiagnostics);
+        private static async Task VerifyAnalyzerVBAsync(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
+            => await VerifyAnalyzerVBAsync(sourceCode, "build_property.TargetFramework = net5", expectedDiagnostics);
 
-        private static async Task VerifyAnalyzerAsyncVb(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
+        private static async Task VerifyAnalyzerVBAsync(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
         {
             var test = PopulateTestVb(sourceCode, expectedDiagnostics);
             test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $@"root = true

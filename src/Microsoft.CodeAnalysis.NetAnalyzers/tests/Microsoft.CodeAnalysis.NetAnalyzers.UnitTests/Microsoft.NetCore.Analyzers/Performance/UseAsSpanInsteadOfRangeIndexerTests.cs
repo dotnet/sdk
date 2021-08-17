@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
@@ -26,7 +26,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [Fact]
         public static async Task StringToStringLocal()
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -42,7 +42,7 @@ public class TestClass
         [Fact]
         public static async Task StringToStringReturn()
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -57,7 +57,7 @@ public class TestClass
         [Fact]
         public static async Task StringToStringParameter()
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -75,7 +75,7 @@ public class TestClass
         public static async Task StringToSpanLocal()
         {
             // This test is responsible for verifying the placeholders for string to ReadOnlySpan<char>.
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -105,7 +105,7 @@ public class TestClass
         [Fact]
         public static async Task StringToSpanReturn()
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -130,7 +130,7 @@ public class TestClass
         [Fact]
         public static async Task StringToSpanParameter()
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -159,7 +159,7 @@ public class TestClass
         [Fact]
         public static async Task StringToSpanParameterMultipleTimes()
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -188,7 +188,7 @@ public class TestClass
         [Fact]
         public static async Task StringToSpanCastLocal()
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -204,7 +204,7 @@ public class TestClass
         [Fact]
         public static async Task StringToSpanCastReturn()
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -219,7 +219,7 @@ public class TestClass
         [Fact]
         public static async Task StringToSpanCastParameter()
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -237,7 +237,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToArrayLocal(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -254,7 +254,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToArrayReturn(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -270,7 +270,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToArrayParameter(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -289,7 +289,7 @@ public class TestClass
         public static async Task ArrayToReadOnlySpanLocal(string typeName)
         {
             // This test is responsible for verifying the placeholders for T[] to ReadOnlySpan<T>.
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -320,7 +320,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToReadOnlySpanReturn(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -346,7 +346,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToReadOnlySpanParameter(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -376,7 +376,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToReadOnlySpanCastLocal(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -393,7 +393,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToReadOnlySpanCastReturn(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -409,7 +409,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToReadOnlySpanCastParameter(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -428,7 +428,7 @@ public class TestClass
         public static async Task ArrayToSpanLocal(string typeName)
         {
             // This test is responsible for verifying the placeholders for T[] to Span<T>.
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -459,7 +459,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToSpanReturn(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -485,7 +485,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToSpanParameter(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -515,7 +515,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToSpanCastLocal(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -532,7 +532,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToSpanCastReturn(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -548,7 +548,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToSpanCastParameter(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -567,7 +567,7 @@ public class TestClass
         public static async Task ArrayToReadOnlyMemoryLocal(string typeName)
         {
             // This test is responsible for verifying the placeholders for T[] to ReadOnlyMemory<T>.
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -598,7 +598,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToReadOnlyMemoryReturn(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -624,7 +624,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToReadOnlyMemoryParameter(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -655,7 +655,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToReadOnlyMemoryCastLocal(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -672,7 +672,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToReadOnlyMemoryCastReturn(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -688,7 +688,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToReadOnlyMemoryCastParameter(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -707,7 +707,7 @@ public class TestClass
         public static async Task ArrayToMemoryLocal(string typeName)
         {
             // This test is responsible for verifying the placeholders for T[] to Memory<T>.
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -738,7 +738,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToMemoryReturn(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -764,7 +764,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToMemoryParameter(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -794,7 +794,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToMemoryCastLocal(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -811,7 +811,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToMemoryCastReturn(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -827,7 +827,7 @@ public class TestClass
         [MemberData(nameof(ArrayElementTypes))]
         public static async Task ArrayToMemoryCastParameter(string typeName)
         {
-            await TestCS(@"
+            await TestCSAsync(@"
 using System;
 
 public class TestClass
@@ -841,7 +841,7 @@ public class TestClass
 }");
         }
 
-        private static Task TestCS(string source, string corrected, params DiagnosticResult[] expected)
+        private static Task TestCSAsync(string source, string corrected, params DiagnosticResult[] expected)
         {
             var test = new VerifyCS.Test
             {
@@ -855,7 +855,7 @@ public class TestClass
             return test.RunAsync();
         }
 
-        private static Task TestCS(string source, params DiagnosticResult[] expected)
+        private static Task TestCSAsync(string source, params DiagnosticResult[] expected)
         {
             var test = new VerifyCS.Test
             {
