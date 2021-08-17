@@ -166,6 +166,7 @@
                       '$(SdkMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(ToolsetBrandName)' ^
+                      '$(VersionPrefix)' ^
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
                       '$(Version)' ^
@@ -183,6 +184,7 @@
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
       OutputFolder="$(LightCommandPackagesDir)"
+      AdditionalBasePaths="$(MSBuildThisFileDirectory)packaging\windows\clisdk"
       NoLogo="true"
       Cultures="en-us"
       InstallerFile="$(SdkMSIInstallerFile)"
