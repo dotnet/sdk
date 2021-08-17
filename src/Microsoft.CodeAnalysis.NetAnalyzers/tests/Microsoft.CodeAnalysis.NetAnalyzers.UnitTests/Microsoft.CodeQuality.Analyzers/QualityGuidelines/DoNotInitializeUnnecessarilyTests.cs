@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class DoNotInitializeUnnecessarilyTests
     {
         [Fact]
-        public async Task NoDiagnostics()
+        public async Task NoDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -71,7 +71,7 @@ public class C
         }
 
         [Fact]
-        public async Task NoDiagnostics_VB()
+        public async Task NoDiagnostics_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -117,7 +117,7 @@ End Class
         }
 
         [Fact]
-        public async Task NoDiagnostics_Nullable()
+        public async Task NoDiagnostics_NullableAsync()
         {
             await new VerifyCS.Test
             {
@@ -149,7 +149,7 @@ namespace System.Diagnostics.CodeAnalysis
         }
 
         [Fact]
-        public async Task Diagnostics_InitializerRemoved()
+        public async Task Diagnostics_InitializerRemovedAsync()
         {
             await new VerifyCS.Test()
             {
@@ -246,7 +246,7 @@ public class C
         }
 
         [Fact]
-        public async Task Diagnostics_VB()
+        public async Task Diagnostics_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C

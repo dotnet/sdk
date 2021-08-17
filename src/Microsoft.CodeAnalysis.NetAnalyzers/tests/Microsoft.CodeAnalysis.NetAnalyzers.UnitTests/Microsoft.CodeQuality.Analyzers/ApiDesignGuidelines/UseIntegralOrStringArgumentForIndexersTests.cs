@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class UseIntegralOrStringArgumentForIndexersTests
     {
         [Fact]
-        public async Task TestBasicUseIntegralOrStringArgumentForIndexersWarning1()
+        public async Task TestBasicUseIntegralOrStringArgumentForIndexersWarning1Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
     Imports System
@@ -33,7 +33,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestBasicUseIntegralOrStringArgumentForIndexersNoWarning_Internal()
+        public async Task TestBasicUseIntegralOrStringArgumentForIndexersNoWarning_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
     Imports System
@@ -59,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task TestBasicUseIntegralOrStringArgumentForIndexersNoWarning1()
+        public async Task TestBasicUseIntegralOrStringArgumentForIndexersNoWarning1Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
     Public Class Months
@@ -74,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task TestCSharpUseIntegralOrStringArgumentForIndexersWarning1()
+        public async Task TestCSharpUseIntegralOrStringArgumentForIndexersWarning1Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     public class Months
@@ -91,7 +91,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestCSharpUseIntegralOrStringArgumentForIndexersNoWarning_Internal()
+        public async Task TestCSharpUseIntegralOrStringArgumentForIndexersNoWarning_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     internal class Months
@@ -120,7 +120,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task TestCSharpUseIntegralOrStringArgumentForIndexersNoWarning1()
+        public async Task TestCSharpUseIntegralOrStringArgumentForIndexersNoWarning1Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     public class Months
@@ -137,7 +137,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task TestCSharpGenericIndexer()
+        public async Task TestCSharpGenericIndexerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     public class Months<T>
@@ -153,7 +153,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task TestBasicGenericIndexer()
+        public async Task TestBasicGenericIndexerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
     Public Class Months(Of T)
@@ -166,7 +166,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task TestCSharpEnumIndexer()
+        public async Task TestCSharpEnumIndexerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     public class Months<T>
@@ -184,7 +184,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task TestBasicEnumIndexer()
+        public async Task TestBasicEnumIndexerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
     Public Class Months(Of T)
@@ -201,7 +201,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(3638, "https://github.com/dotnet/roslyn-analyzers/issues/3638")]
-        public async Task CA1043_IndexerOfTypeSystemIndex_NoDiagnostic()
+        public async Task CA1043_IndexerOfTypeSystemIndex_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -231,7 +231,7 @@ End Class",
         }
 
         [Fact, WorkItem(3638, "https://github.com/dotnet/roslyn-analyzers/issues/3638")]
-        public async Task CA1043_IndexerOfTypeSystemRange_NoDiagnostic()
+        public async Task CA1043_IndexerOfTypeSystemRange_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {

@@ -20,7 +20,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("a", true, " == ", " -1")]
         [InlineData("This", false, " >= ", " 0")]
         [InlineData("a", true, " >= ", " 0")]
-        public async Task TestStringAndChar(string input, bool isCharTest, string operatorKind, string value)
+        public async Task TestStringAndCharAsync(string input, bool isCharTest, string operatorKind, string value)
         {
             string startQuote = isCharTest ? "'" : "\"";
             string endQuote = isCharTest ? "'" : "\", System.StringComparison.Ordinal";
@@ -77,7 +77,7 @@ End Class
         [Theory]
         [InlineData(" == ", " -1")]
         [InlineData(" >= ", " 0")]
-        public async Task TestStringNoComparisonArgument(string operatorKind, string value)
+        public async Task TestStringNoComparisonArgumentAsync(string operatorKind, string value)
         {
             string csInput = @"
 namespace TestNamespace 
@@ -128,7 +128,7 @@ End Class
         [Theory]
         [InlineData(" == ", " -1")]
         [InlineData(" >= ", " 0")]
-        public async Task TestCharAndOrdinal(string operatorKind, string value)
+        public async Task TestCharAndOrdinalAsync(string operatorKind, string value)
         {
             string csInput = @"
 namespace TestNamespace 
@@ -179,7 +179,7 @@ End Class
         [Theory]
         [InlineData("This", false)]
         [InlineData("a", true)]
-        public async Task TestStringAndCharWithMultipleDiagnostics(string input, bool isCharTest)
+        public async Task TestStringAndCharWithMultipleDiagnosticsAsync(string input, bool isCharTest)
         {
             string startQuote = isCharTest ? "'" : "\"";
             string endQuote = isCharTest ? "'" : "\", System.StringComparison.Ordinal";
@@ -244,7 +244,7 @@ End Class
         [Theory]
         [InlineData("This", false)]
         [InlineData("a", true)]
-        public async Task TestStringAndCharWithComparison(string input, bool isCharTest)
+        public async Task TestStringAndCharWithComparisonAsync(string input, bool isCharTest)
         {
             string quotes = isCharTest ? "'" : "\"";
             string csInput = @" 
@@ -298,7 +298,7 @@ End Class
         [Theory]
         [InlineData("This", false)]
         [InlineData("a", true)]
-        public async Task TestLeftAndRightOperandInvocations(string input, bool isCharTest)
+        public async Task TestLeftAndRightOperandInvocationsAsync(string input, bool isCharTest)
         {
             string startQuote = isCharTest ? "'" : "\"";
             string endQuote = isCharTest ? "'" : "\", System.StringComparison.Ordinal";
@@ -393,7 +393,7 @@ End Class
         [Theory]
         [InlineData("This", false)]
         [InlineData("a", true)]
-        public async Task TestStringAndCharNamedArgumentCombinationVB(string input, bool isCharTest)
+        public async Task TestStringAndCharNamedArgumentCombinationVBAsync(string input, bool isCharTest)
         {
             string startQuote = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -529,7 +529,7 @@ End Class
         [Theory]
         [InlineData("This", false)]
         [InlineData("a", true)]
-        public async Task TestStringAndCharNamedArgumentCombinationsCS(string input, bool isCharTest)
+        public async Task TestStringAndCharNamedArgumentCombinationsCSAsync(string input, bool isCharTest)
         {
             string startQuote = isCharTest ? "'" : "\"";
             string csInput = @"
@@ -692,7 +692,7 @@ namespace TestNamespace
         [InlineData("a", true, ", 1", ", 2")]
         [InlineData("This", false, ", 1", ", System.StringComparison.OrdinalIgnoreCase")]
         [InlineData("This", false, ", 1", ", 2", ", System.StringComparison.OrdinalIgnoreCase")]
-        public async Task TestTooManyArgumentsToIndexOf(string input, bool isCharTest, params string[] inputArguments)
+        public async Task TestTooManyArgumentsToIndexOfAsync(string input, bool isCharTest, params string[] inputArguments)
         {
             string quotes = isCharTest ? "'" : "\"";
             StringBuilder sb = new StringBuilder();
@@ -728,7 +728,7 @@ namespace TestNamespace
         [Theory]
         [InlineData("This", false)]
         [InlineData("a", true)]
-        public async Task TestIndexWrittenTo(string input, bool isCharTest)
+        public async Task TestIndexWrittenToAsync(string input, bool isCharTest)
         {
             string quotes = isCharTest ? "'" : "\"";
             string csInput = @"
@@ -782,7 +782,7 @@ End Class
         [Theory]
         [InlineData("This", false)]
         [InlineData("a", true)]
-        public async Task TestIndexWrittenToAfter(string input, bool isCharTest)
+        public async Task TestIndexWrittenToAfterAsync(string input, bool isCharTest)
         {
             string quotes = isCharTest ? "'" : "\"";
             string csInput = @"
@@ -834,7 +834,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestNonSupportedTarget()
+        public async Task TestNonSupportedTargetAsync()
         {
             string csInput = @"
 namespace TestNamespace 
@@ -899,7 +899,7 @@ namespace TestNamespace
         [InlineData(" != ", "3")]
         [InlineData(" > ", "2")]
         [InlineData(" >= ", "2")]
-        public async Task TestNonSupportedOperationKind(string operatorKind, string right)
+        public async Task TestNonSupportedOperationKindAsync(string operatorKind, string right)
         {
             string csInput = @"
 namespace TestNamespace 
@@ -925,7 +925,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task TestRightOperandIsVariable()
+        public async Task TestRightOperandIsVariableAsync()
         {
             string csInput = @"
 namespace TestNamespace 
@@ -952,7 +952,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task TestReadOutside()
+        public async Task TestReadOutsideAsync()
         {
             string csInput = @"
 namespace TestNamespace 
@@ -981,7 +981,7 @@ namespace TestNamespace
         [Theory]
         [InlineData(" == ", " -1", "!")]
         [InlineData(" >= ", " 0", "")]
-        public async Task TestFunctionParameter(string operatorKind, string value, string notString)
+        public async Task TestFunctionParameterAsync(string operatorKind, string value, string notString)
         {
             string csInput = @"
 namespace TestNamespace 
@@ -1053,7 +1053,7 @@ End Class
         [Theory]
         [InlineData(" == ", " -1", "!")]
         [InlineData(" >= ", " 0", "")]
-        public async Task TestFunctionParameterWithStringComparisonArgument(string operatorKind, string value, string notString)
+        public async Task TestFunctionParameterWithStringComparisonArgumentAsync(string operatorKind, string value, string notString)
         {
             string csInput = @"
 namespace TestNamespace 
@@ -1125,7 +1125,7 @@ End Class
         [Theory]
         [InlineData(" == ", " -1")]
         [InlineData(" >= ", " 0")]
-        public async Task TestReversedMultipleDeclarations(string operatorKind, string value)
+        public async Task TestReversedMultipleDeclarationsAsync(string operatorKind, string value)
         {
             string csInput = @"
 namespace TestNamespace 
@@ -1176,7 +1176,7 @@ End Class
         [Theory]
         [InlineData(" == ", " -1")]
         [InlineData(" >= ", " 0")]
-        public async Task TestMultipleDeclarations(string operatorKind, string value)
+        public async Task TestMultipleDeclarationsAsync(string operatorKind, string value)
         {
             string csInput = @"
 namespace TestNamespace 

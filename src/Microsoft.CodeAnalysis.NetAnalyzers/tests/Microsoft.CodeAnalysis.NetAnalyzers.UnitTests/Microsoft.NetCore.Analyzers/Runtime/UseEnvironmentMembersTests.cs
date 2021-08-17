@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class UseEnvironmentMembersTests
     {
         [Fact]
-        public async Task NoDiagnostics_NoEnvironmentProcessId_CSharp()
+        public async Task NoDiagnostics_NoEnvironmentProcessId_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
@@ -30,7 +30,7 @@ class C
         }
 
         [Fact]
-        public async Task NoDiagnostics_NoEnvironmentProcessPath_CSharp()
+        public async Task NoDiagnostics_NoEnvironmentProcessPath_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
@@ -46,7 +46,7 @@ class C
         }
 
         [Fact]
-        public async Task NoDiagnostics_CSharp()
+        public async Task NoDiagnostics_CSharpAsync()
         {
             await new VerifyCS.Test
             {
@@ -98,7 +98,7 @@ class C
         }
 
         [Fact]
-        public async Task Diagnostics_ProcessId_FixApplies_CSharp()
+        public async Task Diagnostics_ProcessId_FixApplies_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"
@@ -170,7 +170,7 @@ class C
         }
 
         [Fact]
-        public async Task Diagnostics_ProcessPath_FixApplies_CSharp()
+        public async Task Diagnostics_ProcessPath_FixApplies_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"
@@ -242,7 +242,7 @@ class C
         }
 
         [Fact]
-        public async Task Diagnostics_CurrentManagedThreadId_FixApplies_CSharp()
+        public async Task Diagnostics_CurrentManagedThreadId_FixApplies_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"
@@ -314,7 +314,7 @@ class C
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_VB()
+        public async Task Diagnostics_FixApplies_VBAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
 @"

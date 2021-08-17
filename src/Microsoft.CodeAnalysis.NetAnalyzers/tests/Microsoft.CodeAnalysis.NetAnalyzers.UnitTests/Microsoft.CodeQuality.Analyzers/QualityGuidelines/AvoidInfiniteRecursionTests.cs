@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
     public class AvoidInfiniteRecursionTests
     {
         [Fact]
-        public async Task PropertySetterRecursion_Diagnostic()
+        public async Task PropertySetterRecursion_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -44,7 +44,7 @@ End Class",
         }
 
         [Fact]
-        public async Task PropertySetterRecursionWithinIf_Diagnostic()
+        public async Task PropertySetterRecursionWithinIf_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -76,7 +76,7 @@ End Class",
         }
 
         [Fact]
-        public async Task PropertySetterRecursionWithinIf_FalsePositive_Diagnostic()
+        public async Task PropertySetterRecursionWithinIf_FalsePositive_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -108,7 +108,7 @@ End Class",
         }
 
         [Fact]
-        public async Task PropertySetterNoRecursionWithField_NoDiagnostic()
+        public async Task PropertySetterNoRecursionWithField_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -137,7 +137,7 @@ End Class");
         }
 
         [Fact]
-        public async Task PropertySetterNoRecursionWithOtherProperty_NoDiagnostic()
+        public async Task PropertySetterNoRecursionWithOtherProperty_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -166,7 +166,7 @@ End Class");
         }
 
         [Fact]
-        public async Task PropertySetterRecursionInLambda_Diagnostic()
+        public async Task PropertySetterRecursionInLambda_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -201,7 +201,7 @@ End Class",
         }
 
         [Fact]
-        public async Task PropertySetterRecursionInLambda_FalsePositive_Diagnostic()
+        public async Task PropertySetterRecursionInLambda_FalsePositive_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -234,7 +234,7 @@ End Class",
         }
 
         [Fact]
-        public async Task PropertySetterRecursionInLambda_FalseNegative_NoDiagnostic()
+        public async Task PropertySetterRecursionInLambda_FalseNegative_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -278,7 +278,7 @@ End Class");
         }
 
         [Fact]
-        public async Task PropertySetterRecursionInLocalFunction_Diagnostic()
+        public async Task PropertySetterRecursionInLocalFunction_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -302,7 +302,7 @@ public class A
         }
 
         [Fact]
-        public async Task PropertySetterNoRecursionNotOnThis_NoDiagnostic()
+        public async Task PropertySetterNoRecursionNotOnThis_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A

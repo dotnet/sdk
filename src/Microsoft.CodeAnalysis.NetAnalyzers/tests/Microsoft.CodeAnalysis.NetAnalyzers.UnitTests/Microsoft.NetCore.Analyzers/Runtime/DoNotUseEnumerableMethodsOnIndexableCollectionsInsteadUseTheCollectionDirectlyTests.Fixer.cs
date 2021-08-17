@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyFixerTests
     {
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_CSharp_EnumerableFirstExtensionCall()
+        public async Task CA1826_CSharp_EnumerableFirstExtensionCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -67,7 +67,7 @@ class C
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_Basic_EnumerableFirstExtensionCall()
+        public async Task CA1826_Basic_EnumerableFirstExtensionCallAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -115,7 +115,7 @@ End Class
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_CSharp_EnumerableLastExtensionCall()
+        public async Task CA1826_CSharp_EnumerableLastExtensionCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -167,7 +167,7 @@ class C
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_Basic_EnumerableLastExtensionCall()
+        public async Task CA1826_Basic_EnumerableLastExtensionCallAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -215,7 +215,7 @@ End Class
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_CSharp_EnumerableCountExtensionCall()
+        public async Task CA1826_CSharp_EnumerableCountExtensionCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -267,7 +267,7 @@ class C
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_CSharp_EnumerableFirstStaticCall()
+        public async Task CA1826_CSharp_EnumerableFirstStaticCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -319,7 +319,7 @@ class C
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_Basic_EnumerableFirstStaticCall()
+        public async Task CA1826_Basic_EnumerableFirstStaticCallAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -367,7 +367,7 @@ End Class
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_CSharp_EnumerableLastStaticCall()
+        public async Task CA1826_CSharp_EnumerableLastStaticCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -419,7 +419,7 @@ class C
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_Basic_EnumerableLastStaticCall()
+        public async Task CA1826_Basic_EnumerableLastStaticCallAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -467,7 +467,7 @@ End Class
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_CSharp_EnumerableCountStaticCall()
+        public async Task CA1826_CSharp_EnumerableCountStaticCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -519,7 +519,7 @@ class C
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_Basic_EnumerableCountStaticCall()
+        public async Task CA1826_Basic_EnumerableCountStaticCallAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -567,7 +567,7 @@ End Class
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_CSharp_ChainCall()
+        public async Task CA1826_CSharp_ChainCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System.Collections.Generic;
@@ -632,7 +632,7 @@ class C
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
-        public async Task CA1826_CSharp_InvalidStatement()
+        public async Task CA1826_CSharp_InvalidStatementAsync()
         {
             //this unit test documents a problematic edge case
             //the fixed code triggers an error - CS0201: Only assignment, call, increment, decrement, and new object expressions can be used as a statement

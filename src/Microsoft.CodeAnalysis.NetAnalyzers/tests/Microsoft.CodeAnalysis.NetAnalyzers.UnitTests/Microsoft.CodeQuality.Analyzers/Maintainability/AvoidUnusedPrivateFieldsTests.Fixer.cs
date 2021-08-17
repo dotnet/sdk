@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     public class AvoidUnusedPrivateFieldsFixerTests
     {
         [Fact]
-        public async Task CA1823CSharp()
+        public async Task CA1823CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"  
@@ -53,7 +53,7 @@ class C
         }
 
         [Fact]
-        public async Task CA1823VisualBasic()
+        public async Task CA1823VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
                 @"

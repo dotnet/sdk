@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
     public class DoNotDeclareEventFieldsAsVirtualTests
     {
         [Fact]
-        public async Task EventFieldVirtual_Diagnostic()
+        public async Task EventFieldVirtual_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -25,7 +25,7 @@ public class C
         }
 
         [Fact]
-        public async Task EventPropertyVirtual_NoDiagnostic()
+        public async Task EventPropertyVirtual_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -65,7 +65,7 @@ public class C
         // Invalid analyzer option ignored
         [InlineData("internal", @"dotnet_code_quality.api_surface = all
                                   dotnet_code_quality.CA1070.api_surface_2 = private")]
-        public async Task CSharp_ApiSurfaceOption(string accessibility, string editorConfigText)
+        public async Task CSharp_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
             {

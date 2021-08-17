@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA2253:""{0}""|}", "1")]
         [InlineData(@"{|CA1848:logger.LogTrace({|CA2253:""{0}""|}, 1)|};")]
         [InlineData(@"{|CA1848:logger.LogTrace({|CA2253:""{0}""|}, ""1"")|};")]
-        public async Task CA2253IsProducedForNumericFormatArgument(string format)
+        public async Task CA2253IsProducedForNumericFormatArgumentAsync(string format)
         {
             // Make sure CA1727 is enabled for this test so we can verify it does not trigger on numeric arguments.
             await TriggerCodeAsync(format);
@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [Theory]
         [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:$""{string.Empty}""|}", "11", false)]
         [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:""string"" + 2|}", "11", false)]
-        public async Task CA2254IsProducedForDynamicFormatArgument(string format)
+        public async Task CA2254IsProducedForDynamicFormatArgumentAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
@@ -44,14 +44,14 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:""{str"" + ""ing}""|}|}", 2)]
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:""{"" + nameof(ILogger) + ""}""|}", 0)]
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:""{"" + Const + ""}""|}|}", 0)]
-        public async Task CA2017IsProducedForFormatArgumentCountMismatch(string format)
+        public async Task CA2017IsProducedForFormatArgumentCountMismatchAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
 
         [Theory]
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:""{camelCase}""|}", "1")]
-        public async Task CA1727IsProducedForCamelCasedFormatArgument(string format)
+        public async Task CA1727IsProducedForCamelCasedFormatArgumentAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
 
         // CA2253 is not enabled by default.
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:""{camelCase}""|}", "1")]
-        public async Task TemplateDiagnosticsAreNotProduced(string format)
+        public async Task TemplateDiagnosticsAreNotProducedAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [InlineData(@"LoggerMessage.DefineScope<int>({|CA2017:""{One} {Two} {Three}""|});")]
         [InlineData(@"LoggerMessage.DefineScope<int, int>({|CA2017:""{One} {Two} {Three}""|});")]
         [InlineData(@"LoggerMessage.DefineScope<int, int, int>({|CA2017:""{One} {Two}""|});")]
-        public async Task CA2017IsProducedForDefineMessageTypeParameterMismatch(string expression)
+        public async Task CA2017IsProducedForDefineMessageTypeParameterMismatchAsync(string expression)
         {
             await TriggerCodeAsync(expression);
         }
@@ -96,7 +96,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [InlineData("LogError", @"""This is a test {Message}""")]
         [InlineData("LogCritical", @"""This is a test {Message}""")]
         [InlineData("BeginScope", @"""This is a test {Message}""")]
-        public async Task CA1848IsProducedForInvocationsOfAllLoggerExtensions(string method, string template)
+        public async Task CA1848IsProducedForInvocationsOfAllLoggerExtensionsAsync(string method, string template)
         {
             var expression = @$"{{|CA1848:logger.{method}({template},""Foo"")|}};";
             await TriggerCodeAsync(expression);

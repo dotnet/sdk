@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         #region CA5350
 
         [Fact]
-        public async Task CA5350UseMD5CreateInMethodDeclaration()
+        public async Task CA5350UseMD5CreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -47,7 +47,7 @@ End Module",
         }
         //NO VB
         [Fact]
-        public async Task CA5350UseMD5CreateInPropertyDeclaration()
+        public async Task CA5350UseMD5CreateInPropertyDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -62,7 +62,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5350UseMD5CreateInGetDeclaration()
+        public async Task CA5350UseMD5CreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -93,7 +93,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350UseMD5CreateInFieldDeclaration()
+        public async Task CA5350UseMD5CreateInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -117,7 +117,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350UseMD5CreateInLambdaExpression()
+        public async Task CA5350UseMD5CreateInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -150,7 +150,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350UseMD5CreateInAnonymousMethodExpression()
+        public async Task CA5350UseMD5CreateInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -176,7 +176,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350CreateObjectFromMD5DerivedClass()
+        public async Task CA5350CreateObjectFromMD5DerivedClassAsync()
         {
             await new VerifyCS.Test
             {
@@ -282,7 +282,7 @@ End Namespace"
         #region CA5354
 
         [Fact]
-        public async Task CA5354UseSHA1CreateInMethodDeclaration()
+        public async Task CA5354UseSHA1CreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -311,7 +311,7 @@ End Module",
         }
         //NO VB
         [Fact]
-        public async Task CA5354UseSHA1CreateInPropertyDeclaration()
+        public async Task CA5354UseSHA1CreateInPropertyDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -326,7 +326,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5354UseSHA1CreateInGetDeclaration()
+        public async Task CA5354UseSHA1CreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -357,7 +357,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5354UseSHA1CreateInFieldDeclaration()
+        public async Task CA5354UseSHA1CreateInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -381,7 +381,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5354UseSHA1CreateInLambdaExpression()
+        public async Task CA5354UseSHA1CreateInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -414,7 +414,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5354UseSHA1CreateInAnonymousMethodExpression()
+        public async Task CA5354UseSHA1CreateInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -440,7 +440,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5354CreateObjectFromSHA1DerivedClass()
+        public async Task CA5354CreateObjectFromSHA1DerivedClassAsync()
         {
             await new VerifyCS.Test
             {
@@ -541,7 +541,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task CA5354UseSHA1CryptoServiceProviderInMethodDeclaration()
+        public async Task CA5354UseSHA1CryptoServiceProviderInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -570,7 +570,7 @@ End Module",
         }
 
         [Fact]
-        public async Task CA5354CreateHMACSHA1ObjectInMethodDeclaration()
+        public async Task CA5354CreateHMACSHA1ObjectInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -599,7 +599,7 @@ End Module",
         }
         //No VB
         [Fact]
-        public async Task CA5354CreateHMACSHA1ObjectInPropertyDeclaration()
+        public async Task CA5354CreateHMACSHA1ObjectInPropertyDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -614,7 +614,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5354CreateHMACSHA1ObjectInGetDeclaration()
+        public async Task CA5354CreateHMACSHA1ObjectInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -645,7 +645,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5354CreateHMACSHA1ObjectInFieldDeclaration()
+        public async Task CA5354CreateHMACSHA1ObjectInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -669,7 +669,7 @@ End Namespace",
         }
         //No VB
         [Fact]
-        public async Task CA5354CreateHMACSHA1ObjectInLambdaExpression()
+        public async Task CA5354CreateHMACSHA1ObjectInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -688,7 +688,7 @@ namespace TestNamespace
         }
         //No VB
         [Fact]
-        public async Task CA5354CreateHMACSHA1ObjectInAnonymousMethodExpression()
+        public async Task CA5354CreateHMACSHA1ObjectInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -704,7 +704,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5354CreateObjectFromHMACSHA1DerivedClass()
+        public async Task CA5354CreateObjectFromHMACSHA1DerivedClassAsync()
         {
             await new VerifyCS.Test
             {
@@ -808,7 +808,7 @@ End Namespace
         #endregion
 
         [Fact]
-        public async Task CA5350UseHMACMD5CreateInMethodDeclaration()
+        public async Task CA5350UseHMACMD5CreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -839,7 +839,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350CreateObjectFromHMACMD5DerivedClass()
+        public async Task CA5350CreateObjectFromHMACMD5DerivedClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -875,7 +875,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350UseHMACMD5CreateInGetDeclaration()
+        public async Task CA5350UseHMACMD5CreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -906,7 +906,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350UseHMACMD5InFieldDeclaration()
+        public async Task CA5350UseHMACMD5InFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -930,7 +930,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350UseHMACMD5InLambdaExpression()
+        public async Task CA5350UseHMACMD5InLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -962,7 +962,7 @@ End Module",
         }
 
         [Fact]
-        public async Task CA5350UseHMACMD5InAnonymousMethodExpression()
+        public async Task CA5350UseHMACMD5InAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -987,7 +987,7 @@ End Module",
         }
 
         [Fact]
-        public async Task CA5351UseDESCreateInMethodDeclaration()
+        public async Task CA5351UseDESCreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1016,7 +1016,7 @@ End Module",
         }
 
         [Fact]
-        public async Task CA5351UseDESCreateInGetDeclaration()
+        public async Task CA5351UseDESCreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1048,7 +1048,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task CA5351UseDESCreateInFieldDeclaration()
+        public async Task CA5351UseDESCreateInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1072,7 +1072,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5351UseDESCreateInLambdaExpression()
+        public async Task CA5351UseDESCreateInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1105,7 +1105,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5351UseDESCreateInAnonymousMethodExpression()
+        public async Task CA5351UseDESCreateInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1131,7 +1131,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5351UseDESCryptoServiceProviderCreateInMethodDeclaration()
+        public async Task CA5351UseDESCryptoServiceProviderCreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1161,7 +1161,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5351UseDESCryptoServiceProviderCreateInGetDeclaration()
+        public async Task CA5351UseDESCryptoServiceProviderCreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1192,7 +1192,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5351UseDESCryptoServiceProviderCreateInFieldDeclaration()
+        public async Task CA5351UseDESCryptoServiceProviderCreateInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1216,7 +1216,7 @@ End Namespace",
         }
         //No VB
         [Fact]
-        public async Task CA5351UseDESCryptoServiceProviderInLambdaExpression()
+        public async Task CA5351UseDESCryptoServiceProviderInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1235,7 +1235,7 @@ namespace TestNamespace
         }
         //No VB
         [Fact]
-        public async Task CA5351UseDESCryptoServiceProviderInAnonymousMethodExpression()
+        public async Task CA5351UseDESCryptoServiceProviderInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1251,7 +1251,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5351CreateObjectFromDESDerivedClass()
+        public async Task CA5351CreateObjectFromDESDerivedClassAsync()
         {
             await new VerifyCS.Test
             {
@@ -1366,7 +1366,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task CA5352UseRC2CryptoServiceProviderInMethodDeclaration()
+        public async Task CA5352UseRC2CryptoServiceProviderInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1395,7 +1395,7 @@ End Module",
         }
 
         [Fact]
-        public async Task CA5352UseRC2CryptoServiceProviderInGetDeclaration()
+        public async Task CA5352UseRC2CryptoServiceProviderInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1426,7 +1426,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5352UseRC2CryptoServiceProviderInFieldDeclaration()
+        public async Task CA5352UseRC2CryptoServiceProviderInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1451,7 +1451,7 @@ End Namespace
         }
         //No VB
         [Fact]
-        public async Task CA5352UseRC2CryptoServiceProviderInLambdaExpression()
+        public async Task CA5352UseRC2CryptoServiceProviderInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1470,7 +1470,7 @@ namespace TestNamespace
         }
         //No VB
         [Fact]
-        public async Task CA5352UseRC2CryptoServiceProviderInAnonymousMethodExpression()
+        public async Task CA5352UseRC2CryptoServiceProviderInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1486,7 +1486,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5352CreateObjectFromRC2DerivedClass()
+        public async Task CA5352CreateObjectFromRC2DerivedClassAsync()
         {
             await new VerifyCS.Test
             {
@@ -1597,7 +1597,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task CA5353TripleDESCreateInMethodDeclaration()
+        public async Task CA5353TripleDESCreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1627,7 +1627,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5353TripleDESCreateInGetDeclaration()
+        public async Task CA5353TripleDESCreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1658,7 +1658,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5353TripleDESCreateInFieldDeclaration()
+        public async Task CA5353TripleDESCreateInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1682,7 +1682,7 @@ End Namespace",
         }
         //No VB
         [Fact]
-        public async Task CA5353TripleDESCreateInLambdaExpression()
+        public async Task CA5353TripleDESCreateInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1701,7 +1701,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5353TripleDESCreateInAnonymousMethodExpression()
+        public async Task CA5353TripleDESCreateInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1727,7 +1727,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5353TripleDESCryptoServiceProviderInMethodDeclaration()
+        public async Task CA5353TripleDESCryptoServiceProviderInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1756,7 +1756,7 @@ End Module",
         }
 
         [Fact]
-        public async Task CA5353TripleDESCryptoServiceProviderInGetDeclaration()
+        public async Task CA5353TripleDESCryptoServiceProviderInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1787,7 +1787,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5353TripleDESCryptoServiceProviderInFieldDeclaration()
+        public async Task CA5353TripleDESCryptoServiceProviderInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1811,7 +1811,7 @@ End Namespace",
         }
         //No VB
         [Fact]
-        public async Task CA5353TripleDESCryptoServiceProviderInLambdaExpression()
+        public async Task CA5353TripleDESCryptoServiceProviderInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1830,7 +1830,7 @@ namespace TestNamespace
         }
         //No VB
         [Fact]
-        public async Task CA5353TripleDESCryptoServiceProviderInAnonymousMethodExpression()
+        public async Task CA5353TripleDESCryptoServiceProviderInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -1846,7 +1846,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5353CreateObjectFromTripleDESDerivedClass()
+        public async Task CA5353CreateObjectFromTripleDESDerivedClassAsync()
         {
             await new VerifyCS.Test
             {
@@ -1963,7 +1963,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task CA5350RIPEMD160ManagedInMethodDeclaration()
+        public async Task CA5350RIPEMD160ManagedInMethodDeclarationAsync()
         {
             await new VerifyCS.Test
             {
@@ -2006,7 +2006,7 @@ End Module",
         }
 
         [Fact]
-        public async Task CA5350RIPEMD160ManagedInGetDeclaration()
+        public async Task CA5350RIPEMD160ManagedInGetDeclarationAsync()
         {
             await new VerifyCS.Test
             {
@@ -2051,7 +2051,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350RIPEMD160ManagedInFieldDeclaration()
+        public async Task CA5350RIPEMD160ManagedInFieldDeclarationAsync()
         {
             await new VerifyCS.Test
             {
@@ -2090,7 +2090,7 @@ End Namespace
         }
         //No VB
         [Fact]
-        public async Task CA5350RIPEMD160ManagedInLambdaExpression()
+        public async Task CA5350RIPEMD160ManagedInLambdaExpressionAsync()
         {
             await new VerifyCS.Test
             {
@@ -2116,7 +2116,7 @@ namespace TestNamespace
         }
         //No VB
         [Fact]
-        public async Task CA5350RIPEMD160ManagedInAnonymousMethodExpression()
+        public async Task CA5350RIPEMD160ManagedInAnonymousMethodExpressionAsync()
         {
             await new VerifyCS.Test
             {
@@ -2139,7 +2139,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5350RIPEMD160CreateInMethodDeclaration()
+        public async Task CA5350RIPEMD160CreateInMethodDeclarationAsync()
         {
             await new VerifyCS.Test
             {
@@ -2183,7 +2183,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350RIPEMD160CreateInGetDeclaration()
+        public async Task CA5350RIPEMD160CreateInGetDeclarationAsync()
         {
             await new VerifyCS.Test
             {
@@ -2228,7 +2228,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350RIPEMD160CreateInFieldDeclaration()
+        public async Task CA5350RIPEMD160CreateInFieldDeclarationAsync()
         {
             await new VerifyCS.Test
             {
@@ -2266,7 +2266,7 @@ End Namespace",
         }
         //No VB
         [Fact]
-        public async Task CA5350RIPEMD160CreateInLambdaExpression()
+        public async Task CA5350RIPEMD160CreateInLambdaExpressionAsync()
         {
             await new VerifyCS.Test
             {
@@ -2292,7 +2292,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5350RIPEMD160CreateInAnonymousMethodExpression()
+        public async Task CA5350RIPEMD160CreateInAnonymousMethodExpressionAsync()
         {
             await new VerifyCS.Test
             {
@@ -2332,7 +2332,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350HMACRIPEMD160InMethodDeclaration()
+        public async Task CA5350HMACRIPEMD160InMethodDeclarationAsync()
         {
             await new VerifyCS.Test
             {
@@ -2376,7 +2376,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350HMACRIPEMD160InGetDeclaration()
+        public async Task CA5350HMACRIPEMD160InGetDeclarationAsync()
         {
             await new VerifyCS.Test
             {
@@ -2421,7 +2421,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5350HMACRIPEMD160InFieldDeclaration()
+        public async Task CA5350HMACRIPEMD160InFieldDeclarationAsync()
         {
             await new VerifyCS.Test
             {
@@ -2459,7 +2459,7 @@ End Namespace",
         }
         //No VB
         [Fact]
-        public async Task CA5350HMACRIPEMD160InLambdaExpression()
+        public async Task CA5350HMACRIPEMD160InLambdaExpressionAsync()
         {
             await new VerifyCS.Test
             {
@@ -2485,7 +2485,7 @@ namespace TestNamespace
         }
         //No VB
         [Fact]
-        public async Task CA5350HMACRIPEMD160InAnonymousMethodExpression()
+        public async Task CA5350HMACRIPEMD160InAnonymousMethodExpressionAsync()
         {
             await new VerifyCS.Test
             {
@@ -2508,7 +2508,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5350CreateObjectFromRIPEMD160DerivedClass()
+        public async Task CA5350CreateObjectFromRIPEMD160DerivedClassAsync()
         {
             await new VerifyCS.Test
             {
@@ -2612,7 +2612,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task CA5350CreateObjectFromRIPEMD160ManagedDerivedClass()
+        public async Task CA5350CreateObjectFromRIPEMD160ManagedDerivedClassAsync()
         {
             await new VerifyCS.Test
             {
@@ -2716,7 +2716,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task CA5350CreateObjectFromHMACRIPEMD160DerivedClass()
+        public async Task CA5350CreateObjectFromHMACRIPEMD160DerivedClassAsync()
         {
             await new VerifyCS.Test
             {
@@ -2766,7 +2766,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5356DSACreateSignatureInMethodDeclaration()
+        public async Task CA5356DSACreateSignatureInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -2796,7 +2796,7 @@ End Module",
         }
 
         [Fact]
-        public async Task CA5356UseDSACreateSignatureInGetDeclaration()
+        public async Task CA5356UseDSACreateSignatureInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -2831,7 +2831,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA5356DSASignatureFormatterInMethodDeclaration()
+        public async Task CA5356DSASignatureFormatterInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -2866,7 +2866,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA5356UseDSACreateSignatureFormatterInGetDeclaration()
+        public async Task CA5356UseDSACreateSignatureFormatterInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -2907,7 +2907,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA5356CreateSignatureFromDSADerivedClass()
+        public async Task CA5356CreateSignatureFromDSADerivedClassAsync()
         {
             await new VerifyCS.Test
             {
@@ -3048,7 +3048,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task CA5357RijndaelManagedInMethodDeclarationShouldNotGenerateDiagnostics()
+        public async Task CA5357RijndaelManagedInMethodDeclarationShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -3077,7 +3077,7 @@ End Module"
         }
 
         [Fact]
-        public async Task CA5357RijndaelManagedInGetDeclarationShouldNotGenerateDiagnostics()
+        public async Task CA5357RijndaelManagedInGetDeclarationShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -3108,7 +3108,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task CA5357RijndaelManagedInFieldDeclarationShouldNotGenerateDiagnostics()
+        public async Task CA5357RijndaelManagedInFieldDeclarationShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -3132,7 +3132,7 @@ End Namespace"
         }
         //No VB
         [Fact]
-        public async Task CA5357RijndaelManagedInLambdaExpressionShouldNotGenerateDiagnostics()
+        public async Task CA5357RijndaelManagedInLambdaExpressionShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -3151,7 +3151,7 @@ namespace TestNamespace
         }
         //No VB
         [Fact]
-        public async Task CA5357RijndaelManagedInAnonymousMethodExpressionShouldNotGenerateDiagnostics()
+        public async Task CA5357RijndaelManagedInAnonymousMethodExpressionShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -3167,7 +3167,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task CA5357CreateObjectFromRijndaelDerivedClassShouldNotGenerateDiagnostics()
+        public async Task CA5357CreateObjectFromRijndaelDerivedClassShouldNotGenerateDiagnosticsAsync()
         {
             await new VerifyCS.Test
             {

@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class NestedTypesShouldNotBeVisibleTests
     {
         [Fact]
-        public async Task CSharpDiagnosticPublicNestedClass()
+        public async Task CSharpDiagnosticPublicNestedClassAsync()
         {
             var code = @"
 public class Outer
@@ -31,7 +31,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task BasicDiagnosticPublicNestedClass()
+        public async Task BasicDiagnosticPublicNestedClassAsync()
         {
             var code = @"
 Public Class Outer
@@ -43,7 +43,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticPublicNestedStruct()
+        public async Task CSharpDiagnosticPublicNestedStructAsync()
         {
             var code = @"
 public class Outer
@@ -57,7 +57,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task BasicDiagnosticPublicNestedStructure()
+        public async Task BasicDiagnosticPublicNestedStructureAsync()
         {
             var code = @"
 Public Class Outer
@@ -69,7 +69,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticPublicNestedEnum()
+        public async Task CSharpNoDiagnosticPublicNestedEnumAsync()
         {
             var code = @"
 public class Outer
@@ -84,7 +84,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticPublicNestedEnum()
+        public async Task BasicNoDiagnosticPublicNestedEnumAsync()
         {
             var code = @"
 Public Class Outer
@@ -97,7 +97,7 @@ End Class
         }
 
         [Fact]
-        public async Task BasicDiagnosticPublicTypeNestedInModule()
+        public async Task BasicDiagnosticPublicTypeNestedInModuleAsync()
         {
             var code = @"
 Public Module Outer
@@ -109,7 +109,7 @@ End Module
         }
 
         [Fact, WorkItem(1347, "https://github.com/dotnet/roslyn-analyzers/issues/1347")]
-        public async Task CSharpDiagnosticPublicNestedDelegate()
+        public async Task CSharpDiagnosticPublicNestedDelegateAsync()
         {
             var code = @"
 public class Outer
@@ -121,7 +121,7 @@ public class Outer
         }
 
         [Fact, WorkItem(1347, "https://github.com/dotnet/roslyn-analyzers/issues/1347")]
-        public async Task BasicDiagnosticPublicNestedDelegate()
+        public async Task BasicDiagnosticPublicNestedDelegateAsync()
         {
             var code = @"
 Public Class Outer
@@ -132,7 +132,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticPrivateNestedType()
+        public async Task CSharpNoDiagnosticPrivateNestedTypeAsync()
         {
             var code = @"
 public class Outer
@@ -146,7 +146,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticPrivateNestedType()
+        public async Task BasicNoDiagnosticPrivateNestedTypeAsync()
         {
             var code = @"
 Public Class Outer
@@ -158,7 +158,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticProtectedNestedType()
+        public async Task CSharpNoDiagnosticProtectedNestedTypeAsync()
         {
             var code = @"
 public class Outer
@@ -172,7 +172,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticProtectedNestedType()
+        public async Task BasicNoDiagnosticProtectedNestedTypeAsync()
         {
             var code = @"
 Public Class Outer
@@ -184,7 +184,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticInternalNestedType()
+        public async Task CSharpNoDiagnosticInternalNestedTypeAsync()
         {
             var code = @"
 public class Outer
@@ -198,7 +198,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticFriendNestedType()
+        public async Task BasicNoDiagnosticFriendNestedTypeAsync()
         {
             var code = @"
 Public Class Outer
@@ -210,7 +210,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticProtectedOrInternalNestedType()
+        public async Task CSharpNoDiagnosticProtectedOrInternalNestedTypeAsync()
         {
             var code = @"
 public class Outer
@@ -224,7 +224,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticProtectedOrFriendNestedType()
+        public async Task BasicNoDiagnosticProtectedOrFriendNestedTypeAsync()
         {
             var code = @"
 Public Class Outer
@@ -236,7 +236,7 @@ End Class
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticNonPublicTypeNestedInModule()
+        public async Task BasicNoDiagnosticNonPublicTypeNestedInModuleAsync()
         {
             var code = @"
 Public Module Outer
@@ -248,7 +248,7 @@ End Module
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticPublicNestedEnumerator()
+        public async Task CSharpNoDiagnosticPublicNestedEnumeratorAsync()
         {
             var code = @"
 using System.Collections;
@@ -267,7 +267,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticPublicTypeNestedInInternalType()
+        public async Task CSharpNoDiagnosticPublicTypeNestedInInternalTypeAsync()
         {
             var code = @"
 internal class Outer
@@ -281,7 +281,7 @@ internal class Outer
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticPublicTypeNestedInFriendType()
+        public async Task BasicNoDiagnosticPublicTypeNestedInFriendTypeAsync()
         {
             var code = @"
 Friend Class Outer
@@ -293,7 +293,7 @@ End Class
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticPublicNestedEnumerator()
+        public async Task BasicNoDiagnosticPublicNestedEnumeratorAsync()
         {
             var code = @"
 Imports System
@@ -322,7 +322,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticDataSetSpecialCases()
+        public async Task CSharpNoDiagnosticDataSetSpecialCasesAsync()
         {
             var code = @"
 using System.Data;
@@ -345,7 +345,7 @@ public class MyDataSet : DataSet
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticDataSetSpecialCases()
+        public async Task BasicNoDiagnosticDataSetSpecialCasesAsync()
         {
             var code = @"
 Imports System.Data
@@ -370,7 +370,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticDataSetWithOtherNestedClass()
+        public async Task CSharpDiagnosticDataSetWithOtherNestedClassAsync()
         {
             var code = @"
 using System.Data;
@@ -397,7 +397,7 @@ public class MyDataSet : DataSet
         }
 
         [Fact]
-        public async Task BasicDiagnosticDataSetWithOtherNestedClass()
+        public async Task BasicDiagnosticDataSetWithOtherNestedClassAsync()
         {
             var code = @"
 Imports System.Data
@@ -425,7 +425,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticNestedDataClassesWithinOtherClass()
+        public async Task CSharpDiagnosticNestedDataClassesWithinOtherClassAsync()
         {
             var code = @"
 using System.Data;
@@ -450,7 +450,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task BasicDiagnosticNestedDataClassesWithinOtherClass()
+        public async Task BasicDiagnosticNestedDataClassesWithinOtherClassAsync()
         {
             var code = @"
 Imports System.Data
@@ -489,7 +489,7 @@ End Class
         [InlineData(BuilderPatternVariant.IncorrectWithPublicOuterConstructor)]
         [InlineData(BuilderPatternVariant.IncorrectWithProtectedOuterConstructor)]
         [InlineData(BuilderPatternVariant.IncorrectNotNamedBuilder)]
-        public async Task CA1034_BuilderPatternVariants(BuilderPatternVariant variant)
+        public async Task CA1034_BuilderPatternVariantsAsync(BuilderPatternVariant variant)
         {
             string builderName = "Builder";
             string outerClassCtorAccessibility = "private";
@@ -605,7 +605,7 @@ End Class
         }
 
         [Fact, WorkItem(3033, "https://github.com/dotnet/roslyn-analyzers/issues/3033")]
-        public async Task CA1034_BuilderPatternTooDeep_Diagnostic()
+        public async Task CA1034_BuilderPatternTooDeep_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Outer

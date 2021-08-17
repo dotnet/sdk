@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class DoNotRaiseExceptionsInExceptionClausesTests
     {
         [Fact]
-        public async Task CSharpSimpleCase()
+        public async Task CSharpSimpleCaseAsync()
         {
             var code = @"
 using System;
@@ -48,7 +48,7 @@ public class Test
         }
 
         [Fact]
-        public async Task BasicSimpleCase()
+        public async Task BasicSimpleCaseAsync()
         {
             var code = @"
 Imports System
@@ -72,7 +72,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNestedFinally()
+        public async Task CSharpNestedFinallyAsync()
         {
             var code = @"
 using System;
@@ -111,7 +111,7 @@ public class Test
         }
 
         [Fact]
-        public async Task BasicNestedFinally()
+        public async Task BasicNestedFinallyAsync()
         {
             var code = @"
 Imports System

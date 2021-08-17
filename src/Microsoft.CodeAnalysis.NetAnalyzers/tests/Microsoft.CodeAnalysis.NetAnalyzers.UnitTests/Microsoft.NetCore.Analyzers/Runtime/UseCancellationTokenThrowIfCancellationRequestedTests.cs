@@ -53,7 +53,7 @@ if ({0})
 
         [Theory]
         [MemberData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_CS))]
-        public Task SimpleAffirmativeCheck_ReportedAndFixed_CS(string operationCanceledExceptionCtor, string simpleConditionalFormatString)
+        public Task SimpleAffirmativeCheck_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string simpleConditionalFormatString)
         {
             string testStatements = Markup(
                 FormatInvariant(
@@ -91,7 +91,7 @@ End If";
 
         [Theory]
         [MemberData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_VB))]
-        public Task SimpleAffirmativeCheck_ReportedAndFixed_VB(string operationCanceledExceptionCtor, string conditionalFormatString)
+        public Task SimpleAffirmativeCheck_ReportedAndFixed_VBAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
         {
             string testStatements = Markup(
                 FormatInvariant(
@@ -155,7 +155,7 @@ else
         }
 
         [Fact]
-        public Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_CS()
+        public Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_CSAsync()
         {
             var test = new VerifyCS.Test
             {
@@ -204,7 +204,7 @@ public class C
         }
 
         [Fact]
-        public Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_VB()
+        public Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_VBAsync()
         {
             var test = new VerifyVB.Test
             {
@@ -248,7 +248,7 @@ End Class",
         }
 
         [Fact]
-        public Task TriviaInIfBlock_IsPreserved_CS()
+        public Task TriviaInIfBlock_IsPreserved_CSAsync()
         {
             var test = new VerifyCS.Test
             {
@@ -291,7 +291,7 @@ public class C
 
         [Theory]
         [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_CS))]
-        public Task NegatedCheckWithElse_ReportedAndFixed_CS(string operationCanceledExceptionCtor, string conditionalFormatString)
+        public Task NegatedCheckWithElse_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
         {
             const string members = @"
 private CancellationToken token;
@@ -337,7 +337,7 @@ End If", 1);
 
         [Theory]
         [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_VB))]
-        public Task NegatedCheckWithElse_ReportedAndFixed_VB(string operationCanceledExceptionCtor, string conditionalFormatString)
+        public Task NegatedCheckWithElse_ReportedAndFixed_VBAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
         {
             const string members = @"
 Private token As CancellationToken
@@ -365,7 +365,7 @@ DoSomething()";
         }
 
         [Fact]
-        public Task NegatedCheckWithElse_MultipleOperationsInTrueBranch_ReportedAndFixed_CS()
+        public Task NegatedCheckWithElse_MultipleOperationsInTrueBranch_ReportedAndFixed_CSAsync()
         {
             const string members = @"
 private CancellationToken token;
@@ -397,7 +397,7 @@ Barble();";
         }
 
         [Fact]
-        public Task NegatedCheckWithElse_MultpleOperationsInTrueBranch_ReportedAndFixed_VB()
+        public Task NegatedCheckWithElse_MultpleOperationsInTrueBranch_ReportedAndFixed_VBAsync()
         {
             const string members = @"
 Private token As CancellationToken
@@ -430,7 +430,7 @@ Barble()";
 
         #region No Diagnostic
         [Fact]
-        public Task MultipleConditions_NoDiagnostic_CS()
+        public Task MultipleConditions_NoDiagnostic_CSAsync()
         {
             const string members = @"
 private CancellationToken token;
@@ -448,7 +448,7 @@ if (token.IsCancellationRequested && otherCondition)
         }
 
         [Fact]
-        public Task MultipleConditions_NoDiagnostic_VB()
+        public Task MultipleConditions_NoDiagnostic_VBAsync()
         {
             const string members = @"
 Private token As CancellationToken
@@ -467,7 +467,7 @@ End If";
         }
 
         [Fact]
-        public Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_CS()
+        public Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_CSAsync()
         {
             const string members = @"
 private CancellationToken token;
@@ -488,7 +488,7 @@ if (token.IsCancellationRequested)
         }
 
         [Fact]
-        public Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_VB()
+        public Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_VBAsync()
         {
             const string members = @"
 Private token As CancellationToken
@@ -521,7 +521,7 @@ End If";
 
         [Theory]
         [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
-        public Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_CS(string ctorArguments)
+        public Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_CSAsync(string ctorArguments)
         {
             const string members = @"
 private CancellationToken token;
@@ -541,7 +541,7 @@ if (token.IsCancellationRequested)
 
         [Theory]
         [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
-        public Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_VB(string ctorArguments)
+        public Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_VBAsync(string ctorArguments)
         {
             const string members = @"
 Private token As CancellationToken
@@ -562,7 +562,7 @@ End If";
 
         [Theory]
         [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
-        public Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_CS(string ctorArguments)
+        public Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_CSAsync(string ctorArguments)
         {
             const string members = @"
 private CancellationToken token;
@@ -585,7 +585,7 @@ else
 
         [Theory]
         [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
-        public Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_VB(string ctorArguments)
+        public Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_VBAsync(string ctorArguments)
         {
             const string members = @"
 Private token As CancellationToken

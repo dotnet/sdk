@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class UriParametersShouldNotBeStringsTests
     {
         [Fact]
-        public async Task CA1054NoWarningWithUrlNotStringType()
+        public async Task CA1054NoWarningWithUrlNotStringTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -29,7 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1054WarningWithUrl()
+        public async Task CA1054WarningWithUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -42,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1054NoWarningWithUrlWithOverload()
+        public async Task CA1054NoWarningWithUrlWithOverloadAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -56,7 +56,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1495, "https://github.com/dotnet/roslyn-analyzers/issues/1495")]
-        public async Task CA1054NoWarningWithUrlWithOverload_IdenticalTypeParameters()
+        public async Task CA1054NoWarningWithUrlWithOverload_IdenticalTypeParametersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -81,7 +81,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1495, "https://github.com/dotnet/roslyn-analyzers/issues/1495")]
-        public async Task CA1054WarningWithUrlWithOverload_DifferingTypeParameters()
+        public async Task CA1054WarningWithUrlWithOverload_DifferingTypeParametersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -107,7 +107,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1054MultipleWarningWithUrl()
+        public async Task CA1054MultipleWarningWithUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -121,7 +121,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1054NoMultipleWarningWithUrlWithOverload()
+        public async Task CA1054NoMultipleWarningWithUrlWithOverloadAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -137,7 +137,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1054MultipleWarningWithUrlWithOverload()
+        public async Task CA1054MultipleWarningWithUrlWithOverloadAsync()
         {
             // Following original FxCop implementation. but this seems strange.
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -154,7 +154,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1054NoWarningNotPublic()
+        public async Task CA1054NoWarningNotPublicAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -167,7 +167,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1054NoWarningDerivedFromAttribute()
+        public async Task CA1054NoWarningDerivedFromAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -180,7 +180,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1054WarningVB()
+        public async Task CA1054WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test
             await VerifyVB.VerifyAnalyzerAsync(@"

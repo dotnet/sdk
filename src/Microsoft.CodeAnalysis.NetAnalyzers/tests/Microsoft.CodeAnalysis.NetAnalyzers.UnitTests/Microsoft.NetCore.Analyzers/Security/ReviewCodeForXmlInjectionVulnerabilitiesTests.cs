@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForXmlInjectionVulnerabilities.Rule;
 
         [Fact]
-        public async Task DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -62,7 +62,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
             {
@@ -106,7 +106,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DocSample1_CSharp_Solution_NoDiagnostic()
+        public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -146,7 +146,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample1_VB_Solution_Diagnostic()
+        public async Task DocSample1_VB_Solution_DiagnosticAsync()
         {
             await new VerifyVB.Test
             {
@@ -186,7 +186,7 @@ End Class",
         }
 
         [Fact]
-        public async Task XmlAttribute_InnerXml_Diagnostic()
+        public async Task XmlAttribute_InnerXml_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -207,7 +207,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task XmlTextWriter_WriteRaw_Diagnostic()
+        public async Task XmlTextWriter_WriteRaw_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -229,7 +229,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task XmlTextWriter_WriteRaw_NoDiagnostic()
+        public async Task XmlTextWriter_WriteRaw_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -250,7 +250,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task XmlNotation_InnerXml_Diagnostic()
+        public async Task XmlNotation_InnerXml_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -271,7 +271,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task XmlNotation_InnerXml_AntiXssXmlEncode_NoDiagnostic()
+        public async Task XmlNotation_InnerXml_AntiXssXmlEncode_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -292,7 +292,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task XmlNotation_InnerXml_AntiXssEncoderXmlEncode_NoDiagnostic()
+        public async Task XmlNotation_InnerXml_AntiXssEncoderXmlEncode_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -313,7 +313,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task AspNetCoreHttpRequest_XmlTextWriter_WriteRaw_Diagnostic()
+        public async Task AspNetCoreHttpRequest_XmlTextWriter_WriteRaw_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;

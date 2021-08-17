@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class OverrideEqualsAndOperatorEqualsOnValueTypesTests
     {
         [Fact]
-        public async Task CSharpDiagnosticForBothEqualsAndOperatorEqualsOnStruct()
+        public async Task CSharpDiagnosticForBothEqualsAndOperatorEqualsOnStructAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct A
@@ -30,7 +30,7 @@ public struct A
 
         [WorkItem(895, "https://github.com/dotnet/roslyn-analyzers/issues/895")]
         [Fact]
-        public async Task CSharpNoDiagnosticForInternalAndPrivateStruct()
+        public async Task CSharpNoDiagnosticForInternalAndPrivateStructAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal struct A
@@ -50,7 +50,7 @@ public class B
 
         [WorkItem(899, "https://github.com/dotnet/roslyn-analyzers/issues/899")]
         [Fact]
-        public async Task CSharpNoDiagnosticForEnum()
+        public async Task CSharpNoDiagnosticForEnumAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public enum E
@@ -62,7 +62,7 @@ public enum E
 
         [WorkItem(899, "https://github.com/dotnet/roslyn-analyzers/issues/899")]
         [Fact]
-        public async Task CSharpNoDiagnosticForStructsWithoutMembers()
+        public async Task CSharpNoDiagnosticForStructsWithoutMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct EmptyStruct
@@ -73,7 +73,7 @@ public struct EmptyStruct
 
         [WorkItem(899, "https://github.com/dotnet/roslyn-analyzers/issues/899")]
         [Fact]
-        public async Task CSharpNoDiagnosticForEnumerators()
+        public async Task CSharpNoDiagnosticForEnumeratorsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -137,7 +137,7 @@ public struct MyGenericEnumerator<T> : System.Collections.Generic.IEnumerator<T>
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForEqualsOrOperatorEqualsOnClass()
+        public async Task CSharpNoDiagnosticForEqualsOrOperatorEqualsOnClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -147,7 +147,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticWhenStructImplementsEqualsAndOperatorEquals()
+        public async Task CSharpNoDiagnosticWhenStructImplementsEqualsAndOperatorEqualsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct A
@@ -170,7 +170,7 @@ public struct A
         }
 
         [Fact]
-        public async Task CSharpDiagnosticWhenEqualsHasWrongSignature()
+        public async Task CSharpDiagnosticWhenEqualsHasWrongSignatureAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct A
@@ -194,7 +194,7 @@ public struct A
         }
 
         [Fact]
-        public async Task CSharpDiagnosticWhenEqualsIsNotAnOverride()
+        public async Task CSharpDiagnosticWhenEqualsIsNotAnOverrideAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct A
@@ -218,7 +218,7 @@ public struct A
         }
 
         [Fact]
-        public async Task BasicDiagnosticsForEqualsOnStructure()
+        public async Task BasicDiagnosticsForEqualsOnStructureAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure A
@@ -231,7 +231,7 @@ End Structure
 
         [WorkItem(895, "https://github.com/dotnet/roslyn-analyzers/issues/895")]
         [Fact]
-        public async Task BasicNoDiagnosticsForInternalAndPrivateStructure()
+        public async Task BasicNoDiagnosticsForInternalAndPrivateStructureAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Structure A
@@ -248,7 +248,7 @@ End Class
 
         [WorkItem(899, "https://github.com/dotnet/roslyn-analyzers/issues/899")]
         [Fact]
-        public async Task BasicNoDiagnosticForEnum()
+        public async Task BasicNoDiagnosticForEnumAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum E
@@ -259,7 +259,7 @@ End Enum
 
         [WorkItem(899, "https://github.com/dotnet/roslyn-analyzers/issues/899")]
         [Fact]
-        public async Task BasicNoDiagnosticForStructsWithoutMembers()
+        public async Task BasicNoDiagnosticForStructsWithoutMembersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure EmptyStruct
@@ -269,7 +269,7 @@ End Structure
 
         [WorkItem(899, "https://github.com/dotnet/roslyn-analyzers/issues/899")]
         [Fact]
-        public async Task BasicNoDiagnosticForEnumerators()
+        public async Task BasicNoDiagnosticForEnumeratorsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -323,7 +323,7 @@ End Structure
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForEqualsOnClass()
+        public async Task BasicNoDiagnosticForEqualsOnClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
@@ -332,7 +332,7 @@ End Class
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticWhenStructureImplementsEqualsAndOperatorEquals()
+        public async Task BasicNoDiagnosticWhenStructureImplementsEqualsAndOperatorEqualsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure A
@@ -352,7 +352,7 @@ End Structure
         }
 
         [Fact]
-        public async Task BasicDiagnosticWhenEqualsHasWrongSignature()
+        public async Task BasicDiagnosticWhenEqualsHasWrongSignatureAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure A
@@ -373,7 +373,7 @@ End Structure
         }
 
         [Fact]
-        public async Task BasicDiagnosticWhenEqualsIsNotAnOverride()
+        public async Task BasicDiagnosticWhenEqualsIsNotAnOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure A
@@ -394,7 +394,7 @@ End Structure
         }
 
         [Fact, WorkItem(2324, "https://github.com/dotnet/roslyn-analyzers/issues/2324")]
-        public async Task CSharp_RefStruct_NoDiagnostic()
+        public async Task CSharp_RefStruct_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {

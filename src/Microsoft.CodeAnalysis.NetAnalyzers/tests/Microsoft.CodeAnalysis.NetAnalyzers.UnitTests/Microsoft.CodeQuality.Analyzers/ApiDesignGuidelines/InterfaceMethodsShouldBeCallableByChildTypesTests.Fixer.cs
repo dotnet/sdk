@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region CSharp
 
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesCSharp_MakeProtected()
+        public async Task CA1033SimpleDiagnosticCasesCSharp_MakeProtectedAsync()
         {
             var code = @"
 using System;
@@ -112,7 +112,7 @@ public class ImplementsGeneralThree : IGeneral
         }
 
         [Fact, WorkItem(2616, "https://github.com/dotnet/roslyn/issues/2616")]
-        public async Task CA1033SimpleDiagnosticCasesCSharp_ImplicitImpl()
+        public async Task CA1033SimpleDiagnosticCasesCSharp_ImplicitImplAsync()
         {
             var code = @"
 using System;
@@ -177,7 +177,7 @@ public class ImplementsGeneral  : IGeneral
         }
 
         [Fact, WorkItem(2616, "https://github.com/dotnet/roslyn/issues/2616")]
-        public async Task CA1033SimpleDiagnosticCasesCSharp_Indexer()
+        public async Task CA1033SimpleDiagnosticCasesCSharp_IndexerAsync()
         {
             var code = @"
 using System;
@@ -273,7 +273,7 @@ public class ImplementsGeneralThree : IGeneral
         }
 
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesCSharp_MakeSealed()
+        public async Task CA1033SimpleDiagnosticCasesCSharp_MakeSealedAsync()
         {
             var code = @"
 using System;
@@ -369,7 +369,7 @@ public sealed class ImplementsGeneral  : IGeneral
         }
 
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesCSharp_MakeSealed_2()
+        public async Task CA1033SimpleDiagnosticCasesCSharp_MakeSealed_2Async()
         {
             var code = @"
 using System;
@@ -519,7 +519,7 @@ public sealed class ImplementsGeneralThree : IGeneral
         }
 
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesCSharp_Events()
+        public async Task CA1033SimpleDiagnosticCasesCSharp_EventsAsync()
         {
             var code = @"
 using System;
@@ -586,7 +586,7 @@ public class NestedExplicitInterfaceImplementation
 
         [WorkItem(2654, "https://github.com/dotnet/roslyn/issues/2654")]
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesCSharp_Property()
+        public async Task CA1033SimpleDiagnosticCasesCSharp_PropertyAsync()
         {
             var code = @"
 using System;
@@ -662,7 +662,7 @@ public class NestedExplicitInterfaceImplementation
         #region VisualBasic
 
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesBasic_MakeProtected()
+        public async Task CA1033SimpleDiagnosticCasesBasic_MakeProtectedAsync()
         {
             var code = @"
 Imports System
@@ -743,7 +743,7 @@ End Class
         }
 
         [Fact, WorkItem(2616, "https://github.com/dotnet/roslyn/issues/2616")]
-        public async Task CA1033SimpleDiagnosticCasesBasic_ImplicitImpl()
+        public async Task CA1033SimpleDiagnosticCasesBasic_ImplicitImplAsync()
         {
             var code = @"
 Imports System
@@ -796,7 +796,7 @@ End Class
         }
 
         [Fact, WorkItem(2650, "https://github.com/dotnet/roslyn/issues/2650")]
-        public async Task CA1033SimpleDiagnosticCasesBasic_Indexer()
+        public async Task CA1033SimpleDiagnosticCasesBasic_IndexerAsync()
         {
             var code = @"
 Imports System
@@ -879,7 +879,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesBasic_MakeSealed()
+        public async Task CA1033SimpleDiagnosticCasesBasic_MakeSealedAsync()
         {
             var code = @"
 Imports System
@@ -951,7 +951,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesBasic_MakeSealed_2()
+        public async Task CA1033SimpleDiagnosticCasesBasic_MakeSealed_2Async()
         {
             var code = @"
 Imports System
@@ -1067,7 +1067,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesBasic_Events()
+        public async Task CA1033SimpleDiagnosticCasesBasic_EventsAsync()
         {
             var code = @"
 Imports System
@@ -1146,7 +1146,7 @@ End Class
 
         [WorkItem(2654, "https://github.com/dotnet/roslyn/issues/2654")]
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesBasic_Property()
+        public async Task CA1033SimpleDiagnosticCasesBasic_PropertyAsync()
         {
             var code = @"
 Imports System

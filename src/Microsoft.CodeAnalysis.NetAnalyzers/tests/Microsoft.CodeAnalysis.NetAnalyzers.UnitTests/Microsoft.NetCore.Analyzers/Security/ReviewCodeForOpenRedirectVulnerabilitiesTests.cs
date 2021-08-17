@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForOpenRedirectVulnerabilities.Rule;
 
         [Fact]
-        public async Task DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -44,7 +44,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
             {
@@ -74,7 +74,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DocSample1_CSharp_Solution_NoDiagnostic()
+        public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -93,7 +93,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample1_VB_Solution_NoDiagnostic()
+        public async Task DocSample1_VB_Solution_NoDiagnosticAsync()
         {
             await new VerifyVB.Test
             {
@@ -121,7 +121,7 @@ End Class"
         }
 
         [Fact]
-        public async Task HttpResponse_RedirectToRoutePermanent_Diagnostic()
+        public async Task HttpResponse_RedirectToRoutePermanent_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -139,7 +139,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task HttpResponseBase_RedirectLocation_NoDiagnostic()
+        public async Task HttpResponseBase_RedirectLocation_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;

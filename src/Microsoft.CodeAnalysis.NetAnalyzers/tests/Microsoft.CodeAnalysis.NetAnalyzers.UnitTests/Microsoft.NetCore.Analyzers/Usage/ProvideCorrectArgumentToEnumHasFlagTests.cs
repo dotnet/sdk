@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
     public class ProvideCorrectArgumentToEnumHasFlagTests
     {
         [Fact]
-        public async Task CA2248_EnumTypesAreDifferent_Diagnostic()
+        public async Task CA2248_EnumTypesAreDifferent_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -59,7 +59,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2248_EnumTypesAreSame_NoDiagnostic()
+        public async Task CA2248_EnumTypesAreSame_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -93,7 +93,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2248_EnumTypesAreSameButNotFlag_NoDiagnostic()
+        public async Task CA2248_EnumTypesAreSameButNotFlag_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -125,7 +125,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2248_EnumTypesAreDifferentAndNotFlags_Diagnostic()
+        public async Task CA2248_EnumTypesAreDifferentAndNotFlags_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -165,7 +165,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2248_NullAsArgument_Diagnostic()
+        public async Task CA2248_NullAsArgument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -209,7 +209,7 @@ End Class
         }
 
         [Fact, WorkItem(4180, "https://github.com/dotnet/roslyn-analyzers/issues/4180")]
-        public async Task CA2248_GenericEnumComparison_NoDiagnostic()
+        public async Task CA2248_GenericEnumComparison_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -232,7 +232,7 @@ public class AllEnums<T1>
         }
 
         [Fact, WorkItem(4180, "https://github.com/dotnet/roslyn-analyzers/issues/4180")]
-        public async Task CA2248_GenericEnumHasFlag_NoDiagnostic()
+        public async Task CA2248_GenericEnumHasFlag_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

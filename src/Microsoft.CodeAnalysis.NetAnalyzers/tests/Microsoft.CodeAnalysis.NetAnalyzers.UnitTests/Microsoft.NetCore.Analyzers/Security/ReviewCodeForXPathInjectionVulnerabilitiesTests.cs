@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForXPathInjectionVulnerabilities.Rule;
 
         [Fact]
-        public async Task DocSample1_CSharp_Diagnostic_Violation()
+        public async Task DocSample1_CSharp_Diagnostic_ViolationAsync()
         {
             await new VerifyCS.Test
             {
@@ -54,7 +54,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample1_VB_Diagnostic_Violation()
+        public async Task DocSample1_VB_Diagnostic_ViolationAsync()
         {
             await new VerifyVB.Test
             {
@@ -95,7 +95,7 @@ End Class
         }
 
         [Fact]
-        public async Task XPathNavigator_Select_Diagnostic()
+        public async Task XPathNavigator_Select_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -115,7 +115,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task XPathNavigator_Select_NoDiagnostic()
+        public async Task XPathNavigator_Select_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -134,7 +134,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task XmlNode_SelectSingleNode_Diagnostic()
+        public async Task XmlNode_SelectSingleNode_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -154,7 +154,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task TemplateControl_XPath_Diagnostic()
+        public async Task TemplateControl_XPath_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -184,7 +184,7 @@ public class MyTemplateControl : TemplateControl
         }
 
         [Fact]
-        public async Task XmlDataSource_XPath_Diagnostic()
+        public async Task XmlDataSource_XPath_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;

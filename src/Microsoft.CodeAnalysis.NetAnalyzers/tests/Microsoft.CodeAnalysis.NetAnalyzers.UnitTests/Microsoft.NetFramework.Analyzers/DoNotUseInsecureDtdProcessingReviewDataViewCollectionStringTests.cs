@@ -25,7 +25,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 #pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
-        public async Task UseDataSetDefaultDataViewManagerSetCollectionStringShouldGenerateDiagnostic()
+        public async Task UseDataSetDefaultDataViewManagerSetCollectionStringShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -65,7 +65,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task UseDataSetDefaultDataViewManagernInGetShouldGenerateDiagnostic()
+        public async Task UseDataSetDefaultDataViewManagernInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -107,7 +107,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataSetDefaultDataViewManagerInSetShouldGenerateDiagnostic()
+        public async Task UseDataSetDefaultDataViewManagerInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -161,7 +161,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataSetDefaultDataViewManagerInTryBlockShouldGenerateDiagnostic()
+        public async Task UseDataSetDefaultDataViewManagerInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -209,7 +209,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataSetDefaultDataViewManagerInCatchBlockShouldGenerateDiagnostic()
+        public async Task UseDataSetDefaultDataViewManagerInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -256,7 +256,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataSetDefaultDataViewManagerInFinallyBlockShouldGenerateDiagnostic()
+        public async Task UseDataSetDefaultDataViewManagerInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -304,7 +304,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataSetDefaultDataViewManagerInAsyncAwaitShouldGenerateDiagnostic()
+        public async Task UseDataSetDefaultDataViewManagerInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -356,7 +356,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataSetDefaultDataViewManagerInDelegateShouldGenerateDiagnostic()
+        public async Task UseDataSetDefaultDataViewManagerInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -396,7 +396,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataViewManagerSetCollectionStringShouldGenerateDiagnostic()
+        public async Task UseDataViewManagerSetCollectionStringShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -436,7 +436,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task UseDataViewManagerInGetShouldGenerateDiagnostic()
+        public async Task UseDataViewManagerInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -478,7 +478,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataViewManagerInSetShouldGenerateDiagnostic()
+        public async Task UseDataViewManagerInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -532,7 +532,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataViewManagerInTryBlockShouldGenerateDiagnostic()
+        public async Task UseDataViewManagerInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -580,7 +580,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataViewManagerInCatchBlockShouldGenerateDiagnostic()
+        public async Task UseDataViewManagerInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -627,7 +627,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataViewManagerInFinallyBlockShouldGenerateDiagnostic()
+        public async Task UseDataViewManagerInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -675,7 +675,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataViewManagerInAsyncAwaitShouldGenerateDiagnostic()
+        public async Task UseDataViewManagerInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -727,7 +727,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataViewManagerInDelegateShouldGenerateDiagnostic()
+        public async Task UseDataViewManagerInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,

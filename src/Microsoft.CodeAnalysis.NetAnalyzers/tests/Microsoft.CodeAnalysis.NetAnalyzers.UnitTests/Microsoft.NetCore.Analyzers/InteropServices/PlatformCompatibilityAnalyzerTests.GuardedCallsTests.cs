@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 
         [Theory]
         [MemberData(nameof(NamedArgumentsData))]
-        public async Task GuardMethodWithNamedArgumentsTest(string arguments)
+        public async Task GuardMethodWithNamedArgumentsTestAsync(string arguments)
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -58,7 +58,7 @@ class Test
         }
 
         [Fact]
-        public async Task MethodsWithOsDependentTypeParameterGuarded()
+        public async Task MethodsWithOsDependentTypeParameterGuardedAsync()
         {
             var csSource = @"
 using System;
@@ -94,7 +94,7 @@ public class Test
         }
 
         [Fact]
-        public async Task PlatformDependentMethodsAndTypeParametersGuarded()
+        public async Task PlatformDependentMethodsAndTypeParametersGuardedAsync()
         {
             var csSource = @"
 using System;
@@ -125,7 +125,7 @@ public class Test
     }
 }
 ";
-            await VerifyAnalyzerAsyncCs(csSource, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("BrowserOnlyType", "'browser'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("Test.WindowsOnlyMethod<BrowserOnlyType>()", "'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).WithArguments("WindowsOnlyType", "'windows'"),
@@ -133,7 +133,7 @@ public class Test
         }
 
         [Fact]
-        public async Task SupportedUnsupportedRange_GuardedWithOr()
+        public async Task SupportedUnsupportedRange_GuardedWithOrAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -161,7 +161,7 @@ class Test
         }
 
         [Fact, WorkItem(4932, "https://github.com/dotnet/roslyn-analyzers/issues/4932")]
-        public async Task GuardMethodWith3VersionPartsEquavalentTo4PartsWithLeading0()
+        public async Task GuardMethodWith3VersionPartsEquavalentTo4PartsWithLeading0Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -195,7 +195,7 @@ public class MSAL
         }
 
         [Fact]
-        public async Task GuardMethodWith1VersionPartsEquavalentTo2PartsWithLeading0()
+        public async Task GuardMethodWith1VersionPartsEquavalentTo2PartsWithLeading0Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -224,7 +224,7 @@ public class MSAL
         }
 
         [Fact]
-        public async Task GuardMethodWith2VersionPartsEquavalentTo3PartsWithLeading0()
+        public async Task GuardMethodWith2VersionPartsEquavalentTo3PartsWithLeading0Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -258,7 +258,7 @@ public class MSAL
         }
 
         [Fact]
-        public async Task GuardsAroundSupported_SimpleIfElse()
+        public async Task GuardsAroundSupported_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -300,7 +300,7 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundSupported
         }
 
         [Fact]
-        public async Task SupportedOnOsx_GuardedWithIsMacOS()
+        public async Task SupportedOnOsx_GuardedWithIsMacOSAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -333,11 +333,11 @@ class Test
     void Api2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task UnsupportedOnOsx_GuardedWithIsMacOS()
+        public async Task UnsupportedOnOsx_GuardedWithIsMacOSAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -363,11 +363,11 @@ class Test
     void Api() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task SupportedOnOsxVersioned_GuardedWithIsMacOSVersioned()
+        public async Task SupportedOnOsxVersioned_GuardedWithIsMacOSVersionedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -393,11 +393,11 @@ class Test
     void Api() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task SupportedUnsupportedOnOsx_GuardedWithIsMacOS_MessageParameterTest()
+        public async Task SupportedUnsupportedOnOsx_GuardedWithIsMacOS_MessageParameterTestAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -431,7 +431,7 @@ class Test
     void UnsupportedOsxApi() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable)
                     .WithLocation(0).WithArguments("Test.UnsupportedOsxApi()", "'macOS/OSX'", "'macOS/OSX'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms)
@@ -441,7 +441,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardsAroundSupported()
+        public async Task GuardsAroundSupportedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -523,7 +523,7 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundSupported
         }
 
         [Fact]
-        public async Task MoreGuardsAroundSupported()
+        public async Task MoreGuardsAroundSupportedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -584,7 +584,7 @@ namespace PlatformCompatDemo.SupportedUnupported
         }
 
         [Fact]
-        public async Task MoreGuardsAroundUnSupported()
+        public async Task MoreGuardsAroundUnSupportedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -693,7 +693,7 @@ namespace PlatformCompatDemo.SupportedUnupported
         }
 
         [Fact]
-        public async Task GuardsAroundUnsupported()
+        public async Task GuardsAroundUnsupportedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -775,7 +775,7 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundUnsupported
         }
 
         [Fact]
-        public async Task SupportedUnsupportedRange_GuardedWithAnd()
+        public async Task SupportedUnsupportedRange_GuardedWithAndAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -802,7 +802,7 @@ class Test
         }
 
         [Fact]
-        public async Task Unsupported_GuardedWith_IsOsNameMethods()
+        public async Task Unsupported_GuardedWith_IsOsNameMethodsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -871,7 +871,7 @@ class Test
         }
 
         [Fact, WorkItem(4190, "https://github.com/dotnet/roslyn-analyzers/issues/4190")]
-        public async Task Unsupported_GuardedWith_DebugAssert_IsOsNameMethods()
+        public async Task Unsupported_GuardedWith_DebugAssert_IsOsNameMethodsAsync()
         {
             var source = @"
 using System;
@@ -983,7 +983,7 @@ class Test
 
         [Theory]
         [MemberData(nameof(OperatingSystem_IsOsNameVersionAtLeast_MethodsTestData))]
-        public async Task GuardedWith_IsOsNameVersionAtLeast_SimpleIfElse(string osName, string isOsMethod, string version, bool versionMatch)
+        public async Task GuardedWith_IsOsNameVersionAtLeast_SimpleIfElseAsync(string osName, string isOsMethod, string version, bool versionMatch)
         {
             var match = versionMatch ? "OsSpecificMethod()" : "[|OsSpecificMethod()|]";
             var source = @"
@@ -1039,7 +1039,7 @@ class Test
 
         [Theory]
         [MemberData(nameof(OperatingSystem_IsOsName_MethodsTestData))]
-        public async Task GuardedWith_IsOsNameMethods_SimpleIfElse(string osName, string isOsMethod)
+        public async Task GuardedWith_IsOsNameMethods_SimpleIfElseAsync(string osName, string isOsMethod)
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1067,7 +1067,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardedWith_OperatingSystem_IsOSPlatform_SimpleIfElse()
+        public async Task GuardedWith_OperatingSystem_IsOSPlatform_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1104,7 +1104,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_SimpleIfElse()
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1132,7 +1132,7 @@ class Test
         }
 
         [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
-        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_SimpleIfElse()
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1160,7 +1160,7 @@ class Test
         }
 
         [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
-        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_ValueCachedInLocal_SimpleIfElse()
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_ValueCachedInLocal_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1189,7 +1189,7 @@ class Test
         }
 
         [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
-        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_MultipleValuesCachedWithConditionalLogic()
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_MultipleValuesCachedWithConditionalLogicAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1248,7 +1248,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardedCalled_SimpleIfElse_VersionNotMatch_Warns()
+        public async Task GuardedCalled_SimpleIfElse_VersionNotMatch_WarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1280,7 +1280,7 @@ public class WindowsSpecificApis
         }
 
         [Fact]
-        public async Task ReintroducingApiSupport_Guarded_NotWarn()
+        public async Task ReintroducingApiSupport_Guarded_NotWarnAsync()
         {
             var source = @"
 using System;
@@ -1317,7 +1317,7 @@ static class Some
         }
 
         [Fact]
-        public async Task GuardedCalled_SimpleIf_NotWarns()
+        public async Task GuardedCalled_SimpleIf_NotWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1355,7 +1355,7 @@ End Class";
         }
 
         [Fact]
-        public async Task GuardedCall_MultipleSimpleIfTests()
+        public async Task GuardedCall_MultipleSimpleIfTestsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1383,7 +1383,7 @@ public class Test
         }
 
         [Fact]
-        public async Task GuardedWith_IsOSPlatformVersionAtLeast_SimpleIfElse()
+        public async Task GuardedWith_IsOSPlatformVersionAtLeast_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1411,7 +1411,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardedWith_AlternativeOf_IsOSPlatformEarlierThan()
+        public async Task GuardedWith_AlternativeOf_IsOSPlatformEarlierThanAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1444,7 +1444,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardedWith_Unsupported_SimpleIfElse()
+        public async Task GuardedWith_Unsupported_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1522,7 +1522,7 @@ End Class";
         }
 
         [Fact]
-        public async Task OsDependentEnumValue_GuardedCall_SimpleIfElse()
+        public async Task OsDependentEnumValue_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1563,7 +1563,7 @@ public enum PlatformEnum
         }
 
         [Fact]
-        public async Task OsDependentProperty_GuardedCall_SimpleIfElse()
+        public async Task OsDependentProperty_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1611,7 +1611,7 @@ public class Test
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
-        public async Task OsDependentPropertyWithInitializer_NoDiagnostic()
+        public async Task OsDependentPropertyWithInitializer_NoDiagnosticAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1629,7 +1629,7 @@ class A { }
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
-        public async Task OsDependentPropertyWithInitializer_Diagnostic()
+        public async Task OsDependentPropertyWithInitializer_DiagnosticAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1647,7 +1647,7 @@ class A { }
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
-        public async Task OsDependentFieldWithInitializer_NoDiagnostic()
+        public async Task OsDependentFieldWithInitializer_NoDiagnosticAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1665,7 +1665,7 @@ class A { }
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
-        public async Task OsDependentFieldWithInitializer_Diagnostic()
+        public async Task OsDependentFieldWithInitializer_DiagnosticAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1683,7 +1683,7 @@ class A { }
         }
 
         [Fact]
-        public async Task OsDependentConstructorOfClass_GuardedCall_SimpleIfElse()
+        public async Task OsDependentConstructorOfClass_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1718,7 +1718,7 @@ public class C
         }
 
         [Fact]
-        public async Task ConstructorAndMethodOfOsDependentClass_GuardedCall_SimpleIfElse()
+        public async Task ConstructorAndMethodOfOsDependentClass_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1773,7 +1773,7 @@ End Class";
         }
 
         [Fact]
-        public async Task LocalFunctionCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        public async Task LocalFunctionCallsOsDependentMember_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1805,7 +1805,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromDifferentContext()
+        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromDifferentContextAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1850,7 +1850,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromNotGuardedDifferentContext()
+        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromNotGuardedDifferentContextAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1905,7 +1905,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromGuardedDifferentContext()
+        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromGuardedDifferentContextAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1962,7 +1962,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1998,7 +1998,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02()
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2040,7 +2040,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03()
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2087,7 +2087,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04()
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2123,7 +2123,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionMultipleCallsOsDependentMember_MixedGuardedCalls()
+        public async Task LocalFunctionMultipleCallsOsDependentMember_MixedGuardedCallsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2174,7 +2174,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionMultipleCalls_DifferentOrder_OsDependentMember_MixedGuardedCalls()
+        public async Task LocalFunctionMultipleCalls_DifferentOrder_OsDependentMember_MixedGuardedCallsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2220,7 +2220,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionWithUnrelatedLocalFunctionCallsOsDependentMember_GuardedCalls()
+        public async Task LocalFunctionWithUnrelatedLocalFunctionCallsOsDependentMember_GuardedCallsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2257,7 +2257,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        public async Task LocalFunctionUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2289,7 +2289,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        public async Task LambdaCallsOsDependentMember_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2332,7 +2332,7 @@ public class Test
         }
 
         [Fact, WorkItem(4090, "https://github.com/dotnet/roslyn-analyzers/issues/4090")]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_DirectlyPassedAsArgument()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_DirectlyPassedAsArgumentAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2366,7 +2366,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2402,7 +2402,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2444,7 +2444,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2491,7 +2491,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2530,7 +2530,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_05()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_05Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2564,7 +2564,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_06()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_06Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2601,7 +2601,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_07()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_07Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2636,7 +2636,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_08()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_08Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2672,7 +2672,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        public async Task LambdaUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2704,7 +2704,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaMultipleCallsOsDependentMember_MixedGuardedCalls()
+        public async Task LambdaMultipleCallsOsDependentMember_MixedGuardedCallsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2755,7 +2755,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaWithUnrelatedLambdaCallsOsDependentMember_GuardedCalls()
+        public async Task LambdaWithUnrelatedLambdaCallsOsDependentMember_GuardedCallsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2792,7 +2792,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaContaingLocalFunctionCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        public async Task LambdaContaingLocalFunctionCallsOsDependentMember_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2827,7 +2827,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionContainingLambdaCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        public async Task LocalFunctionContainingLambdaCallsOsDependentMember_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2862,7 +2862,7 @@ public class Test
         }
 
         [Fact, WorkItem(4209, "https://github.com/dotnet/roslyn-analyzers/issues/4209")]
-        public async Task LambdaInvocationWithUnknownTarget_BeforeGuardedCall()
+        public async Task LambdaInvocationWithUnknownTarget_BeforeGuardedCallAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2896,7 +2896,7 @@ class Test
         }
 
         [Fact]
-        public async Task OsDependentEventAccessed_GuardedCall_SimpleIfElse()
+        public async Task OsDependentEventAccessed_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2941,7 +2941,7 @@ public class Test
         }
 
         [Fact]
-        public async Task OsDependentMethodAssignedToDelegate_GuardedCall_SimpleIfElse()
+        public async Task OsDependentMethodAssignedToDelegate_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2973,7 +2973,7 @@ public class Test
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseIfElseTest()
+        public async Task GuardedCall_SimpleIfElseIfElseTestAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3014,7 +3014,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseTestWithNegation()
+        public async Task GuardedCall_SimpleIfElseTestWithNegationAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3038,7 +3038,7 @@ public class Test
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseIfElseTestWithNegation()
+        public async Task GuardedCall_SimpleIfElseIfElseTestWithNegationAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3064,7 +3064,7 @@ public class Test
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfTestWithNegationAndReturn()
+        public async Task GuardedCall_SimpleIfTestWithNegationAndReturnAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3104,7 +3104,7 @@ End Class";
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfTestWithLogicalAnd()
+        public async Task GuardedCall_SimpleIfTestWithLogicalAndAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3147,7 +3147,7 @@ public class Test
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseTestWithLogicalAnd()
+        public async Task GuardedCall_SimpleIfElseTestWithLogicalAndAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3187,7 +3187,7 @@ public class Test
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfTestWithLogicalOr()
+        public async Task GuardedCall_SimpleIfTestWithLogicalOrAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3224,7 +3224,7 @@ public class Test
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseTestWithLogicalOr()
+        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3253,7 +3253,7 @@ public class Test
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAndNegation()
+        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAndNegationAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3282,7 +3282,7 @@ public class Test
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseIfElseTestWithLogicalOr()
+        public async Task GuardedCall_SimpleIfElseIfElseTestWithLogicalOrAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3333,7 +3333,7 @@ public class Test
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAnd()
+        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAndAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3384,7 +3384,7 @@ End Class";
         }
 
         [Fact]
-        public async Task GuardedWith_ControlFlowAndMultipleChecks()
+        public async Task GuardedWith_ControlFlowAndMultipleChecksAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3429,7 +3429,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardedWith_DebugAssertAnalysisTest()
+        public async Task GuardedWith_DebugAssertAnalysisTestAsync()
         {
             var source = @"
 using System;
@@ -3480,7 +3480,7 @@ End Class";
         }
 
         [Fact]
-        public async Task GuardedWith_ResultSavedInLocal()
+        public async Task GuardedWith_ResultSavedInLocalAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3514,7 +3514,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardedWith_VersionSavedInLocal()
+        public async Task GuardedWith_VersionSavedInLocalAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3538,7 +3538,7 @@ class Test
         }
 
         [Fact]
-        public async Task PlatformSavedInLocal_NotYetSupported() // TODO do we want to support it?
+        public async Task PlatformSavedInLocal_NotYetSupportedAsync() // TODO do we want to support it?
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3562,7 +3562,7 @@ class Test
         }
 
         [Fact]
-        public async Task UnrelatedConditionCheckDoesNotInvalidateState()
+        public async Task UnrelatedConditionCheckDoesNotInvalidateStateAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3640,7 +3640,7 @@ End Class";
         }
 
         [Fact]
-        public async Task InterproceduralAnalysisTest()
+        public async Task InterproceduralAnalysisTestAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3675,7 +3675,7 @@ class Test
         }
 
         [Fact, WorkItem(4282, "https://github.com/dotnet/roslyn-analyzers/issues/4282")]
-        public async Task LambdaPassedAsArgumentOrNotInvokedWithinContextWouldNotAnalyzed_WithoutInterproceduralAnalysis()
+        public async Task LambdaPassedAsArgumentOrNotInvokedWithinContextWouldNotAnalyzed_WithoutInterproceduralAnalysisAsync()
         {
             var source = @"
 using System;
@@ -3738,7 +3738,7 @@ class Test
         }
 
         [Fact, WorkItem(4282, "https://github.com/dotnet/roslyn-analyzers/issues/4282")]
-        public async Task LambdaPassedAsArgumentOrNotInvokedWithinContextWouldAnalyzed_WithInterproceduralAnalysis()
+        public async Task LambdaPassedAsArgumentOrNotInvokedWithinContextWouldAnalyzed_WithInterproceduralAnalysisAsync()
         {
             var source = @"
 using System;
@@ -3799,7 +3799,7 @@ class Test
         }
 
         [Fact, WorkItem(4182, "https://github.com/dotnet/roslyn-analyzers/issues/4182")]
-        public async Task LoopWithinGuardCheck()
+        public async Task LoopWithinGuardCheckAsync()
         {
             var source = @"
 using System;
@@ -3845,7 +3845,7 @@ namespace Repro
         }
 
         [Fact, WorkItem(4372, "https://github.com/dotnet/roslyn-analyzers/issues/4372")]
-        public async Task LoopWithinGuardCheck_02()
+        public async Task LoopWithinGuardCheck_02Async()
         {
             var source = @"
 using System;
@@ -3877,7 +3877,7 @@ namespace Repro
         }
 
         [Fact, WorkItem(4372, "https://github.com/dotnet/roslyn-analyzers/issues/4372")]
-        public async Task LoopWithinGuardCheck_03()
+        public async Task LoopWithinGuardCheck_03Async()
         {
             var source = @"
 using System;
@@ -3909,7 +3909,7 @@ namespace Repro
         }
 
         [Fact(Skip = "TODO: Analysis value not returned, needs to be fixed")]
-        public async Task InterproceduralAnalysisTest_LogicalOr()
+        public async Task InterproceduralAnalysisTest_LogicalOrAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3945,7 +3945,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardMembersWithSupportedGuardAttributes()
+        public async Task GuardMembersWithSupportedGuardAttributesAsync()
         {
             var source = @"
 using System;
@@ -4023,7 +4023,7 @@ class Test
     void SupportedOnLinux() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).
                     WithArguments("Test.SupportedOnWindowsLinuxOsx()", Join("'Linux'", "'macOS/OSX'", "'windows'")),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).
@@ -4033,7 +4033,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardMembersWithUnsupportedGuardAttributes()
+        public async Task GuardMembersWithUnsupportedGuardAttributesAsync()
         {
             var source = @"
 using System;
@@ -4100,11 +4100,11 @@ class Test
     void UnsupportedOnLinuxWindowsIos() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task GuardMembersWithVersionedSupportedUnsupportedGuardAttributes()
+        public async Task GuardMembersWithVersionedSupportedUnsupportedGuardAttributesAsync()
         {
             var source = @"
 using System;
@@ -4163,7 +4163,7 @@ class Test
     void SupportedOnWindows8() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("Test.UnsupportedOnLinuxWindows10Ios91()",
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0"),
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "Windows", "10.0")),
@@ -4176,7 +4176,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardMembersWithSupportedUnsupportedVersionRangeGuardAttributes()
+        public async Task GuardMembersWithSupportedUnsupportedVersionRangeGuardAttributesAsync()
         {
             var source = @"
 using System;
@@ -4245,7 +4245,7 @@ class Test
     void SupportedOnWindowsUntil10() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("Test.UnsupportedOnWindows8IosSupportsIos14_19()",
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "Windows", "8.0"),
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "Windows", "10.0")),
@@ -4253,7 +4253,7 @@ class Test
         }
 
         [Fact]
-        public async Task GuardAttributesFalsePositives()
+        public async Task GuardAttributesFalsePositivesAsync()
         {
             var source = @"
 using System;
@@ -4317,11 +4317,11 @@ class Test
     void SupportedOnWindows8() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task GuardMemberWithinPlatformSpecificTypeShouldNowWarn()
+        public async Task GuardMemberWithinPlatformSpecificTypeShouldNowWarnAsync()
         {
             var source = @"
 using System;
@@ -4369,12 +4369,12 @@ class WindowsOnlyType
 }
 ";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
 #if DEBUG
         [Fact]
-        public async Task IosGuardsMacCatalyst()
+        public async Task IosGuardsMacCatalystAsync()
         {
             var source = @"
 using System;
@@ -4437,11 +4437,11 @@ class Test
     }
 }" + MockApisCsSource;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task IOSSupportGuardAttributesInferMacCatalyst()
+        public async Task IOSSupportGuardAttributesInferMacCatalystAsync()
         {
             var source = @"
 using System;
@@ -4528,11 +4528,11 @@ class Test
     }
 }" + MockApisCsSource;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task IOSUnsupportGuardAttributesInferMacCatalyst()
+        public async Task IOSUnsupportGuardAttributesInferMacCatalystAsync()
         {
             var source = @"
 using System;
@@ -4604,7 +4604,7 @@ class Test
     }
 }" + MockApisCsSource;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         private readonly string MockApisCsSource = @"

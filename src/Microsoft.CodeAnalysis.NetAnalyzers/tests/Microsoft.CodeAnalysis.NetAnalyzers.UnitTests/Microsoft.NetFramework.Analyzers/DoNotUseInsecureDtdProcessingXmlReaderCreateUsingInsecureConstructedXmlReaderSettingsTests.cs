@@ -15,7 +15,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
         [Fact]
-        public async Task DefaultXmlReaderSettingsInStaticFieldShouldNotGenerateDiagnostic()
+        public async Task DefaultXmlReaderSettingsInStaticFieldShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -50,7 +50,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task DefaultXmlReaderSettingsShouldNotGenerateDiagnostic()
+        public async Task DefaultXmlReaderSettingsShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -83,7 +83,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseInInitializerShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -118,7 +118,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseInInitializerTargetFx452ShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseInInitializerTargetFx452ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
@@ -164,7 +164,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlReaderSettingsOnlySetMaxCharRoZeroInInitializerShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsOnlySetMaxCharRoZeroInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -199,7 +199,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetSecureResolverInInitializerShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetSecureResolverInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -234,7 +234,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseAndMaxCharToNonZeroInInitializerShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseAndMaxCharToNonZeroInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -274,7 +274,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseAndSecureResolverInInitializerShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseAndSecureResolverInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -315,7 +315,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseWithOtherValuesSecureInInitializerShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseWithOtherValuesSecureInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -357,7 +357,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -393,7 +393,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseInTryBlockShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseInTryBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -438,7 +438,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseInCatchBlockShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseInCatchBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -482,7 +482,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseInFinallyBlockShouldGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -527,7 +527,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseInUnusedOneShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseInUnusedOneShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -564,7 +564,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlReaderSettingsSetDtdProcessingToParseInUsedOneShouldNotGenerateDiagnostic()
+        public async Task XmlReaderSettingsSetDtdProcessingToParseInUsedOneShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;

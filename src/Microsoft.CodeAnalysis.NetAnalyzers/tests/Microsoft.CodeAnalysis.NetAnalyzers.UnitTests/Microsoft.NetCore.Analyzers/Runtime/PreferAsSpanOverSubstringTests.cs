@@ -51,7 +51,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         [Theory]
         [MemberData(nameof(Data_SubstringAsSpanPair_CS))]
-        public Task SingleArgumentStaticMethod_ReportsDiagnostic_CS(string substring, string asSpan)
+        public Task SingleArgumentStaticMethod_ReportsDiagnostic_CSAsync(string substring, string asSpan)
         {
             string thing = @"
 using System;
@@ -82,7 +82,7 @@ public class Thing
 
         [Theory]
         [MemberData(nameof(Data_SubstringAsSpanPair_VB))]
-        public Task SingleArgumentStaticMethod_ReportsDiagnostic_VB(string substring, string asSpan)
+        public Task SingleArgumentStaticMethod_ReportsDiagnostic_VBAsync(string substring, string asSpan)
         {
             //  'Thing' needs to be in a C# project because VB doesn't support spans in exposed APIs.
             string thing = @"
@@ -122,7 +122,7 @@ public class Thing
 
         [Theory]
         [MemberData(nameof(Data_SubstringAsSpanPair_CS))]
-        public Task SingleArgumentInstanceMethod_ReportsDiagnostic_CS(string substring, string asSpan)
+        public Task SingleArgumentInstanceMethod_ReportsDiagnostic_CSAsync(string substring, string asSpan)
         {
             string thing = @"
 using System;
@@ -158,7 +158,7 @@ public partial class Body
 
         [Theory]
         [MemberData(nameof(Data_SubstringAsSpanPair_VB))]
-        public Task SingleArgumentInstanceMethod_ReportsDiagnostic_VB(string substring, string asSpan)
+        public Task SingleArgumentInstanceMethod_ReportsDiagnostic_VBAsync(string substring, string asSpan)
         {
             //  'Thing' needs to be in a C# project besause VB doesn't support spans in exposed APIs.
             string thing = @"
@@ -237,7 +237,7 @@ public class Thing
 
         [Theory]
         [MemberData(nameof(Data_MultipleArguments_WithAvailableSpanOverloads))]
-        public Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_CS(string receiverClass, string testArguments, string fixedArguments)
+        public Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_CSAsync(string receiverClass, string testArguments, string fixedArguments)
         {
             string fields = @"
 public partial class Body
@@ -265,7 +265,7 @@ public partial class Body
 
         [Theory]
         [MemberData(nameof(Data_MultipleArguments_WithAvailableSpanOverloads))]
-        public Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_VB(string receiverClass, string testArguments, string fixedArguments)
+        public Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_VBAsync(string receiverClass, string testArguments, string fixedArguments)
         {
             //  Use C# project because VB doesn't support spans in APIs.
             var thingProject = new ProjectState("ThingProject", LanguageNames.CSharp, "thing", "cs")
@@ -406,7 +406,7 @@ public class Thing
 
         [Theory]
         [MemberData(nameof(Data_NamedArguments_CS))]
-        public Task NamedArguments_AreHandledCorrectly_CS(string receiverClass, string testExpression, string fixedExpression)
+        public Task NamedArguments_AreHandledCorrectly_CSAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = CS.WithBody(WithKey(testExpression, 0) + ';');
             string fixedCode = CS.WithBody(fixedExpression + ';');
@@ -533,7 +533,7 @@ public class Thing
 
         [Theory]
         [MemberData(nameof(Data_NamedArguments_VB))]
-        public Task NamedArguments_AreHandledCorrectly_VB(string receiverClass, string testExpression, string fixedExpression)
+        public Task NamedArguments_AreHandledCorrectly_VBAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = VB.WithBody(WithKey(testExpression, 0));
             string fixedCode = VB.WithBody(fixedExpression);
@@ -596,7 +596,7 @@ public class Thing
 
         [Theory]
         [MemberData(nameof(Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan))]
-        public Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_CS(string receiverClass, string testExpression, string fixedExpression)
+        public Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_CSAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = CS.WithBody(WithKey(testExpression, 0) + ';');
             string fixedCode = CS.WithBody(fixedExpression + ';');
@@ -619,7 +619,7 @@ public class Thing
 
         [Theory]
         [MemberData(nameof(Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan))]
-        public Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_VB(string receiverClass, string testExpression, string fixedExpression)
+        public Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_VBAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = VB.WithBody(WithKey(testExpression, 0));
             string fixedCode = VB.WithBody(fixedExpression);
@@ -694,7 +694,7 @@ public class C
 
         [Theory]
         [MemberData(nameof(Data_NestedViolations))]
-        public Task NestedViolations_AreAllReportedAndFixed_CS(
+        public Task NestedViolations_AreAllReportedAndFixed_CSAsync(
             string receiverClass, string testExpression, string fixedExpression, int[] locations,
             int? incrementalIterations)
         {
@@ -720,7 +720,7 @@ public class C
 
         [Theory]
         [MemberData(nameof(Data_NestedViolations))]
-        public Task NestedViolations_AreAllReportedAndFixed_VB(
+        public Task NestedViolations_AreAllReportedAndFixed_VBAsync(
             string receiverClass, string testExpression, string fixedExpression, int[] locations,
             int? incrementalIterations)
         {
@@ -753,7 +753,7 @@ public class C
         }
 
         [Fact]
-        public Task SystemNamespace_IsAdded_WhenMissing_CS()
+        public Task SystemNamespace_IsAdded_WhenMissing_CSAsync()
         {
             string receiver = CS.Usings + @"
 public class C
@@ -781,7 +781,7 @@ public class C
         }
 
         [Fact]
-        public Task SystemNamespace_IsAdded_WhenNotIncludedGlobally_VB()
+        public Task SystemNamespace_IsAdded_WhenNotIncludedGlobally_VBAsync()
         {
             string receiver = CS.Usings + @"
 public class C
@@ -817,7 +817,7 @@ public class C
         }
 
         [Fact]
-        public Task SystemNamespace_IsNotAdded_WhenIncludedGlobally_VB()
+        public Task SystemNamespace_IsNotAdded_WhenIncludedGlobally_VBAsync()
         {
             string receiver = CS.Usings + @"
 public class C
@@ -864,7 +864,7 @@ public class C
 
         //  No VB counterpart because imports must precede all declarations in VB.
         [Fact]
-        public Task SystemNamespace_IsNotAdded_WhenImportedWithinNamespaceDeclaration_CS()
+        public Task SystemNamespace_IsNotAdded_WhenImportedWithinNamespaceDeclaration_CSAsync()
         {
             string format = @"
 using Roschar = System.ReadOnlySpan<char>;
@@ -899,7 +899,7 @@ namespace Testopolis
         [Theory]
         [InlineData("System")]
         [InlineData("System.Widgets")]
-        public Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_CS(string namespaceDeclaration)
+        public Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_CSAsync(string namespaceDeclaration)
         {
             string format = @"
 using Roschar = System.ReadOnlySpan<char>;
@@ -932,7 +932,7 @@ namespace " + namespaceDeclaration + @"
         [Theory]
         [InlineData("System")]
         [InlineData("System.Widgets")]
-        public Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_VB(string namespaceDeclaration)
+        public Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_VBAsync(string namespaceDeclaration)
         {
             string helper = @"
 using Roschar = System.ReadOnlySpan<char>;
@@ -1010,7 +1010,7 @@ public void Consume(int n, string b, Roschar c) { }";
 
         [Theory]
         [MemberData(nameof(Data_MultipleCandidateOverloads_SingleBestCandidate_CS))]
-        public Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_CS(string testCode, string fixedCode)
+        public Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_CSAsync(string testCode, string fixedCode)
         {
             var test = new VerifyCS.Test
             {
@@ -1059,7 +1059,7 @@ public class R
 
         [Theory]
         [MemberData(nameof(Data_MultipleCandidateOVerloads_SingleBestCandidate_VB))]
-        public Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_VB(string receiverClass, string testCode, string fixedCode)
+        public Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_VBAsync(string receiverClass, string testCode, string fixedCode)
         {
             var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
             {
@@ -1114,7 +1114,7 @@ public void Consume(string a, Roschar b, Roschar c) { }";
 
         [Theory]
         [MemberData(nameof(Data_MultipleCandidateOverloads_Ambiguous_CS))]
-        public Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_CS(string testCode)
+        public Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_CSAsync(string testCode)
         {
             var test = new VerifyCS.Test
             {
@@ -1161,7 +1161,7 @@ public class R
 
         [Theory]
         [MemberData(nameof(Data_MultipleCandidateOverloads_Ambiguous_VB))]
-        public Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_VB(string receiverClass, string testCode)
+        public Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_VBAsync(string receiverClass, string testCode)
         {
             var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
             {
@@ -1215,7 +1215,7 @@ public class Thing
 
         [Theory]
         [MemberData(nameof(Data_NoRoscharOverload_CS))]
-        public Task NoRoscharOverload_NoDiagnostic_CS(string receiverClass, string testExpression)
+        public Task NoRoscharOverload_NoDiagnostic_CSAsync(string receiverClass, string testExpression)
         {
             string testCode = CS.WithBody(testExpression + ';');
 
@@ -1262,7 +1262,7 @@ public class Thing
 
         [Theory]
         [MemberData(nameof(Data_NoRoscharOverload_VB))]
-        public Task NoRoscharOverload_NoDiagnostic_VB(string receiverClass, string testExpression)
+        public Task NoRoscharOverload_NoDiagnostic_VBAsync(string receiverClass, string testExpression)
         {
             string testCode = VB.WithBody(WithKey(testExpression, 0));
             var receiverProject = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
@@ -1329,7 +1329,7 @@ public class WrongReturnType
 
         [Theory]
         [MemberData(nameof(Data_InvalidOverloads_CS))]
-        public Task InvalidOverloads_NoDiagnostic_CS(string receiverClass, string testStatements, string extraFields = "")
+        public Task InvalidOverloads_NoDiagnostic_CSAsync(string receiverClass, string testStatements, string extraFields = "")
         {
             string testCode = CS.WithBody(testStatements);
 
@@ -1390,7 +1390,7 @@ public class WrongReturnType
 
         [Theory]
         [MemberData(nameof(Data_InvalidOverloads_VB))]
-        public Task InvalidOverloads_NoDiagnostic_VB(string receiverClass, string testStatements, string extraFields = "")
+        public Task InvalidOverloads_NoDiagnostic_VBAsync(string receiverClass, string testStatements, string extraFields = "")
         {
             string testCode = VB.WithBody(testStatements);
             var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
@@ -1429,7 +1429,7 @@ public class WrongReturnType
         [InlineData("Internal")]
         [InlineData("parent.Protected")]
         [InlineData("parent.ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithoutDiagnostics_CS(string methodCallWithoutArgumentList)
+        public Task Accessibility_ExternalBaseClass_WithoutDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
             string testCode = CS.Usings + @"
 public class ExternalSubclass : External
@@ -1477,7 +1477,7 @@ public class ExternalSubclass : External
         [InlineData("Me.Internal")]
         [InlineData("parent.Protected")]
         [InlineData("parent.ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithoutDiagnostics_VB(string methodCallWithoutArgumentList)
+        public Task Accessibility_ExternalBaseClass_WithoutDiagnostics_VBAsync(string methodCallWithoutArgumentList)
         {
             string testCode = VB.Usings + @"
 Public Class ExternalSubclass : Inherits External
@@ -1517,7 +1517,7 @@ End Class";
         [InlineData("base.ProtectedOrInternal")]
         [InlineData("this.ProtectedOrInternal")]
         [InlineData("ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithDiagnostics_CS(string methodCallWithoutArgumentList)
+        public Task Accessibility_ExternalBaseClass_WithDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
             string testCode = CS.Usings + @"
 public class ExternalSubclass : External
@@ -1573,7 +1573,7 @@ public class ExternalSubclass : External
         [InlineData("MyBase.ProtectedOrInternal")]
         [InlineData("Me.ProtectedOrInternal")]
         [InlineData("ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithDiagnostics_VB(string methodCallWithoutArgumentList)
+        public Task Accessibility_ExternalBaseClass_WithDiagnostics_VBAsync(string methodCallWithoutArgumentList)
         {
             string testCode = VB.Usings + @"
 Public Class ExternalSubclass : Inherits External
@@ -1628,7 +1628,7 @@ End Class";
         [InlineData("this.Private")]
         [InlineData("Private")]
         [InlineData("parent.Protected")]
-        public Task Accessibility_InternalBaseClass_WithoutDiagnostics_CS(string methodCallWithoutArgumentList)
+        public Task Accessibility_InternalBaseClass_WithoutDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
             string testCode = CS.Usings + @"
 public class InternalSubclass : Internal
@@ -1659,7 +1659,7 @@ public class InternalSubclass : Internal
         [InlineData("base.Protected")]
         [InlineData("this.Protected")]
         [InlineData("Protected")]
-        public Task Accessibility_InternalBaseClass_WithDiagnostics_CS(string methodCallWithoutArgumentList)
+        public Task Accessibility_InternalBaseClass_WithDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
             string testCode = CS.Usings + @"
 public class InternalSubclass : Internal
@@ -1699,7 +1699,7 @@ public class InternalSubclass : Internal
         }
 
         [Fact]
-        public Task ConditionalSubstringAccess_NoDiagnostic_CS()
+        public Task ConditionalSubstringAccess_NoDiagnostic_CSAsync()
         {
             string testCode = CS.Usings + @"
 public class Body
@@ -1721,7 +1721,7 @@ public class Body
         }
 
         [Fact]
-        public Task ConditionalSubstringAccess_NoDiagnostic_VB()
+        public Task ConditionalSubstringAccess_NoDiagnostic_VBAsync()
         {
             string receiver = CS.Usings + @"
 public class Receiver

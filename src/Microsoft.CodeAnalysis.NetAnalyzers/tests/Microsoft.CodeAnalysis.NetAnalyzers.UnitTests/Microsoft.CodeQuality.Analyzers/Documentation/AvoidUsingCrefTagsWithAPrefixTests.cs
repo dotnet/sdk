@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.Documentation.UnitTests
         #region No Diagnostic Tests
 
         [Fact]
-        public async Task NoDiagnosticCases()
+        public async Task NoDiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 /// <summary>
@@ -47,7 +47,7 @@ End Class
         #region Diagnostic Tests
 
         [Fact]
-        public async Task DiagnosticCases()
+        public async Task DiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 /// <summary>

@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Theory]
         [InlineData("src")]
         [InlineData("dst")]
-        public async Task UsingByteArray(string array)
+        public async Task UsingByteArrayAsync(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -50,7 +50,7 @@ End Module
         [Theory]
         [InlineData("src")]
         [InlineData("dst")]
-        public async Task UsingSbyteArray(string array)
+        public async Task UsingSbyteArrayAsync(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -84,7 +84,7 @@ End Module
         [Theory]
         [InlineData("src")]
         [InlineData("dst")]
-        public async Task UsingBoolArray(string array)
+        public async Task UsingBoolArrayAsync(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -118,7 +118,7 @@ End Module
         [Theory]
         [InlineData("src")]
         [InlineData("dst")]
-        public async Task UsingIntArray(string array)
+        public async Task UsingIntArrayAsync(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -150,7 +150,7 @@ End Module
         }
 
         [Fact]
-        public async Task OperandIsNotSrcOrDst()
+        public async Task OperandIsNotSrcOrDstAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -186,7 +186,7 @@ End Module
         [Theory]
         [InlineData("src")]
         [InlineData("dst")]
-        public async Task SrcNumOfBytesAsReference(string array)
+        public async Task SrcNumOfBytesAsReferenceAsync(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -220,7 +220,7 @@ End Module
         }
 
         [Fact]
-        public async Task NumOfBytesAsLiteralConst()
+        public async Task NumOfBytesAsLiteralConstAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -252,7 +252,7 @@ End Module
         }
 
         [Fact]
-        public async Task NumOfBytesAsMultipleDeclarations()
+        public async Task NumOfBytesAsMultipleDeclarationsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -286,7 +286,7 @@ End Module
         }
 
         [Fact]
-        public async Task NumOfBytesAsConstLiteral()
+        public async Task NumOfBytesAsConstLiteralAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -319,7 +319,7 @@ End Module
         }
 
         [Fact]
-        public async Task NumOfBytesAsClassConstField()
+        public async Task NumOfBytesAsClassConstFieldAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -353,7 +353,7 @@ End Module
         }
 
         [Fact]
-        public async Task NumOfBytesAsClassPropertyGetter()
+        public async Task NumOfBytesAsClassPropertyGetterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -391,7 +391,7 @@ End Class
         }
 
         [Fact]
-        public async Task NumOfBytesAsMethodInvocation()
+        public async Task NumOfBytesAsMethodInvocationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -432,7 +432,7 @@ End Module
         }
 
         [Fact]
-        public async Task SrcAndDstAsLiteralArrays()
+        public async Task SrcAndDstAsLiteralArraysAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -458,7 +458,7 @@ End Module
         }
 
         [Fact]
-        public async Task NamedArgumentsNotInOrder()
+        public async Task NamedArgumentsNotInOrderAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -490,7 +490,7 @@ End Module
         }
 
         [Fact]
-        public async Task NonLocalArrays()
+        public async Task NonLocalArraysAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -530,7 +530,7 @@ End Module
         }
 
         [Fact]
-        public async Task SrcArrayAsFunctionReturn()
+        public async Task SrcArrayAsFunctionReturnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -568,7 +568,7 @@ End Module
         }
 
         [Fact]
-        public async Task SrcAndDstAsGlobalArrays()
+        public async Task SrcAndDstAsGlobalArraysAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -600,7 +600,7 @@ End Class
         }
 
         [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/5371")]
-        public async Task SrcAndDstAsArrayCreateInstance()
+        public async Task SrcAndDstAsArrayCreateInstanceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class DoNotOverloadOperatorEqualsOnReferenceTypesTests
     {
         [Fact]
-        public async Task OperatorEqual_ReferenceType_Diagnostic()
+        public async Task OperatorEqual_ReferenceType_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -38,7 +38,7 @@ End Class",
         }
 
         [Fact]
-        public async Task OperatorEqual_ValueType_NoDiagnostic()
+        public async Task OperatorEqual_ValueType_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct C
@@ -60,7 +60,7 @@ End Structure");
         }
 
         [Fact]
-        public async Task OperatorEqualAndAdditionSubtraction_ReferenceType_Diagnostic()
+        public async Task OperatorEqualAndAdditionSubtraction_ReferenceType_DiagnosticAsync()
         {
             // Doc states that if type behaves as a value-type and has addition/subtraction it might be safe.
 
@@ -119,7 +119,7 @@ End Class");
         // Invalid analyzer option ignored
         [InlineData("internal", @"dotnet_code_quality.api_surface = all
                                   dotnet_code_quality.CA1046.api_surface_2 = private")]
-        public async Task CSharp_ApiSurfaceOption(string accessibility, string editorConfigText)
+        public async Task CSharp_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -171,7 +171,7 @@ public class OuterClass
         // Invalid analyzer option ignored
         [InlineData("Friend", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1046.api_surface_2 = Private")]
-        public async Task VisualBasic_ApiSurfaceOption(string accessibility, string editorConfigText)
+        public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
             {
@@ -205,7 +205,7 @@ End Class"
         [InlineData("internal")]
         [InlineData("private")]
 
-        public async Task CSharp_OperatorEqual_InternalReferenceType_NoDiagnostic(string accessibility)
+        public async Task CSharp_OperatorEqual_InternalReferenceType_NoDiagnosticAsync(string accessibility)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
 public class OuterClass
@@ -222,7 +222,7 @@ public class OuterClass
         [InlineData("Friend")]
         [InlineData("Private")]
 
-        public async Task VisualBasic_OperatorEqual_InternalReferenceType_NoDiagnostic(string accessibility)
+        public async Task VisualBasic_OperatorEqual_InternalReferenceType_NoDiagnosticAsync(string accessibility)
         {
             await VerifyVB.VerifyAnalyzerAsync($@"
 Public Class OuterClass
@@ -239,7 +239,7 @@ End Class");
         }
 
         [Fact]
-        public async Task OperatorEqual_IEquatable_NoDiagnostic()
+        public async Task OperatorEqual_IEquatable_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -270,7 +270,7 @@ End Class");
         }
 
         [Fact]
-        public async Task OperatorEqual_OverrideObjectEquals_NoDiagnostic()
+        public async Task OperatorEqual_OverrideObjectEquals_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -299,7 +299,7 @@ End Class
         }
 
         [Fact]
-        public async Task OperatorEqual_ImplementIComparable_NoDiagnostic()
+        public async Task OperatorEqual_ImplementIComparable_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -334,7 +334,7 @@ End Class
         }
 
         [Fact]
-        public async Task OperatorEqual_ImplementIComparableT_Diagnostic()
+        public async Task OperatorEqual_ImplementIComparableT_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

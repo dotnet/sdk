@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotUseDataTableReadXmlTests
     {
         [Fact]
-        public async Task ReadXml_Diagnostic()
+        public async Task ReadXml_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -33,7 +33,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DerivedReadXml_Diagnostic()
+        public async Task DerivedReadXml_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -58,7 +58,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task RejectChanges_NoDiagnostic()
+        public async Task RejectChanges_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;

@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class IdentifiersShouldHaveCorrectPrefixTests
     {
         [Fact]
-        public async Task TestInterfaceNamesCSharp()
+        public async Task TestInterfaceNamesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface Controller
@@ -73,7 +73,7 @@ public interface IAmAnInterface
         }
 
         [Fact]
-        public async Task TestTypeParameterNamesCSharp()
+        public async Task TestTypeParameterNamesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -164,7 +164,7 @@ public class Class6<TTypeParameter>
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestInternalInterfaceNamesCSharp_NoDiagnostic()
+        public async Task TestInternalInterfaceNamesCSharp_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface Controller
@@ -191,7 +191,7 @@ public class C2
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestTypeParameterNamesInternalCSharp_NoDiagnostic()
+        public async Task TestTypeParameterNamesInternalCSharp_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -216,7 +216,7 @@ public class C2
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
         [Fact]
-        public async Task TestTypeParameterNamesCSharp_SingleLetterCases_Default()
+        public async Task TestTypeParameterNamesCSharp_SingleLetterCases_DefaultAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -257,7 +257,7 @@ public class Class6<TTypeParameter>
         [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
         [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = true
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
-        public async Task TestTypeParameterNamesCSharp_SingleLetterCases_EditorConfig_Diagnostic(string editorConfigText)
+        public async Task TestTypeParameterNamesCSharp_SingleLetterCases_EditorConfig_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -314,7 +314,7 @@ public class Class6<TTypeParameter>
         [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
         [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = false
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
-        public async Task TestTypeParameterNamesCSharp_SingleLetterCases_EditorConfig_NoDiagnostic(string editorConfigText)
+        public async Task TestTypeParameterNamesCSharp_SingleLetterCases_EditorConfig_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -358,7 +358,7 @@ public class Class6<TTypeParameter>
         }
 
         [Fact]
-        public async Task TestInterfaceNamesBasic()
+        public async Task TestInterfaceNamesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface Controller
@@ -405,7 +405,7 @@ End Interface
         }
 
         [Fact]
-        public async Task TestTypeParameterNamesBasic()
+        public async Task TestTypeParameterNamesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -482,7 +482,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestInterfaceNamesInternalBasic_NoDiagnostic()
+        public async Task TestInterfaceNamesInternalBasic_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface Controller
@@ -504,7 +504,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestTypeParameterNamesInternalBasic_NoDiagnostic()
+        public async Task TestTypeParameterNamesInternalBasic_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -525,7 +525,7 @@ End Class
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
         [Fact]
-        public async Task TestTypeParameterNamesBasic_SingleLetterCases_Default()
+        public async Task TestTypeParameterNamesBasic_SingleLetterCases_DefaultAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -561,7 +561,7 @@ End Class
         [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
         [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = true
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
-        public async Task TestTypeParameterNamesBasic_SingleLetterCases_EditorConfig_Diagnostic(string editorConfigText)
+        public async Task TestTypeParameterNamesBasic_SingleLetterCases_EditorConfig_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyVB.Test
             {
@@ -613,7 +613,7 @@ End Class
         [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
         [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = false
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
-        public async Task TestTypeParameterNamesBasic_SingleLetterCases_EditorConfig_NoDiagnostic(string editorConfigText)
+        public async Task TestTypeParameterNamesBasic_SingleLetterCases_EditorConfig_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyVB.Test
             {

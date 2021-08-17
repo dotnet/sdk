@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class DoNotRaiseReservedExceptionTypesTests
     {
         [Fact]
-        public async Task CreateSystemNotImplementedException()
+        public async Task CreateSystemNotImplementedExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -44,7 +44,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task CreateSystemException()
+        public async Task CreateSystemExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -75,7 +75,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CreateSystemStackOverflowException()
+        public async Task CreateSystemStackOverflowExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

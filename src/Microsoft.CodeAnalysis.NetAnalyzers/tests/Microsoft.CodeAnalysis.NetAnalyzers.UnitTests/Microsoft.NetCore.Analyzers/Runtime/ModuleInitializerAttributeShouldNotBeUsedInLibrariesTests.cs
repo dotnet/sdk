@@ -21,7 +21,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("public", "internal", true)]
         [InlineData("internal", "public", true)]
         [InlineData("internal", "internal", true)]
-        public async Task CA2255ModuleInitializerOnMethod(string classModifier, string methodModifier, bool useAsync)
+        public async Task CA2255ModuleInitializerOnMethodAsync(string classModifier, string methodModifier, bool useAsync)
         {
             await new VerifyCS.Test
             {
@@ -51,7 +51,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("public", "internal", true)]
         [InlineData("internal", "public", true)]
         [InlineData("internal", "internal", true)]
-        public async Task CA2255ModuleInitializerOnMethod_WithParens(string classModifier, string methodModifier, bool useAsync)
+        public async Task CA2255ModuleInitializerOnMethod_WithParensAsync(string classModifier, string methodModifier, bool useAsync)
         {
             await new VerifyCS.Test
             {
@@ -81,7 +81,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("public", "internal", true)]
         [InlineData("internal", "public", true)]
         [InlineData("internal", "internal", true)]
-        public async Task CA2255ModuleInitializerOnMethod_Suppressed(string classModifier, string methodModifier, bool useAsync)
+        public async Task CA2255ModuleInitializerOnMethod_SuppressedAsync(string classModifier, string methodModifier, bool useAsync)
         {
             await new VerifyCS.Test
             {
@@ -105,7 +105,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2255DoesNotApply_ToPrivateMethods()
+        public async Task CA2255DoesNotApply_ToPrivateMethodsAsync()
         {
             await new VerifyCS.Test
             {
@@ -129,7 +129,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2255DoesNotApply_ToPrivateNestedClasses()
+        public async Task CA2255DoesNotApply_ToPrivateNestedClassesAsync()
         {
             await new VerifyCS.Test
             {
@@ -156,7 +156,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2255DoesNotApply_ToNonVoidMethods()
+        public async Task CA2255DoesNotApply_ToNonVoidMethodsAsync()
         {
             await new VerifyCS.Test
             {
@@ -180,7 +180,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2255DoesNotApply_ToInstanceMethods()
+        public async Task CA2255DoesNotApply_ToInstanceMethodsAsync()
         {
             await new VerifyCS.Test
             {
@@ -204,7 +204,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2255DoesNotApply_ToGenericTypes()
+        public async Task CA2255DoesNotApply_ToGenericTypesAsync()
         {
             await new VerifyCS.Test
             {
@@ -228,7 +228,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2255DoesNotApply_ToGenericMethods()
+        public async Task CA2255DoesNotApply_ToGenericMethodsAsync()
         {
             await new VerifyCS.Test
             {

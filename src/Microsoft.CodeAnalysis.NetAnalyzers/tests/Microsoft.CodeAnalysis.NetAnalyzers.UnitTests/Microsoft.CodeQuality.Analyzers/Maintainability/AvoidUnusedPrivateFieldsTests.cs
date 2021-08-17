@@ -45,7 +45,7 @@ End Namespace
 ";
 
         [Fact]
-        public async Task CA1823_CSharp_AttributeUsage_NoDiagnostic()
+        public async Task CA1823_CSharp_AttributeUsage_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 [System.Obsolete(Message)]
@@ -57,7 +57,7 @@ public class Class
         }
 
         [Fact]
-        public async Task CA1823_CSharp_InterpolatedStringUsage_NoDiagnostic()
+        public async Task CA1823_CSharp_InterpolatedStringUsage_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class
@@ -69,7 +69,7 @@ public class Class
         }
 
         [Fact]
-        public async Task CA1823_CSharp_CollectionInitializerUsage_NoDiagnostic()
+        public async Task CA1823_CSharp_CollectionInitializerUsage_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -83,7 +83,7 @@ public class Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_CSharp_FieldOffsetAttribute_NoDiagnostic()
+        public async Task CA1823_CSharp_FieldOffsetAttribute_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
@@ -96,7 +96,7 @@ public class Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_CSharp_FieldOffsetAttributeError_NoDiagnostic()
+        public async Task CA1823_CSharp_FieldOffsetAttributeError_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
@@ -109,7 +109,7 @@ public class Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindSequential_NoDiagnostic()
+        public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindSequential_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -128,7 +128,7 @@ class Class2
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindAuto_Diagnostic()
+        public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindAuto_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Auto)]
@@ -141,7 +141,7 @@ class Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindExplicit_Diagnostic()
+        public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindExplicit_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
@@ -154,7 +154,7 @@ class Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_CSharp_StructLayoutAttributeError_NoLayoutKind_Diagnostic()
+        public async Task CA1823_CSharp_StructLayoutAttributeError_NoLayoutKind_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 [{|CS1729:System.Runtime.InteropServices.StructLayout|}]
@@ -174,7 +174,7 @@ class Class2
         }
 
         [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
-        public async Task CA1823_CSharp_MEFAttributes_NoDiagnostic()
+        public async Task CA1823_CSharp_MEFAttributes_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSharpMEFAttributesDefinition + @"
 public class Class
@@ -189,7 +189,7 @@ public class Class
         }
 
         [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
-        public async Task CA1823_CSharp_MEFAttributesError_NoDiagnostic()
+        public async Task CA1823_CSharp_MEFAttributesError_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSharpMEFAttributesDefinition + @"
 public class Class
@@ -204,7 +204,7 @@ public class Class
         }
 
         [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
-        public async Task CA1823_CSharp_MEFAttributesUndefined_Diagnostic()
+        public async Task CA1823_CSharp_MEFAttributesUndefined_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -228,7 +228,7 @@ public class Class
         }
 
         [Fact]
-        public async Task CA1823_CSharp_SimpleUsages_DiagnosticCases()
+        public async Task CA1823_CSharp_SimpleUsages_DiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class
@@ -253,7 +253,7 @@ public class Class
         }
 
         [Fact]
-        public async Task CA1823_VisualBasic_DiagnosticCases()
+        public async Task CA1823_VisualBasic_DiagnosticCasesAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
@@ -280,7 +280,7 @@ End Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_VisualBasic_FieldOffsetAttribute_NoDiagnostic()
+        public async Task CA1823_VisualBasic_FieldOffsetAttribute_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 <System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)> _
@@ -292,7 +292,7 @@ End Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_VisualBasic_FieldOffsetAttributeError_NoDiagnostic()
+        public async Task CA1823_VisualBasic_FieldOffsetAttributeError_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 <System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)>
@@ -304,7 +304,7 @@ End Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindSequential_NoDiagnostic()
+        public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindSequential_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 <System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)> _
@@ -321,7 +321,7 @@ End Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindAuto_Diagnostic()
+        public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindAuto_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 <System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Auto)> _
@@ -333,7 +333,7 @@ End Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindExplicit_Diagnostic()
+        public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindExplicit_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 <System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)> _
@@ -345,7 +345,7 @@ End Class
         }
 
         [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
-        public async Task CA1823_VisualBasic_StructLayoutAttributeError_NoLayoutKind_Diagnostic()
+        public async Task CA1823_VisualBasic_StructLayoutAttributeError_NoLayoutKind_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 <System.Runtime.InteropServices.{|BC30516:StructLayout|}> _
@@ -363,7 +363,7 @@ End Class
         }
 
         [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
-        public async Task CA1823_VisualBasic_MEFAttributes_NoDiagnostic()
+        public async Task CA1823_VisualBasic_MEFAttributes_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(BasicMEFAttributesDefinition + @"
 Public Class [Class]
@@ -377,7 +377,7 @@ End Class
         }
 
         [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
-        public async Task CA1823_VisualBasic_MEFAttributesError_NoDiagnostic()
+        public async Task CA1823_VisualBasic_MEFAttributesError_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(BasicMEFAttributesDefinition + @"
 Public Class [Class]
@@ -391,7 +391,7 @@ End Class
         }
 
         [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
-        public async Task CA1823_VisualBasic_MEFAttributesUndefined_Diagnostic()
+        public async Task CA1823_VisualBasic_MEFAttributesUndefined_DiagnosticAsync()
         {
             await new VerifyVB.Test
             {

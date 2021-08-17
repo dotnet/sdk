@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region No Diagnostic Tests
 
         [Fact]
-        public async Task CSharp_CA1019_NoDiagnostic_GeneralTest()
+        public async Task CSharp_CA1019_NoDiagnostic_GeneralTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -65,7 +65,7 @@ public sealed class PositionalArgWithSetterTestAttribute : Attribute
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_NoDiagnostic_GeneralTest()
+        public async Task VisualBasic_CA1019_NoDiagnostic_GeneralTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -116,7 +116,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CA1019_NoDiagnostic_GetterVisibilityTest()
+        public async Task CSharp_CA1019_NoDiagnostic_GetterVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -318,7 +318,7 @@ internal sealed class PublicGetterInternalAttribute : Attribute   //Good
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_NoDiagnostic_GetterVisibilityTest()
+        public async Task VisualBasic_CA1019_NoDiagnostic_GetterVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -529,7 +529,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CA1019_NoDiagnostic_SetterVisibilityTest()
+        public async Task CSharp_CA1019_NoDiagnostic_SetterVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -605,7 +605,7 @@ public sealed class InternalSetterAttribute : Attribute
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_NoDiagnostic_SetterVisibilityTest()
+        public async Task VisualBasic_CA1019_NoDiagnostic_SetterVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -691,7 +691,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CA1019_NoDiagnostic_ConstructorVisibilityTest()
+        public async Task CSharp_CA1019_NoDiagnostic_ConstructorVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -962,7 +962,7 @@ public class ProtectedInternalConstructorPublicGetterAttribute : Attribute
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_NoDiagnostic_ConstructorVisibilityTest()
+        public async Task VisualBasic_CA1019_NoDiagnostic_ConstructorVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1242,7 +1242,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CA1019_NoDiagnostic_NestedVisibilityTest()
+        public async Task CSharp_CA1019_NoDiagnostic_NestedVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1332,7 +1332,7 @@ internal class InternalContainerClass
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_NoDiagnostic_NestedVisibilityTest()
+        public async Task VisualBasic_CA1019_NoDiagnostic_NestedVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1422,7 +1422,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CA1019_NoDiagnostic_InheritanceTest()
+        public async Task CSharp_CA1019_NoDiagnostic_InheritanceTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1538,7 +1538,7 @@ public sealed class GenericNestedCovariantParameterAttribute : Attribute
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_NoDiagnostic_InheritanceTest()
+        public async Task VisualBasic_CA1019_NoDiagnostic_InheritanceTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1660,7 +1660,7 @@ End Class
         #region Diagnostic Tests
 
         [Fact]
-        public async Task CSharp_CA1019_GeneralTest()
+        public async Task CSharp_CA1019_GeneralTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1724,7 +1724,7 @@ public sealed class ArgWithSetterTestAttribute : Attribute
         }
 
         [Fact]
-        public async Task CSharp_CA1019_GeneralTestWithScope()
+        public async Task CSharp_CA1019_GeneralTestWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1788,7 +1788,7 @@ public sealed class ArgWithSetterTestAttribute : Attribute
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_GeneralTest()
+        public async Task VisualBasic_CA1019_GeneralTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1856,7 +1856,7 @@ End Class
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_GeneralTestWithScope()
+        public async Task VisualBasic_CA1019_GeneralTestWithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1924,7 +1924,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CA1019_IncreaseVisibility_GetterVisibilityTest()
+        public async Task CSharp_CA1019_IncreaseVisibility_GetterVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -2049,7 +2049,7 @@ public sealed class PrivateGetterAttribute : Attribute   //Bad
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_IncreaseVisibility_GetterVisibilityTest()
+        public async Task VisualBasic_CA1019_IncreaseVisibility_GetterVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2192,7 +2192,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CA1019_IncreaseVisibility_NestedVisibilityTest()
+        public async Task CSharp_CA1019_IncreaseVisibility_NestedVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -2297,7 +2297,7 @@ public partial class PublicContainerClass
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_IncreaseVisibility_NestedVisibilityTest()
+        public async Task VisualBasic_CA1019_IncreaseVisibility_NestedVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2405,7 +2405,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CA1019_RemoveSetter_InheritanceTest()
+        public async Task CSharp_CA1019_RemoveSetter_InheritanceTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -2578,7 +2578,7 @@ public sealed class GenericContravariantParameterAttribute : Attribute
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_RemoveSetter_InheritanceTest()
+        public async Task VisualBasic_CA1019_RemoveSetter_InheritanceTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System

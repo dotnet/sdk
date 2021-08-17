@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region CodeFix Tests
 
         [Fact]
-        public async Task CA1813CSharpCodeFixProviderTestFired()
+        public async Task CA1813CSharpCodeFixProviderTestFiredAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -32,7 +32,7 @@ public sealed class AttributeClass : Attribute
         }
 
         [Fact]
-        public async Task CA1813VisualBasicCodeFixProviderTestFired()
+        public async Task CA1813VisualBasicCodeFixProviderTestFiredAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System

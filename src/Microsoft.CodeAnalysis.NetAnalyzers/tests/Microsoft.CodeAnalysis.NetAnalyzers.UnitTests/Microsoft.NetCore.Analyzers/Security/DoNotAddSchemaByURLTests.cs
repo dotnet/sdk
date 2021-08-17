@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotAddSchemaByURLTests
     {
         [Fact]
-        public async Task TestAddWithStringStringParametersDiagnostic()
+        public async Task TestAddWithStringStringParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -45,7 +45,7 @@ End Class",
         }
 
         [Fact]
-        public async Task TestAddWithNullStringParametersDiagnostic()
+        public async Task TestAddWithNullStringParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -75,7 +75,7 @@ End Class",
         }
 
         [Fact]
-        public async Task TestAddWithXmlSchemaCollectionParameterNoDiagnostic()
+        public async Task TestAddWithXmlSchemaCollectionParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -92,7 +92,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestAddWithXmlSchemaParameterNoDiagnostic()
+        public async Task TestAddWithXmlSchemaParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -109,7 +109,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestNormalAddMethodNoDiagnostic()
+        public async Task TestNormalAddMethodNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

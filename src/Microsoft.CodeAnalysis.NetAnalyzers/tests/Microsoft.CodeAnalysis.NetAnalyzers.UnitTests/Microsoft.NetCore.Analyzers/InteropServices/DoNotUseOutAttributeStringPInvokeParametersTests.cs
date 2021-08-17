@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     public class DoNotUseOutAttributeStringPInvokeParametersAnalyzerTests
     {
         [Fact]
-        public async Task StringByReference_NoDiagnostics_CS()
+        public async Task StringByReference_NoDiagnostics_CSAsync()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -36,7 +36,7 @@ public class C
         }
 
         [Fact]
-        public async Task NotPInvoke_NoDiagnostics_CS()
+        public async Task NotPInvoke_NoDiagnostics_CSAsync()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -50,7 +50,7 @@ public class C
         }
 
         [Fact]
-        public async Task OutAttributeStringByValue_Diagnostics_CS()
+        public async Task OutAttributeStringByValue_Diagnostics_CSAsync()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -72,7 +72,7 @@ public class C
         }
 
         [Fact]
-        public async Task StringByReference_NoDiagnostics_VB()
+        public async Task StringByReference_NoDiagnostics_VBAsync()
         {
             string source = @"
 Imports System.Runtime.InteropServices
@@ -87,7 +87,7 @@ End Class
         }
 
         [Fact]
-        public async Task NotPInvoke_NoDiagnostics_VB()
+        public async Task NotPInvoke_NoDiagnostics_VBAsync()
         {
             string source = @"
 Imports System.Runtime.InteropServices
@@ -101,7 +101,7 @@ End Class
         }
 
         [Fact]
-        public async Task OutAttributeStringByValue_Diagnostics_VB()
+        public async Task OutAttributeStringByValue_Diagnostics_VBAsync()
         {
             string source = @"
 Imports System.Runtime.InteropServices

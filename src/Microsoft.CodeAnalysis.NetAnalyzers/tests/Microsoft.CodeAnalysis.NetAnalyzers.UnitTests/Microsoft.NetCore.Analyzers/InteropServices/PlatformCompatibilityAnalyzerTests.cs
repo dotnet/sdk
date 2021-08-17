@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
         private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser,macOS,maccatalyst, ios, linux;\nbuild_property.TargetFramework=net5.0";
 
         [Fact(Skip = "TODO need to be fixed: Test for for wrong arguments, not sure how to report the Compiler error diagnostic")]
-        public async Task TestOsPlatformAttributesWithNonStringArgument()
+        public async Task TestOsPlatformAttributesWithNonStringArgumentAsync()
         {
             var csSource = @"
 using System.Runtime.Versioning;
@@ -59,7 +59,7 @@ public class Test
 
         [Theory]
         [MemberData(nameof(Create_DifferentTfms))]
-        public async Task Net5OrHigherTfmWarns_LowerThanNet5NotWarn(string tfm, bool warn)
+        public async Task Net5OrHigherTfmWarns_LowerThanNet5NotWarnAsync(string tfm, bool warn)
         {
             var invocation = warn ? "[|Target.WindowsOnlyMethod()|]" : "Target.WindowsOnlyMethod()";
             var source = @"
@@ -104,7 +104,7 @@ namespace CallerTargetsBelow5_0
 
         [Theory]
         [MemberData(nameof(Create_DifferentTfmsWithOption))]
-        public async Task Net5OrHigherTfmWarns_LowerThanNet5WarnsIfEnabled(string tfmAndOption, bool warn)
+        public async Task Net5OrHigherTfmWarns_LowerThanNet5WarnsIfEnabledAsync(string tfmAndOption, bool warn)
         {
             var invocation = warn ? "[|Target.WindowsOnlyMethod()|]" : "Target.WindowsOnlyMethod()";
             var source = @"
@@ -130,7 +130,7 @@ namespace CallerTargetsBelow5_0
         }
 
         [Fact]
-        public async Task ProjectWithPlatformNeutralAssemblyPropertyTest()
+        public async Task ProjectWithPlatformNeutralAssemblyPropertyTestAsync()
         {
             var source = @"
 using System.Collections.Generic;
@@ -201,7 +201,7 @@ public class Test
         a = AndroidBrowserOnlyProgram;
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, "build_property.PlatformNeutralAssembly = true\nbuild_property.TargetFramework=net5.0",
+            await VerifyAnalyzerCSAsync(source, "build_property.PlatformNeutralAssembly = true\nbuild_property.TargetFramework=net5.0",
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(0).WithArguments("Test.WindowsOnlyProgram", "'windows'", "'linux'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1).WithArguments("Test.UnsupportedLinuxProgram", "'linux'", "'linux'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(2).WithArguments("Test.AndroidBrowserOnlyProgram", "'android', 'browser'", "'linux'"),
@@ -212,7 +212,7 @@ public class Test
         }
 
         [Fact]
-        public async Task OnlyThrowsNotSupportedWithOsDependentStringNotWarns()
+        public async Task OnlyThrowsNotSupportedWithOsDependentStringNotWarnsAsync()
         {
             var csSource = @"
 using System;
@@ -239,7 +239,7 @@ public class Test
         }
 
         [Fact]
-        public async Task ThrowNotSupportedWithOtherOsDependentApiUsageNotWarns()
+        public async Task ThrowNotSupportedWithOtherOsDependentApiUsageNotWarnsAsync()
         {
             var csSource = @"
 using System;
@@ -288,7 +288,7 @@ public class Test
         }
 
         [Fact]
-        public async Task ThrowNotSupportedWithOtherStatementAndWithinConditionNotWarns()
+        public async Task ThrowNotSupportedWithOtherStatementAndWithinConditionNotWarnsAsync()
         {
             var csSource = @"
 using System;
@@ -346,7 +346,7 @@ public class Test
         }
 
         [Fact]
-        public async Task CreateNotSupportedWithOsDependentStringNotWarns()
+        public async Task CreateNotSupportedWithOsDependentStringNotWarnsAsync()
         {
             var csSource = @"
 using System;
@@ -380,7 +380,7 @@ public class Test
         }
 
         [Fact]
-        public async Task ThrowNotSupportedWarnsForNonStringArgument()
+        public async Task ThrowNotSupportedWarnsForNonStringArgumentAsync()
         {
             var csSource = @"
 using System;
@@ -414,7 +414,7 @@ public class Test
         }
 
         [Fact]
-        public async Task MethodsWithOsDependentTypeParameterWarns()
+        public async Task MethodsWithOsDependentTypeParameterWarnsAsync()
         {
             var csSource = @"
 using System;
@@ -438,7 +438,7 @@ public class Test
         }
 
         [Fact]
-        public async Task ConstructorWithOsDependentTypeParameterWarns()
+        public async Task ConstructorWithOsDependentTypeParameterWarnsAsync()
         {
             var csSource = @"
 using System.Runtime.Versioning;
@@ -462,7 +462,7 @@ public class Test
         }
 
         [Fact]
-        public async Task ApiContainingTypeHasOsDependentTypeParameterWarns()
+        public async Task ApiContainingTypeHasOsDependentTypeParameterWarnsAsync()
         {
             var csSource = @"
 using System;
@@ -502,7 +502,7 @@ public class Test
         }
 
         [Fact]
-        public async Task AssemblyLevelAttribteWithPropertyEventNotWarn()
+        public async Task AssemblyLevelAttribteWithPropertyEventNotWarnAsync()
         {
             var csSource = @"
 using System;
@@ -561,7 +561,7 @@ namespace WindowsOnlyAssembly
         }
 
         [Fact]
-        public async Task ApiContainingMultipleNestedTypeParameter()
+        public async Task ApiContainingMultipleNestedTypeParameterAsync()
         {
             var csSource = @"
 using System;
@@ -596,7 +596,7 @@ public class Test
         }
 
         [Fact]
-        public async Task OsDependentMethodsCalledWarns()
+        public async Task OsDependentMethodsCalledWarnsAsync()
         {
             var csSource = @"
 using System.Runtime.Versioning;
@@ -640,7 +640,7 @@ End Class";
         }
 
         [Fact]
-        public async Task WrongPlatformStringsShouldHandledGracefully()
+        public async Task WrongPlatformStringsShouldHandledGracefullyAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -689,7 +689,7 @@ public class Test
         }
 
         [Fact]
-        public async Task OsDependentPropertyCalledWarns()
+        public async Task OsDependentPropertyCalledWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -721,7 +721,7 @@ public class Test
         }
 
         [Fact, WorkItem(4071, "https://github.com/dotnet/roslyn-analyzers/issues/4071")]
-        public async Task OsDependentPropertyGetterSetterCalledWarns()
+        public async Task OsDependentPropertyGetterSetterCalledWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -820,7 +820,7 @@ End Class";
 
         [Theory]
         [MemberData(nameof(Create_AttributeProperty_WithCondtions))]
-        public async Task OsDependentPropertyConditionalCheckWarns(string attribute, string property, string condition, string setter, string getter)
+        public async Task OsDependentPropertyConditionalCheckWarnsAsync(string attribute, string property, string condition, string setter, string getter)
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -852,7 +852,7 @@ public class Test
         }
 
         [Fact]
-        public async Task OsDependentEnumValueCalledWarns()
+        public async Task OsDependentEnumValueCalledWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -884,7 +884,7 @@ public enum PlatformEnum
         }
 
         [Fact]
-        public async Task OsDependentEnumConditionalCheckNotWarns()
+        public async Task OsDependentEnumConditionalCheckNotWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -943,7 +943,7 @@ End Enum";
         }
 
         [Fact]
-        public async Task OsDependentFieldCalledWarns()
+        public async Task OsDependentFieldCalledWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -976,7 +976,7 @@ public class Test
         }
 
         [Fact]
-        public async Task OsDependentMethodCalledFromInstanceWarns()
+        public async Task OsDependentMethodCalledFromInstanceWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -998,7 +998,7 @@ public class B
         }
 
         [Fact]
-        public async Task OsDependentMethodCalledFromOtherNsInstanceWarns()
+        public async Task OsDependentMethodCalledFromOtherNsInstanceWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1046,7 +1046,7 @@ End Namespace";
         }
 
         [Fact]
-        public async Task OsDependentConstructorOfClassUsedCalledWarns()
+        public async Task OsDependentConstructorOfClassUsedCalledWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1071,7 +1071,7 @@ public class C
         }
 
         [Fact]
-        public async Task ConstructorAndMethodOfOsDependentClassCalledWarns()
+        public async Task ConstructorAndMethodOfOsDependentClassCalledWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1111,7 +1111,7 @@ End Class
         }
 
         [Fact]
-        public async Task LocalFunctionCallsOsDependentMemberWarns()
+        public async Task LocalFunctionCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1134,7 +1134,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalGuardedFunctionCallsOsDependentMemberNotWarns()
+        public async Task LocalGuardedFunctionCallsOsDependentMemberNotWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1158,7 +1158,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionEscapedCallsOsDependentMemberWarns()
+        public async Task LocalFunctionEscapedCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1185,7 +1185,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionUnusedCallsOsDependentMemberWarns()
+        public async Task LocalFunctionUnusedCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1208,7 +1208,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaCallsOsDependentMemberWarns()
+        public async Task LambdaCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1234,7 +1234,7 @@ public class Test
         }
 
         [Fact]
-        public async Task AttributedLambdaCallsOsDependentMemberNotWarn()
+        public async Task AttributedLambdaCallsOsDependentMemberNotWarnAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1261,7 +1261,7 @@ public class C
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMemberWarns()
+        public async Task LambdaEscapedCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1288,7 +1288,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaUnusedCallsOsDependentMemberWarns()
+        public async Task LambdaUnusedCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1311,7 +1311,7 @@ public class Test
         }
 
         [Fact]
-        public async Task OsDependentEventAccessedWarns()
+        public async Task OsDependentEventAccessedWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1362,7 +1362,7 @@ End Class";
         }
 
         [Fact]
-        public async Task EventOfOsDependentTypeAccessedWarns()
+        public async Task EventOfOsDependentTypeAccessedWarnsAsync()
         {
             var source = @"
 using System;
@@ -1389,7 +1389,7 @@ public class C
         }
 
         [Fact]
-        public async Task OsDependentEventAddRemoveAccessedWarns()
+        public async Task OsDependentEventAddRemoveAccessedWarnsAsync()
         {
             var source = @"
 using System;
@@ -1435,7 +1435,7 @@ public class Test
         }
 
         [Fact]
-        public async Task OsDependentMethodAssignedToDelegateWarns()
+        public async Task OsDependentMethodAssignedToDelegateWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1457,7 +1457,7 @@ public class Test
         }
 
         [Fact, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
-        public async Task UnsupportedShouldNotSuppressSupportedWithSameVersion()
+        public async Task UnsupportedShouldNotSuppressSupportedWithSameVersionAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1486,7 +1486,7 @@ class UnsupportedOnBrowserType
         }
 
         [Fact, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
-        public async Task CallSitesUnsupportedShouldNotSuppressSupportedWithSameVersion()
+        public async Task CallSitesUnsupportedShouldNotSuppressSupportedWithSameVersionAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1546,7 +1546,7 @@ class UnsupportedOnBrowserType
         }
 
         [Fact, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
-        public async Task CallSiteUnsupportedShouldNotSuppressSupportedWithSameVersionAndSameLevel()
+        public async Task CallSiteUnsupportedShouldNotSuppressSupportedWithSameVersionAndSameLevelAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1595,7 +1595,7 @@ class UnsupportedOnBrowserSupportedOnWindowType
         }
 
         [Fact]
-        public async Task CallerSupportsSubsetOfTarget()
+        public async Task CallerSupportsSubsetOfTargetAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1628,7 +1628,7 @@ namespace CallerSupportsSubsetOfTarget
         }
 
         [Fact]
-        public async Task CallerUnsupportsNonSubsetOfTargetSupport()
+        public async Task CallerUnsupportsNonSubsetOfTargetSupportAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1653,7 +1653,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
         }
 
         [Fact]
-        public async Task MacOsSuppressesOsxAndViseVersa()
+        public async Task MacOsSuppressesOsxAndViseVersaAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1725,7 +1725,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
         public static void SupportedOnMacOs() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(0).WithArguments("Target.SupportedOnOSX14()",
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "macOS/OSX", "14.0"),
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "macOS/OSX")),
@@ -1735,7 +1735,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
         }
 
         [Fact]
-        public async Task MacOsSuppressesOsxAndViseVersa_Unsupported()
+        public async Task MacOsSuppressesOsxAndViseVersa_UnsupportedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1793,12 +1793,12 @@ namespace ns
         public static void UnsupportedOnOSX14() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("Target.UnsupportedOnOSXAndLinux()", "'macOS/OSX'", "'macOS/OSX'"));
         }
 
         [Fact]
-        public async Task CallerUnsupportsSubsetOfTargetUsupportedFirstThenSupportsNotWarn()
+        public async Task CallerUnsupportsSubsetOfTargetUsupportedFirstThenSupportsNotWarnAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1832,7 +1832,7 @@ namespace CallerUnsupportsSubsetOfTarget
         }
 
         [Fact]
-        public async Task CallerUnsupportsNonSubsetOfTargetUnsupportedFirstSupportsWarns()
+        public async Task CallerUnsupportsNonSubsetOfTargetUnsupportedFirstSupportsWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1862,7 +1862,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
         }
 
         [Fact]
-        public async Task CallerSupportsSupersetOfTarget_AnotherScenario()
+        public async Task CallerSupportsSupersetOfTarget_AnotherScenarioAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1928,7 +1928,7 @@ namespace CallerSupportsSubsetOfTarget
         }
 
         [Fact]
-        public async Task CallerSupportsSupersetOfTarget()
+        public async Task CallerSupportsSupersetOfTargetAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1986,7 +1986,7 @@ namespace CallerSupportsSubsetOfTarget
         }
 
         [Fact]
-        public async Task AllowDenyListMixedApisTest()
+        public async Task AllowDenyListMixedApisTestAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2043,11 +2043,11 @@ namespace ns
         public static void SupportedOnWindowsLinuxUnsupportedBrowser() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task UnsupportedSamePlatformMustSuppressSupported()
+        public async Task UnsupportedSamePlatformMustSuppressSupportedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2074,7 +2074,7 @@ class Some
         }
 
         [Fact]
-        public async Task PlatformOverrides()
+        public async Task PlatformOverridesAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2128,7 +2128,7 @@ namespace PlatformCompatDemo.Bugs
         }
 
         [Fact]
-        public async Task ChildUnsupportedMustParentSupportedPlatformMustNotIgnored()
+        public async Task ChildUnsupportedMustParentSupportedPlatformMustNotIgnoredAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2159,7 +2159,7 @@ namespace PlatformCompatDemo
         }
 
         [Fact]
-        public async Task SupportedMustSuppressUnsupportedAssemblyAttribute()
+        public async Task SupportedMustSuppressUnsupportedAssemblyAttributeAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2189,7 +2189,7 @@ namespace PlatformCompatDemo
         }
 
         [Fact]
-        public async Task UsingUnsupportedApiWithinAllowListShouldWarn()
+        public async Task UsingUnsupportedApiWithinAllowListShouldWarnAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2213,7 +2213,7 @@ class SomeWindowsSpecific
         }
 
         [Fact]
-        public async Task UsingVersionedApiFromAllowListAssemblyNotIgnored()
+        public async Task UsingVersionedApiFromAllowListAssemblyNotIgnoredAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2239,7 +2239,7 @@ static class Some
         }
 
         [Fact]
-        public async Task ReintroducingHigherApiSupport_Warn()
+        public async Task ReintroducingHigherApiSupport_WarnAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2266,7 +2266,7 @@ static class Some
         }
 
         [Fact]
-        public async Task MethodOfOsDependentAssemblyCalledWithoutSuppressionWarns()
+        public async Task MethodOfOsDependentAssemblyCalledWithoutSuppressionWarnsAsync()
         {
             var source = @"
 using System.Threading;
@@ -2308,7 +2308,7 @@ namespace ns
 
         [Theory]
         [MemberData(nameof(SupportedOsAttributeTestData))]
-        public async Task MethodOfOsDependentClassSuppressedWithSupportedOsAttribute(string platform, string version, string suppressingPlatform, string suppressingVersion, bool warn)
+        public async Task MethodOfOsDependentClassSuppressedWithSupportedOsAttributeAsync(string platform, string version, string suppressingPlatform, string suppressingVersion, bool warn)
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2362,7 +2362,7 @@ public class OsDependentClass
 
         [Theory]
         [MemberData(nameof(UnsupportedAttributeTestData))]
-        public async Task MethodOfOsDependentClassSuppressedWithUnsupportedAttribute(string platform,
+        public async Task MethodOfOsDependentClassSuppressedWithUnsupportedAttributeAsync(string platform,
             string version, string suppressingPlatform, string suppressingVersion, bool warn)
         {
             var source = @"
@@ -2402,7 +2402,7 @@ public class OsDependentClass { }
         }
 
         [Fact]
-        public async Task UnsupportedNotWarnsForUnrelatedSupportedContext()
+        public async Task UnsupportedNotWarnsForUnrelatedSupportedContextAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -2442,7 +2442,7 @@ public class C
         }
 
         [Fact]
-        public async Task MultipleAttrbiutesOptionallySupportedListTest()
+        public async Task MultipleAttrbiutesOptionallySupportedListTestAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -2512,7 +2512,7 @@ public class C
         }
 
         [Fact]
-        public async Task MultipleAttrbiutesSupportedOnlyWindowsListTest()
+        public async Task MultipleAttrbiutesSupportedOnlyWindowsListTestAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -2571,7 +2571,7 @@ public class C
         }
 
         [Fact]
-        public async Task CallSiteSupportedUnupportedNoMsBuildOptions()
+        public async Task CallSiteSupportedUnupportedNoMsBuildOptionsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -2675,7 +2675,7 @@ namespace PlatformCompatDemo.SupportedUnupported
         }
 
         [Fact]
-        public async Task CallSiteSupportedUnupporteWithMsBuildOptions()
+        public async Task CallSiteSupportedUnupporteWithMsBuildOptionsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -2765,7 +2765,7 @@ namespace PlatformCompatDemo.SupportedUnupported
         }
 
         [Fact]
-        public async Task CallSiteCrossPlatform_CallsSupportedUnsupported_VersionedVersionlessAPIs()
+        public async Task CallSiteCrossPlatform_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -2801,7 +2801,7 @@ public class Test
         }
 
         [Fact]
-        public async Task CallSiteWindowsOnly_CallsSupportedUnsupported_VersionedVersionlessAPIs()
+        public async Task CallSiteWindowsOnly_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -2837,7 +2837,7 @@ public class Test
         }
 
         [Fact]
-        public async Task CallSiteWindows9Only_CallsSupportedUnsupported_VersionedVersionlessAPIs()
+        public async Task CallSiteWindows9Only_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -2874,7 +2874,7 @@ public class Test
         }
 
         [Fact]
-        public async Task CallSiteAllowList_CallsSupportedUnsupportedVersionedVersionlessAPIs()
+        public async Task CallSiteAllowList_CallsSupportedUnsupportedVersionedVersionlessAPIsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -2929,7 +2929,7 @@ public class Test
         }
 
         [Fact]
-        public async Task CallSiteUnsupportedWindows_CallsSupportedUnsupported_VersionedVersionlessAPIs()
+        public async Task CallSiteUnsupportedWindows_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -2961,7 +2961,7 @@ public class Test
         }
 
         [Fact]
-        public async Task CallSiteUnsupportedWindows9_CallsSupportedUnsupported_VersionedVersionlessAPIs()
+        public async Task CallSiteUnsupportedWindows9_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -3009,7 +3009,7 @@ public class Test
         }
 
         [Fact]
-        public async Task CallSiteUnsupportedWindowsSupportedFrom9_CallsSupportedUnsupported_VersionedVersionlessAPIs()
+        public async Task CallSiteUnsupportedWindowsSupportedFrom9_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -3049,7 +3049,7 @@ public class Test
         }
 
         [Fact]
-        public async Task CallSiteUnsupportsWindows9Supported11_CallsSupportedUnsupported_VersionedVersionlessAPIs()
+        public async Task CallSiteUnsupportsWindows9Supported11_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -3089,7 +3089,7 @@ public class Test
         }
 
         [Fact]
-        public async Task CallSiteUnsupportedWindowsSupportedFrom9To12_CallsSupportedUnsupported_VersionedVersionlessAPIs()
+        public async Task CallSiteUnsupportedWindowsSupportedFrom9To12_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
  using System.Runtime.Versioning;
@@ -3130,7 +3130,7 @@ public class Test
         }
 
         [Fact]
-        public async Task ChildParentDifferentSupportedAttributes()
+        public async Task ChildParentDifferentSupportedAttributesAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3196,7 +3196,7 @@ class TypeSupportedOnlyOnWindows
         }
 
         [Fact]
-        public async Task ChildParentDifferentUnsupportedAttributes()
+        public async Task ChildParentDifferentUnsupportedAttributesAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3274,7 +3274,7 @@ class TypeUnsupportedWin8
         }
 
         [Fact]
-        public async Task ChildParentMultipleSupportedCombinations()
+        public async Task ChildParentMultipleSupportedCombinationsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3382,7 +3382,7 @@ class TypeSupportedWindows8_14
         }
 
         [Fact]
-        public async Task ChildParentMultipleUnsupportedCombinations()
+        public async Task ChildParentMultipleUnsupportedCombinationsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3439,7 +3439,7 @@ class UnsupportedWindows8Supported9_14
         }
 
         [Fact]
-        public async Task ChildParentMultiplePlatformAttributesCombinations()
+        public async Task ChildParentMultiplePlatformAttributesCombinationsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3490,7 +3490,7 @@ class UnsupportedWindows8_9_12_Ios6_7_14
         }
 
         [Fact]
-        public async Task EmptyCallsiteReferencesLocalFunctionNotWarns()
+        public async Task EmptyCallsiteReferencesLocalFunctionNotWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3511,7 +3511,7 @@ public class Test
         }
 
         [Fact]
-        public async Task NarrowedCallsiteReferencesLocalFunctionNotWarns()
+        public async Task NarrowedCallsiteReferencesLocalFunctionNotWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3532,7 +3532,7 @@ public class Test
         }
 
         [Fact]
-        public async Task EmptyCallsiteReferencesApiWithinSameAssemblyAttributeNotWarn()
+        public async Task EmptyCallsiteReferencesApiWithinSameAssemblyAttributeNotWarnAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3555,7 +3555,7 @@ public class Test
         }
 
         [Fact]
-        public async Task EmptyCallsiteReferencesApiWithImmediateAttributeNotWarn()
+        public async Task EmptyCallsiteReferencesApiWithImmediateAttributeNotWarnAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3579,7 +3579,7 @@ public class Test
         }
 
         [Fact]
-        public async Task EmptyCallsiteReferencesPlatformSpecificLibrariesApisNotWarn()
+        public async Task EmptyCallsiteReferencesPlatformSpecificLibrariesApisNotWarnAsync()
         {
             var source = @"
 using System;
@@ -3599,7 +3599,7 @@ public class Test
         }
 
         [Fact]
-        public async Task Empty_NonCallsiteReferencesVersionedApiWithImmediateAttribute()
+        public async Task Empty_NonCallsiteReferencesVersionedApiWithImmediateAttributeAsync()
         {
             var source = @"
 using System;
@@ -3625,7 +3625,7 @@ public class Test
         }
 
         [Fact]
-        public async Task ChildCanNarrowUpperLevelSupportedPlatforms()
+        public async Task ChildCanNarrowUpperLevelSupportedPlatformsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3667,7 +3667,7 @@ public class Test
         }
 
         [Fact]
-        public async Task EmptyCallsiteReferencesSupportedUnsupportedApisNotWarns()
+        public async Task EmptyCallsiteReferencesSupportedUnsupportedApisNotWarnsAsync()
         {
             var source = @"
 using System;
@@ -3717,7 +3717,7 @@ class Test
 
         [Fact]
         [WorkItem(4920, "https://github.com/dotnet/roslyn-analyzers/issues/4920")]
-        public async Task TestTimelyTermination()
+        public async Task TestTimelyTerminationAsync()
         {
             var source = @"
 using System.Runtime.InteropServices;
@@ -3756,7 +3756,7 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue("""
         }
 
         [Fact, WorkItem(51652, "https://github.com/dotnet/roslyn/issues/51652")]
-        public async Task TestGuardedCheckInsideLoopWithTryCatch()
+        public async Task TestGuardedCheckInsideLoopWithTryCatchAsync()
         {
             var source = @"
 using System;
@@ -3787,7 +3787,7 @@ class TestType
 
 #if DEBUG
         [Fact]
-        public async Task IosSupportedOnMacCatalyst()
+        public async Task IosSupportedOnMacCatalystAsync()
         {
             var source = @"
 using System;
@@ -3853,11 +3853,11 @@ class TestType
     }
 }" + MockApisCsSource;
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task ExcludeMacCatalystSupportUnsupportFromIos()
+        public async Task ExcludeMacCatalystSupportUnsupportFromIosAsync()
         {
             var source = @"
 using System;
@@ -3931,11 +3931,11 @@ class AllPlatforms
     }
 }" + MockApisCsSource;
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task IosSupportedOnMacCatalystVersioned()
+        public async Task IosSupportedOnMacCatalystVersionedAsync()
         {
             var source = @"
 using System;
@@ -3971,11 +3971,11 @@ class TestType
     static void SupportsIOS() { }
 }" + MockApisCsSource;
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task IosUnsupportedOnMacCatalyst()
+        public async Task IosUnsupportedOnMacCatalystAsync()
         {
             var source = @"
 using System;
@@ -4010,11 +4010,11 @@ class TestType
     static void UnsupportsIos() { }
 }" + MockApisCsSource;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task IosUnsupportedOnMacCatalystVersioned()
+        public async Task IosUnsupportedOnMacCatalystVersionedAsync()
         {
             var source = @"
 using System;
@@ -4049,7 +4049,7 @@ class TestType
     [UnsupportedOSPlatform(""iOS12.0"")]
     static void UnsupportsIos() { }
 }" + MockApisCsSource;
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 #endif
 

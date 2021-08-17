@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class EquatableAnalyzerTests
     {
         [Fact]
-        public async Task NoDiagnosticForStructWithNoEqualsOverrideAndNoIEquatableImplementation()
+        public async Task NoDiagnosticForStructWithNoEqualsOverrideAndNoIEquatableImplementationAsync()
         {
             var code = @"
 struct S
@@ -26,7 +26,7 @@ struct S
         }
 
         [Fact]
-        public async Task NoDiagnosticForClassWithNoEqualsOverrideAndNoIEquatableImplementation()
+        public async Task NoDiagnosticForClassWithNoEqualsOverrideAndNoIEquatableImplementationAsync()
         {
             var code = @"
 class C
@@ -37,7 +37,7 @@ class C
         }
 
         [Fact]
-        public async Task DiagnosticForStructWithEqualsOverrideButNoIEquatableImplementation()
+        public async Task DiagnosticForStructWithEqualsOverrideButNoIEquatableImplementationAsync()
         {
             var code = @"
 struct S
@@ -53,7 +53,7 @@ struct S
         }
 
         [Fact]
-        public async Task NoDiagnosticForClassWithEqualsOverrideAndNoIEquatableImplementation()
+        public async Task NoDiagnosticForClassWithEqualsOverrideAndNoIEquatableImplementationAsync()
         {
             var code = @"
 class C
@@ -68,7 +68,7 @@ class C
         }
 
         [Fact]
-        public async Task DiagnosticForStructWithIEquatableImplementationButNoEqualsOverride()
+        public async Task DiagnosticForStructWithIEquatableImplementationButNoEqualsOverrideAsync()
         {
             var code = @"
 using System;
@@ -86,7 +86,7 @@ struct S : IEquatable<S>
         }
 
         [Fact]
-        public async Task DiagnosticForClassWithIEquatableImplementationButNoEqualsOverride()
+        public async Task DiagnosticForClassWithIEquatableImplementationButNoEqualsOverrideAsync()
         {
             var code = @"
 using System;
@@ -104,7 +104,7 @@ class C : IEquatable<C>
         }
 
         [Fact]
-        public async Task NoDiagnosticForClassWithIEquatableImplementationWithNoParameterListAndNoEqualsOverride()
+        public async Task NoDiagnosticForClassWithIEquatableImplementationWithNoParameterListAndNoEqualsOverrideAsync()
         {
             var code = @"
 using System;
@@ -121,7 +121,7 @@ class C : {|CS0535:IEquatable<C>|}
         }
 
         [Fact]
-        public async Task NoDiagnosticForClassWithIEquatableImplementationWithMalformedParameterListAndNoEqualsOverride()
+        public async Task NoDiagnosticForClassWithIEquatableImplementationWithMalformedParameterListAndNoEqualsOverrideAsync()
         {
             var code = @"
 using System;
@@ -138,7 +138,7 @@ class C : {|CS0535:IEquatable<C>|}
         }
 
         [Fact]
-        public async Task NoDiagnosticForClassWithIEquatableImplementationWithMalformedParameterListAndNoEqualsOverride2()
+        public async Task NoDiagnosticForClassWithIEquatableImplementationWithMalformedParameterListAndNoEqualsOverride2Async()
         {
             var code = @"
 using System;
@@ -155,7 +155,7 @@ class C : {|CS0535:IEquatable<C>|}
         }
 
         [Fact]
-        public async Task NoDiagnosticForClassWithIEquatableImplementationWithNoParametersAndNoEqualsOverride()
+        public async Task NoDiagnosticForClassWithIEquatableImplementationWithNoParametersAndNoEqualsOverrideAsync()
         {
             var code = @"
 using System;
@@ -172,7 +172,7 @@ class C : {|CS0535:IEquatable<C>|}
         }
 
         [Fact]
-        public async Task NoDiagnosticForClassWithIEquatableImplementationWithMalformedParameterDeclarationAndNoEqualsOverride()
+        public async Task NoDiagnosticForClassWithIEquatableImplementationWithMalformedParameterDeclarationAndNoEqualsOverrideAsync()
         {
             var code = @"
 using System;
@@ -189,7 +189,7 @@ class C : {|CS0535:IEquatable<C>|}
         }
 
         [Fact]
-        public async Task NoDiagnosticForClassWithIEquatableImplementationWithWrongReturnTypeAndNoEqualsOverride()
+        public async Task NoDiagnosticForClassWithIEquatableImplementationWithWrongReturnTypeAndNoEqualsOverrideAsync()
         {
             var code = @"
 using System;
@@ -206,7 +206,7 @@ class C : {|CS0738:IEquatable<C>|}
         }
 
         [Fact]
-        public async Task DiagnosticForClassWithIEquatableImplementationWithNoBodyAndNoEqualsOverride()
+        public async Task DiagnosticForClassWithIEquatableImplementationWithNoBodyAndNoEqualsOverrideAsync()
         {
             var code = @"
 using System;
@@ -221,7 +221,7 @@ class C : IEquatable<C>
         }
 
         [Fact]
-        public async Task NoDiagnosticForClassWithIEquatableImplementationWithNoReturnTypeAndNoEqualsOverride()
+        public async Task NoDiagnosticForClassWithIEquatableImplementationWithNoReturnTypeAndNoEqualsOverrideAsync()
         {
             var code = @"
 using System;
@@ -238,7 +238,7 @@ class C : {|CS0535:IEquatable<C>|}
         }
 
         [Fact]
-        public async Task NoDiagnosticForClassWithEqualsOverrideWithWrongSignatureAndNoIEquatableImplementation()
+        public async Task NoDiagnosticForClassWithEqualsOverrideWithWrongSignatureAndNoIEquatableImplementationAsync()
         {
             var code = @"
 using System;
@@ -255,7 +255,7 @@ class C
         }
 
         [Fact]
-        public async Task DiagnosticForClassWithExplicitIEquatableImplementationAndNoEqualsOverride()
+        public async Task DiagnosticForClassWithExplicitIEquatableImplementationAndNoEqualsOverrideAsync()
         {
             var code = @"
 using System;
@@ -273,7 +273,7 @@ class C : IEquatable<C>
         }
 
         [Fact]
-        public async Task DiagnosticForDerivedStructWithEqualsOverrideAndNoIEquatableImplementation()
+        public async Task DiagnosticForDerivedStructWithEqualsOverrideAndNoIEquatableImplementationAsync()
         {
             var code = @"
 using System;
@@ -301,7 +301,7 @@ struct C : {|CS0527:B|}
         }
 
         [Fact, WorkItem(1914, "https://github.com/dotnet/roslyn-analyzers/issues/1914")]
-        public async Task NoDiagnosticForParentClassWithIEquatableImplementation()
+        public async Task NoDiagnosticForParentClassWithIEquatableImplementationAsync()
         {
             var code = @"
 using System;
@@ -322,7 +322,7 @@ public struct S : IValueObject<S>
         }
 
         [Fact, WorkItem(2027, "https://github.com/dotnet/roslyn-analyzers/issues/2027")]
-        public async Task NoDiagnosticForDerivedTypesWithBaseTypeWithIEquatableImplementation_01()
+        public async Task NoDiagnosticForDerivedTypesWithBaseTypeWithIEquatableImplementation_01Async()
         {
             var code = @"
 using System;
@@ -342,7 +342,7 @@ public class B : A<B>
         }
 
         [Fact, WorkItem(2027, "https://github.com/dotnet/roslyn-analyzers/issues/2027")]
-        public async Task NoDiagnosticForDerivedTypesWithBaseTypeWithIEquatableImplementation_02()
+        public async Task NoDiagnosticForDerivedTypesWithBaseTypeWithIEquatableImplementation_02Async()
         {
             var code = @"
 using System;
@@ -371,7 +371,7 @@ public class D : C<D>
         }
 
         [Fact, WorkItem(2324, "https://github.com/dotnet/roslyn-analyzers/issues/2324")]
-        public async Task CA1066_CSharp_RefStruct_NoDiagnostic()
+        public async Task CA1066_CSharp_RefStruct_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {

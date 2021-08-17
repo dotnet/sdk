@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public partial class OverloadOperatorEqualsOnOverridingValueTypeEqualsTests
     {
         [Fact]
-        public async Task CA2231NoWarningCSharp()
+        public async Task CA2231NoWarningCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -43,7 +43,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA2231NoEqualsOperatorCSharp()
+        public async Task CA2231NoEqualsOperatorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CA2231NoEqualsOperatorButNotExternallyVisibleCSharp()
+        public async Task CA2231NoEqualsOperatorButNotExternallyVisibleCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -87,7 +87,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA2231NoEqualsOperatorCSharpOutofScope()
+        public async Task CA2231NoEqualsOperatorCSharpOutofScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -112,7 +112,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA2231CSharpInnerClassHasNoEqualsOperatorCSharp()
+        public async Task CA2231CSharpInnerClassHasNoEqualsOperatorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -138,7 +138,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA2231HasEqualsOperatorCSharp()
+        public async Task CA2231HasEqualsOperatorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -164,7 +164,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA2231_CSharp_RefStruct_NoDiagnostic()
+        public async Task CA2231_CSharp_RefStruct_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -182,7 +182,7 @@ public ref struct S
         }
 
         [Fact]
-        public async Task CA2231NoWarningBasic()
+        public async Task CA2231NoWarningBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -196,7 +196,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2231NoEqualsOperatorBasic()
+        public async Task CA2231NoEqualsOperatorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -211,7 +211,7 @@ End Structure
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CA2231NoEqualsOperatorButNotExternallyVisibleBasic()
+        public async Task CA2231NoEqualsOperatorButNotExternallyVisibleBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -233,7 +233,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2231NoEqualsOperatorBasicWithScope()
+        public async Task CA2231NoEqualsOperatorBasicWithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -253,7 +253,7 @@ End Structure
         }
 
         [Fact]
-        public async Task CA2231BasicInnerClassHasNoEqualsOperatorBasic()
+        public async Task CA2231BasicInnerClassHasNoEqualsOperatorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -275,7 +275,7 @@ End Structure
         }
 
         [Fact]
-        public async Task CA2231HasEqualsOperatorBasic()
+        public async Task CA2231HasEqualsOperatorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System

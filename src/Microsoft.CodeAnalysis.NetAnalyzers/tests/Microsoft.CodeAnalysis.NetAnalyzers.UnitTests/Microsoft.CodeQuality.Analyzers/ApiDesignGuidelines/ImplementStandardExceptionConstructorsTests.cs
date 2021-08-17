@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region CSharp Unit Tests
 
         [Fact]
-        public async Task CSharp_CA1032_NoDiagnostic_NotDerivingFromException()
+        public async Task CSharp_CA1032_NoDiagnostic_NotDerivingFromExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 //example of a class that doesn't derive from Exception type
@@ -29,7 +29,7 @@ public class NotDerivingFromException
         }
 
         [Fact]
-        public async Task CSharp_CA1032_NoDiagnostic_GoodException1()
+        public async Task CSharp_CA1032_NoDiagnostic_GoodException1Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -51,7 +51,7 @@ public class GoodException1 : Exception
         }
 
         [Fact]
-        public async Task CSharp_CA1032_NoDiagnostic_GoodException2()
+        public async Task CSharp_CA1032_NoDiagnostic_GoodException2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -76,7 +76,7 @@ public class GoodException2 : Exception
         }
 
         [Fact]
-        public async Task CSharp_CA1032_Diagnostic_MissingAllConstructors()
+        public async Task CSharp_CA1032_Diagnostic_MissingAllConstructorsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -90,7 +90,7 @@ public class BadException1 : Exception
         }
 
         [Fact]
-        public async Task CSharp_CA1032_Diagnostic_MissingTwoConstructors()
+        public async Task CSharp_CA1032_Diagnostic_MissingTwoConstructorsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -107,7 +107,7 @@ public class BadException2 : Exception
         }
 
         [Fact]
-        public async Task CSharp_CA1032_Diagnostic_MissingDefaultConstructor()
+        public async Task CSharp_CA1032_Diagnostic_MissingDefaultConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -126,7 +126,7 @@ public class BadException3 : Exception
         }
 
         [Fact]
-        public async Task CSharp_CA1032_Diagnostic_MissingConstructor2()
+        public async Task CSharp_CA1032_Diagnostic_MissingConstructor2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -145,7 +145,7 @@ public class BadException4 : Exception
         }
 
         [Fact]
-        public async Task CSharp_CA1032_Diagnostic_MissingConstructor3()
+        public async Task CSharp_CA1032_Diagnostic_MissingConstructor3Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -164,7 +164,7 @@ public class BadException5 : Exception
         }
 
         [Fact]
-        public async Task CSharp_CA1032_Diagnostic_SurplusButMissingConstructor3()
+        public async Task CSharp_CA1032_Diagnostic_SurplusButMissingConstructor3Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -190,7 +190,7 @@ public class BadException6 : Exception
         #region VB Unit Test
 
         [Fact]
-        public async Task Basic_CA1032_NoDiagnostic_NotDerivingFromException()
+        public async Task Basic_CA1032_NoDiagnostic_NotDerivingFromExceptionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 'example of a class that doesn't derive from Exception type
@@ -201,7 +201,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1032_NoDiagnostic_GoodException1()
+        public async Task Basic_CA1032_NoDiagnostic_GoodException1Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -219,7 +219,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1032_NoDiagnostic_GoodException2()
+        public async Task Basic_CA1032_NoDiagnostic_GoodException2Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -239,7 +239,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1032_Diagnostic_MissingAllConstructors()
+        public async Task Basic_CA1032_Diagnostic_MissingAllConstructorsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -252,7 +252,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1032_Diagnostic_MissingTwoConstructors()
+        public async Task Basic_CA1032_Diagnostic_MissingTwoConstructorsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -267,7 +267,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1032_Diagnostic_MissingDefaultConstructor()
+        public async Task Basic_CA1032_Diagnostic_MissingDefaultConstructorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -283,7 +283,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1032_Diagnostic_MissingConstructor2()
+        public async Task Basic_CA1032_Diagnostic_MissingConstructor2Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -299,7 +299,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1032_Diagnostic_MissingConstructor3()
+        public async Task Basic_CA1032_Diagnostic_MissingConstructor3Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -315,7 +315,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1032_Diagnostic_SurplusButMissingConstructor3()
+        public async Task Basic_CA1032_Diagnostic_SurplusButMissingConstructor3Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System

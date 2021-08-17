@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         private const int SufficientIterationCount = 100000;
 
         [Fact]
-        public async Task TestConstructorWithStringAndByteArrayParametersDiagnostic()
+        public async Task TestConstructorWithStringAndByteArrayParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -32,7 +32,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestAssignIterationCountDiagnostic()
+        public async Task TestAssignIterationCountDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -50,7 +50,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestAssignIterationsParameterMaybeChangedDiagnostic()
+        public async Task TestAssignIterationsParameterMaybeChangedDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -76,7 +76,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestAssignIterationCountPropertyMaybeChangedDiagnostic()
+        public async Task TestAssignIterationCountPropertyMaybeChangedDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -102,7 +102,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestPassRfc2898DeriveBytesAsParameterInterproceduralDiagnostic()
+        public async Task TestPassRfc2898DeriveBytesAsParameterInterproceduralDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -125,7 +125,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReturnRfc2898DeriveBytesInterproceduralDiagnostic()
+        public async Task TestReturnRfc2898DeriveBytesInterproceduralDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -150,7 +150,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstructorWithStringAndIntParametersDiagnostic()
+        public async Task TestConstructorWithStringAndIntParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -167,7 +167,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstructorWithStringAndByteArrayAndIntParametersDiagnostic()
+        public async Task TestConstructorWithStringAndByteArrayAndIntParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -184,7 +184,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstructorWithByteArrayAndByteArrayAndIntParametersLowIterationsDiagnostic()
+        public async Task TestConstructorWithByteArrayAndByteArrayAndIntParametersLowIterationsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -201,7 +201,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstructorWithStringAndIntAndIntParametersDiagnostic()
+        public async Task TestConstructorWithStringAndIntAndIntParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -218,7 +218,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstructorWithByteArrayAndByteArrayAndIntAndHashAlgorithmNameParametersDiagnostic()
+        public async Task TestConstructorWithByteArrayAndByteArrayAndIntAndHashAlgorithmNameParametersDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -248,7 +248,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstructorWithStringAndByteArrayAndIntAndHashAlgorithmNameParametersDiagnostic()
+        public async Task TestConstructorWithStringAndByteArrayAndIntAndHashAlgorithmNameParametersDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -278,7 +278,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstructorWithStringAndIntAndIntAndHashAlgorithmNameParametersDiagnostic()
+        public async Task TestConstructorWithStringAndIntAndIntAndHashAlgorithmNameParametersDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -308,7 +308,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestAssignIterationCountNoDiagnostic()
+        public async Task TestAssignIterationCountNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -325,7 +325,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestPassRfc2898DeriveBytesAsParameterInterproceduralNoDiagnostic()
+        public async Task TestPassRfc2898DeriveBytesAsParameterInterproceduralNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -347,7 +347,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReturnRfc2898DeriveBytesInterproceduralNoDiagnostic()
+        public async Task TestReturnRfc2898DeriveBytesInterproceduralNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -371,7 +371,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstructorWithByteArrayAndByteArrayAndIntParametersUnassignedIterationsNoDiagnostic()
+        public async Task TestConstructorWithByteArrayAndByteArrayAndIntParametersUnassignedIterationsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -387,7 +387,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstructorWithByteArrayAndByteArrayAndIntParametersHighIterationsNoDiagnostic()
+        public async Task TestConstructorWithByteArrayAndByteArrayAndIntParametersHighIterationsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -410,7 +410,7 @@ class TestClass
         [InlineData(@"dotnet_code_quality.CA5387.excluded_symbol_names = TestMet*
                       dotnet_code_quality.CA5388.excluded_symbol_names = TestMet*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var test = new VerifyCS.Test
             {

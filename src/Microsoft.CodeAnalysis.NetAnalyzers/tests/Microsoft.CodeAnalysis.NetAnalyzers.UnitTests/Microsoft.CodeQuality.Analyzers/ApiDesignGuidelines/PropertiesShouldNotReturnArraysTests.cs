@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class PropertiesShouldNotReturnArraysTests
     {
         [Fact]
-        public async Task TestCSharpPropertiesShouldNotReturnArraysWarning1()
+        public async Task TestCSharpPropertiesShouldNotReturnArraysWarning1Async()
         {
             //Verify return type is array, warning...
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -31,7 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task TestCSharpPropertiesShouldNotReturnArraysNoWarning1()
+        public async Task TestCSharpPropertiesShouldNotReturnArraysNoWarning1Async()
         {
             //Verify if property is override, then no warning...
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -51,7 +51,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task TestCSharpPropertiesShouldNotReturnArraysNoWarning2()
+        public async Task TestCSharpPropertiesShouldNotReturnArraysNoWarning2Async()
         {
             //No warning if property definition has no outside visibility
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -69,7 +69,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task TestCSharpPropertiesShouldNotReturnArraysNoWarning3()
+        public async Task TestCSharpPropertiesShouldNotReturnArraysNoWarning3Async()
         {
             //Attributes can contain properties that return arrays
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -84,7 +84,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task TestBasicPropertiesShouldNotReturnArraysWarning1()
+        public async Task TestBasicPropertiesShouldNotReturnArraysWarning1Async()
         {
             //Display warning for property return type is Array
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -99,7 +99,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task TestBasicPropertiesShouldNotReturnArraysNoWarning1()
+        public async Task TestBasicPropertiesShouldNotReturnArraysNoWarning1Async()
         {
             //No warning if property definition is override
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -122,7 +122,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task TestBasicPropertiesShouldNotReturnArraysWarning2()
+        public async Task TestBasicPropertiesShouldNotReturnArraysWarning2Async()
         {
             //No warning if property has no outside visibility
             await VerifyVB.VerifyAnalyzerAsync(@"

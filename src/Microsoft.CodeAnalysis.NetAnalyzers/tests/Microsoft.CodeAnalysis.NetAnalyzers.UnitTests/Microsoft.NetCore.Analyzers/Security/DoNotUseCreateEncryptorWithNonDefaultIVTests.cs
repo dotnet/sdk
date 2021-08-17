@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotUseCreateEncryptorWithNonDefaultIVTests
     {
         [Fact]
-        public async Task Test_CreateEncryptorWithoutParameter_NonDefaultIV_Diagnostic()
+        public async Task Test_CreateEncryptorWithoutParameter_NonDefaultIV_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -46,7 +46,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_CreateEncryptorWithoutParameter_NonDefaultIV_DefinitelyNotNull_Diagnostic()
+        public async Task Test_CreateEncryptorWithoutParameter_NonDefaultIV_DefinitelyNotNull_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -79,7 +79,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_CreateEncryptorWithoutParameter_MaybeNonDefaultIV_MaybeDiagnostic()
+        public async Task Test_CreateEncryptorWithoutParameter_MaybeNonDefaultIV_MaybeDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -118,7 +118,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_CreateEncryptorWithByteArrayAndByteArrayParameters_DefinitelyDiagnostic()
+        public async Task Test_CreateEncryptorWithByteArrayAndByteArrayParameters_DefinitelyDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -147,7 +147,7 @@ class TestClass
             }.RunAsync();
         }
         [Fact]
-        public async Task Test_CreateEncryptorWithoutParameter_DefaultIV_NoDiagnostic()
+        public async Task Test_CreateEncryptorWithoutParameter_DefaultIV_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {

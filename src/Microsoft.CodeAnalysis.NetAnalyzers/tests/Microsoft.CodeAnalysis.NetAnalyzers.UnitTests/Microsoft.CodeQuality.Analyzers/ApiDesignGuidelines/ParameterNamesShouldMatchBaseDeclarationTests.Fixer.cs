@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class ParameterNamesShouldMatchBaseDeclarationFixerTests
     {
         [Fact]
-        public async Task VerifyOverrideWithWrongParameterNames()
+        public async Task VerifyOverrideWithWrongParameterNamesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                         @"public abstract class BaseClass
@@ -123,7 +123,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyInterfaceImplementationWithWrongParameterNames()
+        public async Task VerifyInterfaceImplementationWithWrongParameterNamesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                         @"public interface IBase
@@ -231,7 +231,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task VerifyExplicitInterfaceImplementationWithWrongParameterNames_NoDiagnostic()
+        public async Task VerifyExplicitInterfaceImplementationWithWrongParameterNames_NoDiagnosticAsync()
         {
             var source = @"public interface IBase
                               {
@@ -268,7 +268,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyInterfaceImplementationWithDifferentMethodName()
+        public async Task VerifyInterfaceImplementationWithDifferentMethodNameAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
                         @"Public Interface IBase
@@ -316,7 +316,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyOverrideWithInheritanceChain()
+        public async Task VerifyOverrideWithInheritanceChainAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                         @"public abstract class BaseClass
@@ -378,7 +378,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyBaseClassNameHasPriority()
+        public async Task VerifyBaseClassNameHasPriorityAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                         @"public abstract class BaseClass
@@ -444,7 +444,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyMultipleClashingInterfacesWithPartialMatch()
+        public async Task VerifyMultipleClashingInterfacesWithPartialMatchAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"public interface ITest1
                               {

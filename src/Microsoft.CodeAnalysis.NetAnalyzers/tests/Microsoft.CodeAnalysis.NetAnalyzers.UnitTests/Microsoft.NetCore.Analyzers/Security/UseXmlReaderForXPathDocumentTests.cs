@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class UseXmlReaderForXPathDocumentTests
     {
         [Fact]
-        public async Task TestStreamParameterDiagnostic()
+        public async Task TestStreamParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -30,7 +30,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestStringParameterDiagnostic()
+        public async Task TestStringParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -47,7 +47,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestStringAndXmlSpaceParametersDiagnostic()
+        public async Task TestStringAndXmlSpaceParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -65,7 +65,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestTextReaderParameterDiagnostic()
+        public async Task TestTextReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -83,7 +83,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestXmlReaderParameterNoDiagnostic()
+        public async Task TestXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -100,7 +100,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestXmlReaderAndXmlSpaceParametersNoDiagnostic()
+        public async Task TestXmlReaderAndXmlSpaceParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

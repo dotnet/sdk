@@ -21,7 +21,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         ////    => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlReaderCreateWrongOverload).WithLocation(line, column);
 
         [Fact]
-        public async Task UseXmlReaderCreateWrongOverloadShouldNotGenerateDiagnostic()
+        public async Task UseXmlReaderCreateWrongOverloadShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -55,7 +55,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInGetShouldNotGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInGetShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -93,7 +93,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInSetShouldNotGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInSetShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -137,7 +137,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInTryShouldNotGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInTryShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -179,7 +179,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInCatchShouldNotGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInCatchShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -219,7 +219,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInFinallyShouldNotGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInFinallyShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -260,7 +260,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInAsyncAwaitShouldNotGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInAsyncAwaitShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -304,7 +304,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInDelegateShouldNotGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInDelegateShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -335,7 +335,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateTextReaderOnlyOverloadShouldNotGenerateDiagnostic()
+        public async Task UseXmlReaderCreateTextReaderOnlyOverloadShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -357,7 +357,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateStreamOnlyOverloadShouldNotGenerateDiagnostic()
+        public async Task UseXmlReaderCreateStreamOnlyOverloadShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,

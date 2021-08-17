@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 build_property._SupportedPlatformList=CustomPlatform";
 
         [Fact]
-        public async Task ValidPlatformStringUsedNotWarn()
+        public async Task ValidPlatformStringUsedNotWarnAsync()
         {
             var csSource = @"
 using System;
@@ -54,11 +54,11 @@ public class Test
     [UnsupportedOSPlatform(""windows7.0"")]
     public static void SupportedWindows() { }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCsAsync(csSource);
         }
 
         [Fact]
-        public async Task ValidPlatformStringUsedNotWarnVB()
+        public async Task ValidPlatformStringUsedNotWarnVBAsync()
         {
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -100,11 +100,11 @@ Public Class Test
     Public Shared Sub SupportedWindows()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerAsyncVbAsync(vbSource);
         }
 
         [Fact]
-        public async Task InvalidPlatformNameOrVersionWarns()
+        public async Task InvalidPlatformNameOrVersionWarnsAsync()
         {
             var csSource = @"
 using System.Runtime.Versioning;
@@ -126,7 +126,7 @@ public class Test
     [{|#4:UnsupportedOSPlatform(""browser1.0."")|}] // Version '1.0.' is not valid for platform 'browser'. Do not use versions for this platform.
     public static void InvalidVersion3() { }
 }";
-            await VerifyAnalyzerAsyncCs(csSource,
+            await VerifyAnalyzerCsAsync(csSource,
                 VerifyCS.Diagnostic(UseValidPlatformString.UnknownPlatform).WithLocation(0).WithArguments("window"),
                 VerifyCS.Diagnostic(UseValidPlatformString.UnknownPlatform).WithLocation(1).WithArguments("watch"),
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(2).WithArguments("7", "windows", "-4"),
@@ -135,7 +135,7 @@ public class Test
         }
 
         [Fact]
-        public async Task InvalidPlatformNameOrVersionWarnsVB()
+        public async Task InvalidPlatformNameOrVersionWarnsVBAsync()
         {
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -161,11 +161,11 @@ Public Class Test
     Public Shared Sub InvalidVersion3()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerAsyncVbAsync(vbSource);
         }
 
         [Fact]
-        public async Task InvalidPlatformNameOrVersionDifferentSymbolsWarns()
+        public async Task InvalidPlatformNameOrVersionDifferentSymbolsWarnsAsync()
         {
             var csSource = @"
 using System;
@@ -190,11 +190,11 @@ namespace ns
         private static int s_field = 0;
     }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCsAsync(csSource);
         }
 
         [Fact]
-        public async Task NotWarnForCustomPlatformAddedToMsBuild()
+        public async Task NotWarnForCustomPlatformAddedToMsBuildAsync()
         {
             var csSource = @"
 using System.Runtime.Versioning;
@@ -216,11 +216,11 @@ public class Test
     [[|UnsupportedOSPlatform(""custom1.0"")|]] // The platform 'custom' is not a known platform name
     public void InvlaidPlatform() { }
 }";
-            await VerifyAnalyzerAsyncCs(csSource, s_msBuildPlatforms);
+            await VerifyAnalyzerCsAsync(csSource, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task NotWarnForCustomPlatformAddedToMsBuildVB()
+        public async Task NotWarnForCustomPlatformAddedToMsBuildVBAsync()
         {
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -246,11 +246,11 @@ Public Class Test
     Public Sub InvlaidPlatform()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource, s_msBuildPlatforms);
+            await VerifyAnalyzerAsyncVbAsync(vbSource, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task IsOsPlatformWithInvalidPlatformWarns()
+        public async Task IsOsPlatformWithInvalidPlatformWarnsAsync()
         {
             var csSource = @"
 using System;
@@ -288,11 +288,11 @@ public class Test
 
     public void PlatformSpecificAPI() { }
 }";
-            await VerifyAnalyzerAsyncCs(csSource);
+            await VerifyAnalyzerCsAsync(csSource);
         }
 
         [Fact]
-        public async Task IsOsPlatformWithInvalidPlatformWarnsVB()
+        public async Task IsOsPlatformWithInvalidPlatformWarnsVBAsync()
         {
             var vbSource = @"
 Imports System
@@ -311,11 +311,11 @@ Public Class Test
     Public Sub PlatformSpecificAPI()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerAsyncVbAsync(vbSource);
         }
 
         [Fact]
-        public async Task MoreInvalidPlatformStringsWarns()
+        public async Task MoreInvalidPlatformStringsWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -337,11 +337,11 @@ public class Test
     [[|UnsupportedOSPlatform("""")|]]
     public void UnsupportedWithEmptyString() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCsAsync(source);
         }
 
         [Fact]
-        public async Task InvalidVersionPartInPlatformStringsWarns()
+        public async Task InvalidVersionPartInPlatformStringsWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -369,7 +369,7 @@ public class Test
     [{|#4:SupportedOSPlatform(""Linux4.1"")|}] // Version '4.1' is not valid for platform 'Linux'. Do not use versions for this platform.
     public void SupportedLinux_41() { }
 }";
-            await VerifyAnalyzerAsyncCs(source,
+            await VerifyAnalyzerCsAsync(source,
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(0).WithArguments("4.8.1.2.3", "Android", "-4"),
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(1).WithArguments("14.1.2.3", "Ios", "-3"),
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(2).WithArguments("1.2.3.4.5", "macos", "-3"),
@@ -378,7 +378,7 @@ public class Test
         }
 
         [Fact]
-        public async Task PlatformOSXIsAliasForMacOS()
+        public async Task PlatformOSXIsAliasForMacOSAsync()
         {
             var csSource = @"
 using System.Runtime.Versioning;
@@ -397,13 +397,13 @@ public class Test
     [SupportedOSPlatform(""Osx1.2"")]
     public void SupportedOsx2PartsValid() { }
 }";
-            await VerifyAnalyzerAsyncCs(csSource,
+            await VerifyAnalyzerCsAsync(csSource,
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(0).WithArguments("1.2.3.4", "MacOS", "-3"),
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(1).WithArguments("1.2.3.4", "OSX", "-3"));
         }
 
         [Fact]
-        public async Task APIsWithMultiplePlatformSupportUnsupport()
+        public async Task APIsWithMultiplePlatformSupportUnsupportAsync()
         {
             var csSource = @"
 using System.Runtime.Versioning;
@@ -433,19 +433,19 @@ public class Test
     [[|SupportedOSPlatform(""MacOS1.2.3.4"")|]] // Version '1.2.3.4' is not valid for platform 'MacOS'. Use a version with 2-3 parts for this platform.
     public void SupportedOsx2PartValid() { }
 }";
-            await VerifyAnalyzerAsyncCs(csSource,
+            await VerifyAnalyzerCsAsync(csSource,
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(0).WithArguments("1.2.3.4", "MacOS", "-3"),
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(1).WithArguments("1.2.3.4", "OSX", "-3"));
         }
 
-        private static async Task VerifyAnalyzerAsyncCs(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
+        private static async Task VerifyAnalyzerCsAsync(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
         {
             var test = PopulateTestCs(sourceCode);
             test.ExpectedDiagnostics.AddRange(expectedDiagnostics);
             await test.RunAsync();
         }
 
-        private static async Task VerifyAnalyzerAsyncCs(string sourceCode, string editorconfigText)
+        private static async Task VerifyAnalyzerCsAsync(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestCs(sourceCode);
             test.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", editorconfigText));
@@ -462,13 +462,13 @@ public class Test
             };
         }
 
-        private static async Task VerifyAnalyzerAsyncVb(string sourceCode)
+        private static async Task VerifyAnalyzerAsyncVbAsync(string sourceCode)
         {
             var task = PopulateTestVb(sourceCode);
             await task.RunAsync();
         }
 
-        private static async Task VerifyAnalyzerAsyncVb(string sourceCode, string editorconfigText)
+        private static async Task VerifyAnalyzerAsyncVbAsync(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestVb(sourceCode);
             test.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", editorconfigText));

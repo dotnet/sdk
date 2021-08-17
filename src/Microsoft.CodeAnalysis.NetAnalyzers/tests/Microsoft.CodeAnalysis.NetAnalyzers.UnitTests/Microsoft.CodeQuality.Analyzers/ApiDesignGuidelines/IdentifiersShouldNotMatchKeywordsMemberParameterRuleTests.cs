@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class IdentifiersShouldNotMatchKeywordsMemberParameterRuleTests
     {
         [Fact]
-        public async Task CSharpDiagnosticForKeywordNamedParameterOfPublicVirtualMethodInPublicClass()
+        public async Task CSharpDiagnosticForKeywordNamedParameterOfPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -31,7 +31,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicDiagnosticForKeywordNamedParameterOfPublicVirtualMethodInPublicClass()
+        public async Task BasicDiagnosticForKeywordNamedParameterOfPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -42,7 +42,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForEachKeywordNamedParameterOfPublicVirtualMethodInPublicClass()
+        public async Task CSharpDiagnosticForEachKeywordNamedParameterOfPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -54,7 +54,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicDiagnosticForEachKeywordNamedParameterOfPublicVirtualMethodInPublicClass()
+        public async Task BasicDiagnosticForEachKeywordNamedParameterOfPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -66,7 +66,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForCaseSensitiveKeywordNamedParameterOfPublicVirtualMethodInPublicClassWithDifferentCasing()
+        public async Task CSharpNoDiagnosticForCaseSensitiveKeywordNamedParameterOfPublicVirtualMethodInPublicClassWithDifferentCasingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -76,7 +76,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForCaseSensitiveKeywordNamedParameterOfPublicVirtualMethodInPublicClassWithDifferentCasing()
+        public async Task BasicNoDiagnosticForCaseSensitiveKeywordNamedParameterOfPublicVirtualMethodInPublicClassWithDifferentCasingAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -85,7 +85,7 @@ Public Class C
 End Class");
         }
         [Fact]
-        public async Task CSharpDiagnosticForCaseInsensitiveKeywordNamedParameterOfPublicVirtualMethodInPublicClass()
+        public async Task CSharpDiagnosticForCaseInsensitiveKeywordNamedParameterOfPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -96,7 +96,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicDiagnosticForCaseInsensitiveKeywordNamedParameterOfPublicVirtualMethodInPublicClass()
+        public async Task BasicDiagnosticForCaseInsensitiveKeywordNamedParameterOfPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -107,7 +107,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForKeywordNamedParameterOfProtectedVirtualMethodInPublicClass()
+        public async Task CSharpDiagnosticForKeywordNamedParameterOfProtectedVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -118,7 +118,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicDiagnosticForKeywordNamedParameterOfProtectedVirtualMethodInPublicClass()
+        public async Task BasicDiagnosticForKeywordNamedParameterOfProtectedVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -129,7 +129,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForKeywordNamedParameterOfInternalVirtualMethodInPublicClass()
+        public async Task CSharpNoDiagnosticForKeywordNamedParameterOfInternalVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -139,7 +139,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForKeywordNamedParameterOfInternalVirtualMethodInPublicClass()
+        public async Task BasicNoDiagnosticForKeywordNamedParameterOfInternalVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -149,7 +149,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForParameterOfPublicNonVirtualMethodInPublicClass()
+        public async Task CSharpNoDiagnosticForParameterOfPublicNonVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -159,7 +159,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForKeywordNamedParameterOfPublicNonVirtualMethodInPublicClass()
+        public async Task BasicNoDiagnosticForKeywordNamedParameterOfPublicNonVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -169,7 +169,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForNonKeywordNamedParameterOfPublicVirtualMethodInPublicClass()
+        public async Task CSharpNoDiagnosticForNonKeywordNamedParameterOfPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -179,7 +179,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForNonKeywordNamedParameterOfPublicVirtualMethodInPublicClass()
+        public async Task BasicNoDiagnosticForNonKeywordNamedParameterOfPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -189,7 +189,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForKeywordNamedParameterOfPublicVirtualMethodInInternalClass()
+        public async Task CSharpNoDiagnosticForKeywordNamedParameterOfPublicVirtualMethodInInternalClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal class C
@@ -199,7 +199,7 @@ internal class C
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForKeywordNamedParameterOfPublicVirtualMethodInInternalClass()
+        public async Task BasicNoDiagnosticForKeywordNamedParameterOfPublicVirtualMethodInInternalClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Class C
@@ -209,7 +209,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForKeywordNamedParameterOfMethodInPublicInterface()
+        public async Task CSharpDiagnosticForKeywordNamedParameterOfMethodInPublicInterfaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface I
@@ -220,7 +220,7 @@ public interface I
         }
 
         [Fact]
-        public async Task BasicDiagnosticForKeywordNamedParameterOfMethodInPublicInterface()
+        public async Task BasicDiagnosticForKeywordNamedParameterOfMethodInPublicInterfaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface I
@@ -230,7 +230,7 @@ End Interface",
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForKeywordNamedParameterOfMethodInInternalInterface()
+        public async Task CSharpNoDiagnosticForKeywordNamedParameterOfMethodInInternalInterfaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface I
@@ -240,7 +240,7 @@ internal interface I
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForKeywordNamedParameterOfMethodInInternalInterface()
+        public async Task BasicNoDiagnosticForKeywordNamedParameterOfMethodInInternalInterfaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface I
@@ -249,7 +249,7 @@ End Interface");
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForKeywordNamedParameterOfOverrideOfPublicMethodInPublicClass()
+        public async Task CSharpNoDiagnosticForKeywordNamedParameterOfOverrideOfPublicMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -266,7 +266,7 @@ public class D : C
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForKeywordNamedParameterOfOverrideOfMethodInPublicClass()
+        public async Task BasicNoDiagnosticForKeywordNamedParameterOfOverrideOfMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -285,7 +285,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForKeywordNamedParameterOfNewMethodInPublicClass()
+        public async Task CSharpNoDiagnosticForKeywordNamedParameterOfNewMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -302,7 +302,7 @@ public class D : C
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForKeywordNamedParameterOfNewMethodInPublicClass()
+        public async Task BasicNoDiagnosticForKeywordNamedParameterOfNewMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -321,7 +321,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForKeywordNamedParameterOfVirtualNewMethodInPublicClass()
+        public async Task CSharpDiagnosticForKeywordNamedParameterOfVirtualNewMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -339,7 +339,7 @@ public class D : C
         }
 
         [Fact]
-        public async Task BasicDiagnosticForKeywordNamedParameterOfVirtualNewMethodInPublicClass()
+        public async Task BasicDiagnosticForKeywordNamedParameterOfVirtualNewMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -359,7 +359,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForKeywordNamedParameterOfVirtualPublicIndexerInPublicClass()
+        public async Task CSharpDiagnosticForKeywordNamedParameterOfVirtualPublicIndexerInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -375,7 +375,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicDiagnosticForKeywordNamedParameterOfVirtualPublicParameterizedPropertyInPublicClass()
+        public async Task BasicDiagnosticForKeywordNamedParameterOfVirtualPublicParameterizedPropertyInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -389,7 +389,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForKeywordNamedParameterOfProtectedVirtualMethodInProtectedTypeNestedInPublicClass()
+        public async Task CSharpDiagnosticForKeywordNamedParameterOfProtectedVirtualMethodInProtectedTypeNestedInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -403,7 +403,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicDiagnosticForKeywordNamedParameterOfProtectedVirtualMethodInProtectedTypeNestedInPublicClass()
+        public async Task BasicDiagnosticForKeywordNamedParameterOfProtectedVirtualMethodInProtectedTypeNestedInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -420,7 +420,7 @@ End Class",
         [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method, Property")]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method, Property")]
-        public async Task UserOptionDoesNotIncludeParameter_NoDiagnostic(string editorConfigText)
+        public async Task UserOptionDoesNotIncludeParameter_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -468,7 +468,7 @@ End Class",
         [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Parameter, Property")]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Parameter")]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Parameter, Property")]
-        public async Task UserOptionIncludesParameter_Diagnostic(string editorConfigText)
+        public async Task UserOptionIncludesParameter_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {

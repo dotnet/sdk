@@ -30,7 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 .WithArguments(typeName, interfaceName, genericInterfaceName);
 
         [Fact]
-        public async Task Test_WithCollectionBase()
+        public async Task Test_WithCollectionBaseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections;
@@ -49,7 +49,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task Test_WithCollectionBase_Internal()
+        public async Task Test_WithCollectionBase_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections;
@@ -66,7 +66,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_WithCollection()
+        public async Task Test_WithCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -108,7 +108,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task Test_WithCollection_Internal()
+        public async Task Test_WithCollection_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -148,7 +148,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_WithEnumerable()
+        public async Task Test_WithEnumerableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -177,7 +177,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_WithList()
+        public async Task Test_WithListAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -273,7 +273,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_WithGenericCollection()
+        public async Task Test_WithGenericCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -338,7 +338,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_WithGenericEnumerable()
+        public async Task Test_WithGenericEnumerableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -372,7 +372,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_WithGenericList()
+        public async Task Test_WithGenericListAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -467,7 +467,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_WithCollectionBaseAndGenerics()
+        public async Task Test_WithCollectionBaseAndGenericsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -563,7 +563,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_WithCollectionAndGenericCollection()
+        public async Task Test_WithCollectionAndGenericCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -649,7 +649,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_WithBaseAndDerivedClassFailureCase()
+        public async Task Test_WithBaseAndDerivedClassFailureCaseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -701,7 +701,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_InheritsCollectionBaseAndReadOnlyCollectionBase()
+        public async Task Test_InheritsCollectionBaseAndReadOnlyCollectionBaseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections;
@@ -729,7 +729,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_InheritsCollectionBaseAndReadOnlyCollectionBase_DoesFullyImplementGenerics()
+        public async Task Test_InheritsCollectionBaseAndReadOnlyCollectionBase_DoesFullyImplementGenericsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -838,7 +838,7 @@ End Class
         }
 
         [Fact]
-        public async Task Test_InheritsCollectionBaseAndReadOnlyCollectionBaseAndGenericIEnumerable_NoDiagnostic()
+        public async Task Test_InheritsCollectionBaseAndReadOnlyCollectionBaseAndGenericIEnumerable_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections;
@@ -898,7 +898,7 @@ End Class
         [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.IDictionary")]
         // Cannot use <T>
         [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.Generic.IDictionary<TKey, TValue>")]
-        public async Task AdditionalGenericInterfaces_InvalidSyntax_NoDiagnostic(string editorConfigText)
+        public async Task AdditionalGenericInterfaces_InvalidSyntax_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -1057,7 +1057,7 @@ End Class"
         [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->T:System.Collections.Generic.IDictionary`2")]
         [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->System.Collections.Generic.IDictionary`2")]
         [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`2")]
-        public async Task AdditionalGenericInterfaces_Diagnostic(string editorConfigText)
+        public async Task AdditionalGenericInterfaces_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -1209,7 +1209,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UserMappingWinsOverHardcoded_NoDiagnostic()
+        public async Task UserMappingWinsOverHardcoded_NoDiagnosticAsync()
         {
             const string editorConfigText = "dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IList->T:System.Collections.Generic.IDictionary`2";
 

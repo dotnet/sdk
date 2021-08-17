@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotUseInsecureRandomnessTests
     {
         [Fact]
-        public async Task Test_UsingMethodNext_OfRandom_Diagnostic()
+        public async Task Test_UsingMethodNext_OfRandom_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -42,7 +42,7 @@ End Class",
         }
 
         [Fact]
-        public async Task Test_UsingMethodNextDouble_OfRandom_Diagnostic()
+        public async Task Test_UsingMethodNextDouble_OfRandom_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -69,7 +69,7 @@ End Class",
         }
 
         [Fact]
-        public async Task Test_UsingMethodGetHashCode_OfObject_NoDiagnostic()
+        public async Task Test_UsingMethodGetHashCode_OfObject_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -94,7 +94,7 @@ End Class");
         }
 
         [Fact]
-        public async Task Test_UsingConstructor_OfRandom_NoDiagnostic()
+        public async Task Test_UsingConstructor_OfRandom_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class ExceptionsShouldBePublicFixerTests
     {
         [Fact]
-        public async Task TestCSharpNonPublicException()
+        public async Task TestCSharpNonPublicExceptionAsync()
         {
             var original = @"
 using System;
@@ -34,7 +34,7 @@ public class InternalException : Exception
         }
 
         [Fact]
-        public async Task TestCSharpNonPublicException2()
+        public async Task TestCSharpNonPublicException2Async()
         {
             var original = @"
 using System;
@@ -60,7 +60,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task TestVBasicNonPublicException()
+        public async Task TestVBasicNonPublicExceptionAsync()
         {
             var original = @"
 Imports System
@@ -80,7 +80,7 @@ End Class";
         }
 
         [Fact]
-        public async Task TestVBasicNonPublicException2()
+        public async Task TestVBasicNonPublicException2Async()
         {
             var original = @"
 Imports System

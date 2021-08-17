@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public partial class ImplementSerializationConstructorsFixerTests
     {
         [Fact]
-        public async Task CA2229NoConstructorFix()
+        public async Task CA2229NoConstructorFixAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -76,7 +76,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA2229HasConstructorWrongAccessibilityFix()
+        public async Task CA2229HasConstructorWrongAccessibilityFixAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -138,7 +138,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA2229HasConstructorWrongAccessibility2Fix()
+        public async Task CA2229HasConstructorWrongAccessibility2FixAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;

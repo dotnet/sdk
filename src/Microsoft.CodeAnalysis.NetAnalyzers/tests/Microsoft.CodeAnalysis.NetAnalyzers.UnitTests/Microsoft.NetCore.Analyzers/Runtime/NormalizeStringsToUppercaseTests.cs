@@ -17,7 +17,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region No Diagnostic Tests
 
         [Fact]
-        public async Task NoDiagnostic_ToUpperCases()
+        public async Task NoDiagnostic_ToUpperCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -83,7 +83,7 @@ End Class
         }
 
         [Fact]
-        public async Task NoDiagnostic_ToLowerCases()
+        public async Task NoDiagnostic_ToLowerCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -149,7 +149,7 @@ End Class
         }
 
         [Fact]
-        public async Task NoDiagnostic_ToUpperInvariantCases()
+        public async Task NoDiagnostic_ToUpperInvariantCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -181,7 +181,7 @@ End Class
         #region Diagnostic Tests
 
         [Fact]
-        public async Task Diagnostic_ToLowerCases()
+        public async Task Diagnostic_ToLowerCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -211,7 +211,7 @@ End Class
         }
 
         [Fact]
-        public async Task Diagnostic_ToLowerInvariantCases()
+        public async Task Diagnostic_ToLowerInvariantCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

@@ -38,7 +38,7 @@ namespace System.Web.Mvc
         }
 
         [Fact]
-        public async Task TestLiteralAtActionLevelDiagnostic()
+        public async Task TestLiteralAtActionLevelDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web.Mvc;
@@ -54,7 +54,7 @@ class TestControllerClass
         }
 
         [Fact]
-        public async Task TestConstAtActionLevelDiagnostic()
+        public async Task TestConstAtActionLevelDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web.Mvc;
@@ -72,7 +72,7 @@ class TestControllerClass
         }
 
         [Fact]
-        public async Task TestLiteralAtControllerLevelDiagnostic()
+        public async Task TestLiteralAtControllerLevelDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web.Mvc;
@@ -88,7 +88,7 @@ class TestControllerClass
         }
 
         [Fact]
-        public async Task TestSetBothControllerLevelAndActionLevelDiagnostic()
+        public async Task TestSetBothControllerLevelAndActionLevelDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web.Mvc;
@@ -105,7 +105,7 @@ class TestControllerClass
         }
 
         [Fact]
-        public async Task TestLiteralAtActionLevelNoDiagnostic()
+        public async Task TestLiteralAtActionLevelNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web.Mvc;
@@ -120,7 +120,7 @@ class TestControllerClass
         }
 
         [Fact]
-        public async Task TestConstAtActionLevelNoDiagnostic()
+        public async Task TestConstAtActionLevelNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web.Mvc;
@@ -137,7 +137,7 @@ class TestControllerClass
         }
 
         [Fact]
-        public async Task TestLiteralAtControllerLevelNoDiagnostic()
+        public async Task TestLiteralAtControllerLevelNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web.Mvc;
@@ -152,7 +152,7 @@ class TestControllerClass
         }
 
         [Fact]
-        public async Task TestSetBothControllerLevelAndActionLevelNoDiagnostic()
+        public async Task TestSetBothControllerLevelAndActionLevelNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web.Mvc;
@@ -168,7 +168,7 @@ class TestControllerClass
         }
 
         [Fact]
-        public async Task TestWithoutValidateInputAttributeNoDiagnostic()
+        public async Task TestWithoutValidateInputAttributeNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web.Mvc;

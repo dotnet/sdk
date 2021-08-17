@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DataSetDataTableInWebSerializableObjectGraphTests
     {
         [Fact]
-        public async Task WebServiceDirectlyReferences()
+        public async Task WebServiceDirectlyReferencesAsync()
         {
             await VerifyWebServicesCSharpAsync(@"
 using System;
@@ -35,7 +35,7 @@ public class MyService : WebService
         }
 
         [Fact]
-        public async Task WebServiceIndirectlyReferences()
+        public async Task WebServiceIndirectlyReferencesAsync()
         {
             await VerifyWebServicesCSharpAsync(@"
 using System;
@@ -61,7 +61,7 @@ public class MyType
         }
 
         [Fact]
-        public async Task OperationContract()
+        public async Task OperationContractAsync()
         {
             await VerifyServiceModelCSharpAsync(@"
 using System;

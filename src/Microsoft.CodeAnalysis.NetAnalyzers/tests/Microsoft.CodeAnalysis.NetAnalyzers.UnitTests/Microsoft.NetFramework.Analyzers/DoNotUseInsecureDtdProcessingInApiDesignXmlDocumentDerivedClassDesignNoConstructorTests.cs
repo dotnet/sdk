@@ -26,7 +26,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 #pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
-        public async Task NonXmlDocumentDerivedTypeWithNoConstructorShouldNotGenerateDiagnostic()
+        public async Task NonXmlDocumentDerivedTypeWithNoConstructorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -59,7 +59,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task NonXmlDocumentDerivedTypeWithConstructorShouldNotGenerateDiagnostic()
+        public async Task NonXmlDocumentDerivedTypeWithConstructorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -97,7 +97,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlDocumentDerivedTypeWithNoConstructorShouldGenerateDiagnostic()
+        public async Task XmlDocumentDerivedTypeWithNoConstructorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;

@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class SealMethodsThatSatisfyPrivateInterfacesFixerTests
     {
         [Fact]
-        public async Task TestCSharp_OverriddenMethodChangedToSealed()
+        public async Task TestCSharp_OverriddenMethodChangedToSealedAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"internal interface IFace
@@ -53,7 +53,7 @@ public class C : B, IFace
         }
 
         [Fact]
-        public async Task TestCSharp_VirtualMethodChangedToNotVirtual()
+        public async Task TestCSharp_VirtualMethodChangedToNotVirtualAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"internal interface IFace
@@ -82,7 +82,7 @@ public class C : IFace
         }
 
         [Fact]
-        public async Task TestCSharp_AbstractMethodChangedToNotAbstract()
+        public async Task TestCSharp_AbstractMethodChangedToNotAbstractAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"internal interface IFace
@@ -109,7 +109,7 @@ public abstract class C : IFace
         }
 
         [Fact]
-        public async Task TestCSharp_ContainingTypeChangedToSealed()
+        public async Task TestCSharp_ContainingTypeChangedToSealedAsync()
         {
             await new VerifyCS.Test
             {
@@ -163,7 +163,7 @@ public sealed class C : B, IFace
         }
 
         [Fact]
-        public async Task TestCSharp_ContainingTypeChangedToInternal()
+        public async Task TestCSharp_ContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
             {
@@ -217,7 +217,7 @@ internal class C : B, IFace
         }
 
         [Fact]
-        public async Task TestCSharp_AbstractContainingTypeChangedToInternal()
+        public async Task TestCSharp_AbstractContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
             {
@@ -271,7 +271,7 @@ internal abstract class C : B, IFace
         }
 
         [Fact]
-        public async Task TestCSharp_ImplicitOverride_ContainingTypeChangedToSealed()
+        public async Task TestCSharp_ImplicitOverride_ContainingTypeChangedToSealedAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"internal interface IFace
@@ -308,7 +308,7 @@ public sealed class C : B, IFace
         }
 
         [Fact]
-        public async Task TestCSharp_ImplicitOverride_ContainingTypeChangedToInternal()
+        public async Task TestCSharp_ImplicitOverride_ContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
             {
@@ -360,7 +360,7 @@ internal class C : B, IFace
         }
 
         [Fact]
-        public async Task TestCSharp_ImplicitOverride_AbstractContainingTypeChangedToInternal()
+        public async Task TestCSharp_ImplicitOverride_AbstractContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
             {
@@ -408,7 +408,7 @@ internal abstract class C : B, IFace
         }
 
         [Fact]
-        public async Task TestBasic_OverriddenMethodChangedToSealed()
+        public async Task TestBasic_OverriddenMethodChangedToSealedAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
 @"Friend Interface IFace
@@ -445,7 +445,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestBasic_VirtualMethodChangedToNotVirtual()
+        public async Task TestBasic_VirtualMethodChangedToNotVirtualAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
 @"Friend Interface IFace
@@ -472,7 +472,7 @@ End Class");
         }
 
         [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2285")]
-        public async Task TestBasic_AbstractMethodChangedToNotAbstract()
+        public async Task TestBasic_AbstractMethodChangedToNotAbstractAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
 @"Friend Interface IFace

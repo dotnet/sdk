@@ -19,7 +19,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region CSharp Unit Tests
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePattern()
+        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePatternAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -45,7 +45,7 @@ public class C : IDisposable
         }
 
         [Fact, WorkItem(1435, "https://github.com/dotnet/roslyn-analyzers/issues/1435")]
-        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePattern_WithAttributes()
+        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePattern_WithAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -79,7 +79,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_NotImplementingDisposable()
+        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_NotImplementingDisposableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -109,7 +109,7 @@ public class C
         #region CSharp IDisposableReimplementation Unit Tests
 
         [Fact]
-        public async Task CSharp_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposable()
+        public async Task CSharp_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -152,7 +152,7 @@ public class C : B, IDisposable
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ReimplementingIDisposable_Internal()
+        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ReimplementingIDisposable_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -185,7 +185,7 @@ internal class C : B, IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposableWithDeepInheritance()
+        public async Task CSharp_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposableWithDeepInheritanceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -232,7 +232,7 @@ public class C : B, IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInterfaceInheritedFromIDisposable()
+        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInterfaceInheritedFromIDisposableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -276,7 +276,7 @@ public class C : B, ITest
         }
 
         [Fact]
-        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ReImplementingIDisposableWithNoDisposeMethod()
+        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ReImplementingIDisposableWithNoDisposeMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -307,7 +307,7 @@ public class C : B, ITest, IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInheritedInterfaceWithNoDisposeReimplementation()
+        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInheritedInterfaceWithNoDisposeReimplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -340,7 +340,7 @@ public class C : B, ITest
         #region CSharp DisposeSignature Unit Tests
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeSignature_Diagnostic_DisposeNotPublic()
+        public async Task CSharp_CA1063_DisposeSignature_Diagnostic_DisposeNotPublicAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -368,7 +368,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeSignature_Diagnostic_DisposeIsVirtual()
+        public async Task CSharp_CA1063_DisposeSignature_Diagnostic_DisposeIsVirtualAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -395,7 +395,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeSignature_Diagnostic_DisposeIsOverriden()
+        public async Task CSharp_CA1063_DisposeSignature_Diagnostic_DisposeIsOverridenAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -429,7 +429,7 @@ public class C : B, IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_DisposeIsOverridenAndSealed()
+        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_DisposeIsOverridenAndSealedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -466,7 +466,7 @@ public class C : B, IDisposable
         #region CSharp DisposeOverride Unit Tests
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeOverride_Diagnostic_SimpleDisposeOverride()
+        public async Task CSharp_CA1063_DisposeOverride_Diagnostic_SimpleDisposeOverrideAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -503,7 +503,7 @@ public class C : B
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeOverride_Diagnostic_DoubleDisposeOverride()
+        public async Task CSharp_CA1063_DisposeOverride_Diagnostic_DoubleDisposeOverrideAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -554,7 +554,7 @@ public class C : B
         #region CSharp FinalizeOverride Unit Tests
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_OverridesDisposeBool()
+        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_OverridesDisposeBoolAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -588,7 +588,7 @@ public class C : B
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride()
+        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverrideAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -623,7 +623,7 @@ public class C : B
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride()
+        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverrideAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -667,7 +667,7 @@ public class C : B
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task CSharp_CA1063_FinalizeOverride_NoDiagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasNoFinalizer()
+        public async Task CSharp_CA1063_FinalizeOverride_NoDiagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasNoFinalizerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -701,7 +701,7 @@ public class C : B
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasFinalizer()
+        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasFinalizerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -742,7 +742,7 @@ public class C : B
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride_InvokesDisposeBool()
+        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride_InvokesDisposeBoolAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -798,7 +798,7 @@ public class C : B
         }
 
         [Fact]
-        public async Task CSharp_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotInBaseType()
+        public async Task CSharp_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotInBaseTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -824,7 +824,7 @@ public class C : B
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task CSharp_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotOverriden()
+        public async Task CSharp_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotOverridenAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -861,7 +861,7 @@ public class C : B
         #region CSharp ProvideDisposeBool Unit Tests
 
         [Fact]
-        public async Task CSharp_CA1063_ProvideDisposeBool_Diagnostic_MissingDisposeBool()
+        public async Task CSharp_CA1063_ProvideDisposeBool_Diagnostic_MissingDisposeBoolAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -883,7 +883,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_ProvideDisposeBool_NoDiagnostic_SealedClassAndMissingDisposeBool()
+        public async Task CSharp_CA1063_ProvideDisposeBool_NoDiagnostic_SealedClassAndMissingDisposeBoolAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -906,7 +906,7 @@ public sealed class C : IDisposable
         #region CSharp DisposeBoolSignature Unit Tests
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsPublic()
+        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsPublicAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -933,7 +933,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsProtectedInternal()
+        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsProtectedInternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -960,7 +960,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsNotVirtual()
+        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsNotVirtualAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -987,7 +987,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsSealedOverriden()
+        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsSealedOverridenAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1019,7 +1019,7 @@ public class C : B, IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsOverriden()
+        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsOverridenAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1050,7 +1050,7 @@ public class C : B, IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsAbstract()
+        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsAbstractAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1074,7 +1074,7 @@ public abstract class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPublicAndClassIsSealed()
+        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPublicAndClassIsSealedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1100,7 +1100,7 @@ public sealed class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPrivateAndClassIsSealed()
+        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPrivateAndClassIsSealedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1126,7 +1126,7 @@ public sealed class C : IDisposable
         }
 
         [Fact, WorkItem(1815, "https://github.com/dotnet/roslyn-analyzers/issues/1815")]
-        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsStatic()
+        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsStaticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1153,7 +1153,7 @@ public class Class1 : IDisposable
         #region CSharp DisposeImplementation Unit Tests
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_MissingCallDisposeBool()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_MissingCallDisposeBoolAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1179,7 +1179,7 @@ public class C : IDisposable
         }
 
         [Fact, WorkItem(1974, "https://github.com/dotnet/roslyn-analyzers/issues/1974")]
-        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_MissingCallSuppressFinalize_HasFinalizer()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_MissingCallSuppressFinalize_HasFinalizerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1205,7 +1205,7 @@ public class C : IDisposable
         }
 
         [Fact, WorkItem(1974, "https://github.com/dotnet/roslyn-analyzers/issues/1974")]
-        public async Task CSharp_CA1063_DisposeImplementation_NoDiagnostic_MissingCallSuppressFinalize_NoFinalizer()
+        public async Task CSharp_CA1063_DisposeImplementation_NoDiagnostic_MissingCallSuppressFinalize_NoFinalizerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1225,7 +1225,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_EmptyDisposeBody()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_EmptyDisposeBodyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1250,7 +1250,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_CallDisposeWithFalseArgument()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_CallDisposeWithFalseArgumentAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1277,7 +1277,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_ConditionalStatement()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_ConditionalStatementAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1309,7 +1309,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeImplementation_NoDiagnostic_ConditionalStatement_Internal()
+        public async Task CSharp_CA1063_DisposeImplementation_NoDiagnostic_ConditionalStatement_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1340,7 +1340,7 @@ internal class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_CallDisposeBoolTwice()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_CallDisposeBoolTwiceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1368,7 +1368,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_DisposeImplementation_NoDiagnostic_EmptyDisposeBodyInSealedClass()
+        public async Task CSharp_CA1063_DisposeImplementation_NoDiagnostic_EmptyDisposeBodyInSealedClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1391,7 +1391,7 @@ public sealed class C : IDisposable
         #region CSharp FinalizeImplementation Unit Tests
 
         [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
-        public async Task CSharp_CA1063_FinalizeImplementation_NoDiagnostic_ExpressionBodiedImpl()
+        public async Task CSharp_CA1063_FinalizeImplementation_NoDiagnostic_ExpressionBodiedImplAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1420,7 +1420,7 @@ public class SomeTestClass : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_MissingCallDisposeBool()
+        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_MissingCallDisposeBoolAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1446,7 +1446,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_CallDisposeWithTrueArgument()
+        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_CallDisposeWithTrueArgumentAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1473,7 +1473,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_ConditionalStatement()
+        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_ConditionalStatementAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1505,7 +1505,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_CallDisposeBoolTwice()
+        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_CallDisposeBoolTwiceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1537,7 +1537,7 @@ public class C : IDisposable
         #region VB Unit Tests
 
         [Fact]
-        public async Task Basic_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePattern()
+        public async Task Basic_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePatternAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1563,7 +1563,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeSignature_NoDiagnostic_NotImplementingDisposable()
+        public async Task Basic_CA1063_DisposeSignature_NoDiagnostic_NotImplementingDisposableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1592,7 +1592,7 @@ End Class
         #region VB IDisposableReimplementation Unit Tests
 
         [Fact]
-        public async Task Basic_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposable()
+        public async Task Basic_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1636,7 +1636,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ReimplementingIDisposable_Internal()
+        public async Task Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ReimplementingIDisposable_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1670,7 +1670,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposableWithDeepInheritance()
+        public async Task Basic_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposableWithDeepInheritanceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1718,7 +1718,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInterfaceInheritedFromIDisposable()
+        public async Task Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInterfaceInheritedFromIDisposableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1764,7 +1764,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_IDisposableReimplementation_Diagnostic_ReImplementingIDisposableWithNoDisposeMethod()
+        public async Task Basic_CA1063_IDisposableReimplementation_Diagnostic_ReImplementingIDisposableWithNoDisposeMethodAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1800,7 +1800,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInheritedInterfaceWithNoDisposeReimplementation()
+        public async Task Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInheritedInterfaceWithNoDisposeReimplementationAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1837,7 +1837,7 @@ End Class
         #region VB DisposeSignature Unit Tests
 
         [Fact]
-        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeProtected()
+        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeProtectedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1864,7 +1864,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposePrivate()
+        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposePrivateAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1891,7 +1891,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsVirtual()
+        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsVirtualAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1918,7 +1918,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsOverriden()
+        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsOverridenAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1951,7 +1951,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsOverridenAndSealed()
+        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsOverridenAndSealedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1987,7 +1987,7 @@ End Class
         #region VB RenameDispose Unit Tests
 
         [Fact]
-        public async Task Basic_CA1063_RenameDispose_Diagnostic_DisposeNamedD()
+        public async Task Basic_CA1063_RenameDispose_Diagnostic_DisposeNamedDAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2018,7 +2018,7 @@ End Class
         #region VB DisposeOverride Unit Tests
 
         [Fact]
-        public async Task Basic_CA1063_DisposeOverride_Diagnostic_SimpleDisposeOverride()
+        public async Task Basic_CA1063_DisposeOverride_Diagnostic_SimpleDisposeOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2055,7 +2055,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeOverride_Diagnostic_DoubleDisposeOverride()
+        public async Task Basic_CA1063_DisposeOverride_Diagnostic_DoubleDisposeOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2102,7 +2102,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeOverride_Diagnostic_2DisposeImplementationsOverriden()
+        public async Task Basic_CA1063_DisposeOverride_Diagnostic_2DisposeImplementationsOverridenAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2166,7 +2166,7 @@ End Class
         #region VB FinalizeOverride Unit Tests
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride()
+        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2202,7 +2202,7 @@ End Class
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride()
+        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2249,7 +2249,7 @@ End Class
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task Basic_CA1063_FinalizeOverride_NoDiagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasNoFinalizer()
+        public async Task Basic_CA1063_FinalizeOverride_NoDiagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasNoFinalizerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2279,7 +2279,7 @@ End Class
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasFinalizer()
+        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasFinalizerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2316,7 +2316,7 @@ End Class
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride_InvokesDisposeBool()
+        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride_InvokesDisposeBoolAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2363,7 +2363,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotInBaseType()
+        public async Task Basic_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotInBaseTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2394,7 +2394,7 @@ End Class
         #region VB ProvideDisposeBool Unit Tests
 
         [Fact]
-        public async Task Basic_CA1063_ProvideDisposeBool_Diagnostic_MissingDisposeBool()
+        public async Task Basic_CA1063_ProvideDisposeBool_Diagnostic_MissingDisposeBoolAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2415,7 +2415,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_ProvideDisposeBool_Diagnostic_SealedClassAndMissingDisposeBool()
+        public async Task Basic_CA1063_ProvideDisposeBool_Diagnostic_SealedClassAndMissingDisposeBoolAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2437,7 +2437,7 @@ End Class
         #region VB DisposeBoolSignature Unit Tests
 
         [Fact]
-        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsPublic()
+        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsPublicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2464,7 +2464,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsProtectedInternal()
+        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsProtectedInternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2491,7 +2491,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsNotVirtual()
+        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsNotVirtualAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2518,7 +2518,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsSealedOverriden()
+        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsSealedOverridenAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2550,7 +2550,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsOverriden()
+        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsOverridenAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2581,7 +2581,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsAbstract()
+        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsAbstractAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2606,7 +2606,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPublicAndClassIsSealed()
+        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPublicAndClassIsSealedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2632,7 +2632,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPrivateAndClassIsSealed()
+        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPrivateAndClassIsSealedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2662,7 +2662,7 @@ End Class
         #region VB DisposeImplementation Unit Tests
 
         [Fact]
-        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_MissingCallDisposeBool()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_MissingCallDisposeBoolAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2688,7 +2688,7 @@ End Class
         }
 
         [Fact, WorkItem(1974, "https://github.com/dotnet/roslyn-analyzers/issues/1974")]
-        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_MissingCallSuppressFinalize_HasFinalizer()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_MissingCallSuppressFinalize_HasFinalizerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2714,7 +2714,7 @@ End Class
         }
 
         [Fact, WorkItem(1974, "https://github.com/dotnet/roslyn-analyzers/issues/1974")]
-        public async Task Basic_CA1063_DisposeImplementation_NoDiagnostic_MissingCallSuppressFinalize_NoFinalizer()
+        public async Task Basic_CA1063_DisposeImplementation_NoDiagnostic_MissingCallSuppressFinalize_NoFinalizerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2734,7 +2734,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_EmptyDisposeBody()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_EmptyDisposeBodyAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2759,7 +2759,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_CallDisposeWithFalseArgument()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_CallDisposeWithFalseArgumentAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2786,7 +2786,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_ConditionalStatement()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_ConditionalStatementAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2817,7 +2817,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeImplementation_NoDiagnostic_ConditionalStatement_Internal()
+        public async Task Basic_CA1063_DisposeImplementation_NoDiagnostic_ConditionalStatement_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2847,7 +2847,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_CallDisposeBoolTwice()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_CallDisposeBoolTwiceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2875,7 +2875,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_DisposeImplementation_NoDiagnostic_EmptyDisposeBodyInSealedClass()
+        public async Task Basic_CA1063_DisposeImplementation_NoDiagnostic_EmptyDisposeBodyInSealedClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2899,7 +2899,7 @@ End Class
         #region VB FinalizeImplementation Unit Tests
 
         [Fact]
-        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_MissingCallDisposeBool()
+        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_MissingCallDisposeBoolAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2924,7 +2924,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_CallDisposeWithTrueArgument()
+        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_CallDisposeWithTrueArgumentAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2951,7 +2951,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_ConditionalStatement()
+        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_ConditionalStatementAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2982,7 +2982,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_CallDisposeBoolTwice()
+        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_CallDisposeBoolTwiceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System

@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     public class UseNameOfInPlaceOfStringFixerTests
     {
         [Fact]
-        public async Task Fixer_CSharp_ArgumentMatchesAParameterInScope()
+        public async Task Fixer_CSharp_ArgumentMatchesAParameterInScopeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -37,7 +37,7 @@ class C
         }
 
         [Fact]
-        public async Task Fixer_CSharp_ArgumentWithComments()
+        public async Task Fixer_CSharp_ArgumentWithCommentsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -60,7 +60,7 @@ class C
         }
 
         [Fact]
-        public async Task Fixer_CSharp_ArgumentWithComments2()
+        public async Task Fixer_CSharp_ArgumentWithComments2Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -83,7 +83,7 @@ class C
         }
 
         [Fact]
-        public async Task Fixer_VB_ArgumentMatchesAParameterInScope()
+        public async Task Fixer_VB_ArgumentMatchesAParameterInScopeAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -104,7 +104,7 @@ End Module");
         }
 
         [Fact]
-        public async Task Fixer_CSharp_ArgumentMatchesPropertyInScope()
+        public async Task Fixer_CSharp_ArgumentMatchesPropertyInScopeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System.ComponentModel;

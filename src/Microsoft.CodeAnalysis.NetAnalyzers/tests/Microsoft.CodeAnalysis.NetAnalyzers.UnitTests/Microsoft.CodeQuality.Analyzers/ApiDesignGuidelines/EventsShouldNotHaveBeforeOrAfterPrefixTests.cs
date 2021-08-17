@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class EventsShouldNotHaveBeforeOrAfterPrefixTests
     {
         [Fact]
-        public async Task CA1713_EventNameStartsWithAfter_Diagnostic()
+        public async Task CA1713_EventNameStartsWithAfter_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -33,7 +33,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1713_EventNameStartsWithBefore_Diagnostic()
+        public async Task CA1713_EventNameStartsWithBefore_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -51,7 +51,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1713_ValidEventName_NoDiagnostic()
+        public async Task CA1713_ValidEventName_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -71,7 +71,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1713_EventNameIsExactlyThePrefix_NoDiagnostic()
+        public async Task CA1713_EventNameIsExactlyThePrefix_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -91,7 +91,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1713_CharAfterPrefixIsNotUpperCase_NoDiagnostic()
+        public async Task CA1713_CharAfterPrefixIsNotUpperCase_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -111,7 +111,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1713_PrefixIsNotFollowingRightCase_NoDiagnostic()
+        public async Task CA1713_PrefixIsNotFollowingRightCase_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

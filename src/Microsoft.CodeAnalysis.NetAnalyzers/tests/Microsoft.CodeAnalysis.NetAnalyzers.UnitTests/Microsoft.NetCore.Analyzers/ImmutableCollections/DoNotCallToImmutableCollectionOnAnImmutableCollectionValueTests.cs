@@ -34,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
 
         [Theory, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         [MemberData(nameof(CollectionNames_Arity1))]
-        public async Task NoDiagnosticCases_Arity1(string collectionName)
+        public async Task NoDiagnosticCases_Arity1Async(string collectionName)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
 using System.Collections.Generic;
@@ -115,7 +115,7 @@ End Class
 
         [Theory, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         [MemberData(nameof(CollectionNames_Arity2))]
-        public async Task NoDiagnosticCases_Arity2(string collectionName)
+        public async Task NoDiagnosticCases_Arity2Async(string collectionName)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
 using System.Collections.Generic;
@@ -200,7 +200,7 @@ End Class
 
         [Theory]
         [MemberData(nameof(CollectionNames_Arity1))]
-        public async Task DiagnosticCases_Arity1(string collectionName)
+        public async Task DiagnosticCases_Arity1Async(string collectionName)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
 using System.Collections.Generic;
@@ -268,7 +268,7 @@ End Class
 
         [Theory]
         [MemberData(nameof(CollectionNames_Arity2))]
-        public async Task DiagnosticCases_Arity2(string collectionName)
+        public async Task DiagnosticCases_Arity2Async(string collectionName)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
 using System.Collections.Generic;

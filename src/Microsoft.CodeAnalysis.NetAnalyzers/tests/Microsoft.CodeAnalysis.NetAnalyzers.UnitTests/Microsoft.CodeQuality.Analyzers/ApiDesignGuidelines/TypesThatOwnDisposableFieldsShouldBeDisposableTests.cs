@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzerTests
     {
         [Fact]
-        public async Task CA1001CSharpTestWithNoDisposableType()
+        public async Task CA1001CSharpTestWithNoDisposableTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     class Program
@@ -29,7 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1001CSharpTestWithNoCreationOfDisposableObject()
+        public async Task CA1001CSharpTestWithNoCreationOfDisposableObjectAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -42,7 +42,7 @@ using System.IO;
         }
 
         [Fact]
-        public async Task CA1001CSharpTestWithFieldInitAndNoDisposeMethod()
+        public async Task CA1001CSharpTestWithFieldInitAndNoDisposeMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -56,7 +56,7 @@ using System.IO;
         }
 
         [Fact]
-        public async Task CA1001CSharpTestWithCtorInitAndNoDisposeMethod()
+        public async Task CA1001CSharpTestWithCtorInitAndNoDisposeMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -76,7 +76,7 @@ using System.IO;
         }
 
         [Fact]
-        public async Task CA1001CSharpTestWithCreationOfDisposableObjectInOtherClass()
+        public async Task CA1001CSharpTestWithCreationOfDisposableObjectInOtherClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -111,7 +111,7 @@ using System.IO;
         }
 
         [Fact]
-        public async Task CA1001CSharpTestWithNoDisposeMethodInScope()
+        public async Task CA1001CSharpTestWithNoDisposeMethodInScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -130,7 +130,7 @@ using System.IO;
         }
 
         [Fact]
-        public async Task CA1001CSharpScopedTestWithNoDisposeMethodOutOfScope()
+        public async Task CA1001CSharpScopedTestWithNoDisposeMethodOutOfScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -154,7 +154,7 @@ public class SomeClass
         }
 
         [Fact]
-        public async Task CA1001CSharpTestWithADisposeMethod()
+        public async Task CA1001CSharpTestWithADisposeMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -190,7 +190,7 @@ public class HasDisposeMethod : IDisposable
         }
 
         [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
-        public async Task CA1001CSharpTestWithIDisposableField()
+        public async Task CA1001CSharpTestWithIDisposableFieldAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -208,7 +208,7 @@ namespace ClassLibrary1
         }
 
         [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
-        public async Task CA1001CSharpTestWithIAsyncDisposable()
+        public async Task CA1001CSharpTestWithIAsyncDisposableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace System
@@ -242,7 +242,7 @@ namespace ClassLibrary1
         }
 
         [Fact]
-        public async Task CA1001BasicTestWithNoDisposableType()
+        public async Task CA1001BasicTestWithNoDisposableTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Module Module1
@@ -256,7 +256,7 @@ End Module
         }
 
         [Fact]
-        public async Task CA1001BasicTestWithNoCreationOfDisposableObject()
+        public async Task CA1001BasicTestWithNoCreationOfDisposableObjectAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
@@ -268,7 +268,7 @@ Imports System.IO
         }
 
         [Fact]
-        public async Task CA1001BasicTestWithFieldInitAndNoDisposeMethod()
+        public async Task CA1001BasicTestWithFieldInitAndNoDisposeMethodAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
@@ -303,7 +303,7 @@ Imports System.IO
         }
 
         [Fact]
-        public async Task CA1001BasicTestWithCtorInitAndNoDisposeMethod()
+        public async Task CA1001BasicTestWithCtorInitAndNoDisposeMethodAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
    Imports System
@@ -324,7 +324,7 @@ Imports System.IO
         }
 
         [Fact]
-        public async Task CA1001BasicTestWithCreationOfDisposableObjectInOtherClass()
+        public async Task CA1001BasicTestWithCreationOfDisposableObjectInOtherClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
@@ -354,7 +354,7 @@ Imports System.IO
         }
 
         [Fact]
-        public async Task CA1001BasicTestWithNoDisposeMethodInScope()
+        public async Task CA1001BasicTestWithNoDisposeMethodInScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
    Imports System.IO
@@ -373,7 +373,7 @@ Imports System.IO
         }
 
         [Fact]
-        public async Task CA1001BasicTestWithNoDisposeMethodOutOfScope()
+        public async Task CA1001BasicTestWithNoDisposeMethodOutOfScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
    Imports System.IO
@@ -395,7 +395,7 @@ Imports System.IO
         }
 
         [Fact]
-        public async Task CA1001BasicTestWithADisposeMethod()
+        public async Task CA1001BasicTestWithADisposeMethodAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
    Imports System
@@ -435,7 +435,7 @@ Imports System.IO
         }
 
         [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
-        public async Task CA1001BasicTestWithIDisposableField()
+        public async Task CA1001BasicTestWithIDisposableFieldAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -451,7 +451,7 @@ End Namespace
         }
 
         [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
-        public async Task CA1001_OnlyListDisposableFields()
+        public async Task CA1001_OnlyListDisposableFieldsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -487,7 +487,7 @@ End Class
         }
 
         [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
-        public async Task CA1001_ListDisposableFields()
+        public async Task CA1001_ListDisposableFieldsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -530,7 +530,7 @@ End Class
         [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = FileStream")]
         [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = T:System.IO.FileStream")]
         [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = FileStr*")]
-        public async Task CA1001_ExcludedSymbolNames(string editorConfigText)
+        public async Task CA1001_ExcludedSymbolNamesAsync(string editorConfigText)
         {
             var args = editorConfigText.Length == 0 ? "_fs', '_ms" : "_ms";
 

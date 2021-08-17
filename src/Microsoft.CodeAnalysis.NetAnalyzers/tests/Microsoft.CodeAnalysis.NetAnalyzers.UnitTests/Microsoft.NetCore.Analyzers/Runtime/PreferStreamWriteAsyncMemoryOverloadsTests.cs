@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region C# - No diagnostic
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_Write()
+        public Task CS_Analyzer_NoDiagnostic_WriteAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -35,7 +35,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_WriteAsync_ByteMemory()
+        public Task CS_Analyzer_NoDiagnostic_WriteAsync_ByteMemoryAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -57,7 +57,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_WriteAsync_AsMemory()
+        public Task CS_Analyzer_NoDiagnostic_WriteAsync_AsMemoryAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -78,7 +78,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_NoAwait_SaveAsTask()
+        public Task CS_Analyzer_NoDiagnostic_NoAwait_SaveAsTaskAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -100,7 +100,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_FileStream_NoAwait_ReturnMethod()
+        public Task CS_Analyzer_NoDiagnostic_FileStream_NoAwait_ReturnMethodAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -118,7 +118,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod()
+        public Task CS_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethodAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -136,7 +136,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod_InvokeGetBufferMethod()
+        public Task CS_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod_InvokeGetBufferMethodAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -158,7 +158,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_NoAwait_ExpressionBodyMethod()
+        public Task CS_Analyzer_NoDiagnostic_NoAwait_ExpressionBodyMethodAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -173,7 +173,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_ContinueWith_ConfigureAwait()
+        public Task CS_Analyzer_NoDiagnostic_ContinueWith_ConfigureAwaitAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -194,7 +194,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_ContinueWith_ContinueWith_ConfigureAwait()
+        public Task CS_Analyzer_NoDiagnostic_ContinueWith_ContinueWith_ConfigureAwaitAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -215,7 +215,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_AutoCastedToReadOnlyMemory()
+        public Task CS_Analyzer_NoDiagnostic_AutoCastedToReadOnlyMemoryAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -236,7 +236,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_AutoCastedToReadOnlyMemory_CancellationToken()
+        public Task CS_Analyzer_NoDiagnostic_AutoCastedToReadOnlyMemory_CancellationTokenAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -257,7 +257,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_AwaitInvocationOutsideStreamInvocation()
+        public Task CS_Analyzer_NoDiagnostic_AwaitInvocationOutsideStreamInvocationAsync()
         {
             return CSharpVerifyAnalyzerAsync(@"
 using System;
@@ -284,7 +284,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_UnsupportedVersion()
+        public Task CS_Analyzer_NoDiagnostic_UnsupportedVersionAsync()
         {
             return CSharpVerifyAnalyzerForUnsupportedVersionAsync(@"
 using System;
@@ -309,7 +309,7 @@ class C
         #region VB - No diagnostic
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_Write()
+        public Task VB_Analyzer_NoDiagnostic_WriteAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -327,7 +327,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_WriteAsync_AsMemory()
+        public Task VB_Analyzer_NoDiagnostic_WriteAsync_AsMemoryAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -345,7 +345,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_NoAwait_SaveAsTask()
+        public Task VB_Analyzer_NoDiagnostic_NoAwait_SaveAsTaskAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -364,7 +364,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_FileStream_NoAwait_ReturnMethod()
+        public Task VB_Analyzer_NoDiagnostic_FileStream_NoAwait_ReturnMethodAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -380,7 +380,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod()
+        public Task VB_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethodAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -396,7 +396,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod_InvokeGetBufferMethod()
+        public Task VB_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod_InvokeGetBufferMethodAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -418,7 +418,7 @@ End Class
         // skipped because VB does not support expression bodies for methods.
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_ContinueWith_ConfigureAwait()
+        public Task VB_Analyzer_NoDiagnostic_ContinueWith_ConfigureAwaitAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -437,7 +437,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_ContinueWith_ContinueWith_ConfigureAwait()
+        public Task VB_Analyzer_NoDiagnostic_ContinueWith_ContinueWith_ConfigureAwaitAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -457,7 +457,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_AutoCastedToReadOnlyMemory()
+        public Task VB_Analyzer_NoDiagnostic_AutoCastedToReadOnlyMemoryAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -476,7 +476,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_AutoCastedToReadOnlyMemory_CancellationToken()
+        public Task VB_Analyzer_NoDiagnostic_AutoCastedToReadOnlyMemory_CancellationTokenAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -495,7 +495,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_AwaitInvocationOutsideStreamInvocation()
+        public Task VB_Analyzer_NoDiagnostic_AwaitInvocationOutsideStreamInvocationAsync()
         {
             return VisualBasicVerifyAnalyzerAsync(@"
 Imports System
@@ -520,7 +520,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_UnsupportedVersion()
+        public Task VB_Analyzer_NoDiagnostic_UnsupportedVersionAsync()
         {
             return VisualBasicVerifyAnalyzerForUnsupportedVersionAsync(@"
 Imports System
@@ -567,7 +567,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Fixer_Diagnostic_EnsureSystemNamespaceAutoAdded()
+        public Task CS_Fixer_Diagnostic_EnsureSystemNamespaceAutoAddedAsync()
         {
             string originalCode = @"
 using System.IO;
@@ -609,7 +609,7 @@ class C
         [MemberData(nameof(CSharpUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsWithCancellationTokenPartialBufferTestData))]
-        public Task CS_Fixer_Diagnostic_ArgumentNaming(string originalArgs, string fixedArgs) =>
+        public Task CS_Fixer_Diagnostic_ArgumentNamingAsync(string originalArgs, string fixedArgs) =>
             CSharpVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
         [Theory]
@@ -619,7 +619,7 @@ class C
         [MemberData(nameof(CSharpUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsWithCancellationTokenPartialBufferTestData))]
-        public Task CS_Fixer_Diagnostic_ArgumentNaming_WithConfigureAwait(string originalArgs, string fixedArgs) =>
+        public Task CS_Fixer_Diagnostic_ArgumentNaming_WithConfigureAwaitAsync(string originalArgs, string fixedArgs) =>
             CSharpVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 
         [Theory]
@@ -629,7 +629,7 @@ class C
         [MemberData(nameof(CSharpUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsWithCancellationTokenPartialBufferTestData))]
-        public Task CS_Fixer_Diagnostic_AsStream(string originalArgs, string fixedArgs) =>
+        public Task CS_Fixer_Diagnostic_AsStreamAsync(string originalArgs, string fixedArgs) =>
             CSharpVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "Stream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
         [Theory]
@@ -639,21 +639,21 @@ class C
         [MemberData(nameof(CSharpUnnamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsWithCancellationTokenPartialBufferTestData))]
-        public Task CS_Fixer_Diagnostic_AsStream_WithConfigureAwait(string originalArgs, string fixedArgs) =>
+        public Task CS_Fixer_Diagnostic_AsStream_WithConfigureAwaitAsync(string originalArgs, string fixedArgs) =>
             CSharpVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "Stream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 
         [Theory]
         [MemberData(nameof(CSharpInlinedByteArrayTestData))]
-        public Task CS_Fixer_Diagnostic_InlineByteArray(string originalArgs, string fixedArgs)
+        public Task CS_Fixer_Diagnostic_InlineByteArrayAsync(string originalArgs, string fixedArgs)
             => CSharpVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: true, isEmptyConfigureAwait: true);
 
         [Theory]
         [MemberData(nameof(CSharpInlinedByteArrayTestData))]
-        public Task CS_Fixer_Diagnostic_InlineByteArray_WithConfigureAwait(string originalArgs, string fixedArgs)
+        public Task CS_Fixer_Diagnostic_InlineByteArray_WithConfigureAwaitAsync(string originalArgs, string fixedArgs)
             => CSharpVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: true, isEmptyConfigureAwait: false);
 
         [Fact]
-        public Task CS_Fixer_Diagnostic_WithTrivia()
+        public Task CS_Fixer_Diagnostic_WithTriviaAsync()
         {
             // Notes:
             // The invocation trivia is not part of the squiggle
@@ -697,7 +697,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Fixer_Diagnostic_WithTrivia_WithConfigureAwait()
+        public Task CS_Fixer_Diagnostic_WithTrivia_WithConfigureAwaitAsync()
         {
             // Notes:
             // The invocation trivia is not part of the squiggle
@@ -741,7 +741,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Fixer_PreserveNullability()
+        public Task CS_Fixer_PreserveNullabilityAsync()
         {
             // The difference with the ReadAsync test is buffer?.Length
             string originalSource = @"
@@ -782,7 +782,7 @@ public class C
         }
 
         [Fact]
-        public Task CS_Fixer_PreserveNullabilityWithCancellationToken()
+        public Task CS_Fixer_PreserveNullabilityWithCancellationTokenAsync()
         {
             // The difference with the ReadAsync test is buffer?.Length
             string originalSource = @"
@@ -851,7 +851,7 @@ End Module
         }
 
         [Fact]
-        public Task VB_Fixer_Diagnostic_EnsureSystemNamespaceAutoAdded()
+        public Task VB_Fixer_Diagnostic_EnsureSystemNamespaceAutoAddedAsync()
         {
             string originalCode = @"
 Imports System.IO
@@ -887,7 +887,7 @@ End Class
         [InlineData("system")]
         [InlineData("SYSTEM")]
         [InlineData("sYSTEm")]
-        public Task VB_Fixer_Diagnostic_EnsureSystemNamespaceNotAddedWhenAlreadyPresent(string systemNamespace)
+        public Task VB_Fixer_Diagnostic_EnsureSystemNamespaceNotAddedWhenAlreadyPresentAsync(string systemNamespace)
         {
             string originalCode = $@"
 Imports System.IO
@@ -929,7 +929,7 @@ End Class
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
-        public Task VB_Fixer_Diagnostic_ArgumentNaming(string originalArgs, string fixedArgs) =>
+        public Task VB_Fixer_Diagnostic_ArgumentNamingAsync(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
         [Theory]
@@ -940,14 +940,14 @@ End Class
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
-        public Task VB_Fixer_Diagnostic_ArgumentNaming_WithConfigureAwait(string originalArgs, string fixedArgs) =>
+        public Task VB_Fixer_Diagnostic_ArgumentNaming_WithConfigureAwaitAsync(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 
         [Theory]
         [MemberData(nameof(VisualBasicUnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenFullBufferTestData))]
-        public Task VB_Fixer_Diagnostic_AsStream(string originalArgs, string fixedArgs) =>
+        public Task VB_Fixer_Diagnostic_AsStreamAsync(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "Stream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
         [Theory]
@@ -958,21 +958,21 @@ End Class
         [MemberData(nameof(VisualBasicNamedArgumentsPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenPartialBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWrongCaseTestData))]
-        public Task VB_Fixer_Diagnostic_AsStream_WithConfigureAwait(string originalArgs, string fixedArgs) =>
+        public Task VB_Fixer_Diagnostic_AsStream_WithConfigureAwaitAsync(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "Stream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 
         [Theory]
         [MemberData(nameof(VisualBasicInlinedByteArrayTestData))]
-        public Task VB_Fixer_Diagnostic_InlineByteArray(string originalArgs, string fixedArgs)
+        public Task VB_Fixer_Diagnostic_InlineByteArrayAsync(string originalArgs, string fixedArgs)
             => VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: true, isEmptyConfigureAwait: true);
 
         [Theory]
         [MemberData(nameof(VisualBasicInlinedByteArrayTestData))]
-        public Task VB_Fixer_Diagnostic_InlineByteArray_WithConfigureAwait(string originalArgs, string fixedArgs)
+        public Task VB_Fixer_Diagnostic_InlineByteArray_WithConfigureAwaitAsync(string originalArgs, string fixedArgs)
             => VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: true, isEmptyConfigureAwait: false);
 
         [Fact]
-        public Task VB_Fixer_Diagnostic_WithTrivia()
+        public Task VB_Fixer_Diagnostic_WithTriviaAsync()
         {
             // Notes:
             // - Visual Basic does not allow inline comments like in C#: /**/, only at the end of the line
@@ -1017,7 +1017,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Fixer_Diagnostic_WithTrivia_WithConfigureAwait_PartialBuffer()
+        public Task VB_Fixer_Diagnostic_WithTrivia_WithConfigureAwait_PartialBufferAsync()
         {
             // Notes:
             // - Visual Basic does not allow inline comments like in C#: /**/, only at the end of the line
@@ -1062,7 +1062,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Fixer_Diagnostic_WithTrivia_WithConfigureAwait_FullBuffer()
+        public Task VB_Fixer_Diagnostic_WithTrivia_WithConfigureAwait_FullBufferAsync()
         {
             // Notes:
             // - Visual Basic does not allow inline comments like in C#: /**/, only at the end of the line

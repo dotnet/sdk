@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public partial class ImplementSerializationConstructorsTests
     {
         [Fact]
-        public async Task CA2229NoConstructor()
+        public async Task CA2229NoConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -45,7 +45,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2229NoConstructorInternal()
+        public async Task CA2229NoConstructorInternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -73,7 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2229HasConstructor()
+        public async Task CA2229HasConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -106,7 +106,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2229HasConstructor1()
+        public async Task CA2229HasConstructor1Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -139,7 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2229HasConstructorWrongAccessibility()
+        public async Task CA2229HasConstructorWrongAccessibilityAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -174,7 +174,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2229HasConstructorWrongAccessibility1()
+        public async Task CA2229HasConstructorWrongAccessibility1Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -209,7 +209,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2229HasConstructorWrongAccessibility2()
+        public async Task CA2229HasConstructorWrongAccessibility2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -244,7 +244,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2229HasConstructorWrongAccessibility3()
+        public async Task CA2229HasConstructorWrongAccessibility3Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -279,7 +279,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2229HasConstructorWrongOrder()
+        public async Task CA2229HasConstructorWrongOrderAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -314,7 +314,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2229SerializableProper()
+        public async Task CA2229SerializableProperAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;

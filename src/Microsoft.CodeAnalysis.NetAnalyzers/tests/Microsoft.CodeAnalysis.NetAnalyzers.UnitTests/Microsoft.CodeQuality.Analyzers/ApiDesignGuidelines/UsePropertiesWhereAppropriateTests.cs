@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class UsePropertiesWhereAppropriateTests
     {
         [Fact]
-        public async Task CSharp_CA1024NoDiagnosticCases()
+        public async Task CSharp_CA1024NoDiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -161,7 +161,7 @@ public class Class2
         }
 
         [Fact]
-        public async Task CSharp_CA1024DiagnosticCases()
+        public async Task CSharp_CA1024DiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class
@@ -202,7 +202,7 @@ public class Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharp_CA1024NoDiagnosticCases_Internal()
+        public async Task CSharp_CA1024NoDiagnosticCases_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class
@@ -233,7 +233,7 @@ public class Class
         }
 
         [Fact]
-        public async Task VisualBasic_CA1024NoDiagnosticCases()
+        public async Task VisualBasic_CA1024NoDiagnosticCasesAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Collections
@@ -335,7 +335,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CA1024NoDiagnosticOnUnboundMethodCaller()
+        public async Task CSharp_CA1024NoDiagnosticOnUnboundMethodCallerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -352,7 +352,7 @@ public class class1
         }
 
         [Fact]
-        public async Task VisualBasic_CA1024NoDiagnosticOnUnboundMethodCaller()
+        public async Task VisualBasic_CA1024NoDiagnosticOnUnboundMethodCallerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -367,7 +367,7 @@ End Class
         }
 
         [Fact]
-        public async Task VisualBasic_CA1024DiagnosticCases()
+        public async Task VisualBasic_CA1024DiagnosticCasesAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
@@ -397,7 +397,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task VisualBasic_CA1024NoDiagnosticCases_Internal()
+        public async Task VisualBasic_CA1024NoDiagnosticCases_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
@@ -423,7 +423,7 @@ End Class
         }
 
         [Fact, WorkItem(1551, "https://github.com/dotnet/roslyn-analyzers/issues/1551")]
-        public async Task CA1024_ExplicitInterfaceImplementation_NoDiagnostic()
+        public async Task CA1024_ExplicitInterfaceImplementation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface ISomething
@@ -442,7 +442,7 @@ public class Something : ISomething
         }
 
         [Fact, WorkItem(1551, "https://github.com/dotnet/roslyn-analyzers/issues/1551")]
-        public async Task CA1024_ImplicitInterfaceImplementation_NoDiagnostic()
+        public async Task CA1024_ImplicitInterfaceImplementation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface ISomething
@@ -461,7 +461,7 @@ public class Something : ISomething
         }
 
         [Fact, WorkItem(3877, "https://github.com/dotnet/roslyn-analyzers/issues/3877")]
-        public async Task CA1024_ReturnsTask_NoDiagnostic()
+        public async Task CA1024_ReturnsTask_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading.Tasks;
@@ -500,7 +500,7 @@ End Class
         }
 
         [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
-        public async Task AwaiterPattern_INotifyCompletion_NoDiagnostic()
+        public async Task AwaiterPattern_INotifyCompletion_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -517,7 +517,7 @@ public class DummyAwaiter : INotifyCompletion
         }
 
         [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
-        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnostic()
+        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -535,7 +535,7 @@ public class DummyAwaiter : ICriticalNotifyCompletion
         }
 
         [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
-        public async Task AwaitablePattern_NoDiagnostic()
+        public async Task AwaitablePattern_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

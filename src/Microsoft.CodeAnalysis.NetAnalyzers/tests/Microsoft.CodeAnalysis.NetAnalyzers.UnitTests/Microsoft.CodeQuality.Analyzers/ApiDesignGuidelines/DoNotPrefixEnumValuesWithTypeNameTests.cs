@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
     public class DoNotPrefixEnumValuesWithTypeNameTests
     {
         [Fact]
-        public async Task CSharp_NoDiagnostic_NoPrefix()
+        public async Task CSharp_NoDiagnostic_NoPrefixAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 class A
@@ -31,7 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         }
 
         [Fact]
-        public async Task Basic_NoDiagnostic_NoPrefix()
+        public async Task Basic_NoDiagnostic_NoPrefixAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Class A
@@ -44,7 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         }
 
         [Fact]
-        public async Task CSharp_Diagnostic_EachValuePrefixed()
+        public async Task CSharp_Diagnostic_EachValuePrefixedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 class A
@@ -62,7 +62,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         }
 
         [Fact]
-        public async Task Basic_Diagnostic_EachValuePrefixed()
+        public async Task Basic_Diagnostic_EachValuePrefixedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Class A
@@ -79,7 +79,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         }
 
         [Fact]
-        public async Task CSharp_NoDiagnostic_HalfOfValuesPrefixed()
+        public async Task CSharp_NoDiagnostic_HalfOfValuesPrefixedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 class A
@@ -95,7 +95,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         }
 
         [Fact]
-        public async Task CSharp_Diagnostic_ThreeOfFourValuesPrefixed()
+        public async Task CSharp_Diagnostic_ThreeOfFourValuesPrefixedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 class A
@@ -114,7 +114,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         }
 
         [Fact]
-        public async Task CSharp_Diagnostic_PrefixCaseDiffers()
+        public async Task CSharp_Diagnostic_PrefixCaseDiffersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 class A
@@ -128,7 +128,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         }
 
         [Fact]
-        public async Task CSharp_NoDiagnostic_EmptyEnum()
+        public async Task CSharp_NoDiagnostic_EmptyEnumAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 class A
@@ -149,7 +149,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = Heuristic")]
-        public async Task AllValuesPrefixed_Diagnostic(string editorConfigText)
+        public async Task AllValuesPrefixed_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -225,7 +225,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = Heuristic")]
-        public async Task OneOfFourValuesPrefixed_Diagnostic(string editorConfigText)
+        public async Task OneOfFourValuesPrefixed_DiagnosticAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {
@@ -301,7 +301,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = Heuristic")]
-        public async Task ThreeOfFourValuesPrefixed_Diagnostic(string editorConfigText)
+        public async Task ThreeOfFourValuesPrefixed_DiagnosticAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {

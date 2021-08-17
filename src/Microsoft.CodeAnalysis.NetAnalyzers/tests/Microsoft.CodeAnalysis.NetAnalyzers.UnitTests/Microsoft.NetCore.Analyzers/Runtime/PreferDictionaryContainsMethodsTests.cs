@@ -42,7 +42,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region Expected Diagnostic
         [Theory]
         [MemberData(nameof(DictionaryKeysExpressions))]
-        public async Task IDictionary_Keys_Contains_ReportsDiagnostic_CS(string dictionaryKeys)
+        public async Task IDictionary_Keys_Contains_ReportsDiagnostic_CSAsync(string dictionaryKeys)
         {
             const string declaration = @"IDictionary<string, int> dictionary = new Dictionary<string, int>();";
             string testCode = CreateCSSource(declaration, @$"bool wutzHuh = {{|#0:{dictionaryKeys}.Contains(""Wumphed"")|}};");
@@ -61,7 +61,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task IDictionary_Keys_Contains_ReportsDiagnostic_VB()
+        public async Task IDictionary_Keys_Contains_ReportsDiagnostic_VBAsync()
         {
             const string declaration = @"Dim dictionary As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()";
             string testCode = CreateVBSource(declaration, @"Dim wutzHuh = {|#0:dictionary.Keys.Contains(""Wumphed"")|}");
@@ -81,7 +81,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         [Theory]
         [MemberData(nameof(DictionaryKeysExpressions))]
-        public async Task BuiltInDictionary_Keys_Contains_ReportsDiagnostic_CS(string dictionaryKeys)
+        public async Task BuiltInDictionary_Keys_Contains_ReportsDiagnostic_CSAsync(string dictionaryKeys)
         {
             const string declaration = @"var dictionary = new Dictionary<string, int>();";
             string testCode = CreateCSSource(declaration, $@"bool isPhleeb = {{|#0:{dictionaryKeys}.Contains(""bizzurf"")|}};");
@@ -100,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task BuiltInDictionary_Keys_Contains_ReportsDiagnostic_VB()
+        public async Task BuiltInDictionary_Keys_Contains_ReportsDiagnostic_VBAsync()
         {
             const string declaration = "Dim dictionary = New Dictionary(Of String, Integer)()";
             string testCode = CreateVBSource(declaration, @"Dim isPhleeb = {|#0:dictionary.Keys.Contains(""bizzurf"")|}");
@@ -120,7 +120,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         [Theory]
         [MemberData(nameof(DictionaryValuesExpressions))]
-        public async Task BuiltInDictionary_Values_Contains_ReportsDiagnostic_CS(string dictionaryValues)
+        public async Task BuiltInDictionary_Values_Contains_ReportsDiagnostic_CSAsync(string dictionaryValues)
         {
             const string declaration = "var dictionary = new Dictionary<string, int>();";
             string testCode = CreateCSSource(declaration, $@"bool wasFlobbed = {{|#0:{dictionaryValues}.Contains(75)|}};");
@@ -139,7 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task BuiltInDictionary_Values_Contains_ReportsDiagnostic_VB()
+        public async Task BuiltInDictionary_Values_Contains_ReportsDiagnostic_VBAsync()
         {
             const string declaration = "Dim dictionary = New Dictionary(Of String, Integer)()";
             string testCode = CreateVBSource(declaration, @"Dim wasFlobbed = {|#0:dictionary.Values.Contains(75)|}");
@@ -159,7 +159,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         [Theory]
         [MemberData(nameof(DictionaryKeysExpressions))]
-        public async Task ExplicitContainsKey_WhenTypedAsIDictionary_ReportsDiagnostic_CS(string dictionaryKeys)
+        public async Task ExplicitContainsKey_WhenTypedAsIDictionary_ReportsDiagnostic_CSAsync(string dictionaryKeys)
         {
             const string declaration = "IDictionary<string, int> dictionary = new TestDictionary();";
             string testCode = CreateCSSource(declaration, $@"bool tugBlug = {{|#0:{dictionaryKeys}.Contains(""bricklebrit"")|}};");
@@ -178,7 +178,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ExplicitContainsKey_WhenTypedAsIDictionary_ReportsDiagnostic_VB()
+        public async Task ExplicitContainsKey_WhenTypedAsIDictionary_ReportsDiagnostic_VBAsync()
         {
             const string declaration = "Dim dictionary As IDictionary(Of String, Integer) = New TestDictionary()";
             string testCode = CreateVBSource(declaration, @"Dim tugBlug = {|#0:dictionary.Keys.Contains(""bricklebrit"")|}");
@@ -198,7 +198,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         [Theory]
         [MemberData(nameof(DictionaryKeysExpressions))]
-        public async Task IEnumerableKeyCollection_ReportsDiagnostic_CS(string dictionaryKeys)
+        public async Task IEnumerableKeyCollection_ReportsDiagnostic_CSAsync(string dictionaryKeys)
         {
             const string declaration = "var dictionary = new TestDictionary();";
             string testCode = CreateCSSource(declaration, $@"bool b = {{|#0:{dictionaryKeys}.Contains(""bracklebrat"")|}};");
@@ -217,7 +217,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task IEnumerableKeyCollection_ReportsDiagnostic_VB()
+        public async Task IEnumerableKeyCollection_ReportsDiagnostic_VBAsync()
         {
             const string declaration = "Dim dictionary = New TestDictionary()";
             string testCode = CreateVBSource(declaration, @"Dim b = {|#0:dictionary.Keys.Contains(""bracklebrat"")|}");
@@ -237,7 +237,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         [Theory]
         [MemberData(nameof(DictionaryValuesExpressions))]
-        public async Task IEnumerableValueCollection_ReportsDiagnostic_CS(string dictionaryValues)
+        public async Task IEnumerableValueCollection_ReportsDiagnostic_CSAsync(string dictionaryValues)
         {
             const string declaration = "var dictionary = new TestDictionary();";
             string testCode = CreateCSSource(declaration, $@"bool b = {{|#0:{dictionaryValues}.Contains(314159)|}};");
@@ -256,7 +256,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task IEnumerableValueCollection_ReportsDiagnostic_VB()
+        public async Task IEnumerableValueCollection_ReportsDiagnostic_VBAsync()
         {
             const string declaration = "Dim dictionary = New TestDictionary()";
             string testCode = CreateVBSource(declaration, @"Dim b = {|#0:dictionary.Values.Contains(314159)|}");
@@ -277,7 +277,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region No Diagnostic
         [Fact]
-        public async Task IDictionary_Values_Contains_NoDiagnostic_CS()
+        public async Task IDictionary_Values_Contains_NoDiagnostic_CSAsync()
         {
             const string declaration = @"IDictionary<string, int> dictionary = new Dictionary<string, int>();";
             string testCode = CreateCSSource(declaration, @"bool urrp = dictionary.Values.Contains(49);");
@@ -290,7 +290,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task IDictionary_Values_Contains_NoDiagnostic_VB()
+        public async Task IDictionary_Values_Contains_NoDiagnostic_VBAsync()
         {
             const string declaration = @"Dim dictionary As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()";
             string testCode = CreateVBSource(declaration, @"Dim urrp = dictionary.Values.Contains(49)");
@@ -303,7 +303,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ExplicitContainsKey_Keys_Contains_NoDiagnostic_CS()
+        public async Task ExplicitContainsKey_Keys_Contains_NoDiagnostic_CSAsync()
         {
             string testCode = CreateCSSource(
                 @"var dictionary = new TestDictionary();",
@@ -317,7 +317,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ExplicitContainsKey_Keys_Contains_NoDiagnostic_VB()
+        public async Task ExplicitContainsKey_Keys_Contains_NoDiagnostic_VBAsync()
         {
             string testCode = CreateVBSource(
                 @"Dim dictionary = New TestDictionary()",
@@ -335,7 +335,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData(CSFacadeCollectionContainsWithWrongArgumentTypeSource, @"dictionary.Values.Contains(""RuhRoh"")")]
         [InlineData(CSFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Keys.Contains(new object())")]
         [InlineData(CSFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Values.Contains(new object())")]
-        public async Task ContainsArgument_WrongType_NoDiagnostic_CS(string facadeCollectionSource, string containsInvocation)
+        public async Task ContainsArgument_WrongType_NoDiagnostic_CSAsync(string facadeCollectionSource, string containsInvocation)
         {
             string testCode = CreateCSSourceWithoutLinq(
                 @"var dictionary = new TestDictionary();",
@@ -353,7 +353,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData(VBFacadeCollectionContainsWithWrongArgumentTypeSource, @"dictionary.Values.Contains(""RuhRoh"")")]
         [InlineData(VBFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Keys.Contains(New Object())")]
         [InlineData(VBFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Values.Contains(New Object())")]
-        public async Task ContainsArgument_WrongType_NoDiagnostic_VB(string facadeCollectionSource, string containsInvocation)
+        public async Task ContainsArgument_WrongType_NoDiagnostic_VBAsync(string facadeCollectionSource, string containsInvocation)
         {
             string testCode = CreateVBSourceWithoutLinq(
                 @"Dim dictionary = New TestDictionary()",

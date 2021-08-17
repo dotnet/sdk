@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region Diagnostic tests
 
         [Fact]
-        public async Task CA1820StaticEqualsTestCSharp()
+        public async Task CA1820StaticEqualsTestCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -57,7 +57,7 @@ class C
         }
 
         [Fact]
-        public async Task CA1820InstanceEqualsTestCSharp()
+        public async Task CA1820InstanceEqualsTestCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -85,7 +85,7 @@ class C
         }
 
         [Fact]
-        public async Task CA1820OperatorOverloadTestCSharp()
+        public async Task CA1820OperatorOverloadTestCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -111,7 +111,7 @@ class C
         #endregion
 
         [Fact, WorkItem(1508, "https://github.com/dotnet/roslyn-analyzers/issues/1508")]
-        public async Task CA1820_ExpressionTree_NoDiagnostic()
+        public async Task CA1820_ExpressionTree_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Linq;

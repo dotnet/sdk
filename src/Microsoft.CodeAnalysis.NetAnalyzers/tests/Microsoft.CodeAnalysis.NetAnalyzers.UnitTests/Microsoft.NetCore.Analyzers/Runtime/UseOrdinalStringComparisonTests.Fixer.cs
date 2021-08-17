@@ -17,7 +17,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region Code fix tests
 
         [Fact]
-        public async Task CA1309FixStaticEqualsOverloadCSharp()
+        public async Task CA1309FixStaticEqualsOverloadCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"
@@ -45,7 +45,7 @@ class C
         }
 
         [Fact]
-        public async Task CA1309FixStaticEqualsOverloadBasic()
+        public async Task CA1309FixStaticEqualsOverloadBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
                 @"
@@ -75,7 +75,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1309FixInstanceEqualsOverloadCSharp()
+        public async Task CA1309FixInstanceEqualsOverloadCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"
@@ -105,7 +105,7 @@ class C
         }
 
         [Fact]
-        public async Task CA1309FixInstanceEqualsOverloadBasic()
+        public async Task CA1309FixInstanceEqualsOverloadBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
                 @"
@@ -139,7 +139,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1309FixStaticCompareOverloadCSharp()
+        public async Task CA1309FixStaticCompareOverloadCSharpAsync()
         {
             await new VerifyCS.Test
             {
@@ -212,7 +212,7 @@ class C
         }
 
         [Fact]
-        public async Task CA1309FixStaticCompareOverloadBasic()
+        public async Task CA1309FixStaticCompareOverloadBasicAsync()
         {
             await new VerifyVB.Test
             {

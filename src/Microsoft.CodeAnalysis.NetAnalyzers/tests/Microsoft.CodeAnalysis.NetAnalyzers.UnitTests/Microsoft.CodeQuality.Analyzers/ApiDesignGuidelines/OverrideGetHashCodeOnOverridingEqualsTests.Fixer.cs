@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class OverrideGetHashCodeOnOverridingEqualsFixerTests
     {
         [Fact]
-        public async Task CS0659()
+        public async Task CS0659Async()
         {
             await new VerifyCS.Test
             {
@@ -61,7 +61,7 @@ class C
         }
 
         [Fact]
-        public async Task CS0659_Simplified()
+        public async Task CS0659_SimplifiedAsync()
         {
             await new VerifyCS.Test
             {
@@ -111,7 +111,7 @@ class C
         }
 
         [Fact]
-        public async Task Basic_CA2218()
+        public async Task Basic_CA2218Async()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Class [|C|]
@@ -134,7 +134,7 @@ End Class
         }
 
         [Fact]
-        public async Task Basic_CA2218_Simplified()
+        public async Task Basic_CA2218_SimplifiedAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System

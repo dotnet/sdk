@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForXssVulnerabilities.Rule;
 
         [Fact]
-        public async Task DocSample2_CSharp_Violation_Diagnostic()
+        public async Task DocSample2_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -44,7 +44,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample2_CSharp_Solution_NoDiagnostic()
+        public async Task DocSample2_CSharp_Solution_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -72,7 +72,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample2_VB_Violation_Diagnostic()
+        public async Task DocSample2_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
             {
@@ -103,7 +103,7 @@ End Class
         }
 
         [Fact]
-        public async Task DocSample2_VB_Solution_NoDiagnostic()
+        public async Task DocSample2_VB_Solution_NoDiagnosticAsync()
         {
             await new VerifyVB.Test
             {
@@ -132,7 +132,7 @@ End Class
         }
 
         [Fact]
-        public async Task Simple_NoDiagnostic()
+        public async Task Simple_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -159,7 +159,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task Int32_Parse_NoDiagnostic()
+        public async Task Int32_Parse_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -187,7 +187,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task HttpServerUtility_HtmlEncode_NoDiagnostic()
+        public async Task HttpServerUtility_HtmlEncode_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -215,7 +215,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task HttpServerUtility_HtmlEncode_StringWriterOverload_NoDiagnostic()
+        public async Task HttpServerUtility_HtmlEncode_StringWriterOverload_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
