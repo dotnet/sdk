@@ -1671,6 +1671,39 @@
   <data name="MakeParameterlessConstructorPublic" xml:space="preserve">
     <value>Make the constructor that takes zero parameters 'public'</value>
   </data>
+  <data name="DynamicInterfaceCastableImplementationUnsupportedDescription" xml:space="preserve">
+    <value>Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</value>
+  </data>
+  <data name="DynamicInterfaceCastableImplementationUnsupportedMessage" xml:space="preserve">
+    <value>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</value>
+  </data>
+  <data name="DynamicInterfaceCastableImplementationUnsupportedTitle" xml:space="preserve">
+    <value>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</value>
+  </data>
+  <data name="ImplementInterfacesOnDynamicCastableImplementation" xml:space="preserve">
+    <value>Implement inherited interfaces</value>
+  </data>
+  <data name="InterfaceMembersMissingImplementationDescription" xml:space="preserve">
+    <value>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</value>
+  </data>
+  <data name="InterfaceMembersMissingImplementationMessage" xml:space="preserve">
+    <value>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</value>
+  </data>
+  <data name="InterfaceMembersMissingImplementationTitle" xml:space="preserve">
+    <value>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</value>
+  </data>
+  <data name="MembersDeclaredOnImplementationTypeMustBeStaticDescription" xml:space="preserve">
+    <value>Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</value>
+  </data>
+  <data name="MembersDeclaredOnImplementationTypeMustBeStaticMessage" xml:space="preserve">
+    <value>The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</value>
+  </data>
+  <data name="MembersDeclaredOnImplementationTypeMustBeStaticTitle" xml:space="preserve">
+    <value>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</value>
+  </data>
+  <data name="MakeMethodDeclaredOnImplementationTypeStatic" xml:space="preserve">
+    <value>Convert to static method</value>
+  </data>
   <data name="UseStringContainsCharOverloadWithSingleCharactersDescription" xml:space="preserve">
     <value>'string.Contains(char)' is available as a better performing overload for single char lookup.</value>
   </data>
@@ -1697,6 +1730,9 @@
   </data>
   <data name="StaticAndAbstractRequiresPreviewFeatures" xml:space="preserve">
     <value>Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode" xml:space="preserve">
+    <value>Converting an instance method to a static method may produce invalid code</value>
   </data>
   <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription" xml:space="preserve">
     <value>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</value>

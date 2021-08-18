@@ -1052,6 +1052,21 @@
         <target state="translated">請勿使用 XslTransform。它不會限制可能引發危險的外部參考。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedDescription">
+        <source>Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</source>
+        <target state="new">Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedMessage">
+        <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
+        <target state="new">Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedTitle">
+        <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
+        <target state="new">Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
         <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
         <target state="translated">完成項必須傳播到整個繼承階層。為確保上述作業，類型必須呼叫其本身 Finalize 方法中的基底類別 Finalize 方法。</target>
@@ -1130,6 +1145,11 @@
       <trans-unit id="ImplementISerializableCorrectlyTitle">
         <source>Implement ISerializable correctly</source>
         <target state="translated">必須正確實作 ISerializable</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
+        <source>Implement inherited interfaces</source>
+        <target state="new">Implement inherited interfaces</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
@@ -1262,6 +1282,21 @@
         <target state="translated">正確地將引數例外狀況具現化</target>
         <note />
       </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationDescription">
+        <source>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</source>
+        <target state="new">Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationMessage">
+        <source>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</source>
+        <target state="new">Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationTitle">
+        <source>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</source>
+        <target state="new">All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</target>
+        <note />
+      </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
         <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 將未受信任的資料還原序列化，方法 '{0}' 就不安全。請確認將 JavaScriptSerializer 初始化時，未指定 JavaScriptTypeResolver，或使用 JavaScriptTypeResolver 來限制已還原序列化物件圖中的物件類型。</target>
@@ -1345,6 +1380,16 @@
       <trans-unit id="LosFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer LosFormatter</source>
         <target state="translated">請勿使用不安全的還原序列化程式 LosFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeMethodDeclaredOnImplementationTypeStatic">
+        <source>Convert to static method</source>
+        <target state="new">Convert to static method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode">
+        <source>Converting an instance method to a static method may produce invalid code</source>
+        <target state="new">Converting an instance method to a static method may produce invalid code</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeParameterlessConstructorPublic">
@@ -1465,6 +1510,21 @@
       <trans-unit id="MaybeUseWeakKDFInsufficientIterationCountMessage">
         <source>Ensure that the iteration count is at least {0} when deriving a cryptographic key from a password. By default, Rfc2898DeriveByte's IterationCount is only 1000</source>
         <target state="translated">當從密碼衍生密碼編譯金鑰時，請確保反覆項目計數至少為 {0}。根據預設，Rfc2898DeriveByte 的 IterationCount 只有 1000</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticDescription">
+        <source>Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</source>
+        <target state="new">Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticMessage">
+        <source>The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
+        <target state="new">The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticTitle">
+        <source>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</source>
+        <target state="new">Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">

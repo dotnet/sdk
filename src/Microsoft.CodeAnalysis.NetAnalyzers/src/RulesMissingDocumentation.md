@@ -16,3 +16,6 @@ CA2252 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-r
 CA2253 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253> | Named placeholders should not be numeric values |
 CA2254 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254> | Template should be a static expression |
 CA2255 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255> | The 'ModuleInitializer' attribute should not be used in libraries |
+CA2256 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2256> | All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface |
+CA2257 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2257> | Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static' |
+CA2258 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2258> | Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported |

@@ -25,6 +25,9 @@ CA2252 | Usage | Info | DetectPreviewFeatureAnalyzer, [Documentation](https://do
 CA2253 | Usage | Info | LoggerMessageDefineAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253)
 CA2254 | Usage | Info | LoggerMessageDefineAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254)
 CA2255 | Usage | Warning | ModuleInitializerAttributeShouldNotBeUsedInLibraries, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255)
+CA2256 | Usage | Warning | InterfaceMembersMissingImplementation, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2256)
+CA2257 | Usage | Warning | MembersDeclaredOnImplementationTypeMustBeStatic, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2257)
+CA2258 | Usage | Warning | DynamicInterfaceCastableImplementationUnsupported, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2258)
 
 ### Removed Rules
 
