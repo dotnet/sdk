@@ -1,22 +1,27 @@
 <Project>
   <Import Project="runtime.common.props"/>
 
+  <PropertyGroup>
+    <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-x64</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-x64</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-x64</OverrideTargetRid>
+
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:TargetRid=$(OverrideTargetRid)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:SourceBuildNonPortable=true</BuildCommandArgs>
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+  </PropertyGroup>
+
   <!-- Repository References -->
   <ItemGroup>
       <RepositoryReference Include="arcade" />
       <RepositoryReference Include="symreader" />
       <RepositoryReference Include="linker" />
-      <RepositoryReference Include="newtonsoft-json" />
-      <RepositoryReference Include="newtonsoft-json901" />
+      <RepositoryReference Include="source-build" />
       <RepositoryReference Include="roslyn" />
-      <RepositoryReference Include="runtime-portable" Condition="'$(TargetOS)' == 'Linux' and '$(BuildPortableRuntime)' == 'true'" />
+      <RepositoryReference Include="runtime-portable" />
   </ItemGroup>
-
-    <!-- Additional Targets -->
-  <Target Name="InstallJustBuiltRuntime" AfterTargets="RemoveBuiltPackagesFromCache">
-    <!-- Install the runtime that was just built to be used by downstream repos, namely, aspnetcore -->
-    <Exec Command="tar -xvf $(SourceBuiltAssetsDir)dotnet-runtime-$(runtimeOutputPackageVersion)-$(OverrideTargetRid).tar.gz -C $(DotNetCliToolDir)" />
-  </Target>
 
   <Import Project="runtime.common.targets" />
 </Project>

@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup>
-    <RepositoryName>runtime</RepositoryName>
     <SourceDirectory>runtime</SourceDirectory>
   </PropertyGroup>
 

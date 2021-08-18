@@ -178,6 +178,10 @@
     </ItemGroup>
 
     <Copy
+      SourceFiles="$(TarballGitInfoDir)runtime.props"
+      DestinationFiles="$(TarballGitInfoDir)runtime-portable.props" />
+
+    <Copy
       SourceFiles="@(TarballContent)"
       DestinationFiles="@(TarballContent->'$(TarballRootDir)%(RecursiveDir)%(Filename)%(Extension)')" />
 
