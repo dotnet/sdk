@@ -161,7 +161,11 @@ namespace Microsoft.TemplateSearch.Common.Providers
                 cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
-                    using (HttpClient client = new HttpClient())
+                    HttpClientHandler handler = new HttpClientHandler()
+                    {
+                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                    };
+                    using (HttpClient client = new HttpClient(handler))
                     {
                         string etagFileLocation = searchMetadataFileLocation + ETagFileSuffix;
                         if (_environmentSettings.Host.FileSystem.FileExists(etagFileLocation))
