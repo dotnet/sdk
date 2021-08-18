@@ -6,8 +6,7 @@ To add conditional, or dynamic, content you can add Template Enging expressions 
 |[JSON files](#json-files) | Common Json type files. |
 |[XML files](#xml-files) | Common Xml and *tml type files. |
 |[MSBuild files](#msbuild-files)| MSBuild project files.|
-|[Solution files](#solution-files)| Solution files.|
-|[Linux files](#linux-files)| Common Linux files.|
+|[Single hash line comments](#single-hash-line-comments)| Common file types that use single hash line comment syntax.|
 |[Css files](#css-files)| Css Files.|
 |[Command files](#command-files)| Windows command Files.|
 |[Razor Views](#razor-views)| Razor View files.|
@@ -18,7 +17,7 @@ To add conditional, or dynamic, content you can add Template Enging expressions 
 ## Language Source Files
 
 #### File Extensions
-`.cs`, `.fs`,`.cpp`, `.h`, `.hpp`.
+`.cs`, `.fs`,`.cpp`, `.h`, `.hpp`, `.cake`.
 
 In these file types you can use a preprocessor directive. 
    
@@ -260,25 +259,25 @@ The choice between `//` or `////` is very important because let you choose betwe
 ### Samples
 
 In this sample, we see the difference between the two ways to define conditional expression.
-If the initial `#if` condition is preceded by `//` so, if param1 == true, rows below are copied as is.  
-second condition `#elseif`, is preceded by `////`, so if param1 == false and param2 == true, rows below will be copied after the leading `//` has been removed, risulting in
+If the initial `#if` condition is preceded by `//` so, if `param1 == true`, rows below are copied as is.  
+second condition `#elseif`, is preceded by `////`, so if `param1 == false` and `param2 == true`, rows below will be copied after the leading `//` has been removed, resulting in
 
 ```
-//// comment related to the 'elseif' content
-//content for when param2 is true and param1 is false
+// comment related to the 'elseif' content
+content for when param2 is true and param1 is false
 ```
 
-the latest condition, #else, is preceded by `////`, so the comments will removed, resulting in 
+the latest condition, `#else`, is preceded by `////`, so the comments will removed, resulting in 
 
 ```
-  comment related to the 'else' content
-  content for when both param1 & param2 are false
+// comment related to the 'else' content
+content for when both param1 & param2 are false
 ```
 Changing from `////#else` to `//#else` the result will be
 
 ```
-  // comment related to the 'else' content
-  // content for when both param1 & param2 are false
+// comment related to the 'else' content
+// content for when both param1 & param2 are false
 ```
 
 ```
@@ -289,7 +288,7 @@ Changing from `////#else` to `//#else` the result will be
 	//// comment related to the 'elseif' content
 	//content for when param2 is true and param1 is false
 ////#else
-	// comment related to the 'else' content
+	//// comment related to the 'else' content
 	// content for when both param1 & param2 are false
 //#endif
 ```
@@ -300,11 +299,11 @@ Changing from `////#else` to `//#else` the result will be
 
 #### File Extensions
 
-`.*htm`, `.*html`, `.jsp`, `.asp`, `.aspx`, `.nuspec`, `.xslt`, `.xsd`, `.vsixmanifest`, `.vsct`, `.storyboard`, `.axml`, `.plist`, `.xib`, `.strings`, `.xml`, `.xaml`.  
+`.*htm`, `.*html`, `.jsp`, `.asp`, `.aspx`, `.nuspec`, `.xslt`, `.xsd`, `.vsixmanifest`, `.vsct`, `.storyboard`, `.axml`, `.plist`, `.xib`, `.strings`, `.xml`, `.xaml`, `.md`.
 
 #### Well known XML file names
 
-`app.config`, `web.config`, `web.\*.config`, `packages.config'
+`app.config`, `web.config`, `web.\*.config`, `packages.config`, `nuget.config`.
 
 the comment block starts with `<!--` and ends with `-->`. Inside this block you can add your conditional expressions.     
 
@@ -425,35 +424,25 @@ The first `<Foo Condition...` is copied as-is because the `msbuild-conditional` 
 
 [Sample](https://github.com/dotnet/templating/blob/rel/vs2017/3-Preview3/template_feed/Microsoft.DotNet.Web.ProjectTemplates.2.0/content/WebApi-CSharp/Company.WebApplication1.csproj)
 
-## Solution Files
+## Single hash line comments
 
 #### File Extensions
 
-`.sln`
+`.sln`, `.yml`, `.yaml`, `.sh`
 
-For solution files, the comment block starts with # to the end of the line. After this marker you can add the conditional expressions.
+#### Well-known file names
+
+`.dockerignore`, `.gitignore`, `.gitattributes`, `.editorconfig`, `Dockerfile`, `nginx.conf`, `robots.txt`.
 
 ### Samples
+
+For solution files, the comment block starts with # to the end of the line. After this marker you can add the conditional expressions.
 
 ```
 #if (symbol-name == "value")
 stuff
 #endif
 ```
-
-## Linux Files
-
-#### File Extensions
-
-`.sh`
-
-#### Well known Linux file names
-
-`nginx.conf`, `robots.txt`
-
-Editing file types the expressions could be added without any comment element.
-
-### Samples
 
 In this sample, using the parameter `useSSL` add configuration for the 443 port inside nginx configuration
 
@@ -506,7 +495,6 @@ http {
 }
 ```
 
-### Related
 
 ## CSS Files
 
@@ -605,18 +593,15 @@ The comment block starts with `{/*` and ends with `*/}`. Inside this block you c
 
 ## Other File Types
 
-The comment block starts with `//` to the end of the line. After this marker you can add the conditional expressions.
-
-#### File Extensions (among others)    
-
-`.ps1`, `.yaml`, `.yml`
+The file types that do not have special configuration predefined in template engine or `template.json` configuration will follow default settings.
+The comment block starts with `//` to the end of the line. After this marker you can add the conditional expressions using `#if`, `#elseif`, `#endif`, `#else` directives.
 
 ### Samples
 
-In this sample, according to the value of the boolean `param1` symbol, `option1` is added to the `.yaml` file.
+In this sample, according to the value of the boolean `param1` symbol, `option1` is added to the file.
 ```
 //#if (param1)
--  option1
+option1
 //#endif
--  option2
+option2
 ```
