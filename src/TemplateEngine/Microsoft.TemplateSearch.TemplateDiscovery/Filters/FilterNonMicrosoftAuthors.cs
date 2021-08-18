@@ -9,7 +9,7 @@ using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
+namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters;
 
 internal class FilterNonMicrosoftAuthors
 {

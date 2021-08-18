@@ -8,14 +8,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
 {
     internal class TestPackProvider : IPackProvider
     {
-        private readonly string _folder;
+        private readonly DirectoryInfo _folder;
 
-        internal TestPackProvider(string folder)
+        internal TestPackProvider(DirectoryInfo folder)
         {
-            if (string.IsNullOrWhiteSpace(folder))
-            {
-                throw new ArgumentException($"'{nameof(folder)}' cannot be null or whitespace.", nameof(folder));
-            }
             _folder = folder;
         }
 
@@ -34,9 +30,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
 
         public async IAsyncEnumerable<ITemplatePackageInfo> GetCandidatePacksAsync([EnumeratorCancellation]CancellationToken token)
         {
-            var directoryInfo = new DirectoryInfo(_folder);
-
-            foreach (FileInfo package in directoryInfo.EnumerateFiles("*.nupkg", SearchOption.AllDirectories))
+            foreach (FileInfo package in _folder.EnumerateFiles("*.nupkg", SearchOption.AllDirectories))
             {
                 yield return new TestPackInfo(package.FullName);
             }
@@ -46,7 +40,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
 
         public Task<int> GetPackageCountAsync(CancellationToken token)
         {
-            return Task.FromResult(new DirectoryInfo(_folder).EnumerateFiles("*.nupkg", SearchOption.AllDirectories).Count());
+            return Task.FromResult(_folder.EnumerateFiles("*.nupkg", SearchOption.AllDirectories).Count());
         }
 
         private class TestPackInfo : ITemplatePackageInfo, IDownloadedPackInfo

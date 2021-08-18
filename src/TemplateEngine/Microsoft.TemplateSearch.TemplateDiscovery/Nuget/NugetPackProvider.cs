@@ -25,12 +25,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
         private readonly FindPackageByIdResource _downloadResource;
         private string _searchUriFormat;
 
-        internal NugetPackProvider(string name, string query, string packageTempBasePath, int pageSize, bool runOnlyOnePage, bool includePreviewPacks)
+        internal NugetPackProvider(string name, string query, DirectoryInfo packageTempBasePath, int pageSize, bool runOnlyOnePage, bool includePreviewPacks)
         {
             Name = name;
             _pageSize = pageSize;
             _runOnlyOnePage = runOnlyOnePage;
-            _packageTempPath = Path.GetFullPath(Path.Combine(packageTempBasePath, DownloadedPacksDir, Name));
+            _packageTempPath = Path.GetFullPath(Path.Combine(packageTempBasePath.FullName, DownloadedPacksDir, Name));
             _repository = Repository.Factory.GetCoreV3(NuGetOrgFeed);
             ServiceIndexResourceV3 indexResource = _repository.GetResource<ServiceIndexResourceV3>();
             IReadOnlyList<ServiceIndexEntry> searchResources = indexResource.GetServiceEntries("SearchQueryService");
