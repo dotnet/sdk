@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
@@ -19,7 +19,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class AvoidEmptyInterfacesTests
     {
         [Fact]
-        public async Task TestCSharpEmptyPublicInterface()
+        public async Task TestCSharpEmptyPublicInterfaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface I
@@ -28,7 +28,7 @@ public interface I
         }
 
         [Fact]
-        public async Task TestBasicEmptyPublicInterface()
+        public async Task TestBasicEmptyPublicInterfaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface I
@@ -36,7 +36,7 @@ End Interface", CreateBasicResult(2, 18));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestCSharpEmptyInternalInterface()
+        public async Task TestCSharpEmptyInternalInterfaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 interface I
@@ -45,7 +45,7 @@ interface I
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestBasicEmptyInternalInterface()
+        public async Task TestBasicEmptyInternalInterfaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Interface I
@@ -53,7 +53,7 @@ End Interface");
         }
 
         [Fact]
-        public async Task TestCSharpNonEmptyInterface1()
+        public async Task TestCSharpNonEmptyInterface1Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface I
@@ -63,7 +63,7 @@ public interface I
         }
 
         [Fact]
-        public async Task TestBasicNonEmptyInterface1()
+        public async Task TestBasicNonEmptyInterface1Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface I
@@ -72,7 +72,7 @@ End Interface");
         }
 
         [Fact]
-        public async Task TestCSharpEmptyInterfaceWithNoInheritedMembers()
+        public async Task TestCSharpEmptyInterfaceWithNoInheritedMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface I : IBase
@@ -83,7 +83,7 @@ public interface IBase { }", CreateCSharpResult(2, 18), CreateCSharpResult(6, 18
         }
 
         [Fact]
-        public async Task TestBasicEmptyInterfaceWithNoInheritedMembers()
+        public async Task TestBasicEmptyInterfaceWithNoInheritedMembersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface I
@@ -95,7 +95,7 @@ End Interface", CreateBasicResult(2, 18), CreateBasicResult(6, 18));
         }
 
         [Fact]
-        public async Task TestCSharpEmptyInterfaceWithInheritedMembers()
+        public async Task TestCSharpEmptyInterfaceWithInheritedMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface I : IBase
@@ -109,7 +109,7 @@ public interface IBase
         }
 
         [Fact]
-        public async Task TestBasicEmptyInterfaceWithInheritedMembers()
+        public async Task TestBasicEmptyInterfaceWithInheritedMembersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface I
@@ -146,7 +146,7 @@ End Interface");
         // Invalid analyzer option ignored
         [InlineData("internal", @"dotnet_code_quality.api_surface = all
                                   dotnet_code_quality.CA1040.api_surface_2 = private")]
-        public async Task TestCSharpEmptyInterface_AnalyzerOptions_Diagnostic(string accessibility, string editorConfigText)
+        public async Task TestCSharpEmptyInterface_AnalyzerOptions_DiagnosticAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -198,7 +198,7 @@ public class C
         // Invalid analyzer option ignored
         [InlineData("Friend", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1040.api_surface_2 = Private")]
-        public async Task TestBasicEmptyInterface_AnalyzerOptions_Diagnostic(string accessibility, string editorConfigText)
+        public async Task TestBasicEmptyInterface_AnalyzerOptions_DiagnosticAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
             {
@@ -231,7 +231,7 @@ End Class"
         [InlineData("public", "dotnet_code_quality.Design.api_surface = internal, private")]
         [InlineData("public", @"dotnet_code_quality.api_surface = all
                                   dotnet_code_quality.CA1040.api_surface = private")]
-        public async Task TestCSharpEmptyInterface_AnalyzerOptions_NoDiagnostic(string accessibility, string editorConfigText)
+        public async Task TestCSharpEmptyInterface_AnalyzerOptions_NoDiagnosticAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -260,7 +260,7 @@ public class C
         [InlineData("Public", "dotnet_code_quality.Design.api_surface = Friend, Private")]
         [InlineData("Public", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1040.api_surface = Private")]
-        public async Task TestBasicEmptyInterface_AnalyzerOptions_NoDiagnostic(string accessibility, string editorConfigText)
+        public async Task TestBasicEmptyInterface_AnalyzerOptions_NoDiagnosticAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
             {
@@ -285,7 +285,7 @@ End Class"
 
         [Theory(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
         [CombinatorialData]
-        public async Task TestConflictingAnalyzerOptionsForPartials(bool hasConflict)
+        public async Task TestConflictingAnalyzerOptionsForPartialsAsync(bool hasConflict)
         {
             var csTest = new VerifyCS.Test
             {

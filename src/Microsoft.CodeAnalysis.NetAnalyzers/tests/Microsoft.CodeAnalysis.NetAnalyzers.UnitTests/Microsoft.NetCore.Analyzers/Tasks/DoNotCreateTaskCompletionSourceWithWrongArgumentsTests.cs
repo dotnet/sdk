@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
     public class DoNotCreateTaskCompletionSourceWithWrongArgumentsTests
     {
         [Fact]
-        public async Task NoDiagnostics_CSharp()
+        public async Task NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading.Tasks;
@@ -64,7 +64,7 @@ class Derived : TaskCompletionSource<int>
         }
 
         [Fact]
-        public async Task NoDiagnostics_Basic()
+        public async Task NoDiagnostics_BasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading.Tasks
@@ -106,7 +106,7 @@ End Class
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_CSharp()
+        public async Task Diagnostics_FixApplies_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"
@@ -150,7 +150,7 @@ class Derived : TaskCompletionSource<int>
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_CSharp_NonGeneric()
+        public async Task Diagnostics_FixApplies_CSharp_NonGenericAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"
@@ -212,7 +212,7 @@ class Derived : TaskCompletionSource
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_Basic()
+        public async Task Diagnostics_FixApplies_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
 @"
@@ -260,7 +260,7 @@ End Class
         }
 
         [Fact]
-        public async Task Diagnostics_FixDoesntApply_CSharp()
+        public async Task Diagnostics_FixDoesntApply_CSharpAsync()
         {
             const string Input = @"
 using System.Threading.Tasks;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTests
     {
         [Fact]
-        public async Task ClassNotDerivedFromMemoryManagerOK()
+        public async Task ClassNotDerivedFromMemoryManagerOKAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -39,7 +39,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ClassHavingFinalizerButNotDerivedFromMemoryManagerOK()
+        public async Task ClassHavingFinalizerButNotDerivedFromMemoryManagerOKAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -75,7 +75,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ClassDerivedFromMemoryManagerNoFinilizerOK()
+        public async Task ClassDerivedFromMemoryManagerNoFinilizerOKAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -101,7 +101,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ClassDerivedFromMemoryManagerWithFinilizerWarns()
+        public async Task ClassDerivedFromMemoryManagerWithFinilizerWarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -154,7 +154,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ClassIndirectlyDerivedFromMemoryManagerWithFinilizerWarns()
+        public async Task ClassIndirectlyDerivedFromMemoryManagerWithFinilizerWarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;

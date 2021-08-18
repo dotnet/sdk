@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DataSetDataTableInSerializableObjectGraphTests
     {
         [Fact]
-        public async Task JavaScriptSerializer_Deserialize_Generic_Diagnostic()
+        public async Task JavaScriptSerializer_Deserialize_Generic_DiagnosticAsync()
         {
             await VerifyCSharpJssAsync(@"
 using System;
@@ -38,7 +38,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task JavaScriptSerializer_Deserialize_Generic_NoDiagnostic()
+        public async Task JavaScriptSerializer_Deserialize_Generic_NoDiagnosticAsync()
         {
             await VerifyCSharpJssAsync(@"
 using System;
@@ -60,7 +60,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task JavaScriptSerializer_Deserialize_NonGeneric_Diagnostic()
+        public async Task JavaScriptSerializer_Deserialize_NonGeneric_DiagnosticAsync()
         {
             await VerifyCSharpJssAsync(@"
 using System;
@@ -84,7 +84,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task JavaScriptSerializer_Deserialize_NonGeneric_OutOfOrderArguments_Diagnostic()
+        public async Task JavaScriptSerializer_Deserialize_NonGeneric_OutOfOrderArguments_DiagnosticAsync()
         {
             await VerifyCSharpJssAsync(@"
 using System;
@@ -108,7 +108,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task JavaScriptSerializer_DeserializeObject_As_Diagnostic()
+        public async Task JavaScriptSerializer_DeserializeObject_As_DiagnosticAsync()
         {
             await VerifyCSharpJssAsync(@"
 using System;
@@ -132,7 +132,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DataContract_Type_Diagnostic()
+        public async Task DataContract_Type_DiagnosticAsync()
         {
             await VerifyCSharpAsync(@"
 using System;
@@ -157,7 +157,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DataContract_Type_Types_Diagnostic()
+        public async Task DataContract_Type_Types_DiagnosticAsync()
         {
             await VerifyCSharpAsync(@"
 using System;
@@ -183,7 +183,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task XmlSerializer_Constructor_Diagnostic()
+        public async Task XmlSerializer_Constructor_DiagnosticAsync()
         {
             await VerifyCSharpAsync(@"
 using System;
@@ -208,7 +208,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task XmlSerializer_FromType_Diagnostic()
+        public async Task XmlSerializer_FromType_DiagnosticAsync()
         {
             await VerifyCSharpAsync(@"
 using System;
@@ -233,7 +233,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Newtonsoft_JsonSerializer_Deserialize_Casted_Diagnostic()
+        public async Task Newtonsoft_JsonSerializer_Deserialize_Casted_DiagnosticAsync()
         {
             await VerifyCSharpNewtonsoftAsync(@"
 using System;
@@ -257,7 +257,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Newtonsoft_JsonSerializer_Deserialize_TypeSpecified_Diagnostic()
+        public async Task Newtonsoft_JsonSerializer_Deserialize_TypeSpecified_DiagnosticAsync()
         {
             await VerifyCSharpNewtonsoftAsync(@"
 using System;
@@ -281,7 +281,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Newtonsoft_JsonSerializer_Deserialize_TypeSpecified_OutOfOrderArguments_Diagnostic()
+        public async Task Newtonsoft_JsonSerializer_Deserialize_TypeSpecified_OutOfOrderArguments_DiagnosticAsync()
         {
             await VerifyCSharpNewtonsoftAsync(@"
 using System;
@@ -305,7 +305,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Newtonsoft_JsonSerializer_Deserialize_Casted_JsonIgnore_NoDiagnostic()
+        public async Task Newtonsoft_JsonSerializer_Deserialize_Casted_JsonIgnore_NoDiagnosticAsync()
         {
             await VerifyCSharpNewtonsoftAsync(@"
 using System;
@@ -329,7 +329,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Newtonsoft_JsonConvert_DeserializeObject_Generic_Diagnostic()
+        public async Task Newtonsoft_JsonConvert_DeserializeObject_Generic_DiagnosticAsync()
         {
             await VerifyCSharpNewtonsoftAsync(@"
 using System;

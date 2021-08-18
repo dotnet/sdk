@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public partial class MarkISerializableTypesWithSerializableTests
     {
         [Fact]
-        public async Task CA2237SerializableMissingAttr()
+        public async Task CA2237SerializableMissingAttrAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2237SerializableInternal()
+        public async Task CA2237SerializableInternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -75,7 +75,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2237SerializableProperWithScope()
+        public async Task CA2237SerializableProperWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -126,7 +126,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2237SerializableWithBase()
+        public async Task CA2237SerializableWithBaseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -159,7 +159,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2237SerializableWithBaseAttr()
+        public async Task CA2237SerializableWithBaseAttrAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -196,7 +196,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2237_CA2229_NoDiagnosticForInterfaceAndDelegate()
+        public async Task CA2237_CA2229_NoDiagnosticForInterfaceAndDelegateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -35,7 +35,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region CSharp
 
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesCSharp()
+        public async Task CA1033SimpleDiagnosticCasesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -145,7 +145,7 @@ public class ImplementsGeneralThree : IGeneral
         }
 
         [Fact]
-        public async Task CA1033NestedDiagnosticCasesCSharp()
+        public async Task CA1033NestedDiagnosticCasesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -210,7 +210,7 @@ public class NestedExplicitInterfaceImplementation
         }
 
         [Fact]
-        public async Task CA1033NoDiagnosticCasesCSharp()
+        public async Task CA1033NoDiagnosticCasesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -358,7 +358,7 @@ public class NestedExplicitInterfaceImplementation
         }
 
         [Fact]
-        public async Task CA1033ExpressionBodiedMemberCSharp()
+        public async Task CA1033ExpressionBodiedMemberCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -393,7 +393,7 @@ public class ImplementsGeneralThree : IGeneral
         #region VisualBasic
 
         [Fact]
-        public async Task CA1033SimpleDiagnosticCasesBasic()
+        public async Task CA1033SimpleDiagnosticCasesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -503,7 +503,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1033NestedDiagnosticCasesBasic()
+        public async Task CA1033NestedDiagnosticCasesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -572,7 +572,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1033NoUnderlyingImplementationsDiagnostics()
+        public async Task CA1033NoUnderlyingImplementationsDiagnosticsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class SpecifyStringComparisonTests
     {
         [Fact]
-        public async Task CA1307_CA1310_StringCompareTests_CSharp()
+        public async Task CA1307_CA1310_StringCompareTests_CSharpAsync()
         {
 #if !NETCOREAPP
             const string StringArgType = "string";
@@ -56,7 +56,7 @@ GetCA1310CSharpResultsAt(14, 18, $"string.Compare({StringArgType}, int, {StringA
         }
 
         [Fact]
-        public async Task CA1307_CA1310_StringWithStringTests_CSharp()
+        public async Task CA1307_CA1310_StringWithStringTests_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -82,7 +82,7 @@ GetCA1310CSharpResultsAt(12, 16, "string.StartsWith(string)",
 
 #if NETCOREAPP // EndsWith(char) and StartsWith(char) overloads don't exist in .NET Framework 4.7.2
         [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
-        public async Task CA1307_CA1310_StringWithCharTests_CSharp()
+        public async Task CA1307_CA1310_StringWithCharTests_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -102,7 +102,7 @@ public class StringComparisonTests
         [Theory]
         [InlineData("IndexOf")]
         [InlineData("LastIndexOf")]
-        public async Task CA1307_CA1310_StringIndexOfStringTests_CSharp(string method)
+        public async Task CA1307_CA1310_StringIndexOfStringTests_CSharpAsync(string method)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
 using System;
@@ -130,7 +130,7 @@ GetCA1310CSharpResultsAt(12, 16, $"string.{method}(string, int, int)",
         }
 
         [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
-        public async Task CA1307_CA1310_StringIndexOfCharTests_CSharp()
+        public async Task CA1307_CA1310_StringIndexOfCharTests_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -154,7 +154,7 @@ public class StringComparisonTests
         }
 
         [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
-        public async Task CA1307_CA1310_StringLastIndexOfCharTests_CSharp()
+        public async Task CA1307_CA1310_StringLastIndexOfCharTests_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -175,7 +175,7 @@ public class StringComparisonTests
         [Theory, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
         [InlineData("string")]
         [InlineData("char")]
-        public async Task CA1307_CA1310_StringContainsTests_CSharp(string firstParamType)
+        public async Task CA1307_CA1310_StringContainsTests_CSharpAsync(string firstParamType)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
 using System;
@@ -195,7 +195,7 @@ GetCA1307CSharpResultsAt(9, 16, $"string.Contains({firstParamType})",
 #endif
 
         [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
-        public async Task CA1307_CA1310_StringGetHashCodeTests_CSharp()
+        public async Task CA1307_CA1310_StringGetHashCodeTests_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -217,7 +217,7 @@ public class StringGetHashCodeTests
         }
 
         [Fact]
-        public async Task CA1307_CA1310_StringCompareToTests_CSharp()
+        public async Task CA1307_CA1310_StringCompareToTests_CSharpAsync()
         {
 #if !NETCOREAPP
             const string ObjectArgType = "object";
@@ -250,7 +250,7 @@ GetCA1310CSharpResultsAt(12, 20, $"string.CompareTo({ObjectArgType})",
         }
 
         [Fact]
-        public async Task CA1307_CA1310_OverloadTests_StringFirstParam_CSharp()
+        public async Task CA1307_CA1310_OverloadTests_StringFirstParam_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -286,7 +286,7 @@ GetCA1307CSharpResultsAt(9, 9, "StringComparisonTests.DoNothing(string)",
         [InlineData("int")]
         [InlineData("object")]
         [InlineData("StringComparisonTests")]
-        public async Task CA1307_CA1310_OverloadTests_NonStringFirstParam_CSharp(string firstParamType)
+        public async Task CA1307_CA1310_OverloadTests_NonStringFirstParam_CSharpAsync(string firstParamType)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
 using System;
@@ -313,7 +313,7 @@ GetCA1307CSharpResultsAt(9, 9, $"StringComparisonTests.DoNothing({firstParamType
         }
 
         [Fact]
-        public async Task CA1307_CA1310_OverloadWithMismatchRefKind_CSharp()
+        public async Task CA1307_CA1310_OverloadWithMismatchRefKind_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -347,7 +347,7 @@ public class StringComparisonTests
         }
 
         [Fact]
-        public async Task CA1307_CA1310_StringCompareTests_VisualBasic()
+        public async Task CA1307_CA1310_StringCompareTests_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -379,7 +379,7 @@ GetCA1310BasicResultsAt(12, 18, "String.Compare(String, Integer, String, Integer
         }
 
         [Fact]
-        public async Task CA1307_CA1310_StringWithTests_VisualBasic()
+        public async Task CA1307_CA1310_StringWithTests_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -402,7 +402,7 @@ GetCA1310BasicResultsAt(10, 16, "String.StartsWith(String)",
         }
 
         [Fact]
-        public async Task CA1307_CA1310_StringIndexOfTests_VisualBasic()
+        public async Task CA1307_CA1310_StringIndexOfTests_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -428,7 +428,7 @@ GetCA1310BasicResultsAt(10, 16, "String.IndexOf(String, Integer, Integer)",
         }
 
         [Fact]
-        public async Task CA1307_CA1310_StringCompareToTests_VisualBasic()
+        public async Task CA1307_CA1310_StringCompareToTests_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -451,7 +451,7 @@ GetCA1310BasicResultsAt(10, 16, "String.CompareTo(Object)",
         }
 
         [Fact]
-        public async Task CA1307_CA1310_OverloadTests_VisualBasic()
+        public async Task CA1307_CA1310_OverloadTests_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -479,7 +479,7 @@ GetCA1307BasicResultsAt(7, 9, "StringComparisonTests.DoNothing(String)",
         }
 
         [Fact, WorkItem(3492, "https://github.com/dotnet/roslyn-analyzers/issues/3492")]
-        public async Task CA1307_CA1310_SimpleIQueryable_NoDiagnostic()
+        public async Task CA1307_CA1310_SimpleIQueryable_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -501,7 +501,7 @@ public class C
         }
 
         [Fact, WorkItem(3492, "https://github.com/dotnet/roslyn-analyzers/issues/3492")]
-        public async Task CA1307_CA1310_IQueryableOfIEnumerable_Diagnostic()
+        public async Task CA1307_CA1310_IQueryableOfIEnumerable_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -532,7 +532,7 @@ public class C
         }
 
         [Fact, WorkItem(3492, "https://github.com/dotnet/roslyn-analyzers/issues/3492")]
-        public async Task CA1307_CA1310_IQueryableAsEnumerable_Diagnostic()
+        public async Task CA1307_CA1310_IQueryableAsEnumerable_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -563,7 +563,7 @@ public class C
         }
 
         [Fact, WorkItem(3492, "https://github.com/dotnet/roslyn-analyzers/issues/3492")]
-        public async Task CA1307_CA1310_ExpressionFunc_NoDiagnostic()
+        public async Task CA1307_CA1310_ExpressionFunc_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

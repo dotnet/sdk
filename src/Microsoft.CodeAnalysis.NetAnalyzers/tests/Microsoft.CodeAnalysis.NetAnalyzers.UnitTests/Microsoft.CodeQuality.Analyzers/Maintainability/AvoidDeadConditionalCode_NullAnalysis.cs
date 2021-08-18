@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -84,7 +84,7 @@ dotnet_code_quality.copy_analysis = true") },
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task SimpleNullCompare_NoDiagnostic()
+        public async Task SimpleNullCompare_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -116,7 +116,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task SimpleNullCompare_AfterAssignment_Diagnostic()
+        public async Task SimpleNullCompare_AfterAssignment_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -158,7 +158,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ElseIf_NestedIf_NullCompare_IsNullValue_Diagnostic()
+        public async Task ElseIf_NestedIf_NullCompare_IsNullValue_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -282,7 +282,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ElseIf_NestedIf_NullCompare_IsNotNullValue_Diagnostic()
+        public async Task ElseIf_NestedIf_NullCompare_IsNotNullValue_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -406,7 +406,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ElseIf_NestedIf_NullCompare_IsNotNotNullValue_NoDiagnostic()
+        public async Task ElseIf_NestedIf_NullCompare_IsNotNotNullValue_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -506,7 +506,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ElseIf_NestedIf_NullCompare_IsMayBeNullValue_NoDiagnostic()
+        public async Task ElseIf_NestedIf_NullCompare_IsMayBeNullValue_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -606,7 +606,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_WhileLoop()
+        public async Task NullCompare_WhileLoopAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -676,7 +676,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_WhileLoop_02()
+        public async Task NullCompare_WhileLoop_02Async()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -709,7 +709,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_WhileLoop_03()
+        public async Task NullCompare_WhileLoop_03Async()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -754,7 +754,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_WhileLoop_04()
+        public async Task NullCompare_WhileLoop_04Async()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -803,7 +803,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_WhileLoop_05()
+        public async Task NullCompare_WhileLoop_05Async()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -862,7 +862,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_WhileLoop_WithBreak()
+        public async Task NullCompare_WhileLoop_WithBreakAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -937,7 +937,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_WhileLoop_WithContinue()
+        public async Task NullCompare_WhileLoop_WithContinueAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -1038,7 +1038,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_DoWhileLoop()
+        public async Task NullCompare_DoWhileLoopAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -1130,7 +1130,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_DoWhileLoop_02()
+        public async Task NullCompare_DoWhileLoop_02Async()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -1176,7 +1176,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_DoWhileLoop_WithBreak()
+        public async Task NullCompare_DoWhileLoop_WithBreakAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -1269,7 +1269,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_DoWhileLoop_WithContinue()
+        public async Task NullCompare_DoWhileLoop_WithContinueAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -1424,7 +1424,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_DoUntilLoop()
+        public async Task NullCompare_DoUntilLoopAsync()
         {
             await VerifyBasicAnalyzerAsync(@"
 Module Test
@@ -1480,7 +1480,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ForLoop()
+        public async Task NullCompare_ForLoopAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -1545,7 +1545,7 @@ class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ForLoop_02()
+        public async Task NullCompare_ForLoop_02Async()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -1570,7 +1570,7 @@ class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ForLoop_03()
+        public async Task NullCompare_ForLoop_03Async()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -1624,7 +1624,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ForLoop_WithBreak()
+        public async Task NullCompare_ForLoop_WithBreakAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -1700,7 +1700,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ForLoop_WithContinue()
+        public async Task NullCompare_ForLoop_WithContinueAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -1797,7 +1797,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ValueCompare_ForLoop()
+        public async Task ValueCompare_ForLoopAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -1836,7 +1836,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ForEachLoop()
+        public async Task NullCompare_ForEachLoopAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -1889,7 +1889,7 @@ End Class
         }
 
         [Fact]
-        public async Task NullCompare_ForEachLoop_WithBreak()
+        public async Task NullCompare_ForEachLoop_WithBreakAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -1966,7 +1966,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ForEachLoop_WithContinue()
+        public async Task NullCompare_ForEachLoop_WithContinueAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2082,7 +2082,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_SwitchStatement_01_NoDiagnostic()
+        public async Task NullCompare_SwitchStatement_01_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2137,7 +2137,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_SwitchStatement_02_NoDiagnostic()
+        public async Task NullCompare_SwitchStatement_02_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2192,7 +2192,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_SwitchStatement_03_NoDiagnostic()
+        public async Task NullCompare_SwitchStatement_03_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2249,7 +2249,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_SwitchStatement_01_Diagnostic()
+        public async Task NullCompare_SwitchStatement_01_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2309,7 +2309,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_SwitchStatement_02_Diagnostic()
+        public async Task NullCompare_SwitchStatement_02_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2370,7 +2370,7 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCompare_CopyAnalysis()
+        public async Task NullCompare_CopyAnalysisAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2422,7 +2422,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ConditionalOr_NoDiagnostic()
+        public async Task NullCompare_ConditionalOr_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2469,7 +2469,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ConditionalOr_Diagnostic()
+        public async Task NullCompare_ConditionalOr_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2517,7 +2517,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ConditionalAnd_NoDiagnostic()
+        public async Task NullCompare_ConditionalAnd_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2592,7 +2592,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ConditionalAnd_Diagnostic()
+        public async Task NullCompare_ConditionalAnd_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2641,7 +2641,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ConditionaAndOrNullCompare_Diagnostic()
+        public async Task ConditionaAndOrNullCompare_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -2683,7 +2683,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ContractCheck_NoDiagnostic()
+        public async Task NullCompare_ContractCheck_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -2721,7 +2721,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_ContractCheck_Diagnostic()
+        public async Task NullCompare_ContractCheck_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -2809,7 +2809,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_InAssignment_Diagnostic()
+        public async Task NullCompare_InAssignment_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -2846,7 +2846,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_Nested_NoDiagnostic()
+        public async Task NullCompare_Nested_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -2891,7 +2891,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCoalesce_NoDiagnostic()
+        public async Task NullCoalesce_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -2926,7 +2926,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCoalesce_Diagnostic()
+        public async Task NullCoalesce_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -2984,7 +2984,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCoalesce_NullableValueType_NoDiagnostic()
+        public async Task NullCoalesce_NullableValueType_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3015,7 +3015,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCoalesce_NullableValueType_Diagnostic()
+        public async Task NullCoalesce_NullableValueType_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -3047,7 +3047,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ConditionalAccess_NoDiagnostic()
+        public async Task ConditionalAccess_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3084,7 +3084,7 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ConditionalAccess_Diagnostic()
+        public async Task ConditionalAccess_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3144,7 +3144,7 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ConditionalAccessNullCoalesce_Field_NoDiagnostic()
+        public async Task ConditionalAccessNullCoalesce_Field_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3180,7 +3180,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterTryCast_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3243,7 +3243,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterTryCast_02_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_02_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3352,7 +3352,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact, WorkItem(4411, "https://github.com/dotnet/roslyn-analyzers/issues/4411")]
-        public async Task NullCheck_AfterTryCast_03_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_03_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class A
@@ -3375,7 +3375,7 @@ class B : A
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact, WorkItem(4383, "https://github.com/dotnet/roslyn-analyzers/issues/4383")]
-        public async Task NullCheck_AfterTryCast_04_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_04_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -3414,7 +3414,7 @@ internal static class Class1
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterTryCast_Diagnostic()
+        public async Task NullCheck_AfterTryCast_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3487,7 +3487,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterTryCast_02_Diagnostic()
+        public async Task NullCheck_AfterTryCast_02_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3685,7 +3685,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterTryCast_IsPattern_Diagnostic()
+        public async Task NullCheck_AfterTryCast_IsPattern_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3762,7 +3762,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task DeclarationPattern_DiscardSymbol_Diagnostic()
+        public async Task DeclarationPattern_DiscardSymbol_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3798,7 +3798,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterTryCast_IsPattern_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_IsPattern_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -3848,7 +3848,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterTryCast_Interfaces_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_Interfaces_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 interface I
@@ -3932,7 +3932,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterTryCast_Interfaces_Diagnostic()
+        public async Task NullCheck_AfterTryCast_Interfaces_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 interface I
@@ -4013,7 +4013,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterTryCast_TypeParameter_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_TypeParameter_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -4093,7 +4093,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterTryCast_TypeParameter_Diagnostic()
+        public async Task NullCheck_AfterTryCast_TypeParameter_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -4152,7 +4152,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_NoDiagnostic()
+        public async Task NullCheck_AfterDirectCast_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -4212,7 +4212,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_NarrowingConversion_NoDiagnostic()
+        public async Task NullCheck_AfterDirectCast_NarrowingConversion_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -4230,7 +4230,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact, WorkItem(4415, "https://github.com/dotnet/roslyn-analyzers/issues/4415")]
-        public async Task NullCheck_AfterDirectCast_NullableValueType_NoDiagnostic()
+        public async Task NullCheck_AfterDirectCast_NullableValueType_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -4251,7 +4251,7 @@ internal class Class1
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -4309,7 +4309,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_02_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_02_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -4367,7 +4367,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_03_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_03_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -4488,7 +4488,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_04_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_04_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -4541,7 +4541,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_05_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_05_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -4602,7 +4602,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_Interfaces_NoDiagnostic()
+        public async Task NullCheck_AfterDirectCast_Interfaces_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 interface I
@@ -4687,7 +4687,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_Interfaces_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_Interfaces_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 interface I
@@ -4768,7 +4768,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_Interfaces_02_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_Interfaces_02_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 interface I
@@ -4864,7 +4864,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_TypeParameter_NoDiagnostic()
+        public async Task NullCheck_AfterDirectCast_TypeParameter_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -4919,7 +4919,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AfterDirectCast_TypeParameter_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_TypeParameter_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5007,7 +5007,7 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_ThrowExpressionWithoutArgument_NoDiagnostic()
+        public async Task NullCheck_ThrowExpressionWithoutArgument_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5036,7 +5036,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AssignedInCatch_NoDiagnostic()
+        public async Task NullCheck_AssignedInCatch_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5072,7 +5072,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_OutArgument_NoDiagnostic()
+        public async Task NullCheck_OutArgument_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5112,7 +5112,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_RefArgument_NoDiagnostic()
+        public async Task NullCheck_RefArgument_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -5138,7 +5138,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_LogicalOr_NoDiagnostic()
+        public async Task NullCheck_LogicalOr_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -5158,7 +5158,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_DeconstructionAssignment_NoDiagnostic()
+        public async Task NullCheck_DeconstructionAssignment_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5184,7 +5184,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_DeconstructionAssignment_InLambda_NoDiagnostic()
+        public async Task NullCheck_DeconstructionAssignment_InLambda_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5211,7 +5211,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/1647")]
-        public async Task NullCheck_DeconstructionAssignment_InLambdaPassedAsArgument_NoDiagnostic()
+        public async Task NullCheck_DeconstructionAssignment_InLambdaPassedAsArgument_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5239,7 +5239,7 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_AwaitExpression_NoDiagnostic()
+        public async Task NullCheck_AwaitExpression_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Threading.Tasks;
@@ -5279,7 +5279,7 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_CollectionAddAndCount_NoDiagnostic()
+        public async Task NullCheck_CollectionAddAndCount_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -5327,7 +5327,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCheck_BothSidesOfEquals_NoDiagnostic()
+        public async Task NullCheck_BothSidesOfEquals_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -5365,7 +5365,7 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ConditionalAccessCheck_InsideLocalFunction_NoDiagnostic()
+        public async Task ConditionalAccessCheck_InsideLocalFunction_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -5383,7 +5383,7 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ConditionalAccessCheck_InsideLocalFunction_02_NoDiagnostic()
+        public async Task ConditionalAccessCheck_InsideLocalFunction_02_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -5401,7 +5401,7 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ConditionalAccessCheck_InsideInitializer_NoDiagnostic()
+        public async Task ConditionalAccessCheck_InsideInitializer_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5427,7 +5427,7 @@ class Test : Base
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(1650, "https://github.com/dotnet/roslyn-analyzers/issues/1650")]
-        public async Task ConditionalAccessCheck_InsideConstructorInitializer_Diagnostic()
+        public async Task ConditionalAccessCheck_InsideConstructorInitializer_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5455,7 +5455,7 @@ class Test : Base
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(1650, "https://github.com/dotnet/roslyn-analyzers/issues/1650")]
-        public async Task ConditionalAccessCheck_InsideFieldInitializer_Diagnostic()
+        public async Task ConditionalAccessCheck_InsideFieldInitializer_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5475,7 +5475,7 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(1650, "https://github.com/dotnet/roslyn-analyzers/issues/1650")]
-        public async Task ConditionalAccessCheck_InsidePropertyInitializer_ExpressionBody_Diagnostic()
+        public async Task ConditionalAccessCheck_InsidePropertyInitializer_ExpressionBody_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5498,7 +5498,7 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task InsideLockStatement_FieldCheck_NoDiagnostic()
+        public async Task InsideLockStatement_FieldCheck_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -5548,7 +5548,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task TestCompilerGeneratedNullCheckNotFlagged()
+        public async Task TestCompilerGeneratedNullCheckNotFlaggedAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -5577,7 +5577,7 @@ public class C : IDisposable
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact, WorkItem(4327, "https://github.com/dotnet/roslyn-analyzers/issues/4327")]
-        public async Task TestCompilerGeneratedNullCheckNotFlagged_02()
+        public async Task TestCompilerGeneratedNullCheckNotFlagged_02Async()
         {
             await new VerifyCS.Test
             {
@@ -5604,7 +5604,7 @@ class Class1
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact, WorkItem(4382, "https://github.com/dotnet/roslyn-analyzers/issues/4382")]
-        public async Task TestCompilerGeneratedNullCheckNotFlagged_03()
+        public async Task TestCompilerGeneratedNullCheckNotFlagged_03Async()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -5622,7 +5622,7 @@ class C
         }
 
         [Fact]
-        public async Task StaticObjectReferenceEquals_Diagnostic()
+        public async Task StaticObjectReferenceEquals_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 public class C
@@ -5717,7 +5717,7 @@ End Class",
         }
 
         [Fact]
-        public async Task StaticObjectEquals_NoObjectEqualsOverride_Diagnostic()
+        public async Task StaticObjectEquals_NoObjectEqualsOverride_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 public class C
@@ -5812,7 +5812,7 @@ End Class",
         }
 
         [Fact]
-        public async Task StaticObjectEquals_ObjectEqualsOverride_Diagnostic()
+        public async Task StaticObjectEquals_ObjectEqualsOverride_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 public class C
@@ -5909,7 +5909,7 @@ End Class",
         }
 
         [Fact]
-        public async Task ObjectEquals_NoObjectEqualsOverride_Diagnostic()
+        public async Task ObjectEquals_NoObjectEqualsOverride_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 public class C
@@ -6004,7 +6004,7 @@ End Class",
         }
 
         [Fact]
-        public async Task ObjectEquals_ObjectEqualsOverride_Diagnostic()
+        public async Task ObjectEquals_ObjectEqualsOverride_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 public class C
@@ -6101,7 +6101,7 @@ End Class",
         }
 
         [Fact]
-        public async Task IEquatableEquals_ExplicitImplementation_Diagnostic()
+        public async Task IEquatableEquals_ExplicitImplementation_DiagnosticAsync()
         {
             // Explicit implementation of Equals means c1.Equals(c2) performs
             // reference equality using object.Equals(object) overload.
@@ -6211,7 +6211,7 @@ End Class",
         }
 
         [Fact]
-        public async Task IEquatableEquals_ImplicitImplementation_Diagnostic()
+        public async Task IEquatableEquals_ImplicitImplementation_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -6269,7 +6269,7 @@ public class Test
         }
 
         [Fact]
-        public async Task IEquatableEquals_Override_Diagnostic()
+        public async Task IEquatableEquals_Override_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -6332,7 +6332,7 @@ public class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task MultidimensionalArray_NoDiagnostic()
+        public async Task MultidimensionalArray_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -6365,7 +6365,7 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_LambdaResult_Diagnostic()
+        public async Task NullCheck_LambdaResult_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -6404,7 +6404,7 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_LambdaResult_EditorConfig_NoInterproceduralLambdaAnalysis_NoDiagnostic()
+        public async Task NullCheck_LambdaResult_EditorConfig_NoInterproceduralLambdaAnalysis_NoDiagnosticAsync()
         {
             const string editorConfigText = "dotnet_code_quality.max_interprocedural_lambda_or_local_function_call_chain = 0";
 
@@ -6469,7 +6469,7 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_LambdaResult_NoDiagnostic()
+        public async Task NullCheck_LambdaResult_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -6510,7 +6510,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_LambdaResult_NoDiagnostic_02()
+        public async Task NullCheck_LambdaResult_NoDiagnostic_02Async()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class Test
@@ -6553,7 +6553,7 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCheck_LambdaResult_NoDiagnostic_03()
+        public async Task NullCheck_LambdaResult_NoDiagnostic_03Async()
         {
             // We do not analyze lambdas/local functions independent of the calling context
             // Hence no diagnostic reported for dead code in lambda here.
@@ -6593,7 +6593,7 @@ End Class");
         }
 
         [Fact, WorkItem(1855, "https://github.com/dotnet/roslyn-analyzers/issues/1855")]
-        public async Task PointsToAbstractValue_MakeMayBeNull_AssertsKindNotEqualKnownKnownLValueCaptures()
+        public async Task PointsToAbstractValue_MakeMayBeNull_AssertsKindNotEqualKnownKnownLValueCapturesAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -6648,7 +6648,7 @@ using System.Linq;
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task NullCompare_Unboxing_InstanceEntityAssert()
+        public async Task NullCompare_Unboxing_InstanceEntityAssertAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 struct S
@@ -6668,7 +6668,7 @@ class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NullCompare_PointsToFlowCaptureAssert()
+        public async Task NullCompare_PointsToFlowCaptureAssertAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 class C
@@ -6711,7 +6711,7 @@ class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task NestedLambdaAndLocalFunctionsWithCaptures()
+        public async Task NestedLambdaAndLocalFunctionsWithCapturesAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -6738,7 +6738,7 @@ class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public async Task CopyAnalysisAssert_IndexerArrayAccessWithCast()
+        public async Task CopyAnalysisAssert_IndexerArrayAccessWithCastAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 public struct S
@@ -6764,7 +6764,7 @@ public class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task ArrayInitializerNotParentedByArrayCreation()
+        public async Task ArrayInitializerNotParentedByArrayCreationAsync()
         {
             await VerifyBasicAnalyzerAsync(@"
 Class C
@@ -6783,7 +6783,7 @@ End Class
         [InlineData("dotnet_code_quality.CA1508.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.CA1508.excluded_symbol_names = M*")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {
@@ -6860,7 +6860,7 @@ End Module"
         [Fact]
         [WorkItem(3063, "https://github.com/dotnet/roslyn-analyzers/issues/3063")]
         [WorkItem(2985, "https://github.com/dotnet/roslyn-analyzers/issues/2985")]
-        public async Task UsingBlock_NoDiagnostic()
+        public async Task UsingBlock_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -6888,7 +6888,7 @@ public class Class1
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public async Task UsingStatement_NoDiagnostic()
+        public async Task UsingStatement_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -6918,7 +6918,7 @@ public class Class1
         [Theory, WorkItem(3685, "https://github.com/dotnet/roslyn-analyzers/issues/3685")]
         [InlineData("IsNullOrWhiteSpace")]
         [InlineData("IsNullOrEmpty")]
-        public async Task StringNullCheckApis(string apiName)
+        public async Task StringNullCheckApisAsync(string apiName)
         {
             await new VerifyCS.Test
             {
@@ -6946,7 +6946,7 @@ public class Class1
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
         [WorkItem(3845, "https://github.com/dotnet/roslyn-analyzers/issues/3845")]
-        public async Task ParamArrayNullCheckIsNotFlagged()
+        public async Task ParamArrayNullCheckIsNotFlaggedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -6972,7 +6972,7 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
         [WorkItem(4509, "https://github.com/dotnet/roslyn-analyzers/issues/4509")]
-        public async Task GenericFieldNullCheckIsNotFlagged()
+        public async Task GenericFieldNullCheckIsNotFlaggedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class MyClass<T>
@@ -6999,7 +6999,7 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
         [WorkItem(4548, "https://github.com/dotnet/roslyn-analyzers/issues/4548")]
-        public async Task ActivatorCreateInstanceNullCheckIsNotFlagged()
+        public async Task ActivatorCreateInstanceNullCheckIsNotFlaggedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -7032,7 +7032,7 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
         [WorkItem(4548, "https://github.com/dotnet/roslyn-analyzers/issues/4548")]
-        public async Task FactoryMethodWithNullableReturnIsNotFlagged()
+        public async Task FactoryMethodWithNullableReturnIsNotFlaggedAsync()
         {
             await new VerifyCS.Test
             {

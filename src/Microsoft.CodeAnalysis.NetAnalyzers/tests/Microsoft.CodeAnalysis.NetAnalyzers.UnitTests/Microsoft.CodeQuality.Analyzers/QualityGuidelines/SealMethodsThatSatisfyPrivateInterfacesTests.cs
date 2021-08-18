@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class SealMethodsThatSatisfyPrivateInterfacesTests
     {
         [Fact]
-        public async Task TestCSharp_ClassesThatCannotBeSubClassedOutsideThisAssembly_HasNoDiagnostic()
+        public async Task TestCSharp_ClassesThatCannotBeSubClassedOutsideThisAssembly_HasNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface IFace
@@ -47,7 +47,7 @@ public class D : IFace
         }
 
         [Fact]
-        public async Task TestCSharp_VirtualImplicit_HasDiagnostic()
+        public async Task TestCSharp_VirtualImplicit_HasDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface IFace
@@ -65,7 +65,7 @@ public class C : IFace
         }
 
         [Fact]
-        public async Task TestCSharp_AbstractImplicit_HasDiagnostic()
+        public async Task TestCSharp_AbstractImplicit_HasDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface IFace
@@ -81,7 +81,7 @@ public abstract class C : IFace
         }
 
         [Fact]
-        public async Task TestCSharp_Explicit_NoDiagnostic()
+        public async Task TestCSharp_Explicit_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface IFace
@@ -99,7 +99,7 @@ public class C : IFace
         }
 
         [Fact]
-        public async Task TestCSharp_NoInterface_NoDiagnostic()
+        public async Task TestCSharp_NoInterface_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -112,7 +112,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestCSharp_StructImplicit_NoDiagnostic()
+        public async Task TestCSharp_StructImplicit_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface IFace
@@ -130,7 +130,7 @@ public class C : IFace
         }
 
         [Fact]
-        public async Task TestCSharp_PublicInterface_NoDiagnostic()
+        public async Task TestCSharp_PublicInterface_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface IFace
@@ -148,7 +148,7 @@ public class C : IFace
         }
 
         [Fact]
-        public async Task TestCSharp_OverriddenFromBase_HasDiagnostic()
+        public async Task TestCSharp_OverriddenFromBase_HasDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface IFace
@@ -171,7 +171,7 @@ public class C : B, IFace
         }
 
         [Fact]
-        public async Task TestCSharp_OverriddenFromBaseButMethodIsSealed_NoDiagnostic()
+        public async Task TestCSharp_OverriddenFromBaseButMethodIsSealed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface IFace
@@ -194,7 +194,7 @@ public class C : B, IFace
         }
 
         [Fact]
-        public async Task TestCSharp_OverriddenFromBaseButClassIsSealed_NoDiagnostic()
+        public async Task TestCSharp_OverriddenFromBaseButClassIsSealed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface IFace
@@ -217,7 +217,7 @@ public sealed class C : B, IFace
         }
 
         [Fact]
-        public async Task TestCSharp_ImplicitlyImplementedFromBaseMember_HasDiagnostic()
+        public async Task TestCSharp_ImplicitlyImplementedFromBaseMember_HasDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface IFace
@@ -239,7 +239,7 @@ public class C : B, IFace
         }
 
         [Fact]
-        public async Task TestCSharp_ImplicitlyImplementedFromBaseMember_Public_NoDiagnostic()
+        public async Task TestCSharp_ImplicitlyImplementedFromBaseMember_Public_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface IFace
@@ -261,7 +261,7 @@ class C : B, IFace
         }
 
         [Fact]
-        public async Task TestVB_Overridable_HasDiagnostic()
+        public async Task TestVB_Overridable_HasDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface IFace
@@ -278,7 +278,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestVB_MustOverride_HasDiagnostic()
+        public async Task TestVB_MustOverride_HasDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface IFace
@@ -294,7 +294,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestVB_OverridenFromBase_HasDiagnostic()
+        public async Task TestVB_OverridenFromBase_HasDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface IFace
@@ -316,7 +316,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestVB_OverridenFromBaseButNotOverridable_NoDiagnostic()
+        public async Task TestVB_OverridenFromBaseButNotOverridable_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface IFace
@@ -338,7 +338,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestVB_NotExplicit_NoDiagnostic()
+        public async Task TestVB_NotExplicit_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface IFace
@@ -357,7 +357,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestVB_PrivateMethod_NoDiagnostic()
+        public async Task TestVB_PrivateMethod_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface IFace
@@ -374,7 +374,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestVB_PublicMethod_NoDiagnostic()
+        public async Task TestVB_PublicMethod_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface IFace
@@ -391,7 +391,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestVB_FriendMethod_NoDiagnostic()
+        public async Task TestVB_FriendMethod_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface IFace
@@ -408,7 +408,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestVB_PublicInterface_NoDiagnostic()
+        public async Task TestVB_PublicInterface_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface IFace
@@ -425,7 +425,7 @@ End Class
         }
 
         [Fact, WorkItem(4406, "https://github.com/dotnet/roslyn-analyzers/issues/4406")]
-        public async Task CA2119_ExtendedInterface()
+        public async Task CA2119_ExtendedInterfaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace FxCopRule
@@ -468,7 +468,7 @@ End Namespace");
         // sealed overrides - no diagnostic
 
         [Fact, WorkItem(4566, "https://github.com/dotnet/roslyn-analyzers/issues/4566")]
-        public async Task CA2119_BaseClassInterface_NoDiagnostic()
+        public async Task CA2119_BaseClassInterface_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace NS

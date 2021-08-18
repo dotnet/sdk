@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class PotentialReferenceCycleInDeserializedObjectGraphTests
     {
         [Fact]
-        public async Task TestSelfReferDirectlyDiagnostic()
+        public async Task TestSelfReferDirectlyDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -47,7 +47,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task TestParentChildCircleDiagnostic()
+        public async Task TestParentChildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -76,7 +76,7 @@ class TestClassB
         }
 
         [Fact]
-        public async Task TestParentGrandchildCircleDiagnostic()
+        public async Task TestParentGrandchildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -126,7 +126,7 @@ class TestClassD
         }
 
         [Fact]
-        public async Task TestChildCircleDiagnostic()
+        public async Task TestChildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -154,7 +154,7 @@ class TestClassB
         }
 
         [Fact]
-        public async Task TestChildGrandchildCircleDiagnostic()
+        public async Task TestChildGrandchildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -193,7 +193,7 @@ class TestClassC
         }
 
         [Fact]
-        public async Task TestClassReferedInTwoLoopsDiagnostic()
+        public async Task TestClassReferedInTwoLoopsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -268,7 +268,7 @@ class TestClassC2
         }
 
         [Fact]
-        public async Task TestMultiFieldsWithSameTypeDiagnostic()
+        public async Task TestMultiFieldsWithSameTypeDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -303,7 +303,7 @@ class TestClassB
         }
 
         [Fact]
-        public async Task TestChildCircleWithParentChildCircleDiagnostic()
+        public async Task TestChildCircleWithParentChildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -335,7 +335,7 @@ class TestClassB
         }
 
         [Fact]
-        public async Task TestTwoIndependentParentChildCirclesDiagnostic()
+        public async Task TestTwoIndependentParentChildCirclesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -386,7 +386,7 @@ class TestClassB2
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyByPropertyDiagnostic()
+        public async Task TestSelfReferDirectlyByPropertyDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -404,7 +404,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithGenericTypeDiagnostic()
+        public async Task TestSelfReferDirectlyWithGenericTypeDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -427,7 +427,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithArrayDiagnostic()
+        public async Task TestSelfReferDirectlyWithArrayDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -445,7 +445,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithDoubleDimensionalArrayDiagnostic()
+        public async Task TestSelfReferDirectlyWithDoubleDimensionalArrayDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -463,7 +463,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithListDiagnostic()
+        public async Task TestSelfReferDirectlyWithListDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -482,7 +482,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithListListDiagnostic()
+        public async Task TestSelfReferDirectlyWithListListDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -501,7 +501,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithListListListDiagnostic()
+        public async Task TestSelfReferDirectlyWithListListListDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -520,7 +520,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestGenericChildCircleDiagnostic()
+        public async Task TestGenericChildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -549,7 +549,7 @@ class TestClassB
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyByPropertyWithArrayDiagnostic()
+        public async Task TestSelfReferDirectlyByPropertyWithArrayDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -567,7 +567,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithinGenericTypeDiagnostic()
+        public async Task TestSelfReferDirectlyWithinGenericTypeDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -585,7 +585,7 @@ class TestClass<T>
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithDictionaryDiagnostic()
+        public async Task TestSelfReferDirectlyWithDictionaryDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -609,7 +609,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestParentClassSubclassCirlceDiagnostic()
+        public async Task TestParentClassSubclassCirlceDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -661,7 +661,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task TestParentClassIndirectSubclassCirlceDiagnostic()
+        public async Task TestParentClassIndirectSubclassCirlceDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -701,7 +701,7 @@ class TestClassC : TestClassB
         }
 
         [Fact]
-        public async Task TestWithoutSelfReferNoDiagnostic()
+        public async Task TestWithoutSelfReferNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -728,7 +728,7 @@ class TestClassB
         }
 
         [Fact]
-        public async Task TestStaticSelfReferNoDiagnostic()
+        public async Task TestStaticSelfReferNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -745,7 +745,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestStaticParentChildCircleNoDiagnostic()
+        public async Task TestStaticParentChildCircleNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -772,7 +772,7 @@ class TestClassB
         }
 
         [Fact]
-        public async Task TestStaticParentGrandchildCircleNoDiagnostic()
+        public async Task TestStaticParentGrandchildCircleNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -819,7 +819,7 @@ class TestClassD
         }
 
         [Fact]
-        public async Task TestNonSerializedAttributeSelfReferNoDiagnostic()
+        public async Task TestNonSerializedAttributeSelfReferNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -837,7 +837,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithArrayNoDiagnostic()
+        public async Task TestSelfReferDirectlyWithArrayNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -859,7 +859,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithDoubleDimensionalArrayNoDiagnostic()
+        public async Task TestSelfReferDirectlyWithDoubleDimensionalArrayNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -881,7 +881,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithListNoDiagnostic()
+        public async Task TestSelfReferDirectlyWithListNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -904,7 +904,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSelfReferDirectlyWithListListNoDiagnostic()
+        public async Task TestSelfReferDirectlyWithListListNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

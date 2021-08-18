@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -25,7 +25,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 #pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
-        public async Task UseDataTableReadXmlSchemaShouldGenerateDiagnostic()
+        public async Task UseDataTableReadXmlSchemaShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -69,7 +69,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task UseDataTableReadXmlSchemaInGetShouldGenerateDiagnostic()
+        public async Task UseDataTableReadXmlSchemaInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -111,7 +111,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataTableReadXmlSchemaInSetShouldGenerateDiagnostic()
+        public async Task UseDataTableReadXmlSchemaInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -165,7 +165,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataTableReadXmlSchemaInTryBlockShouldGenerateDiagnostic()
+        public async Task UseDataTableReadXmlSchemaInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -213,7 +213,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataTableReadXmlSchemaInCatchBlockShouldGenerateDiagnostic()
+        public async Task UseDataTableReadXmlSchemaInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -260,7 +260,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataTableReadXmlSchemaInFinallyBlockShouldGenerateDiagnostic()
+        public async Task UseDataTableReadXmlSchemaInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -308,7 +308,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataTableReadXmlSchemaInAsyncAwaitShouldGenerateDiagnostic()
+        public async Task UseDataTableReadXmlSchemaInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -360,7 +360,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataTableReadXmlSchemaInDelegateShouldGenerateDiagnostic()
+        public async Task UseDataTableReadXmlSchemaInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -400,7 +400,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseDataTableReadXmlSchemaWithXmlReaderShouldNotGenerateDiagnostic()
+        public async Task UseDataTableReadXmlSchemaWithXmlReaderShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotSerializeTypeWithPointerFieldsTests
     {
         [Fact]
-        public async Task TestChildPointerToStructureDiagnostic()
+        public async Task TestChildPointerToStructureDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -31,7 +31,7 @@ struct TestStructB
         }
 
         [Fact]
-        public async Task TestChildPointerToIntegerDiagnostic()
+        public async Task TestChildPointerToIntegerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -45,7 +45,7 @@ unsafe class TestClassA
         }
 
         [Fact]
-        public async Task TestChildPointerToBooleanDiagnostic()
+        public async Task TestChildPointerToBooleanDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -59,7 +59,7 @@ unsafe class TestClassA
         }
 
         [Fact]
-        public async Task TestChildPointerToPointerDiagnostic()
+        public async Task TestChildPointerToPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -73,7 +73,7 @@ unsafe class TestClassA
         }
 
         [Fact]
-        public async Task TestChildPointerPropertyToPointerDiagnostic()
+        public async Task TestChildPointerPropertyToPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -87,7 +87,7 @@ unsafe class TestClassA
         }
 
         [Fact]
-        public async Task TestChildPointerInArrayDiagnostic()
+        public async Task TestChildPointerInArrayDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -101,7 +101,7 @@ unsafe class TestClassA
         }
 
         [Fact]
-        public async Task TestChildArrayOfChildPointerDiagnostic()
+        public async Task TestChildArrayOfChildPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -121,7 +121,7 @@ unsafe class TestClassB
         }
 
         [Fact]
-        public async Task TestChildListOfChildPointerDiagnostic()
+        public async Task TestChildListOfChildPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -142,7 +142,7 @@ unsafe class TestClassB
         }
 
         [Fact]
-        public async Task TestChildListOfListOfChildPointerDiagnostic()
+        public async Task TestChildListOfListOfChildPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -163,7 +163,7 @@ unsafe class TestClassB
         }
 
         [Fact]
-        public async Task TestGrandchildPointerToIntegerDiagnostic()
+        public async Task TestGrandchildPointerToIntegerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -183,7 +183,7 @@ unsafe class TestClassB
         }
 
         [Fact]
-        public async Task TestGrandchildPointerInArrayDiagnostic()
+        public async Task TestGrandchildPointerInArrayDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -203,7 +203,7 @@ unsafe class TestClassB
         }
 
         [Fact]
-        public async Task TestChildPointerAndGrandchildPointerDiagnostic()
+        public async Task TestChildPointerAndGrandchildPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -224,7 +224,7 @@ unsafe struct TestStructB
         }
 
         [Fact]
-        public async Task TestMultiChildPointersDiagnostic()
+        public async Task TestMultiChildPointersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -241,7 +241,7 @@ unsafe class TestClassA
         }
 
         [Fact]
-        public async Task TestChildPointerToSelfDiagnostic()
+        public async Task TestChildPointerToSelfDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -255,7 +255,7 @@ unsafe struct TestStructA
         }
 
         [Fact]
-        public async Task TestGrandchildPointerToSelfDiagnostic()
+        public async Task TestGrandchildPointerToSelfDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -275,7 +275,7 @@ unsafe struct TestStructB
         }
 
         [Fact]
-        public async Task TestSubclassWithPointerFieldsDiagnostic()
+        public async Task TestSubclassWithPointerFieldsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -301,7 +301,7 @@ unsafe class TestClassC : TestClassA
         }
 
         [Fact]
-        public async Task TestGenericTypeWithPointerFieldDiagnostic()
+        public async Task TestGenericTypeWithPointerFieldDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -317,7 +317,7 @@ unsafe class TestClassA<T>
         }
 
         [Fact]
-        public async Task TestGenericTypeWithoutPointerFieldNoDiagnostic()
+        public async Task TestGenericTypeWithoutPointerFieldNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -330,7 +330,7 @@ class TestClassA<T>
         }
 
         [Fact]
-        public async Task TestWithoutPointerFieldNoDiagnostic()
+        public async Task TestWithoutPointerFieldNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -343,7 +343,7 @@ unsafe class TestClassA
         }
 
         [Fact]
-        public async Task TestWithoutSerializableAttributeNoDiagnostic()
+        public async Task TestWithoutSerializableAttributeNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -355,7 +355,7 @@ unsafe class TestClassA
         }
 
         [Fact]
-        public async Task TestChildPointerWithNonSerializedNoDiagnostic()
+        public async Task TestChildPointerWithNonSerializedNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -369,7 +369,7 @@ unsafe class TestClassA
         }
 
         [Fact]
-        public async Task TestChildPointerWithStaticNoDiagnostic()
+        public async Task TestChildPointerWithStaticNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

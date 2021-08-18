@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -39,13 +39,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 context.RegisterCodeFix(
                     CodeAction.Create(
                         MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic,
-                        async ct => await MakeParameterlessConstructorPublic(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                        async ct => await MakeParameterlessConstructorPublicAsync(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
                         equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic)),
                     diagnostic);
             }
         }
 
-        private static async Task<Document> MakeParameterlessConstructorPublic(SyntaxNode declaration, Document document, CancellationToken ct)
+        private static async Task<Document> MakeParameterlessConstructorPublicAsync(SyntaxNode declaration, Document document, CancellationToken ct)
         {
             var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
             editor.SetAccessibility(declaration, Accessibility.Public);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class TypesThatOwnDisposableFieldsShouldBeDisposableFixerTests
     {
         [Fact]
-        public async Task CA1001CSharpCodeFixNoDispose()
+        public async Task CA1001CSharpCodeFixNoDisposeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -54,7 +54,7 @@ public class NoDisposeClass : IDisposable
         }
 
         [Fact]
-        public async Task CA1001BasicCodeFixNoDispose()
+        public async Task CA1001BasicCodeFixNoDisposeAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -93,7 +93,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1001CSharpCodeFixHasDispose()
+        public async Task CA1001CSharpCodeFixHasDisposeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -126,7 +126,7 @@ public class NoDisposeClass : IDisposable
         }
 
         [Fact]
-        public async Task CA1001CSharpCodeFixHasWrongDispose()
+        public async Task CA1001CSharpCodeFixHasWrongDisposeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -164,7 +164,7 @@ public partial class NoDisposeClass : IDisposable
         }
 
         [Fact]
-        public async Task CA1001BasicCodeFixHasDispose()
+        public async Task CA1001BasicCodeFixHasDisposeAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -197,7 +197,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1001BasicCodeFixHasWrongDispose()
+        public async Task CA1001BasicCodeFixHasWrongDisposeAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System

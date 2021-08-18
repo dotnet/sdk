@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotUseInsecureDeserializerObjectStateFormatterTests
     {
         [Fact]
-        public async Task DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -34,7 +34,7 @@ public class ExampleClass
         }
 
         [Fact]
-        public async Task DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await VerifyBasicAnalyzerAsync(@"
 Imports System.IO
@@ -50,7 +50,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DeserializeStream_Diagnostic()
+        public async Task DeserializeStream_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -71,7 +71,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeString_Diagnostic()
+        public async Task DeserializeString_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -92,7 +92,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_Reference_Diagnostic()
+        public async Task Deserialize_Reference_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -114,7 +114,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serialize_NoDiagnostic()
+        public async Task Serialize_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -136,7 +136,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serialize_Reference_NoDiagnostic()
+        public async Task Serialize_Reference_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
