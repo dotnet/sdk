@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.Cli.Utils;
@@ -254,10 +255,14 @@ namespace Microsoft.DotNet.Tools.Run
             var command = CommandFactoryUsingResolver.Create(commandSpec)
                 .WorkingDirectory(runWorkingDirectory);
 
-            var rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
-            if (Environment.GetEnvironmentVariable(rootVariableName) == null)
+            if (TryGetTargetArchitecture(project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"), out var targetArchitecture) &&
+                targetArchitecture == RuntimeInformation.ProcessArchitecture)
             {
-                command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
+                var rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
+                if (Environment.GetEnvironmentVariable(rootVariableName) == null)
+                {
+                    command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
+                }
             }
 
             return command;
@@ -310,6 +315,27 @@ namespace Microsoft.DotNet.Tools.Run
             }
 
             return projectFiles[0];
+        }
+
+        private static bool TryGetTargetArchitecture(string runtimeIdentifier, out Architecture? targetArchitecture)
+        {
+            targetArchitecture = null;
+            int separator = runtimeIdentifier.LastIndexOf("-");
+            if (separator < 0)
+            {
+                return false;
+            }
+
+            targetArchitecture = runtimeIdentifier.Substring(separator + 1).ToLowerInvariant() switch
+            {
+                "arm" => Architecture.Arm,
+                "arm64" => Architecture.Arm64,
+                "x64" => Architecture.X64,
+                "x86" => Architecture.X86,
+                _ => null
+            };
+
+            return targetArchitecture != null;
         }
     }
 }
