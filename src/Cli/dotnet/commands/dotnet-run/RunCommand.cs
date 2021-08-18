@@ -255,7 +255,8 @@ namespace Microsoft.DotNet.Tools.Run
             var command = CommandFactoryUsingResolver.Create(commandSpec)
                 .WorkingDirectory(runWorkingDirectory);
 
-            if (TryGetTargetArchitecture(project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"), out var targetArchitecture) &&
+            if ((TryGetTargetArchitecture(project.GetPropertyValue("RuntimeIdentifier"), out var targetArchitecture) ||
+                TryGetTargetArchitecture(project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"), out targetArchitecture)) &&
                 targetArchitecture == RuntimeInformation.ProcessArchitecture)
             {
                 var rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
