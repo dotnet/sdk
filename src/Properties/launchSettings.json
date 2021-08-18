@@ -2,12 +2,12 @@
   "profiles": {
     "dotnet-format (--dry-run)": {
       "commandName": "Project",
-      "commandLineArgs": "-w format.sln -v diag --dry-run",
+      "commandLineArgs": "format.sln -v diag --verify-no-changes",
       "workingDirectory": "$(SolutionDir)"
     },
     "dotnet-format": {
       "commandName": "Project",
-      "commandLineArgs": "-w format.sln -v diag",
+      "commandLineArgs": "format.sln -v diag",
       "workingDirectory": "$(SolutionDir)"
     }
   }

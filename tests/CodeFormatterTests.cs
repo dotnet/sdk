@@ -586,10 +586,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 analyzerSeverity,
                 diagnostics?.ToImmutableHashSet() ?? ImmutableHashSet<string>.Empty,
                 saveFormattedFiles,
-                changesAreErrors: false,
+                ChangesAreErrors: false,
                 fileMatcher,
-                reportPath: string.Empty,
-                includeGenerated);
+                ReportPath: string.Empty,
+                IncludeGeneratedFiles: includeGenerated,
+                BinaryLogPath: null);
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
             Environment.CurrentDirectory = currentDirectory;
 

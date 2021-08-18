@@ -6,6 +6,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Tools.Commands;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
@@ -43,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_OptionsAreParsedCorrectly()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] {
@@ -76,7 +77,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectArgument_Simple()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "workspaceValue" });
@@ -90,7 +91,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectArgument_WithOption_AfterArgument()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "workspaceValue", "--verbosity", "detailed" });
@@ -105,7 +106,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectArgument_WithOption_BeforeArgument()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--verbosity", "detailed", "workspaceValue" });
@@ -120,7 +121,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectArgument_FailsIfSpecifiedTwice()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "workspaceValue1", "workspaceValue2" });
@@ -133,7 +134,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_FolderValidation_FailsIfFixAnalyzersSpecified()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--folder", "--fix-analyzers" });
@@ -146,7 +147,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_FolderValidation_FailsIfFixStyleSpecified()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--folder", "--fix-style" });
@@ -159,7 +160,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_FolderValidation_FailsIfNoRestoreSpecified()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--folder", "--no-restore" });
@@ -172,7 +173,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_AnalyzerOptions_CanSpecifyBothWithDefaults()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--fix-analyzers", "--fix-style" });
@@ -188,8 +189,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Arrange
             var uniqueExitCode = 143;
 
-            var sut = FormatCommand.CreateCommandLineOptions();
-            sut.Handler = CommandHandler.Create(new FormatCommand.Handler(TestRun));
+            var sut = RootFormatCommand.GetCommand();
 
             Task<int> TestRun(
                 string workspace,
@@ -260,7 +260,7 @@ report.json
         public void CommandLine_BinaryLog_DoesNotFailIfPathNotSpecified()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--binarylog" });
@@ -274,7 +274,7 @@ report.json
         public void CommandLine_BinaryLog_DoesNotFailIfPathIsSpecified()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--binarylog", "log" });
@@ -288,7 +288,7 @@ report.json
         public void CommandLine_BinaryLog_FailsIfFolderIsSpecified()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--folder", "--binarylog" });
@@ -301,7 +301,7 @@ report.json
         public void CommandLine_Diagnostics_FailsIfDiagnosticNoSpecified()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--diagnostics" });
@@ -314,7 +314,7 @@ report.json
         public void CommandLine_Diagnostics_DoesNotFailIfDiagnosticIsSpecified()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--diagnostics", "RS0016" });
@@ -327,7 +327,7 @@ report.json
         public void CommandLine_Diagnostics_DoesNotFailIfMultipleDiagnosticAreSpecified()
         {
             // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
+            var sut = RootFormatCommand.GetCommand();
 
             // Act
             var result = sut.Parse(new[] { "--diagnostics", "RS0016", "RS0017", "RS0018" });
