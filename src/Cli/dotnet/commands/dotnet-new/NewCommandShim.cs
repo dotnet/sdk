@@ -51,6 +51,7 @@ namespace Microsoft.DotNet.Tools.New
                 RestoreProject = RestoreProject
             };
 
+            Console.OutputEncoding = Encoding.Utf8;
             var disableSdkTemplates = args.Contains("--debug:disable-sdk-templates");
 
             return New3Command.Run(CommandName, CreateHost(disableSdkTemplates), logger, callbacks, args, null);
