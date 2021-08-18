@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Composition;
@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
         private const SyntaxKind InitKeyword = (SyntaxKind)8443;
         private const SyntaxKind InitAccessorDeclaration = (SyntaxKind)9060;
 
-        protected override async Task<Document> ImplementInterfacesOnDynamicCastableImplementation(
+        protected override async Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
             SyntaxNode declaration,
             Document document,
             CancellationToken cancellationToken)
@@ -175,7 +175,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 })));
         }
 
-        protected override async Task<Document> MakeMemberDeclaredOnImplementationTypeStatic(SyntaxNode declaration, Document document, CancellationToken cancellationToken)
+        protected override async Task<Document> MakeMemberDeclaredOnImplementationTypeStaticAsync(SyntaxNode declaration, Document document, CancellationToken cancellationToken)
         {
             var root = (await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false))!;
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
