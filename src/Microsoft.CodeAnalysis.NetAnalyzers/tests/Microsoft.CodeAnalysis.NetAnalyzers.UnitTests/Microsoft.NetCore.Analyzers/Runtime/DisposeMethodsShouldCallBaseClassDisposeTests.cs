@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -30,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 .WithArguments(arguments);
 
         [Fact]
-        public async Task NoBaseDisposeImplementation_NoBaseDisposeCall_NoDiagnostic()
+        public async Task NoBaseDisposeImplementation_NoBaseDisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -63,7 +63,7 @@ End Class");
         }
 
         [Fact]
-        public async Task NoBaseDisposeImplementation_NoBaseDisposeCall_02_NoDiagnostic()
+        public async Task NoBaseDisposeImplementation_NoBaseDisposeCall_02_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -101,7 +101,7 @@ End Class");
         }
 
         [Fact]
-        public async Task BaseDisposeCall_NoDiagnostic()
+        public async Task BaseDisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -142,7 +142,7 @@ End Class");
         }
 
         [Fact]
-        public async Task NoBaseDisposeCall_Diagnostic()
+        public async Task NoBaseDisposeCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -185,7 +185,7 @@ End Class",
         }
 
         [Fact]
-        public async Task BaseDisposeCall_IgnoreCase_VB_NoDiagnostic()
+        public async Task BaseDisposeCall_IgnoreCase_VB_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -207,7 +207,7 @@ End Class");
         }
 
         [Fact]
-        public async Task BaseDisposeBoolCall_NoDiagnostic()
+        public async Task BaseDisposeBoolCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -259,7 +259,7 @@ End Class");
         }
 
         [Fact]
-        public async Task NoBaseDisposeBoolCall_Diagnostic()
+        public async Task NoBaseDisposeBoolCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -313,7 +313,7 @@ End Class",
         }
 
         [Fact]
-        public async Task NoBaseDisposeCloseCall_NoDiagnostic()
+        public async Task NoBaseDisposeCloseCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -363,7 +363,7 @@ End Class");
         }
 
         [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
-        public async Task BaseDisposeAsyncCall_NoDiagnostic()
+        public async Task BaseDisposeAsyncCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -414,7 +414,7 @@ End Class");
         }
 
         [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
-        public async Task NoBaseDisposeAsyncCall_Diagnostic()
+        public async Task NoBaseDisposeAsyncCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -469,7 +469,7 @@ End Class",
         }
 
         [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
-        public async Task BaseDisposeCoreAsyncCall_NoDiagnostic()
+        public async Task BaseDisposeCoreAsyncCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -537,7 +537,7 @@ End Class");
         }
 
         [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
-        public async Task NoBaseDisposeCoreAsyncCall_Diagnostic()
+        public async Task NoBaseDisposeCoreAsyncCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -609,7 +609,7 @@ End Class",
         }
 
         [Fact]
-        public async Task AbstractBaseDisposeMethod_NoBaseDisposeCall_NoDiagnostic()
+        public async Task AbstractBaseDisposeMethod_NoBaseDisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -645,7 +645,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ShadowsBaseDisposeMethod_NoBaseDisposeCall_NoDiagnostic()
+        public async Task ShadowsBaseDisposeMethod_NoBaseDisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -684,7 +684,7 @@ End Class");
         }
 
         [Fact]
-        public async Task Multiple_BaseDisposeCalls_NoDiagnostic()
+        public async Task Multiple_BaseDisposeCalls_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -727,7 +727,7 @@ End Class");
         }
 
         [Fact]
-        public async Task BaseDisposeCalls_AllPaths_NoDiagnostic()
+        public async Task BaseDisposeCalls_AllPaths_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -781,7 +781,7 @@ End Class");
         }
 
         [Fact(Skip = "Analyzer isn't yet flow based."), WorkItem(1654, "https://github.com/dotnet/roslyn-analyzers/issues/1654")]
-        public async Task BaseDisposeCalls_SomePaths_Diagnostic()
+        public async Task BaseDisposeCalls_SomePaths_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -833,7 +833,7 @@ End Class",
         }
 
         [Fact]
-        public async Task BaseDisposeCall_GuardedWithBoolField_NoDiagnostic()
+        public async Task BaseDisposeCall_GuardedWithBoolField_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -889,7 +889,7 @@ End Class");
         }
 
         [Fact]
-        public async Task BaseDisposeCall_DifferentOverload_Diagnostic()
+        public async Task BaseDisposeCall_DifferentOverload_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -941,7 +941,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DisposeCall_DifferentInstance_Diagnostic()
+        public async Task DisposeCall_DifferentInstance_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -988,7 +988,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DisposeCall_StaticMethod_Diagnostic()
+        public async Task DisposeCall_StaticMethod_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1040,7 +1040,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DisposeCall_ThisOrMeInstance_Diagnostic()
+        public async Task DisposeCall_ThisOrMeInstance_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

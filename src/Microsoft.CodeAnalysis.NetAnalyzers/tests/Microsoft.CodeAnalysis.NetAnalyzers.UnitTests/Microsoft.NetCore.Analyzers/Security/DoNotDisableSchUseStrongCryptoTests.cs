@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotDisableSchUseStrongCryptoTests
     {
         [Fact]
-        public async Task DocSample1_CSharp_Violation()
+        public async Task DocSample1_CSharp_ViolationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -33,7 +33,7 @@ public class ExampleClass
         }
 
         [Fact]
-        public async Task DocSample1_VB_Violation()
+        public async Task DocSample1_VB_ViolationAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -48,7 +48,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DocSample1_CSharp_Solution()
+        public async Task DocSample1_CSharp_SolutionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -63,7 +63,7 @@ public class ExampleClass
         }
 
         [Fact]
-        public async Task DocSample1_VB_Solution()
+        public async Task DocSample1_VB_SolutionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -76,7 +76,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestBoolDiagnostic()
+        public async Task TestBoolDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -92,7 +92,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestEquationDiagnostic()
+        public async Task TestEquationDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -108,7 +108,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConditionalOperatorDiagnostic()
+        public async Task TestConditionalOperatorDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -124,7 +124,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestWithConstantSwitchNameDiagnostic()
+        public async Task TestWithConstantSwitchNameDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -141,7 +141,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestBoolNoDiagnostic()
+        public async Task TestBoolNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -156,7 +156,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestEquationNoDiagnostic()
+        public async Task TestEquationNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -171,7 +171,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConditionalOperatorNoDiagnostic()
+        public async Task TestConditionalOperatorNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -186,7 +186,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSwitchNameNullNoDiagnostic()
+        public async Task TestSwitchNameNullNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -202,7 +202,7 @@ class TestClass
 
         [Fact]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
-        public async Task TestSwitchNameVariableNoDiagnostic()
+        public async Task TestSwitchNameVariableNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -220,7 +220,7 @@ class TestClass
 
         //Ideally, we would generate a diagnostic in this case.
         [Fact]
-        public async Task TestBoolParseNoDiagnostic()
+        public async Task TestBoolParseNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -240,7 +240,7 @@ class TestClass
         [InlineData("dotnet_code_quality.CA5361.excluded_symbol_names = TestMethod")]
         [InlineData("dotnet_code_quality.CA5361.excluded_symbol_names = TestMet*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var test = new VerifyCS.Test
             {

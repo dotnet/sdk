@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public partial class DefineAccessorsForAttributeArgumentsTests
     {
         [Fact]
-        public async Task CSharp_CA1019_AddAccessor()
+        public async Task CSharp_CA1019_AddAccessorAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -48,7 +48,7 @@ public sealed class NoAccessorTestAttribute : Attribute
         }
 
         [Fact]
-        public async Task CSharp_CA1019_AddAccessor1()
+        public async Task CSharp_CA1019_AddAccessor1Async()
         {
             await new VerifyCS.Test
             {
@@ -115,7 +115,7 @@ public sealed class SetterOnlyTestAttribute : Attribute
         }
 
         [Fact]
-        public async Task CSharp_CA1019_MakeGetterPublic()
+        public async Task CSharp_CA1019_MakeGetterPublicAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -160,7 +160,7 @@ public sealed class InternalGetterTestAttribute : Attribute
         }
 
         [Fact]
-        public async Task CSharp_CA1019_MakeGetterPublic2()
+        public async Task CSharp_CA1019_MakeGetterPublic2Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -205,7 +205,7 @@ public sealed class InternalGetterTestAttribute : Attribute
         }
 
         [Fact]
-        public async Task CSharp_CA1019_MakeGetterPublic3()
+        public async Task CSharp_CA1019_MakeGetterPublic3Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -247,7 +247,7 @@ public sealed class InternalGetterTestAttribute : Attribute
         }
 
         [Fact]
-        public async Task CSharp_CA1019_MakeSetterInternal()
+        public async Task CSharp_CA1019_MakeSetterInternalAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -292,7 +292,7 @@ public sealed class PublicSetterTestAttribute : Attribute
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_AddAccessor()
+        public async Task VisualBasic_CA1019_AddAccessorAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -327,7 +327,7 @@ End Class");
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_AddAccessor2()
+        public async Task VisualBasic_CA1019_AddAccessor2Async()
         {
             await new VerifyVB.Test
             {
@@ -392,7 +392,7 @@ End Class",
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_MakeGetterPublic()
+        public async Task VisualBasic_CA1019_MakeGetterPublicAsync()
         {
             await new VerifyVB.Test
             {
@@ -460,7 +460,7 @@ End Class",
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_MakeGetterPublic2()
+        public async Task VisualBasic_CA1019_MakeGetterPublic2Async()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -508,7 +508,7 @@ End Class");
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_MakeGetterPublic3()
+        public async Task VisualBasic_CA1019_MakeGetterPublic3Async()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -550,7 +550,7 @@ End Class");
         }
 
         [Fact]
-        public async Task VisualBasic_CA1019_MakeSetterInternal()
+        public async Task VisualBasic_CA1019_MakeSetterInternalAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System

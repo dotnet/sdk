@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class UseSecureCookiesASPNetCoreTests
     {
         [Fact]
-        public async Task TestHasWrongSecurePropertyAssignmentDiagnostic()
+        public async Task TestHasWrongSecurePropertyAssignmentDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using Microsoft.AspNetCore.Http;
@@ -34,7 +34,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestHasWrongSecurePropertyAssignmentMaybeChangedRightDiagnostic()
+        public async Task TestHasWrongSecurePropertyAssignmentMaybeChangedRightDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -62,7 +62,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestHasRightSecurePropertyAssignmentMaybeChangedWrongDiagnostic()
+        public async Task TestHasRightSecurePropertyAssignmentMaybeChangedWrongDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -90,7 +90,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestAssignSecurePropertyAnUnassignedVariableMaybeChangedWrongDiagnostic()
+        public async Task TestAssignSecurePropertyAnUnassignedVariableMaybeChangedWrongDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -118,7 +118,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestAssignSecurePropertyAnUnassignedVariableMaybeChangedRightDiagnostic()
+        public async Task TestAssignSecurePropertyAnUnassignedVariableMaybeChangedRightDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -146,7 +146,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestAssignSecurePropertyAnAssignedVariableMaybeChangedDiagnostic()
+        public async Task TestAssignSecurePropertyAnAssignedVariableMaybeChangedDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -175,7 +175,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestHasWrongSecurePropertyInitializerDiagnostic()
+        public async Task TestHasWrongSecurePropertyInitializerDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using Microsoft.AspNetCore.Http;
@@ -194,7 +194,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestWithoutSecurePropertyAssignmentDiagnostic()
+        public async Task TestWithoutSecurePropertyAssignmentDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using Microsoft.AspNetCore.Http;
@@ -213,7 +213,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestParamterLengthLessThan3TrueDiagnostic()
+        public async Task TestParamterLengthLessThan3TrueDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using Microsoft.AspNetCore.Http;
@@ -231,7 +231,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestGetCookieOptionsFromOtherMethodInterproceduralDiagnostic()
+        public async Task TestGetCookieOptionsFromOtherMethodInterproceduralDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using Microsoft.AspNetCore.Http;
@@ -257,7 +257,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestPassCookieOptionsAsParameterInterproceduralDiagnostic()
+        public async Task TestPassCookieOptionsAsParameterInterproceduralDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using Microsoft.AspNetCore.Http;
@@ -282,7 +282,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestHasRightSecurePropertyAssignmentNoDiagnostic()
+        public async Task TestHasRightSecurePropertyAssignmentNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using Microsoft.AspNetCore.Http;
@@ -301,7 +301,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestHasRightSecurePropertyInitializerNoDiagnostic()
+        public async Task TestHasRightSecurePropertyInitializerNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using Microsoft.AspNetCore.Http;

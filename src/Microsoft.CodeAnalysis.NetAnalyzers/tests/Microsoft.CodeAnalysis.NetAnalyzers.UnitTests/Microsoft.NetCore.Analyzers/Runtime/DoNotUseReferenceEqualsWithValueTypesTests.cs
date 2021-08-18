@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class DoNotUseReferenceEqualsWithValueTypesTests
     {
         [Fact]
-        public async Task ReferenceTypesAreOK()
+        public async Task ReferenceTypesAreOKAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -45,7 +45,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task LeftArgumentFailsForValueType()
+        public async Task LeftArgumentFailsForValueTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -76,7 +76,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task RightArgumentFailsForValueType()
+        public async Task RightArgumentFailsForValueTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -107,7 +107,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task NoErrorForUnconstrainedGeneric()
+        public async Task NoErrorForUnconstrainedGenericAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -136,7 +136,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task NoErrorForInterfaceConstrainedGeneric()
+        public async Task NoErrorForInterfaceConstrainedGenericAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -166,7 +166,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task ErrorForValueTypeConstrainedGeneric()
+        public async Task ErrorForValueTypeConstrainedGenericAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -198,7 +198,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task TwoValueTypesProducesTwoErrors()
+        public async Task TwoValueTypesProducesTwoErrorsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -235,7 +235,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task LeftArgumentFailsForValueTypeWhenRightIsNull()
+        public async Task LeftArgumentFailsForValueTypeWhenRightIsNullAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -266,7 +266,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task RightArgumentFailsForValueTypeWhenLeftIsNull()
+        public async Task RightArgumentFailsForValueTypeWhenLeftIsNullAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -297,7 +297,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task DoNotWarnForUserDefinedConversions()
+        public async Task DoNotWarnForUserDefinedConversionsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -339,7 +339,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task Comparer_ReferenceTypesAreOK()
+        public async Task Comparer_ReferenceTypesAreOKAsync()
         {
             await new VerifyCS.Test
             {
@@ -378,7 +378,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task Comparer_LeftArgumentFailsForValueType()
+        public async Task Comparer_LeftArgumentFailsForValueTypeAsync()
         {
             await new VerifyCS.Test
             {
@@ -419,7 +419,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task Comparer_RightArgumentFailsForValueType()
+        public async Task Comparer_RightArgumentFailsForValueTypeAsync()
         {
             await new VerifyCS.Test
             {
@@ -460,7 +460,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task Comparer_NoErrorForUnconstrainedGeneric()
+        public async Task Comparer_NoErrorForUnconstrainedGenericAsync()
         {
             await new VerifyCS.Test
             {
@@ -499,7 +499,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task Comparer_NoErrorForInterfaceConstrainedGeneric()
+        public async Task Comparer_NoErrorForInterfaceConstrainedGenericAsync()
         {
             await new VerifyCS.Test
             {
@@ -539,7 +539,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task Comparer_ErrorForValueTypeConstrainedGeneric()
+        public async Task Comparer_ErrorForValueTypeConstrainedGenericAsync()
         {
             await new VerifyCS.Test
             {
@@ -581,7 +581,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task Comparer_TwoValueTypesProducesTwoErrors()
+        public async Task Comparer_TwoValueTypesProducesTwoErrorsAsync()
         {
             await new VerifyCS.Test
             {
@@ -634,7 +634,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task Comparer_LeftArgumentFailsForValueTypeWhenRightIsNull()
+        public async Task Comparer_LeftArgumentFailsForValueTypeWhenRightIsNullAsync()
         {
             await new VerifyCS.Test
             {
@@ -675,7 +675,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task Comparer_RightArgumentFailsForValueTypeWhenLeftIsNull()
+        public async Task Comparer_RightArgumentFailsForValueTypeWhenLeftIsNullAsync()
         {
             await new VerifyCS.Test
             {
@@ -716,7 +716,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task Comparer_DoNotWarnForUserDefinedConversions()
+        public async Task Comparer_DoNotWarnForUserDefinedConversionsAsync()
         {
             await new VerifyCS.Test
             {
@@ -768,7 +768,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task ComparerDoesNotTrackThroughInterface()
+        public async Task ComparerDoesNotTrackThroughInterfaceAsync()
         {
             await new VerifyCS.Test
             {

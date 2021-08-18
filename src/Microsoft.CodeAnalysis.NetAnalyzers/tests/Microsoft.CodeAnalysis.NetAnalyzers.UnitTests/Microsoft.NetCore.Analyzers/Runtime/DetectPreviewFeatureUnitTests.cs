@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. 
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Test.Utilities;
@@ -44,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task TestPreviewMethodUnaryOperator()
+        public async Task TestPreviewMethodUnaryOperatorAsync()
         {
             var csInput = @" 
 using System.Runtime.Versioning; using System;
@@ -74,7 +74,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestCatchPreviewException()
+        public async Task TestCatchPreviewExceptionAsync()
         {
             var csInput = @" 
 using System.Runtime.Versioning; using System;
@@ -111,7 +111,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestArrayOrPreviewTypes()
+        public async Task TestArrayOrPreviewTypesAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -139,7 +139,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestPreviewMethodBinaryOperator()
+        public async Task TestPreviewMethodBinaryOperatorAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -169,7 +169,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestUnmarkedPreviewPropertyCallingPreviewProperty()
+        public async Task TestUnmarkedPreviewPropertyCallingPreviewPropertyAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -195,7 +195,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestUnmarkedPreviewMethodCallingPreviewMethod()
+        public async Task TestUnmarkedPreviewMethodCallingPreviewMethodAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -226,7 +226,7 @@ namespace Preview_Feature_Scratch
             await test.RunAsync();
         }
         [Fact]
-        public async Task TestPreviewMethodCallingPreviewMethod()
+        public async Task TestPreviewMethodCallingPreviewMethodAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -252,7 +252,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestDerivedClassExtendsUnmarkedClass()
+        public async Task TestDerivedClassExtendsUnmarkedClassAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -281,7 +281,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestMethodInvocation_Simple()
+        public async Task TestMethodInvocation_SimpleAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -311,7 +311,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestMethodInvocation_DeclareDerivedMethod()
+        public async Task TestMethodInvocation_DeclareDerivedMethodAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -354,7 +354,7 @@ namespace Preview_Feature_Scratch
         [Theory]
         [InlineData("class")]
         [InlineData("struct")]
-        public async Task TestClassOrStruct(string classOrStruct)
+        public async Task TestClassOrStructAsync(string classOrStruct)
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -377,7 +377,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestAbstractClass()
+        public async Task TestAbstractClassAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -430,7 +430,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestUnmarkedPreviewProperty()
+        public async Task TestUnmarkedPreviewPropertyAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -463,7 +463,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestUnmarkedPreviewInterface()
+        public async Task TestUnmarkedPreviewInterfaceAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -500,7 +500,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestPreviewLanguageFeatures()
+        public async Task TestPreviewLanguageFeaturesAsync()
         {
             var csInput = @" 
                 using System.Runtime.Versioning; using System;
@@ -536,7 +536,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestMarkedPreviewInterface()
+        public async Task TestMarkedPreviewInterfaceAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -570,7 +570,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestMarkedEmptyPreviewInterface()
+        public async Task TestMarkedEmptyPreviewInterfaceAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -600,7 +600,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestInterfaceMethodInvocation()
+        public async Task TestInterfaceMethodInvocationAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -663,7 +663,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestField()
+        public async Task TestFieldAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -693,7 +693,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestProperty()
+        public async Task TestPropertyAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -732,7 +732,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestDelegate()
+        public async Task TestDelegateAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -759,7 +759,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestEnumValue()
+        public async Task TestEnumValueAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -793,7 +793,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestEnumValue_NoDiagnostic()
+        public async Task TestEnumValue_NoDiagnosticAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -826,7 +826,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestEnum()
+        public async Task TestEnumAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;
@@ -860,7 +860,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task TestEvent()
+        public async Task TestEventAsync()
         {
             var csInput = @" 
         using System.Runtime.Versioning; using System;

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class EnumsShouldHaveZeroValueTests
     {
         [Fact]
-        public async Task CSharp_EnumsShouldZeroValueFlagsRename()
+        public async Task CSharp_EnumsShouldZeroValueFlagsRenameAsync()
         {
             var code = @"
 public class Outer
@@ -64,7 +64,7 @@ public enum NoZeroValuedField
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharp_EnumsShouldZeroValueFlagsRename_Internal()
+        public async Task CSharp_EnumsShouldZeroValueFlagsRename_InternalAsync()
         {
             var code = @"
 class Outer
@@ -108,7 +108,7 @@ internal enum NoZeroValuedField
         }
 
         [Fact]
-        public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZero()
+        public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
             var code = @"// Some comment
 public class Outer
@@ -134,7 +134,7 @@ public enum E2
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZero_Internal()
+        public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZero_InternalAsync()
         {
             var code = @"// Some comment
 public class Outer
@@ -158,7 +158,7 @@ internal enum E2
         }
 
         [Fact]
-        public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValue()
+        public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
             var code = @"
 public class Outer
@@ -193,7 +193,7 @@ public enum E4
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValue_Internal()
+        public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValue_InternalAsync()
         {
             var code = @"
 public class Outer
@@ -226,7 +226,7 @@ internal enum E4
         }
 
         [Fact]
-        public async Task VisualBasic_EnumsShouldZeroValueFlagsRename()
+        public async Task VisualBasic_EnumsShouldZeroValueFlagsRenameAsync()
         {
             var code = @"
 Public Class C
@@ -262,7 +262,7 @@ End Enum
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_Internal()
+        public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_InternalAsync()
         {
             var code = @"
 Public Class C
@@ -296,7 +296,7 @@ End Enum
 
         [WorkItem(836193, "DevDiv")]
         [Fact]
-        public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_AttributeListHasTrivia()
+        public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_AttributeListHasTriviaAsync()
         {
             var code = @"
 Public Class Outer
@@ -332,7 +332,7 @@ End Enum
         }
 
         [Fact]
-        public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZero()
+        public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
             var code = @"
 Public Class Outer
@@ -362,7 +362,7 @@ End Enum";
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZero_Internal()
+        public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZero_InternalAsync()
         {
             var code = @"
 Public Class Outer
@@ -389,7 +389,7 @@ End Enum";
         }
 
         [Fact]
-        public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValue()
+        public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
             var code = @"
 Public Class Outer
@@ -420,7 +420,7 @@ End Enum
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValue_Internal()
+        public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValue_InternalAsync()
         {
             var code = @"
 Public Class Outer

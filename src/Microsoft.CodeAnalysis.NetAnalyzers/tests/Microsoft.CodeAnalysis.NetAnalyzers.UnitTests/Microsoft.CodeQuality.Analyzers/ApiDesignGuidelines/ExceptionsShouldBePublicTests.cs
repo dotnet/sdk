@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class ExceptionsShouldBePublicTests
     {
         [Fact]
-        public async Task TestCSharpNonPublicException()
+        public async Task TestCSharpNonPublicExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -25,7 +25,7 @@ class InternalException : Exception
         }
 
         [Fact]
-        public async Task TestCSharpNonPublicException2()
+        public async Task TestCSharpNonPublicException2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -39,7 +39,7 @@ internal class Outer
         }
 
         [Fact]
-        public async Task TestCSharpPublicException()
+        public async Task TestCSharpPublicExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -49,7 +49,7 @@ public class BasicException : Exception
         }
 
         [Fact]
-        public async Task TestCSharpNonExceptionType()
+        public async Task TestCSharpNonExceptionTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -59,7 +59,7 @@ public class NonException : StringWriter
         }
 
         [Fact]
-        public async Task TestVBasicNonPublicException()
+        public async Task TestVBasicNonPublicExceptionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -70,7 +70,7 @@ End Class",
         }
 
         [Fact]
-        public async Task TestVBasicNonPublicException2()
+        public async Task TestVBasicNonPublicException2Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -83,7 +83,7 @@ End Class",
         }
 
         [Fact]
-        public async Task TestVBasicPublicException()
+        public async Task TestVBasicPublicExceptionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -93,7 +93,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestVBasicNonExceptionType()
+        public async Task TestVBasicNonExceptionTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO

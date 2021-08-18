@@ -1,9 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -18,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class MarkMembersAsStaticTests
     {
         [Fact]
-        public async Task CSharpSimpleMembers()
+        public async Task CSharpSimpleMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class MembersTests
@@ -26,53 +25,53 @@ public class MembersTests
     internal static int s_field;
     public const int Zero = 0;
 
-    public int Method1(string name)
+    public int {|#0:Method1|}(string name)
     {
         return name.Length;
     }
 
-    public void Method2() { }
+    public void {|#1:Method2|}() { }
 
-    public void Method3()
+    public void {|#2:Method3|}()
     {
         s_field = 4;
     }
 
-    public int Method4()
+    public int {|#3:Method4|}()
     {
         return Zero;
     }
     
-    public int Property
+    public int {|#4:Property|}
     {
         get { return 5; }
     }
 
-    public int Property2
+    public int {|#5:Property2|}
     {
         set { s_field = value; }
     }
 
-    public int MyProperty
+    public int {|#6:MyProperty|}
     {
         get { return 10; }
         set { System.Console.WriteLine(value); }
     }
 
-    public event System.EventHandler<System.EventArgs> CustomEvent { add {} remove {} }
+    public event System.EventHandler<System.EventArgs> {|#7:CustomEvent|} { add {} remove {} }
 }",
-                GetCSharpResultAt(7, 16, "Method1"),
-                GetCSharpResultAt(12, 17, "Method2"),
-                GetCSharpResultAt(14, 17, "Method3"),
-                GetCSharpResultAt(19, 16, "Method4"),
-                GetCSharpResultAt(24, 16, "Property"),
-                GetCSharpResultAt(29, 16, "Property2"),
-                GetCSharpResultAt(34, 16, "MyProperty"),
-                GetCSharpResultAt(40, 56, "CustomEvent"));
+                VerifyCS.Diagnostic().WithLocation(0).WithArguments("Method1"),
+                VerifyCS.Diagnostic().WithLocation(1).WithArguments("Method2"),
+                VerifyCS.Diagnostic().WithLocation(2).WithArguments("Method3"),
+                VerifyCS.Diagnostic().WithLocation(3).WithArguments("Method4"),
+                VerifyCS.Diagnostic().WithLocation(4).WithArguments("Property"),
+                VerifyCS.Diagnostic().WithLocation(5).WithArguments("Property2"),
+                VerifyCS.Diagnostic().WithLocation(6).WithArguments("MyProperty"),
+                VerifyCS.Diagnostic().WithLocation(7).WithArguments("CustomEvent"));
         }
 
         [Fact]
-        public async Task BasicSimpleMembers()
+        public async Task BasicSimpleMembersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -81,34 +80,34 @@ Public Class MembersTests
     Shared s_field As Integer
     Public Const Zero As Integer = 0
 
-    Public Function Method1(name As String) As Integer
+    Public Function {|#0:Method1|}(name As String) As Integer
         Return name.Length
     End Function
 
-    Public Sub Method2()
+    Public Sub {|#1:Method2|}()
     End Sub
 
-    Public Sub Method3()
+    Public Sub {|#2:Method3|}()
         s_field = 4
     End Sub
 
-    Public Function Method4() As Integer
+    Public Function {|#3:Method4|}() As Integer
         Return Zero
     End Function
 
-    Public ReadOnly Property Property1 As Integer
+    Public ReadOnly Property {|#4:Property1|} As Integer
         Get
             Return 5
         End Get
     End Property
 
-    Public WriteOnly Property Property2 As Integer
+    Public WriteOnly Property {|#5:Property2|} As Integer
         Set
             s_field = Value
         End Set
     End Property
 
-    Public Property MyProperty As Integer
+    Public Property {|#6:MyProperty|} As Integer
         Get 
             Return 10
         End Get
@@ -117,7 +116,7 @@ Public Class MembersTests
         End Set
     End Property
 
-    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+    Public Custom Event {|#7:CustomEvent|} As EventHandler(Of EventArgs)
         AddHandler(value As EventHandler(Of EventArgs))
         End AddHandler
         RemoveHandler(value As EventHandler(Of EventArgs))
@@ -127,18 +126,18 @@ Public Class MembersTests
     End Event
 End Class
 ",
-                GetBasicResultAt(8, 21, "Method1"),
-                GetBasicResultAt(12, 16, "Method2"),
-                GetBasicResultAt(15, 16, "Method3"),
-                GetBasicResultAt(19, 21, "Method4"),
-                GetBasicResultAt(23, 30, "Property1"),
-                GetBasicResultAt(29, 31, "Property2"),
-                GetBasicResultAt(35, 21, "MyProperty"),
-                GetBasicResultAt(44, 25, "CustomEvent"));
+                VerifyVB.Diagnostic().WithLocation(0).WithArguments("Method1"),
+                VerifyVB.Diagnostic().WithLocation(1).WithArguments("Method2"),
+                VerifyVB.Diagnostic().WithLocation(2).WithArguments("Method3"),
+                VerifyVB.Diagnostic().WithLocation(3).WithArguments("Method4"),
+                VerifyVB.Diagnostic().WithLocation(4).WithArguments("Property1"),
+                VerifyVB.Diagnostic().WithLocation(5).WithArguments("Property2"),
+                VerifyVB.Diagnostic().WithLocation(6).WithArguments("MyProperty"),
+                VerifyVB.Diagnostic().WithLocation(7).WithArguments("CustomEvent"));
         }
 
         [Fact]
-        public async Task CSharpSimpleMembers_Internal_DiagnosticsOnlyForInvokedMethods()
+        public async Task CSharpSimpleMembers_Internal_DiagnosticsOnlyForInvokedMethodsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal class MembersTests
@@ -146,40 +145,40 @@ internal class MembersTests
     internal static int s_field;
     public const int Zero = 0;
 
-    public int Method1(string name)
+    public int {|#0:Method1|}(string name)
     {
         return name.Length;
     }
 
     public void Method2() { }
 
-    public void Method3()
+    public void {|#1:Method3|}()
     {
         s_field = 4;
     }
 
-    public int Method4()
+    public int {|#2:Method4|}()
     {
         return Zero;
     }
     
-    public int Property
+    public int {|#3:Property|}
     {
         get { return 5; }
     }
 
-    public int Property2
+    public int {|#4:Property2|}
     {
         set { s_field = value; }
     }
 
-    public int MyProperty
+    public int {|#5:MyProperty|}
     {
         get { return 10; }
         set { System.Console.WriteLine(value); }
     }
 
-    public event System.EventHandler<System.EventArgs> CustomEvent { add {} remove {} }
+    public event System.EventHandler<System.EventArgs> {|#6:CustomEvent|} { add {} remove {} }
 
     public void Common(string arg)
     {
@@ -202,17 +201,17 @@ internal class MembersTests
         MyProperty = 10; // getter not accessed.
     }
 }",
-                GetCSharpResultAt(7, 16, "Method1"),
-                GetCSharpResultAt(14, 17, "Method3"),
-                GetCSharpResultAt(19, 16, "Method4"),
-                GetCSharpResultAt(24, 16, "Property"),
-                GetCSharpResultAt(29, 16, "Property2"),
-                GetCSharpResultAt(34, 16, "MyProperty"),
-                GetCSharpResultAt(40, 56, "CustomEvent"));
+                VerifyCS.Diagnostic().WithLocation(0).WithArguments("Method1"),
+                VerifyCS.Diagnostic().WithLocation(1).WithArguments("Method3"),
+                VerifyCS.Diagnostic().WithLocation(2).WithArguments("Method4"),
+                VerifyCS.Diagnostic().WithLocation(3).WithArguments("Property"),
+                VerifyCS.Diagnostic().WithLocation(4).WithArguments("Property2"),
+                VerifyCS.Diagnostic().WithLocation(5).WithArguments("MyProperty"),
+                VerifyCS.Diagnostic().WithLocation(6).WithArguments("CustomEvent"));
         }
 
         [Fact]
-        public async Task BasicSimpleMembers_Internal_DiagnosticsOnlyForInvokedMethods()
+        public async Task BasicSimpleMembers_Internal_DiagnosticsOnlyForInvokedMethodsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -221,34 +220,34 @@ Friend Class MembersTests
     Shared s_field As Integer
     Public Const Zero As Integer = 0
 
-    Public Function Method1(name As String) As Integer
+    Public Function {|#0:Method1|}(name As String) As Integer
         Return name.Length
     End Function
 
     Public Sub Method2()
     End Sub
 
-    Public Sub Method3()
+    Public Sub {|#1:Method3|}()
         s_field = 4
     End Sub
 
-    Public Function Method4() As Integer
+    Public Function {|#2:Method4|}() As Integer
         Return Zero
     End Function
 
-    Public ReadOnly Property Property1 As Integer
+    Public ReadOnly Property {|#3:Property1|} As Integer
         Get
             Return 5
         End Get
     End Property
 
-    Public WriteOnly Property Property2 As Integer
+    Public WriteOnly Property {|#4:Property2|} As Integer
         Set
             s_field = Value
         End Set
     End Property
 
-    Public Property MyProperty As Integer
+    Public Property {|#5:MyProperty|} As Integer
         Get 
             Return 10
         End Get
@@ -257,7 +256,7 @@ Friend Class MembersTests
         End Set
     End Property
 
-    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+    Public Custom Event {|#6:CustomEvent|} As EventHandler(Of EventArgs)
         AddHandler(value As EventHandler(Of EventArgs))
         End AddHandler
         RemoveHandler(value As EventHandler(Of EventArgs))
@@ -288,17 +287,17 @@ End Sub
 
 End Class
 ",
-                GetBasicResultAt(8, 21, "Method1"),
-                GetBasicResultAt(15, 16, "Method3"),
-                GetBasicResultAt(19, 21, "Method4"),
-                GetBasicResultAt(23, 30, "Property1"),
-                GetBasicResultAt(29, 31, "Property2"),
-                GetBasicResultAt(35, 21, "MyProperty"),
-                GetBasicResultAt(44, 25, "CustomEvent"));
+                VerifyVB.Diagnostic().WithLocation(0).WithArguments("Method1"),
+                VerifyVB.Diagnostic().WithLocation(1).WithArguments("Method3"),
+                VerifyVB.Diagnostic().WithLocation(2).WithArguments("Method4"),
+                VerifyVB.Diagnostic().WithLocation(3).WithArguments("Property1"),
+                VerifyVB.Diagnostic().WithLocation(4).WithArguments("Property2"),
+                VerifyVB.Diagnostic().WithLocation(5).WithArguments("MyProperty"),
+                VerifyVB.Diagnostic().WithLocation(6).WithArguments("CustomEvent"));
         }
 
         [Fact]
-        public async Task CSharpSimpleMembers_NoDiagnostic()
+        public async Task CSharpSimpleMembers_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class MembersTests
@@ -352,7 +351,7 @@ public class Generic<T>
         }
 
         [Fact]
-        public async Task BasicSimpleMembers_NoDiagnostic()
+        public async Task BasicSimpleMembers_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class MembersTests
@@ -418,7 +417,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpOverrides_NoDiagnostic()
+        public async Task CSharpOverrides_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public abstract class SpecialCasesTest1
@@ -442,7 +441,7 @@ public class SpecialCasesTest2 : SpecialCasesTest1, ISpecialCasesTest
         }
 
         [Fact]
-        public async Task BasicOverrides_NoDiagnostic()
+        public async Task BasicOverrides_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public MustInherit Class SpecialCasesTest1
@@ -470,7 +469,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnostic_ComVisibleAttribute()
+        public async Task CSharpNoDiagnostic_ComVisibleAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -491,7 +490,7 @@ public class ComVisibleClass
         }
 
         [Fact]
-        public async Task BasicNoDiagnostic_ComVisibleAttribute()
+        public async Task BasicNoDiagnostic_ComVisibleAttributeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -527,7 +526,7 @@ End Class
         [InlineData("NUnit.Framework.TestCase(\"asdf\")", false, true, false)]
         [InlineData("NUnit.Framework.TestCaseSource(\"asdf\")", false, true, false)]
         [InlineData("NUnit.Framework.Theory", false, true, false)]
-        public async Task NoDiagnostic_TestAttributes(string testAttributeData, bool isMSTest, bool isNUnit, bool isxunit)
+        public async Task NoDiagnostic_TestAttributesAsync(string testAttributeData, bool isMSTest, bool isNUnit, bool isxunit)
         {
             var referenceAssemblies = (isMSTest, isNUnit, isxunit) switch
             {
@@ -603,7 +602,7 @@ End Namespace
         [Fact]
         [WorkItem(4995, "https://github.com/dotnet/roslyn-analyzers/issues/4995")]
         [WorkItem(5110, "https://github.com/dotnet/roslyn-analyzers/issues/5110")]
-        public async Task AttributeImplementingNUnitITestBuilder_NoDiagnostic()
+        public async Task AttributeImplementingNUnitITestBuilder_NoDiagnosticAsync()
         {
             var referenceAssemblies = AdditionalMetadataReferences.DefaultWithNUnit;
 
@@ -679,7 +678,7 @@ End Namespace
         }
 
         [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
-        public async Task PrivateMethodOnlyCalledByASkippedMethod_Diagnostic()
+        public async Task PrivateMethodOnlyCalledByASkippedMethod_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -699,21 +698,21 @@ public class Program
         N();
     }
 
-    private void N()
+    private void {|#0:N|}()
     {
     }
 }",
                     },
                     ExpectedDiagnostics =
                     {
-                        GetCSharpResultAt(12, 18, "N")
+                        VerifyCS.Diagnostic().WithLocation(0).WithArguments("N"),
                     }
                 }
             }.RunAsync();
         }
 
         [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
-        public async Task PrivateMethodOnlyReferencedByASkippedMethod_NoDiagnostic()
+        public async Task PrivateMethodOnlyReferencedByASkippedMethod_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -743,12 +742,12 @@ public class Program
         }
 
         [Fact, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
-        public async Task CSharp_InstanceReferenceInObjectInitializer_Diagnostic()
+        public async Task CSharp_InstanceReferenceInObjectInitializer_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
-    public void M()
+    public void {|#0:M|}()
     {
         var x = new B() { P = true };
     }
@@ -759,15 +758,15 @@ public class B
     public bool P { get; set; }
 }",
             // Test0.cs(4,17): warning CA1822: Member M does not access instance data and can be marked as static (Shared in VisualBasic)
-            GetCSharpResultAt(4, 17, "M"));
+            VerifyCS.Diagnostic().WithLocation(0).WithArguments("M"));
         }
 
         [Fact, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
-        public async Task Basic_InstanceReferenceInObjectInitializer_Diagnostic()
+        public async Task Basic_InstanceReferenceInObjectInitializer_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
-    Public Sub M()
+    Public Sub {|#0:M|}()
         Dim x = New B With {.P = True}
     End Sub
 End Class
@@ -777,11 +776,11 @@ Public Class B
 End Class
 ",
             // Test0.vb(3,16): warning CA1822: Member M does not access instance data and can be marked as static (Shared in VisualBasic)
-            GetBasicResultAt(3, 16, "M"));
+            VerifyVB.Diagnostic().WithLocation(0).WithArguments("M"));
         }
 
         [Fact, WorkItem(1933, "https://github.com/dotnet/roslyn-analyzers/issues/1933")]
-        public async Task CSharpPropertySingleAccessorAccessingInstance_NoDiagnostic()
+        public async Task CSharpPropertySingleAccessorAccessingInstance_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class MyClass
@@ -811,7 +810,7 @@ public class MyClass
         }
 
         [Fact, WorkItem(1933, "https://github.com/dotnet/roslyn-analyzers/issues/1933")]
-        public async Task CSharpEventWithSingleAccessorAccessingInstance_NoDiagnostic()
+        public async Task CSharpEventWithSingleAccessorAccessingInstance_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -850,7 +849,7 @@ public class MyClass
         }
 
         [Fact, WorkItem(2414, "https://github.com/dotnet/roslyn-analyzers/issues/2414")]
-        public async Task CSharp_ErrorCase_MethodWithThrowNotInCatch()
+        public async Task CSharp_ErrorCase_MethodWithThrowNotInCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -865,7 +864,7 @@ class C
         }
 
         [Fact, WorkItem(2785, "https://github.com/dotnet/roslyn-analyzers/issues/2785")]
-        public async Task CSharp_CustomTestMethodAttribute_NoDiagnostic()
+        public async Task CSharp_CustomTestMethodAttribute_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -907,7 +906,7 @@ namespace SomeNamespace
         [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
         [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
         [InlineData("dotnet_code_quality.api_surface = private, internal")]
-        public async Task WebSpecificControllerMethods_NoDiagnostic(string editorConfigText)
+        public async Task WebSpecificControllerMethods_NoDiagnosticAsync(string editorConfigText)
         {
             var csSource = @"
 using System;
@@ -1001,7 +1000,7 @@ End Class
         }
 
         [Fact]
-        public async Task MethodsWithOptionalParameter()
+        public async Task MethodsWithOptionalParameterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal class C
@@ -1037,7 +1036,7 @@ End Class
         }
 
         [Fact, WorkItem(3857, "https://github.com/dotnet/roslyn-analyzers/issues/3857")]
-        public async Task CA1822_ObsoleteAttribute_NoDiagnostic()
+        public async Task CA1822_ObsoleteAttribute_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -1229,7 +1228,7 @@ End Class
         [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
         [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
         [InlineData("dotnet_code_quality.api_surface = private, internal")]
-        public async Task TestWebProject(string editorConfigText)
+        public async Task TestWebProjectAsync(string editorConfigText)
         {
             var csSource = @"
 public class Test
@@ -1277,7 +1276,7 @@ End Class";
         }
 
         [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
-        public async Task FullProperties_NoDiagnostic()
+        public async Task FullProperties_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -1306,7 +1305,7 @@ public class C
         }
 
         [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
-        public async Task AutoProperties_NoDiagnostic()
+        public async Task AutoProperties_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
@@ -1340,7 +1339,7 @@ public class C1
         }
 
         [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
-        public async Task Properties_StaticField_Diagnostic()
+        public async Task Properties_StaticField_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C1
@@ -1366,7 +1365,7 @@ public class C1
         }
 
         [Fact, WorkItem(4304, "https://github.com/dotnet/roslyn-analyzers/pull/4304")]
-        public async Task SkippableFactAttribute()
+        public async Task SkippableFactAttributeAsync()
         {
             await new VerifyCS.Test
             {
@@ -1385,7 +1384,7 @@ public class C
         }
 
         [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
-        public async Task AwaiterPattern_INotifyCompletion_NoDiagnostic()
+        public async Task AwaiterPattern_INotifyCompletion_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1404,7 +1403,7 @@ public class DummyAwaiter : INotifyCompletion
         }
 
         [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
-        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnostic()
+        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1424,7 +1423,7 @@ public class DummyAwaiter : ICriticalNotifyCompletion
         }
 
         [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
-        public async Task AwaitablePattern_NoDiagnostic()
+        public async Task AwaitablePattern_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1448,7 +1447,7 @@ public class DummyAwaiter : INotifyCompletion
         }
 
         [Fact]
-        public async Task InstanceMemberUsedInXml_NoDiagnostic()
+        public async Task InstanceMemberUsedInXml_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -1462,19 +1461,5 @@ Public Class C
         End Sub
 End Class");
         }
-
-        private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyCS.Diagnostic()
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
-                .WithArguments(symbolName);
-
-        private static DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyVB.Diagnostic()
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
-                .WithArguments(symbolName);
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     {
         // Valid C# Tests that should not be flagged based on CA1044 (good tests)
         [Fact]
-        public async Task CS_CA1044Good_Read_Write()
+        public async Task CS_CA1044Good_Read_WriteAsync()
         {
             var code = @"
 using System;
@@ -36,7 +36,7 @@ namespace CS_DesignLibrary
         }
 
         [Fact]
-        public async Task CS_CA1044Good_Read_Write1()
+        public async Task CS_CA1044Good_Read_Write1Async()
         {
             var code = @"
 using System;
@@ -56,7 +56,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests1
         }
 
         [Fact]
-        public async Task CS_CA1044Good_public_Read_private_Write()
+        public async Task CS_CA1044Good_public_Read_private_WriteAsync()
         {
             var code = @"
 using System;
@@ -76,7 +76,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests2
         }
 
         [Fact]
-        public async Task CS_CA1044Good_protected_Read_private_Write()
+        public async Task CS_CA1044Good_protected_Read_private_WriteAsync()
         {
             var code = @"
 using System;
@@ -96,7 +96,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests3
         }
 
         [Fact]
-        public async Task CS_CA1044Good_internal_Read_private_Write()
+        public async Task CS_CA1044Good_internal_Read_private_WriteAsync()
         {
             var code = @"
 using System;
@@ -116,7 +116,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests4
         }
 
         [Fact]
-        public async Task CS_CA1044Good_protected_internal_Read_internal_Write()
+        public async Task CS_CA1044Good_protected_internal_Read_internal_WriteAsync()
         {
             var code = @"
 using System;
@@ -136,7 +136,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests5
         }
 
         [Fact]
-        public async Task CS_CA1044Good_public_Read_internal_Write()
+        public async Task CS_CA1044Good_public_Read_internal_WriteAsync()
         {
             var code = @"
 using System;
@@ -156,7 +156,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests6
         }
 
         [Fact]
-        public async Task CS_CA1044Good_public_Read_protected_Write()
+        public async Task CS_CA1044Good_public_Read_protected_WriteAsync()
         {
             var code = @"
 using System;
@@ -176,7 +176,7 @@ namespace CS__GoodPropertiesShouldNotBeWriteOnlyTests7
         }
 
         [Fact]
-        public async Task CS_CA1044Good_public_override_Write()
+        public async Task CS_CA1044Good_public_override_WriteAsync()
         {
             var code = @"
 using System;
@@ -199,7 +199,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests8
         }
 
         [Fact]
-        public async Task CS_CA1044Interface()
+        public async Task CS_CA1044InterfaceAsync()
         {
             var code = @"
 using System;
@@ -225,7 +225,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests9
         }
 
         [Fact]
-        public async Task CS_CA1044Base_Write()
+        public async Task CS_CA1044Base_WriteAsync()
         {
             var code = @"
 using System;
@@ -252,7 +252,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests10
 
         // Valid VB Tests that should not be flagged based on CA1044 (good tests)
         [Fact]
-        public async Task VB_CA1044Good_Read_Write()
+        public async Task VB_CA1044Good_Read_WriteAsync()
         {
             var code = @"
 Imports System
@@ -274,7 +274,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task VB_CA1044Good_Read_Write1()
+        public async Task VB_CA1044Good_Read_Write1Async()
         {
             var code = @"
 Imports System
@@ -296,7 +296,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task VB_CA1044Good_public_Read_private_Write()
+        public async Task VB_CA1044Good_public_Read_private_WriteAsync()
         {
             var code = @"
 Imports System
@@ -318,7 +318,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Good_protected_Read_private_Write()
+        public async Task VB_CA1044Good_protected_Read_private_WriteAsync()
         {
             var code = @"
 Imports System
@@ -340,7 +340,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Good_internal_Read_private_Write()
+        public async Task VB_CA1044Good_internal_Read_private_WriteAsync()
         {
             var code = @"
 Imports System
@@ -362,7 +362,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Good_protected_internal_Read_internal_Write()
+        public async Task VB_CA1044Good_protected_internal_Read_internal_WriteAsync()
         {
             var code = @"
 Imports System
@@ -384,7 +384,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Good_public_Read_internal_Write()
+        public async Task VB_CA1044Good_public_Read_internal_WriteAsync()
         {
             var code = @"
 Imports System
@@ -406,7 +406,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Good_public_Read_protected_Write()
+        public async Task VB_CA1044Good_public_Read_protected_WriteAsync()
         {
             var code = @"
 Imports System
@@ -429,7 +429,7 @@ End NameSpace
 
         // C# Tests that should be flagged with CA1044 Addgetter
         [Fact]
-        public async Task CS_CA1044Bad_Write_with_NoRead()
+        public async Task CS_CA1044Bad_Write_with_NoReadAsync()
         {
             var code = @"
 using System;
@@ -448,7 +448,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests
         }
 
         [Fact]
-        public async Task CS_CA1044Bad_Write_with_NoRead1()
+        public async Task CS_CA1044Bad_Write_with_NoRead1Async()
         {
             var code = @"
 using System;
@@ -467,7 +467,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests1
         }
 
         [Fact]
-        public async Task CS_CA1044Bad_Write_with_NoRead2()
+        public async Task CS_CA1044Bad_Write_with_NoRead2Async()
         {
             var code = @"
 using System;
@@ -486,7 +486,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests2
         }
 
         [Fact]
-        public async Task CS_CA1044Bad_Write_with_NoRead3()
+        public async Task CS_CA1044Bad_Write_with_NoRead3Async()
         {
             var code = @"
 using System;
@@ -505,7 +505,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests3
         }
 
         [Fact]
-        public async Task CS_CA1044Bad_Write_with_NoRead4()
+        public async Task CS_CA1044Bad_Write_with_NoRead4Async()
         {
             var code = @"
 using System;
@@ -524,7 +524,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests4
         }
 
         [Fact]
-        public async Task CS_CA1044bad_Base_Write()
+        public async Task CS_CA1044bad_Base_WriteAsync()
         {
             var code = @"
 using System;
@@ -542,7 +542,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests5
         }
 
         [Fact]
-        public async Task CS_CA1044bad_Interface_Write()
+        public async Task CS_CA1044bad_Interface_WriteAsync()
         {
             var code = @"
 using System;
@@ -561,7 +561,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests6
 
         // C# Tests that should be flagged with CA1044 MakeMoreAccessible
         [Fact]
-        public async Task CS_CA1044Bad_InaccessibleRead()
+        public async Task CS_CA1044Bad_InaccessibleReadAsync()
         {
             var code = @"
 using System;
@@ -581,7 +581,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests
         }
 
         [Fact]
-        public async Task CS_CA1044Bad_InaccessibleRead1()
+        public async Task CS_CA1044Bad_InaccessibleRead1Async()
         {
             var code = @"
 using System;
@@ -601,7 +601,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests1
         }
 
         [Fact]
-        public async Task CS_CA1044Bad_InaccessibleRead2()
+        public async Task CS_CA1044Bad_InaccessibleRead2Async()
         {
             var code = @"
 using System;
@@ -622,7 +622,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests2
 
         // VB Tests that should be flagged with CA1044 Addgetter
         [Fact]
-        public async Task VB_CA1044Bad_Write_with_NoRead()
+        public async Task VB_CA1044Bad_Write_with_NoReadAsync()
         {
             var code = @"
 Imports System
@@ -641,7 +641,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Bad_Write_with_NoRead1()
+        public async Task VB_CA1044Bad_Write_with_NoRead1Async()
         {
             var code = @"
 Imports System
@@ -660,7 +660,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Bad_Write_with_NoRead2()
+        public async Task VB_CA1044Bad_Write_with_NoRead2Async()
         {
             var code = @"
 Imports System
@@ -679,7 +679,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Bad_Write_with_NoRead3()
+        public async Task VB_CA1044Bad_Write_with_NoRead3Async()
         {
             var code = @"
 Imports System
@@ -698,7 +698,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Bad_Write_with_NoRead4()
+        public async Task VB_CA1044Bad_Write_with_NoRead4Async()
         {
             var code = @"
 Imports System
@@ -717,7 +717,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Bad_Write_with_NoRead5()
+        public async Task VB_CA1044Bad_Write_with_NoRead5Async()
         {
             var code = @"
 Imports System
@@ -735,7 +735,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(6, 35, CA1044MessageAddGetter, "VB_WriteOnlyProperty5"));
         }
         [Fact]
-        public async Task VB_CA1044Bad_Interface_Write()
+        public async Task VB_CA1044Bad_Interface_WriteAsync()
         {
             var code = @"
 Imports System
@@ -756,7 +756,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Bad_Interface_Write1()
+        public async Task VB_CA1044Bad_Interface_Write1Async()
         {
             var code = @"
 Imports System
@@ -770,7 +770,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Bad_Write_with_NoRead6()
+        public async Task VB_CA1044Bad_Write_with_NoRead6Async()
         {
             var code = @"
 Imports System
@@ -790,7 +790,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(5, 28, CA1044MessageAddGetter, "InterfaceProperty"));
         }
         [Fact]
-        public async Task VB_CA1044Bad_Base_Write()
+        public async Task VB_CA1044Bad_Base_WriteAsync()
         {
             var code = @"
 Imports System
@@ -808,7 +808,7 @@ End NameSpace
 
         // VB Tests that should be flagged with CA1044 MakeMoreAccessible
         [Fact]
-        public async Task VB_CA1044Bad_InaccessibleRead()
+        public async Task VB_CA1044Bad_InaccessibleReadAsync()
         {
             var code = @"
 Imports System
@@ -830,7 +830,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Bad_InaccessibleRead1()
+        public async Task VB_CA1044Bad_InaccessibleRead1Async()
         {
             var code = @"
 Imports System
@@ -852,7 +852,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Bad_InaccessibleRead2()
+        public async Task VB_CA1044Bad_InaccessibleRead2Async()
         {
             var code = @"
 Imports System
@@ -874,7 +874,7 @@ End NameSpace
         }
 
         [Fact]
-        public async Task VB_CA1044Bad_InaccessibleRead3()
+        public async Task VB_CA1044Bad_InaccessibleRead3Async()
         {
             var code = @"
 Imports System

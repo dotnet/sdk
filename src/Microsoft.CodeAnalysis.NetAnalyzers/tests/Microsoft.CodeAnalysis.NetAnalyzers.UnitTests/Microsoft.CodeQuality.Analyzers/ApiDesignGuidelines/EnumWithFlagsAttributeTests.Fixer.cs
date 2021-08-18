@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class EnumWithFlagsAttributeFixerTests
     {
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_SimpleCase()
+        public async Task CSharp_EnumWithFlagsAttributes_SimpleCaseAsync()
         {
             var code = @"
 public enum {|CA1027:SimpleFlagsEnumClass|}
@@ -57,7 +57,7 @@ public enum HexFlagsEnumClass
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCase()
+        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCaseAsync()
         {
             var code = @"
 Public Enum {|CA1027:SimpleFlagsEnumClass|}
@@ -96,7 +96,7 @@ End Enum";
         }
 
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_DuplicateValues()
+        public async Task CSharp_EnumWithFlagsAttributes_DuplicateValuesAsync()
         {
             string code = @"
 public enum {|CA1027:DuplicateValuesEnumClass|}
@@ -128,7 +128,7 @@ public enum DuplicateValuesEnumClass
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_DuplicateValues()
+        public async Task VisualBasic_EnumWithFlagsAttributes_DuplicateValuesAsync()
         {
             string code = @"
 Public Enum {|CA1027:DuplicateValuesEnumClass|}
@@ -158,7 +158,7 @@ End Enum
         }
 
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_MissingPowerOfTwo()
+        public async Task CSharp_EnumWithFlagsAttributes_MissingPowerOfTwoAsync()
         {
             string code = @"
 public enum {|CA1027:MissingPowerOfTwoEnumClass|}
@@ -205,7 +205,7 @@ public enum MultipleMissingPowerOfTwoEnumClass
         }
 
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_IncorrectNumbers()
+        public async Task CSharp_EnumWithFlagsAttributes_IncorrectNumbersAsync()
         {
             string code = @"
 [System.Flags]
@@ -231,7 +231,7 @@ public enum AnotherTestValue
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_MissingPowerOfTwo()
+        public async Task VisualBasic_EnumWithFlagsAttributes_MissingPowerOfTwoAsync()
         {
             string code = @"
 Public Enum {|CA1027:MissingPowerOfTwoEnumClass|}
@@ -276,7 +276,7 @@ End Enum
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_IncorrectNumber()
+        public async Task VisualBasic_EnumWithFlagsAttributes_IncorrectNumberAsync()
         {
             string code = @"
 <System.Flags>

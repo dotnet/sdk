@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class DoNotExposeGenericListsTests
     {
         [Fact]
-        public async Task CA1002_Fields()
+        public async Task CA1002_FieldsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA1002_Methods()
+        public async Task CA1002_MethodsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -141,7 +141,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task CA1002_Properties()
+        public async Task CA1002_PropertiesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -218,7 +218,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task CA1002_ExtensionMethods()
+        public async Task CA1002_ExtensionMethodsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -279,7 +279,7 @@ End Namespace
         // Invalid analyzer option ignored
         [InlineData("internal", @"dotnet_code_quality.api_surface = all
                                   dotnet_code_quality.CA1002.api_surface_2 = private")]
-        public async Task CSharp_ApiSurfaceOption(string accessibility, string editorConfigText)
+        public async Task CSharp_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -330,7 +330,7 @@ public class OuterClass
         // Invalid analyzer option ignored
         [InlineData("Friend", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1002.api_surface_2 = Private")]
-        public async Task VisualBasic_ApiSurfaceOption(string accessibility, string editorConfigText)
+        public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
             {

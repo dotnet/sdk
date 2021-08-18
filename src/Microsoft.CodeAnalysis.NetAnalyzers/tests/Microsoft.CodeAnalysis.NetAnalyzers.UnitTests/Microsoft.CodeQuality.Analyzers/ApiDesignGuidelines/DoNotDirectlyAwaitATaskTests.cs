@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
@@ -23,7 +23,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [InlineData("Task<int>")]
         [InlineData("ValueTask")]
         [InlineData("ValueTask<int>")]
-        public async Task CSharpSimpleAwaitTask(string typeName)
+        public async Task CSharpSimpleAwaitTaskAsync(string typeName)
         {
             var code = $@"
 using System.Threading.Tasks;
@@ -68,7 +68,7 @@ public class C
         }
 
         [Fact]
-        public async Task CSharpSimpleAwaitTaskWithTrivia()
+        public async Task CSharpSimpleAwaitTaskWithTriviaAsync()
         {
             var code = @"
 using System.Threading.Tasks;
@@ -99,7 +99,7 @@ public class C
 
         [Fact]
         [WorkItem(4888, "https://github.com/dotnet/roslyn-analyzers/issues/4888")]
-        public async Task CSharpAsyncDisposable()
+        public async Task CSharpAsyncDisposableAsync()
         {
             var code = @"
 using System;
@@ -186,7 +186,7 @@ public class C
         [InlineData("Task(Of Integer)")]
         [InlineData("ValueTask")]
         [InlineData("ValueTask(Of Integer)")]
-        public async Task BasicSimpleAwaitTask(string typeName)
+        public async Task BasicSimpleAwaitTaskAsync(string typeName)
         {
             var code = $@"
 Imports System.Threading.Tasks
@@ -227,7 +227,7 @@ End Class
         }
 
         [Fact]
-        public async Task BasicSimpleAwaitTaskWithTrivia()
+        public async Task BasicSimpleAwaitTaskWithTriviaAsync()
         {
             var code = @"
 Imports System.Threading.Tasks
@@ -254,7 +254,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnostic()
+        public async Task CSharpNoDiagnosticAsync()
         {
             var code = @"
 using System;
@@ -309,7 +309,7 @@ public class SomeAwaiter : INotifyCompletion
         }
 
         [Fact]
-        public async Task BasicNoDiagnostic()
+        public async Task BasicNoDiagnosticAsync()
         {
             var code = @"
 Imports System
@@ -362,7 +362,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpAwaitAwaitTask()
+        public async Task CSharpAwaitAwaitTaskAsync()
         {
             var code = @"
 using System.Threading.Tasks;
@@ -412,7 +412,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicAwaitAwaitTask()
+        public async Task BasicAwaitAwaitTaskAsync()
         {
             var code = @"
 Imports System.Threading.Tasks
@@ -457,7 +457,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpComplexAwaitTask()
+        public async Task CSharpComplexAwaitTaskAsync()
         {
             var code = @"
 using System;
@@ -496,7 +496,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicComplexAwaitTask()
+        public async Task BasicComplexAwaitTaskAsync()
         {
             var code = @"
 Imports System
@@ -533,7 +533,7 @@ End Class
         }
 
         [Fact, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
-        public async Task CSharpAsyncVoidMethod_Diagnostic()
+        public async Task CSharpAsyncVoidMethod_DiagnosticAsync()
         {
             var code = @"
 using System.Threading.Tasks;
@@ -574,7 +574,7 @@ public class C
         [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
         [InlineData("dotnet_code_quality.exclude_async_void_methods = true")]
         [InlineData("dotnet_code_quality.CA2007.exclude_async_void_methods = true")]
-        public async Task CSharpAsyncVoidMethod_AnalyzerOption_NoDiagnostic(string editorConfigText)
+        public async Task CSharpAsyncVoidMethod_AnalyzerOption_NoDiagnosticAsync(string editorConfigText)
         {
             var code = @"
 using System.Threading.Tasks;
@@ -609,7 +609,7 @@ public class C
         [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
         [InlineData("dotnet_code_quality.exclude_async_void_methods = false")]
         [InlineData("dotnet_code_quality.CA2007.exclude_async_void_methods = false")]
-        public async Task CSharpAsyncVoidMethod_AnalyzerOption_Diagnostic(string editorConfigText)
+        public async Task CSharpAsyncVoidMethod_AnalyzerOption_DiagnosticAsync(string editorConfigText)
         {
             var code = @"
 using System.Threading.Tasks;
@@ -668,7 +668,7 @@ public class C
         [InlineData("dotnet_code_quality.CA2007.output_kind = ConsoleApplication, WindowsApplication", false)]
         [InlineData("dotnet_code_quality.output_kind = DynamicallyLinkedLibrary", true)]
         [InlineData("dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary", true)]
-        public async Task CSharpSimpleAwaitTask_AnalyzerOption_OutputKind(string editorConfigText, bool isExpectingDiagnostic)
+        public async Task CSharpSimpleAwaitTask_AnalyzerOption_OutputKindAsync(string editorConfigText, bool isExpectingDiagnostic)
         {
             var csharpTest = new VerifyCS.Test
             {
@@ -706,7 +706,7 @@ public class C
         }
 
         [Fact, WorkItem(2393, "https://github.com/dotnet/roslyn-analyzers/issues/2393")]
-        public async Task CSharpSimpleAwaitTaskInLocalFunction()
+        public async Task CSharpSimpleAwaitTaskInLocalFunctionAsync()
         {
             var code = @"
 using System.Threading.Tasks;

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     public class ProvidePublicParameterlessSafeHandleConstructorTests
     {
         [Fact]
-        public async Task NonSafeHandleDerivedType_NoDiagnostics_CS()
+        public async Task NonSafeHandleDerivedType_NoDiagnostics_CSAsync()
         {
             string source = @"
 class Foo
@@ -29,7 +29,7 @@ class Foo
         }
 
         [Fact]
-        public async Task NonSafeHandleDerivedType_NoDiagnostics_VB()
+        public async Task NonSafeHandleDerivedType_NoDiagnostics_VBAsync()
         {
             string source = @"
 Class Foo
@@ -40,7 +40,7 @@ End Class";
         }
 
         [Fact]
-        public async Task SafeHandleDerivedType_WithParameterlessConstructor_NoDiagnostics_CS()
+        public async Task SafeHandleDerivedType_WithParameterlessConstructor_NoDiagnostics_CSAsync()
         {
             string source = @"
 using Microsoft.Win32.SafeHandles;
@@ -57,7 +57,7 @@ class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
         }
 
         [Fact]
-        public async Task SafeHandleDerivedType_WithParameterlessConstructor_NoDiagnostics_VB()
+        public async Task SafeHandleDerivedType_WithParameterlessConstructor_NoDiagnostics_VBAsync()
         {
             string source = @"
 Imports Microsoft.Win32.SafeHandles
@@ -75,7 +75,7 @@ End Class";
         }
 
         [Fact]
-        public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_CodeFix_CS()
+        public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_CodeFix_CSAsync()
         {
             string source = @"
 using Microsoft.Win32.SafeHandles;
@@ -104,7 +104,7 @@ class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
         }
 
         [Fact]
-        public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_CodeFix_VB()
+        public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_CodeFix_VBAsync()
         {
             string source = @"
 Imports Microsoft.Win32.SafeHandles
@@ -137,7 +137,7 @@ End Class";
         }
 
         [Fact]
-        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithAccessibleBaseTypeParameterlessConstructor_CodeFix_CS()
+        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithAccessibleBaseTypeParameterlessConstructor_CodeFix_CSAsync()
         {
             string source = @"
 using System;
@@ -188,7 +188,7 @@ class BarHandle : FooHandle
         }
 
         [Fact]
-        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithAccessibleBaseTypeParameterlessConstructor_CodeFix_VB()
+        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithAccessibleBaseTypeParameterlessConstructor_CodeFix_VBAsync()
         {
             string source = @"
 Imports System
@@ -239,7 +239,7 @@ End Class";
         }
 
         [Fact]
-        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoAccessibleBaseTypeParameterlessConstructor_Diagnostic_CS()
+        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoAccessibleBaseTypeParameterlessConstructor_Diagnostic_CSAsync()
         {
             string source = @"
 using System;
@@ -272,7 +272,7 @@ class [|BarHandle|] : FooHandle
         }
 
         [Fact]
-        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoAccessibleBaseTypeParameterlessConstructor_DeepInheritance_Diagnostic_CS()
+        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoAccessibleBaseTypeParameterlessConstructor_DeepInheritance_Diagnostic_CSAsync()
         {
             string source = @"
 using System;
@@ -310,7 +310,7 @@ class [|BazHandle|] : BarHandle
         }
 
         [Fact]
-        public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_CS()
+        public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_CSAsync()
         {
             string source = @"
 using System;
@@ -329,7 +329,7 @@ abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
         }
 
         [Fact]
-        public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_VB()
+        public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_VBAsync()
         {
             string source = @"
 Imports System
@@ -350,7 +350,7 @@ End Class";
         }
 
         [Fact]
-        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoAccessibleBaseTypeParameterlessConstructor_Diagnostic_VB()
+        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoAccessibleBaseTypeParameterlessConstructor_Diagnostic_VBAsync()
         {
             string source = @"
 Imports System
@@ -382,7 +382,7 @@ End Class";
         }
 
         [Fact]
-        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoBaseTypeParameterlessConstructor_Diagnostic_CS()
+        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoBaseTypeParameterlessConstructor_Diagnostic_CSAsync()
         {
             string source = @"
 using System;
@@ -412,7 +412,7 @@ class [|BarHandle|] : FooHandle
         }
 
         [Fact]
-        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoBaseTypeParameterlessConstructor_Diagnostic_VB()
+        public async Task SafeHandleDerived_WithNoParameterlessConstructor_WithNoBaseTypeParameterlessConstructor_Diagnostic_VBAsync()
         {
             string source = @"
 Imports System
@@ -440,7 +440,7 @@ End Class";
 
         [Fact]
         [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
-        public async Task SafeHandleDerived_WithInternalParameterlessConstructor_InternalType_NoDiagnostic_CS()
+        public async Task SafeHandleDerived_WithInternalParameterlessConstructor_InternalType_NoDiagnostic_CSAsync()
         {
             string source = @"
 using System;
@@ -461,7 +461,7 @@ internal class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
 
         [Fact]
         [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
-        public async Task SafeHandleDerived_WithInternalParameterlessConstructor_DefaultAccessibilityType_NoDiagnostic_CS()
+        public async Task SafeHandleDerived_WithInternalParameterlessConstructor_DefaultAccessibilityType_NoDiagnostic_CSAsync()
         {
             string source = @"
 using System;
@@ -482,7 +482,7 @@ class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
 
         [Fact]
         [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
-        public async Task SafeHandleDerived_WithPrivateProtectedParameterlessConstructor_PrivateProtectedType_NoDiagnostic_CS()
+        public async Task SafeHandleDerived_WithPrivateProtectedParameterlessConstructor_PrivateProtectedType_NoDiagnostic_CSAsync()
         {
             string source = @"
 using System;

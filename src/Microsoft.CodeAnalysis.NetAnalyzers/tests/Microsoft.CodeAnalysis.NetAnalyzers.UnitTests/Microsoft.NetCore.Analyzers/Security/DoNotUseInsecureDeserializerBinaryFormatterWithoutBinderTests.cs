@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -62,7 +62,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -98,7 +98,7 @@ public class ExampleClass
         }
 
         [Fact]
-        public async Task DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -129,7 +129,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DocSample1_CSharp_Solution_NoDiagnostic()
+        public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -186,7 +186,7 @@ public class ExampleClass
         }
 
         [Fact]
-        public async Task DocSample1_VB_Solution_NoDiagnostic()
+        public async Task DocSample1_VB_Solution_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -235,7 +235,7 @@ End Class");
         }
 
         [Fact]
-        public async Task DocSample2_CSharp_Violation_Diagnostic()
+        public async Task DocSample2_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -272,7 +272,7 @@ public class ExampleClass
         }
 
         [Fact]
-        public async Task DocSample2_VB_Violation_Diagnostic()
+        public async Task DocSample2_VB_Violation_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -304,7 +304,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DocSample3_CSharp_Violation_Diagnostic()
+        public async Task DocSample3_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -368,7 +368,7 @@ public class ExampleClass
         }
 
         [Fact]
-        public async Task DocSample3_VB_Violation_Diagnostic()
+        public async Task DocSample3_VB_Violation_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -422,7 +422,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DocSample3_CSharp_Solution_NoDiagnostic()
+        public async Task DocSample3_CSharp_Solution_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -488,7 +488,7 @@ public class ExampleClass
         }
 
         [Fact]
-        public async Task DocSample3_VB_Solution_NoDiagnostic()
+        public async Task DocSample3_VB_Solution_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -544,7 +544,7 @@ End Class");
         }
 
         [Fact]
-        public async Task Deserialize_Diagnostic()
+        public async Task Deserialize_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -565,7 +565,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_OptionalParameters_Diagnostic()
+        public async Task Deserialize_OptionalParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -587,7 +587,7 @@ namespace Blah
 
         // Ideally, we'd detect that formatter.Binder is always null.
         [Fact]
-        public async Task DeserializeWithInstanceField_Diagnostic_NotIdeal()
+        public async Task DeserializeWithInstanceField_Diagnostic_NotIdealAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -609,7 +609,7 @@ namespace Blah
         }
 
         [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/1851")]
-        public async Task DeserializeWithInstanceField_NoDiagnostic()
+        public async Task DeserializeWithInstanceField_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System.IO;
@@ -632,7 +632,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_BinderMaybeSet_Diagnostic()
+        public async Task Deserialize_BinderMaybeSet_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -659,7 +659,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_BinderSet_NoDiagnostic()
+        public async Task Deserialize_BinderSet_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -681,7 +681,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task TwoDeserializersOneBinderOnFirst_Diagnostic()
+        public async Task TwoDeserializersOneBinderOnFirst_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -711,7 +711,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task TwoDeserializersOneBinderOnSecond_Diagnostic()
+        public async Task TwoDeserializersOneBinderOnSecond_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -740,7 +740,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task TwoDeserializersNoBinder_Diagnostic()
+        public async Task TwoDeserializersNoBinder_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -770,7 +770,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task BinderSetInline_NoDiagnostic()
+        public async Task BinderSetInline_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -790,7 +790,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serialize_NoDiagnostic()
+        public async Task Serialize_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -812,7 +812,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_LoopBinderSetAfter_Diagnostic()
+        public async Task Deserialize_LoopBinderSetAfter_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -838,7 +838,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_LoopBinderSetBefore_NoDiagnostic()
+        public async Task Deserialize_LoopBinderSetBefore_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -863,7 +863,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_LoopBinderSetBeforeMaybe_Diagnostic()
+        public async Task Deserialize_LoopBinderSetBeforeMaybe_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -892,7 +892,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_InvokedAsDelegate_Diagnostic()
+        public async Task Deserialize_InvokedAsDelegate_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -916,7 +916,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_BranchInvokedAsDelegate_Diagnostic()
+        public async Task Deserialize_BranchInvokedAsDelegate_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -954,7 +954,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_BranchInvokedAsDelegate_NoDiagnostic()
+        public async Task Deserialize_BranchInvokedAsDelegate_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -984,7 +984,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_Property_Diagnostic()
+        public async Task Deserialize_Property_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1014,7 +1014,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_Constructor_Diagnostic()
+        public async Task Deserialize_Constructor_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1038,7 +1038,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_FieldInitializer_Diagnostic()
+        public async Task Deserialize_FieldInitializer_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1058,7 +1058,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_InConstructorAndMethod_Diagnostics()
+        public async Task Deserialize_InConstructorAndMethod_DiagnosticsAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1104,7 +1104,7 @@ class Derived : Base
         }
 
         [Fact]
-        public async Task BinderVariableSetInAllBranches_NoDiagnostic()
+        public async Task BinderVariableSetInAllBranches_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1131,7 +1131,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task BinderParameter_NoDiagnostic()
+        public async Task BinderParameter_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1155,7 +1155,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task BinderNotNullInsideIf_NoDiagnostic()
+        public async Task BinderNotNullInsideIf_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1183,7 +1183,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task SomeOtherSerializer_NoDiagnostic()
+        public async Task SomeOtherSerializer_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1207,7 +1207,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task OtherMethodInstantiatesWithoutBinder_Diagnostic()
+        public async Task OtherMethodInstantiatesWithoutBinder_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1235,7 +1235,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task OtherMethodInstantiatesWithBinderMaybe_Diagnostic()
+        public async Task OtherMethodInstantiatesWithBinderMaybe_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1266,7 +1266,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task OtherMethodInstantiatesWithBinder_NoDiagnostic()
+        public async Task OtherMethodInstantiatesWithBinder_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1292,7 +1292,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task OtherMethodDeserializesWithoutBinder_Diagnostic()
+        public async Task OtherMethodDeserializesWithoutBinder_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1322,7 +1322,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task OtherMethodDeserializesWithoutBinderUsingDelegate_Diagnostic()
+        public async Task OtherMethodDeserializesWithoutBinderUsingDelegate_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1352,7 +1352,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task OtherMethodDeserializesWithoutBinderUsingBinaryFormatter_Diagnostic()
+        public async Task OtherMethodDeserializesWithoutBinderUsingBinaryFormatter_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1389,7 +1389,7 @@ namespace Blah
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = DeserializeBookRecord")]
         [InlineData(@"dotnet_code_quality.CA2301.excluded_symbol_names = DeserializeBook*
                       dotnet_code_quality.CA2302.excluded_symbol_names = DeserializeBook*")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {
@@ -1447,7 +1447,7 @@ public class ExampleClass
         }
 
         [Fact]
-        public async Task Deserialize_SharedBinderInstance_NoDiagnostic()
+        public async Task Deserialize_SharedBinderInstance_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;
@@ -1472,7 +1472,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_SharedBinderInstanceIntermediate_NoDiagnostic()
+        public async Task Deserialize_SharedBinderInstanceIntermediate_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
 using System;

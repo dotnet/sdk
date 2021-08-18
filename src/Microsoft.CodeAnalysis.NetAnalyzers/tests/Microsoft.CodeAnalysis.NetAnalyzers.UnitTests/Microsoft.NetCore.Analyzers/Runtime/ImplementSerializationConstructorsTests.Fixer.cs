@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public partial class ImplementSerializationConstructorsFixerTests
     {
         [Fact]
-        public async Task CA2229NoConstructorFix()
+        public async Task CA2229NoConstructorFixAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -76,7 +76,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA2229HasConstructorWrongAccessibilityFix()
+        public async Task CA2229HasConstructorWrongAccessibilityFixAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -138,7 +138,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA2229HasConstructorWrongAccessibility2Fix()
+        public async Task CA2229HasConstructorWrongAccessibility2FixAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;

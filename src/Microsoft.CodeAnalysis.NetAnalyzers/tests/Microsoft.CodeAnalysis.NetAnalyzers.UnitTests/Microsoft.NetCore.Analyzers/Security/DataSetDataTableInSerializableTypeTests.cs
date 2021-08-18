@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DataSetDataTableInSerializableTypeTests
     {
         [Fact]
-        public async Task Serializable_Field_Diagnostic()
+        public async Task Serializable_Field_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -31,7 +31,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DataContract_Field_Diagnostic()
+        public async Task DataContract_Field_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Data;
@@ -50,7 +50,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task IgnoreDataMemberOnDataTable_Diagnostic()
+        public async Task IgnoreDataMemberOnDataTable_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Data;
@@ -69,7 +69,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task IgnoreDataMemberOnNotDataTable_Diagnostic()
+        public async Task IgnoreDataMemberOnNotDataTable_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Data;
@@ -89,7 +89,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DataContract_PrivateProperty_Diagnostic()
+        public async Task DataContract_PrivateProperty_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Data;
@@ -108,7 +108,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DataContract_KnownType_DataTable_Diagnostic()
+        public async Task DataContract_KnownType_DataTable_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Data;
@@ -128,7 +128,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DataContract_InheritedKnownType_DataTable_Diagnostic()
+        public async Task DataContract_InheritedKnownType_DataTable_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Data;
@@ -151,7 +151,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serializable_FieldDerivedClass_Diagnostic()
+        public async Task Serializable_FieldDerivedClass_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -173,7 +173,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serializable_PrivateField_Diagnostic()
+        public async Task Serializable_PrivateField_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -191,7 +191,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serializable_Property_Diagnostic()
+        public async Task Serializable_Property_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -209,7 +209,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serializable_PropertyDerived_Diagnostic()
+        public async Task Serializable_PropertyDerived_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -231,7 +231,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serializable_PropertyList_Diagnostic()
+        public async Task Serializable_PropertyList_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -250,7 +250,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serializable_PropertyListListList_Diagnostic()
+        public async Task Serializable_PropertyListListList_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -269,7 +269,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serializable_PropertyArray_Diagnostic()
+        public async Task Serializable_PropertyArray_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -287,7 +287,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serializable_Property2DArray_Diagnostic()
+        public async Task Serializable_Property2DArray_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -305,7 +305,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serializable_PropertyArrayArray_Diagnostic()
+        public async Task Serializable_PropertyArrayArray_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -323,7 +323,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serializable_PropertyNoExplicitSetter_Diagnostic()
+        public async Task Serializable_PropertyNoExplicitSetter_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -341,7 +341,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task XmlElement_Property_Diagnostic()
+        public async Task XmlElement_Property_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Data;
@@ -359,7 +359,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task XmlIgnore_Property_Diagnostic()
+        public async Task XmlIgnore_Property_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Data;
@@ -377,7 +377,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task GeneratedCode_Diagnostic()
+        public async Task GeneratedCode_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Data;
@@ -401,7 +401,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task OtherGeneratedCode_Diagnostic()
+        public async Task OtherGeneratedCode_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.Data;
@@ -456,7 +456,7 @@ namespace Blah
 #endif
 
         [Fact]
-        public async Task TypedTableBase_Diagnostic()
+        public async Task TypedTableBase_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 namespace Blah

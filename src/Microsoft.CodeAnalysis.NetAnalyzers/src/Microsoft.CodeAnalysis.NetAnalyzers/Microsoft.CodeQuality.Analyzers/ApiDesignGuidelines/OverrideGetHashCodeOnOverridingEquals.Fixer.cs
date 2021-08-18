@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading;
@@ -38,12 +38,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterCodeFix(
                 new MyCodeAction(
                     title,
-                    cancellationToken => OverrideObjectGetHashCode(context.Document, typeDeclaration, cancellationToken),
+                    cancellationToken => OverrideObjectGetHashCodeAsync(context.Document, typeDeclaration, cancellationToken),
                     equivalenceKey: title),
                 context.Diagnostics);
         }
 
-        private static async Task<Document> OverrideObjectGetHashCode(Document document, SyntaxNode typeDeclaration, CancellationToken cancellationToken)
+        private static async Task<Document> OverrideObjectGetHashCodeAsync(Document document, SyntaxNode typeDeclaration, CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
@@ -33,7 +33,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [InlineData(AttributeTargets.Property, 13)]
         [InlineData(AttributeTargets.ReturnValue, 14)]
         [InlineData(AttributeTargets.Struct, 15)]
-        public async Task TestSimpleAttributeClass(AttributeTargets attributeTarget, int codeActionIndex)
+        public async Task TestSimpleAttributeClassAsync(AttributeTargets attributeTarget, int codeActionIndex)
         {
             var attributeTargetsValue = "AttributeTargets." + attributeTarget.ToString();
 
@@ -81,7 +81,7 @@ End Class
         }
 
         [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
-        public async Task TestCSInheritedAttributeClass()
+        public async Task TestCSInheritedAttributeClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -97,7 +97,7 @@ class D : C
         }
 
         [Fact]
-        public async Task TestCSAbstractAttributeClass()
+        public async Task TestCSAbstractAttributeClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -109,7 +109,7 @@ abstract class C : Attribute
         }
 
         [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
-        public async Task TestVBInheritedAttributeClass()
+        public async Task TestVBInheritedAttributeClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -125,7 +125,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestVBAbstractAttributeClass()
+        public async Task TestVBAbstractAttributeClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System

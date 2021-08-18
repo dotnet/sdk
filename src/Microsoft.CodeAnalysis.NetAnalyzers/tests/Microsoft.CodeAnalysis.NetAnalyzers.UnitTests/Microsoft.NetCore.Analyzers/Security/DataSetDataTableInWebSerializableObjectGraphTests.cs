@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DataSetDataTableInWebSerializableObjectGraphTests
     {
         [Fact]
-        public async Task WebServiceDirectlyReferences()
+        public async Task WebServiceDirectlyReferencesAsync()
         {
             await VerifyWebServicesCSharpAsync(@"
 using System;
@@ -35,7 +35,7 @@ public class MyService : WebService
         }
 
         [Fact]
-        public async Task WebServiceIndirectlyReferences()
+        public async Task WebServiceIndirectlyReferencesAsync()
         {
             await VerifyWebServicesCSharpAsync(@"
 using System;
@@ -61,7 +61,7 @@ public class MyType
         }
 
         [Fact]
-        public async Task OperationContract()
+        public async Task OperationContractAsync()
         {
             await VerifyServiceModelCSharpAsync(@"
 using System;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => DoNotHardCodeCertificate.Rule;
 
         [Fact]
-        public async Task Test_Source_ContantByteArray_Diagnostic()
+        public async Task Test_Source_ContantByteArray_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -32,7 +32,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Source_ConvertFromBase64String_WithConstantString_Diagnostic()
+        public async Task Test_Source_ConvertFromBase64String_WithConstantString_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -52,7 +52,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Source_ASCIIEncodingGetBytes_WithConstantString_Diagnostic()
+        public async Task Test_Source_ASCIIEncodingGetBytes_WithConstantString_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -72,7 +72,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Source_EncodingUTF8GetBytes_WithConstantString_Diagnostic()
+        public async Task Test_Source_EncodingUTF8GetBytes_WithConstantString_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -92,7 +92,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Source_ASCIIEncodingGetBytes_WithStringAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantString_Diagnostic()
+        public async Task Test_Source_ASCIIEncodingGetBytes_WithStringAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantString_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -112,7 +112,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_X509Certificate_WithStringAndSecureStringAndX509KeyStorageFlagsParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithStringAndSecureStringAndX509KeyStorageFlagsParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -132,7 +132,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_X509Certificate_WithByteArrayAndStringAndX509KeyStorageFlagsParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithByteArrayAndStringAndX509KeyStorageFlagsParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -151,7 +151,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_X509Certificate_WithStringAndStringParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithStringAndStringParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -170,7 +170,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_X509Certificate_WithStringAndSecureStringParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithStringAndSecureStringParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -190,7 +190,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_X509Certificate_WithStringAndStringAndX509KeyStorageFlagsParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithStringAndStringAndX509KeyStorageFlagsParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -209,7 +209,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_X509Certificate_WithByteArrayAndSecureStringParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithByteArrayAndSecureStringParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -229,7 +229,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_X509Certificate_WithByteArrayParameter_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithByteArrayParameter_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -248,7 +248,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_X509Certificate_WithByteArrayAndStringParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithByteArrayAndStringParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -267,7 +267,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_X509Certificates2_Diagnostic()
+        public async Task Test_X509Certificates2_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -287,7 +287,7 @@ class TestClass
 
         // For now, we didn't take serialization into consideration.
         [Fact]
-        public async Task Test_Sink_X509Certificate_WithSerializationInfoAndStreamingContextParameters_NoDiagnostic()
+        public async Task Test_Sink_X509Certificate_WithSerializationInfoAndStreamingContextParameters_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -305,7 +305,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Source_NotContantByteArray_NoDiagnostic()
+        public async Task Test_Source_NotContantByteArray_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -322,7 +322,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Source_ConvertFromBase64String_WithNotConstantString_NoDiagnostic()
+        public async Task Test_Source_ConvertFromBase64String_WithNotConstantString_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -341,7 +341,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_X509Certificate2_NoDiagnostic()
+        public async Task Test_X509Certificate2_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -358,7 +358,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Source_ASCIIEncodingGetBytes_WithCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantCharArray_NoDiagnostic()
+        public async Task Test_Source_ASCIIEncodingGetBytes_WithCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantCharArray_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -380,7 +380,7 @@ class TestClass
 
         // Didn't find out what causes NRE.
         [Fact, WorkItem(3012, "https://github.com/dotnet/roslyn-analyzers/issues/3012")]
-        public async Task Test_ExampleCodeFromTheIssue_NoDiagnostic()
+        public async Task Test_ExampleCodeFromTheIssue_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -429,7 +429,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_NullCfg_NoDiagnostic()
+        public async Task Test_NullCfg_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

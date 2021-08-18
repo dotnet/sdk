@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
         [Fact]
-        public async Task Issue2753_CS_Diagnostic()
+        public async Task Issue2753_CS_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -37,7 +37,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task Issue2753_VB_Diagnostic()
+        public async Task Issue2753_VB_DiagnosticAsync()
         {
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -54,7 +54,7 @@ End Module",
         }
 
         [Fact]
-        public async Task XmlDocumentNoCtorSetResolverToNullShouldNotGenerateDiagnostic()
+        public async Task XmlDocumentNoCtorSetResolverToNullShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -88,7 +88,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlDocumentNoCtorUseSecureResolverShouldNotGenerateDiagnostic()
+        public async Task XmlDocumentNoCtorUseSecureResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -122,7 +122,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlDocumentNoCtorUseSecureResolverWithPermissionsShouldNotGenerateDiagnostic()
+        public async Task XmlDocumentNoCtorUseSecureResolverWithPermissionsShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -176,7 +176,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlDocumentNoCtorSetResolverToNullInTryClauseShouldNotGenerateDiagnostic()
+        public async Task XmlDocumentNoCtorSetResolverToNullInTryClauseShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -218,7 +218,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlDocumentNoCtorUseNonSecureResolverInCatchClauseShouldGenerateDiagnostic()
+        public async Task XmlDocumentNoCtorUseNonSecureResolverInCatchClauseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -263,7 +263,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlDocumentNoCtorUseNonSecureResolverInFinallyClauseShouldGenerateDiagnostic()
+        public async Task XmlDocumentNoCtorUseNonSecureResolverInFinallyClauseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -309,7 +309,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlDocumentNoCtorDoNotSetResolverShouldNotGenerateDiagnostic()
+        public async Task XmlDocumentNoCtorDoNotSetResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -343,7 +343,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlDocumentNoCtorUseNonSecureResolverShouldGenerateDiagnostic()
+        public async Task XmlDocumentNoCtorUseNonSecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -380,7 +380,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlDocumentNoCtorUseNonSecureResolverInTryClauseShouldGenerateDiagnostic()
+        public async Task XmlDocumentNoCtorUseNonSecureResolverInTryClauseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -425,7 +425,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlDocumentDerivedTypeSetInsecureResolverShouldGenerateDiagnostic()
+        public async Task XmlDocumentDerivedTypeSetInsecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -473,7 +473,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlDocumentCreatedAsTempSetResolverToNullShouldNotGenerateDiagnostics()
+        public async Task XmlDocumentCreatedAsTempSetResolverToNullShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -516,7 +516,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task XmlDocumentCreatedAsTempSetInsecureResolverShouldGenerateDiagnostics()
+        public async Task XmlDocumentCreatedAsTempSetInsecureResolverShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,

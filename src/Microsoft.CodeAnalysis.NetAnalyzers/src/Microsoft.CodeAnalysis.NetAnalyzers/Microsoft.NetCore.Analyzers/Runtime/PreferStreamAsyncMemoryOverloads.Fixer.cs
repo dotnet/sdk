@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -103,7 +103,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             string title = MicrosoftNetCoreAnalyzersResources.PreferStreamAsyncMemoryOverloadsTitle;
 
-            Task<Document> createChangedDocument(CancellationToken _) => FixInvocation(model, doc, root,
+            Task<Document> createChangedDocument(CancellationToken _) => FixInvocationAsync(model, doc, root,
                                                          invocation, invocation.TargetMethod.Name,
                                                          bufferNode, isBufferNamed,
                                                          offsetNode, isOffsetNamed,
@@ -118,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 context.Diagnostics);
         }
 
-        private Task<Document> FixInvocation(SemanticModel model, Document doc, SyntaxNode root,
+        private Task<Document> FixInvocationAsync(SemanticModel model, Document doc, SyntaxNode root,
             IInvocationOperation invocation, string methodName,
             SyntaxNode bufferNode, bool isBufferNamed,
             SyntaxNode offsetNode, bool isOffsetNamed,

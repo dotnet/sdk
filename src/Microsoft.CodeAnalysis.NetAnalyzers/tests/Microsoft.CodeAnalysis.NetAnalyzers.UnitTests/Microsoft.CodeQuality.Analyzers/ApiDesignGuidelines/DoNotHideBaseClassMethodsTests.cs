@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class DoNotHideBaseClassMethodsTests
     {
         [Fact]
-        public async Task CA1061_DerivedMethodMatchesBaseMethod_NoDiagnostic()
+        public async Task CA1061_DerivedMethodMatchesBaseMethod_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
@@ -47,7 +47,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasMoreDerivedParameter_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasMoreDerivedParameter_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
@@ -79,7 +79,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_Diagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
@@ -113,7 +113,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1061_ConstructorCallsBaseConstructorWithDifferentParameterType_NoDiagnostic()
+        public async Task CA1061_ConstructorCallsBaseConstructorWithDifferentParameterType_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
@@ -133,7 +133,7 @@ class Derived : Base
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_MultipleMethodsHidden_Diagnostics()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_MultipleMethodsHidden_DiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Parent
@@ -183,7 +183,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ImplementsInterface_CompileError()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ImplementsInterface_CompileErrorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 interface IFace
@@ -212,7 +212,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_OverridesVirtualBaseMethod_CompileError()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_OverridesVirtualBaseMethod_CompileErrorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
@@ -242,7 +242,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_OverridesAbstractBaseMethod_CompileError()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_OverridesAbstractBaseMethod_CompileErrorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 abstract class Base
@@ -272,7 +272,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_DerivedMethodPrivate_Diagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_DerivedMethodPrivate_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
@@ -307,7 +307,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_BaseMethodPrivate_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_BaseMethodPrivate_NoDiagnosticAsync()
         {
             // Note: This behavior differs from FxCop's CA1061
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -341,7 +341,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ArityMismatch_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ArityMismatch_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
@@ -374,7 +374,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ReturnTypeMismatch_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ReturnTypeMismatch_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
@@ -409,7 +409,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ParameterTypeMismatchAtStart_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ParameterTypeMismatchAtStart_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
@@ -442,7 +442,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ParameterTypeMismatchAtEnd_NoDiagnostic()
+        public async Task CA1061_DerivedMethodHasLessDerivedParameter_ParameterTypeMismatchAtEnd_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class Base
