@@ -28,6 +28,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
         }
 
         [Theory]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:$""{new System.Exception().Message}""|}", "11", false)]
         [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:$""{string.Empty}""|}", "11", false)]
         [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:""string"" + 2|}", "11", false)]
         public async Task CA2254IsProducedForDynamicFormatArgument(string format)
@@ -77,6 +78,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [Theory]
         [InlineData(@"LoggerMessage.Define(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
         [InlineData(@"LoggerMessage.Define<int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
+        [InlineData(@"LoggerMessage.Define<int>(LogLevel.Information, 42, {|CA2017:""{One} {}""|});")]
         [InlineData(@"LoggerMessage.Define<int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
         [InlineData(@"LoggerMessage.Define<int, int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two}""|});")]
         [InlineData(@"LoggerMessage.Define<int, int, int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
