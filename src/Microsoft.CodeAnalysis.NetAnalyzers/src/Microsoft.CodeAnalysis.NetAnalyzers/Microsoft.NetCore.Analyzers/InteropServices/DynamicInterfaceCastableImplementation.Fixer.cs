@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading;
@@ -42,7 +42,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     context.RegisterCodeFix(
                         CodeAction.Create(
                             MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,
-                            async ct => await ImplementInterfacesOnDynamicCastableImplementation(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                            async ct => await ImplementInterfacesOnDynamicCastableImplementationAsync(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
                             equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
                         diagnostic);
                 }
@@ -52,7 +52,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     context.RegisterCodeFix(
                         CodeAction.Create(
                             MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic,
-                            async ct => await MakeMemberDeclaredOnImplementationTypeStatic(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                            async ct => await MakeMemberDeclaredOnImplementationTypeStaticAsync(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
                             equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic)),
                         diagnostic);
                 }
@@ -66,12 +66,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         protected abstract bool CodeFixSupportsDeclaration(SyntaxNode declaration);
 
-        protected abstract Task<Document> ImplementInterfacesOnDynamicCastableImplementation(
+        protected abstract Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
             SyntaxNode declaration,
             Document document,
             CancellationToken cancellationToken);
 
-        protected abstract Task<Document> MakeMemberDeclaredOnImplementationTypeStatic(
+        protected abstract Task<Document> MakeMemberDeclaredOnImplementationTypeStaticAsync(
             SyntaxNode declaration,
             Document document,
             CancellationToken cancellationToken);
