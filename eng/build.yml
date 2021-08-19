@@ -147,6 +147,7 @@ jobs:
               --restore
               --test
               --projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
+              -v:diag
               /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
               /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
         displayName: Run Tests in Helix
