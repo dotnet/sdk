@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.Watcher.Internal;
