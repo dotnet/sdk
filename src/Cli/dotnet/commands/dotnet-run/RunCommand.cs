@@ -26,6 +26,7 @@ namespace Microsoft.DotNet.Tools.Run
         public bool Interactive { get; private set; }
         public IEnumerable<string> RestoreArgs { get; private set; }
 
+        private Version Version6_0 = new Version(6, 0);
         private bool ShouldBuild => !NoBuild;
         private bool HasQuietVerbosity =>
             RestoreArgs.All(arg => !arg.StartsWith("-verbosity:", StringComparison.Ordinal) ||
@@ -260,6 +261,12 @@ namespace Microsoft.DotNet.Tools.Run
                 targetArchitecture == RuntimeInformation.ProcessArchitecture)
             {
                 var rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
+                string targetFrameworkVersion = project.GetPropertyValue("TargetFrameworkVersion");
+                if (!string.IsNullOrEmpty(targetFrameworkVersion) && Version.Parse(targetFrameworkVersion.AsSpan(1)) >= Version6_0)
+                {
+                    rootVariableName = $"DOTNET_ROOT_{targetArchitecture.ToString().ToUpper()}";
+                }
+
                 if (Environment.GetEnvironmentVariable(rootVariableName) == null)
                 {
                     command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
