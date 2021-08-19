@@ -72,12 +72,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         private string SetupDotnetRootEchoProject([CallerMemberName] string callingMethod = null, string targetFramework = null)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("TestAppEchoDotnetRoot", callingMethod)
+                .CopyTestAsset("TestAppEchoDotnetRoot", callingMethod, allowCopyIfPresent: true)
                 .WithSource()
                 .Restore(Log);
 
             new BuildCommand(testAsset)
-                .Execute($"{(!string.IsNullOrEmpty(targetFramework) ? "/p:TargetFramework = " + targetFramework : string.Empty)}")
+                .Execute($"{(!string.IsNullOrEmpty(targetFramework) ? "/p:TargetFramework=" + targetFramework : string.Empty)}")
                 .Should()
                 .Pass();
 

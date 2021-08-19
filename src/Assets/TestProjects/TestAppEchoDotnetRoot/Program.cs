@@ -13,7 +13,7 @@ namespace ConsoleApplication
             var processArchitecture = $"DOTNET_ROOT_{RuntimeInformation.ProcessArchitecture.ToString().ToUpper()}";
             Console.WriteLine($"DOTNET_ROOT='{Environment.GetEnvironmentVariable("DOTNET_ROOT", EnvironmentVariableTarget.Process)}';" +
                 $"DOTNET_ROOT(x86)='{Environment.GetEnvironmentVariable("DOTNET_ROOT(x86)", EnvironmentVariableTarget.Process)}';" +
-                $"DOTNET_ROOT_{processArchitecture}='{Environment.GetEnvironmentVariable(processArchitecture)}'");
+                $"{processArchitecture}='{Environment.GetEnvironmentVariable(processArchitecture)}'");
         }
     }
 }
