@@ -3,9 +3,21 @@
 The template engine is composed of several different subsystems, which are
 designed to separate gathering, instantiating and processing templates.
 
+- [Overview of the subsystems](#overview-of-the-subsystems)
+  - [IEngineEnvironmentSettings](#iengineenvironmentsettings)
+  - [TemplatePackageManager class](#templatepackagemanager-class)
+  - [TemplateCreator class](#templatecreator-class)
+- [Template Engine packages](#template-engine-packages)
+- [Components](#components)
+  - [Template package providers](#template-package-providers)
+  - [Installer](#installer)
+  - [Mount point](#mount-point)
+  - [Registering the components](#registering-the-components)
+- [Microsoft.TemplateEngine.IDE](#microsofttemplateengineide)
+
 # Overview of the subsystems
 
-## [IEngineEnvironmentSettings](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IEngineEnvironmentSettings.cs)
+## [IEngineEnvironmentSettings](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IEngineEnvironmentSettings.cs) 
 
 This is responsible for holding all properties of the environment.
 
@@ -40,8 +52,7 @@ implementation of this interface representing your host. Template engine
 provides the default implementation:
 [DefaultTemplateEngineHost](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/DefaultTemplateEngineHost.cs).
 
-#### IPhysicalFileSystem
-
+#### [IPhysicalFileSystem](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/PhysicalFileSystem/IPhysicalFileSystem.cs)
 Abstraction over file system, accessible from ITemplateEngineHost.
 
 Each template engine host should support physical and in-memory file system and
@@ -55,10 +66,10 @@ and
 
 ### [IComponentManager](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IComponentManager.cs)
 
-`ComponentManager` is responsible for loading components provided by the host from
+`ComponentManager` is responsible for loading [components](#components) provided by the host from
 `ITemplateEngineHost.BuiltIns`. Additional components can be added via
 `IComponentManager.AddComponent`. Similar to templates, components are also 
-dynamically loaded from `TemplatePackage`s during scanning. `ComponentManager`
+dynamically loaded from template packages during scanning. `ComponentManager`
 implementation is not publicly accessible; however, it is used when default
 implementation of `IEngineEnvironmentSettings` is used.
 
@@ -110,18 +121,18 @@ instantiate the class when needed.
 
 Template engine publishes the following packages:
 
--   Microsoft.TemplateEngine.Abstractions – contains interfaces to work with
+-   [Microsoft.TemplateEngine.Abstractions](https://www.nuget.org/packages/Microsoft.TemplateEngine.Abstractions) – contains interfaces to work with
     template engine
 
--   Microsoft.TemplateEngine.Egde – enables hosting the template engine in the
+-   [Microsoft.TemplateEngine.Egde](https://www.nuget.org/packages/Microsoft.TemplateEngine.Edge) – enables hosting the template engine in the
     application
 
--   Microsoft.TemplateEngine.IDE – lightweight API over Edge (optional to use)
+-   [Microsoft.TemplateEngine.IDE](https://www.nuget.org/packages/Microsoft.TemplateEngine.IDE) – lightweight API over Edge (optional to use)
 
--   Microsoft.TemplateEngine.Orchestrator.RunnableProjects – template engine
+-   [Microsoft.TemplateEngine.Orchestrator.RunnableProjects](https://www.nuget.org/packages/Microsoft.TemplateEngine.Orchestrator.RunnableProjects) – template engine
     default generator (a.k.a. the generator of template.json format)
 
--   Microsoft.TemplateEngine.Utils – different utilities useful for template
+-   [Microsoft.TemplateEngine.Utils](https://www.nuget.org/packages/Microsoft.TemplateEngine.Utils) – different utilities useful for template
     engine usage
 
 # Components
