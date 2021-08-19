@@ -61,7 +61,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == ''">win7-x86</RuntimeIdentifier>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == 'true'">
+  <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == 'true' or ('$(RuntimeIdentifier)' == '' and '$(SelfContained)' == 'true')">
     <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
