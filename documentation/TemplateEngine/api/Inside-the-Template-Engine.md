@@ -1,31 +1,30 @@
 # Inside the Template Engine
 
 The template engine is composed of several different subsystems, which are
-designed to separate gathering templates, instantiating template and processing
-templates.
+designed to separate gathering, instantiating and processing templates.
 
 # Overview of the subsystems
 
 ## [IEngineEnvironmentSettings](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IEngineEnvironmentSettings.cs)
 
-This is responsible for holding all properties of environment.
+This is responsible for holding all properties of the environment.
 
-Template engine provides default implementation:
+Template engine provides a default implementation:
 [EngineEnvironmentSettings](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/EngineEnvironmentSettings.cs).
 
-It has single constructor that accepts ITemplateEngineHost and set up settings
+It has a single constructor that accepts ITemplateEngineHost and set up settings
 based on TemplateEngine.Edge implementation of component manager, paths, and
 environment. All this can also be passed in as optional parameters.
 
 ### [ITemplateEngineHost](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs)
 
 The interface is responsible for providing host information to template engine,
-managing file system and do the logging. Host may also provide default parameter
-values for template via TryGetHostParamDefault method.
+managing file system and logging. Host may also provide default parameter
+values for templates via `TryGetHostParamDefault` method.
 
-The applications using template engine are often called as “hosts”.
+Applications using template engine are often called “hosts”.
 dotnet/templating repo is managing one of such hosts: dotnet new CLI, which is
-part of dotnet SDK.
+part of .NET SDK.
 
 Main host properties:
 
@@ -36,9 +35,9 @@ Main host properties:
 Those properties are used to identify host to various built-in components
 explained below.
 
-If you are considering using the template engine core, you need to make
+If you are considering using the template engine core, you need to create an
 implementation of this interface representing your host. Template engine
-provides default implementation:
+provides the default implementation:
 [DefaultTemplateEngineHost](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/DefaultTemplateEngineHost.cs).
 
 #### IPhysicalFileSystem
@@ -46,8 +45,8 @@ provides default implementation:
 Abstraction over file system, accessible from ITemplateEngineHost.
 
 Each template engine host should support physical and in-memory file system and
-virtualize file system under given path. Switch between physical and in-memory
-is done via ITemplateEngineHost.VirtualizePath method.
+virtualize the file system under a given path. Switching between physical and in-memory
+file systems is done via `ITemplateEngineHost.VirtualizePath` method.
 
 Template engine provides default implementation of file systems:
 [PhysicalFileSystem](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Utils/PhysicalFileSystem.cs)
@@ -56,12 +55,12 @@ and
 
 ### [IComponentManager](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IComponentManager.cs)
 
-ComponentManager is responsible for loading components provided by Host from
-ITemplateEngineHost.BuiltIns, but additional components can be added via
-IComponentManager.AddComponent or they are dynamically loaded from
-TemplatePackage during scanning similar to templates. ComponentManager
-implementation is not publicly accessible, however it is used when default
-implementation of IEngineEnvironmentSettings is used.
+`ComponentManager` is responsible for loading components provided by the host from
+`ITemplateEngineHost.BuiltIns`. Additional components can be added via
+`IComponentManager.AddComponent`. Similar to templates, components are also 
+dynamically loaded from `TemplatePackage`s during scanning. `ComponentManager`
+implementation is not publicly accessible; however, it is used when default
+implementation of `IEngineEnvironmentSettings` is used.
 
 ### [IEnvironment](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IEnvironment.cs)
 
@@ -71,7 +70,7 @@ environment variables.
 ### [IPathInfo](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IPathInfo.cs)
 
 Provides the main paths used by template engine: global settings path, host
-settings path host version settings path.
+settings path, host version settings path.
 
 The default locations are:
 
