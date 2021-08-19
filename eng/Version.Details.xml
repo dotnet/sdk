@@ -137,21 +137,21 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>f2b270cdae0ad927a200cf41e214e21326ff29a7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.0-rc.1.21418.12">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.0-rc.1.21419.3">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>e947338d01a99dab7dedc8aaa1c71681eae6770e</Sha>
+      <Sha>8bfc2a7a5425ff6d9b7b346f1f3269c81b5640b3</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.6.0" Version="6.0.0-rc.1.21418.12">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.6.0" Version="6.0.0-rc.1.21419.3">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>e947338d01a99dab7dedc8aaa1c71681eae6770e</Sha>
+      <Sha>8bfc2a7a5425ff6d9b7b346f1f3269c81b5640b3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="6.0.0-rc.1.21418.12">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="6.0.0-rc.1.21419.3">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>e947338d01a99dab7dedc8aaa1c71681eae6770e</Sha>
+      <Sha>8bfc2a7a5425ff6d9b7b346f1f3269c81b5640b3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="6.0.0-rc.1.21418.18" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="6.0.0-rc.1.21418.23" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>77039413e3a5a844c85dec251fcd922006fb70f1</Sha>
+      <Sha>599109489e6e20bb7beffcd2790eb1f1ee5d03d6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="6.0.0-rc.1.21418.8">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
