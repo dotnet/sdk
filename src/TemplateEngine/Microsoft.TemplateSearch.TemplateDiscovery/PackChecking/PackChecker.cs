@@ -16,40 +16,30 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 
         internal PackCheckResult TryGetTemplatesInPack(IDownloadedPackInfo packInfo, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, HashSet<string> alreadySeenTemplateIdentities)
         {
-            ITemplateEngineHost host = CreateHost(packInfo);
+            ITemplateEngineHost host = TemplateEngineHostHelper.CreateHost(HostIdentifierBase + packInfo.Name);
             EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
-
+            Scanner scanner = new Scanner(environmentSettings);
             PackCheckResult checkResult;
-
             try
             {
-                if (TryInstallPackage(packInfo.Path, environmentSettings, out IReadOnlyList<ITemplateInfo> installedTemplates))
+                using var scanResult = scanner.Scan(packInfo.Path, scanForComponents: false);
+                foreach (ITemplateInfo templateInfo in scanResult.Templates.Where(t => alreadySeenTemplateIdentities.Contains(t.Identity)))
                 {
-                    IReadOnlyList<ITemplateInfo> filteredInstalledTemplates = installedTemplates.Where(t => !alreadySeenTemplateIdentities.Contains(t.Identity)).ToList();
-                    checkResult = new PackCheckResult(packInfo, filteredInstalledTemplates);
-                    ProduceAdditionalDataForPack(additionalDataProducers, checkResult, environmentSettings);
+                    Verbose.WriteLine($"[{packInfo.Name}::{packInfo.Version}] {templateInfo.ShortNameList[0]}({templateInfo.Name}) is skipped because template with same identity {templateInfo.Identity} was already found in other package.");
                 }
-                else
-                {
-                    IReadOnlyList<ITemplateInfo> foundTemplates = new List<ITemplateInfo>();
-                    checkResult = new PackCheckResult(packInfo, foundTemplates);
-                }
+                checkResult = new PackCheckResult(packInfo, scanResult.Templates.Where(t => !alreadySeenTemplateIdentities.Contains(t.Identity)).ToList());
+                ProduceAdditionalDataForPack(additionalDataProducers, checkResult, environmentSettings);
             }
-            catch
+            catch (TaskCanceledException)
             {
-                IReadOnlyList<ITemplateInfo> foundTemplates = new List<ITemplateInfo>();
-                checkResult = new PackCheckResult(packInfo, foundTemplates);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to read package {0}::{1}, details: {2}. The package will be skipped.", packInfo.Name, packInfo.Version, ex);
+                checkResult = new PackCheckResult(packInfo, Array.Empty<ITemplateInfo>());
             }
             return checkResult;
-        }
-
-        private static ITemplateEngineHost CreateHost(IDownloadedPackInfo packInfo)
-        {
-            string hostIdentifier = HostIdentifierBase + packInfo.Name;
-
-            ITemplateEngineHost host = TemplateEngineHostHelper.CreateHost(hostIdentifier);
-
-            return host;
         }
 
         private void ProduceAdditionalDataForPack(IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, PackCheckResult packCheckResult, IEngineEnvironmentSettings environment)
@@ -63,23 +53,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             {
                 dataProducer.CreateDataForTemplatePack(packCheckResult.PackInfo, packCheckResult.FoundTemplates, environment);
             }
-        }
-
-        private bool TryInstallPackage(string packageFile, IEngineEnvironmentSettings environment, out IReadOnlyList<ITemplateInfo> installedTemplates)
-        {
-            var scanner = new Scanner(environment);
-            using var scanResult = scanner.Scan(packageFile);
-
-            if (scanResult.Templates.Count > 0)
-            {
-                installedTemplates = scanResult.Templates;
-            }
-            else
-            {
-                installedTemplates = new List<ITemplateInfo>();
-            }
-
-            return installedTemplates.Count > 0;
         }
     }
 }

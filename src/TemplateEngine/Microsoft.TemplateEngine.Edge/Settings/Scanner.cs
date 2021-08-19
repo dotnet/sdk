@@ -43,13 +43,27 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// </remarks>
         public ScanResult Scan(string mountPointUri)
         {
+            return Scan(mountPointUri, scanForComponents: true);
+        }
+
+        /// <summary>
+        /// Same as <see cref="Scan(string)"/>, however allows to enable or disable components scanning via <paramref name="scanForComponents"/>.
+        /// </summary>
+        /// <remarks>
+        /// The mount point will not be disposed by the <see cref="Scanner"/>. Use <see cref="ScanResult.Dispose"/> to dispose mount point.
+        /// </remarks>
+        public ScanResult Scan(string mountPointUri, bool scanForComponents)
+        {
             if (string.IsNullOrWhiteSpace(mountPointUri))
             {
                 throw new ArgumentException($"{nameof(mountPointUri)} should not be null or empty");
             }
             MountPointScanSource source = GetOrCreateMountPointScanInfoForInstallSource(mountPointUri);
 
-            ScanForComponents(source);
+            if (scanForComponents)
+            {
+                ScanForComponents(source);
+            }
             return ScanMountPointForTemplatesAndLangpacks(source);
         }
 

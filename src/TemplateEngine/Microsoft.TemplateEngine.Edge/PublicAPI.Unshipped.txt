@@ -13,6 +13,7 @@ Microsoft.TemplateEngine.Edge.DefaultPathInfo.HostVersionSettingsDir.get -> stri
 Microsoft.TemplateEngine.Edge.DefaultPathInfo.UserProfileDir.get -> string!
 Microsoft.TemplateEngine.Edge.Settings.ITemplateInfoHostJsonCache
 Microsoft.TemplateEngine.Edge.Settings.ITemplateInfoHostJsonCache.HostData.get -> Newtonsoft.Json.Linq.JObject?
+Microsoft.TemplateEngine.Edge.Settings.Scanner.Scan(string! mountPointUri, bool scanForComponents) -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.Dispose() -> void
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.MountPoint.get -> Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint!
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.ScanResult(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint! mountPoint, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>! templates, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>! localizations, System.Collections.Generic.IReadOnlyList<(string! AssemblyPath, System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>! components) -> void
