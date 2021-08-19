@@ -235,17 +235,20 @@
     <!-- same thing here for CLI -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64Version" Version="$(coresetupOutputPackageVersion)" />
     <!-- same thing here for toolset -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64PackageVersion" Version="%24(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64PackageVersion" Version="%24(MicrosoftNETCoreAppCompositeVersion)" />
     <!-- same thing here for core-sdk -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimePackageVersion" Version="%24(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="%24(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimePackageVersion" Version="%24(MicrosoftNETCoreAppCompositeVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="%24(MicrosoftNETCoreAppCompositeVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreAppCompositeVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimePackageVersion" Version="%24(MicrosoftAspNetCoreAppRuntimeLinux$(Platform)PackageVersion)" />
     <!-- core-sdk uses this property for ASP.NET blob directory -->
     <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonAspNetCoreTargetingPackx6430PackageVersion" Version="$(aspnetcoreOutputPackageVersion)" />
     <!-- OSX needs the OSX version instead of Linux.  We don't have a lot of flexibility in how we output these properties so we're relying on the previous one being blank if the Linux version of the package is missing.  -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimePackageVersion" Version="%24(MicrosoftAspNetCoreAppRuntimeOsxX64PackageVersion)" DoNotOverwrite="true" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimePackageVersion" Version="%24(MicrosoftAspNetCoreAppRuntimewinx64PackageVersion)" DoNotOverwrite="true" />
+
+    <!-- Used by installer to determine sdk version -->
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftDotnetToolsetInternalPackageVersion" Version="%24(MicrosoftNETSdkPackageVersion)" />
 
     <!-- Used by sdk to determine msbuild version for fsharp -->
     <ExtraPackageVersionPropsPackageInfo Include="FSharpBuildVersion" Version="%24(MicrosoftBuildPackageVersion)" />
