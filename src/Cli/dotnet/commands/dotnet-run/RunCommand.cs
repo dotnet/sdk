@@ -256,15 +256,16 @@ namespace Microsoft.DotNet.Tools.Run
             var command = CommandFactoryUsingResolver.Create(commandSpec)
                 .WorkingDirectory(runWorkingDirectory);
 
-            if ((TryGetTargetArchitecture(project.GetPropertyValue("RuntimeIdentifier"), out var targetArchitecture) ||
+            if (((TryGetTargetArchitecture(project.GetPropertyValue("RuntimeIdentifier"), out var targetArchitecture) ||
                 TryGetTargetArchitecture(project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"), out targetArchitecture)) &&
-                targetArchitecture == RuntimeInformation.ProcessArchitecture)
+                targetArchitecture == RuntimeInformation.ProcessArchitecture) || targetArchitecture == null)
             {
                 var rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
                 string targetFrameworkVersion = project.GetPropertyValue("TargetFrameworkVersion");
-                if (!string.IsNullOrEmpty(targetFrameworkVersion) && Version.Parse(targetFrameworkVersion.AsSpan(1)) >= Version6_0)
+                if (!string.IsNullOrEmpty(targetFrameworkVersion) && Version.Parse(targetFrameworkVersion.AsSpan(1)) >= Version6_0 &&
+                    Enum.GetName(typeof(Architecture), RuntimeInformation.ProcessArchitecture) is string processArchitecture)
                 {
-                    rootVariableName = $"DOTNET_ROOT_{targetArchitecture.ToString().ToUpper()}";
+                    rootVariableName = $"DOTNET_ROOT_{processArchitecture}";
                 }
 
                 if (Environment.GetEnvironmentVariable(rootVariableName) == null)
