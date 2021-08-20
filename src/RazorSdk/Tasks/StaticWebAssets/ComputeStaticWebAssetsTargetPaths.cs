@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         PathPrefix,
                         UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar);
 
-                    if (AdjustPathsForPack && Path.GetExtension(targetPath) == "")
+                    if (AdjustPathsForPack && string.IsNullOrEmpty(Path.GetExtension(targetPath)))
                     {
                         targetPath = Path.GetDirectoryName(targetPath);
                     }
