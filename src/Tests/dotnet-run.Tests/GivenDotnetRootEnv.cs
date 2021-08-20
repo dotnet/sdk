@@ -74,6 +74,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var testAsset = _testAssetsManager
                 .CopyTestAsset("TestAppEchoDotnetRoot", callingMethod, allowCopyIfPresent: true)
                 .WithSource()
+                .WithTargetFrameworkOrFrameworks(targetFramework ?? null, false)
                 .Restore(Log);
 
             new BuildCommand(testAsset)
@@ -90,7 +91,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             string processArchitecture = RuntimeInformation.ProcessArchitecture.ToString().ToUpper();
             if (!string.IsNullOrEmpty(targetFramework) && Version.Parse(targetFramework.AsSpan(3)) >= Version6_0)
             {
-                expectOutput = $"DOTNET_ROOT='';DOTNET_ROOT(x86)='';DOTNET_ROOT_{processArchitecture}={expectDotnetRoot}";
+                expectOutput = $"DOTNET_ROOT='';DOTNET_ROOT(x86)='';DOTNET_ROOT_{processArchitecture}='{expectDotnetRoot}'";
             }
             else if (Environment.Is64BitProcess)
             {
