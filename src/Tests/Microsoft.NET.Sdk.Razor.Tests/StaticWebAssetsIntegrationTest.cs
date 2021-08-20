@@ -737,6 +737,46 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             intermediateOutputPath);
         }
 
+        [Fact]
+        public void PublishProjectWithReferences_AppendTargetFrameworkToOutputPathFalse_GeneratesPublishJsonManifestAndCopiesPublishAssets()
+        {
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
+            restore.Execute().Should().Pass();
+
+            var publish = new PublishCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
+            publish.WithWorkingDirectory(ProjectDirectory.Path);
+            publish.Execute("/p:AppendTargetFrameworkToOutputPath=false", "/bl").Should().Pass();
+
+            var intermediateOutputPath = publish.GetIntermediateDirectory("", "Debug").ToString();
+            var publishPath = publish.GetOutputDirectory("", "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+            AssertManifest(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
+                LoadBuildManifest());
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(publishPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().NotExist();
+
+            // GenerateStaticWebAssetsPublishManifest should generate the publish manifest file.
+            var intermediatePublishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
+            new FileInfo(path).Should().Exist();
+            AssertManifest(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath)),
+                LoadPublishManifest());
+
+            AssertPublishAssets(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath)),
+                publishPath,
+                intermediateOutputPath);
+        }
+
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/17979")]
         public void BuildProjectWithReferences_DeployOnPublish_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
