@@ -118,11 +118,11 @@ namespace Microsoft.TemplateSearch.Common
 
         [JsonIgnore]
         [Obsolete]
-        IReadOnlyDictionary<string, ICacheTag> ITemplateInfo.Tags => throw new NotImplementedException();
+        public IReadOnlyDictionary<string, ICacheTag> Tags { get; private set; } = new Dictionary<string, ICacheTag>();
 
         [JsonIgnore]
         [Obsolete]
-        IReadOnlyDictionary<string, ICacheParameter> ITemplateInfo.CacheParameters => throw new NotImplementedException();
+        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; private set; } = new Dictionary<string, ICacheParameter>();
 
         [JsonIgnore]
         string ITemplateInfo.ConfigPlace => throw new NotImplementedException();
@@ -217,11 +217,20 @@ namespace Microsoft.TemplateSearch.Common
             tagsObject = entry.Get<JObject>("tags");
             if (tagsObject != null)
             {
+                Dictionary<string, ICacheTag> legacyTags = new Dictionary<string, ICacheTag>();
                 foreach (JProperty item in tagsObject.Properties())
                 {
                     if (item.Value.Type == JTokenType.String)
                     {
                         tags[item.Name.ToString()] = item.Value.ToString();
+                        legacyTags[item.Name.ToString()] = new BlobLegacyCacheTag(
+                            description: null,
+                            choicesAndDescriptions: new Dictionary<string, string>()
+                            {
+                                { item.Value.ToString(), string.Empty }
+                            },
+                            defaultValue: item.Value.ToString(),
+                            defaultIfOptionWithoutValue: null);
                     }
                     else if (item.Value is JObject tagObj)
                     {
@@ -229,23 +238,32 @@ namespace Microsoft.TemplateSearch.Common
                         if (choicesObject != null && !readParameters)
                         {
                             Dictionary<string, ParameterChoice> choicesAndDescriptions = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
+                            Dictionary<string, string> legacyChoices = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                             foreach (JProperty cdPair in choicesObject.Properties())
                             {
-                                choicesAndDescriptions.Add(cdPair.Name.ToString(), new ParameterChoice(null, cdPair.Value.ToString()));
+                                choicesAndDescriptions[cdPair.Name.ToString()] = new ParameterChoice(null, cdPair.Value.ToString());
+                                legacyChoices[cdPair.Name.ToString()] = cdPair.Value.ToString();
                             }
                             templateParameters.Add(
                                 new BlobTemplateParameter(item.Name.ToString(), "choice")
                                 {
                                     Choices = choicesAndDescriptions
                                 });
+                            legacyTags[item.Name.ToString()] = new BlobLegacyCacheTag(
+                              description: tagObj.ToString("description"),
+                              choicesAndDescriptions: legacyChoices,
+                              defaultValue: tagObj.ToString("defaultValue"),
+                              defaultIfOptionWithoutValue: tagObj.ToString("defaultIfOptionWithoutValue"));
                         }
                         tags[item.Name.ToString()] = tagObj.ToString("defaultValue") ?? "";
                     }
                 }
+                info.Tags = legacyTags;
             }
             JObject? cacheParametersObject = entry.Get<JObject>("cacheParameters");
             if (!readParameters && cacheParametersObject != null)
             {
+                Dictionary<string, ICacheParameter> legacyParams = new Dictionary<string, ICacheParameter>();
                 foreach (JProperty item in cacheParametersObject.Properties())
                 {
                     JObject paramObj = (JObject)item.Value;
@@ -255,6 +273,11 @@ namespace Microsoft.TemplateSearch.Common
                     }
                     string dataType = paramObj.ToString(nameof(BlobTemplateParameter.DataType)) ?? "string";
                     templateParameters.Add(new BlobTemplateParameter(item.Name.ToString(), dataType));
+                    legacyParams[item.Name.ToString()] = new BlobLegacyCacheParameter(
+                        description: paramObj.ToString("description"),
+                        dataType: paramObj.ToString(nameof(BlobTemplateParameter.DataType)) ?? "string",
+                        defaultValue: paramObj.ToString("defaultValue"),
+                        defaultIfOptionWithoutValue: paramObj.ToString("defaultIfOptionWithoutValue"));
                 }
             }
 
@@ -357,8 +380,8 @@ namespace Microsoft.TemplateSearch.Common
             [JsonIgnore]
             bool ITemplateParameter.IsName => false;
 
-            [JsonIgnore]
-            string? ITemplateParameter.DefaultValue => throw new NotImplementedException();
+            [JsonProperty]
+            public string? DefaultValue { get; internal set; }
 
             [JsonIgnore]
             string? ITemplateParameter.DisplayName => throw new NotImplementedException();
@@ -373,5 +396,62 @@ namespace Microsoft.TemplateSearch.Common
             [JsonIgnore]
             string? ITemplateParameter.Documentation => throw new NotImplementedException();
         }
+
+        private class BlobLegacyCacheTag : ICacheTag
+        {
+            public BlobLegacyCacheTag(string? description, IReadOnlyDictionary<string, string> choicesAndDescriptions, string? defaultValue, string? defaultIfOptionWithoutValue)
+            {
+                Description = description;
+                ChoicesAndDescriptions = choicesAndDescriptions;
+                DefaultValue = defaultValue;
+                DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue;
+            }
+
+            [JsonProperty]
+            public string? Description { get; }
+
+            [JsonProperty]
+            public IReadOnlyDictionary<string, string> ChoicesAndDescriptions { get; }
+
+            [JsonProperty]
+            public string? DefaultValue { get; }
+
+            [JsonProperty]
+            public string? DefaultIfOptionWithoutValue { get; }
+
+            [JsonIgnore]
+            public string? DisplayName => throw new NotImplementedException();
+
+            [JsonIgnore]
+            public IReadOnlyDictionary<string, ParameterChoice> Choices => throw new NotImplementedException();
+
+        }
+
+        private class BlobLegacyCacheParameter : ICacheParameter
+        {
+            public BlobLegacyCacheParameter(string? description, string? dataType, string? defaultValue, string? defaultIfOptionWithoutValue)
+            {
+                Description = description;
+                DataType = dataType;
+                DefaultValue = defaultValue;
+                DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue;
+            }
+
+            [JsonProperty]
+            public string? DataType { get; }
+
+            [JsonProperty]
+            public string? DefaultValue { get; }
+
+            [JsonProperty]
+            public string? Description { get; }
+
+            [JsonProperty]
+            public string? DefaultIfOptionWithoutValue { get; }
+
+            [JsonIgnore]
+            public string? DisplayName => throw new NotImplementedException();
+        }
+
     }
 }
