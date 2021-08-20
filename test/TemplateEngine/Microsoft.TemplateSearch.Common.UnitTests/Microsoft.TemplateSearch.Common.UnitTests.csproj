@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FakeItEasy" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="NuGetTemplateSearchInfoWithInvalidData.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

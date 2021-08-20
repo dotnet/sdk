@@ -152,6 +152,8 @@ namespace Microsoft.TemplateSearch.Common
                         }
                         if (param.Choices != null && param.Choices.Any())
                         {
+                            writer.WritePropertyName(nameof(ITemplateParameter.Choices));
+                            writer.WriteStartObject();
                             foreach (var choice in param.Choices)
                             {
                                 writer.WritePropertyName(choice.Key);
@@ -168,6 +170,7 @@ namespace Microsoft.TemplateSearch.Common
                                 }
                                 writer.WriteEndObject();
                             }
+                            writer.WriteEndObject();
                         }
                         writer.WriteEndObject();
                     }

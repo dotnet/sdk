@@ -62,6 +62,50 @@
               "Priority": 2
             }
           ]
+        },
+        {
+          "Identity": "Azure.Function.CSharp.HttpTrigger.2.x",
+          "GroupIdentity": "Azure.Function.HttpTrigger",
+          "Name": "HttpTrigger",
+          "ShortNameList": [
+            "http"
+          ],
+          "Author": "Microsoft",
+          "Classifications": [
+            "Azure Function",
+            "Trigger",
+            "Http"
+          ],
+          "TagsCollection": {
+            "language": "C#",
+            "type": "item",
+            "AccessRights": "Function"
+          },
+          "Parameters": [
+            {
+              "Name": "AccessRights",
+              "DataType": "choice",
+              "Choices": {
+                "Function": {
+                  "Description": "Function"
+                },
+                "Anonymous": {
+                  "Description": "Anonymous"
+                },
+                "Admin": {
+                  "Description": "Admin"
+                }
+              }
+            },
+            {
+              "Name": "name",
+              "DataType": "string"
+            },
+            {
+              "Name": "namespace",
+              "DataType": "string"
+            }
+          ]
         }
       ]
     }
