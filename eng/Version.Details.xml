@@ -141,9 +141,9 @@
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>2be2e4a16daf105a7027f1ac031b07fd14a30ad3</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.6.0" Version="6.0.0-rc.1.21419.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.7.0" Version="7.0.0-alpha.1.21420.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>dd0baef5eade7e9c392766dfb6ab5bd845eeb740</Sha>
+      <Sha>2be2e4a16daf105a7027f1ac031b07fd14a30ad3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="7.0.0-alpha.1.21420.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
