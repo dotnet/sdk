@@ -112,7 +112,8 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.True(LegacySearchCacheReader.TryReadDiscoveryMetadata(jObj, environmentSettings.Host.Logger, null, out _));
 #pragma warning restore CS0618 // Type or member is obsolete
         }
-                [Fact]
+
+        [Fact]
         public void CanReadSearchMetadata_V2_E2E()
         {
             ITemplateInfo mockTemplate = new MockTemplateInfo("shortName", "Full Name", "test.identity", "test.group.identity", 100, "test author")

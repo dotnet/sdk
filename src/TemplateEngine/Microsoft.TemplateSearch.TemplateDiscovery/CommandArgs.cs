@@ -19,7 +19,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 bool savePacks,
                 bool noTemplateJsonFilter,
                 IEnumerable<SupportedQueries>? queries,
-                DirectoryInfo? packagesPath
+                DirectoryInfo? packagesPath,
+                bool diff,
+                FileInfo? diffOverrideCache,
+                FileInfo? diffOverrideNonPackages
             )
         {
             OutputPath = basePath ?? throw new ArgumentNullException(nameof(basePath));
@@ -30,6 +33,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             DontFilterOnTemplateJson = noTemplateJsonFilter;
             Queries = queries?.ToArray() ?? Array.Empty<SupportedQueries>();
             LocalPackagePath = packagesPath;
+            DiffMode = diff;
+            DiffOverrideSearchCacheLocation = diffOverrideCache;
+            DiffOverrideKnownPackagesLocation = diffOverrideNonPackages;
         }
 
         internal DirectoryInfo? LocalPackagePath { get; }
@@ -47,5 +53,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         internal bool DontFilterOnTemplateJson { get; }
 
         internal IReadOnlyList<SupportedQueries> Queries { get; }
+
+        internal bool DiffMode { get; }
+
+        internal FileInfo? DiffOverrideSearchCacheLocation { get; }
+
+        internal FileInfo? DiffOverrideKnownPackagesLocation { get; }
     }
 }

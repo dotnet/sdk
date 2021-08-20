@@ -4,11 +4,11 @@
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
-using Microsoft.TemplateSearch.TemplateDiscovery.NuGet;
-using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
+using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 {
+    [Obsolete]
     internal partial class LegacyMetadataWriter
     {
         internal static string WriteLegacySearchMetadata(PackSourceCheckResult packSourceCheckResults, string outputFileName)
@@ -19,27 +19,24 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             return outputFileName;
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
         private static TemplateDiscoveryMetadata CreateLegacySearchMetadata(PackSourceCheckResult packSourceCheckResults)
         {
-            List<ITemplateInfo> templateCache = packSourceCheckResults.PackCheckData.Where(r => r.AnyTemplates)
-                                                    .SelectMany(r => r.FoundTemplates)
+            List<ITemplateInfo> templateCache = packSourceCheckResults.SearchCache.TemplatePackages.SelectMany(p => p.Templates)
                                                     .Distinct(new TemplateIdentityEqualityComparer())
                                                     .Select(t => (ITemplateInfo)new LegacyBlobTemplateInfo(t))
                                                     .ToList();
 
-            Dictionary<string, PackToTemplateEntry> packToTemplateMap = packSourceCheckResults.PackCheckData
-                            .Where(r => r.AnyTemplates)
+            Dictionary<string, PackToTemplateEntry> packToTemplateMap = packSourceCheckResults.SearchCache.TemplatePackages
                             .ToDictionary(
-                                r => r.PackInfo.Name,
+                                r => r.Name,
                                 r =>
                                 {
                                     PackToTemplateEntry packToTemplateEntry = new PackToTemplateEntry(
-                                            r.PackInfo.Version ?? "",
-                                            r.FoundTemplates.Select(t => new TemplateIdentificationEntry(t.Identity, t.GroupIdentity)).ToList());
-                                    packToTemplateEntry.TotalDownloads = r.PackInfo.TotalDownloads;
-                                    packToTemplateEntry.Owners = r.PackInfo.Owners;
-                                    packToTemplateEntry.Verified = r.PackInfo.Verified;
+                                            r.Version ?? "",
+                                            r.Templates.Select(t => new TemplateIdentificationEntry(t.Identity, t.GroupIdentity)).ToList());
+                                    packToTemplateEntry.TotalDownloads = r.TotalDownloads;
+                                    packToTemplateEntry.Owners = r.Owners;
+                                    packToTemplateEntry.Verified = r.Verified;
                                     return packToTemplateEntry;
                                 });
 
@@ -55,6 +52,5 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 
             return new TemplateDiscoveryMetadata("1.0.0.3", templateCache, packToTemplateMap, additionalData);
         }
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

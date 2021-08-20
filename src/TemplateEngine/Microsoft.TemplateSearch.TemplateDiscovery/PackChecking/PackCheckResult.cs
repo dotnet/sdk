@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
-namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting
+namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
     internal class PackCheckResult
     {

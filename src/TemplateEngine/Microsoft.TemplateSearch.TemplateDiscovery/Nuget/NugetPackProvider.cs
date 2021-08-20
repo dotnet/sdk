@@ -3,7 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.TemplateSearch.Common.Abstractions;
-using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
+using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Protocol;
@@ -23,6 +23,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         private readonly SourceRepository _repository;
         private readonly SourceCacheContext _cacheContext = new SourceCacheContext();
         private readonly FindPackageByIdResource _downloadResource;
+        private readonly bool _includePreview;
         private string _searchUriFormat;
 
         internal NuGetPackProvider(string name, string query, DirectoryInfo packageTempBasePath, int pageSize, bool runOnlyOnePage, bool includePreviewPacks)
@@ -35,6 +36,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             ServiceIndexResourceV3 indexResource = _repository.GetResource<ServiceIndexResourceV3>();
             IReadOnlyList<ServiceIndexEntry> searchResources = indexResource.GetServiceEntries("SearchQueryService");
             _downloadResource = _repository.GetResource<FindPackageByIdResource>();
+            _includePreview = includePreviewPacks;
 
             if (!searchResources.Any())
             {
@@ -54,6 +56,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         }
 
         public string Name { get; private set; }
+
+        public bool SupportsGetPackageInfoViaApi => true;
 
         public async IAsyncEnumerable<ITemplatePackageInfo> GetCandidatePacksAsync([EnumeratorCancellation] CancellationToken token)
         {
@@ -136,7 +140,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                     NullLogger.Instance,
                     token).ConfigureAwait(false))
                 {
-                    return new NuGetPackInfo(packinfo, outputPackageFileNameFullPath);
+                    return new DownloadedPackInfo(packinfo, outputPackageFileNameFullPath);
                 }
                 else
                 {
@@ -186,5 +190,81 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             Console.WriteLine($"Failed to remove {_packageTempPath}, remove it manually.");
         }
 
+        public async Task<(ITemplatePackageInfo PackageInfo, bool Removed)> GetPackageInfoAsync(string packageIdentifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(packageIdentifier))
+            {
+                throw new ArgumentException($"{nameof(packageIdentifier)} cannot be null or empty", nameof(packageIdentifier));
+            }
+
+            try
+            {
+                PackageMetadataResource resource = await _repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
+                IEnumerable<IPackageSearchMetadata> foundPackages = await resource.GetMetadataAsync(
+                    packageIdentifier,
+                    includePrerelease: _includePreview,
+                    includeUnlisted: true,
+                    _cacheContext,
+                    NullLogger.Instance,
+                    cancellationToken).ConfigureAwait(false);
+
+                if (!foundPackages.Any())
+                {
+                    Console.WriteLine($"Package {packageIdentifier} was not found.");
+                    return default;
+                }
+
+                if (foundPackages
+                    .Where(package => package.IsListed).Any())
+                {
+                    IPackageSearchMetadata latestPackage = foundPackages
+                        .Where(package => package.IsListed)
+                        .Aggregate((max, current) =>
+                        {
+                            return current.Identity.Version > max.Identity.Version ? current : max;
+                        });
+                    return (new NuGetPackInfo(latestPackage), false);
+                }
+
+                IPackageSearchMetadata latestUnlistedPackage = foundPackages
+                 .Aggregate((max, current) =>
+                 {
+                     return current.Identity.Version > max.Identity.Version ? current : max;
+                 });
+
+                return (new NuGetPackInfo(latestUnlistedPackage), true);
+
+            }
+            catch (TaskCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to get information about package {packageIdentifier}, details: {ex}");
+                return default;
+            }
+        }
+
+        private class NuGetPackInfo : ITemplatePackageInfo
+        {
+            internal NuGetPackInfo(IPackageSearchMetadata packageSearchMetadata)
+            {
+                Name = packageSearchMetadata.Identity.Id;
+                Version = packageSearchMetadata.Identity.Version.ToString();
+                TotalDownloads = packageSearchMetadata.DownloadCount ?? 0;
+                Verified = packageSearchMetadata.PrefixReserved;
+            }
+
+            public string Name { get; }
+
+            public string? Version { get; }
+
+            public long TotalDownloads { get; }
+
+            public IReadOnlyList<string> Owners => Array.Empty<string>();
+
+            public bool Verified { get; }
+        }
     }
 }

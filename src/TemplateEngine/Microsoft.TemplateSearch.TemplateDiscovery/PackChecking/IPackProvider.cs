@@ -3,7 +3,7 @@
 
 using Microsoft.TemplateSearch.Common.Abstractions;
 
-namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
+namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
     internal interface IPackProvider
     {
@@ -16,5 +16,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
         Task<int> GetPackageCountAsync(CancellationToken token);
 
         Task DeleteDownloadedPacksAsync();
+
+        Task<(ITemplatePackageInfo PackageInfo, bool Removed)> GetPackageInfoAsync(string packageIdentifier, CancellationToken cancellationToken);
+
     }
 }

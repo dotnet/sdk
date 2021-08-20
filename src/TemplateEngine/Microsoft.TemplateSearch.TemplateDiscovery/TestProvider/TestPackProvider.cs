@@ -3,8 +3,9 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.TemplateSearch.Common.Abstractions;
+using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 
-namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
+namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
 {
     internal class TestPackProvider : IPackProvider
     {
@@ -15,7 +16,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
             _folder = folder;
         }
 
-        public string Name => "TestProvider";
+        public string Name => "TestFolderProvider";
 
         public Task DeleteDownloadedPacksAsync()
         {
@@ -43,17 +44,43 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
             return Task.FromResult(_folder.EnumerateFiles("*.nupkg", SearchOption.AllDirectories).Count());
         }
 
+        public Task<(ITemplatePackageInfo PackageInfo, bool Removed)> GetPackageInfoAsync(string packageIdentifier, CancellationToken cancellationToken)
+        {
+            foreach (FileInfo package in _folder.EnumerateFiles("*.nupkg", SearchOption.AllDirectories))
+            {
+                if (package.Name.Contains(packageIdentifier, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Task.FromResult(((ITemplatePackageInfo)new TestPackInfo(package.FullName), false));
+                }
+            }
+            return Task.FromResult(((ITemplatePackageInfo)new TestPackInfo(packageIdentifier), true));
+        }
+
         private class TestPackInfo : ITemplatePackageInfo, IDownloadedPackInfo
         {
             internal TestPackInfo(string path)
             {
                 Path = path;
-                Name = System.IO.Path.GetFileNameWithoutExtension(path);
+
+                string filename = System.IO.Path.GetFileNameWithoutExtension(path);
+
+                //for testing purposes NuGet versioned packages should be named as <name>##<version>.nupkg
+                if (filename.Contains("##"))
+                {
+                    string[] split = filename.Split("##");
+                    Name = split[0];
+                    Version = split[1];
+                }
+                else
+                {
+                    Name = System.IO.Path.GetFileNameWithoutExtension(path);
+                    Version = "1.0";
+                }
             }
 
             public string Name { get; }
 
-            public string Version => "1.0";
+            public string Version { get; }
 
             public long TotalDownloads => 0;
 

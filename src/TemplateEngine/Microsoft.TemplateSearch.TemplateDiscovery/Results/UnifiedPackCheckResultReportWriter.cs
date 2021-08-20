@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateSearch.Common;
-using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
+using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
@@ -31,8 +30,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             string legacyMetadataFilePath = Path.Combine(reportPath, SearchMetadataFilename);
             string metadataFilePath = Path.Combine(reportPath, SearchMetadataFilenameVer2);
 
-            WriteNonTemplatePackList(reportPath, packSourceCheckResults.PackCheckData);
+            WriteNonTemplatePackList(reportPath, packSourceCheckResults.FilteredPackages);
+            #pragma warning disable CS0612 // Type or member is obsolete
             LegacyMetadataWriter.WriteLegacySearchMetadata(packSourceCheckResults, legacyMetadataFilePath);
+#pragma warning restore CS0612 // Type or member is obsolete
             WriteSearchMetadata(packSourceCheckResults, metadataFilePath);
             return (metadataFilePath, legacyMetadataFilePath);
 
@@ -40,55 +41,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 
         private static void WriteSearchMetadata(PackSourceCheckResult packSourceCheckResults, string outputFileName)
         {
-            TemplateSearchCache searchMetadata = CreateSearchMetadata(packSourceCheckResults);
+            TemplateSearchCache searchMetadata = packSourceCheckResults.SearchCache;
             File.WriteAllText(outputFileName, searchMetadata.ToJObject().ToString(Formatting.None));
             Console.WriteLine($"Search cache file created: {outputFileName}");
         }
 
-        private static TemplateSearchCache CreateSearchMetadata(PackSourceCheckResult packSourceCheckResults)
+        private static void WriteNonTemplatePackList(string reportPath, IReadOnlyList<FilteredPackageInfo> packCheckResults)
         {
-            List<TemplatePackageSearchData> packages = new List<TemplatePackageSearchData>();
-            foreach (PackCheckResult package in packSourceCheckResults.PackCheckData)
-            {
-                if (!package.FoundTemplates.Any())
-                {
-                    continue;
-                }
-                List<TemplateSearchData> templates = new List<TemplateSearchData>();
-                foreach (ITemplateInfo template in package.FoundTemplates)
-                {
-                    Dictionary<string, object> data = new Dictionary<string, object>();
-                    foreach (var producer in packSourceCheckResults.AdditionalDataProducers)
-                    {
-                        var producerData = producer.GetDataForTemplate(package.PackInfo, template.Identity);
-                        if (producerData != null)
-                        {
-                            data[producer.DataUniqueName] = producerData;
-                        }
-                    }
-                    templates.Add(new TemplateSearchData(template, data));
-                }
-                Dictionary<string, object> packData = new Dictionary<string, object>();
-                foreach (var producer in packSourceCheckResults.AdditionalDataProducers)
-                {
-                    var producerData = producer.GetDataForPack(package.PackInfo);
-                    if (producerData != null)
-                    {
-                        packData[producer.DataUniqueName] = producerData;
-                    }
-                }
-                packages.Add(new TemplatePackageSearchData(package.PackInfo, templates, packData));
-            }
-            return new TemplateSearchCache(packages);
-        }
-
-        private static void WriteNonTemplatePackList(string reportPath, IReadOnlyList<PackCheckResult> packCheckResults)
-        {
-            List<string> packsWithoutTemplates = packCheckResults.Where(r => !r.AnyTemplates)
-                                                                .Select(r => r.PackInfo.Name)
-                                                                .ToList();
-            string serializedContent = JsonConvert.SerializeObject(packsWithoutTemplates, Formatting.Indented);
-
+            string serializedContent = JsonConvert.SerializeObject(packCheckResults, Formatting.None);
             string outputFileName = Path.Combine(reportPath, NonTemplatePacksFileName);
             File.WriteAllText(outputFileName, serializedContent);
             Console.WriteLine($"Non template pack list was created: {outputFileName}");

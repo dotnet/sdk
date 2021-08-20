@@ -2,15 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateSearch.Common.Abstractions;
-using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
-namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
+namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
-    public class NuGetPackInfo : IDownloadedPackInfo
+    public class DownloadedPackInfo : IDownloadedPackInfo
     {
         private ITemplatePackageInfo _info;
 
-        internal NuGetPackInfo(ITemplatePackageInfo info, string filePath)
+        internal DownloadedPackInfo(ITemplatePackageInfo info, string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {

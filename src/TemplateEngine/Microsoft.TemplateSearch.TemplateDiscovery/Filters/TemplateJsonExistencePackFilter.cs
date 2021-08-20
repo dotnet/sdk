@@ -4,8 +4,7 @@
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge;
-using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
-using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
+using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
 {

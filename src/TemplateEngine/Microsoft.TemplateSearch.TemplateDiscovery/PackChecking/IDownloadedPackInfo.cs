@@ -3,7 +3,7 @@
 
 using Microsoft.TemplateSearch.Common.Abstractions;
 
-namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
+namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
     internal interface IDownloadedPackInfo : ITemplatePackageInfo
     {

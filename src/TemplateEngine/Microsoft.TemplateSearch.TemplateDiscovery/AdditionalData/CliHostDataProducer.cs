@@ -5,8 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateSearch.Common.Abstractions;
-using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
-using Newtonsoft.Json;
+using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 {
@@ -25,9 +24,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         public string DataUniqueName => CliHostDataName;
 
-        public string Serialized => JsonConvert.SerializeObject(_hostDataForPackByTemplate, Formatting.Indented);
-
         public object? Data => _hostDataForPackByTemplate;
+
+        public object? CreateDataForTemplate(ITemplateInfo template, IEngineEnvironmentSettings environment)
+        {
+            IHostSpecificDataLoader hostDataLoader = new HostSpecificDataLoader(environment);
+            HostSpecificTemplateData hostData = hostDataLoader.ReadHostSpecificTemplateData(template);
+            // store the host data if it has any info that could affect searching for this template.
+            if (hostData.IsHidden || hostData.SymbolInfo.Count > 0)
+            {
+                return hostData;
+            }
+            return null;
+        }
 
         public void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templateList, IEngineEnvironmentSettings environment)
         {
@@ -47,6 +56,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
             }
             _hostDataForPack[packInfo] = dataForPack;
         }
+
+        public object? CreateDataForTemplatePackage(ITemplatePackageInfo packInfo) => null;
 
         public object? GetDataForPack(ITemplatePackageInfo packInfo)
         {

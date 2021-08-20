@@ -195,5 +195,271 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             var jObjectV2 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!;
             Assert.Equal("TestAuthor", jObjectV2!["TemplatePackages"]![0]!["Owners"]!.Value<string>());
         }
+
+        [Fact]
+        public async Task CanDetectNewPackagesInDiffMode()
+        {
+            string testDir = TestUtils.CreateTemporaryFolder();
+            using var packageManager = new PackageManager();
+            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+
+            File.Move(packageLocation, Path.Combine(Path.GetDirectoryName(packageLocation)!, "Test.Templates##1.0.0.nupkg"));
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v",
+                "--diff",
+                "false")
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdOutContaining(
+@"Template packages:
+   new: 1
+      Test.Templates::1.0.0
+   updated: 0
+   removed: 0
+   not changed: 0")
+                .And.HaveStdOutContaining(
+@"Non template packages:
+   new: 0
+   updated: 0
+   removed: 0
+   not changed: 0");
+
+            string cacheV1Path = Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json");
+            string cacheV2Path = Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json");
+            string nonTemplatePackagesList = Path.Combine(testDir, "SearchCache", "nonTemplatePacks.json");
+
+            Assert.True(File.Exists(cacheV1Path));
+            Assert.True(File.Exists(cacheV2Path));
+            Assert.True(File.Exists(nonTemplatePackagesList));
+
+            packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates").ConfigureAwait(false);
+
+            File.Move(packageLocation, Path.Combine(Path.GetDirectoryName(packageLocation)!, "Microsoft.Azure.WebJobs.ProjectTemplates##1.0.0.nupkg"));
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v",
+                "--diff",
+                "true",
+                "--diff-override-cache",
+                cacheV2Path)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdOutContaining(
+@"Template packages:
+   new: 1
+      Microsoft.Azure.WebJobs.ProjectTemplates::1.0.0
+   updated: 0
+   removed: 0
+   not changed: 1")
+                .And.HaveStdOutContaining(
+@"Non template packages:
+   new: 0
+   updated: 0
+   removed: 0
+   not changed: 0");
+
+            Assert.True(File.Exists(cacheV1Path));
+            Assert.True(File.Exists(cacheV2Path));
+            Assert.True(File.Exists(nonTemplatePackagesList));
+
+            var jObjectV1 = JObject.Parse(File.ReadAllText(cacheV1Path));
+            Assert.Equal(2, jObjectV1["PackToTemplateMap"]?.Children<JProperty>().Count());
+            var jObjectV2 = JObject.Parse(File.ReadAllText(cacheV2Path));
+            Assert.Equal(2, jObjectV2["TemplatePackages"]?.Count());
+        }
+
+        [Fact]
+        public void CanDetectUpdatedPackagesInDiffMode()
+        {
+            string testDir = TestUtils.CreateTemporaryFolder();
+            using var packageManager = new PackageManager();
+            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+
+            string testFileName = Path.Combine(Path.GetDirectoryName(packageLocation)!, "Test.Templates##1.0.0.nupkg");
+            File.Move(packageLocation, testFileName);
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v",
+                "--diff",
+                "false")
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdOutContaining(
+@"Template packages:
+   new: 1
+      Test.Templates::1.0.0
+   updated: 0
+   removed: 0
+   not changed: 0")
+                .And.HaveStdOutContaining(
+@"Non template packages:
+   new: 0
+   updated: 0
+   removed: 0
+   not changed: 0");
+
+            string cacheV1Path = Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json");
+            string cacheV2Path = Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json");
+            string nonTemplatePackagesList = Path.Combine(testDir, "SearchCache", "nonTemplatePacks.json");
+
+            Assert.True(File.Exists(cacheV1Path));
+            Assert.True(File.Exists(cacheV2Path));
+            Assert.True(File.Exists(nonTemplatePackagesList));
+
+            File.Move(testFileName, Path.Combine(Path.GetDirectoryName(testFileName)!, "Test.Templates##1.0.1.nupkg"));
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v",
+                "--diff",
+                "true",
+                "--diff-override-cache",
+                cacheV2Path)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdOutContaining(
+@"Template packages:
+   new: 0
+   updated: 1
+      Test.Templates, 1.0.0 --> 1.0.1
+   removed: 0
+   not changed: 0")
+                .And.HaveStdOutContaining(
+@"Non template packages:
+   new: 0
+   updated: 0
+   removed: 0
+   not changed: 0");
+
+            Assert.True(File.Exists(cacheV1Path));
+            Assert.True(File.Exists(cacheV2Path));
+            Assert.True(File.Exists(nonTemplatePackagesList));
+
+            var jObjectV1 = JObject.Parse(File.ReadAllText(cacheV1Path));
+            Assert.Equal(1, jObjectV1["PackToTemplateMap"]?.Children<JProperty>().Count());
+            var jObjectV2 = JObject.Parse(File.ReadAllText(cacheV2Path));
+            Assert.Equal(1, jObjectV2["TemplatePackages"]?.Count());
+            Assert.Equal("1.0.1", jObjectV2["TemplatePackages"]?[0]?["Version"]?.Value<string>());
+        }
+
+        [Fact]
+        public void CanDetectRemovedPackagesInDiffMode()
+        {
+            string testDir = TestUtils.CreateTemporaryFolder();
+            using var packageManager = new PackageManager();
+            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+
+            string testFileName = Path.Combine(Path.GetDirectoryName(packageLocation)!, "Test.Templates##1.0.0.nupkg");
+            File.Move(packageLocation, testFileName);
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v",
+                "--diff",
+                "false")
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdOutContaining(
+@"Template packages:
+   new: 1
+      Test.Templates::1.0.0
+   updated: 0
+   removed: 0
+   not changed: 0")
+                .And.HaveStdOutContaining(
+@"Non template packages:
+   new: 0
+   updated: 0
+   removed: 0
+   not changed: 0");
+
+            string cacheV1Path = Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json");
+            string cacheV2Path = Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json");
+            string nonTemplatePackagesList = Path.Combine(testDir, "SearchCache", "nonTemplatePacks.json");
+
+            Assert.True(File.Exists(cacheV1Path));
+            Assert.True(File.Exists(cacheV2Path));
+            Assert.True(File.Exists(nonTemplatePackagesList));
+
+            File.Delete(testFileName);
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v",
+                "--diff",
+                "true",
+                "--diff-override-cache",
+                cacheV2Path)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdOutContaining(
+@"Template packages:
+   new: 0
+   updated: 0
+   removed: 1
+      Test.Templates::1.0.0
+   not changed: 0")
+                .And.HaveStdOutContaining(
+@"Non template packages:
+   new: 0
+   updated: 0
+   removed: 0
+   not changed: 0")
+                .And.HaveStdOutContaining(
+@"[Error]: the following 1 packages were removed
+   Test.Templates::1.0.0
+Checking template packages via API: 
+Package Test.Templates was unlisted."
+                );
+
+            Assert.True(File.Exists(cacheV1Path));
+            Assert.True(File.Exists(cacheV2Path));
+            Assert.True(File.Exists(nonTemplatePackagesList));
+
+            var jObjectV1 = JObject.Parse(File.ReadAllText(cacheV1Path));
+            Assert.Equal(0, jObjectV1["PackToTemplateMap"]?.Children<JProperty>().Count());
+            var jObjectV2 = JObject.Parse(File.ReadAllText(cacheV2Path));
+            Assert.Equal(0, jObjectV2["TemplatePackages"]?.Count());
+        }
     }
 }

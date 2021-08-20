@@ -7,74 +7,70 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 {
+    [Obsolete]
     internal class LegacyBlobTemplateInfo : ITemplateInfo
     {
         public LegacyBlobTemplateInfo(ITemplateInfo templateInfo)
         {
             Author = templateInfo.Author;
             Classifications = templateInfo.Classifications;
-            DefaultName = templateInfo.DefaultName;
             Description = templateInfo.Description;
             Identity = templateInfo.Identity;
-            GeneratorId = templateInfo.GeneratorId;
             GroupIdentity = templateInfo.GroupIdentity;
             Precedence = templateInfo.Precedence;
             Name = templateInfo.Name;
             ShortNameList = templateInfo.ShortNameList;
-            ConfigPlace = templateInfo.ConfigPlace;
-            LocaleConfigPlace = templateInfo.LocaleConfigPlace;
-            HostConfigPlace = templateInfo.HostConfigPlace;
-            ThirdPartyNotices = templateInfo.ThirdPartyNotices;
             BaselineInfo = templateInfo.BaselineInfo;
 
             //new properties - not written to json
-            MountPointUri = templateInfo.MountPointUri;
             Parameters = templateInfo.Parameters;
             TagsCollection = templateInfo.TagsCollection;
-#pragma warning disable CS0618 // Type or member is obsolete
-            Tags = templateInfo.Tags;
-            CacheParameters = templateInfo.CacheParameters;
-#pragma warning restore CS0618 // Type or member is obsolete
 
             //compatibility for old way to manage parameters
-            Dictionary<string, LegacyCacheTag> tags = new Dictionary<string, LegacyCacheTag>();
-            foreach (KeyValuePair<string, string> tag in TagsCollection)
+            if (templateInfo.Tags.Any())
             {
-                Dictionary<string, string> choices = new Dictionary<string, string>();
-                choices.Add(tag.Value, "");
-                tags[tag.Key] = new LegacyCacheTag(null, choices, tag.Value);
+                Tags = templateInfo.Tags;
             }
-
-            foreach (ITemplateParameter choiceParam in Parameters.Where(param => param.IsChoice()))
+            else
             {
-                Dictionary<string, string> choices = new Dictionary<string, string>();
-                if (choiceParam.Choices != null)
+                Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
+                foreach (KeyValuePair<string, string> tag in TagsCollection)
                 {
-                    foreach (var choice in choiceParam.Choices)
-                    {
-                        choices.Add(choice.Key, choice.Value.Description ?? string.Empty);
-                    }
+                    Dictionary<string, string> choices = new Dictionary<string, string>() { { tag.Value, string.Empty } };
+                    tags[tag.Key] = new BlobLegacyCacheTag(null, choices, tag.Value, null);
                 }
-                tags[choiceParam.Name] = new LegacyCacheTag(choiceParam.Description, choices, choiceParam.DefaultValue, choiceParam.DefaultIfOptionWithoutValue);
-            }
-            LegacyTags = tags;
-
-            Dictionary<string, LegacyCacheParameter> cacheParameters = new Dictionary<string, LegacyCacheParameter>();
-            foreach (ITemplateParameter param in Parameters.Where(param => !param.IsChoice()))
-            {
-                cacheParameters[param.Name] = new LegacyCacheParameter()
+                foreach (ITemplateParameter choiceParam in Parameters.Where(param => param.IsChoice()))
                 {
-                    DataType = param.DataType,
-                    DefaultIfOptionWithoutValue = param.DefaultIfOptionWithoutValue,
-                    DefaultValue = param.DefaultValue,
-                    Description = param.Description
-                };
+                    Dictionary<string, string> choices = new Dictionary<string, string>();
+                    if (choiceParam.Choices != null)
+                    {
+                        foreach (var choice in choiceParam.Choices)
+                        {
+                            choices.Add(choice.Key, choice.Value.Description ?? string.Empty);
+                        }
+                    }
+                    tags[choiceParam.Name] = new BlobLegacyCacheTag(choiceParam.Description, choices, choiceParam.DefaultValue, choiceParam.DefaultIfOptionWithoutValue);
+                }
+                Tags = tags;
             }
-            LegacyCacheParameters = cacheParameters;
+
+            if (templateInfo.CacheParameters.Any())
+            {
+                CacheParameters = templateInfo.CacheParameters;
+            }
+            else
+            {
+                Dictionary<string, ICacheParameter> cacheParameters = new Dictionary<string, ICacheParameter>();
+                foreach (ITemplateParameter param in Parameters.Where(param => !param.IsChoice()))
+                {
+                    cacheParameters[param.Name] = new BlobLegacyCacheParameter(param.Description, param.DataType, param.DefaultValue, param.DefaultIfOptionWithoutValue);
+                }
+                CacheParameters = cacheParameters;
+            }
         }
 
         [JsonProperty]
-        public Guid ConfigMountPointId { get; set; }
+        public Guid ConfigMountPointId => Guid.Empty;
 
         [JsonProperty]
         public string? Author { get; private set; }
@@ -83,7 +79,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         public IReadOnlyList<string> Classifications { get; private set; }
 
         [JsonProperty]
-        public string? DefaultName { get; private set; }
+        public string? DefaultName => string.Empty;
 
         [JsonProperty]
         public string? Description { get; private set; }
@@ -92,7 +88,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         public string Identity { get; private set; }
 
         [JsonProperty]
-        public Guid GeneratorId { get; private set; }
+        public Guid GeneratorId => Guid.Empty;
 
         [JsonProperty]
         public string? GroupIdentity { get; private set; }
@@ -127,28 +123,23 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             }
         }
 
+        [JsonProperty]
         public IReadOnlyList<string> ShortNameList { get; private set; }
 
-        [JsonProperty(nameof(Tags))]
-        public IReadOnlyDictionary<string, LegacyCacheTag> LegacyTags { get; private set; }
-
-        [JsonProperty(nameof(CacheParameters))]
-        public IReadOnlyDictionary<string, LegacyCacheParameter> LegacyCacheParameters { get; private set; }
+        [JsonProperty]
+        public string ConfigPlace => string.Empty;
 
         [JsonProperty]
-        public string ConfigPlace { get; private set; }
+        public Guid LocaleConfigMountPointId => Guid.Empty;
 
         [JsonProperty]
-        public Guid LocaleConfigMountPointId { get; private set; }
+        public string? LocaleConfigPlace => string.Empty;
 
         [JsonProperty]
-        public string? LocaleConfigPlace { get; private set; }
+        public Guid HostConfigMountPointId => Guid.Empty;
 
         [JsonProperty]
-        public Guid HostConfigMountPointId { get; private set; }
-
-        [JsonProperty]
-        public string? HostConfigPlace { get; private set; }
+        public string? HostConfigPlace => string.Empty;
 
         [JsonProperty]
         public string? ThirdPartyNotices { get; private set; }
@@ -169,17 +160,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         public IReadOnlyList<ITemplateParameter> Parameters { get; private set; }
 
         [JsonIgnore]
-        public string MountPointUri { get; private set; }
+        public string MountPointUri => string.Empty;
 
-        [JsonIgnore]
-#pragma warning disable CS0618 // Type or member is obsolete
-        public IReadOnlyDictionary<string, ICacheTag> Tags { get; private set; }
-#pragma warning restore CS0618 // Type or member is obsolete
+        [JsonProperty]
+        public IReadOnlyDictionary<string, ICacheTag> Tags { get; private set; } = new Dictionary<string, ICacheTag>();
 
-    [JsonIgnore]
-#pragma warning disable CS0618 // Type or member is obsolete
-        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; private set; }
-#pragma warning restore CS0618 // Type or member is obsolete
+        [JsonProperty]
+        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; private set; } = new Dictionary<string, ICacheParameter>();
 
         // ShortName should get deserialized when it exists, for backwards compat.
         // But moving forward, ShortNameList should be the definitive source.
@@ -189,49 +176,60 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             return false;
         }
 
-        internal class LegacyCacheTag
+        private class BlobLegacyCacheTag : ICacheTag
         {
-            public LegacyCacheTag(string? description, IReadOnlyDictionary<string, string> choicesAndDescriptions, string defaultValue)
-                : this(description, choicesAndDescriptions, defaultValue, null)
-            {
-            }
-
-            public LegacyCacheTag(string? description, IReadOnlyDictionary<string, string> choicesAndDescriptions, string? defaultValue, string? defaultIfOptionWithoutValue)
+            public BlobLegacyCacheTag(string? description, IReadOnlyDictionary<string, string> choicesAndDescriptions, string? defaultValue, string? defaultIfOptionWithoutValue)
             {
                 Description = description;
-                ChoicesAndDescriptions = choicesAndDescriptions.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
+                ChoicesAndDescriptions = choicesAndDescriptions;
                 DefaultValue = defaultValue;
                 DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue;
             }
 
+            [JsonProperty]
             public string? Description { get; }
 
+            [JsonProperty]
             public IReadOnlyDictionary<string, string> ChoicesAndDescriptions { get; }
 
+            [JsonProperty]
             public string? DefaultValue { get; }
 
-            public string? DefaultIfOptionWithoutValue { get; set; }
+            [JsonProperty]
+            public string? DefaultIfOptionWithoutValue { get; }
 
-            public bool ShouldSerializeDefaultIfOptionWithoutValue()
-            {
-                return !string.IsNullOrEmpty(DefaultIfOptionWithoutValue);
-            }
+            [JsonIgnore]
+            public string? DisplayName => throw new NotImplementedException();
+
+            [JsonIgnore]
+            public IReadOnlyDictionary<string, ParameterChoice> Choices => throw new NotImplementedException();
+
         }
 
-        internal class LegacyCacheParameter
+        private class BlobLegacyCacheParameter : ICacheParameter
         {
-            public string? DataType { get; set; }
-
-            public string? DefaultValue { get; set; }
-
-            public string? Description { get; set; }
-
-            public string? DefaultIfOptionWithoutValue { get; set; }
-
-            public bool ShouldSerializeDefaultIfOptionWithoutValue()
+            public BlobLegacyCacheParameter(string? description, string? dataType, string? defaultValue, string? defaultIfOptionWithoutValue)
             {
-                return !string.IsNullOrEmpty(DefaultIfOptionWithoutValue);
+                Description = description;
+                DataType = dataType;
+                DefaultValue = defaultValue;
+                DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue;
             }
+
+            [JsonProperty]
+            public string? DataType { get; }
+
+            [JsonProperty]
+            public string? DefaultValue { get; }
+
+            [JsonProperty]
+            public string? Description { get; }
+
+            [JsonProperty]
+            public string? DefaultIfOptionWithoutValue { get; }
+
+            [JsonIgnore]
+            public string? DisplayName => throw new NotImplementedException();
         }
     }
 }
