@@ -102,7 +102,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 else if (File.GetLastWriteTimeUtc(inputFullPath) < File.GetLastWriteTimeUtc(outputRelativePath))
                 {
                     // Incrementalism. If input source doesn't exist or it exists and is not newer than the expected output, do nothing.
-                    Log.LogMessage(MessageImportance.Low, "Skipping '{0}' because '{1}' is newer than '{file.ItemSpec}'.", file.ItemSpec, outputRelativePath);
+                    Log.LogMessage(MessageImportance.Low, "Skipping '{0}' because '{1}' is newer than '{2}'.", file.ItemSpec, outputRelativePath, file.ItemSpec);
                     continue;
                 }
                 else
