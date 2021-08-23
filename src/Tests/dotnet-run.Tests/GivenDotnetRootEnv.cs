@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         private static string GetExpectOutput(string expectDotnetRoot, string targetFramework = null)
         {
             string expectOutput;
-            string processArchitecture = Enum.GetName(typeof(Architecture), RuntimeInformation.ProcessArchitecture);
+            string processArchitecture = RuntimeInformation.ProcessArchitecture.ToString().ToUpperInvariant();
             if (!string.IsNullOrEmpty(targetFramework) && Version.Parse(targetFramework.AsSpan(3)) >= Version6_0)
             {
                 expectOutput = $"DOTNET_ROOT='';DOTNET_ROOT(x86)='';DOTNET_ROOT_{processArchitecture}='{expectDotnetRoot}'";

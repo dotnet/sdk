@@ -262,10 +262,9 @@ namespace Microsoft.DotNet.Tools.Run
             {
                 var rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
                 string targetFrameworkVersion = project.GetPropertyValue("TargetFrameworkVersion");
-                if (!string.IsNullOrEmpty(targetFrameworkVersion) && Version.Parse(targetFrameworkVersion.AsSpan(1)) >= Version6_0 &&
-                    Enum.GetName(typeof(Architecture), RuntimeInformation.ProcessArchitecture) is string processArchitecture)
+                if (!string.IsNullOrEmpty(targetFrameworkVersion) && Version.Parse(targetFrameworkVersion.AsSpan(1)) >= Version6_0)
                 {
-                    rootVariableName = $"DOTNET_ROOT_{processArchitecture}";
+                    rootVariableName = $"DOTNET_ROOT_{targetArchitecture.ToString().ToUpperInvariant()}";
                 }
 
                 if (Environment.GetEnvironmentVariable(rootVariableName) == null)
