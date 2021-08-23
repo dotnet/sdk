@@ -26,8 +26,7 @@
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="source-build" />
-    <!-- TODO:  Enable with https://github.com/dotnet/source-build/issues/2274
-    <RepositoryReference Include="runtime" /> -->
+    <RepositoryReference Include="runtime" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn" />
     <!-- TODO:  https://github.com/dotnet/source-build/issues/2319

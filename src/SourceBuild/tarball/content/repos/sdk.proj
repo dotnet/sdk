@@ -35,8 +35,7 @@
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="xliff-tasks" />
-    <!-- TODO:  Enable with https://github.com/dotnet/source-build/issues/2274
-    <RepositoryReference Include="runtime" /> -->
+    <RepositoryReference Include="runtime" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="source-build" />
     <!-- TODO:  https://github.com/dotnet/source-build/issues/2279

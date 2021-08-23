@@ -489,30 +489,34 @@
 
 
     <PropertyGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
-        <_DestinationPath>$(SourceBuiltPackagesPath)</_DestinationPath>
+        <_NupkgDestinationPath>$(SourceBuiltPackagesPath)</_NupkgDestinationPath>
         <!-- SBRP packages unpack into the Reference packages directory instead of into blob-feed packages -->
-        <_DestinationPath Condition="$([System.String]::Copy(%(_BuiltIntermediatePackages.Identity)).Contains('source-build-reference-packages'))">$(ReferencePackagesDir)</_DestinationPath>
+        <_NupkgDestinationPath Condition="$([System.String]::Copy(%(_BuiltIntermediatePackages.Identity)).Contains('source-build-reference-packages'))">$(ReferencePackagesDir)</_NupkgDestinationPath>
     </PropertyGroup>
 
     <ZipFileExtractToDirectory Condition="'@(_BuiltIntermediatePackages)' != ''"
                             SourceArchive="%(_BuiltIntermediatePackages.Identity)"
-                            DestinationDirectory="$(SourceBuiltPackagesPath)extractArtifacts/"
+                            DestinationDirectory="$(SourceBuiltPackagesPath)extractArtifacts/%(_BuiltIntermediatePackages.FileName)/"
                             OverwriteDestination="true" />
 
     <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
-      <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/*.nupkg" />
-      <!-- don't copy some packages that we specifically want to override for now due to bad reference package generation                                                  -->
-      <!-- relevant issues: https://github.com/dotnet/runtime/issues/44646, https://github.com/dotnet/runtime/issues/45183, https://github.com/dotnet/runtime/issues/45417 -->
-      <!-- these should be fixed for 6.0 proper                                                                                                                            -->
-      <PrebuiltPackagesToUse Include="$(PrebuiltPackagesPath)/*.nupkg" />
-      <SourceBuiltNupkgFilesToSkip Include="@(PrebuiltPackagesToUse -> '$(SourceBuiltPackagesPath)extractArtifacts/artifacts/%(Filename)%(Extension)')" />
-      <SourceBuiltNupkgFiles Condition="$([System.String]::Copy(%(_BuiltIntermediatePackages.Identity)).Contains('source-build-reference-packages'))" Remove="@(SourceBuiltNupkgFilesToSkip)" />
+      <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
     </ItemGroup>
 
     <Copy
       Condition="'@(SourceBuiltNupkgFiles)' != ''"
       SourceFiles="@(SourceBuiltNupkgFiles)"
-      DestinationFiles="@(SourceBuiltNupkgFiles -> '$(_DestinationPath)%(Filename)%(Extension)')" />
+      DestinationFiles="@(SourceBuiltNupkgFiles -> '$(_NupkgDestinationPath)%(Filename)%(Extension)')" />
+
+    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
+      <SourceBuiltAssetFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.*" />
+      <SourceBuiltAssetFiles Remove="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
+    </ItemGroup>
+
+    <Copy
+      Condition="'@(SourceBuiltAssetFiles)' != ''"
+      SourceFiles="@(SourceBuiltAssetFiles)"
+      DestinationFiles="@(SourceBuiltAssetFiles -> '$(SourceBuiltAssetsDir)%(Filename)%(Extension)')" />
 
     <RemoveDir
       Condition="Exists('$(SourceBuiltPackagesPath)extractArtifacts/')"

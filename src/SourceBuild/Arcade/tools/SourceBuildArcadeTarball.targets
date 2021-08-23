@@ -110,6 +110,17 @@
       WorkingDirectory="$(RepoRoot)"
       Condition="$(IsRootRepo) == 'true'" />
 
+    <!-- Because the root repo was locally cloned, the remote.origin.url needs to be updated from the local source to the real origin -->
+    <Exec
+      Command="git config --file $(TarballRepoSourceDir)/.git/config --unset remote.origin.url"
+      WorkingDirectory="$(RepoRoot)"
+      Condition="$(IsRootRepo) == 'true'" />
+
+    <Exec
+      Command="git config --file $(TarballRepoSourceDir)/.git/config --add remote.origin.url `git config --get remote.origin.url`"
+      WorkingDirectory="$(RepoRoot)"
+      Condition="$(IsRootRepo) == 'true'" />
+
     <Exec
       Command="git init $(TarballRepoSourceDir)"
       WorkingDirectory="$(RepoRoot)"
@@ -176,6 +187,10 @@
       <TarballContent Include="$(RepoRoot)src/SourceBuild/tarball/content/**/*" />
       <EngCommonContent Include="$(RepoRoot)eng/common/**/*" />
     </ItemGroup>
+
+    <Copy
+      SourceFiles="$(TarballGitInfoDir)runtime.props"
+      DestinationFiles="$(TarballGitInfoDir)runtime-portable.props" />
 
     <Copy
       SourceFiles="@(TarballContent)"

@@ -13,8 +13,7 @@
 
   <ItemGroup>
     <RepositoryReference Include="diagnostics" />
-    <!-- TODO:  Enable with https://github.com/dotnet/source-build/issues/2275
-    <RepositoryReference Include="runtime" /> -->
+    <RepositoryReference Include="runtime" />
     <RepositoryReference Include="source-build" />
   </ItemGroup>
 

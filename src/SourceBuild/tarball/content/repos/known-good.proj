@@ -45,6 +45,7 @@
         <RepositoryReference Include="linker" />
         <RepositoryReference Include="msbuild" />
         <RepositoryReference Include="runtime-portable" />
+        <RepositoryReference Include="runtime" />
         <RepositoryReference Include="templating" />
 
         <!-- Tier 4 -->
@@ -54,6 +55,9 @@
         <RepositoryReference Include="fsharp" />
         <RepositoryReference Include="sdk" />
         <RepositoryReference Include="vstest" />
+
+        <!-- Tier 6 -->
+        <RepositoryReference Include="installer" />
 
         <!-- Package source-build artifacts -->
         <RepositoryReference Include="package-source-build" />
