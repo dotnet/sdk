@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class UseXmlReaderForDeserializeTests
     {
         [Fact]
-        public async Task TestDeserializeWithStreamParameterDiagnostic()
+        public async Task TestDeserializeWithStreamParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -33,7 +33,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDeserializeWithTextReaderParameterDiagnostic()
+        public async Task TestDeserializeWithTextReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -51,7 +51,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestBaseClassInvokesDeserializeWithXmlSerializationReaderParameterDiagnostic()
+        public async Task TestBaseClassInvokesDeserializeWithXmlSerializationReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -82,7 +82,7 @@ End Class",
         }
 
         [Fact]
-        public async Task TesDerivedClassInvokesDeserializeWithXmlSerializationReaderParameterDiagnostic()
+        public async Task TesDerivedClassInvokesDeserializeWithXmlSerializationReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -122,7 +122,7 @@ End Class",
         }
 
         [Fact]
-        public async Task TestWithTwoLevelsOfInheritanceAndOverridesDiagnostic()
+        public async Task TestWithTwoLevelsOfInheritanceAndOverridesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -153,7 +153,7 @@ class SubTestClass : TestClass
         }
 
         [Fact]
-        public async Task TestDeserializeWithXmlReaderParameterNoDiagnostic()
+        public async Task TestDeserializeWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -171,7 +171,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDeserializeWithXmlReaderAndStringParametersNoDiagnostic()
+        public async Task TestDeserializeWithXmlReaderAndStringParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -190,7 +190,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDeserializeWithXmlReaderAndXmlDeserializationEventsParametersNoDiagnostic()
+        public async Task TestDeserializeWithXmlReaderAndXmlDeserializationEventsParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -208,7 +208,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDeserializeWithXmlReaderAndStringAndXmlDeserializationEventsParametersNoDiagnostic()
+        public async Task TestDeserializeWithXmlReaderAndStringAndXmlDeserializationEventsParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -226,7 +226,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDerivedFromANormalClassNoDiagnostic()
+        public async Task TestDerivedFromANormalClassNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -258,7 +258,7 @@ class SubTestClass : TestClass
         }
 
         [Fact]
-        public async Task TestNormalClassReadXmlWithXmlReaderParameterNoDiagnostic()
+        public async Task TestNormalClassReadXmlWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

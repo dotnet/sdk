@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 // TODO(dotpaul): Enable nullable analysis after rewriting these to use DFA.
 #nullable disable
@@ -200,7 +200,7 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     XmlDocumentEnvironment env = p.Value;
 
-                    if (!(env.IsXmlResolverSet | env.IsSecureResolver))
+                    if (!env.IsXmlResolverSet && !env.IsSecureResolver)
                     {
                         context.ReportDiagnostic(env.XmlDocumentDefinition.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));
                     }
@@ -209,8 +209,8 @@ namespace Microsoft.NetFramework.Analyzers
                 foreach (KeyValuePair<ISymbol, XmlTextReaderEnvironment> p in _xmlTextReaderEnvironments)
                 {
                     XmlTextReaderEnvironment env = p.Value;
-                    if (!(env.IsXmlResolverSet | env.IsSecureResolver) ||
-                        !(env.IsDtdProcessingSet | env.IsDtdProcessingDisabled))
+                    if ((!env.IsXmlResolverSet && !env.IsSecureResolver) ||
+                        (!env.IsDtdProcessingSet && !env.IsDtdProcessingDisabled))
                     {
                         context.ReportDiagnostic(env.XmlTextReaderDefinition.CreateDiagnostic(RuleXmlTextReaderConstructedWithNoSecureResolution));
                     }

@@ -1534,6 +1534,15 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="BufferBlockCopyLengthMessage" xml:space="preserve">
+    <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
+  </data>
+  <data name="BufferBlockCopyLengthTitle" xml:space="preserve">
+    <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</value>
+  </data>
+  <data name="BufferBlockCopyDescription" xml:space="preserve">
+    <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
+  </data>
   <data name="PreferAsSpanOverSubstringDescription" xml:space="preserve">
     <value>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</value>
   </data>
@@ -1648,19 +1657,52 @@
     <value>Use 'string.Equals'</value>
   </data>
   <data name="ProvidePublicParameterlessSafeHandleConstructorDescription" xml:space="preserve">
-    <value>Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</value>
+    <value>Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</value>
   </data>
   <data name="ProvidePublicParameterlessSafeHandleConstructorMessage" xml:space="preserve">
-    <value>Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</value>
+    <value>Provide a parameterless constructor that is as visible as the containing type for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</value>
   </data>
   <data name="ProvidePublicParameterlessSafeHandleConstructorTitle" xml:space="preserve">
-    <value>Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</value>
+    <value>Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</value>
   </data>
   <data name="AddPublicParameterlessConstructor" xml:space="preserve">
     <value>Add a public constructor that takes zero parameters</value>
   </data>
   <data name="MakeParameterlessConstructorPublic" xml:space="preserve">
     <value>Make the constructor that takes zero parameters 'public'</value>
+  </data>
+  <data name="DynamicInterfaceCastableImplementationUnsupportedDescription" xml:space="preserve">
+    <value>Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</value>
+  </data>
+  <data name="DynamicInterfaceCastableImplementationUnsupportedMessage" xml:space="preserve">
+    <value>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</value>
+  </data>
+  <data name="DynamicInterfaceCastableImplementationUnsupportedTitle" xml:space="preserve">
+    <value>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</value>
+  </data>
+  <data name="ImplementInterfacesOnDynamicCastableImplementation" xml:space="preserve">
+    <value>Implement inherited interfaces</value>
+  </data>
+  <data name="InterfaceMembersMissingImplementationDescription" xml:space="preserve">
+    <value>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</value>
+  </data>
+  <data name="InterfaceMembersMissingImplementationMessage" xml:space="preserve">
+    <value>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</value>
+  </data>
+  <data name="InterfaceMembersMissingImplementationTitle" xml:space="preserve">
+    <value>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</value>
+  </data>
+  <data name="MembersDeclaredOnImplementationTypeMustBeStaticDescription" xml:space="preserve">
+    <value>Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</value>
+  </data>
+  <data name="MembersDeclaredOnImplementationTypeMustBeStaticMessage" xml:space="preserve">
+    <value>The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</value>
+  </data>
+  <data name="MembersDeclaredOnImplementationTypeMustBeStaticTitle" xml:space="preserve">
+    <value>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</value>
+  </data>
+  <data name="MakeMethodDeclaredOnImplementationTypeStatic" xml:space="preserve">
+    <value>Convert to static method</value>
   </data>
   <data name="UseStringContainsCharOverloadWithSingleCharactersDescription" xml:space="preserve">
     <value>'string.Contains(char)' is available as a better performing overload for single char lookup.</value>
@@ -1683,11 +1725,35 @@
   <data name="DetectPreviewFeaturesTitle" xml:space="preserve">
     <value>This API requires opting into preview features</value>
   </data>
-  <data name="ImplementsEmptyPreviewInterfaceMessage" xml:space="preserve">
-    <value>'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
-  </data>
   <data name="StaticAndAbstractRequiresPreviewFeatures" xml:space="preserve">
     <value>Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode" xml:space="preserve">
+    <value>Converting an instance method to a static method may produce invalid code</value>
+  </data>
+  <data name="DerivesFromPreviewClassMessage" xml:space="preserve">
+    <value>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="ImplementsPreviewInterfaceMessage" xml:space="preserve">
+    <value>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="ImplementsPreviewMethodMessage" xml:space="preserve">
+    <value>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="MethodReturnsPreviewTypeMessage" xml:space="preserve">
+    <value>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="MethodUsesPreviewTypeAsParamaterMessage" xml:space="preserve">
+    <value>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="OverridesPreviewMethodMessage" xml:space="preserve">
+    <value>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
+    <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  </data>
+  <data name="FieldIsPreviewTypeMessage" xml:space="preserve">
+    <value>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
   </data>
   <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription" xml:space="preserve">
     <value>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</value>

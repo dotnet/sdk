@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -45,14 +45,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             if (IsAttribute(node))
             {
                 context.RegisterCodeFix(new MyCodeAction(title,
-                                                         async ct => await FixAttributeArguments(context.Document, node, charSetType, dllImportType, marshalAsType, unmanagedType, ct).ConfigureAwait(false),
+                                                         async ct => await FixAttributeArgumentsAsync(context.Document, node, charSetType, dllImportType, marshalAsType, unmanagedType, ct).ConfigureAwait(false),
                                                          equivalenceKey: title),
                                         context.Diagnostics);
             }
             else if (IsDeclareStatement(node))
             {
                 context.RegisterCodeFix(new MyCodeAction(title,
-                                                         async ct => await FixDeclareStatement(context.Document, node, ct).ConfigureAwait(false),
+                                                         async ct => await FixDeclareStatementAsync(context.Document, node, ct).ConfigureAwait(false),
                                                          equivalenceKey: title),
                                         context.Diagnostics);
             }
@@ -60,10 +60,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         protected abstract bool IsAttribute(SyntaxNode node);
         protected abstract bool IsDeclareStatement(SyntaxNode node);
-        protected abstract Task<Document> FixDeclareStatement(Document document, SyntaxNode node, CancellationToken cancellationToken);
+        protected abstract Task<Document> FixDeclareStatementAsync(Document document, SyntaxNode node, CancellationToken cancellationToken);
         protected abstract SyntaxNode FindNamedArgument(IReadOnlyList<SyntaxNode> arguments, string argumentName);
 
-        private async Task<Document> FixAttributeArguments(Document document, SyntaxNode attributeDeclaration,
+        private async Task<Document> FixAttributeArgumentsAsync(Document document, SyntaxNode attributeDeclaration,
             INamedTypeSymbol charSetType, INamedTypeSymbol dllImportType, INamedTypeSymbol marshalAsType, INamedTypeSymbol unmanagedType, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);

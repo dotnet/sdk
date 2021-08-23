@@ -720,9 +720,9 @@ Platform compatibility analyzer requires a valid platform name and version.
 |CodeFix|False|
 ---
 
-## [CA1419](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419): Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'
+## [CA1419](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419): Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'
 
-Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.
+Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.
 
 |Item|Value|
 |-|-|
@@ -1608,6 +1608,18 @@ Number of parameters supplied in the logging message template do not match the n
 |CodeFix|False|
 ---
 
+## [CA2018](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2018): 'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument
+
+'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA2100](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.
@@ -2091,6 +2103,42 @@ The logging message template should not vary between calls.
 ## [CA2255](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255): The 'ModuleInitializer' attribute should not be used in libraries
 
 Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
+## [CA2256](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2256): All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface
+
+Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
+## [CA2257](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2257): Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'
+
+Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
+## [CA2258](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2258): Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported
+
+Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.
 
 |Item|Value|
 |-|-|

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class DoNotCallOverridableMethodsInConstructorsTests
     {
         [Fact]
-        public async Task CA2214VirtualMethodCSharp()
+        public async Task CA2214VirtualMethodCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
@@ -33,7 +33,7 @@ class C
         }
 
         [Fact]
-        public async Task CA2214VirtualMethodCSharpWithScope()
+        public async Task CA2214VirtualMethodCSharpWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
@@ -49,7 +49,7 @@ class C
         }
 
         [Fact]
-        public async Task CA2214VirtualMethodBasic()
+        public async Task CA2214VirtualMethodBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -64,7 +64,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2214VirtualMethodBasicwithScope()
+        public async Task CA2214VirtualMethodBasicwithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -78,7 +78,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2214AbstractMethodCSharp()
+        public async Task CA2214AbstractMethodCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 abstract class C
@@ -95,7 +95,7 @@ abstract class C
         }
 
         [Fact]
-        public async Task CA2214AbstractMethodBasic()
+        public async Task CA2214AbstractMethodBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class C
@@ -109,7 +109,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2214MultipleInstancesCSharp()
+        public async Task CA2214MultipleInstancesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 abstract class C
@@ -129,7 +129,7 @@ abstract class C
         }
 
         [Fact]
-        public async Task CA2214MultipleInstancesBasic()
+        public async Task CA2214MultipleInstancesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class C
@@ -147,7 +147,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2214NotTopLevelCSharp()
+        public async Task CA2214NotTopLevelCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 abstract class C
@@ -173,7 +173,7 @@ abstract class C
         }
 
         [Fact]
-        public async Task CA2214NotTopLevelBasic()
+        public async Task CA2214NotTopLevelBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class C
@@ -194,7 +194,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2214NoDiagnosticsOutsideConstructorCSharp()
+        public async Task CA2214NoDiagnosticsOutsideConstructorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 abstract class C
@@ -210,7 +210,7 @@ abstract class C
         }
 
         [Fact]
-        public async Task CA2214NoDiagnosticsOutsideConstructorBasic()
+        public async Task CA2214NoDiagnosticsOutsideConstructorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class C
@@ -224,7 +224,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2214SpecialInheritanceCSharp_Web()
+        public async Task CA2214SpecialInheritanceCSharp_WebAsync()
         {
             await new VerifyCS.Test
             {
@@ -263,7 +263,7 @@ abstract class F : System.ComponentModel.Component
         }
 
         [Fact]
-        public async Task CA2214SpecialInheritanceCSharp_WinForms()
+        public async Task CA2214SpecialInheritanceCSharp_WinFormsAsync()
         {
             await new VerifyCS.Test
             {
@@ -314,7 +314,7 @@ abstract class F : System.ComponentModel.Component
         }
 
         [Fact]
-        public async Task CA2214SpecialInheritanceBasic_WinForms()
+        public async Task CA2214SpecialInheritanceBasic_WinFormsAsync()
         {
             await new VerifyVB.Test
             {
@@ -360,7 +360,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2214SpecialInheritanceBasic_Web()
+        public async Task CA2214SpecialInheritanceBasic_WebAsync()
         {
             await new VerifyVB.Test
             {
@@ -395,7 +395,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2214VirtualOnOtherClassesCSharp()
+        public async Task CA2214VirtualOnOtherClassesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class D
@@ -417,7 +417,7 @@ class C
         }
 
         [Fact]
-        public async Task CA2214VirtualOnOtherClassesBasic()
+        public async Task CA2214VirtualOnOtherClassesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class D
@@ -436,7 +436,7 @@ End Class
         }
 
         [Fact, WorkItem(1652, "https://github.com/dotnet/roslyn-analyzers/issues/1652")]
-        public async Task CA2214VirtualInvocationsInLambdaCSharp()
+        public async Task CA2214VirtualInvocationsInLambdaCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -455,7 +455,7 @@ internal abstract class A
         }
 
         [Fact, WorkItem(1652, "https://github.com/dotnet/roslyn-analyzers/issues/1652")]
-        public async Task CA2214VirtualInvocationsInLambdaBasic()
+        public async Task CA2214VirtualInvocationsInLambdaBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -473,7 +473,7 @@ End Class
         }
 
         [Fact, WorkItem(4142, "https://github.com/dotnet/roslyn-analyzers/issues/4142")]
-        public async Task CA2214_VirtualInvocationsInLambda()
+        public async Task CA2214_VirtualInvocationsInLambdaAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

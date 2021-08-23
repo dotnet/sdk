@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -95,7 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [MemberData(nameof(CS_ComparisonRightOfLiteralTestData))]
         [MemberData(nameof(CS_InvertedComparisonLeftOfLiteralTestData))]
         [MemberData(nameof(CS_InvertedComparisonRightOfLiteralTestData))]
-        public Task StringCompareResult_CompareToZero_Diagnostic_CS(string testExpression, string fixedExpression)
+        public Task StringCompareResult_CompareToZero_Diagnostic_CSAsync(string testExpression, string fixedExpression)
         {
             string testCode = $@"
 using System;
@@ -126,7 +126,7 @@ public class Testopolis
         [MemberData(nameof(VB_ComparisonRightOfLiteralTestData))]
         [MemberData(nameof(VB_InvertedComparisonLeftOfLiteralTestData))]
         [MemberData(nameof(VB_InvertedComparisonRightOfLiteralTestData))]
-        public Task StringCompareResult_CompareToZero_Diagnostic_VB(string testExpression, string fixedExpression)
+        public Task StringCompareResult_CompareToZero_Diagnostic_VBAsync(string testExpression, string fixedExpression)
         {
             string testCode = $@"
 Imports System
@@ -152,7 +152,7 @@ End Class";
 
         [Theory]
         [MemberData(nameof(CS_StringCompareExpressionsTestData))]
-        public Task StringCompareResult_CompareToNonLiteralZero_NoDiagnostic_CS(string expression)
+        public Task StringCompareResult_CompareToNonLiteralZero_NoDiagnostic_CSAsync(string expression)
         {
             string code = $@"
 using System;
@@ -175,7 +175,7 @@ public class Testopolis
 
         [Theory]
         [MemberData(nameof(VB_StringCompareExpressionsTestData))]
-        public Task StringCompareResult_CompareToNonLiteralZero_NoDiagnostic_VB(string expression)
+        public Task StringCompareResult_CompareToNonLiteralZero_NoDiagnostic_VBAsync(string expression)
         {
             var code = $@"
 Imports System
@@ -196,7 +196,7 @@ End Class";
 
         [Theory]
         [MemberData(nameof(CS_StringCompareExpressionsTestData))]
-        public Task StringCompareResult_CompareToLiteralNonZero_NoDiagnostic_CS(string expression)
+        public Task StringCompareResult_CompareToLiteralNonZero_NoDiagnostic_CSAsync(string expression)
         {
             string code = $@"
 using System;
@@ -217,7 +217,7 @@ public class Testopolis
 
         [Theory]
         [MemberData(nameof(VB_StringCompareExpressionsTestData))]
-        public Task StringCompareResult_CompareToLiteralNonZero_NoDiagnostic_VB(string expression)
+        public Task StringCompareResult_CompareToLiteralNonZero_NoDiagnostic_VBAsync(string expression)
         {
             string code = $@"
 Imports System
@@ -236,7 +236,7 @@ End Class";
 
         [Theory]
         [MemberData(nameof(CS_IneligibleStringCompareOverloadTestData))]
-        public Task IneligibleStringCompareOverload_NoDiagnostic_CS(string expression)
+        public Task IneligibleStringCompareOverload_NoDiagnostic_CSAsync(string expression)
         {
             string code = $@"
 using System;
@@ -257,7 +257,7 @@ public class Testopolis
 
         [Theory]
         [MemberData(nameof(VB_IneligibleStringCompareOverloadTestData))]
-        public Task IneligibleStringCompareOverload_NoDiagnostic_VB(string expression)
+        public Task IneligibleStringCompareOverload_NoDiagnostic_VBAsync(string expression)
         {
             string code = $@"
 Imports System

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class RemoveEmptyFinalizersFixerTests
     {
         [Fact]
-        public async Task CA1821CSharpCodeFixTestRemoveEmptyFinalizers()
+        public async Task CA1821CSharpCodeFixTestRemoveEmptyFinalizersAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class Class1
@@ -33,7 +33,7 @@ public class Class1
         }
 
         [Fact]
-        public async Task CA1821BasicCodeFixTestRemoveEmptyFinalizers()
+        public async Task CA1821BasicCodeFixTestRemoveEmptyFinalizersAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System.Diagnostics

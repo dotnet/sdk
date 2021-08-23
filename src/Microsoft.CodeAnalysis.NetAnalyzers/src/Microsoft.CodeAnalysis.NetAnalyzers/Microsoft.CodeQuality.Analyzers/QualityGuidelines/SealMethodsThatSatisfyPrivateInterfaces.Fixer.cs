@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 if (dx.Location.IsInSource)
                 {
-                    var root = dx.Location.SourceTree.GetRoot(context.CancellationToken);
+                    var root = await dx.Location.SourceTree.GetRootAsync(context.CancellationToken).ConfigureAwait(false);
                     var declarationNode = gen.GetDeclaration(root.FindToken(dx.Location.SourceSpan.Start).Parent);
                     if (declarationNode != null)
                     {

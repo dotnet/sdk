@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class UseXmlReaderForSchemaReadTests
     {
         [Fact]
-        public async Task TestReadWithStreamAndValidationEventHandlerParametersDiagnostic()
+        public async Task TestReadWithStreamAndValidationEventHandlerParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -30,7 +30,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestTextReaderAndValidationEventHandlerParametersDiagnostic()
+        public async Task TestTextReaderAndValidationEventHandlerParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -48,7 +48,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestXmlReaderAndValidationEventHandlerParametersNoDiagnostic()
+        public async Task TestXmlReaderAndValidationEventHandlerParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -65,7 +65,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task XmlSchemaReadDocSample1_Solution()
+        public async Task XmlSchemaReadDocSample1_SolutionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;

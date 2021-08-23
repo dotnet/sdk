@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
@@ -22,7 +22,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class IdentifiersShouldNotMatchKeywordsTypeRuleTests
     {
         [Fact]
-        public async Task CSharpDiagnosticForKeywordNamedPublicType()
+        public async Task CSharpDiagnosticForKeywordNamedPublicTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class @class {}
@@ -31,7 +31,7 @@ public class @class {}
         }
 
         [Fact]
-        public async Task BasicDiagnosticForKeywordNamedPublicType()
+        public async Task BasicDiagnosticForKeywordNamedPublicTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class [Class]
@@ -41,7 +41,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForCaseSensitiveKeywordNamedPublicTypeWithDifferentCasing()
+        public async Task CSharpNoDiagnosticForCaseSensitiveKeywordNamedPublicTypeWithDifferentCasingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class iNtErNaL {}
@@ -49,7 +49,7 @@ public class iNtErNaL {}
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForCaseSensitiveKeywordNamedPublicTypeWithDifferentCasing()
+        public async Task BasicNoDiagnosticForCaseSensitiveKeywordNamedPublicTypeWithDifferentCasingAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class iNtErNaL
@@ -57,7 +57,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForCaseInsensitiveKeywordNamedPublicType()
+        public async Task CSharpDiagnosticForCaseInsensitiveKeywordNamedPublicTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct aDdHaNdLeR {}
@@ -66,7 +66,7 @@ public struct aDdHaNdLeR {}
         }
 
         [Fact]
-        public async Task BasicDiagnosticForCaseInsensitiveKeywordNamedPublicType()
+        public async Task BasicDiagnosticForCaseInsensitiveKeywordNamedPublicTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure [aDdHaNdLeR]
@@ -75,7 +75,7 @@ End Structure",
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForKeywordNamedInternalype()
+        public async Task CSharpNoDiagnosticForKeywordNamedInternalypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal class @class {}
@@ -83,7 +83,7 @@ internal class @class {}
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForKeywordNamedInternalType()
+        public async Task BasicNoDiagnosticForKeywordNamedInternalTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Class [Class]
@@ -92,7 +92,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForNonKeywordNamedPublicType()
+        public async Task CSharpNoDiagnosticForNonKeywordNamedPublicTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class classic {}
@@ -100,7 +100,7 @@ public class classic {}
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForNonKeywordNamedPublicType()
+        public async Task BasicNoDiagnosticForNonKeywordNamedPublicTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Classic
@@ -109,7 +109,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForKeywordNamedPublicTypeInNamespace()
+        public async Task CSharpDiagnosticForKeywordNamedPublicTypeInNamespaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace N
@@ -121,7 +121,7 @@ namespace N
         }
 
         [Fact]
-        public async Task BasicDiagnosticForKeywordNamedPublicTypeInNamespace()
+        public async Task BasicDiagnosticForKeywordNamedPublicTypeInNamespaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Namespace N
@@ -134,7 +134,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForKeywordNamedProtectedTypeNestedInPublicClass()
+        public async Task CSharpDiagnosticForKeywordNamedProtectedTypeNestedInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -146,7 +146,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicDiagnosticForKeywordNamedProtectedTypeNestedInPublicClass()
+        public async Task BasicDiagnosticForKeywordNamedProtectedTypeNestedInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -162,7 +162,7 @@ End Class
         [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method, Property")]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method")]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method, Property")]
-        public async Task UserOptionDoesNotIncludeNamedType_NoDiagnostic(string editorConfigText)
+        public async Task UserOptionDoesNotIncludeNamedType_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -204,7 +204,7 @@ End Class",
         [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
-        public async Task UserOptionIncludesNamedType_Diagnostic(string editorConfigText)
+        public async Task UserOptionIncludesNamedType_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -255,7 +255,7 @@ End Class",
         [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.analyzed_symbol_kinds = Property", false)]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method", "dotnet_code_quality.analyzed_symbol_kinds = Property", false)]
         [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method", "", false)] // Default has 'NamedType'
-        public async Task TestConflictingAnalyzerOptionsForPartials(string editorConfigText1, string editorConfigText2, bool expectDiagnostic)
+        public async Task TestConflictingAnalyzerOptionsForPartialsAsync(string editorConfigText1, string editorConfigText2, bool expectDiagnostic)
         {
             var csTest = new VerifyCS.Test
             {

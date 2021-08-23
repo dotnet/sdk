@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class SpecifyIFormatProviderTests
     {
         [Fact]
-        public async Task CA1305_StringReturningStringFormatOverloads_CSharp()
+        public async Task CA1305_StringReturningStringFormatOverloads_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -60,7 +60,7 @@ GetIFormatProviderAlternateStringRuleCSharpResultAt(25, 16, "string.Format(strin
         }
 
         [Fact]
-        public async Task CA1305_StringReturningUserMethodOverloads_CSharp()
+        public async Task CA1305_StringReturningUserMethodOverloads_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -126,7 +126,7 @@ GetIFormatProviderAlternateStringRuleCSharpResultAt(12, 9, "IFormatProviderOverl
         }
 
         [Fact]
-        public async Task CA1305_StringReturningNoDiagnostics_CSharp()
+        public async Task CA1305_StringReturningNoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -200,7 +200,7 @@ public class DerivedClass : IFormatProvider
         }
 
         [Fact]
-        public async Task CA1305_NonStringReturningStringFormatOverloads_CSharp()
+        public async Task CA1305_NonStringReturningStringFormatOverloads_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -254,7 +254,7 @@ GetIFormatProviderAlternateRuleCSharpResultAt(12, 9, "IFormatProviderOverloads.T
         }
 
         [Fact]
-        public async Task CA1305_NonStringReturningStringFormatOverloads_TargetMethodNoGenerics_CSharp()
+        public async Task CA1305_NonStringReturningStringFormatOverloads_TargetMethodNoGenerics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -292,7 +292,7 @@ GetIFormatProviderAlternateRuleCSharpResultAt(8, 9, "IFormatProviderOverloads.Ta
         }
 
         [Fact]
-        public async Task CA1305_StringReturningUICultureIFormatProvider_CSharp()
+        public async Task CA1305_StringReturningUICultureIFormatProvider_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -349,7 +349,7 @@ GetIFormatProviderUICultureStringRuleCSharpResultAt(13, 9, "UICultureAsIFormatPr
         }
 
         [Fact]
-        public async Task CA1305_NonStringReturningUICultureIFormatProvider_CSharp()
+        public async Task CA1305_NonStringReturningUICultureIFormatProvider_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -404,7 +404,7 @@ GetIFormatProviderUICultureRuleCSharpResultAt(13, 9, "UICultureAsIFormatProvider
         }
 
         [Fact]
-        public async Task CA1305_AcceptNullForIFormatProvider_CSharp()
+        public async Task CA1305_AcceptNullForIFormatProvider_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -429,7 +429,7 @@ internal static class IFormatProviderOverloads
         }
 
         [Fact]
-        public async Task CA1305_DoesNotRecommendObsoleteOverload_CSharp()
+        public async Task CA1305_DoesNotRecommendObsoleteOverload_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -460,7 +460,7 @@ internal static class IFormatProviderOverloads
         }
 
         [Fact]
-        public async Task CA1305_RuleException_NoDiagnostics_CSharp()
+        public async Task CA1305_RuleException_NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -483,7 +483,7 @@ public static class IFormatProviderStringTest
         }
 
         [Fact]
-        public async Task CA1305_StringReturningStringFormatOverloads_VisualBasic()
+        public async Task CA1305_StringReturningStringFormatOverloads_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -525,7 +525,7 @@ GetIFormatProviderAlternateStringRuleBasicResultAt(23, 16, "String.Format(String
         }
 
         [Fact]
-        public async Task CA1305_StringReturningUserMethodOverloads_VisualBasic()
+        public async Task CA1305_StringReturningUserMethodOverloads_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -585,7 +585,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1305_StringReturningNoDiagnostics_VisualBasic()
+        public async Task CA1305_StringReturningNoDiagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -635,7 +635,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1305_NonStringReturningStringFormatOverloads_VisualBasic()
+        public async Task CA1305_NonStringReturningStringFormatOverloads_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -687,7 +687,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1305_StringReturningUICultureIFormatProvider_VisualBasic()
+        public async Task CA1305_StringReturningUICultureIFormatProvider_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -743,7 +743,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1305_NonStringReturningUICultureIFormatProvider_VisualBasic()
+        public async Task CA1305_NonStringReturningUICultureIFormatProvider_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -797,7 +797,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1305_NonStringReturningComputerInfoInstalledUICultureIFormatProvider_VisualBasic()
+        public async Task CA1305_NonStringReturningComputerInfoInstalledUICultureIFormatProvider_VisualBasicAsync()
         {
             await new VerifyVB.Test
             {
@@ -833,7 +833,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1305_RuleException_NoDiagnostics_VisualBasic()
+        public async Task CA1305_RuleException_NoDiagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -857,7 +857,7 @@ End Class");
 
         [Fact]
         [WorkItem(2394, "https://github.com/dotnet/roslyn-analyzers/issues/2394")]
-        public async Task CA1305_BoolToString_NoDiagnostics()
+        public async Task CA1305_BoolToString_NoDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class SomeClass
@@ -879,7 +879,7 @@ End Class
 
         [Fact]
         [WorkItem(2394, "https://github.com/dotnet/roslyn-analyzers/issues/2394")]
-        public async Task CA1305_CharToString_NoDiagnostics()
+        public async Task CA1305_CharToString_NoDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class SomeClass
@@ -901,7 +901,7 @@ End Class
 
         [Fact]
         [WorkItem(2394, "https://github.com/dotnet/roslyn-analyzers/issues/2394")]
-        public async Task CA1305_StringToString_NoDiagnostics()
+        public async Task CA1305_StringToString_NoDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class SomeClass
@@ -923,7 +923,7 @@ End Class
 
         [Fact]
         [WorkItem(3378, "https://github.com/dotnet/roslyn-analyzers/issues/3378")]
-        public async Task CA1305_GuidToString_NoDiagnostics()
+        public async Task CA1305_GuidToString_NoDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -946,7 +946,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1305_NullableInvariantTypes_NoDiagnostic()
+        public async Task CA1305_NullableInvariantTypes_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -978,7 +978,7 @@ End Class");
         [Theory, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
         [InlineData("DateTime")]
         [InlineData("DateTimeOffset")]
-        public async Task CA1305_DateTimeOrDateTimeOffsetInvariantSpecifiers_NoDiagnostic(string type)
+        public async Task CA1305_DateTimeOrDateTimeOffsetInvariantSpecifiers_NoDiagnosticAsync(string type)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
 using System;
@@ -999,7 +999,7 @@ public class C
         [Theory, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
         [InlineData("DateTime")]
         [InlineData("DateTimeOffset")]
-        public async Task CA1305_DateTimeOrDateTimeOffsetVariantSpecifiers_Diagnostic(string type)
+        public async Task CA1305_DateTimeOrDateTimeOffsetVariantSpecifiers_DiagnosticAsync(string type)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
 using System;
@@ -1018,7 +1018,7 @@ public class C
         }
 
         [Fact, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
-        public async Task CA1305_TimeSpanInvariantSpecifiers_NoDiagnostic()
+        public async Task CA1305_TimeSpanInvariantSpecifiers_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -1031,7 +1031,7 @@ public class C
         }
 
         [Fact, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
-        public async Task CA1305_TimeSpanVariantSpecifiers_Diagnostic()
+        public async Task CA1305_TimeSpanVariantSpecifiers_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C

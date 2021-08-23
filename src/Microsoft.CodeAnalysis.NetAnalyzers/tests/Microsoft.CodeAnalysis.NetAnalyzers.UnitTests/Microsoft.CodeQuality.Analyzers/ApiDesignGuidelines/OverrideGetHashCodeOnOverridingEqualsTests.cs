@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class OverrideGetHashCodeOnOverridingEqualsTests
     {
         [Fact]
-        public async Task Good_Class_Equals()
+        public async Task Good_Class_EqualsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -27,7 +27,7 @@ End Class");
         }
 
         [Fact]
-        public async Task Good_Class_NoEquals()
+        public async Task Good_Class_NoEqualsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -35,7 +35,7 @@ End Class");
         }
 
         [Fact]
-        public async Task Good_Structure_Equals()
+        public async Task Good_Structure_EqualsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Structure C
@@ -50,7 +50,7 @@ End Structure");
         }
 
         [Fact]
-        public async Task Good_Structure_NoEquals()
+        public async Task Good_Structure_NoEqualsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Structure C
@@ -58,7 +58,7 @@ End Structure");
         }
 
         [Fact]
-        public async Task Bad_Class()
+        public async Task Bad_ClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -71,7 +71,7 @@ End Class",
         }
 
         [Fact]
-        public async Task Bad_Structure()
+        public async Task Bad_StructureAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Structure C
@@ -84,7 +84,7 @@ End Structure",
         }
 
         [Fact]
-        public async Task Bad_NotOverride()
+        public async Task Bad_NotOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -101,7 +101,7 @@ End Class",
         }
 
         [Fact]
-        public async Task Bad_FalseOverride()
+        public async Task Bad_FalseOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base

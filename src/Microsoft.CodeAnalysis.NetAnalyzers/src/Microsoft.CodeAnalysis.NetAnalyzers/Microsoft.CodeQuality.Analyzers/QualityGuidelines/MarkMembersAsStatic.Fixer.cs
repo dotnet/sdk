@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -75,7 +75,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 if (!allReferencesFixed)
                 {
                     // We could not fix all references, so add a warning annotation that users need to manually fix these.
-                    document = await AddWarningAnnotation(solution.GetDocument(document.Id)!, symbol, cancellationToken).ConfigureAwait(false);
+                    document = await AddWarningAnnotationAsync(solution.GetDocument(document.Id)!, symbol, cancellationToken).ConfigureAwait(false);
                     solution = document.Project.Solution;
                 }
             }
@@ -240,7 +240,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
         }
 
-        private static async Task<Document> AddWarningAnnotation(Document document, ISymbol symbolFromEarlierSnapshot, CancellationToken cancellationToken)
+        private static async Task<Document> AddWarningAnnotationAsync(Document document, ISymbol symbolFromEarlierSnapshot, CancellationToken cancellationToken)
         {
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var fixedDeclaration = root.GetAnnotatedNodes(s_annotationForFixedDeclaration).Single();

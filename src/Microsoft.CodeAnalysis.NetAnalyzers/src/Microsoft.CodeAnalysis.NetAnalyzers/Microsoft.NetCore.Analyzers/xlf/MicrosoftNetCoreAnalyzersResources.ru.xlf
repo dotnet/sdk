@@ -127,6 +127,21 @@
         <target state="translated">Не используйте небезопасный десериализатор BinaryFormatter</target>
         <note />
       </trans-unit>
+      <trans-unit id="BufferBlockCopyDescription">
+        <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</source>
+        <target state="new">'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BufferBlockCopyLengthMessage">
+        <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</source>
+        <target state="new">'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BufferBlockCopyLengthTitle">
+        <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</source>
+        <target state="new">'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
         <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).</source>
         <target state="translated">Метод, являющийся реализацией Dispose, не вызывает GC.SuppressFinalize, метод, не являющийся реализацией Dispose, вызывает GC.SuppressFinalize, либо метод вызывает GC.SuppressFinalize и передает нечто иное (Me в Visual Basic).</target>
@@ -320,6 +335,11 @@
       <trans-unit id="DeprecatedSslProtocolsTitle">
         <source>Do not use deprecated SslProtocols values</source>
         <target state="translated">Не используйте устаревшие значения параметра SslProtocols</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DerivesFromPreviewClassMessage">
+        <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
@@ -1037,6 +1057,26 @@
         <target state="translated">Не используйте XslTransform. Он не ограничивает потенциально опасные внешние ссылки.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedDescription">
+        <source>Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</source>
+        <target state="new">Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedMessage">
+        <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
+        <target state="new">Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedTitle">
+        <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
+        <target state="new">Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldIsPreviewTypeMessage">
+        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
         <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
         <target state="translated">Завершение должно распространяться через иерархию наследования. Для этого типы должны вызывать метод Finalize своего базового класса в своем собственном методе Finalize.</target>
@@ -1117,6 +1157,11 @@
         <target state="translated">Правильно реализуйте ISerializable</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
+        <source>Implement inherited interfaces</source>
+        <target state="new">Implement inherited interfaces</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
         <source>Implement Serialization constructor</source>
         <target state="translated">Реализовать конструктор сериализации</target>
@@ -1182,9 +1227,14 @@
         <target state="translated">Правильно реализуйте методы сериализации</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementsEmptyPreviewInterfaceMessage">
-        <source>'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+      <trans-unit id="ImplementsPreviewInterfaceMessage">
+        <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewMethodMessage">
+        <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1245,6 +1295,21 @@
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
         <source>Instantiate argument exceptions correctly</source>
         <target state="translated">Правильно создавайте экземпляры исключений аргументов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationDescription">
+        <source>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</source>
+        <target state="new">Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationMessage">
+        <source>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</source>
+        <target state="new">Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationTitle">
+        <source>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</source>
+        <target state="new">All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
@@ -1330,6 +1395,16 @@
       <trans-unit id="LosFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer LosFormatter</source>
         <target state="translated">Не используйте небезопасный десериализатор LosFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeMethodDeclaredOnImplementationTypeStatic">
+        <source>Convert to static method</source>
+        <target state="new">Convert to static method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode">
+        <source>Converting an instance method to a static method may produce invalid code</source>
+        <target state="new">Converting an instance method to a static method may produce invalid code</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeParameterlessConstructorPublic">
@@ -1452,6 +1527,31 @@
         <target state="translated">Убедитесь, что число итераций составляет не меньше {0} при формировании криптографического ключа из пароля. По умолчанию значение IterationCount для Rfc2898DeriveByte равно всего 1000</target>
         <note />
       </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticDescription">
+        <source>Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</source>
+        <target state="new">Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticMessage">
+        <source>The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
+        <target state="new">The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticTitle">
+        <source>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</source>
+        <target state="new">Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodReturnsPreviewTypeMessage">
+        <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParamaterMessage">
+        <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
         <source>Miss HttpVerb attribute for action methods</source>
         <target state="translated">Отсутствует атрибут HttpVerb для методов действия.</target>
@@ -1540,6 +1640,11 @@
       <trans-unit id="ObjectStateFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer ObjectStateFormatter</source>
         <target state="translated">Не используйте небезопасный десериализатор ObjectStateFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverridesPreviewMethodMessage">
+        <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -1853,18 +1958,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
-        <source>Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
-        <target state="new">Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</target>
+        <source>Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
+        <target state="new">Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorMessage">
-        <source>Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</source>
-        <target state="new">Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <source>Provide a parameterless constructor that is as visible as the containing type for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</source>
+        <target state="new">Provide a parameterless constructor that is as visible as the containing type for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorTitle">
-        <source>Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</source>
-        <target state="new">Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <source>Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</source>
+        <target state="new">Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesDescription">
@@ -2630,6 +2735,11 @@
       <trans-unit id="UseXmlReaderMessage">
         <source>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
         <target state="translated">Перегрузка метода "{0}.{1}" потенциально небезопасна. Она может включать определение типа документа (DTD), которое может быть уязвимо для атак типа "отказ в обслуживании", или может использовать XmlResolver, что может представлять уязвимость для раскрытия информации. Используйте перегрузку, которая принимает экземпляр XmlReader, с отключенной обработкой DTD и без XmlResolver.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsesPreviewTypeParameterMessage">
+        <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
+        <target state="new">'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
         <note />
       </trans-unit>
     </body>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public partial class OverloadOperatorEqualsOnOverridingValueTypeEqualsTests
     {
         [Fact]
-        public async Task CA2231CSharpCodeFixNoEqualsOperator()
+        public async Task CA2231CSharpCodeFixNoEqualsOperatorAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -53,7 +53,7 @@ public struct A
         }
 
         [Fact]
-        public async Task CA2231BasicCodeFixNoEqualsOperator()
+        public async Task CA2231BasicCodeFixNoEqualsOperatorAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -84,7 +84,7 @@ End Structure
         }
 
         [Fact]
-        public async Task CA2231_CSharp_MultipleViolations()
+        public async Task CA2231_CSharp_MultipleViolationsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -145,7 +145,7 @@ public struct B
         }
 
         [Fact]
-        public async Task CA2231_Basic_MultipleViolations()
+        public async Task CA2231_Basic_MultipleViolationsAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System

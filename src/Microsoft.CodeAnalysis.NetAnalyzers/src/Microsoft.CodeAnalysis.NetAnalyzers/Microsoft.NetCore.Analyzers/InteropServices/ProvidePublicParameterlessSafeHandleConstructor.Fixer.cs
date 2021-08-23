@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -42,7 +42,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 context.RegisterCodeFix(
                     new MyCodeAction(
                         MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic,
-                        async ct => await MakeParameterlessConstructorPublic(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                        async ct => await MakeParameterlessConstructorPublicAsync(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
                         equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic)),
                     diagnostic);
             }
@@ -51,13 +51,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 context.RegisterCodeFix(
                     new MyCodeAction(
                         MicrosoftNetCoreAnalyzersResources.AddPublicParameterlessConstructor,
-                        async ct => await AddParameterlessConstructor(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                        async ct => await AddParameterlessConstructorAsync(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
                         equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.AddPublicParameterlessConstructor)),
                     diagnostic);
             }
         }
 
-        private static async Task<Document> AddParameterlessConstructor(SyntaxNode declaration, Document document, CancellationToken ct)
+        private static async Task<Document> AddParameterlessConstructorAsync(SyntaxNode declaration, Document document, CancellationToken ct)
         {
             var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
             INamedTypeSymbol type = (INamedTypeSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, ct);
@@ -70,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return editor.GetChangedDocument();
         }
 
-        private static async Task<Document> MakeParameterlessConstructorPublic(SyntaxNode declaration, Document document, CancellationToken ct)
+        private static async Task<Document> MakeParameterlessConstructorPublicAsync(SyntaxNode declaration, Document document, CancellationToken ct)
         {
             var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
             editor.SetAccessibility(declaration, Accessibility.Public);

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("char[]", false)]
         [InlineData("DateTime", false)]
         [InlineData("DayOfWeek", false)]
-        public async Task ArgumentIsToStringMethodCallOnLocal_CSharp(string receiverType, bool diagnosticExpected)
+        public async Task ArgumentIsToStringMethodCallOnLocal_CSharpAsync(string receiverType, bool diagnosticExpected)
         {
             string toString = diagnosticExpected ? "[|value.ToString()|]" : "value.ToString()";
 
@@ -67,7 +67,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("Object", false)]
         [InlineData("DateTime", false)]
         [InlineData("DayOfWeek", false)]
-        public async Task ArgumentIsToStringMethodCallOnLocal_VB(string receiverType, bool diagnosticExpected)
+        public async Task ArgumentIsToStringMethodCallOnLocal_VBAsync(string receiverType, bool diagnosticExpected)
         {
             string toString = diagnosticExpected ? "[|value.ToString()|]" : "value.ToString()";
 
@@ -108,7 +108,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("char[]", false)]
         [InlineData("DateTime", false)]
         [InlineData("DayOfWeek", false)]
-        public async Task ArgumentIsToStringMethodCallOnResult_CSharp(string receiverType, bool diagnosticExpected)
+        public async Task ArgumentIsToStringMethodCallOnResult_CSharpAsync(string receiverType, bool diagnosticExpected)
         {
             string toString = diagnosticExpected ? "[|Prop.ToString()|]" : "Prop.ToString()";
 
@@ -152,7 +152,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("\"hello\"", true)]
         [InlineData("DayOfWeek.Monday", false)]
         [InlineData("DateTime.Now", false)]
-        public async Task ArgumentIsToStringMethodCallOnValue(string value, bool diagnosticExpected)
+        public async Task ArgumentIsToStringMethodCallOnValueAsync(string value, bool diagnosticExpected)
         {
             string toString = value + ".ToString()";
             if (diagnosticExpected)
@@ -188,7 +188,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("\"hello\"")]
         [InlineData("DayOfWeek.Monday")]
         [InlineData("DateTime.Now")]
-        public async Task NoDiagnostic_NoToStringCall(string value)
+        public async Task NoDiagnostic_NoToStringCallAsync(string value)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -205,7 +205,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("42")]
         [InlineData("DayOfWeek.Monday")]
         [InlineData("DateTime.Now")]
-        public async Task NoDiagnostic_FormattedToString(string value)
+        public async Task NoDiagnostic_FormattedToStringAsync(string value)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -237,7 +237,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostic_NotRelevantMethod()
+        public async Task NoDiagnostic_NotRelevantMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;

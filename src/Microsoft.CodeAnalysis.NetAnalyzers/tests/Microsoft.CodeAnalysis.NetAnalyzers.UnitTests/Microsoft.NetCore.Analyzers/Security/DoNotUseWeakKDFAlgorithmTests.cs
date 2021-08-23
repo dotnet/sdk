@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotUseWeakKDFAlgorithmTests
     {
         [Fact]
-        public async Task TestMD5Diagnostic()
+        public async Task TestMD5DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -41,7 +41,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSHA1Diagnostic()
+        public async Task TestSHA1DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -70,7 +70,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestNoHashAlgorithmNameDiagnostic()
+        public async Task TestNoHashAlgorithmNameDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -86,7 +86,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDerivedClassOfRfc2898DeriveBytesDiagnostic()
+        public async Task TestDerivedClassOfRfc2898DeriveBytesDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -122,7 +122,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDerivedClassOfRfc2898DeriveBytesNewPropertyDiagnostic()
+        public async Task TestDerivedClassOfRfc2898DeriveBytesNewPropertyDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -161,7 +161,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestNormalClassNoDiagnostic()
+        public async Task TestNormalClassNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -180,7 +180,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSHA256NoDiagnostic()
+        public async Task TestSHA256NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -205,7 +205,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDerivedClassOfRfc2898DeriveBytesNoDiagnostic()
+        public async Task TestDerivedClassOfRfc2898DeriveBytesNoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -237,7 +237,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDerivedClassOfRfc2898DeriveBytesNewPropertyNoDiagnostic()
+        public async Task TestDerivedClassOfRfc2898DeriveBytesNewPropertyNoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
