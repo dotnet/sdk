@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. 
 
+using System.Collections.Immutable;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -24,12 +26,18 @@ using System.Threading.Tasks;
 class Test {
     Task T() {
         Task t = null;
-        [|t.Wait()|];
+        {|#0:t.Wait()|};
         return Task.FromResult(1);
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -40,12 +48,18 @@ Module Program
     End Sub
     Function Test() As Task
         Dim t As Task = Nothing
-        [|t.Wait()|]
+        {|#0:t.Wait()|}
         Return Task.FromResult(1)
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -57,12 +71,18 @@ using System.Threading.Tasks;
 class Test {
     ValueTask T() {
         Task t = null;
-        [|t.Wait()|];
+        {|#0:t.Wait()|};
         return default;
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -73,15 +93,20 @@ Module Program
     End Sub
     Function Test() As ValueTask
         Dim t As Task = Nothing
-        [|t.Wait()|]
+        {|#0:t.Wait()|}
         Return CType(Nothing, ValueTask)
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
-#if NETCOREAPP
         [Fact]
         public async Task TaskWait_InIAsyncEnumerableAsyncMethod_ShouldReportWarning()
         {
@@ -94,13 +119,17 @@ using System.Threading.Tasks;
 class Test {
     async IAsyncEnumerable<int> FooAsync()
     {
-        [|Task.Delay(TimeSpan.FromSeconds(5)).Wait()|];
+        {|#0:Task.Delay(TimeSpan.FromSeconds(5)).Wait()|};
         yield return 1;
     }
 }
 ";
             var csTestVerify = new VerifyCS.Test
             {
+                ReferenceAssemblies = ReferenceAssemblies.Default.AddPackages(
+                    ImmutableArray.Create(new PackageIdentity("Microsoft.Bcl.AsyncInterfaces", "5.0.0"))
+                ),
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 TestCode = testCS,
             };
@@ -117,14 +146,23 @@ Module Program
         FooAsync()
     End Sub
     Function FooAsync() As IAsyncEnumerable(Of Integer)
-        [|Task.Delay(TimeSpan.FromSeconds(5)).Wait()|]
+        {|#0:Task.Delay(TimeSpan.FromSeconds(5)).Wait()|}
         Return Nothing
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+
+            var vbTestVerify = new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Default.AddPackages(
+                    ImmutableArray.Create(new PackageIdentity("Microsoft.Bcl.AsyncInterfaces", "5.0.0"))
+                ),
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") },
+                LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic16_9,
+                TestCode = testVB,
+            };
+            await vbTestVerify.RunAsync();
         }
-#endif
 
         [Fact]
         public async Task TaskOfTResultInTaskReturningMethodGeneratesWarning()
@@ -135,12 +173,18 @@ using System.Threading.Tasks;
 class Test {
     Task<int> T() {
         Task<int> t = null;
-        int result = [|t.Result|];
+        int result = {|#0:t.Result|};
         return Task.FromResult(result);
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -151,12 +195,18 @@ Module Program
     End Sub
     Function Test() As Task(Of Integer)
         Dim t As Task(Of Integer) = Nothing
-        Dim result = [|t.Result()|]
+        Dim result = {|#0:t.Result()|}
         Return Task.FromResult(result)
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -168,7 +218,7 @@ using System.Threading.Tasks;
 class Test {
     Task T() {
         Task<int> t = null;
-        Assert.NotNull([|t.Result|]);
+        Assert.NotNull({|#0:t.Result|});
         return Task.CompletedTask;
     }
 }
@@ -177,7 +227,13 @@ static class Assert {
     internal static void NotNull(object value) => throw null;
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -188,7 +244,7 @@ Module Program
     End Sub
     Function Test() As Task
         Dim t As Task(Of Integer) = Nothing
-        Assert.NotNull([|t.Result|])
+        Assert.NotNull({|#0:t.Result|})
         Return Task.CompletedTask
     End Function
 End Module
@@ -199,7 +255,13 @@ Module Assert
     End Sub
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -213,13 +275,19 @@ class Test {
     void T() {
         Func<Task<int>> f = delegate {
             Task<int> t = null;
-            int result = [|t.Result|];
+            int result = {|#0:t.Result|};
             return Task.FromResult(result);
         };
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System
@@ -231,13 +299,19 @@ Module Program
     Sub Test()
         Dim f As Func(Of Task(Of Integer)) = Function()
                                                  Dim t As Task(Of Integer) = Nothing
-                                                 Dim result As Integer = [|t.Result|]
+                                                 Dim result As Integer = {|#0:t.Result|}
                                                  Return Task.FromResult(result)
                                              End Function
     End Sub
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -251,13 +325,19 @@ class Test {
     void T() {
         Func<int, Task<int>> f = a => {
             Task<int> t = null;
-            int result = [|t.Result|];
+            int result = {|#0:t.Result|};
             return Task.FromResult(result);
         };
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -269,13 +349,19 @@ Module Program
     Sub Test()
         Dim f = Function(a)
                     Dim t As Task(Of Integer) = Nothing
-                    Dim result As Integer = [|t.Result|]
+                    Dim result As Integer = {|#0:t.Result|}
                     Return Task.FromResult(result)
                 End Function
     End Sub
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -288,11 +374,17 @@ using System.Threading.Tasks;
 class Test {
     void T() {
         Task<int> b = null;
-        Func<int, Task<int>> f = a => Task.FromResult([|b.Result|]);
+        Func<int, Task<int>> f = a => Task.FromResult({|#0:b.Result|});
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -302,11 +394,17 @@ Module Program
     End Sub
     Sub Test()
         Dim b As Task(Of Integer) = Nothing
-        Dim f = Function(a) Task.FromResult([|b.Result|])
+        Dim f = Function(a) Task.FromResult({|#0:b.Result|})
     End Sub
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -318,11 +416,17 @@ using System.Threading.Tasks;
 
 class Test {
     async Task T() {
-        await [|Task.Run(() => Console.Error).Result|].WriteLineAsync();
+        await {|#0:Task.Run(() => Console.Error).Result|}.WriteLineAsync();
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System
@@ -333,11 +437,17 @@ Module Program
         Test()
     End Sub
     Async Function Test() As Task
-        Await [|Task.Run(Function() Console.Error).Result|].WriteLineAsync()
+        Await {|#0:Task.Run(Function() Console.Error).Result|}.WriteLineAsync()
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -351,13 +461,19 @@ class Test {
     void T() {
         Func<Task<int>> f = () => {
             Task<int> t = null;
-            int result = [|t.Result|];
+            int result = {|#0:t.Result|};
             return Task.FromResult(result);
         };
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System
@@ -369,13 +485,19 @@ Module Program
     Sub Test()
         Dim f As Func(Of Task(Of Integer)) = Function()
                                                  Dim t As Task(Of Integer) = Nothing
-                                                 Dim result As Integer = [|t.Result|]
+                                                 Dim result As Integer = {|#0:t.Result|}
                                                  Return Task.FromResult(result)
                                              End Function
     End Sub
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -393,7 +515,12 @@ class Test {
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System
@@ -410,7 +537,12 @@ Module Program
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -422,12 +554,18 @@ using System.Threading.Tasks;
 class Test {
     Task T() {
         Task t = null;
-        [|t.GetAwaiter().GetResult()|];
+        {|#0:t.GetAwaiter().GetResult()|};
         return Task.FromResult(1);
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("GetResult") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -437,12 +575,18 @@ Module Program
     End Sub
     Function Test() As Task
         Dim t As Task = Nothing
-        [|t.GetAwaiter().GetResult()|]
+        {|#0:t.GetAwaiter().GetResult()|}
         Return task.FromResult(1)
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("GetResult") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -452,14 +596,20 @@ End Module
 using System.Threading.Tasks;
 class Test {
     Task T() {
-        [|Foo(10, 15)|];
+        {|#0:Foo(10, 15)|};
         return Task.FromResult(1);
     }
     internal static void Foo(int x, int y) { }
     internal static Task FooAsync(int x, int y) => null;
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(10, 15)", "FooAsync") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -468,7 +618,7 @@ Module Program
         Test()
     End Sub
     Function Test() As Task
-        [|Foo(10, 15)|]
+        {|#0:Foo(10, 15)|}
         Return Task.FromResult(1)
     End Function
 
@@ -479,7 +629,13 @@ Module Program
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(10, 15)", "FooAsync") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -500,7 +656,12 @@ class Test {
     internal static Task FooAsync(int x, int y) => null;
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System
@@ -523,7 +684,12 @@ Module Program
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -535,7 +701,7 @@ using System.Threading.Tasks;
 
 class Test {
     Task T() {
-        [|Foo(10, 15.0)|];
+        {|#0:Foo(10, 15.0)|};
         return Task.FromResult(1);
     }
 
@@ -546,7 +712,13 @@ class Test {
     internal static Task FooAsync(int x, double y) => null;
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(10, 15.0)", "FooAsync") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System
@@ -557,7 +729,7 @@ Module Program
         Test()
     End Sub
     Function Test() As Task
-        [|Foo(10, 15.0)|]
+        {|#0:Foo(10, 15.0)|}
         Return Task.FromResult(1)
     End Function
 
@@ -574,7 +746,13 @@ Module Program
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(10, 15.0)", "FooAsync") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -585,7 +763,7 @@ using System.Threading.Tasks;
 
 class Test {
     Task T() {
-        int r = [|Foo()|].CompareTo(1);
+        int r = {|#0:Foo()|}.CompareTo(1);
         return Task.FromResult(1);
     }
 
@@ -593,7 +771,13 @@ class Test {
     internal static Task<int> FooAsync() => null;
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo()", "FooAsync") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -602,7 +786,7 @@ Module Program
         Test()
     End Sub
     Function Test() As Task
-        Dim r = [|Foo()|].CompareTo(1)
+        Dim r = {|#0:Foo()|}.CompareTo(1)
         Return Task.FromResult(1)
     End Function
 
@@ -614,7 +798,13 @@ Module Program
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo()", "FooAsync") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -625,7 +815,7 @@ using System.Threading.Tasks;
 
 class Test {
     Task T() {
-        [|Util.Foo()|];
+        {|#0:Util.Foo()|};
         return Task.FromResult(1);
     }
 }
@@ -635,7 +825,13 @@ class Util {
     internal static Task FooAsync() => null;
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Util.Foo()", "FooAsync") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -644,7 +840,7 @@ Module Program
         Test()
     End Sub
     Function Test() As Task
-        [|Util.Foo()|]
+        {|#0:Util.Foo()|}
         Return Task.FromResult(1)
     End Function
 End Module
@@ -657,7 +853,13 @@ Module Util
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Util.Foo()", "FooAsync") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -679,7 +881,12 @@ class Util {
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -701,7 +908,12 @@ Module Util
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -713,7 +925,7 @@ using System.Threading.Tasks;
 class Test {
     Task T() {
         Apple a = null;
-        [|a.Foo()|];
+        {|#0:a.Foo()|};
         return Task.FromResult(1);
     }
 }
@@ -726,7 +938,13 @@ class Apple : Fruit {
     internal void Foo() { }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("a.Foo()", "FooAsync") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -736,7 +954,7 @@ Module Program
     End Sub
     Function Test() As Task
         Dim a As Apple = Nothing
-        [|a.Foo()|]
+        {|#0:a.Foo()|}
         Return Task.FromResult(1)
     End Function
 End Module
@@ -752,7 +970,13 @@ Class Apple
     End Sub
 End Class
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("a.Foo()", "FooAsync") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -764,7 +988,7 @@ using System.Threading.Tasks;
 class Test {
     Task T() {
         Fruit f = null;
-        [|f.Foo()|];
+        {|#0:f.Foo()|};
         return Task.FromResult(1);
     }
 }
@@ -778,7 +1002,13 @@ static class FruitUtils {
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("f.Foo()", "FooAsync") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -789,7 +1019,7 @@ Module Program
     End Sub
     Function Test() As Task
         Dim f As Fruit = Nothing
-        [|f.Foo()|]
+        {|#0:f.Foo()|}
         Return Task.FromResult(1)
     End Function
 End Module
@@ -805,7 +1035,13 @@ Module FruitUtils
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("f.Foo()", "FooAsync") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -817,7 +1053,7 @@ using static FruitUtils;
 
 class Test {
     Task T() {
-        [|Foo()|];
+        {|#0:Foo()|};
         return Task.FromResult(1);
     }
 }
@@ -827,7 +1063,13 @@ static class FruitUtils {
     internal static Task FooAsync() => null;
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo()", "FooAsync") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -837,7 +1079,7 @@ Module Program
         Test()
     End Sub
     Function Test() As Task
-        [|Foo()|]
+        {|#0:Foo()|}
         Return Task.FromResult(1)
     End Function
 End Module
@@ -850,7 +1092,13 @@ Module FruitUtils
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo()", "FooAsync") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -879,7 +1127,12 @@ static class PlateUtils {
     internal static Task FooAsync() => null;
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -905,7 +1158,12 @@ Module PlateUtils
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -923,7 +1181,12 @@ class Test {
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -942,7 +1205,12 @@ Module Program
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         /// <summary>
@@ -960,7 +1228,12 @@ class Test {
     string Bar => string.Join(""a"", string.Empty);
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -978,7 +1251,12 @@ Module Program
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -990,7 +1268,7 @@ using static FruitUtils;
 
 class Test {
     Task T() {
-        [|Foo<int>()|];
+        {|#0:Foo<int>()|};
         return Task.FromResult(1);
     }
 }
@@ -1000,7 +1278,13 @@ static class FruitUtils {
     internal static Task FooAsync<T>() => null;
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo<int>()", "FooAsync") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -1010,7 +1294,7 @@ Module Program
         Test()
     End Sub
     Function Test() As Task
-        [|Foo(Of Integer)()|]
+        {|#0:Foo(Of Integer)()|}
         Return Task.FromResult(1)
     End Function
 End Module
@@ -1023,7 +1307,13 @@ Module FruitUtils
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(Of Integer)()", "FooAsync") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -1043,11 +1333,17 @@ class Test {
         Console.WriteLine(""Foo"");
 
         // Some comment
-        [|Foo(/*argcomment*/)|]; // another comment
+        {|#0:Foo(/*argcomment*/)|}; // another comment
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(/*argcomment*/)", "FooAsync") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System
@@ -1067,11 +1363,17 @@ Module Program
         Console.WriteLine(""Foo"")
 
         'Some comment
-        [|Foo()|] 'another comment
+        {|#0:Foo()|} 'another comment
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo()", "FooAsync") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -1091,12 +1393,18 @@ class Test {
         System.Console.WriteLine(""Foo"");
 
         // Some comment
-        [|FooAsync(/*argcomment*/).Wait()|];
+        {|#0:FooAsync(/*argcomment*/).Wait()|};
     }
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") }
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System
@@ -1116,11 +1424,17 @@ Module Program
         Console.WriteLine(""Foo"")
 
         'Some comment
-        [|FooAsync().Wait()|] 'another comment
+        {|#0:FooAsync().Wait()|} 'another comment
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") }
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -1144,7 +1458,12 @@ class Test {
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -1161,7 +1480,12 @@ Module Program
     End Sub
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+            };
+
+            await vbTestVerify.RunAsync();
         }
 
         [Fact]
@@ -1182,7 +1506,12 @@ class Test {
     }
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(testCS);
+            var csTestVerify = new VerifyCS.Test
+            {
+                TestCode = testCS,
+            };
+
+            await csTestVerify.RunAsync();
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -1202,7 +1531,12 @@ Module Program
     End Function
 End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(testVB);
+            var vbTestVerify = new VerifyVB.Test
+            {
+                TestCode = testVB,
+            };
+
+            await vbTestVerify.RunAsync();
         }
     }
 }
