@@ -394,7 +394,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 if (SymbolIsAnnotatedAsPreview(baseInterfaceMember, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
-                    string baseInterfaceMemberName = baseInterfaceMember.ContainingType != null ? baseInterfaceMember.ContainingType.Name + "." + baseInterfaceMember.Name : baseInterfaceMember.Name;
+                    string baseInterfaceMemberName = baseInterfaceMember.ContainingSymbol != null ? baseInterfaceMember.ContainingSymbol.Name + "." + baseInterfaceMember.Name : baseInterfaceMember.Name;
                     context.ReportDiagnostic(propertyOrMethodSymbol.CreateDiagnostic(ImplementsPreviewMethodRule, propertyOrMethodSymbol.Name, baseInterfaceMemberName));
                 }
             }
@@ -404,7 +404,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 ISymbol overridden = propertyOrMethodSymbol.GetOverriddenMember();
                 if (SymbolIsAnnotatedAsPreview(overridden, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
-                    string overriddenName = overridden.ContainingType != null ? overridden.ContainingType.Name + "." + overridden.Name : overridden.Name;
+                    string overriddenName = overridden.ContainingSymbol != null ? overridden.ContainingSymbol.Name + "." + overridden.Name : overridden.Name;
                     context.ReportDiagnostic(propertyOrMethodSymbol.CreateDiagnostic(OverridesPreviewMethodRule, propertyOrMethodSymbol.Name, overriddenName));
                 }
             }
@@ -551,11 +551,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (SymbolIsAnnotatedOrUsesPreviewTypes(methodSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
                     {
                         // Constructor symbols have the name .ctor. Return the containing type instead so we get meaningful names in the diagnostic message
-                        referencedPreviewSymbol = referencedPreviewSymbol.ContainingType;
+                        referencedPreviewSymbol = referencedPreviewSymbol.ContainingSymbol;
                         return true;
                     }
 
-                    if (SymbolIsAnnotatedOrUsesPreviewTypes(methodSymbol.ContainingType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
+                    if (SymbolIsAnnotatedOrUsesPreviewTypes(methodSymbol.ContainingSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
                     {
                         return true;
                     }
@@ -626,10 +626,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return true;
                 }
 
-                INamedTypeSymbol? parent = symbol.ContainingType;
-                if (parent is INamespaceSymbol)
+                ISymbol? parent = symbol.ContainingSymbol;
+                while (parent is INamespaceSymbol)
                 {
-                    parent = parent.ContainingType;
+                    parent = parent.ContainingSymbol;
                 }
 
                 if (parent != null)
