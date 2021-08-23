@@ -264,7 +264,7 @@ namespace Microsoft.DotNet.Tools.Run
                 string targetFrameworkVersion = project.GetPropertyValue("TargetFrameworkVersion");
                 if (!string.IsNullOrEmpty(targetFrameworkVersion) && Version.Parse(targetFrameworkVersion.AsSpan(1)) >= Version6_0)
                 {
-                    rootVariableName = $"DOTNET_ROOT_{targetArchitecture.ToString().ToUpperInvariant()}";
+                    rootVariableName = $"DOTNET_ROOT_{RuntimeInformation.ProcessArchitecture.ToString().ToUpperInvariant()}";
                 }
 
                 if (Environment.GetEnvironmentVariable(rootVariableName) == null)
