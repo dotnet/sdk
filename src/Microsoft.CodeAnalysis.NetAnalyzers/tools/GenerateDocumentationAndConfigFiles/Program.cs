@@ -30,7 +30,7 @@ namespace GenerateDocumentationAndConfigFiles
 
         public static async Task<int> Main(string[] args)
         {
-            const int expectedArguments = 22;
+            const int expectedArguments = 23;
             const string validateOnlyPrefix = "-validateOnly:";
 
             if (args.Length != expectedArguments)
@@ -84,6 +84,11 @@ namespace GenerateDocumentationAndConfigFiles
             if (!bool.TryParse(releaseTrackingOptOutString, out bool releaseTrackingOptOut))
             {
                 releaseTrackingOptOut = false;
+            }
+
+            if (!bool.TryParse(args[22], out var validateOffline))
+            {
+                validateOffline = false;
             }
 
             var allRulesById = new SortedList<string, DiagnosticDescriptor>();
@@ -624,13 +629,18 @@ Rule ID | Missing Help Link | Title |
                 }
                 return;
 
-                static async Task<bool> checkHelpLinkAsync(string helpLink)
+                async Task<bool> checkHelpLinkAsync(string helpLink)
                 {
                     try
                     {
                         if (!Uri.TryCreate(helpLink, UriKind.Absolute, out var uri))
                         {
                             return false;
+                        }
+
+                        if (validateOffline)
+                        {
+                            return true;
                         }
 
                         var request = new HttpRequestMessage(HttpMethod.Head, uri);
