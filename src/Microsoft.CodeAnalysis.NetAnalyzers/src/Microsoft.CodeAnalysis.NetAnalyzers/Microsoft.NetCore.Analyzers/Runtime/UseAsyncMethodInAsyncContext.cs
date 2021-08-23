@@ -285,18 +285,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (symbol.Value is null || symbol.Kind != kind) continue;
                     if (symbol.Value.Equals(memberSymbol.OriginalDefinition))
                     {
-                        Location? location = context.Operation.Syntax.GetLocation();
-                        ImmutableDictionary<string, string>? properties = ImmutableDictionary<string, string>.Empty;
-                        DiagnosticDescriptor descriptor;
-                        var messageArgs = new List<object>(2)
-                            {
-                                symbol.Value.Name
-                            };
+                        ImmutableDictionary<string, string?>? properties = ImmutableDictionary<string, string?>.Empty;
 
                         properties = properties.Add(AsyncMethodKeyName, string.Empty);
-                        descriptor = DescriptorNoAlternativeMethod;
 
-                        Diagnostic diagnostic = Diagnostic.Create(descriptor, location, properties, messageArgs.ToArray());
+                        Diagnostic diagnostic = context.Operation.Syntax.CreateDiagnostic(
+                            DescriptorNoAlternativeMethod,
+                            properties,
+                            symbol.Value.Name,
+                            string.Empty
+                        );
+
                         context.ReportDiagnostic(diagnostic);
                         return true;
                     }
