@@ -25,7 +25,7 @@
   </Target>
 
   <PropertyGroup>
-      <VersionFeature21>29</VersionFeature21>
+      <VersionFeature21>30</VersionFeature21>
       <VersionFeature31>18</VersionFeature31>
       <VersionFeature50>9</VersionFeature50>
   </PropertyGroup>
