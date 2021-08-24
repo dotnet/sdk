@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(analyzerAssemblies);
         }
 
-        private Assembly? TryLoadAssemblyFrom(string? path)
+        private static Assembly? TryLoadAssemblyFrom(string? path)
         {
             // Since we are not deploying these assemblies we need to ensure the files exist.
             if (path is null || !File.Exists(path))
@@ -77,13 +77,24 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             public AnalyzerLoadContext(string assemblyPath)
             {
-                var analyzerDirectory = new DirectoryInfo(Path.GetDirectoryName(assemblyPath));
+                var assemblyDirectory = Path.GetDirectoryName(assemblyPath);
+                if (assemblyDirectory is null)
+                {
+                    throw new InvalidOperationException($"Assembly path invalid '{assemblyPath}'");
+                }
+
+                var analyzerDirectory = new DirectoryInfo(assemblyDirectory);
 
                 // Analyzer packages will put language specific assemblies in subfolders.
                 if (analyzerDirectory.Name == "cs" || analyzerDirectory.Name == "vb")
                 {
                     // Get the root analyzer folder.
                     analyzerDirectory = analyzerDirectory.Parent;
+                }
+
+                if (analyzerDirectory is null)
+                {
+                    throw new InvalidOperationException($"Could not get parent directory for '{assemblyPath}'");
                 }
 
                 AssemblyFolderPath = analyzerDirectory.FullName;
