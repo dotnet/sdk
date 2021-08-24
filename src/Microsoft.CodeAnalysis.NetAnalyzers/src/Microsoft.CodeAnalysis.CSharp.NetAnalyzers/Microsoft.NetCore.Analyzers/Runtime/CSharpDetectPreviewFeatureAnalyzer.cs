@@ -48,7 +48,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 {
                     TypeSyntax type = simpleBaseTypeSyntax.Type;
                     if (type is IdentifierNameSyntax identifier && identifier.Identifier.ValueText == previewInterfaceSymbol.Name)
-                    {
+                        {
                         previewInterfaceNode = simpleBaseTypeSyntax;
                         return true;
                     }
