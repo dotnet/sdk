@@ -72,11 +72,15 @@ namespace Microsoft.TemplateSearch.Common
         #region JsonConverter
         private class TemplatePackageSearchDataJsonConverter : JsonConverter<TemplatePackageSearchData>
         {
-            public override TemplatePackageSearchData ReadJson(JsonReader reader, Type objectType, TemplatePackageSearchData existingValue, bool hasExistingValue, JsonSerializer serializer)
+            public override TemplatePackageSearchData ReadJson(JsonReader reader, Type objectType, TemplatePackageSearchData? existingValue, bool hasExistingValue, JsonSerializer serializer)
                 => throw new NotImplementedException();
 
-            public override void WriteJson(JsonWriter writer, TemplatePackageSearchData value, JsonSerializer serializer)
+            public override void WriteJson(JsonWriter writer, TemplatePackageSearchData? value, JsonSerializer serializer)
             {
+                if (value == null)
+                {
+                    return;
+                }
                 writer.WriteStartObject();
                 writer.WritePropertyName(nameof(Name));
                 writer.WriteValue(value.Name);

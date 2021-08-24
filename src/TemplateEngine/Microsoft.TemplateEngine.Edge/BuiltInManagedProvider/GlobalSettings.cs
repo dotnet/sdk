@@ -94,8 +94,8 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                     {
                         packages.Add(new TemplatePackageData(
                             package.ToGuid(nameof(TemplatePackageData.InstallerId)),
-                            package.Value<string>(nameof(TemplatePackageData.MountPointUri)),
-                            (DateTime)package[nameof(TemplatePackageData.LastChangeTime)],
+                            package.Value<string>(nameof(TemplatePackageData.MountPointUri)) ?? "",
+                            ((DateTime?)package[nameof(TemplatePackageData.LastChangeTime)]) ?? default,
                             package.ToStringDictionary(propertyName: nameof(TemplatePackageData.Details))
                         ));
                     }

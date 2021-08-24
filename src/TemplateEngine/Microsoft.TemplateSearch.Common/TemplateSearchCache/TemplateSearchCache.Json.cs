@@ -82,7 +82,7 @@ namespace Microsoft.TemplateSearch.Common
             Dictionary<string, object> additionalData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             foreach (KeyValuePair<string, Func<object, object>> dataReadInfo in additionalDataReaders)
             {
-                if (!cacheObject.TryGetValue(dataReadInfo.Key, StringComparison.OrdinalIgnoreCase, out JToken dataToken)
+                if (!cacheObject.TryGetValue(dataReadInfo.Key, StringComparison.OrdinalIgnoreCase, out JToken? dataToken)
                     || !(dataToken is JObject dataObject))
                 {
                     // this piece of data wasn't found, or wasn't valid. Ignore it.

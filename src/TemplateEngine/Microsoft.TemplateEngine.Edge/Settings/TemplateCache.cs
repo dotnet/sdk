@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public TemplateCache(JObject? contentJobject, ILogger logger)
         {
             _logger = logger;
-            if (contentJobject != null && contentJobject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken versionToken))
+            if (contentJobject != null && contentJobject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken? versionToken))
             {
                 Version = versionToken.ToString();
             }
@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            if (contentJobject.TryGetValue(nameof(Locale), StringComparison.OrdinalIgnoreCase, out JToken localeToken))
+            if (contentJobject.TryGetValue(nameof(Locale), StringComparison.OrdinalIgnoreCase, out JToken? localeToken))
             {
                 Locale = localeToken.ToString();
             }
@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             var mountPointInfo = new Dictionary<string, DateTime>();
 
-            if (contentJobject.TryGetValue(nameof(MountPointsInfo), StringComparison.OrdinalIgnoreCase, out JToken mountPointInfoToken) && mountPointInfoToken is IDictionary<string, JToken> dict)
+            if (contentJobject.TryGetValue(nameof(MountPointsInfo), StringComparison.OrdinalIgnoreCase, out JToken? mountPointInfoToken) && mountPointInfoToken is IDictionary<string, JToken> dict)
             {
                 foreach (var entry in dict)
                 {
@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             List<TemplateInfo> templateList = new List<TemplateInfo>();
 
-            if (contentJobject.TryGetValue(nameof(TemplateInfo), StringComparison.OrdinalIgnoreCase, out JToken templateInfoToken) && templateInfoToken is JArray arr)
+            if (contentJobject.TryGetValue(nameof(TemplateInfo), StringComparison.OrdinalIgnoreCase, out JToken? templateInfoToken) && templateInfoToken is JArray arr)
             {
                 foreach (JToken entry in arr)
                 {

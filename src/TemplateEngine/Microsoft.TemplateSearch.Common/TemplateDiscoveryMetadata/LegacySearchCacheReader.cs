@@ -88,7 +88,7 @@ namespace Microsoft.TemplateSearch.Common
         private static bool TryReadVersion(ILogger logger, JObject cacheObject, out string? version)
         {
             logger.LogDebug($"Reading template metadata version");
-            if (cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.Version), out JToken value))
+            if (cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.Version), out JToken? value))
             {
                 version = value.Value<string>();
                 logger.LogDebug($"Version: {version}.");
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateSearch.Common
             try
             {
                 // This is lifted from TemplateCache.ParseCacheContent - almost identical
-                if (cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.TemplateCache), StringComparison.OrdinalIgnoreCase, out JToken templateInfoToken))
+                if (cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.TemplateCache), StringComparison.OrdinalIgnoreCase, out JToken? templateInfoToken))
                 {
                     List<ITemplateInfo> buildingTemplateList = new List<ITemplateInfo>();
 
@@ -152,7 +152,7 @@ namespace Microsoft.TemplateSearch.Common
             logger.LogDebug($"Reading package information.");
             try
             {
-                if (!cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.PackToTemplateMap), out JToken packToTemplateMapToken)
+                if (!cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.PackToTemplateMap), out JToken? packToTemplateMapToken)
                     || !(packToTemplateMapToken is JObject packToTemplateMapObject))
                 {
                     logger.LogDebug($"Failed to read package info entries. Details: no PackToTemplateMap property found.");
@@ -169,25 +169,33 @@ namespace Microsoft.TemplateSearch.Common
                         string packName = packEntry.Name.ToString();
                         JObject entryValue = (JObject)packEntry.Value;
 
-                        if (entryValue.TryGetValue(nameof(PackToTemplateEntry.Version), StringComparison.OrdinalIgnoreCase, out JToken versionToken)
+                        if (entryValue.TryGetValue(nameof(PackToTemplateEntry.Version), StringComparison.OrdinalIgnoreCase, out JToken? versionToken)
                             && versionToken.Type == JTokenType.String
-                            && entryValue.TryGetValue(nameof(PackToTemplateEntry.TemplateIdentificationEntry), StringComparison.OrdinalIgnoreCase, out JToken identificationToken)
+                            && entryValue.TryGetValue(nameof(PackToTemplateEntry.TemplateIdentificationEntry), StringComparison.OrdinalIgnoreCase, out JToken? identificationToken)
                             && identificationToken is JArray identificationArray)
                         {
-                            string version = versionToken.Value<string>();
+                            string? version = versionToken.Value<string>();
+                            if (version == null)
+                            {
+                                throw new Exception("Version value is null.");
+                            }
                             List<TemplateIdentificationEntry> templatesInPack = new List<TemplateIdentificationEntry>();
 
                             foreach (JObject templateIdentityInfo in identificationArray)
                             {
-                                string identity = templateIdentityInfo.Value<string>(nameof(TemplateIdentificationEntry.Identity));
-                                string groupIdentity = templateIdentityInfo.Value<string>(nameof(TemplateIdentificationEntry.GroupIdentity));
+                                string? identity = templateIdentityInfo.Value<string>(nameof(TemplateIdentificationEntry.Identity));
+                                string? groupIdentity = templateIdentityInfo.Value<string>(nameof(TemplateIdentificationEntry.GroupIdentity));
 
+                                if (identity == null)
+                                {
+                                    throw new Exception("Identity value is null.");
+                                }
                                 TemplateIdentificationEntry deserializedEntry = new TemplateIdentificationEntry(identity, groupIdentity);
                                 templatesInPack.Add(deserializedEntry);
                             }
 
                             workingPackToTemplateMap[packName] = new PackToTemplateEntry(version, templatesInPack);
-                            if (entryValue.TryGetValue(nameof(PackToTemplateEntry.TotalDownloads), out JToken totalDownloadsToken)
+                            if (entryValue.TryGetValue(nameof(PackToTemplateEntry.TotalDownloads), out JToken? totalDownloadsToken)
                                 && long.TryParse(totalDownloadsToken.Value<string>(), out long totalDownloads))
                             {
                                 workingPackToTemplateMap[packName].TotalDownloads = totalDownloads;
@@ -217,7 +225,7 @@ namespace Microsoft.TemplateSearch.Common
             }
             logger.LogDebug($"Reading additional information.");
             // get the additional data section
-            if (!cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.AdditionalData), out JToken additionalDataToken)
+            if (!cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.AdditionalData), out JToken? additionalDataToken)
                 || !(additionalDataToken is JObject additionalDataObject))
             {
                 logger.LogDebug($"Failed to read package info entries. Details: no AdditionalData property found.");
@@ -232,7 +240,7 @@ namespace Microsoft.TemplateSearch.Common
                 try
                 {
                     // get the entry for this piece of additional data
-                    if (!additionalDataObject.TryGetValue(dataReadInfo.Key, StringComparison.OrdinalIgnoreCase, out JToken dataToken)
+                    if (!additionalDataObject.TryGetValue(dataReadInfo.Key, StringComparison.OrdinalIgnoreCase, out JToken? dataToken)
                         || !(dataToken is JObject dataObject))
                     {
                         // this piece of data wasn't found, or wasn't valid. Ignore it.

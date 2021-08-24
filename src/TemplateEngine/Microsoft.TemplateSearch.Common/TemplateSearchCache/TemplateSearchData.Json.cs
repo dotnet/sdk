@@ -45,11 +45,15 @@ namespace Microsoft.TemplateSearch.Common
         private class TemplateSearchDataJsonConverter : JsonConverter<TemplateSearchData>
         {
             //falls back to default de-serializer if not implemented
-            public override TemplateSearchData ReadJson(JsonReader reader, Type objectType, TemplateSearchData existingValue, bool hasExistingValue, JsonSerializer serializer)
+            public override TemplateSearchData ReadJson(JsonReader reader, Type objectType, TemplateSearchData? existingValue, bool hasExistingValue, JsonSerializer serializer)
                 => throw new NotImplementedException();
 
-            public override void WriteJson(JsonWriter writer, TemplateSearchData value, JsonSerializer serializer)
+            public override void WriteJson(JsonWriter writer, TemplateSearchData? value, JsonSerializer serializer)
             {
+                if (value == null)
+                {
+                    return;
+                }
                 writer.WriteStartObject();
                 writer.WritePropertyName(nameof(ITemplateInfo.Identity));
                 writer.WriteValue(value.TemplateInfo.Identity);

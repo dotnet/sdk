@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            if (obj.TryGetValue(nameof(ComponentGuidToAssemblyQualifiedName), StringComparison.OrdinalIgnoreCase, out JToken componentGuidToAssemblyQualifiedNameToken))
+            if (obj.TryGetValue(nameof(ComponentGuidToAssemblyQualifiedName), StringComparison.OrdinalIgnoreCase, out JToken? componentGuidToAssemblyQualifiedNameToken))
             {
                 if (componentGuidToAssemblyQualifiedNameToken is JObject componentGuidToAssemblyQualifiedNameObject)
                 {
@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            if (obj.TryGetValue(nameof(ProbingPaths), StringComparison.OrdinalIgnoreCase, out JToken probingPathsToken))
+            if (obj.TryGetValue(nameof(ProbingPaths), StringComparison.OrdinalIgnoreCase, out JToken? probingPathsToken))
             {
                 if (probingPathsToken is JArray probingPathsArray)
                 {
@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            if (obj.TryGetValue(nameof(ComponentTypeToGuidList), StringComparison.OrdinalIgnoreCase, out JToken componentTypeToGuidListToken))
+            if (obj.TryGetValue(nameof(ComponentTypeToGuidList), StringComparison.OrdinalIgnoreCase, out JToken? componentTypeToGuidListToken))
             {
                 if (componentTypeToGuidListToken is JObject componentTypeToGuidListObject)
                 {

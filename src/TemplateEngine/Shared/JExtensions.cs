@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine
                 return null;
             }
 
-            JToken element;
+            JToken? element;
             if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element) || element.Type != JTokenType.String)
             {
                 return null;
@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine
 
         internal static bool ToBool(this JToken? token, string? key = null, bool defaultValue = false)
         {
-            JToken checkToken;
+            JToken? checkToken;
 
             // determine which token to bool-ify
             if (token == null)
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine
                 return defaultValue;
             }
 
-            JToken element;
+            JToken? element;
             if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element))
             {
                 return defaultValue;
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine
 
             if (key != null)
             {
-                JToken element;
+                JToken? element;
                 if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element))
                 {
                     return Array.Empty<JProperty>();
@@ -169,12 +169,12 @@ namespace Microsoft.TemplateEngine
         {
             JObject? obj = token as JObject;
 
-            if (obj == null)
+            if (obj == null || key == null)
             {
                 return default(T);
             }
 
-            JToken res;
+            JToken? res;
             if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out res))
             {
                 return default(T);
