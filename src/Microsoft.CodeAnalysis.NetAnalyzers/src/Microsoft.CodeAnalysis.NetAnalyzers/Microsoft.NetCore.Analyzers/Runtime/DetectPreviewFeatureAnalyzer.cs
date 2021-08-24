@@ -311,7 +311,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 if (SymbolIsAnnotatedAsPreview(baseType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
-                    context.ReportDiagnostic(symbol.CreateDiagnostic(DerivesFromPreviewClassRule, symbol.Name, baseType.Name));
+                    SyntaxNode? baseTypeNode = GetPreviewInterfaceNodeForTypeImplementingPreviewInterface(symbol, baseType);
+                    if (baseTypeNode != null)
+                    {
+                        context.ReportDiagnostic(baseTypeNode.CreateDiagnostic(DerivesFromPreviewClassRule, symbol.Name, baseType.Name));
+                    }
+                    else
+                    {
+                        context.ReportDiagnostic(symbol.CreateDiagnostic(DerivesFromPreviewClassRule, symbol.Name, baseType.Name));
+                    }
                 }
             }
         }
