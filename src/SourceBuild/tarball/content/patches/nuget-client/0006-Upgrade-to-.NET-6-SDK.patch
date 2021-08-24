@@ -1,0 +1,138 @@
+From d3c633ad00408b2b6122b70d9a152d1ab79c8378 Mon Sep 17 00:00:00 2001
+From: Chris Rummel <crummel@microsoft.com>
+Date: Thu, 19 Aug 2021 11:01:04 -0500
+Subject: [PATCH 2/2] Upgrade to .NET 6 SDK.
+
+---
+ .../NuGet.Commands/SignCommand/CertificateProvider.cs       | 4 ++--
+ .../NuGet.Packaging/Signing/Authoring/SignPackageRequest.cs | 2 ++
+ src/NuGet.Core/NuGet.Packaging/Signing/Cms/NativeUtility.cs | 2 ++
+ src/NuGet.Core/NuGet.Protocol/Converters/JsonExtensions.cs  | 2 +-
+ .../HttpSource/HttpRequestMessageExtensions.cs              | 6 +++---
+ .../NuGet.Protocol/HttpSource/HttpRetryHandler.cs           | 2 +-
+ .../HttpSource/HttpSourceAuthenticationHandler.cs           | 2 +-
+ 7 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/src/NuGet.Core/NuGet.Commands/SignCommand/CertificateProvider.cs b/src/NuGet.Core/NuGet.Commands/SignCommand/CertificateProvider.cs
+index c6ea71243..beac41889 100644
+--- a/src/NuGet.Core/NuGet.Commands/SignCommand/CertificateProvider.cs
++++ b/src/NuGet.Core/NuGet.Commands/SignCommand/CertificateProvider.cs
+@@ -115,7 +115,7 @@ public static async Task<X509Certificate2Collection> GetCertificatesAsync(Certif
+ 
+             return resultCollection;
+         }
+-
++#pragma warning disable CS1998
+         private static async Task<X509Certificate2> LoadCertificateFromFileAsync(CertificateSourceOptions options)
+         {
+             X509Certificate2 cert;
+@@ -154,7 +154,7 @@ private static async Task<X509Certificate2> LoadCertificateFromFileAsync(Certifi
+ 
+             return cert;
+         }
+-
++#pragma warning restore CS1998
+         private static X509Certificate2Collection LoadCertificateFromStore(CertificateSourceOptions options)
+         {
+             X509Certificate2Collection resultCollection = null;
+diff --git a/src/NuGet.Core/NuGet.Packaging/Signing/Authoring/SignPackageRequest.cs b/src/NuGet.Core/NuGet.Packaging/Signing/Authoring/SignPackageRequest.cs
+index e0cfae99f..ce19f2d6e 100644
+--- a/src/NuGet.Core/NuGet.Packaging/Signing/Authoring/SignPackageRequest.cs
++++ b/src/NuGet.Core/NuGet.Packaging/Signing/Authoring/SignPackageRequest.cs
+@@ -98,7 +98,9 @@ protected virtual void Dispose(bool disposing)
+                 Chain?.Dispose();
+ 
+ #if IS_SIGNING_SUPPORTED
++#pragma warning disable CA1416
+                 PrivateKey?.Dispose();
++#pragma warning restore CA1416
+ #endif
+             }
+ 
+diff --git a/src/NuGet.Core/NuGet.Packaging/Signing/Cms/NativeUtility.cs b/src/NuGet.Core/NuGet.Packaging/Signing/Cms/NativeUtility.cs
+index 565ac60b7..d57e38a65 100644
+--- a/src/NuGet.Core/NuGet.Packaging/Signing/Cms/NativeUtility.cs
++++ b/src/NuGet.Core/NuGet.Packaging/Signing/Cms/NativeUtility.cs
+@@ -120,7 +120,9 @@ internal static SignedCms NativeSign(CmsSigner cmsSigner, byte[] data, CngKey pr
+ 
+             signerInfo.cbSize = (uint)Marshal.SizeOf(signerInfo);
+             signerInfo.pCertInfo = MarshalUtility.PtrToStructure<CERT_CONTEXT>(cmsSigner.Certificate.Handle).pCertInfo;
++#pragma warning disable CA1416
+             signerInfo.hCryptProvOrhNCryptKey = privateKey.Handle.DangerousGetHandle();
++#pragma warning restore CA1416
+             signerInfo.HashAlgorithm.pszObjId = cmsSigner.DigestAlgorithm.Value;
+ 
+             if (cmsSigner.SignerIdentifierType == SubjectIdentifierType.SubjectKeyIdentifier)
+diff --git a/src/NuGet.Core/NuGet.Protocol/Converters/JsonExtensions.cs b/src/NuGet.Core/NuGet.Protocol/Converters/JsonExtensions.cs
+index 53fcd4cbd..b77b634fd 100644
+--- a/src/NuGet.Core/NuGet.Protocol/Converters/JsonExtensions.cs
++++ b/src/NuGet.Core/NuGet.Protocol/Converters/JsonExtensions.cs
+@@ -23,7 +23,7 @@ public static class JsonExtensions
+             {
+                 new NuGetVersionConverter(),
+                 new VersionInfoConverter(),
+-                new StringEnumConverter { CamelCaseText = false },
++                new StringEnumConverter(),
+                 new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
+                 new FingerprintsConverter(),
+                 new VersionRangeConverter()
+diff --git a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs
+index 7c9595268..1ca751850 100644
+--- a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs
++++ b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs
+@@ -34,7 +34,7 @@ internal static HttpRequestMessage Clone(this HttpRequestMessage request)
+                 clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+             }
+ 
+-#if NET5_0
++#if NET5_0 || NET6_0
+             var clonedOptions = (IDictionary<string, object>)clone.Options;
+             foreach (var option in request.Options)
+             {
+@@ -118,7 +118,7 @@ public static void SetConfiguration(this HttpRequestMessage request, HttpRequest
+                 throw new ArgumentNullException(nameof(configuration));
+             }
+ 
+-#if NET5_0
++#if NET5_0 || NET6_0
+             request.Options.Set(new HttpRequestOptionsKey<HttpRequestMessageConfiguration>(NuGetConfigurationKey), configuration);
+ #else
+             request.Properties[NuGetConfigurationKey] = configuration;
+@@ -128,7 +128,7 @@ public static void SetConfiguration(this HttpRequestMessage request, HttpRequest
+         private static T GetProperty<T>(this HttpRequestMessage request, string key)
+         {
+ 
+-#if NET5_0
++#if NET5_0 || NET6_0
+             if (request.Options.TryGetValue<T>(new HttpRequestOptionsKey<T>(key), out T result))
+ #else
+             object result;
+diff --git a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs
+index 67a1726b6..0534e936e 100644
+--- a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs
++++ b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs
+@@ -81,7 +81,7 @@ public class HttpRetryHandler : IHttpRetryHandler
+                         headerStopwatch = new Stopwatch();
+                         stopwatches.Add(headerStopwatch);
+                     }
+-#if NET5_0
++#if NET5_0 || NET6_0
+                     requestMessage.Options.Set(new HttpRequestOptionsKey<List<Stopwatch>>(StopwatchPropertyName), stopwatches);
+ #else
+                     requestMessage.Properties[StopwatchPropertyName] = stopwatches;
+diff --git a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs
+index b9ab58ce7..ebf738e52 100644
+--- a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs
++++ b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs
+@@ -98,7 +98,7 @@ protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage
+                 {
+                     List<Stopwatch> stopwatches = null;
+ 
+-#if NET5_0
++#if NET5_0 || NET6_0
+                     if (request.Options.TryGetValue(
+                         new HttpRequestOptionsKey<List<Stopwatch>>(HttpRetryHandler.StopwatchPropertyName),
+                         out stopwatches))
+-- 
+2.18.0
+

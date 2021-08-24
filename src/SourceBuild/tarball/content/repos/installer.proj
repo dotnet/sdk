@@ -62,8 +62,7 @@
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="source-build" />
-    <!-- TODO:  https://github.com/dotnet/source-build/issues/2279
-    <RepositoryReference Include="nuget-client" /> -->
+    <RepositoryReference Include="nuget-client" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="sdk" />

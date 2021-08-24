@@ -23,6 +23,6 @@
   <PropertyGroup>
     <PrivateSourceBuiltArtifactsPackageVersion>0.1.0-6.0.100-bootstrap.11</PrivateSourceBuiltArtifactsPackageVersion>
     <PrivateSourceBuiltPrebuiltsPackageVersionPrefix>0.1.0-6.0.100-</PrivateSourceBuiltPrebuiltsPackageVersionPrefix>
-    <PrivateSourceBuiltPrebuiltsPackageVersionSuffix>16</PrivateSourceBuiltPrebuiltsPackageVersionSuffix>
+    <PrivateSourceBuiltPrebuiltsPackageVersionSuffix>17</PrivateSourceBuiltPrebuiltsPackageVersionSuffix>
   </PropertyGroup>
 </Project>

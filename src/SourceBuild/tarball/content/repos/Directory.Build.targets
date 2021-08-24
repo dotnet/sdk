@@ -503,7 +503,7 @@
       <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
     </ItemGroup>
 
-    <Copy
+    <Move
       Condition="'@(SourceBuiltNupkgFiles)' != ''"
       SourceFiles="@(SourceBuiltNupkgFiles)"
       DestinationFiles="@(SourceBuiltNupkgFiles -> '$(_NupkgDestinationPath)%(Filename)%(Extension)')" />
@@ -513,7 +513,7 @@
       <SourceBuiltAssetFiles Remove="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
     </ItemGroup>
 
-    <Copy
+    <Move
       Condition="'@(SourceBuiltAssetFiles)' != ''"
       SourceFiles="@(SourceBuiltAssetFiles)"
       DestinationFiles="@(SourceBuiltAssetFiles -> '$(SourceBuiltAssetsDir)%(Filename)%(Extension)')" />
