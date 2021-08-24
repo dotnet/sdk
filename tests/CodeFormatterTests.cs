@@ -572,7 +572,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var logger = new TestLogger();
             var msBuildPath = MSBuildRegistrar.RegisterInstance();
 
-            logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, Program.GetRuntimeVersion());
             logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
 
             var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
