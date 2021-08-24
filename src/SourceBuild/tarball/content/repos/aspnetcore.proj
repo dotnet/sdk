@@ -29,8 +29,7 @@
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn" />
-    <!-- TODO:  https://github.com/dotnet/source-build/issues/2319
-    <RepositoryReference Include="roslyn-analyzers" /> -->
+    <RepositoryReference Include="roslyn-analyzers" />
   </ItemGroup>
 
   <ItemGroup>

@@ -50,6 +50,7 @@ jobs:
       mkdir -p "$(_TarballDir)"
       tarballFilePath="$(PIPELINE.WORKSPACE)/${resourceIdPathSegment}BlobArtifacts/dotnet-sdk-source*.tar.gz"
       eval tar -ozxf "$tarballFilePath" -C "$(_TarballDir)"
+      eval rm -f "$tarballFilePath"
     displayName: Extract Tarball
 
   - script: |

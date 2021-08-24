@@ -253,10 +253,6 @@
     <!-- Used by sdk to determine msbuild version for fsharp -->
     <ExtraPackageVersionPropsPackageInfo Include="FSharpBuildVersion" Version="%24(MicrosoftBuildPackageVersion)" />
 
-    <!-- Used by roslyn-analyzsers to determine rsolyn version -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisForShippedApisVersion" Version="%24(MicrosoftCodeAnalysisVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisForRoslynDiagnosticsAnalyzersVersion" Version="%24(MicrosoftCodeAnalysisVersion)" />
-
     <!-- property used by Arcade to determine what version of SourceLink to use -->
     <!-- if MicrosoftSourceLinkCommonPackageVersion is non-empty, then we've already built SourceLink, regardless of whether
          this is the production or offline build, so we should use that version.  -->

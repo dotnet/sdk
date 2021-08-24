@@ -48,6 +48,9 @@
         <RepositoryReference Include="runtime" />
         <RepositoryReference Include="templating" />
 
+        <!-- Tier 3 -->
+        <RepositoryReference Include="roslyn-analyzers" />
+
         <!-- Tier 4 -->
         <RepositoryReference Include="aspnetcore" />
 

@@ -1,0 +1,85 @@
+From ea7eaff7d3385901d0d54b347f5762639cf80cd0 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Thu, 19 Aug 2021 15:29:03 +0000
+Subject: [PATCH] Add offline validation to GenerateDocumentationAndConfigFiles
+ for source build
+
+---
+ eng/GenerateAnalyzerNuspec.targets                 |  6 ++++--
+ .../GenerateDocumentationAndConfigFiles/Program.cs | 14 ++++++++++++--
+ 2 files changed, 16 insertions(+), 4 deletions(-)
+
+diff --git a/eng/GenerateAnalyzerNuspec.targets b/eng/GenerateAnalyzerNuspec.targets
+index a79e9d33f..9d86ab871 100644
+--- a/eng/GenerateAnalyzerNuspec.targets
++++ b/eng/GenerateAnalyzerNuspec.targets
+@@ -36,6 +36,8 @@
+       <_GeneratedRulesetsDir>$(IntermediateOutputPath)Rulesets</_GeneratedRulesetsDir>
+       <_GeneratedEditorconfigsDir>$(IntermediateOutputPath)Editorconfig</_GeneratedEditorconfigsDir>
+       <_GeneratedGlobalAnalyzerConfigsDir>$(IntermediateOutputPath)GlobalAnalyzerConfigs</_GeneratedGlobalAnalyzerConfigsDir>
++      <_ValidateOffline Condition="'$(DotNetBuildFromSource)' == 'true'">true</_ValidateOffline>
++      <_ValidateOffline Condition="'$(_ValidateOffline)' == ''">false</_ValidateOffline>
+       <ContainsPortedFxCopRules Condition="'$(ContainsPortedFxCopRules)' == ''">false</ContainsPortedFxCopRules>
+       <GeneratePackagePropsFile Condition="'$(GeneratePackagePropsFile)' == ''">true</GeneratePackagePropsFile>
+       <GenerateDisableNETAnalyzersPackagePropsFile Condition=" '$(GenerateDisableNETAnalyzersPackagePropsFile)' == '' and '$(ContainsPortedFxCopRules)' == 'true'">true</GenerateDisableNETAnalyzersPackagePropsFile>
+@@ -106,9 +108,9 @@
+ 
+     <!-- Only run validate only in CI builds. Running them in local builds will prevent refreshing auto-generated files. -->
+     <Exec Condition="'$(ContinuousIntegrationBuild)' == 'true'"
+-          Command='"$(DotNetExecutable)" "$(_GenerateDocumentationAndConfigFilesPath)" "-validateOnly:true" "$(_GeneratedRulesetsDir)" "$(_GeneratedEditorconfigsDir)" "$(_GeneratedGlobalAnalyzerConfigsDir)" "$(ArtifactsBinDir)$(EscapeDirectorySuffix)" "$(Configuration)" "%(AnalyzerRulesetAssembly.TargetFramework)" "@(AnalyzerRulesetAssembly)" "$(PackagePropsFileDir)" "$(PackagePropsFileName)" "$(PackageTargetsFileDir)" "$(PackageTargetsFileName)" "$(DisableNETAnalyzersPackagePropsFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerDocumentationFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerSarifFileName)" "$(VersionPrefix)" $(NuspecPackageId) $(ContainsPortedFxCopRules) $(GenerateAnalyzerRulesMissingDocumentationFile) "$(ReleaseTrackingOptOut)"' />
++          Command='"$(DotNetExecutable)" "$(_GenerateDocumentationAndConfigFilesPath)" "-validateOnly:true" "$(_GeneratedRulesetsDir)" "$(_GeneratedEditorconfigsDir)" "$(_GeneratedGlobalAnalyzerConfigsDir)" "$(ArtifactsBinDir)$(EscapeDirectorySuffix)" "$(Configuration)" "%(AnalyzerRulesetAssembly.TargetFramework)" "@(AnalyzerRulesetAssembly)" "$(PackagePropsFileDir)" "$(PackagePropsFileName)" "$(PackageTargetsFileDir)" "$(PackageTargetsFileName)" "$(DisableNETAnalyzersPackagePropsFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerDocumentationFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerSarifFileName)" "$(VersionPrefix)" $(NuspecPackageId) $(ContainsPortedFxCopRules) $(GenerateAnalyzerRulesMissingDocumentationFile) "$(ReleaseTrackingOptOut)" $(_ValidateOffline)' />
+ 
+-    <Exec Command='"$(DotNetExecutable)" "$(_GenerateDocumentationAndConfigFilesPath)" "-validateOnly:false" "$(_GeneratedRulesetsDir)" "$(_GeneratedEditorconfigsDir)" "$(_GeneratedGlobalAnalyzerConfigsDir)" "$(ArtifactsBinDir)$(EscapeDirectorySuffix)" "$(Configuration)" "%(AnalyzerRulesetAssembly.TargetFramework)" "@(AnalyzerRulesetAssembly)" "$(PackagePropsFileDir)" "$(PackagePropsFileName)" "$(PackageTargetsFileDir)" "$(PackageTargetsFileName)" "$(DisableNETAnalyzersPackagePropsFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerDocumentationFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerSarifFileName)" "$(VersionPrefix)" $(NuspecPackageId) $(ContainsPortedFxCopRules) $(GenerateAnalyzerRulesMissingDocumentationFile) "$(ReleaseTrackingOptOut)"' />
++    <Exec Command='"$(DotNetExecutable)" "$(_GenerateDocumentationAndConfigFilesPath)" "-validateOnly:false" "$(_GeneratedRulesetsDir)" "$(_GeneratedEditorconfigsDir)" "$(_GeneratedGlobalAnalyzerConfigsDir)" "$(ArtifactsBinDir)$(EscapeDirectorySuffix)" "$(Configuration)" "%(AnalyzerRulesetAssembly.TargetFramework)" "@(AnalyzerRulesetAssembly)" "$(PackagePropsFileDir)" "$(PackagePropsFileName)" "$(PackageTargetsFileDir)" "$(PackageTargetsFileName)" "$(DisableNETAnalyzersPackagePropsFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerDocumentationFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerSarifFileName)" "$(VersionPrefix)" $(NuspecPackageId) $(ContainsPortedFxCopRules) $(GenerateAnalyzerRulesMissingDocumentationFile) "$(ReleaseTrackingOptOut)" $(_ValidateOffline)' />
+ 
+     <ItemGroup Condition="Exists('$(PackageTargetsFileDir)\$(PackageTargetsFileName)')">
+       <AnalyzerNupkgFile Include="$(PackageTargetsFileDir)\$(PackageTargetsFileName)"/>
+diff --git a/src/Tools/GenerateDocumentationAndConfigFiles/Program.cs b/src/Tools/GenerateDocumentationAndConfigFiles/Program.cs
+index a4c081184..af02b8ee2 100644
+--- a/src/Tools/GenerateDocumentationAndConfigFiles/Program.cs
++++ b/src/Tools/GenerateDocumentationAndConfigFiles/Program.cs
+@@ -30,7 +30,7 @@ public static class Program
+ 
+         public static async Task<int> Main(string[] args)
+         {
+-            const int expectedArguments = 22;
++            const int expectedArguments = 23;
+             const string validateOnlyPrefix = "-validateOnly:";
+ 
+             if (args.Length != expectedArguments)
+@@ -86,6 +86,11 @@ public static async Task<int> Main(string[] args)
+                 releaseTrackingOptOut = false;
+             }
+ 
++            if (!bool.TryParse(args[22], out var validateOffline))
++            {
++                validateOffline = false;
++            }
++
+             var allRulesById = new SortedList<string, DiagnosticDescriptor>();
+             var fixableDiagnosticIds = new HashSet<string>();
+             var categories = new HashSet<string>();
+@@ -624,7 +629,7 @@ await checkHelpLinkAsync(helpLinkUri).ConfigureAwait(false))
+                 }
+                 return;
+ 
+-                static async Task<bool> checkHelpLinkAsync(string helpLink)
++                async Task<bool> checkHelpLinkAsync(string helpLink)
+                 {
+                     try
+                     {
+@@ -633,6 +638,11 @@ static async Task<bool> checkHelpLinkAsync(string helpLink)
+                             return false;
+                         }
+ 
++                        if (validateOffline)
++                        {
++                            return true;
++                        }
++
+                         var request = new HttpRequestMessage(HttpMethod.Head, uri);
+                         using var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+                         return response?.StatusCode == HttpStatusCode.OK;
+-- 
+2.29.2
+

@@ -40,8 +40,7 @@
     <RepositoryReference Include="source-build" />
     <!-- TODO:  https://github.com/dotnet/source-build/issues/2279
     <RepositoryReference Include="nuget-client" /> -->
-    <!-- TODO:  https://github.com/dotnet/source-build/issues/2319
-    <RepositoryReference Include="roslyn-analyzers" /> -->
+    <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="fsharp" />
   </ItemGroup>
