@@ -446,6 +446,15 @@
                       Overwrite="true" />
   </Target>
 
+  <Target Name="CopyIncludedWorkloadManifestFile" >
+    <ItemGroup>
+      <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.WorkloadManifestId)', '').ToLower())" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(SdkOutputDirectory)IncludedWorkloadManifests.txt"
+                      Lines="@(WorkloadManifestFilesContent)"
+                      Overwrite="true" />
+  </Target>
+
   <Target Name="LayoutAppHostTemplate" DependsOnTargets="RunResolvePackageDependencies">
 
     <PropertyGroup>
@@ -510,6 +519,7 @@
                             LayoutBundledComponents;
                             GenerateFullNuGetVersion;
                             GenerateVersionFile;
+                            CopyIncludedWorkloadManifestFile;
                             GenerateBundledVersions;
                             LayoutRuntimeGraph;
                             LayoutTemplates;
